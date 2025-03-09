@@ -111,7 +111,7 @@ import { useHunterStore } from '../../store/hunterStore';
 import { evaluateBuildWithWorker } from '../../services/workerService';
 import { getHunterById } from '../../constants/hunters';
 import * as EvaluationCacheService from '../../services/evaluationCacheService';
-import { BuildCodeHandler } from '../../utils/buildCodeHandler';
+import { BuildCodeHandler } from '../../utils/BuildCodeHandler';
 
 // Unterkomponenten importieren
 import BuildHeader from './card-components/BuildHeader.vue';
