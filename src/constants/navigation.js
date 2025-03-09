@@ -1,0 +1,90 @@
+import { 
+  IconTool, 
+  IconProng, 
+  IconAnchor,
+  IconShield,
+  IconWriting,
+  IconZodiacGemini,
+  IconRefresh,
+  IconHammer,
+  IconMicroscope,
+  IconCrown,
+  IconDiamond,
+  IconCards,
+  IconCreditCard,
+  IconChartBar,
+  IconFileImport
+} from '@tabler/icons-vue';
+
+export const NAVIGATION = {
+  hunters: [
+    {
+      id: 'borge',
+      name: 'Borge',
+      path: '/borge',
+      icon: IconTool, // Direkte Verwendung der Komponente
+      color: 'red',
+      description: 'Ein mächtiger Krieger mit hohem Schaden und Überlebensfähigkeiten.'
+    },
+    {
+      id: 'ozzy',
+      name: 'Ozzy',
+      path: '/ozzy',
+      icon: IconProng,
+      color: 'green',
+      description: 'Ein geschickter Jäger mit einzigartigen Fähigkeiten und starken Debuffs.'
+    },
+    {
+      id: 'knox',
+      name: 'Knox',
+      path: '/knox',
+      icon: IconAnchor,
+      color: 'blue',
+      description: 'Ein erfahrener Pirat mit strategischen Fähigkeiten und mächtigen Torpedos.'
+    }
+  ],
+  
+  upgradeCategories: [
+    {
+      name: 'Core Upgrades',
+      links: [
+        { label: 'Relics', path: '/upgrades/relics', icon: IconShield },
+        { label: 'Gadgets', path: '/upgrades/gadgets', icon: IconTool },
+        { label: 'Inscryptions', path: '/upgrades/inscryptions', icon: IconWriting },
+      ]
+    },
+    {
+      name: 'Utility Upgrades',
+      links: [
+        { label: 'Gems', path: '/upgrades/gems', icon: IconZodiacGemini },
+        { label: 'Loop Mods', path: '/upgrades/loopmods', icon: IconRefresh },
+        { label: 'Shard Milestones', path: '/upgrades/milestones', icon: IconHammer },
+        { label: 'Researches', path: '/upgrades/researches', icon: IconMicroscope },
+      ]
+    },
+    {
+      name: 'Premium',
+      links: [
+        { label: 'Diamond Ultima', path: '/upgrades/ultima', icon: IconCrown },
+        { label: 'Diamond Specials', path: '/upgrades/diamondspecials', icon: IconDiamond },
+        { label: 'Diamond Cards', path: '/upgrades/diamondcards', icon: IconCards },
+        { label: 'IAP', path: '/upgrades/iap', icon: IconCreditCard }
+      ]
+    }
+  ],
+  
+  tools: [
+    {
+      id: 'compare',
+      name: 'Compare',
+      path: '/compare',
+      icon: IconChartBar
+    },
+    {
+      id: 'import',
+      name: 'Import/Export',
+      path: '/import',
+      icon: IconFileImport
+    }
+  ]
+};
