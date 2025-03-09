@@ -436,7 +436,7 @@ export class BuildCodeHandler {
     // Definiere Talent-Parameter je nach Hunter-Typ
     const hunterTalentParams = {
       'borge': ['revival', 'loth', 'ua', 'impeccable', 'omen', 'll', 'pog', 'tfow', 'ultima'],
-      'ozzy': ['revival', 'boon', 'ua', 'needles', 'omen', 'll', 'crip', 'echo', 'lotl', 'ultima'],
+      'ozzy': ['revival', 'boon', 'ua', 'needles', 'omen', 'll', 'crip', 'echo', 'ultima'],
       'knox': ['revival', 'calyp', 'ua', 'ghost', 'omen', 'll', 'pog', 'finish', 'ultima']
     };
     
@@ -444,7 +444,7 @@ export class BuildCodeHandler {
     const hunterAttributeParams = {
       'borge': ['ares', 'ylith', 'spartan', 'timeless', 'baal', 'sensors', 'htb', 'lfin', 'exp', 
                 'atlas', 'weak', 'battle', 'mino', 'hermes', 'athena'],
-      'ozzy': ['exo', 'scorp', 'timeless', 'ibu', 'exterm', 'snek', 'vect', 'cycle', 'deal', 
+      'ozzy': ['lotl', 'exo', 'scorp', 'timeless', 'ibu', 'exterm', 'snek', 'vect', 'cycle', 'deal', 
                'medusa', 'dance', 'sisters', 'scarab', 'cat'],
       'knox': ['kraken', 'spa', 'pl', 'time', 'soul', 'dead', 'fe', 'sop', 'sear', 'pct', 'kot']
     };
