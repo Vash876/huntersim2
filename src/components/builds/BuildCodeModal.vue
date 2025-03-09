@@ -79,7 +79,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { IconShare, IconX, IconCopy, IconCheck } from '@tabler/icons-vue';
-import { BuildCodeHandler } from '../../utils/buildCodeHandler';
+import { BuildCodeHandler } from '../../utils/BuildCodeHandler';
 import { useHunterStore } from '../../store/hunterStore';
 
 // Props
