@@ -3,7 +3,6 @@
     class="build-compact border-l-4 bg-gray-800 rounded-lg shadow-md mb-2 overflow-hidden transition-all duration-200 hover:shadow-xl"
     :class="[
       isReferenceBuild ? 'border-yellow-500' : `border-${hunterColor}-500`,
-      { 'opacity-60': buildData.isArchived }
     ]"
   >
     <div class="flex flex-col">
@@ -20,7 +19,11 @@
             <h3 class="text-white font-medium truncate">
               {{ buildData.name || 'Unnamed Build' }}
               <span class="ml-2 text-xs bg-gray-700/50 px-2 py-0.5 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">Lvl {{ buildData.level }}</span>
+              <span v-if="buildData.isArchived" class="ml-2 text-xs px-2 py-0.5 bg-gray-700/50 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">
+              Archived
+            </span>
             </h3>
+
           </div>
         </div>
         
