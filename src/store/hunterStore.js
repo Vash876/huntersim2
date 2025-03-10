@@ -25,6 +25,9 @@ export const useHunterStore = defineStore('hunter', () => {
   // Neuer Evaluation-Cache
   const evaluationCache = ref({});
 
+  // Stelle sicher, dass der State und die Funktionen im store definiert sind
+  const displaySettings = ref({});
+
   /**
    * Generiert die initiale Upgrades-Struktur basierend auf den UPGRADES-Konstanten
    * @param {Object} upgradesConfig - Die UPGRADES-Konstante
@@ -726,6 +729,33 @@ function updateBuildOverrides(buildId, overrides) {
   return false;
 }
 
+// Display-Einstellungen speichern
+function saveDisplaySettings(hunterId, settings) {
+  if (!hunterId) return;
+  
+  // Stelle sicher, dass displaySettings initialisiert ist
+  if (!displaySettings.value) {
+    displaySettings.value = {};
+  }
+  
+  // Tiefe Kopie des Objekts erstellen, um reaktive Arrays richtig zu speichern
+  const settingsCopy = JSON.parse(JSON.stringify(settings));
+  
+  // Speichere die Einstellungen im Store
+  displaySettings.value = {
+    ...displaySettings.value,
+    [hunterId]: settingsCopy
+  };
+
+  console.log("Settings saved to store:", displaySettings.value);
+  return true;
+}
+
+// Display-Einstellungen abrufen
+function getDisplaySettings(hunterId) {
+  return displaySettings.value[hunterId] || null;
+}
+
 
   return {
     hunterStats,
@@ -734,6 +764,7 @@ function updateBuildOverrides(buildId, overrides) {
     hunterIterations, // Neue Zustandsvariable
     buildOrders, // Neue Zustandsvariable
     evaluationCache, // Neue Zustandsvariable
+    displaySettings,
     // Hunter Stats Funktionen
     initHunterStats,
     initHunterBuilds,
@@ -767,12 +798,14 @@ function updateBuildOverrides(buildId, overrides) {
     cacheEvaluationResult,
     getCachedEvaluationResult,
     clearEvaluationCache,
-    findSimilarCachedResult
+    findSimilarCachedResult,
+    saveDisplaySettings,
+    getDisplaySettings
   };
 }, {
   persist: {
     key: 'hunter-data',
     storage: localStorage,
-    paths: ['hunterStats', 'upgrades', 'hunterBuilds', 'hunterIterations', 'buildOrders', 'evaluationCache']
+    paths: ['hunterStats', 'upgrades', 'hunterBuilds', 'hunterIterations', 'buildOrders', 'evaluationCache', 'displaySettings',]
   }
 });

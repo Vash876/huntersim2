@@ -48,40 +48,34 @@
     <div class="action-bar p-2 px-4 flex justify-between items-center bg-gray-800/70 border-t border-b border-gray-700/50">
       
       <!-- Alle Aktionen in einer Reihe (kompakt aber ausreichend Platz) -->
-      <div class="flex items-center gap-2 flex-1 justify-center lg:justify-start lg:ml-0">
+      <div class="flex items-center gap-2 flex-1 justify-center">
         <button 
           @click="emit('edit')"
           class="action-button-compact"
           title="Edit build">
           <IconEdit size="16" />
-          <span class="text-xs ml-1 hidden sm:inline">Edit</span>
         </button>
-        
-        <button 
-          @click="emit('overrides')"
-          class="action-button-compact"
-          title="Overrides">
-          <IconAdjustments size="16" />
-          <span class="text-xs ml-1 hidden sm:inline">Overrides</span>
-        </button>
-        
         
         <button 
           @click="emit('clone')" 
           class="action-button-compact" 
           title="Copy build">
           <IconCopy size="16" />
-          <span class="text-xs ml-1 hidden sm:inline">Copy</span>
         </button>
-        
+
         <button 
           @click="emit('share')"
           class="action-button-compact"
           title="Share build code">
           <IconShare size="16" />
-          <span class="text-xs ml-1 hidden sm:inline">Share</span>
         </button>
-        
+
+        <button 
+          @click="emit('overrides')"
+          class="action-button-compact"
+          title="Overrides">
+          <IconAdjustments size="16" />
+        </button>
         
         <button 
           @click="emit('archive')" 
@@ -89,7 +83,6 @@
           :title="buildData.isArchived ? 'Restore build' : 'Archive build'">
           <IconArchive v-if="!buildData.isArchived" size="16" />
           <IconArchiveOff v-else size="16" />
-          <span class="text-xs ml-1 hidden sm:inline">{{ buildData.isArchived ? 'Restore' : 'Archive' }}</span>
         </button>
         
         <button 
@@ -97,7 +90,6 @@
           class="action-button-compact hover:text-red-400" 
           title="Delete build">
           <IconTrash size="16" />
-          <span class="text-xs ml-1 hidden sm:inline">Delete</span>
         </button>
       </div>
     </div>

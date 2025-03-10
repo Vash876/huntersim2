@@ -24,10 +24,12 @@
 
       <!-- Build-Form Inhalt -->
       <div class="p-4">
-        <!-- Build Name Input -->
+        <!-- Build Name Input für Mobile -->
         <div class="mb-5 bg-gray-700 rounded-lg p-4 border border-gray-600">
           <label for="buildName" class="block text-sm font-medium text-gray-300 mb-2">Build Name</label>
-          <div class="flex gap-2">
+          
+          <!-- Desktop Layout: Input und Buttons nebeneinander -->
+          <div class="hidden md:flex gap-2">
             <input 
               type="text" 
               id="buildName" 
@@ -45,11 +47,37 @@
             </button>
             <button 
               @click="saveBuild"
-              :disabled="!isValidBuild" 
               class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md disabled:bg-blue-900 disabled:opacity-50"
             >
               {{ isEditMode ? 'Update Build' : 'Create Build' }}
             </button>
+          </div>
+          
+          <!-- Mobile Layout: Input und Buttons untereinander -->
+          <div class="flex flex-col gap-3 md:hidden">
+            <input 
+              type="text" 
+              id="buildNameMobile" 
+              v-model="buildData.name" 
+              class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="Enter build name..."
+            />
+            <div class="flex gap-2">
+              <button 
+                @click="openOverrideModal"
+                class="flex-1 px-3 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-md flex items-center justify-center"
+                title="Customize game parameters for simulation"
+              >
+                <IconAdjustments size="18" class="mr-1" />
+                Overrides
+              </button>
+              <button 
+                @click="saveBuild"
+                class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-md disabled:bg-blue-900 disabled:opacity-50"
+              >
+                {{ isEditMode ? 'Update' : 'Create' }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -403,10 +431,6 @@ const calculatedLevel = computed(() => {
 const maxTalentPoints = computed(() => calculatedLevel.value);
 const maxAttributePoints = computed(() => calculatedLevel.value * 3);
 
-const isValidBuild = computed(() => {
-  return buildData.value.name.trim() !== '';
-});
-
 // Item-Objekt für ControlButton mit ID und maxLevel
 function getTalentItem(talent) {
   return {
@@ -578,11 +602,14 @@ const {
 
 // Build speichern
 function saveBuild() {
-  if (!isValidBuild.value) return;
-  
   // Level und Zeitstempel aktualisieren
   buildData.value.level = calculatedLevel.value;
   buildData.value.timestamp = Date.now();
+  
+  // Wenn kein Name eingegeben wurde, "Unnamed" verwenden
+  if (!buildData.value.name.trim()) {
+    buildData.value.name = "Unnamed";
+  }
   
   // Generiere ID wenn keine vorhanden (geklonter Build)
   if (!buildData.value.id) {

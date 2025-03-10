@@ -34,7 +34,7 @@
     
     <!-- Grid für wichtigsten Spielstatistiken -->
     <div class="stats-grid">
-      <!-- Durchschnittliche Stage -->
+      <!-- Erste Zeile: Stage und Time -->
       <div class="stat-card">
         <div class="stat-header">
           <IconStairs :size="16" :class="`text-${hunterColor}-400`" />
@@ -71,8 +71,8 @@
         </div>
       </div>
       
-      <!-- Runs pro Tag -->
-      <div class="stat-card">
+      <!-- Zweite Zeile: Runs pro Tag über die ganze Breite 
+      <div class="stat-card full-width">
         <div class="stat-header">
           <IconRepeat :size="16" class="text-purple-400" />
           <span class="stat-title">Runs per Day</span>
@@ -80,7 +80,7 @@
         <div class="stat-value-row">
           <div class="stat-main-value">{{ formatNumber(calculateRunsPerDay(results.avgTime)) }}</div>
         </div>
-      </div>
+      </div>-->
     </div>
   </div>
 </template>
@@ -262,8 +262,14 @@ function getTimeDiffClass(value, reference) {
 /* Statistik-Grid */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto auto;
   gap: 0.75rem;
+}
+
+/* Volle Breite für das 3. Element (Runs per Day) */
+.full-width {
+  grid-column: 1 / -1;
 }
 
 .stat-card {
@@ -311,26 +317,14 @@ function getTimeDiffClass(value, reference) {
   color: rgba(156, 163, 175, 0.8);
 }
 
-/* Responsive Design - ANGEPASST */
-@media (max-width: 640px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  /* Erzwingt, dass das dritte Element volle Breite hat */
-  .stats-grid > .stat-card:nth-child(3) {
-    grid-column: 1 / -1;
-  }
-}
-
 /* Nur für sehr kleine Bildschirme alles untereinander */
 @media (max-width: 360px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
   
-  /* Zurücksetzen der Spezialregel für das dritte Element */
-  .stats-grid > .stat-card:nth-child(3) {
+  /* Zurücksetzen der Spezialregel für das "Runs per Day"-Element */
+  .full-width {
     grid-column: auto;
   }
 }

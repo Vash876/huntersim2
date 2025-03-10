@@ -95,7 +95,9 @@ export function getTimeDiffText(value, reference) {
 
 // Boss-Statistik Differenz
 export function getBossStatDiffClasses(value, reference, higherIsBetter = true) {
-  if (!value || !reference || value === '--' || reference === '--') return '';
+  // Prüfen auf null, undefined oder '--', aber erlaubt den Wert 0
+  if (value === null || value === undefined || reference === null || reference === undefined || 
+      value === '--' || reference === '--') return '';
   
   try {
     const diff = value - reference;
@@ -118,7 +120,9 @@ export function getBossStatDiffClasses(value, reference, higherIsBetter = true) 
 }
 
 export function getBossStatDiffText(value, reference) {
-  if (!value || !reference || value === '--' || reference === '--') return '';
+  // Prüfen auf null, undefined oder '--', aber erlaubt den Wert 0
+  if (value === null || value === undefined || reference === null || reference === undefined || 
+      value === '--' || reference === '--') return '';
   
   try {
     const diff = value - reference;

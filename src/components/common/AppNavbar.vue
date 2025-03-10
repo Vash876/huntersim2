@@ -7,12 +7,14 @@
     <div class="hidden md:flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
       <!-- Logo & Branding -->
       <div class="flex items-center group">
-        <div class="mr-3 bg-gradient-to-br from-blue-400 to-purple-600 p-2 rounded-lg shadow-glow transition-all duration-300 group-hover:shadow-glow-intense">
-          <IconTargetArrow size="24" class="text-white" />
-        </div>
+        <router-link to="/">
+          <div class="mr-3 bg-gradient-to-br from-blue-400 to-purple-600 p-2 rounded-lg shadow-glow transition-all duration-300 group-hover:shadow-glow-intense">
+            <IconTargetArrow size="24" class="text-white" />
+          </div>
+        </router-link>
         <div class="flex flex-col">
           <span class="text-xl font-bold tracking-wide">Hunter Simulator</span>
-          <span class="text-xs text-gray-400">Build Creator & Analyzer</span>
+          <span class="text-xs text-gray-400">by Kylenator and Vash</span>
         </div>
       </div>
       

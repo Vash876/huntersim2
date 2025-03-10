@@ -55,14 +55,27 @@
             <span>{{ iterationValue }} iterations</span>
           </button>
           
-          <!-- Statistics 
-          <button
-            class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-700 transition-colors"
-            @click.stop="openStatisticsModal"
-          >
-            <IconChartDonut size="16" class="text-purple-400" />
-            <span>Display Settings</span>
-          </button>-->
+          <!-- Statistics -->
+          <div class="hidden md:flex items-center gap-2">
+            <button
+              @click="setDisplayMode('Vertical')"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors"
+              :class="displaySettings.displayMode === 'Vertical' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'"
+              title="Vertical View"
+            >
+              <IconLayoutDistributeVertical size="16" class="text-blue-400" />
+              <span>Vertical</span>
+            </button>
+            <button
+              @click="setDisplayMode('Horizontal')"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors"
+              :class="displaySettings.displayMode === 'Horizontal' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'"
+              title="Horizontal View"
+            >
+              <IconLayoutDistributeHorizontal size="16" class="text-blue-400" />
+              <span>Horizontal</span>
+            </button>
+          </div>
         </div>
         
         <!-- Build Filter Switch -->
@@ -92,42 +105,145 @@
     
     <!-- Neue Build-Resultate -->
     <div v-if="builds.length > 0">
-      <Draggable 
-        v-model="builds"
-        :componentData="{
-          tag: 'div',
-          type: 'transition-group',
-          name: 'flip-list',
-          class: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
-        }"
-        handle=".grip-handle"
-        :group="{ name: 'builds' }"
-        itemKey="id"
-        :animation="200"
-        ghostClass="ghost"
-        chosenClass="chosen"
-        dragClass="dragging"
-        @end="onDragEnd"
-      >
-        <template #item="{ element, index }">
-          <div class="build-card-wrapper">
-            <BuildResultCard 
-              :build-id="element.id"
-              :hunter-id="element.hunterId || route.params.hunterId"
-              :build-data="element"
-              :index="index"
-              @name-changed="handleNameChanged"
-              @edit="editBuild"
-              @clone="cloneBuild"
-              @archive="archiveBuild"
-              @delete="deleteBuild"
-              @evaluated="handleBuildEvaluated"
-              @overridesBuild="openOverrideModal"
-            />
-          </div>
-        </template>
-      </Draggable>
-    </div>
+  <!-- Nur auf Desktop anzeigen: Detaillierte Ansicht oder Kompakte Ansicht -->
+  <div class="hidden md:block">
+    <!-- Detaillierte Ansicht Draggable -->
+    <Draggable 
+      v-if="displaySettings.displayMode === 'Vertical'"
+      v-model="builds"
+      :componentData="{
+        tag: 'div',
+        type: 'transition-group',
+        name: 'flip-list',
+        class: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'
+      }"
+      handle=".grip-handle"
+      :group="{ name: 'builds' }"
+      itemKey="id"
+      :animation="200"
+      ghostClass="ghost"
+      chosenClass="chosen"
+      dragClass="dragging"
+      @end="onDragEnd"
+    >
+      <template #item="{ element, index }">
+        <div class="build-card-wrapper">
+          <BuildResultCard 
+            :build-id="element.id"
+            :hunter-id="element.hunterId || route.params.hunterId"
+            :build-data="element"
+            :index="index"
+            :is-reference-build="element.id === referenceBuildId"
+            @name-changed="handleNameChanged"
+            @edit="editBuild"
+            @clone="cloneBuild"
+            @archive="archiveBuild"
+            @delete="deleteBuild"
+            @evaluated="handleBuildEvaluated"
+            @overridesBuild="openOverrideModal"
+          />
+        </div>
+      </template>
+    </Draggable>
+
+    <!-- Kompakte Ansicht Draggable -->
+    <Draggable 
+      v-else
+      v-model="builds"
+      :componentData="{
+        tag: 'div',
+        type: 'transition-group',
+        name: 'flip-list',
+        class: 'space-y-2'
+      }"
+      handle=".grip-handle"
+      :group="{ name: 'builds' }"
+      itemKey="id"
+      :animation="200"
+      ghostClass="ghost"
+      chosenClass="chosen"
+      dragClass="dragging"
+      @end="onDragEnd"
+    >
+      <template #item="{ element, index }">
+        <div class="build-compact-wrapper">
+          <BuildCardCompact 
+            :build-id="element.id"
+            :hunter-id="element.hunterId || route.params.hunterId"
+            :build-data="element"
+            :auto-evaluate="true"
+            :index="index"
+            :is-reference-build="element.id === referenceBuildId"
+            :reference-results="referenceBuildResults"
+            :result-labels="resultLabels"
+            :results="evaluationResults[element.id]?.results"
+            :is-loading="evaluationResults[element.id]?.isLoading"
+            :has-error="evaluationResults[element.id]?.hasError"
+            :progress-iteration="evaluationResults[element.id]?.progressIteration || 0"
+            :total-iterations="hunterIterations"
+            @name-changed="handleNameChanged"
+            @edit="editBuild"
+            @clone="cloneBuild"
+            @archive="archiveBuild"
+            @delete="deleteBuild"
+            @evaluated="handleBuildEvaluated"
+            @overridesBuild="openOverrideModal"
+            @reevaluate="(buildId) => onBuildReevaluate(buildId)"
+          />
+        </div>
+      </template>
+    </Draggable>
+  </div>
+
+  <!-- Mobile Ansicht: Immer die Mobile-Karte anzeigen -->
+  <div class="md:hidden">
+    <Draggable 
+      v-model="builds"
+      :componentData="{
+        tag: 'div',
+        type: 'transition-group',
+        name: 'flip-list',
+        class: 'space-y-3'
+      }"
+      handle=".grip-handle"
+      :group="{ name: 'builds' }"
+      itemKey="id"
+      :animation="200"
+      ghostClass="ghost"
+      chosenClass="chosen"
+      dragClass="dragging"
+      @end="onDragEnd"
+    >
+      <template #item="{ element, index }">
+        <div class="build-mobile-wrapper">
+          <BuildCardMobile
+            :build-id="element.id"
+            :hunter-id="element.hunterId || route.params.hunterId"
+            :build-data="element"
+            :auto-evaluate="true"
+            :index="index"
+            :is-reference-build="element.id === referenceBuildId"
+            :reference-results="referenceBuildResults"
+            :result-labels="resultLabels"
+            :results="evaluationResults[element.id]?.results"
+            :is-loading="evaluationResults[element.id]?.isLoading"
+            :has-error="evaluationResults[element.id]?.hasError"
+            :progress-iteration="evaluationResults[element.id]?.progressIteration || 0"
+            :total-iterations="hunterIterations"
+            @name-changed="handleNameChanged"
+            @edit="editBuild"
+            @clone="cloneBuild"
+            @archive="archiveBuild"
+            @delete="deleteBuild"
+            @evaluated="handleBuildEvaluated"
+            @overridesBuild="openOverrideModal"
+            @reevaluate="(buildId) => onBuildReevaluate(buildId)"
+          />
+        </div>
+      </template>
+    </Draggable>
+  </div>
+</div>
     
     <!-- Leerer State wenn keine Builds vorhanden -->
     <div 
@@ -174,28 +290,12 @@
     />
 
     <!-- Statistics Modal -->
-    <div
-      v-if="isStatisticsModalOpen"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      @click.self="closeStatisticsModal"
-    >
-      <div class="bg-gray-900 p-6 rounded-lg w-11/12 max-w-md border border-gray-700">
-        <h3 class="text-xl font-bold mb-4 flex items-center">
-          <IconChartDonut size="20" class="mr-2 text-purple-400" />
-          Display Settings
-        </h3>
-        <p class="text-gray-400 mb-4">Wähle aus, welche Statistiken angezeigt werden sollen.</p>
-        
-        <div class="flex justify-end mt-6">
-          <button 
-            @click="closeStatisticsModal"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-          >
-            Schließen
-          </button>
-        </div>
-      </div>
-    </div>
+    <StatisticsDisplayModal
+      :isVisible="isStatisticsModalOpen"
+      :hunterType="route.params.hunterId"
+      @close="closeStatisticsModal"
+      @update:displaySettings="onDisplaySettingsUpdated"
+    />
     
     <!-- Build Code Modal -->
     <BuildImportModal
@@ -269,7 +369,9 @@ import {
   // Neue Icons für die Toast-Nachrichten
   IconCircleCheck,
   IconAlertCircle,
-  IconInfoCircle
+  IconInfoCircle,
+  IconLayoutDistributeVertical,
+  IconLayoutDistributeHorizontal
 } from '@tabler/icons-vue';
 
 import StatsModal from '../components/common/StatsModal.vue';
@@ -279,6 +381,8 @@ import BuildResultCard from '@/components/builds/BuildResultCard.vue';
 import Draggable from 'vuedraggable';
 import OverrideModal from '../components/common/OverrideModal.vue';
 import BuildImportModal from '@/components/builds/BuildImportModal.vue';
+import StatisticsDisplayModal from '@/components/common/StatisticsDisplayModal.vue';
+import BuildCardCompact from '@/components/builds/BuildCardCompact.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -309,6 +413,12 @@ const buildCode = ref('');
 
 // Durch den neuen Toast-State im selben Format wie in SettingsView
 const toast = ref({ show: false, message: '', type: 'info' });
+
+// Füge auch resultLabels und evaluationResults State hinzu, falls noch nicht vorhanden
+const resultLabels = ref({});
+const evaluationResults = ref({});
+
+const hunterIterations = computed(() => hunterStore.hunterIterations[route.params.hunterId] || 1000);
 
 // Modale Status
 const showStatsModal = ref(false);
@@ -794,6 +904,63 @@ function handleBuildEvaluated({ buildId, results, isReference }) {
     referenceUpdateCounter.value++;
   }
 }
+
+// Füge auch die Funktion zum Aktualisieren der Display-Einstellungen hinzu
+function onDisplaySettingsUpdated(settings) {
+  console.log('Display settings updated:', settings);
+  // Hier kannst du auf Änderungen reagieren, z.B. alle Karten neu rendern
+  // Oder den aktuellen Anzeigemodus aktualisieren
+  
+  // Optional: Toast-Nachricht anzeigen
+  showToastMessage('Display settings updated', 'success');
+}
+
+// Stelle displaySettings als reactive Wert bereit
+const displaySettings = computed(() => {
+  return hunterStore.getDisplaySettings(route.params.hunterId) || {
+    displayMode: 'Vertical',
+    enabledStats: ['lootPerMin', 'avgStage', 'avgTime', 'stageDistribution'],
+    chartStyle: 'bar'
+  };
+});
+
+// Funktion zum Umschalten der Anzeigemodi
+function setDisplayMode(mode) {
+  // Aktuelle Einstellungen abrufen
+  const currentSettings = hunterStore.getDisplaySettings(route.params.hunterId) || {
+    displayMode: 'Vertical',
+    enabledStats: ['lootPerMin', 'avgStage', 'avgTime', 'stageDistribution'],
+    chartStyle: 'bar'
+  };
+  
+  // Neue Einstellungen mit aktualisiertem Anzeigemodus erstellen
+  const updatedSettings = { 
+    ...currentSettings,
+    displayMode: mode 
+  };
+  
+  // Im Store speichern
+  hunterStore.saveDisplaySettings(route.params.hunterId, updatedSettings);
+  
+  // Optional: Toast-Nachricht anzeigen
+  showToastMessage(`Display mode changed to ${mode}`, 'info', 1500);
+}
+
+// Füge die onBuildReevaluate-Funktion hinzu, falls sie fehlt
+function onBuildReevaluate(buildId) {
+  evaluationResults.value = {
+    ...evaluationResults.value,
+    [buildId]: {
+      ...evaluationResults.value[buildId],
+      isLoading: true,
+      hasError: false,
+      progressIteration: 0
+    }
+  };
+}
+
+// Stelle displaySettings zur Verfügung (provide/inject Pattern)
+provide('displaySettings', displaySettings);
 </script>
 
 <style scoped>
