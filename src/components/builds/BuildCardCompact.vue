@@ -149,6 +149,10 @@
               <div class="flex items-center">
                 <span class="text-white font-medium pt-1">{{ formatStage(results.avgStage, true) }}</span>
               </div>
+              <!-- Min-Max Stage hinzugefügt -->
+              <div class="text-xs text-gray-500">
+                {{ formatStage(results.minStage) }}-{{ formatStage(results.maxStage) }}
+              </div>
             </div>
             
             <!-- Avg Time -->
@@ -166,6 +170,10 @@
               </div>
               <div class="flex items-center">
                 <span class="text-white font-medium">{{ formatTime(results.avgTime) }}</span>
+              </div>
+              <!-- Runs per Day hinzugefügt -->
+              <div class="text-xs text-gray-500">
+                {{ formatNumber(calculateRunsPerDay(results.avgTime)) }} Runs per day
               </div>
             </div>
             
@@ -365,7 +373,7 @@ import {
   getAbsoluteDiffClasses, getAbsoluteDiffText,
   getTimeDiffClasses, getTimeDiffText,
   getBossStatDiffClasses, getBossStatDiffText,
-  calculatePerDay
+  calculatePerDay,calculateRunsPerDay
 } from './utils/BuildComparisonUtils';
 
 // Unterkomponenten importieren

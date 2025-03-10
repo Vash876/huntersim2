@@ -1,47 +1,54 @@
 <!-- filepath: /c:/Users/igorn/projects/huntersim2/src/components/builds/card-components/BuildStatistics.vue -->
 <template>
-  <div class="stats-container">
-    <!-- Hauptstatistik: Loot per Minute -->
-    <div class="main-stat-card">
-      <div class="flex items-center justify-between mb-2">
-        <div class="flex items-center">
-          <IconReportMoney :size="18" class="mr-1.5" :class="`text-${hunterColor}-400`" />
-          <span class="text-sm font-medium text-gray-200">{{ resultLabels.lootPerMin }}</span>
-        </div>
-        <div 
-          v-if="!props.isReferenceBuild && props.referenceResults?.lootPerMin && results.lootPerMin"
-          class="comparison-chip"
-          :class="getDiffBadgeClass(results.lootPerMin, props.referenceResults.lootPerMin, true)"
-        >
-          <component :is="getDiffIcon(results.lootPerMin, props.referenceResults.lootPerMin, true)" :size="14" />
-          <span class="ml-0.5">{{ getDiffText(results.lootPerMin, props.referenceResults.lootPerMin, true) }}</span>
-        </div>
-      </div>
-      
-      <div class="mb-1.5">
-        <span class="primary-value" :class="`text-${hunterColor}-400`">{{ formatNumber(results.lootPerMin) }}</span>
-      </div>
-      
-      <div class="progress-track">
-        <div class="progress-bg"></div>
-        <div 
-          class="progress-fill" 
-          :class="`bg-${hunterColor}-500`"
-          :style="{ width: getProgressWidth(results.lootPerMin, props.referenceResults?.lootPerMin) }"
-        ></div>
-      </div>
-    </div>
-    
+  <div class="stats-container">  
+    <h4 class="section-title">Main Statistics</h4>  
     <!-- Grid für wichtigsten Spielstatistiken -->
     <div class="stats-grid">
-      <!-- Erste Zeile: Stage und Time -->
+      <!-- Erste Zeile: Laufzeit und Loot Score -->
+      <!-- Loot Score -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <IconReportMoney :size="16" class="text-amber-400" />
+          <span class="stat-title">Loot Score</span>
+          <div 
+            v-if="!props.isReferenceBuild && props.referenceResults?.lootPerMin" 
+            class="stat-diff"
+            :class="getAbsoluteDiffClass(results.lootPerMin, props.referenceResults.lootPerMin, true)"
+          >
+          <component :is="getDiffIcon(results.lootPerMin, props.referenceResults.lootPerMin, true)" :size="14" />
+            {{ getDiffText(results.lootPerMin, props.referenceResults.lootPerMin) }}
+          </div>
+        </div>
+        <div class="stat-value-row">
+          <div class="stat-main-value">{{ formatNumber(results.lootPerMin || 0) }}</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <IconClock :size="16" class="text-blue-400" />
+          <span class="stat-title">{{ resultLabels.avgTime }}</span>
+          <div 
+            v-if="!props.isReferenceBuild && props.referenceResults?.avgTime" 
+            class="comparison-chip"
+            :class="getTimeDiffClass(results.avgTime, props.referenceResults.avgTime)"
+          >
+            {{ getTimeDiffText(results.avgTime, props.referenceResults.avgTime) }}
+          </div>
+        </div>
+        <div class="stat-value-row">
+          <div class="stat-main-value">{{ formatTime(results.avgTime) }}</div>
+        </div>
+      </div>
+      
+      <!-- Zweite Zeile: Stage und Runs pro Tag -->
       <div class="stat-card">
         <div class="stat-header">
           <IconStairs :size="16" :class="`text-${hunterColor}-400`" />
           <span class="stat-title">{{ resultLabels.avgStage }}</span>
           <div 
             v-if="!props.isReferenceBuild && props.referenceResults?.avgStage" 
-            class="stat-diff"
+            class="comparison-chip"
             :class="getAbsoluteDiffClass(results.avgStage, props.referenceResults.avgStage)"
           >
             {{ getAbsoluteDiffText(results.avgStage, props.referenceResults.avgStage) }}
@@ -53,26 +60,8 @@
         </div>
       </div>
       
-      <!-- Laufzeit -->
+      <!-- Runs per Day -->
       <div class="stat-card">
-        <div class="stat-header">
-          <IconClock :size="16" class="text-blue-400" />
-          <span class="stat-title">{{ resultLabels.avgTime }}</span>
-          <div 
-            v-if="!props.isReferenceBuild && props.referenceResults?.avgTime" 
-            class="stat-diff"
-            :class="getTimeDiffClass(results.avgTime, props.referenceResults.avgTime)"
-          >
-            {{ getTimeDiffText(results.avgTime, props.referenceResults.avgTime) }}
-          </div>
-        </div>
-        <div class="stat-value-row">
-          <div class="stat-main-value">{{ formatTime(results.avgTime) }}</div>
-        </div>
-      </div>
-      
-      <!-- Zweite Zeile: Runs pro Tag über die ganze Breite 
-      <div class="stat-card full-width">
         <div class="stat-header">
           <IconRepeat :size="16" class="text-purple-400" />
           <span class="stat-title">Runs per Day</span>
@@ -80,7 +69,7 @@
         <div class="stat-value-row">
           <div class="stat-main-value">{{ formatNumber(calculateRunsPerDay(results.avgTime)) }}</div>
         </div>
-      </div>-->
+      </div>
     </div>
   </div>
 </template>
@@ -193,6 +182,14 @@ function getTimeDiffClass(value, reference) {
 </script>
 
 <style scoped>
+.section-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: rgba(229, 231, 235, 1);
+  border-bottom: 1px solid rgba(75, 85, 99, 0.4);
+  padding-bottom: 0.5rem;
+}
+
 .stats-container {
   display: flex;
   flex-direction: column;
@@ -215,12 +212,14 @@ function getTimeDiffClass(value, reference) {
 }
 
 .comparison-chip {
+  position: absolute;
   display: flex;
   align-items: center;
   padding: 0.1875rem 0.375rem;
   border-radius: 0.25rem;
   font-size: 0.75rem;
   font-weight: 500;
+  right: 0;
 }
 
 .comparison-chip.positive {
@@ -267,15 +266,10 @@ function getTimeDiffClass(value, reference) {
   gap: 0.75rem;
 }
 
-/* Volle Breite für das 3. Element (Runs per Day) */
-.full-width {
-  grid-column: 1 / -1;
-}
-
 .stat-card {
   background-color: rgba(31, 41, 55, 0.4);
   border-radius: 0.5rem;
-  padding: 0.75rem;
+  padding: 0.55rem;
   height: 100%;
   transition: transform 0.1s ease;
 }
@@ -296,7 +290,11 @@ function getTimeDiffClass(value, reference) {
 .stat-diff {
   position: absolute;
   right: 0;
-  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  padding: 0.1875rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
@@ -321,11 +319,6 @@ function getTimeDiffClass(value, reference) {
 @media (max-width: 360px) {
   .stats-grid {
     grid-template-columns: 1fr;
-  }
-  
-  /* Zurücksetzen der Spezialregel für das "Runs per Day"-Element */
-  .full-width {
-    grid-column: auto;
   }
 }
 </style>

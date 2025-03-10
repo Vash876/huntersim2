@@ -179,6 +179,8 @@ import { useHunterStore } from '../../store/hunterStore';
 import { HUNTERS } from '../../constants/hunters';
 import { UPGRADES } from '../../constants/upgrades';
 import { calcCostDifference, formatCost } from '../../utils/statCostUtils';
+import { getRelicCost, calcRelicCostDifference, formatRelicCost } from '../../utils/relicCostUtils';
+import { getGadgetCost, calcGadgetCostDifference, formatGadgetCost } from '../../utils/gadgetCostUtils';
 
 const props = defineProps({
   isVisible: { type: Boolean, default: false },
@@ -474,10 +476,25 @@ function showCostForParam(param) {
     return false;
   }
   
-  // Nur für Basis-Stats und nur wenn Override höher als global
-  return param.category === 'baseStats' &&  
-         localOverrides.value[param.key] !== null &&
-         localOverrides.value[param.key] > param.globalValue;
+  // Für Basis-Stats nur wenn Override höher als global
+  if (param.category === 'baseStats') {
+    return localOverrides.value[param.key] !== null &&
+           localOverrides.value[param.key] > param.globalValue;
+  }
+  
+  // Für Relics nur wenn Override höher als global
+  if (param.key.startsWith('upgrades.relics.')) {
+    return localOverrides.value[param.key] !== null &&
+           localOverrides.value[param.key] > param.globalValue;
+  }
+  
+  // Für Gadgets nur wenn Override höher als global
+  if (param.key.startsWith('upgrades.gadgets.')) {
+    return localOverrides.value[param.key] !== null &&
+           localOverrides.value[param.key] > param.globalValue;
+  }
+  
+  return false;
 }
 
 // Funktion zur Berechnung der Kosten für einen Parameter
@@ -486,26 +503,69 @@ function getParamCost(param) {
   
   const fromLevel = Math.floor(param.globalValue);
   const toLevel = localOverrides.value[param.key];
-  const statKey = param.key; // Direkt den key des Parameters verwenden
   
+  // Für Relics
+  if (param.key.startsWith('upgrades.relics.')) {
+    // Format ist upgrades.relics.relicId, z.B. upgrades.relics.r4 (entspricht relic04)
+    const relicId = param.key.split('.')[2]; // Extrahiert 'r4'
+    let relicType;
+    
+    // Mapping von Relic IDs zu den entsprechenden Typen in relicCostUtils
+    switch(relicId) {
+      case 'r4': relicType = 'relic04'; break;
+      case 'r7': relicType = 'relic07'; break;
+      case 'r16': relicType = 'relic16'; break;
+      case 'r17': relicType = 'relic17'; break;
+      case 'r19': relicType = 'relic19'; break;
+      default: return 0; // Relictyp nicht erkannt
+    }
+    
+    return calcRelicCostDifference(relicType, fromLevel, toLevel);
+  }
+  
+  // Für Gadgets
+  if (param.key.startsWith('upgrades.gadgets.')) {
+    // Format ist upgrades.gadgets.gadgetId, z.B. upgrades.gadgets.wrench
+    const gadgetId = param.key.split('.')[2]; // Extrahiert 'wrench'
+    
+    // Direkt den gadgetId verwenden - unsere gadgetCostUtils kennt 'wrench', 'zaptron', usw.
+    return calcGadgetCostDifference(gadgetId, fromLevel, toLevel);
+  }
+  
+  // Für normale Stats
+  const statKey = param.key; // Direkt den key des Parameters verwenden
   return calcCostDifference(statKey, fromLevel, toLevel, props.hunterType);
 }
 
 // Funktion zur Berechnung der Gesamtkosten
 function calculateTotalCost() {
   let cost = 0;
+  let hasMaxCost = false;
   
   // Alle Parameter durchlaufen
   parameterData.value.forEach(category => {
     category.params.forEach(param => {
       if (showCostForParam(param)) {
-        cost += getParamCost(param);
+        const paramCost = getParamCost(param);
+        
+        // Wenn irgendein Parameter "MAX" zurückgibt, setzen wir hasMaxCost flag
+        if (paramCost === "MAX") {
+          hasMaxCost = true;
+        } else if (typeof paramCost === 'number') {
+          cost += paramCost;
+        }
       }
     });
   });
   
   // Gesamtkosten speichern und formatieren
-  totalCost.value = cost > 0 ? formatCost(cost) : null;
+  if (hasMaxCost) {
+    totalCost.value = "MAX";
+  } else if (cost > 0) {
+    totalCost.value = formatCost(cost);
+  } else {
+    totalCost.value = null;
+  }
 }
 
 // Bestimmt die Textfarbe basierend auf dem Vergleich zwischen Override- und Global-Wert
