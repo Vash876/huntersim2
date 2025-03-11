@@ -17,3 +17,17 @@ app.provide('evaluationCache', evaluationCache)
 
 app.use(router)
 app.mount('#app')
+
+if (import.meta.env.PROD) {
+  // Speichere Original-Methoden
+  const originalConsole = { ...console };
+  
+  // Überschreibe Debug-Methoden
+  console.log = () => {};
+  console.debug = () => {};
+  console.info = () => {};
+  
+  // Behalte wichtige Meldungen
+  console.warn = originalConsole.warn;
+  console.error = originalConsole.error;
+}
