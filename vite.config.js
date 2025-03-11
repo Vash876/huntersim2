@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
-import { terser } from 'rollup-plugin-terser'
 // unplugin-icons
 import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
@@ -15,12 +14,6 @@ export default defineConfig({
   plugins: [
     vue(),
     tailwindcss(),
-
-    process.env.NODE_ENV === 'production' && terser({
-      compress: {
-        drop_console: true,  // Entfernt alle console.* Aufrufe
-      }
-    }),
 
     Components({
       resolvers: [
@@ -40,8 +33,15 @@ export default defineConfig({
     plugins: [] // Keine speziellen Plugins für Worker
   },
   build: {
-    target: 'esnext', // Modernes JavaScript
-    sourcemap: true, // Für besseres Debugging
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        pure_funcs: ['console.log', 'console.debug', 'console.info']
+      }
+    },
+    target: 'esnext',
+    sourcemap: true,
   },
   resolve: {
     alias: {
