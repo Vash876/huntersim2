@@ -16,6 +16,13 @@ export default defineConfig({
     vue(),
     tailwindcss(),
 
+    process.env.NODE_ENV === 'production' && terser({
+      compress: {
+        drop_console: true,  // Entfernt alle console.* Aufrufe
+        pure_funcs: ['console.log', 'console.debug']  // Oder nur bestimmte
+      }
+    }),
+
     Components({
       resolvers: [
         IconsResolver({

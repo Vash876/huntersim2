@@ -545,3 +545,25 @@ export async function invalidateCacheKey(hunterId, cacheKey) {
     return false;
   }
 }
+
+/**
+ * Prüft, ob die Build-Evaluierung nach Änderungen an den Hunter-Stats aktualisiert werden sollte
+ * @param {Object} options - Optionen mit hunterId, buildData und hunterStore
+ * @returns {Promise<boolean>} - True, wenn eine Aktualisierung notwendig ist
+ */
+export async function shouldUpdateOnStatsChange({ hunterId, buildData, hunterStore }) {
+  if (!buildData) return true;
+
+  // Überprüfe, ob dieser Build Overrides hat, die hunter Stats betreffen
+  const hasStatOverrides = buildData.overrides && 
+    Object.keys(buildData.overrides).some(key => !key.includes('.'));
+  
+  // Wenn der Build Stats-Overrides hat, Änderungen ignorieren
+  if (hasStatOverrides) {
+    console.log('Build has stat overrides, ignoring hunter stat changes');
+    return false;
+  }
+  
+  // Sonst aktualisieren, da hunter Stats relevant sind
+  return true;
+}

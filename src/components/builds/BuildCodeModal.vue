@@ -116,7 +116,7 @@ const buildCode = computed(() => {
 const shareLink = computed(() => {
   if (!buildCode.value) return '';
   // The URL of the application + a parameter for the build code
-  return `${window.location.origin}/hunter/${props.build?.hunter || props.build?.hunterId}?code=${encodeURIComponent(buildCode.value)}`;
+  return `${window.location.origin}/${props.build?.hunter || props.build?.hunterId}?code=${encodeURIComponent(buildCode.value)}`;
 });
 
 // Methods

@@ -96,9 +96,11 @@
     <div class="md:hidden px-4 py-3 flex items-center justify-between">
       <!-- Mobile Logo -->
       <div class="flex items-center">
-        <div class="mr-2 bg-gradient-to-br from-blue-400 to-purple-600 p-1.5 rounded-lg">
-          <IconTargetArrow class="w-5 h-5 text-white" />
-        </div>
+        <router-link to="/">
+          <div class="mr-2 bg-gradient-to-br from-blue-400 to-purple-600 p-1.5 rounded-lg">
+            <IconTargetArrow class="w-5 h-5 text-white" />
+          </div>
+        </router-link>
         <div>
           <span class="font-bold text-lg">Hunter Simulator</span>
         </div>
@@ -223,7 +225,7 @@
               </div>
               
               <div class="mt-4 text-center text-xs text-gray-500">
-                Hunter Simulator v1.0.0
+                by Kylenator and Vash
               </div>
             </div>
           </div>

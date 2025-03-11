@@ -19,8 +19,8 @@ export const TALENTS = [
   { key: 'omen', label: 'The Omen Of Decay', max: 10 },
   { key: 'll', label: 'Call Me Lucky Loot', max: 10 },
   { key: 'crip', label: 'Crippling Shots', max: 15 },
-  { key: 'echo', label: 'Echo Bullets', max: 20 },
   { key: 'ultima', label: 'The Legacy Of Ultima', max: 50 },
+  { key: 'echo', label: 'Echo Bullets', max: 20 },
 ];
 
 export const ATTRIBUTES = [

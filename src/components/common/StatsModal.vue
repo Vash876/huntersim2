@@ -9,9 +9,10 @@
       @click.stop
     >
       <!-- Header mit Schließen-Button -->
-      <div :class="`bg-gradient-to-r from-${hunterColor}-900/30 to-gray-700 p-4 border-b border-gray-600 flex justify-between items-center sticky top-0 z-10`">
-        <h2 class="text-xl font-bold text-white">
-          <span :class="`text-${hunterColor}-500`">{{ hunterName }}</span> Stats
+      <div :class="`bg-gradient-to-r from-gray-700 to-gray-800 p-4 border-b border-gray-600 flex justify-between items-center sticky top-0 z-10`">
+        <h2 class="text-xl font-bold text-white flex items-center">
+          <IconChartBar size="20" :class="`mr-2 text-${hunterColor}-400`" />
+          <span :class="`text-${hunterColor}-500`">{{ hunterName }}</span><span class="ml-1">Stats</span> 
         </h2>
         <button 
           @click="handleClose"
@@ -128,7 +129,7 @@ import { computed, ref, onMounted, watch } from 'vue';
 import ProgressBar from './ProgressBar.vue';
 import ControlButton from './ControlButton.vue';
 import { useButtonControls } from '../../utils/useButtonControls';
-import { IconX } from '@tabler/icons-vue';
+import { IconX, IconChartBar } from '@tabler/icons-vue';
 import { getHunterById, HUNTERS } from '../../constants/hunters';
 import { useHunterStore } from '../../store/hunterStore';
 
@@ -206,9 +207,16 @@ function handleClose() {
     
     // Custom Event auslösen, damit die BuildResultCard weiß, 
     // dass das Modal geschlossen wurde und die Stats geändert wurden
-    window.dispatchEvent(new CustomEvent('statsModalClosed', {
-      detail: { hunterType: props.hunterType }
-    }));
+    window.dispatchEvent(
+      new CustomEvent('statsModalClosed', {
+        detail: { 
+          hunterType: props.hunterType,
+          timestamp: Date.now() // Zum Debugging
+        },
+        bubbles: true
+      })
+    );
+    console.log('statsModalClosed event dispatched', props.hunterType);
   }
   emit('close');
 }

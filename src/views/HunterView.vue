@@ -300,6 +300,7 @@
     <!-- Build Code Modal -->
     <BuildImportModal
       :show="isBuildCodeModalOpen"
+      :prefilled-code="importCodeFromUrl"
       @close="closeBuildCodeModal"
       @import-build="importBuild"
     />
@@ -386,9 +387,9 @@ import BuildCardCompact from '@/components/builds/BuildCardCompact.vue';
 
 const router = useRouter();
 const route = useRoute();
+const importCodeFromUrl = ref('');
 
 const hunterStore = useHunterStore();
-
 
 // Hunter-spezifische Daten
 const hunterIdMap = {
@@ -754,6 +755,22 @@ const sortableOpts = {
   scrollSensitivity: 60,
   scrollSpeed: 10
 }
+
+onMounted(() => {
+  // Prüfe, ob ein code-Parameter in der URL vorhanden ist
+  if (route.query.code) {
+    // Code für das Modal speichern
+    importCodeFromUrl.value = route.query.code;
+    
+    // Modal öffnen
+    isBuildCodeModalOpen.value = true;
+    
+    // Optional: Code aus der URL entfernen (mit history.replaceState)
+    const url = new URL(window.location.href);
+    url.searchParams.delete('code');
+    window.history.replaceState({}, '', url);
+  }
+});
 
 // Weitere Handler für BuildResultCard-Events
 function handleNameChanged(data) {

@@ -8,6 +8,7 @@
       :build-data="buildData"
       :hunter-color="hunterColor"
       :is-reference-build="isReferenceBuild"
+      :results="results"
       @edit="emit('edit', buildData)"
       @clone="emit('clone', buildData)"
       @archive="emit('archive', buildData)"
@@ -16,6 +17,7 @@
       @overrides="$emit('overridesBuild', buildData)"
       @share="showCodeModal = true"
       @reevaluate="handleReevaluate"
+      @show-distribution="showDistributionModal = true" 
     />
     
     <div class="p-5 pb-3">
@@ -76,12 +78,7 @@
           :result-labels="resultLabels"
         />
         
-        <!-- Stage-Verteilung -->
-        <BuildStageDistribution 
-          v-if="results?.stageDistribution?.length"
-          :stage-distribution="results.stageDistribution"
-          :hunter-color="hunterColor"
-        />
+
 
         <!-- Build-Tags -->
         <div v-if="buildData.tags && buildData.tags.length" class="flex flex-wrap gap-1 pt-2 border-t border-gray-700/50 mt-3">
@@ -120,6 +117,7 @@ import BuildResources from './card-components/BuildResources.vue';
 import BuildBossStats from './card-components/BuildBossStats.vue';
 import BuildStageDistribution from './card-components/BuildStageDistribution.vue';
 import BuildCodeModal from './BuildCodeModal.vue';
+import { result } from 'lodash';
 
 // Global evaluation cache and reference build
 const evaluationCache = inject('evaluationCache', ref({}));

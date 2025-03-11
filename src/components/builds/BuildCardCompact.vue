@@ -23,7 +23,6 @@
               Archived
             </span>
             </h3>
-
           </div>
         </div>
         
@@ -31,53 +30,53 @@
         <div class="flex items-center gap-1">
           <button 
             @click="emit('edit', buildData)"
-            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="action-button-compact"
             title="Edit Build"
           >
-            <IconEdit size="16" />
+            <IconEdit size="18" />
           </button>
           <button 
             @click="emit('clone', buildData)"
-            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="action-button-compact"
             title="Clone Build"
           >
-            <IconCopy size="16" />
-          </button>
-          <button 
-            @click="showCodeModal = true"
-            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-            title="Share Build"
-          >
-            <IconShare size="16" />
+            <IconCopy size="18" />
           </button>
           <button 
             @click="emit('overridesBuild', buildData)"
-            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="action-button-compact"
             title="Build Overrides"
           >
-            <IconAdjustmentsHorizontal size="16" />
-          </button>
-          <button 
-            @click="emit('archive', buildData)"
-            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-            :title="buildData.isArchived ? 'Restore Build' : 'Archive Build'"
-          >
-            <component :is="buildData.isArchived ? IconArchiveOff : IconArchive" size="16" />
+            <IconAdjustmentsHorizontal size="18" />
           </button>
           <button 
             v-if="enabledStats.includes('stageDistribution') && results?.stageDistribution?.length"
             @click="showDistributionModal = true"
-            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="action-button-compact"
             title="Show Stage Distribution"
           >
-            <IconChartBar size="16" />
+            <IconChartBar size="18" />
+          </button>
+          <button 
+            @click="showCodeModal = true"
+            class="action-button-compact"
+            title="Share Build"
+          >
+            <IconShare size="18" />
+          </button>
+          <button 
+            @click="emit('archive', buildData)"
+            class="action-button-compact"
+            :title="buildData.isArchived ? 'Restore Build' : 'Archive Build'"
+          >
+            <component :is="buildData.isArchived ? IconArchiveOff : IconArchive" size="18" />
           </button>
           <button
             @click="emit('delete', buildData)"
-            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="action-button-compact"
             title="Delete Build"
           >
-            <IconTrash size="16" />
+            <IconTrash size="18" />
           </button>
         </div>
       </div>
@@ -115,13 +114,18 @@
         </div>
         
         <!-- Ergebnisse -->
-        <div v-else-if="results" class="flex flex-col space-y-3">
+        <div v-else-if="results" class="flex flex-col space-y-2 ">
           <!-- Stats Row -->
-          <div class="w-full grid gap-2" style="grid-template-columns: 10% 8% 9% 1px 11% 11% 11% 15% 1px auto;">
+          <div class="w-full grid gap-2" style="grid-template-columns: 11% 9.5% 9.5% 1px 11% 11% 11% 13% 1px auto;">
             <!-- Loot Score -->
             <div class="stat-box">
               <div class="flex items-center justify-between">
-                <div class="text-xs text-gray-400">{{ resultLabels.lootPerMin || 'Loot/Min' }}</div>
+                <div class="flex items-center">
+                  <IconReportMoney :size="14" class="text-amber-400" />
+                  <div class="text-xs text-gray-400 ml-1.5">
+                    {{ resultLabels.lootPerMin || 'Loot/Min' }}
+                  </div>
+                </div>
                 <span 
                   v-if="!isReferenceBuild && referenceResults?.lootPerMin"
                   :class="getDiffClasses(results.lootPerMin, referenceResults.lootPerMin, true, true)"
@@ -139,7 +143,12 @@
             <!-- Avg Stage -->
             <div class="stat-box">
               <div class="flex items-center justify-between">
-                <div class="text-xs text-gray-400">{{ resultLabels.avgStage || 'Avg Stage' }}</div>
+                <div class="flex items-center">
+                  <IconStairs :size="14" :class="`text-${hunterColor}-400`" />
+                  <div class="text-xs text-gray-400 ml-1.5">
+                    {{ resultLabels.avgStage || 'Avg Stage' }}
+                  </div>
+                </div>
                 <span 
                   v-if="!isReferenceBuild && referenceResults?.avgStage"
                   :class="getAbsoluteDiffClasses(results.avgStage, referenceResults.avgStage, true, true)"
@@ -157,11 +166,16 @@
                 {{ formatStage(results.minStage) }}-{{ formatStage(results.maxStage) }}
               </div>
             </div>
-            
+
             <!-- Avg Time -->
             <div class="stat-box">
               <div class="flex items-center justify-between">
-                <div class="text-xs text-gray-400">{{ resultLabels.avgTime || 'Run Time' }}</div>
+                <div class="flex items-center">
+                  <IconClock :size="14" class="text-blue-400" />
+                  <div class="text-xs text-gray-400 ml-1.5">
+                    {{ resultLabels.avgTime || 'Run Time' }}
+                  </div>
+                </div>
                 <span 
                   v-if="!isReferenceBuild && referenceResults?.avgTime"
                   :class="getTimeDiffClasses(results.avgTime, referenceResults.avgTime)"
@@ -268,31 +282,15 @@
             
             <!-- Boss Stats (flexibler Restplatz) -->
             <div class="grid grid-cols-2 gap-2 w-full">
-              <!-- Boss Kill Rate (wenn vorhanden oder Platzhalter) -->
-              <div class="stat-box">
-                <div class="flex items-center justify-between">
-                  <div class="text-xs text-gray-400">{{ resultLabels.bossKillRate || 'Kill Rate' }}</div>
-                  <span 
-                    v-if="!isReferenceBuild && results.bossKillRate !== '--' && referenceResults?.bossKillRate && referenceResults.bossKillRate !== '--'"
-                    :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true)"
-                    class="text-xs whitespace-nowrap flex items-center"
-                  >
-                    <component :is="getDiffIcon(results.bossKillRate, referenceResults.bossKillRate)" size="11" class="mr-0.5 flex-shrink-0" />
-                    <span>{{ getBossStatDiffText(results.bossKillRate, referenceResults.bossKillRate) }}</span>
-                  </span>
-                </div>
-                <div class="flex items-center">
-                  <span v-if="results.bossKillRate !== '--'" class="text-white font-medium pt-1">
-                    {{ formatPercent(results.bossKillRate) }}
-                  </span>
-                  <span v-else class="text-gray-500 font-medium">--</span>
-                </div>
-              </div>
-              
               <!-- Boss HP (wenn vorhanden oder Platzhalter) -->
               <div class="stat-box">
                 <div class="flex items-center justify-between">
-                  <div class="text-xs text-gray-400">{{ resultLabels.bossHpPercent || 'Boss HP' }}</div>
+                  <div class="flex items-center">
+                    <IconHeartFilled :size="14" class="text-pink-400" />
+                    <div class="text-xs text-gray-400 ml-1.5">
+                      {{ resultLabels.bossHpPercent || 'Boss HP' }}
+                    </div>
+                  </div>
                   <span 
                     v-if="!isReferenceBuild && results.bossHpPercent !== '--' && referenceResults?.bossHpPercent && referenceResults.bossHpPercent !== '--'"
                     :class="getBossStatDiffClasses((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent), true)"
@@ -305,6 +303,32 @@
                 <div class="flex items-center">
                   <span v-if="results.bossHpPercent !== '--'" class="text-white font-medium pt-1">
                     {{ formatPercent(results.bossHpPercent) }}
+                  </span>
+                  <span v-else class="text-gray-500 font-medium">--</span>
+                </div>
+              </div>
+
+              <!-- Boss Kill Rate (wenn vorhanden oder Platzhalter) -->
+              <div class="stat-box">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <IconSword :size="14" class="text-green-400" />
+                    <div class="text-xs text-gray-400 ml-1.5">
+                      {{ resultLabels.bossKillRate || 'Kill Rate' }}
+                    </div>
+                  </div>
+                  <span 
+                    v-if="!isReferenceBuild && results.bossKillRate !== '--' && referenceResults?.bossKillRate && referenceResults.bossKillRate !== '--'"
+                    :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true)"
+                    class="text-xs whitespace-nowrap flex items-center"
+                  >
+                    <component :is="getDiffIcon(results.bossKillRate, referenceResults.bossKillRate)" size="11" class="mr-0.5 flex-shrink-0" />
+                    <span>{{ getBossStatDiffText(results.bossKillRate, referenceResults.bossKillRate) }}</span>
+                  </span>
+                </div>
+                <div class="flex items-center">
+                  <span v-if="results.bossKillRate !== '--'" class="text-white font-medium pt-1">
+                    {{ formatPercent(results.bossKillRate) }}
                   </span>
                   <span v-else class="text-gray-500 font-medium">--</span>
                 </div>
@@ -363,7 +387,8 @@ import {
   IconAlertCircle, IconUser, IconDotsVertical, IconEdit, IconCopy, 
   IconShare, IconRefresh, IconArchive, IconArchiveOff, IconTrash, 
   IconGripVertical, IconAdjustmentsHorizontal, IconChartBar, IconX,
-  IconBrightness, IconDiamond, IconHexagon, IconHexagons
+  IconBrightness, IconDiamond, IconHexagon, IconHexagons,
+  IconReportMoney, IconStairs, IconClock, IconHeartFilled, IconSword
 } from '@tabler/icons-vue';
 import { useRoute } from 'vue-router';
 import { useHunterStore } from '../../store/hunterStore';
@@ -764,6 +789,13 @@ function handleClickOutside(event) {
   }
 }
 
+// Funktion zum Behandeln des Modal-Schließen-Events
+function handleStatsModalClosed(event) {
+  if (event.detail?.hunterType === props.hunterId && props.autoEvaluate) {
+    evaluateBuild();
+  }
+}
+
 // Hilfsfunktion für Toasts
 function showToastMessage(message, type = 'success') {
   if (window.toast && typeof window.toast === 'function') {
@@ -853,10 +885,16 @@ onMounted(async () => {
       evaluateBuild();
     }, props.index * 100); 
   }
+
+  // Event-Listener für Modal-Schließung
+  window.addEventListener('statsModalClosed', handleStatsModalClosed);
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
+
+  // Event-Listener entfernen
+  window.removeEventListener('statsModalClosed', handleStatsModalClosed);
 });
 </script>
 
@@ -878,4 +916,20 @@ onUnmounted(() => {
   background-color: rgb(18, 26, 48);
   border-radius: 0.5rem;
 }
+
+.action-button-compact {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: rgba(55, 65, 81, 0.3);
+  color: rgba(209, 213, 219, 1);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.action-button-compact:hover {
+  background-color: rgba(75, 85, 99, 0.5);
+}
+
 </style>

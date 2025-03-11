@@ -6,11 +6,11 @@ const changelog = [
     baseVersion: 'Kylenator\'s Sheet v1.2.4',
     changes: [
       'Complete redesign of the application with modern UI',
+      'Added a stage distribution chart',
+      'Added Costs for Stats, Relics and Gadgets',
       'Improved build management with archiving',
       'New backup/restore system for all player data',
-      'Optimized cache management for faster calculations',
-      'Enhanced statistics dashboard with more detailed graphs',
-      'Better performance for complex builds through optimized calculations',
+      'Added Cache Management for faster loading',
     ]
   },
   {

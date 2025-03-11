@@ -102,51 +102,105 @@ function formatStage(stage) {
   return stage % 1 === 0 ? stage.toString() : stage.toFixed(1);
 }
 
+// Tracking der letzten Größe, um unnötige Neuinitialisierungen zu vermeiden
+const lastContainerSize = ref({ width: 0, height: 0 });
+const resizeThreshold = 10; // Mindeständerung in Pixeln, um neu zu rendern
+
+// Chart sicher aktualisieren statt komplett neu erstellen
+async function updateChart() {
+  if (!chart.value || !chartRef.value || !chartContainer.value) return;
+  
+  // Größenänderung überprüfen
+  const container = chartContainer.value;
+  const currentSize = {
+    width: container.clientWidth,
+    height: container.clientHeight
+  };
+  
+  // Nur aktualisieren, wenn sich die Größe wirklich signifikant geändert hat
+  const widthChanged = Math.abs(currentSize.width - lastContainerSize.value.width) > resizeThreshold;
+  const heightChanged = Math.abs(currentSize.height - lastContainerSize.value.height) > resizeThreshold;
+  
+  if (widthChanged || heightChanged) {
+    // Größe aktualisieren
+    lastContainerSize.value = { ...currentSize };
+    
+    // Aktuelle Daten beibehalten
+    try {
+      chart.value.resize();
+      chart.value.update('none'); // 'none' verhindert Animationen
+    } catch (e) {
+      console.warn('Error updating chart, will recreate:', e);
+      // Bei Fehler neu erstellen
+      scheduleChartInit();
+    }
+  }
+}
+
 // Sichere Chart-Initialisierung
 async function initChart() {
-  // Zuerst vorhandenes Chart zerstören
-  destroyChart();
-  
-  // Auf nächstes DOM-Update warten
-  await nextTick();
-  
-  // Nicht fortfahren, wenn nicht bereit
-  if (!isChartReady.value) {
-    console.log('Chart initialization skipped: chart is not ready');
-    return false;
-  }
-  
-  // Überprüfen, ob Container oder Canvas-Ref fehlt
-  if (!chartContainer.value || !chartRef.value) {
-    console.log('Chart initialization skipped: container or canvas ref is null');
-    return false;
-  }
-
-  // Auf gültige Daten prüfen
-  if (!props.distribution || props.distribution.length === 0) {
-    console.warn('No valid data for the chart.');
-    return false;
-  }
-  
-  // Sicherstellen, dass Canvas richtig dimensioniert ist
-  const container = chartContainer.value;
-  const canvas = chartRef.value;
-  
-  // Sicherstellen, dass Chart-Container Dimensionen hat
-  if (container.clientWidth === 0 || container.clientHeight === 0) {
-    console.warn('Chart container has no dimensions yet');
-    return false;
-  }
-  
   try {
-    // Canvas-Kontext mit zusätzlichen Prüfungen holen
-    const ctx = canvas.getContext('2d');
+    // Zuerst vorhandenes Chart zerstören
+    destroyChart();
+    
+    // Auf nächstes DOM-Update warten
+    await nextTick();
+    
+    // Zusätzlich warten, um sicherzustellen, dass das DOM vollständig gerendert ist
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Überprüfen, ob Container oder Canvas-Ref fehlt
+    if (!chartContainer.value || !chartRef.value) {
+      console.log('Chart initialization skipped: container or canvas ref is null');
+      return false;
+    }
+
+    // Auf gültige Daten prüfen
+    if (!props.distribution || props.distribution.length === 0) {
+      console.warn('No valid data for the chart.');
+      return false;
+    }
+    
+    // Sicherstellen, dass Canvas richtig dimensioniert ist
+    const container = chartContainer.value;
+    const canvas = chartRef.value;
+    
+    // Sicherstellen, dass Chart-Container Dimensionen hat
+    if (container.clientWidth === 0 || container.clientHeight === 0) {
+      console.warn('Chart container has no dimensions yet');
+      return false;
+    }
+    
+    // Canvas-Kontext holen, mit mehreren Versuchen
+    let ctx = null;
+    let attempts = 0;
+    while (!ctx && attempts < 3) {
+      try {
+        ctx = canvas.getContext('2d');
+        if (!ctx) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+          attempts++;
+        }
+      } catch (e) {
+        console.warn('Error getting canvas context, attempt ' + attempts, e);
+        await new Promise(resolve => setTimeout(resolve, 50));
+        attempts++;
+      }
+    }
+    
+    // Wenn nach 3 Versuchen kein Kontext, abbrechen
     if (!ctx) {
-      console.error('Could not get 2d context from canvas');
+      console.error('Could not get 2d context from canvas after multiple attempts');
       return false;
     }
     
     const colorRGB = getColorRGB(props.color);
+    
+    // Aktuelle Größe speichern
+    lastContainerSize.value = {
+      width: container.clientWidth,
+      height: container.clientHeight
+    };
     
     // Chart erstellen
     chart.value = new Chart(ctx, {
@@ -168,11 +222,22 @@ async function initChart() {
         animation: {
           duration: 250 // Schnellere Animationen für bessere Performance
         },
+        onResize: function(chart, size) {
+          // Integrierter Chart.js Resize-Handler
+          // Verhindert, dass das Chart automatisch neu gerendert wird
+        },
+        // Verbesserte Interaktionen mit stabileren Tooltips
+        interaction: {
+          mode: 'index',       // Index basierte Interaktion ist stabiler
+          intersect: false,      // Auch ohne direktes Hovern anzeigen
+          includeInvisible: true // Auch Punkte berücksichtigen, die nicht sichtbar sind
+        },
         plugins: {
           legend: {
             display: false
           },
           tooltip: {
+            enabled: true,
             backgroundColor: 'rgba(17, 24, 39, 0.9)',
             titleColor: 'rgba(255, 255, 255, 0.9)',
             bodyColor: 'rgba(255, 255, 255, 0.9)',
@@ -182,6 +247,9 @@ async function initChart() {
             boxPadding: 5,
             cornerRadius: 4,
             displayColors: false,
+            // Feste Position statt "nearest"
+            position: 'nearest',  // Stabiler als 'average'
+            // Tooltip länger anzeigen
             callbacks: {
               label: function(context) {
                 const count = context.raw;
@@ -192,7 +260,32 @@ async function initChart() {
                 return `Stage ${context[0].label}`;
               }
             }
+          },
+          // Wir fügen eine benutzerdefinierte Plugin-Implementierung hinzu
+          tooltip2: {
+            id: 'customTooltipBehavior',
+            beforeEvent(chart, args) {
+              const event = args.event;
+              if (event.type === 'mousemove') {
+                // Reduziere die Anzahl der Tooltip-Updates
+                if (!event._throttled) {
+                  event._throttled = true;
+                  setTimeout(() => {
+                    if (event._latestEvent) delete event._latestEvent;
+                    event._throttled = false;
+                  }, 50); // 50ms Throttling
+                } else {
+                  event._latestEvent = true;
+                  return false; // Blockiere das Event
+                }
+              }
+            }
           }
+        },
+        // Tooltip-Verzögerung für mehr Stabilität
+        hover: {
+          animationDuration: 0, // Keine Animation beim Hover
+          delay: 100            // Leichte Verzögerung beim Anzeigen
         },
         scales: {
           y: {
@@ -220,7 +313,26 @@ async function initChart() {
             }
           }
         }
-      }
+      },
+      plugins: [
+        {
+          id: 'customTooltipBehavior',
+          beforeEvent(chart, args, options) {
+            const event = args.event;
+            // Stabilisierung der Tooltip-Position
+            if (event.type === 'mousemove') {
+              // Implementiere Debouncing für Mousemove-Events
+              if (!chart._tooltipDebounceTimeout) {
+                chart._tooltipDebounceTimeout = setTimeout(() => {
+                  chart._tooltipDebounceTimeout = null;
+                }, 30);
+              } else {
+                return false; // Event unterdrücken
+              }
+            }
+          }
+        }
+      ]
     });
     
     console.log('Chart successfully initialized');
@@ -272,6 +384,12 @@ function destroyChart() {
   }
 }
 
+const wheelHandler = debounce(() => {
+  if (chart.value) {
+    chart.value.update('none');
+  }
+}, 100);
+
 // Beobachte Änderungen an den Verteilungsdaten
 watch(() => props.distribution, () => {
   scheduleChartInit();
@@ -289,14 +407,14 @@ watch(() => props.sampleSize, () => {
 
 // Debounce-optimierter Handler für Größenänderungen
 const handleResize = debounce(() => {
-  scheduleChartInit();
+  updateChart();
 }, 150);
 
 // Observer für DOM-Änderungen, die das Chart beeinflussen könnten
 let resizeObserver = null;
 
 // DOM-Observer und Event-Listener einrichten
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('resize', handleResize);
   
   // ResizeObserver für Containergrößenänderungen verwenden
@@ -312,20 +430,15 @@ onMounted(() => {
     });
     
     // Nach dem nächsten DOM-Update dem Observer hinzufügen
-    nextTick(() => {
-      if (chartContainer.value) {
-        resizeObserver.observe(chartContainer.value);
-      }
-    });
+    await nextTick();
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    if (chartContainer.value) {
+      resizeObserver.observe(chartContainer.value);
+    }
   }
   
-  // Überwachen von Zoom-Änderungen
-  const wheelHandler = debounce((e) => {
-    if (e.ctrlKey && isChartReady.value) {
-      handleResize();
-    }
-  }, 100);
-  
+  // Wheel-Event-Listener hinzufügen
   window.addEventListener('wheel', wheelHandler, { passive: true });
   
   // Bei Montierung der Komponente Chart initialisieren
@@ -347,7 +460,7 @@ onUnmounted(() => {
   }
   
   // Wheel-Event-Listener entfernen
-  window.removeEventListener('wheel', handleResize);
+  window.removeEventListener('wheel', wheelHandler);
 });
 </script>
 

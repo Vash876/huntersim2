@@ -1,9 +1,8 @@
-<!-- filepath: /c:/Users/igorn/projects/huntersim2/src/components/common/IterationsModal.vue -->
 <template>
   <div 
     v-if="isVisible" 
     class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4"
-    @click.self="handleClose"
+    @click.self="saveAndClose"
   >
     <div 
       class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in border border-gray-700"
@@ -16,7 +15,7 @@
           Iteration Settings
         </h2>
         <button 
-          @click="handleClose"
+          @click="saveAndClose"
           class="p-1.5 rounded-full hover:bg-gray-700 transition-colors"
         >
           <IconX size="18" />
@@ -48,7 +47,7 @@
         </div>
 
         <!-- Apply to all hunters checkbox -->
-        <div class="flex items-center mb-6 p-3 bg-gray-700/50 rounded-lg">
+        <div class="flex items-center mb-2 p-3 bg-gray-700/50 rounded-lg">
           <input 
             type="checkbox" 
             id="apply-all" 
@@ -58,21 +57,6 @@
           <label for="apply-all" class="ml-2 text-sm text-gray-300">
             Apply to all hunters
           </label>
-        </div>
-
-        <div class="flex justify-end gap-2 mt-4">
-          <button 
-            @click="handleClose"
-            class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors"
-          >
-            Cancel
-          </button>
-          <button 
-            @click="saveAndClose"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-          >
-            Apply Changes
-          </button>
         </div>
       </div>
     </div>
@@ -134,11 +118,6 @@ function saveAndClose() {
   
   // Event emittieren, um den Wert im Parent zu aktualisieren
   emit('update:iterations', localIterationValue.value);
-  handleClose();
-}
-
-// Modal schließen ohne Speichern
-function handleClose() {
   emit('close');
 }
 
@@ -182,6 +161,7 @@ input[type="range"] {
   height: 6px;
   background: #4B5563; /* bg-gray-600 */
   border-radius: 3px;
+  cursor: pointer;
   outline: none;
 }
 

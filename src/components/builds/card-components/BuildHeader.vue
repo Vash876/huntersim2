@@ -64,19 +64,28 @@
         </button>
 
         <button 
+          @click="emit('overrides')"
+          class="action-button-compact"
+          title="Overrides">
+          <IconAdjustments size="16" />
+        </button>
+
+        <button 
+          v-if="results?.stageDistribution?.length"
+          @click="showDistributionModal = true"
+          class="action-button-compact"
+          title="Show Stage Distribution"
+        >
+          <IconChartBar size="16" />
+        </button>
+
+        <button 
           @click="emit('share')"
           class="action-button-compact"
           title="Share build code">
           <IconShare size="16" />
         </button>
 
-        <button 
-          @click="emit('overrides')"
-          class="action-button-compact"
-          title="Overrides">
-          <IconAdjustments size="16" />
-        </button>
-        
         <button 
           @click="emit('archive')" 
           class="action-button-compact" 
@@ -94,6 +103,40 @@
       </div>
     </div>
   </div>
+
+  <!-- Stage Distribution Modal -->
+  <Teleport to="body">
+    <div 
+      v-if="showDistributionModal" 
+      class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4"
+      @click.self="showDistributionModal = false"
+    >
+      <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in border border-gray-700">
+        <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-4 border-b border-gray-600 flex justify-between items-center">
+          <h3 class="text-xl font-bold text-white flex items-center">
+            <IconChartBar size="20" class="mr-2" :class="`text-${hunterColor}-400`" />
+            Stage Distribution: {{ buildData.name }}
+          </h3>
+          <button 
+            @click="showDistributionModal = false"
+            class="text-gray-400 hover:text-white transition-colors"
+          >
+            <IconX size="20" />
+          </button>
+        </div>
+        <div class="p-4">
+          <StageDistributionChart 
+              :distribution="results.stageDistribution"
+              :avg-stage="results.avgStage"
+              :max-stage="results.maxStage"
+              :min-stage="results.minStage"
+              :color="hunterColor"
+            />
+        </div>
+      </div>
+    </div>
+  </Teleport>
+
 </template>
 
 <script setup>
@@ -101,21 +144,24 @@ import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { 
   IconEdit, IconEditCircle, IconCopy, IconArchive, IconArchiveOff,
   IconTrash, IconGripVertical, IconDotsVertical, IconAdjustments,
-  IconShare, IconRefresh
+  IconShare, IconRefresh, IconChartBar, IconX
 } from '@tabler/icons-vue';
+import StageDistributionChart from '../../charts/StageDistributionChart.vue';
 
 const props = defineProps({
   buildData: { type: Object, required: true },
   hunterColor: { type: String, required: true },
-  isReferenceBuild: { type: Boolean, default: false }
+  isReferenceBuild: { type: Boolean, default: false },
+  results: { type: Object, default: () => ({}) }
 });
 
-const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share']);
+const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'reevaluate', 'showDistribution']);
 
 const isEditingName = ref(false);
 const editableName = ref('');
 const nameInputRef = ref(null);
 const showDropdown = ref(false);
+const showDistributionModal = ref(false); 
 
 // Name editing functions
 function startNameEdit() {

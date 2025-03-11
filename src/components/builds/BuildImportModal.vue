@@ -117,7 +117,8 @@ import { getHunterById, HUNTERS } from '../../constants/hunters';
 
 // Props
 const props = defineProps({
-  show: Boolean
+  show: Boolean,
+  prefilledCode: String // Neue Prop für vorausgefüllten Code
 });
 
 // Emits
@@ -128,6 +129,8 @@ const importCode = ref('');
 const errorMessage = ref('');
 const validatedBuild = ref(null);
 const isValidating = ref(false);
+
+
 
 // Hunter type from validated build
 const hunterType = computed(() => {
@@ -178,7 +181,8 @@ const hunterIcon = computed(() => {
 const handlePaste = (e) => {
   setTimeout(() => {
     try {
-      if (importCode.value.includes('http') && importCode.value.includes('?code=')) {
+      if (importCode.value && typeof importCode.value === 'string' && 
+          importCode.value.includes('http') && importCode.value.includes('?code=')) {
         const url = new URL(importCode.value);
         const codeParam = url.searchParams.get('code');
         if (codeParam) {
@@ -188,6 +192,7 @@ const handlePaste = (e) => {
       }
     } catch (e) {
       // Not a URL, that's fine
+      console.log('Not a URL or other paste error:', e);
     }
   }, 0);
 };
@@ -197,8 +202,10 @@ const validateBuildCode = async () => {
   // Reset previous validation
   errorMessage.value = '';
   
+  // Sicherstellen, dass importCode.value ein String ist
+  const code = typeof importCode.value === 'string' ? importCode.value.trim() : '';
+  
   // Skip validation if empty
-  const code = importCode.value.trim();
   if (!code) {
     validatedBuild.value = null;
     return;
@@ -305,11 +312,19 @@ watch(() => props.show, (newVal) => {
 
 // Initial validation if code is pre-filled
 watch(() => importCode.value, (newVal) => {
-  if (newVal.trim()) {
+  if (typeof newVal === 'string' && newVal.trim()) {
     validateBuildCode();
   } else {
     validatedBuild.value = null;
     errorMessage.value = '';
+  }
+}, { immediate: true });
+
+// Überwache Änderungen an prefilledCode und fülle importCode entsprechend
+watch(() => props.prefilledCode, (newVal) => {
+  if (typeof newVal === 'string' && newVal) {
+    importCode.value = newVal;
+    validateBuildCode();
   }
 }, { immediate: true });
 </script>

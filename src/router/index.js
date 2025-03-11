@@ -116,9 +116,23 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior() {
-    // Immer zum Seitenanfang scrollen
-    return { top: 0 }
+  scrollBehavior(to, from, savedPosition) {
+    // Wenn eine savedPosition existiert oder die Route einen Hash hat,
+    // lasse den Browser entscheiden
+    if (savedPosition || to.hash) {
+      return savedPosition || { el: to.hash };
+    }
+    
+    // Wenn die Route Parameter oder Query identisch sind,
+    // scrolle nicht
+    if (from.name === to.name && 
+        JSON.stringify(from.params) === JSON.stringify(to.params) &&
+        JSON.stringify(from.query) === JSON.stringify(to.query)) {
+      return false; // Verhindert das Scrollen
+    }
+    
+    // Ansonsten scrolle nach oben
+    return { top: 0 };
   }
 })
 

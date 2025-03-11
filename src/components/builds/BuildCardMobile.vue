@@ -2,13 +2,18 @@
   <div 
     class="build-compact border-l-4 bg-gray-800 rounded-lg shadow-md mb-3 overflow-hidden transition-all duration-200"
     :class="[
-      isReferenceBuild ? 'border-yellow-500' : `border-${hunterColor}-500`,
-      { 'opacity-60': buildData.isArchived }
+      isReferenceBuild ? 'border-yellow-500' : `border-${hunterColor}-500`
     ]"
   >
     <div class="flex flex-col">
       <!-- Header mit Build-Info -->
       <div class="bg-gray-850/40 p-3 flex items-center border-b border-gray-700/30">
+
+        <!-- Grip Handle (links) -->
+        <div class="grip-handle p-1.5 cursor-grab rounded-md text-gray-500 hover:bg-gray-700 hover:text-gray-300 transition-colors">
+          <IconGripVertical size="16" />
+        </div>
+
         <!-- Build-Name -->
         <div class="flex-1">
           <div class="flex flex-wrap items-center">
@@ -56,13 +61,16 @@
         
         <!-- Ergebnisse -->
         <div v-else-if="results" class="flex flex-col space-y-3">
-          <!-- Mobile Layout: Wichtigste Stats in einer Reihe -->
-          <div class="grid grid-cols-3 gap-2 mb-3">
+          <!-- Mobile Layout: Loot Score alleine in der ersten Reihe -->
+          <div>
             <!-- Loot Score -->
             <div class="stat-box">
               <div class="flex flex-col">
                 <div class="flex justify-between items-center mb-1">
-                  <div class="text-xs text-gray-400">{{ resultLabels.lootPerMin || 'Loot' }}</div>
+                  <div class="flex items-center">
+                    <IconReportMoney :size="14" class="text-amber-400" />
+                    <div class="text-xs text-gray-400 ml-1.5">{{ resultLabels.lootPerMin || 'Loot' }}</div>
+                  </div>
                   <span 
                     v-if="!isReferenceBuild && referenceResults?.lootPerMin"
                     :class="getDiffClasses(results.lootPerMin, referenceResults.lootPerMin, true, true)"
@@ -72,15 +80,21 @@
                     <span>{{ getDiffText(results.lootPerMin, referenceResults.lootPerMin) }}</span>
                   </span>
                 </div>
-                <div class="text-white text-sm font-medium text-center">{{ formatNumber(results.lootPerMin) }}</div>
+                <div class="text-white text-lg font-medium text-center">{{ formatNumber(results.lootPerMin) }}</div>
               </div>
             </div>
-            
+          </div>
+
+          <!-- Mobile Layout: Stage und Time nebeneinander in der zweiten Reihe -->
+          <div class="grid grid-cols-2 gap-2 mb-3">
             <!-- Avg Stage -->
             <div class="stat-box">
               <div class="flex flex-col">
                 <div class="flex justify-between items-center mb-1">
-                  <div class="text-xs text-gray-400">{{ resultLabels.avgStage || 'Stage' }}</div>
+                  <div class="flex items-center">
+                    <IconStairs :size="14" :class="`text-${hunterColor}-400`" />
+                    <div class="text-xs text-gray-400 ml-1.5">{{ resultLabels.avgStage || 'Stage' }}</div>
+                  </div>
                   <span 
                     v-if="!isReferenceBuild && referenceResults?.avgStage"
                     :class="getAbsoluteDiffClasses(results.avgStage, referenceResults.avgStage, true, true)"
@@ -91,6 +105,10 @@
                   </span>
                 </div>
                 <div class="text-white text-sm font-medium text-center">{{ formatStage(results.avgStage, true) }}</div>
+                <!-- Min-Max Stage Range hinzufügen -->
+                <div class="text-xs text-gray-500 text-center">
+                  {{ formatStage(results.minStage) }}-{{ formatStage(results.maxStage) }}
+                </div>
               </div>
             </div>
             
@@ -98,7 +116,10 @@
             <div class="stat-box">
               <div class="flex flex-col">
                 <div class="flex justify-between items-center mb-1">
-                  <div class="text-xs text-gray-400">{{ resultLabels.avgTime || 'Time' }}</div>
+                  <div class="flex items-center">
+                    <IconClock :size="14" class="text-blue-400" />
+                    <div class="text-xs text-gray-400 ml-1.5">{{ resultLabels.avgTime || 'Time' }}</div>
+                  </div>
                   <span 
                     v-if="!isReferenceBuild && referenceResults?.avgTime"
                     :class="getTimeDiffClasses(results.avgTime, referenceResults.avgTime)"
@@ -109,6 +130,10 @@
                   </span>
                 </div>
                 <div class="text-white text-sm font-medium text-center">{{ formatTime(results.avgTime) }}</div>
+                <!-- Runs per Day unter der Zeit -->
+                <div class="text-xs text-gray-500 text-center">
+                  {{ formatNumber(calculateRunsPerDay(results.avgTime)) }} runs/day
+                </div>
               </div>
             </div>
           </div>
@@ -129,7 +154,7 @@
                   <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
                 </span>
               </div>
-              <div class="text-blue-300 text-sm font-medium text-center">{{ formatNumber(results.xp) }}</div>
+              <div class="text-sm font-medium text-center">{{ formatNumber(results.xp) }}</div>
               <div class="text-xs text-gray-500 text-center">
                 {{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }}/day
               </div>
@@ -149,7 +174,7 @@
                   <span>{{ getDiffText(results.mat1, referenceResults.mat1) }}</span>
                 </span>
               </div>
-              <div class="text-red-300 text-sm font-medium text-center">{{ formatNumber(results.mat1) }}</div>
+              <div class="text-sm font-medium text-center">{{ formatNumber(results.mat1) }}</div>
               <div class="text-xs text-gray-500 text-center">
                 {{ formatNumber(calculatePerDay(results.mat1, results.avgTime)) }}/day
               </div>
@@ -169,7 +194,7 @@
                   <span>{{ getDiffText(results.mat2, referenceResults.mat2) }}</span>
                 </span>
               </div>
-              <div class="text-orange-300 text-sm font-medium text-center">{{ formatNumber(results.mat2) }}</div>
+              <div class="text-sm font-medium text-center">{{ formatNumber(results.mat2) }}</div>
               <div class="text-xs text-gray-500 text-center">
                 {{ formatNumber(calculatePerDay(results.mat2, results.avgTime)) }}/day
               </div>
@@ -189,7 +214,7 @@
                   <span>{{ getDiffText(results.mat3, referenceResults.mat3) }}</span>
                 </span>
               </div>
-              <div class="text-amber-300 text-sm font-medium text-center">{{ formatNumber(results.mat3) }}</div>
+              <div class="text-sm font-medium text-center">{{ formatNumber(results.mat3) }}</div>
               <div class="text-xs text-gray-500 text-center">
                 {{ formatNumber(calculatePerDay(results.mat3, results.avgTime)) }}/day
               </div>
@@ -198,29 +223,16 @@
           
           <!-- Mobile Layout: Boss-Stats in einer Reihe -->
           <div class="flex gap-2 mb-3" v-if="results.bossKillRate !== '--' || results.bossHpPercent !== '--'">
-            <!-- Boss Kill Rate -->
-            <div class="stat-box flex-1" v-if="results.bossKillRate !== '--'">
-              <div class="flex flex-col">
-                <div class="flex justify-between items-center mb-1">
-                  <div class="text-xs text-gray-400">{{ resultLabels.bossKillRate || 'Kill Rate' }}</div>
-                  <span 
-                    v-if="!isReferenceBuild && referenceResults?.bossKillRate && referenceResults.bossKillRate !== '--'"
-                    :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true)"
-                    class="text-xs flex items-center"
-                  >
-                    <component :is="getDiffIcon(results.bossKillRate, referenceResults.bossKillRate)" size="10" class="mr-0.5" />
-                    <span>{{ getBossStatDiffText(results.bossKillRate, referenceResults.bossKillRate) }}</span>
-                  </span>
-                </div>
-                <div class="text-white text-sm font-medium text-center">{{ formatPercent(results.bossKillRate) }}</div>
-              </div>
-            </div>
-            
-            <!-- Boss HP -->
+            <!-- Boss HP mit Icon -->
             <div class="stat-box flex-1" v-if="results.bossHpPercent !== '--'">
               <div class="flex flex-col">
                 <div class="flex justify-between items-center mb-1">
-                  <div class="text-xs text-gray-400">{{ resultLabels.bossHpPercent || 'Boss HP' }}</div>
+                  <div class="flex items-center">
+                    <IconHeartFilled :size="14" class="text-pink-400" />
+                    <div class="text-xs text-gray-400 ml-1.5">
+                      {{ resultLabels.bossHpPercent || 'Boss HP' }}
+                    </div>
+                  </div>
                   <span 
                     v-if="!isReferenceBuild && referenceResults?.bossHpPercent && referenceResults.bossHpPercent !== '--'"
                     :class="getBossStatDiffClasses((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent), true)"
@@ -231,6 +243,29 @@
                   </span>
                 </div>
                 <div class="text-white text-sm font-medium text-center">{{ formatPercent(results.bossHpPercent) }}</div>
+              </div>
+            </div>
+
+            <!-- Boss Kill Rate mit Icon -->
+            <div class="stat-box flex-1" v-if="results.bossKillRate !== '--'">
+              <div class="flex flex-col">
+                <div class="flex justify-between items-center mb-1">
+                  <div class="flex items-center">
+                    <IconSword :size="14" class="text-green-400" />
+                    <div class="text-xs text-gray-400 ml-1.5">
+                      {{ resultLabels.bossKillRate || 'Kill Rate' }}
+                    </div>
+                  </div>
+                  <span 
+                    v-if="!isReferenceBuild && referenceResults?.bossKillRate && referenceResults.bossKillRate !== '--'"
+                    :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true)"
+                    class="text-xs flex items-center"
+                  >
+                    <component :is="getDiffIcon(results.bossKillRate, referenceResults.bossKillRate)" size="10" class="mr-0.5" />
+                    <span>{{ getBossStatDiffText(results.bossKillRate, referenceResults.bossKillRate) }}</span>
+                  </span>
+                </div>
+                <div class="text-white text-sm font-medium text-center">{{ formatPercent(results.bossKillRate) }}</div>
               </div>
             </div>
           </div>
@@ -256,17 +291,6 @@
             <IconCopy size="18" />
           </button>
           <button 
-            @click="showCodeModal = true"
-            class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-            title="Share Build"
-          >
-            <IconShare size="18" />
-          </button>
-
-        
-        <!-- Rechte Buttons -->
-
-          <button 
             @click="emit('overridesBuild', buildData)"
             class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Build Overrides"
@@ -280,6 +304,13 @@
             title="Show Stage Distribution"
           >
             <IconChartBar size="18" />
+          </button>
+          <button 
+            @click="showCodeModal = true"
+            class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            title="Share Build"
+          >
+            <IconShare size="18" />
           </button>
           <button 
             @click="emit('archive', buildData)"
@@ -347,7 +378,8 @@ import {
   IconAlertCircle, IconUser, IconDotsVertical, IconEdit, IconCopy, 
   IconShare, IconRefresh, IconArchive, IconArchiveOff, IconTrash, 
   IconGripVertical, IconAdjustmentsHorizontal, IconChartBar, IconX,
-  IconBrightness, IconDiamond, IconHexagon, IconHexagons
+  IconBrightness, IconDiamond, IconHexagon, IconHexagons,
+  IconReportMoney, IconStairs, IconClock, IconHeartFilled, IconSword 
 } from '@tabler/icons-vue';
 import { useRoute } from 'vue-router';
 import { useHunterStore } from '../../store/hunterStore';
@@ -360,7 +392,7 @@ import {
   getAbsoluteDiffClasses, getAbsoluteDiffText,
   getTimeDiffClasses, getTimeDiffText,
   getBossStatDiffClasses, getBossStatDiffText,
-  calculatePerDay
+  calculatePerDay, calculateRunsPerDay
 } from './utils/BuildComparisonUtils';
 
 // Unterkomponenten importieren
@@ -748,6 +780,13 @@ function handleClickOutside(event) {
   }
 }
 
+// Funktion zum Behandeln des Modal-Schließen-Events
+function handleStatsModalClosed(event) {
+  if (event.detail?.hunterType === props.hunterId && props.autoEvaluate) {
+    evaluateBuild();
+  }
+}
+
 // Hilfsfunktion für Toasts
 function showToastMessage(message, type = 'success') {
   if (window.toast && typeof window.toast === 'function') {
@@ -837,10 +876,15 @@ onMounted(async () => {
       evaluateBuild();
     }, props.index * 100); 
   }
+
+  // Event-Listener für Modal-Schließung
+  window.addEventListener('statsModalClosed', handleStatsModalClosed);
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
+
+  window.removeEventListener('statsModalClosed', handleStatsModalClosed);
 });
 </script>
 
