@@ -1,4 +1,4 @@
-<!-- filepath: /c:/Users/igorn/projects/huntersim2/src/components/builds/card-components/BuildBossStats.vue -->
+<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\builds\card-components\BuildBossStats.vue -->
 <template>
   <div>
     <h4 class="section-title">Boss Statistics</h4>
@@ -8,16 +8,18 @@
       <div v-if="results.bossHpPercent !== '--'" class="boss-stat-card">
         <div class="boss-stat-header">
           <div class="flex items-center">
-            <IconHeartFilled :size="24" class="text-red-400 mr-1.5" />
+            <IconHeartFilled :size="16" class="text-red-400 mr-1.5" />
             <span class="boss-stat-title">{{ resultLabels.bossHpPercent }}</span>
           </div>
-          <span 
+          <div 
             v-if="!isReferenceBuild && referenceResults?.bossHpPercent !== '--' && results.bossHpPercent !== '--'"
-            :class="getBossStatDiffClasses(results.bossHpPercent, referenceResults.bossHpPercent, false)"
-            class="boss-stat-diff"
+            class="flex items-center"
           >
-            {{ getBossStatDiffText(results.bossHpPercent, referenceResults.bossHpPercent) }}%
-          </span>
+            <div :class="getBossStatDiffClasses((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent), true, true)" class="whitespace-nowrap inline-flex items-center text-xs">
+              <component :is="getDiffIcon((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent))" size="11" class="mr-0.5 flex-shrink-0" />
+              <span>{{ getBossStatDiffText(results.bossHpPercent, referenceResults.bossHpPercent) }}%</span>
+            </div>
+          </div>
         </div>
         <div class="boss-stat-value">{{ formatPercent(results.bossHpPercent) }}</div>
         <div class="boss-progress">
@@ -30,16 +32,18 @@
       <div v-if="results.bossKillRate !== '--'" class="boss-stat-card">
         <div class="boss-stat-header">
           <div class="flex items-center">
-            <IconSword :size="24" class="text-emerald-400 mr-1.5" />
+            <IconSword :size="16" class="text-emerald-400 mr-1.5" />
             <span class="boss-stat-title">{{ resultLabels.bossKillRate }}</span>
           </div>
-          <span 
+          <div 
             v-if="!isReferenceBuild && referenceResults?.bossKillRate !== '--' && results.bossKillRate !== '--'"
-            :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true)"
-            class="boss-stat-diff"
+            class="flex items-center"
           >
-            {{ getBossStatDiffText(results.bossKillRate, referenceResults.bossKillRate) }}%
-          </span>
+            <div :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true, true)" class="whitespace-nowrap inline-flex items-center text-xs">
+              <component :is="getDiffIcon(results.bossKillRate, referenceResults.bossKillRate)" size="11" class="mr-0.5 flex-shrink-0" />
+              <span>{{ getBossStatDiffText(results.bossKillRate, referenceResults.bossKillRate) }}%</span>
+            </div>
+          </div>
         </div>
         <div class="boss-stat-value">{{ formatPercent(results.bossKillRate) }}</div>
         <div class="boss-progress">
@@ -52,9 +56,10 @@
 </template>
 
 <script setup>
-import { IconHeartFilled, IconSword } from '@tabler/icons-vue';
+import { IconHeartFilled, IconSword, IconArrowUp, IconArrowDown, IconEqual } from '@tabler/icons-vue';
 import { 
-  getBossStatDiffClasses, getBossStatDiffText, formatPercent 
+  getBossStatDiffClasses, getBossStatDiffText, formatPercent, 
+  getDiffIcon
 } from '../utils/BuildComparisonUtils';
 
 const props = defineProps({
@@ -100,13 +105,6 @@ const props = defineProps({
   color: rgba(209, 213, 219, 0.9);
 }
 
-.boss-stat-diff {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  padding: 0.125rem 0.3125rem;
-  border-radius: 0.25rem;
-}
-
 .boss-stat-value {
   font-size: 1.125rem;
   font-weight: 600;
@@ -139,21 +137,5 @@ const props = defineProps({
   .boss-stats-grid {
     grid-template-columns: 1fr;
   }
-}
-
-/* Diff-Klassen */
-.text-emerald-400 {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: rgba(52, 211, 153, 1);
-}
-
-.text-red-400 {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: rgba(248, 113, 113, 1);
-}
-
-.text-gray-400 {
-  background-color: rgba(75, 85, 99, 0.15);
-  color: rgba(156, 163, 175, 1);
 }
 </style>

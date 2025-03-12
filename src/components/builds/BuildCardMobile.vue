@@ -1,3 +1,4 @@
+<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\builds\BuildCardMobile.vue -->
 <template>
   <div 
     class="build-compact border-l-4 bg-gray-800 rounded-lg shadow-md mb-3 overflow-hidden transition-all duration-200"
@@ -86,7 +87,7 @@
           </div>
 
           <!-- Mobile Layout: Stage und Time nebeneinander in der zweiten Reihe -->
-          <div class="grid grid-cols-2 gap-2 mb-3">
+          <div class="grid grid-cols-2 gap-2">
             <!-- Avg Stage -->
             <div class="stat-box">
               <div class="flex flex-col">
@@ -122,7 +123,7 @@
                   </div>
                   <span 
                     v-if="!isReferenceBuild && referenceResults?.avgTime"
-                    :class="getTimeDiffClasses(results.avgTime, referenceResults.avgTime)"
+                    :class="getTimeDiffClasses(results.avgTime, referenceResults.avgTime, true, true)"
                     class="text-xs flex items-center"
                   >
                     <component :is="getDiffIcon(referenceResults.avgTime, results.avgTime)" size="10" class="mr-0.5" />
@@ -132,97 +133,198 @@
                 <div class="text-white text-sm font-medium text-center">{{ formatTime(results.avgTime) }}</div>
                 <!-- Runs per Day unter der Zeit -->
                 <div class="text-xs text-gray-500 text-center">
-                  {{ formatNumber(calculateRunsPerDay(results.avgTime)) }} runs/day
+                  <span>{{ formatNumber(calculateRunsPerDay(results.avgTime)) }}/day</span>
                 </div>
               </div>
             </div>
           </div>
-          
-          <!-- Mobile Layout: XP und Materialien in 2x2 Grid -->
-          <div class="grid grid-cols-2 gap-2 mb-3">
-            <!-- XP Resource -->
-            <div class="resource-box">
-              <div class="flex items-center mb-1">
-                <IconBrightness size="14" class="mr-1 text-blue-400" />
-                <span class="text-xs text-gray-300">{{ resultLabels.xp || 'XP' }}</span>
+
+          <!-- Mobile Layout: XP - eine Zeile pro Materialtyp -->
+          <div class="resource-box">
+            <!-- Neue Header Struktur: 2 Einheiten -->
+            <div class="grid grid-cols-2 gap-2 mb-1">
+              <!-- Erste Einheit: Label links und Run Diff rechts -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <IconBrightness size="14" class="text-blue-400" />
+                  <span class="text-xs text-gray-300 ml-1">{{ resultLabels.xp || 'XP' }}</span>
+                </div>
                 <span 
                   v-if="!isReferenceBuild && referenceResults?.xp && results.xp"
                   :class="getDiffClasses(results.xp, referenceResults.xp, true, true)"
-                  class="ml-auto text-xs"
+                  class="text-xs flex items-center"
                 >
-                  <component :is="getDiffIcon(results.xp, referenceResults.xp)" size="10" class="mr-0.5" />
+                  <component :is="getDiffIcon(results.xp, referenceResults.xp)" size="9" class="mr-0.5" />
                   <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
                 </span>
               </div>
-              <div class="text-sm font-medium text-center">{{ formatNumber(results.xp) }}</div>
-              <div class="text-xs text-gray-500 text-center">
-                {{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }}/day
+              
+              <!-- Zweite Einheit: "per day" und Day Diff rechts -->
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400"></span>
+                <span 
+                  v-if="!isReferenceBuild && referenceResults?.xp && referenceResults?.avgTime"
+                  :class="getDiffClasses(calculatePerDay(results.xp, results.avgTime), calculatePerDay(referenceResults.xp, referenceResults.avgTime), true, true)"
+                  class="text-xs flex items-center"
+                >
+                  <component :is="getDiffIcon(calculatePerDay(results.xp, results.avgTime), calculatePerDay(referenceResults.xp, referenceResults.avgTime))" size="9" class="mr-0.5" />
+                  <span>{{ getDiffText(calculatePerDay(results.xp, results.avgTime), calculatePerDay(referenceResults.xp, referenceResults.avgTime)) }}</span>
+                </span>
               </div>
             </div>
             
-            <!-- Material 1 -->
-            <div class="resource-box">
-              <div class="flex items-center mb-1">
-                <IconDiamond size="14" class="mr-1 text-red-400" />
-                <span class="text-xs text-gray-300">{{ resultLabels.mat1 || 'Mat 1' }}</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="text-sm font-medium text-center">
+                {{ formatNumber(results.xp) }}
+                <div class="text-xs text-gray-500">per run</div>
+              </div>
+              <div class="text-sm font-medium text-center">
+                {{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }}
+                <div class="text-xs text-gray-500">per day</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Material 1 -->
+          <div class="resource-box">
+            <!-- Neue Header Struktur: 2 Einheiten -->
+            <div class="grid grid-cols-2 gap-2 mb-1">
+              <!-- Erste Einheit: Label links und Run Diff rechts -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <IconDiamond size="14" class="text-red-400" />
+                  <span class="text-xs text-gray-300 ml-1">{{ resultLabels.mat1 || 'Mat 1' }}</span>
+                </div>
                 <span 
                   v-if="!isReferenceBuild && referenceResults?.mat1 && results.mat1"
                   :class="getDiffClasses(results.mat1, referenceResults.mat1, true, true)"
-                  class="ml-auto text-xs"
+                  class="text-xs flex items-center"
                 >
-                  <component :is="getDiffIcon(results.mat1, referenceResults.mat1)" size="10" class="mr-0.5" />
+                  <component :is="getDiffIcon(results.mat1, referenceResults.mat1)" size="9" class="mr-0.5" />
                   <span>{{ getDiffText(results.mat1, referenceResults.mat1) }}</span>
                 </span>
               </div>
-              <div class="text-sm font-medium text-center">{{ formatNumber(results.mat1) }}</div>
-              <div class="text-xs text-gray-500 text-center">
-                {{ formatNumber(calculatePerDay(results.mat1, results.avgTime)) }}/day
+              
+              <!-- Zweite Einheit: "per day" und Day Diff rechts -->
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400"></span>
+                <span 
+                  v-if="!isReferenceBuild && referenceResults?.mat1 && referenceResults?.avgTime"
+                  :class="getDiffClasses(calculatePerDay(results.mat1, results.avgTime), calculatePerDay(referenceResults.mat1, referenceResults.avgTime), true, true)"
+                  class="text-xs flex items-center"
+                >
+                  <component :is="getDiffIcon(calculatePerDay(results.mat1, results.avgTime), calculatePerDay(referenceResults.mat1, referenceResults.avgTime))" size="9" class="mr-0.5" />
+                  <span>{{ getDiffText(calculatePerDay(results.mat1, results.avgTime), calculatePerDay(referenceResults.mat1, referenceResults.avgTime)) }}</span>
+                </span>
               </div>
             </div>
             
-            <!-- Material 2 -->
-            <div class="resource-box">
-              <div class="flex items-center mb-1">
-                <IconHexagon size="14" class="mr-1 text-orange-400" />
-                <span class="text-xs text-gray-300">{{ resultLabels.mat2 || 'Mat 2' }}</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="text-sm font-medium text-center">
+                {{ formatNumber(results.mat1) }}
+                <div class="text-xs text-gray-500">per run</div>
+              </div>
+              <div class="text-sm font-medium text-center">
+                {{ formatNumber(calculatePerDay(results.mat1, results.avgTime)) }}
+                <div class="text-xs text-gray-500">per day</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Material 2 -->
+          <div class="resource-box">
+            <!-- Neue Header Struktur: 2 Einheiten -->
+            <div class="grid grid-cols-2 gap-2 mb-1">
+              <!-- Erste Einheit: Label links und Run Diff rechts -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <IconHexagon size="14" class="text-orange-400" />
+                  <span class="text-xs text-gray-300 ml-1">{{ resultLabels.mat2 || 'Mat 2' }}</span>
+                </div>
                 <span 
                   v-if="!isReferenceBuild && referenceResults?.mat2 && results.mat2"
                   :class="getDiffClasses(results.mat2, referenceResults.mat2, true, true)"
-                  class="ml-auto text-xs"
+                  class="text-xs flex items-center"
                 >
-                  <component :is="getDiffIcon(results.mat2, referenceResults.mat2)" size="10" class="mr-0.5" />
+                  <component :is="getDiffIcon(results.mat2, referenceResults.mat2)" size="9" class="mr-0.5" />
                   <span>{{ getDiffText(results.mat2, referenceResults.mat2) }}</span>
                 </span>
               </div>
-              <div class="text-sm font-medium text-center">{{ formatNumber(results.mat2) }}</div>
-              <div class="text-xs text-gray-500 text-center">
-                {{ formatNumber(calculatePerDay(results.mat2, results.avgTime)) }}/day
+              
+              <!-- Zweite Einheit: "per day" und Day Diff rechts -->
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400"></span>
+                <span 
+                  v-if="!isReferenceBuild && referenceResults?.mat2 && referenceResults?.avgTime"
+                  :class="getDiffClasses(calculatePerDay(results.mat2, results.avgTime), calculatePerDay(referenceResults.mat2, referenceResults.avgTime), true, true)"
+                  class="text-xs flex items-center"
+                >
+                  <component :is="getDiffIcon(calculatePerDay(results.mat2, results.avgTime), calculatePerDay(referenceResults.mat2, referenceResults.avgTime))" size="9" class="mr-0.5" />
+                  <span>{{ getDiffText(calculatePerDay(results.mat2, results.avgTime), calculatePerDay(referenceResults.mat2, referenceResults.avgTime)) }}</span>
+                </span>
               </div>
             </div>
             
-            <!-- Material 3 -->
-            <div class="resource-box">
-              <div class="flex items-center mb-1">
-                <IconHexagons size="14" class="mr-1 text-amber-400" />
-                <span class="text-xs text-gray-300">{{ resultLabels.mat3 || 'Mat 3' }}</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="text-sm font-medium text-center">
+                {{ formatNumber(results.mat2) }}
+                <div class="text-xs text-gray-500">per run</div>
+              </div>
+              <div class="text-sm font-medium text-center">
+                {{ formatNumber(calculatePerDay(results.mat2, results.avgTime)) }}
+                <div class="text-xs text-gray-500">per day</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Material 3 -->
+          <div class="resource-box">
+            <!-- Neue Header Struktur: 2 Einheiten -->
+            <div class="grid grid-cols-2 gap-2 mb-1">
+              <!-- Erste Einheit: Label links und Run Diff rechts -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <IconHexagons size="14" class="text-amber-400" />
+                  <span class="text-xs text-gray-300 ml-1">{{ resultLabels.mat3 || 'Mat 3' }}</span>
+                </div>
                 <span 
                   v-if="!isReferenceBuild && referenceResults?.mat3 && results.mat3"
                   :class="getDiffClasses(results.mat3, referenceResults.mat3, true, true)"
-                  class="ml-auto text-xs"
+                  class="text-xs flex items-center"
                 >
-                  <component :is="getDiffIcon(results.mat3, referenceResults.mat3)" size="10" class="mr-0.5" />
+                  <component :is="getDiffIcon(results.mat3, referenceResults.mat3)" size="9" class="mr-0.5" />
                   <span>{{ getDiffText(results.mat3, referenceResults.mat3) }}</span>
                 </span>
               </div>
-              <div class="text-sm font-medium text-center">{{ formatNumber(results.mat3) }}</div>
-              <div class="text-xs text-gray-500 text-center">
-                {{ formatNumber(calculatePerDay(results.mat3, results.avgTime)) }}/day
+              
+              <!-- Zweite Einheit: "per day" und Day Diff rechts -->
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400"></span>
+                <span 
+                  v-if="!isReferenceBuild && referenceResults?.mat3 && referenceResults?.avgTime"
+                  :class="getDiffClasses(calculatePerDay(results.mat3, results.avgTime), calculatePerDay(referenceResults.mat3, referenceResults.avgTime), true, true)"
+                  class="text-xs flex items-center"
+                >
+                  <component :is="getDiffIcon(calculatePerDay(results.mat3, results.avgTime), calculatePerDay(referenceResults.mat3, referenceResults.avgTime))" size="9" class="mr-0.5" />
+                  <span>{{ getDiffText(calculatePerDay(results.mat3, results.avgTime), calculatePerDay(referenceResults.mat3, referenceResults.avgTime)) }}</span>
+                </span>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2">
+              <div class="text-sm font-medium text-center">
+                {{ formatNumber(results.mat3) }}
+                <div class="text-xs text-gray-500">per run</div>
+              </div>
+              <div class="text-sm font-medium text-center">
+                {{ formatNumber(calculatePerDay(results.mat3, results.avgTime)) }}
+                <div class="text-xs text-gray-500">per day</div>
               </div>
             </div>
           </div>
           
           <!-- Mobile Layout: Boss-Stats in einer Reihe -->
-          <div class="flex gap-2 mb-3" v-if="results.bossKillRate !== '--' || results.bossHpPercent !== '--'">
+          <div class="flex gap-2" v-if="results.bossKillRate !== '--' || results.bossHpPercent !== '--'">
             <!-- Boss HP mit Icon -->
             <div class="stat-box flex-1" v-if="results.bossHpPercent !== '--'">
               <div class="flex flex-col">
@@ -235,10 +337,10 @@
                   </div>
                   <span 
                     v-if="!isReferenceBuild && referenceResults?.bossHpPercent && referenceResults.bossHpPercent !== '--'"
-                    :class="getBossStatDiffClasses((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent), true)"
+                    :class="getBossStatDiffClasses((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent), true, true)"
                     class="text-xs flex items-center"
                   >
-                    <component :is="getDiffIcon((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent))" size="10" class="mr-0.5" />
+                    <component :is="getDiffIcon((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent))" size="9" class="mr-0.5" />
                     <span>{{ getBossStatDiffText(results.bossHpPercent, referenceResults.bossHpPercent) }}</span>
                   </span>
                 </div>
@@ -258,10 +360,10 @@
                   </div>
                   <span 
                     v-if="!isReferenceBuild && referenceResults?.bossKillRate && referenceResults.bossKillRate !== '--'"
-                    :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true)"
+                    :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true, true)"
                     class="text-xs flex items-center"
                   >
-                    <component :is="getDiffIcon(results.bossKillRate, referenceResults.bossKillRate)" size="10" class="mr-0.5" />
+                    <component :is="getDiffIcon(results.bossKillRate, referenceResults.bossKillRate)" size="9" class="mr-0.5" />
                     <span>{{ getBossStatDiffText(results.bossKillRate, referenceResults.bossKillRate) }}</span>
                   </span>
                 </div>
@@ -272,61 +374,60 @@
         </div>
       </div>
       
-      <!-- Mobile Action Buttons -->
+      <!-- Mobile Action Buttons: Kompakter mit kleineren Icons -->
       <div class="action-buttons p-2 bg-gray-800 border-t border-gray-700/40 flex items-center justify-between mt-2">
-        <!-- Linke Buttons -->
-
+        <div class="flex flex-wrap justify-between w-full">
           <button 
             @click="emit('edit', buildData)"
-            class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Edit Build"
           >
-            <IconEdit size="18" />
+            <IconEdit size="16" />
           </button>
           <button 
             @click="emit('clone', buildData)"
-            class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Clone Build"
           >
-            <IconCopy size="18" />
+            <IconCopy size="16" />
           </button>
           <button 
             @click="emit('overridesBuild', buildData)"
-            class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Build Overrides"
           >
-            <IconAdjustmentsHorizontal size="18" />
+            <IconAdjustmentsHorizontal size="16" />
           </button>
           <button 
             v-if="enabledStats.includes('stageDistribution') && results?.stageDistribution?.length"
             @click="showDistributionModal = true"
-            class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Show Stage Distribution"
           >
-            <IconChartBar size="18" />
+            <IconChartBar size="16" />
           </button>
           <button 
             @click="showCodeModal = true"
-            class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Share Build"
           >
-            <IconShare size="18" />
+            <IconShare size="16" />
           </button>
           <button 
             @click="emit('archive', buildData)"
-            class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             :title="buildData.isArchived ? 'Restore Build' : 'Archive Build'"
           >
-            <component :is="buildData.isArchived ? IconArchiveOff : IconArchive" size="18" />
+            <component :is="buildData.isArchived ? IconArchiveOff : IconArchive" size="16" />
           </button>
           <button
             @click="emit('delete', buildData)"
-            class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Delete Build"
           >
-            <IconTrash size="18" />
+            <IconTrash size="16" />
           </button>
-
+        </div>
       </div>
     </div>
     

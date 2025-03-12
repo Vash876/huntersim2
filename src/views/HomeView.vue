@@ -1,8 +1,22 @@
 <script setup>
 const changelog = [
+
+  {
+    version: '2.0.1',
+    date: '2025-03-12',
+    baseVersion: 'Kylenator\'s Sheet v1.2.4',
+    changes: [
+      'Added "per day" difference values with UI layout improvements',
+      'Enhanced mobile build creator with two talents/attributes per row',
+      'Added confirmation dialog when clicking outside build creator',
+      'Implemented wider scrollbar for windows users who don\'t have a mouse wheel',
+      'Fixed build import/export handling of zero values in overrides',
+      'Fixed Ozzy Damage Reduction cost calculation'
+    ]
+  },
   {
     version: '2.0.0',
-    date: '2025-03-09',
+    date: '2025-03-11',
     baseVersion: 'Kylenator\'s Sheet v1.2.4',
     changes: [
       'Complete redesign of the application with modern UI',

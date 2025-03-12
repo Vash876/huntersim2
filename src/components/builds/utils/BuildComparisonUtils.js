@@ -8,17 +8,19 @@ export function getDiffClasses(value, reference, higherIsBetter = true, small = 
     const diff = value - reference;
     const percentDiff = (diff / reference) * 100;
     
-    let color = 'gray';
+    let colorClass = 'diff-box-gray';
     
     if (Math.abs(percentDiff) < 1) {
-      color = 'gray';
+      colorClass = 'diff-box-gray';
     } else if (percentDiff > 0) {
-      color = higherIsBetter ? 'green' : 'red';
+      colorClass = higherIsBetter ? 'diff-box-green' : 'diff-box-red';
     } else {
-      color = higherIsBetter ? 'red' : 'green';
+      colorClass = higherIsBetter ? 'diff-box-red' : 'diff-box-green';
     }
     
-    return `inline-flex items-center justify-center ${small ? 'ml-1 px-1 py-0.5 text-xs' : 'ml-2 px-1.5 py-1 text-sm'} font-medium rounded bg-${color}-700/30 text-${color}-400`;
+    const sizeClass = small ? 'diff-box-small' : 'diff-box-normal';
+    
+    return `${colorClass} ${sizeClass}`;
   } catch (error) {
     console.error('Error in getDiffClasses:', error);
     return '';
@@ -50,7 +52,7 @@ export function getDiffText(value, reference, isPercent = true) {
   try {
     const diff = value - reference;
     const percentDiff = (diff / reference) * 100;
-    return Math.abs(percentDiff).toFixed(1) + '%';
+    return formatNumber(Math.abs(percentDiff)) + '%';
   } catch (error) {
     console.error('Error in getDiffText:', error);
     return '';
@@ -58,23 +60,25 @@ export function getDiffText(value, reference, isPercent = true) {
 }
 
 // Zeit-Differenz
-export function getTimeDiffClasses(value, reference) {
+export function getTimeDiffClasses(value, reference, small = false) {
   if (!value || !reference) return '';
   
   try {
     const diff = value - reference;
     
-    let color = 'gray';
+    let colorClass = 'diff-box-gray';
     
     if (Math.abs(diff) < 0.1) {
-      color = 'gray';
+      colorClass = 'diff-box-gray';
     } else if (diff > 0) {
-      color = 'red';  // Längere Zeit ist schlechter
+      colorClass = 'diff-box-red';  // Längere Zeit ist schlechter
     } else {
-      color = 'green'; // Kürzere Zeit ist besser
+      colorClass = 'diff-box-green'; // Kürzere Zeit ist besser
     }
     
-    return `inline-flex items-center justify-center ml-2 px-1.5 py-1 text-sm font-medium rounded bg-${color}-700/30 text-${color}-400`;
+    const sizeClass = small ? 'diff-box-small' : 'diff-box-normal';
+    
+    return `${colorClass} ${sizeClass}`;
   } catch (error) {
     console.error('Error in getTimeDiffClasses:', error);
     return '';
@@ -86,7 +90,12 @@ export function getTimeDiffText(value, reference) {
   
   try {
     const diff = value - reference;
-    return Math.abs(diff).toFixed(1) + 'm';
+    const absDiff = Math.abs(diff);
+    
+    if (absDiff >= 1000) {
+      return (absDiff / 1000).toFixed(1) + 'k m';
+    }
+    return absDiff.toFixed(1) + 'm';
   } catch (error) {
     console.error('Error in getTimeDiffText:', error);
     return '';
@@ -94,7 +103,7 @@ export function getTimeDiffText(value, reference) {
 }
 
 // Boss-Statistik Differenz
-export function getBossStatDiffClasses(value, reference, higherIsBetter = true) {
+export function getBossStatDiffClasses(value, reference, higherIsBetter = true, small = false) {
   // Prüfen auf null, undefined oder '--', aber erlaubt den Wert 0
   if (value === null || value === undefined || reference === null || reference === undefined || 
       value === '--' || reference === '--') return '';
@@ -102,17 +111,19 @@ export function getBossStatDiffClasses(value, reference, higherIsBetter = true) 
   try {
     const diff = value - reference;
     
-    let color = 'gray';
+    let colorClass = 'diff-box-gray';
     
     if (Math.abs(diff) < 1) {
-      color = 'gray';
+      colorClass = 'diff-box-gray';
     } else if (diff > 0) {
-      color = higherIsBetter ? 'green' : 'red';
+      colorClass = higherIsBetter ? 'diff-box-green' : 'diff-box-red';
     } else {
-      color = higherIsBetter ? 'red' : 'green';
+      colorClass = higherIsBetter ? 'diff-box-red' : 'diff-box-green';
     }
     
-    return `ml-2 text-${color}-400`;
+    const sizeClass = small ? 'diff-box-small' : 'diff-box-normal';
+    
+    return `${colorClass} ${sizeClass}`;
   } catch (error) {
     console.error('Error in getBossStatDiffClasses:', error);
     return '';
@@ -126,7 +137,13 @@ export function getBossStatDiffText(value, reference) {
   
   try {
     const diff = value - reference;
-    return diff > 0 ? `+${diff.toFixed(0)}` : diff.toFixed(0);
+    const absDiff = Math.abs(diff);
+    const sign = diff >= 0 ? '+' : '-';
+    
+    if (absDiff >= 1000) {
+      return sign + (absDiff / 1000).toFixed(1) + 'k';
+    }
+    return sign + absDiff.toFixed(0);
   } catch (error) {
     console.error('Error in getBossStatDiffText:', error);
     return '';
@@ -140,17 +157,19 @@ export function getAbsoluteDiffClasses(value, reference, higherIsBetter = true, 
   try {
     const diff = value - reference;
     
-    let color = 'gray';
+    let colorClass = 'diff-box-gray';
     
     if (Math.abs(diff) < 0.1) {
-      color = 'gray';
+      colorClass = 'diff-box-gray';
     } else if (diff > 0) {
-      color = higherIsBetter ? 'green' : 'red';
+      colorClass = higherIsBetter ? 'diff-box-green' : 'diff-box-red';
     } else {
-      color = higherIsBetter ? 'red' : 'green';
+      colorClass = higherIsBetter ? 'diff-box-red' : 'diff-box-green';
     }
     
-    return `inline-flex items-center justify-center ${small ? 'ml-1 px-1 py-0.5 text-xs' : 'ml-2 px-1.5 py-1 text-sm'} font-medium rounded bg-${color}-700/30 text-${color}-400`;
+    const sizeClass = small ? 'diff-box-small' : 'diff-box-normal';
+    
+    return `${colorClass} ${sizeClass}`;
   } catch (error) {
     console.error('Error in getAbsoluteDiffClasses:', error);
     return '';
@@ -162,7 +181,13 @@ export function getAbsoluteDiffText(value, reference) {
   
   try {
     const diff = value - reference;
-    return (diff >= 0 ? '+' : '') + diff.toFixed(1);
+    const absDiff = Math.abs(diff);
+    const sign = diff >= 0 ? '+' : '-';
+    
+    if (absDiff >= 1000) {
+      return sign + (absDiff / 1000).toFixed(1) + 'k';
+    }
+    return sign + absDiff.toFixed(1);
   } catch (error) {
     console.error('Error in getAbsoluteDiffText:', error);
     return '';

@@ -20,7 +20,7 @@
       @show-distribution="showDistributionModal = true" 
     />
     
-    <div class="p-5 pb-3">
+    <div class="p-4 pb-3">
       <!-- Loading-Zustand -->
       <div v-if="isLoading" class="flex flex-col items-center justify-center py-8 space-y-3">
         <div class="w-full max-w-xs">

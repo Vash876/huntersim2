@@ -1,22 +1,24 @@
-<!-- filepath: /c:/Users/igorn/projects/huntersim2/src/components/builds/card-components/BuildStatistics.vue -->
+<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\builds\card-components\BuildStatistics.vue -->
 <template>
   <div class="stats-container">  
     <h4 class="section-title">Main Statistics</h4>  
     <!-- Grid für wichtigsten Spielstatistiken -->
     <div class="stats-grid">
-      <!-- Erste Zeile: Laufzeit und Loot Score -->
       <!-- Loot Score -->
       <div class="stat-card">
-        <div class="stat-header">
-          <IconReportMoney :size="16" class="text-amber-400" />
-          <span class="stat-title">Loot Score</span>
+        <div class="stat-header justify-between">
+          <div class="flex items-center">
+            <IconReportMoney :size="16" class="text-amber-400" />
+            <span class="stat-title">Loot Score</span>
+          </div>
           <div 
-            v-if="!props.isReferenceBuild && props.referenceResults?.lootPerMin" 
-            class="stat-diff"
-            :class="getAbsoluteDiffClass(results.lootPerMin, props.referenceResults.lootPerMin, true)"
+            v-if="!props.isReferenceBuild && props.referenceResults?.lootPerMin"
+            class="flex items-center"
           >
-          <component :is="getDiffIcon(results.lootPerMin, props.referenceResults.lootPerMin, true)" :size="14" />
-            {{ getDiffText(results.lootPerMin, props.referenceResults.lootPerMin) }}
+            <div :class="getDiffClasses(results.lootPerMin, props.referenceResults.lootPerMin, true, true)" class="whitespace-nowrap inline-flex items-center">
+              <component :is="getDiffIcon(results.lootPerMin, props.referenceResults.lootPerMin)" size="11" class="mr-0.5 flex-shrink-0" />
+              <span>{{ getDiffText(results.lootPerMin, props.referenceResults.lootPerMin) }}</span>
+            </div>
           </div>
         </div>
         <div class="stat-value-row">
@@ -24,16 +26,21 @@
         </div>
       </div>
 
+      <!-- Run Time -->
       <div class="stat-card">
-        <div class="stat-header">
-          <IconClock :size="16" class="text-blue-400" />
-          <span class="stat-title">{{ resultLabels.avgTime }}</span>
+        <div class="stat-header justify-between">
+          <div class="flex items-center">
+            <IconClock :size="16" class="text-blue-400" />
+            <span class="stat-title">{{ resultLabels.avgTime }}</span>
+          </div>
           <div 
-            v-if="!props.isReferenceBuild && props.referenceResults?.avgTime" 
-            class="comparison-chip"
-            :class="getTimeDiffClass(results.avgTime, props.referenceResults.avgTime)"
+            v-if="!props.isReferenceBuild && props.referenceResults?.avgTime"
+            class="flex items-center"
           >
-            {{ getTimeDiffText(results.avgTime, props.referenceResults.avgTime) }}
+            <div :class="getTimeDiffClasses(results.avgTime, props.referenceResults.avgTime, true)" class="whitespace-nowrap inline-flex items-center">
+              <component :is="getDiffIcon(props.referenceResults.avgTime, results.avgTime)" size="11" class="mr-0.5 flex-shrink-0" />
+              <span>{{ getTimeDiffText(results.avgTime, props.referenceResults.avgTime) }}</span>
+            </div>
           </div>
         </div>
         <div class="stat-value-row">
@@ -41,22 +48,28 @@
         </div>
       </div>
       
-      <!-- Zweite Zeile: Stage und Runs pro Tag -->
+      <!-- Average Stage -->
       <div class="stat-card">
-        <div class="stat-header">
-          <IconStairs :size="16" :class="`text-${hunterColor}-400`" />
-          <span class="stat-title">{{ resultLabels.avgStage }}</span>
+        <div class="stat-header justify-between">
+          <div class="flex items-center">
+            <IconStairs :size="16" :class="`text-${hunterColor}-400`" />
+            <span class="stat-title">{{ resultLabels.avgStage }}</span>
+          </div>
           <div 
-            v-if="!props.isReferenceBuild && props.referenceResults?.avgStage" 
-            class="comparison-chip"
-            :class="getAbsoluteDiffClass(results.avgStage, props.referenceResults.avgStage)"
+            v-if="!props.isReferenceBuild && props.referenceResults?.avgStage"
+            class="flex items-center"
           >
-            {{ getAbsoluteDiffText(results.avgStage, props.referenceResults.avgStage) }}
+            <div :class="getAbsoluteDiffClasses(results.avgStage, props.referenceResults.avgStage, true, true)" class="whitespace-nowrap inline-flex items-center">
+              <component :is="getDiffIcon(results.avgStage, props.referenceResults.avgStage)" size="11" class="mr-0.5 flex-shrink-0" />
+              <span>{{ getAbsoluteDiffText(results.avgStage, props.referenceResults.avgStage) }}</span>
+            </div>
           </div>
         </div>
         <div class="stat-value-row">
-          <div class="stat-main-value">{{ formatStage(results.avgStage, true) }}</div>
-          <div class="stat-range">{{ formatStage(results.minStage) }}-{{ formatStage(results.maxStage) }}</div>
+          <div class="flex items-baseline">
+            <div class="stat-main-value">{{ formatStage(results.avgStage, true) }}</div>
+            <div class="stat-range ml-2">{{ formatStage(results.minStage) }}-{{ formatStage(results.maxStage) }}</div>
+          </div>
         </div>
       </div>
       
@@ -81,7 +94,9 @@ import {
   IconArrowUp, IconArrowDown, IconEqual 
 } from '@tabler/icons-vue';
 import { 
-  formatNumber, formatStage, formatTime,
+  formatNumber, formatStage, formatTime, 
+  getDiffClasses, getTimeDiffClasses, getAbsoluteDiffClasses,
+  getDiffIcon, getDiffText, getAbsoluteDiffText, getTimeDiffText,
   calculateRunsPerDay
 } from '../utils/BuildComparisonUtils';
 
@@ -92,93 +107,6 @@ const props = defineProps({
   hunterColor: { type: String, required: true },
   resultLabels: { type: Object, required: true }
 });
-
-// Berechnet den Fortschrittsbalken
-function getProgressWidth(value, reference) {
-  if (!reference || !value) return '85%'; // Standard-Wert wenn keine Referenz
-  
-  // Vergleiche mit Referenz, max 150% der Referenz
-  const percentage = Math.min((value / reference) * 100, 150);
-  return `${percentage}%`;
-}
-
-// Differenz-Funktionen
-function getDiffIcon(value, reference, higherIsBetter = true) {
-  if (!value || !reference) return IconEqual;
-  
-  const diff = value - reference;
-  const percentDiff = (diff / reference) * 100;
-  
-  if (Math.abs(percentDiff) < 1) return IconEqual;
-  if (percentDiff > 0) {
-    return higherIsBetter ? IconArrowUp : IconArrowDown;
-  } else {
-    return higherIsBetter ? IconArrowDown : IconArrowUp;
-  }
-}
-
-function getDiffText(value, reference) {
-  if (!value || !reference) return '';
-  
-  const diff = value - reference;
-  const percentDiff = (diff / reference) * 100;
-  return Math.abs(percentDiff).toFixed(1) + '%';
-}
-
-function getAbsoluteDiffText(value, reference) {
-  if (!value || !reference) return '';
-  
-  const diff = value - reference;
-  return (diff >= 0 ? '+' : '') + diff.toFixed(1);
-}
-
-function getTimeDiffText(value, reference) {
-  if (!value || !reference) return '';
-  
-  const diff = value - reference;
-  return (diff >= 0 ? '+' : '') + Math.abs(diff).toFixed(1) + 'm';
-}
-
-// CSS-Klassen für Vergleiche
-function getDiffBadgeClass(value, reference, higherIsBetter = true) {
-  if (!value || !reference) return 'neutral';
-  
-  const diff = value - reference;
-  const percentDiff = (diff / reference) * 100;
-  
-  if (Math.abs(percentDiff) < 1) return 'neutral';
-  if (percentDiff > 0) {
-    return higherIsBetter ? 'positive' : 'negative';
-  } else {
-    return higherIsBetter ? 'negative' : 'positive';
-  }
-}
-
-function getAbsoluteDiffClass(value, reference, higherIsBetter = true) {
-  if (!value || !reference) return '';
-  
-  const diff = value - reference;
-  
-  if (Math.abs(diff) < 0.1) return 'text-gray-400';
-  if (diff > 0) {
-    return higherIsBetter ? 'text-emerald-400' : 'text-red-400';
-  } else {
-    return higherIsBetter ? 'text-red-400' : 'text-emerald-400';
-  }
-}
-
-function getTimeDiffClass(value, reference) {
-  if (!value || !reference) return '';
-  
-  const diff = value - reference;
-  
-  if (Math.abs(diff) < 0.1) return 'text-gray-400';
-  if (diff > 0) {
-    return 'text-red-400';  // Höhere Zeit ist schlechter
-  } else {
-    return 'text-emerald-400';  // Niedrigere Zeit ist besser
-  }
-}
 </script>
 
 <style scoped>
@@ -196,74 +124,12 @@ function getTimeDiffClass(value, reference) {
   gap: 0.875rem;
 }
 
-/* Hauptstatistik-Karte */
-.main-stat-card {
-  background-color: rgba(17, 24, 39, 0.5);
-  border-radius: 0.5rem;
-  padding: 0.875rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.primary-value {
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.1;
-}
-
-.comparison-chip {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  padding: 0.1875rem 0.375rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  right: 0;
-}
-
-.comparison-chip.positive {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: rgba(52, 211, 153, 1);
-}
-
-.comparison-chip.negative {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: rgba(248, 113, 113, 1);
-}
-
-.comparison-chip.neutral {
-  background-color: rgba(75, 85, 99, 0.15);
-  color: rgba(156, 163, 175, 1);
-}
-
-.progress-track {
-  position: relative;
-  height: 0.375rem;
-  width: 100%;
-  overflow: hidden;
-  border-radius: 9999px;
-}
-
-.progress-bg {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  background-color: rgba(55, 65, 81, 0.3);
-}
-
-.progress-fill {
-  position: absolute;
-  height: 100%;
-  transition: width 1s ease-in-out;
-}
-
 /* Statistik-Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: auto auto;
-  gap: 0.75rem;
+  gap: 0.25rem;
 }
 
 .stat-card {
@@ -285,17 +151,6 @@ function getTimeDiffClass(value, reference) {
   margin-left: 0.375rem;
   font-size: 0.75rem;
   color: rgba(209, 213, 219, 0.9);
-}
-
-.stat-diff {
-  position: absolute;
-  right: 0;
-  display: flex;
-  align-items: center;
-  padding: 0.1875rem 0.375rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 500;
 }
 
 .stat-value-row {

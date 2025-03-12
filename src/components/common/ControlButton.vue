@@ -1,12 +1,17 @@
+<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\common\ControlButton.vue -->
 <template>
   <button
-    class="flex justify-center items-center p-2 bg-gray-800 hover:bg-gray-700 rounded transition-colors"
+    class="flex justify-center items-center bg-gray-800 hover:bg-gray-700 rounded transition-colors"
     :class="{
       'ml-1': direction === 'left' && !isFast,
       'mr-1': direction === 'right' && !isFast,
-      'opacity-20 cursor-not-allowed hover:bg-gray-900': isDisabled
+      'opacity-20 cursor-not-allowed hover:bg-gray-900': isDisabled,
+      'p-2': size !== 'small',
+      'p-1.5': size === 'small'
     }"
-    style="min-width: 2.5rem;"
+    :style="{
+      minWidth: size === 'small' ? '2rem' : '2.5rem'
+    }"
     @mousedown="onMouseDown"
     @dragstart.prevent
     @touchstart.prevent="onTouchStart"
@@ -17,11 +22,11 @@
   >
     <!-- Wenn isFast true → Doppel-Icon (z.B. doppelte Pfeile) -->
     <div v-if="isFast" class="flex">
-      <component :is="icon" size="18" />
-      <component :is="icon" size="18" class="-ml-2" />
+      <component :is="icon" :size="size === 'small' ? 16 : 18" />
+      <component :is="icon" :size="size === 'small' ? 16 : 18" class="-ml-2" />
     </div>
     <!-- Sonst nur ein Pfeil -->
-    <component v-else :is="icon" size="18" />
+    <component v-else :is="icon" :size="size === 'small' ? 16 : 18" />
   </button>
 </template>
 
@@ -53,7 +58,10 @@ const props = defineProps({
   increment: { type: Function, required: true },
   decrement: { type: Function, required: true },
   incrementFast: { type: Function, required: true },
-  decrementFast: { type: Function, required: true }
+  decrementFast: { type: Function, required: true },
+  
+  // Hinzufügen der size-Prop
+  size: { type: String, default: 'normal' }
 })
 
 // Icon abhängig von direction

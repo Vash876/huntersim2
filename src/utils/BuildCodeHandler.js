@@ -279,17 +279,17 @@ export class BuildCodeHandler {
     
     // Override-Werte haben höchste Priorität
     if (build.overrides && paramKey in build.overrides) {
-      return build.overrides[paramKey];
+      return build.overrides[paramKey] ?? 0; // Null-Koaleszenz: undefined wird zu 0
     }
     
     // Talent-Parameter suchen
     if (build.talents && paramKey in build.talents) {
-      return build.talents[paramKey];
+      return build.talents[paramKey] ?? 0;
     }
     
     // Attribut-Parameter suchen
     if (build.attributes && paramKey in build.attributes) {
-      return build.attributes[paramKey];
+      return build.attributes[paramKey] ?? 0;
     }
     
     // Stats-Parameter je nach Hunter-Typ
@@ -304,37 +304,52 @@ export class BuildCodeHandler {
     if (statParams.includes(paramKey)) {
       // Wenn in baseStats vorhanden
       if (build.baseStats && paramKey in build.baseStats) {
-        return build.baseStats[paramKey];
+        return build.baseStats[paramKey] ?? 0;
       }
       // Oder wenn direkt im Build-Objekt
       if (paramKey in build) {
-        return build[paramKey];
+        return build[paramKey] ?? 0;
       }
       
       // Oder wenn im Store
       if (storeData && storeData.hunterStats && storeData.hunterStats[build.hunterId]) {
-        return storeData.hunterStats[build.hunterId][paramKey] || 0;
+        return storeData.hunterStats[build.hunterId][paramKey] ?? 0;
       }
+      
+      // Falls ein Stats-Parameter, aber nirgendwo gesetzt, explizit 0 zurückgeben
+      return 0;
     }
   
     // "lvl" speziell behandeln
     if (paramKey === 'lvl') {
-      return build.level || 0;
+      return build.level ?? 0;
     }
     
-    // Upgrade-Parameter suchen
+    // Upgrade-Parameter suchen - hier speziell den Nullfall behandeln
     if (paramKey.startsWith('upgrades.')) {
       const parts = paramKey.split('.');
       
       if (parts.length === 3) {
         const [_, category, key] = parts;
-        return storeData?.upgrades?.[category]?.[key] || 0;
+        // Explizit prüfen und 0 zurückgeben, wenn nicht vorhanden
+        if (!storeData?.upgrades?.[category] || !(key in storeData.upgrades[category])) {
+          return 0;
+        }
+        return storeData.upgrades[category][key] ?? 0;
       }
       
       if (parts.length === 4) {
         const [_, category, subcategory, key] = parts;
-        return storeData?.upgrades?.[category]?.[subcategory]?.[key] || 0;
+        // Explizit prüfen und 0 zurückgeben, wenn nicht vorhanden
+        if (!storeData?.upgrades?.[category]?.[subcategory] || 
+            !(key in storeData.upgrades[category][subcategory])) {
+          return 0;
+        }
+        return storeData.upgrades[category][subcategory][key] ?? 0;
       }
+      
+      // Nicht-standard Upgrade-Format, aber trotzdem 0 zurückgeben
+      return 0;
     }
   
     // Wenn nichts gefunden wurde, 0 zurückgeben
@@ -405,7 +420,7 @@ export class BuildCodeHandler {
       
       // Parameter aus den Levels extrahieren
       data.levels.forEach((value, index) => {
-        if (index < paramArray.length && value > 0) {
+        if (index < paramArray.length) {
           const paramKey = paramArray[index];
           this.setParamValue(build, paramKey, value, hunterType);
         }
@@ -424,7 +439,7 @@ export class BuildCodeHandler {
    */
   static setParamValue(build, paramKey, value, hunterType) {
     // Ignoriere Nullwerte
-    if (value === 0 || value === null || value === undefined) return;
+    //if (value === 0 || value === null || value === undefined) return;
     
     // Definiere Stats-Parameter je nach Hunter-Typ
     const hunterStatParams = {

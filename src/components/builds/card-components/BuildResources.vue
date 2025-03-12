@@ -1,4 +1,4 @@
-<!-- filepath: /c:/Users/igorn/projects/huntersim2/src/components/builds/card-components/BuildResources.vue -->
+<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\builds\card-components\BuildResources.vue -->
 <template>
   <div>
     <h4 class="section-title">Loot</h4>
@@ -9,23 +9,48 @@
           <IconBrightness :size="18" class="text-blue-300" />
         </div>
         <div class="resource-content">
-          <div class="flex justify-between items-center mb-1.5">
-            <span class="resource-label">{{ resultLabels.xp }}</span>
-            <span 
-              v-if="!isReferenceBuild && referenceResults?.xp && results.xp"
-              :class="getDiffClasses(results.xp, referenceResults.xp, true, true)"
-              class="comparison-chip"
-            >
-              <component :is="getDiffIcon(results.xp, referenceResults.xp, true)" :size="12" />
-              <span class="ml-0.5">{{ getDiffText(results.xp, referenceResults.xp, true) }}</span>
-            </span>
+          <div class="grid grid-cols-3 mb-1.5">
+            <span class="resource-label self-center">{{ resultLabels.xp }}</span>
+            <div class="flex justify-center">
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.xp && results.xp"
+                class="flex items-center mr-15"
+              >
+                <div :class="getDiffClasses(results.xp, referenceResults.xp, true, true)" class="whitespace-nowrap inline-flex items-center text-xs">
+                  <component :is="getDiffIcon(results.xp, referenceResults.xp)" size="11" class="mr-0.5 flex-shrink-0" />
+                  <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.xp && referenceResults?.avgTime && results.xp && results.avgTime"
+                class="flex items-center"
+              >
+                <div :class="getDiffClasses(
+                  calculatePerDay(results.xp, results.avgTime), 
+                  calculatePerDay(referenceResults.xp, referenceResults.avgTime), 
+                  true, 
+                  true
+                )" class="whitespace-nowrap inline-flex items-center text-xs">
+                  <component :is="getDiffIcon(
+                    calculatePerDay(results.xp, results.avgTime), 
+                    calculatePerDay(referenceResults.xp, referenceResults.avgTime)
+                  )" size="11" class="mr-0.5 flex-shrink-0" />
+                  <span>{{ getDiffText(
+                    calculatePerDay(results.xp, results.avgTime), 
+                    calculatePerDay(referenceResults.xp, referenceResults.avgTime)
+                  ) }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="resource-values">
-            <div>
+            <div class="flex flex-col">
               <span class="value text-blue-300">{{ formatNumber(results.xp) }}</span>
               <span class="unit">per run</span>
             </div>
-            <div>
+            <div class="flex flex-col">
               <span class="value text-blue-300">{{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }}</span>
               <span class="unit">per day</span>
             </div>
@@ -39,23 +64,48 @@
           <IconDiamond :size="18" class="text-red-300" />
         </div>
         <div class="resource-content">
-          <div class="flex justify-between items-center mb-1.5">
-            <span class="resource-label">{{ resultLabels.mat1 }}</span>
-            <span 
-              v-if="!isReferenceBuild && referenceResults?.mat1 && results.mat1"
-              :class="getDiffClasses(results.mat1, referenceResults.mat1, true, true)"
-              class="comparison-chip"
-            >
-              <component :is="getDiffIcon(results.mat1, referenceResults.mat1, true)" :size="12" />
-              <span class="ml-0.5">{{ getDiffText(results.mat1, referenceResults.mat1, true) }}</span>
-            </span>
+          <div class="grid grid-cols-3 mb-1.5">
+            <span class="resource-label self-center">{{ resultLabels.mat1 }}</span>
+            <div class="flex justify-center">
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.mat1 && results.mat1"
+                class="flex items-center mr-15"
+              >
+                <div :class="getDiffClasses(results.mat1, referenceResults.mat1, true, true)" class="whitespace-nowrap inline-flex items-center text-xs">
+                  <component :is="getDiffIcon(results.mat1, referenceResults.mat1)" size="11" class="mr-0.5 flex-shrink-0" />
+                  <span>{{ getDiffText(results.mat1, referenceResults.mat1) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.mat1 && referenceResults?.avgTime && results.mat1 && results.avgTime"
+                class="flex items-center"
+              >
+                <div :class="getDiffClasses(
+                  calculatePerDay(results.mat1, results.avgTime), 
+                  calculatePerDay(referenceResults.mat1, referenceResults.avgTime), 
+                  true, 
+                  true
+                )" class="whitespace-nowrap inline-flex items-center text-xs">
+                  <component :is="getDiffIcon(
+                    calculatePerDay(results.mat1, results.avgTime), 
+                    calculatePerDay(referenceResults.mat1, referenceResults.avgTime)
+                  )" size="11" class="mr-0.5 flex-shrink-0" />
+                  <span>{{ getDiffText(
+                    calculatePerDay(results.mat1, results.avgTime), 
+                    calculatePerDay(referenceResults.mat1, referenceResults.avgTime)
+                  ) }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="resource-values">
-            <div>
+            <div class="flex flex-col">
               <span class="value text-red-300">{{ formatNumber(results.mat1) }}</span>
               <span class="unit">per run</span>
             </div>
-            <div>
+            <div class="flex flex-col">
               <span class="value text-red-300">{{ formatNumber(calculatePerDay(results.mat1, results.avgTime)) }}</span>
               <span class="unit">per day</span>
             </div>
@@ -69,23 +119,48 @@
           <IconHexagon :size="18" class="text-orange-300" />
         </div>
         <div class="resource-content">
-          <div class="flex justify-between items-center mb-1.5">
-            <span class="resource-label">{{ resultLabels.mat2 }}</span>
-            <span 
-              v-if="!isReferenceBuild && referenceResults?.mat2 && results.mat2"
-              :class="getDiffClasses(results.mat2, referenceResults.mat2, true, true)"
-              class="comparison-chip"
-            >
-              <component :is="getDiffIcon(results.mat2, referenceResults.mat2, true)" :size="12" />
-              <span class="ml-0.5">{{ getDiffText(results.mat2, referenceResults.mat2, true) }}</span>
-            </span>
+          <div class="grid grid-cols-3 mb-1.5">
+            <span class="resource-label self-center">{{ resultLabels.mat2 }}</span>
+            <div class="flex justify-center">
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.mat2 && results.mat2"
+                class="flex items-center mr-15"
+              >
+                <div :class="getDiffClasses(results.mat2, referenceResults.mat2, true, true)" class="whitespace-nowrap inline-flex items-center text-xs">
+                  <component :is="getDiffIcon(results.mat2, referenceResults.mat2)" size="11" class="mr-0.5 flex-shrink-0" />
+                  <span>{{ getDiffText(results.mat2, referenceResults.mat2) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.mat2 && referenceResults?.avgTime && results.mat2 && results.avgTime"
+                class="flex items-center"
+              >
+                <div :class="getDiffClasses(
+                  calculatePerDay(results.mat2, results.avgTime), 
+                  calculatePerDay(referenceResults.mat2, referenceResults.avgTime), 
+                  true, 
+                  true
+                )" class="whitespace-nowrap inline-flex items-center text-xs">
+                  <component :is="getDiffIcon(
+                    calculatePerDay(results.mat2, results.avgTime), 
+                    calculatePerDay(referenceResults.mat2, referenceResults.avgTime)
+                  )" size="11" class="mr-0.5 flex-shrink-0" />
+                  <span>{{ getDiffText(
+                    calculatePerDay(results.mat2, results.avgTime), 
+                    calculatePerDay(referenceResults.mat2, referenceResults.avgTime)
+                  ) }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="resource-values">
-            <div>
+            <div class="flex flex-col">
               <span class="value text-orange-300">{{ formatNumber(results.mat2) }}</span>
               <span class="unit">per run</span>
             </div>
-            <div>
+            <div class="flex flex-col">
               <span class="value text-orange-300">{{ formatNumber(calculatePerDay(results.mat2, results.avgTime)) }}</span>
               <span class="unit">per day</span>
             </div>
@@ -99,23 +174,48 @@
           <IconHexagons :size="18" class="text-amber-300" />
         </div>
         <div class="resource-content">
-          <div class="flex justify-between items-center mb-1.5">
-            <span class="resource-label">{{ resultLabels.mat3 }}</span>
-            <span 
-              v-if="!isReferenceBuild && referenceResults?.mat3 && results.mat3"
-              :class="getDiffClasses(results.mat3, referenceResults.mat3, true, true)"
-              class="comparison-chip"
-            >
-              <component :is="getDiffIcon(results.mat3, referenceResults.mat3, true)" :size="12" />
-              <span class="ml-0.5">{{ getDiffText(results.mat3, referenceResults.mat3, true) }}</span>
-            </span>
+          <div class="grid grid-cols-3 mb-1.5">
+            <span class="resource-label self-center">{{ resultLabels.mat3 }}</span>
+            <div class="flex justify-center">
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.mat3 && results.mat3"
+                class="flex items-center mr-15"
+              >
+                <div :class="getDiffClasses(results.mat3, referenceResults.mat3, true, true)" class="whitespace-nowrap inline-flex items-center text-xs">
+                  <component :is="getDiffIcon(results.mat3, referenceResults.mat3)" size="11" class="mr-0.5 flex-shrink-0" />
+                  <span>{{ getDiffText(results.mat3, referenceResults.mat3) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.mat3 && referenceResults?.avgTime && results.mat3 && results.avgTime"
+                class="flex items-center"
+              >
+                <div :class="getDiffClasses(
+                  calculatePerDay(results.mat3, results.avgTime), 
+                  calculatePerDay(referenceResults.mat3, referenceResults.avgTime), 
+                  true, 
+                  true
+                )" class="whitespace-nowrap inline-flex items-center text-xs">
+                  <component :is="getDiffIcon(
+                    calculatePerDay(results.mat3, results.avgTime), 
+                    calculatePerDay(referenceResults.mat3, referenceResults.avgTime)
+                  )" size="11" class="mr-0.5 flex-shrink-0" />
+                  <span>{{ getDiffText(
+                    calculatePerDay(results.mat3, results.avgTime), 
+                    calculatePerDay(referenceResults.mat3, referenceResults.avgTime)
+                  ) }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="resource-values">
-            <div>
+            <div class="flex flex-col">
               <span class="value text-amber-300">{{ formatNumber(results.mat3) }}</span>
               <span class="unit">per run</span>
             </div>
-            <div>
+            <div class="flex flex-col">
               <span class="value text-amber-300">{{ formatNumber(calculatePerDay(results.mat3, results.avgTime)) }}</span>
               <span class="unit">per day</span>
             </div>
@@ -182,6 +282,7 @@ const props = defineProps({
 .resource-content {
   flex-grow: 1;
   min-width: 0;
+  width: 100%;
 }
 
 .resource-label {
@@ -207,32 +308,7 @@ const props = defineProps({
   font-size: 0.6875rem;
   color: rgba(156, 163, 175, 0.8);
   line-height: 1;
-}
-
-.comparison-chip {
-  display: flex;
-  align-items: center;
-  padding: 0.125rem 0.3125rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.text-emerald-400 {
-  background-color: rgba(16, 185, 129, 0.15);
-  color: rgba(52, 211, 153, 1);
-}
-
-.text-red-400 {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: rgba(248, 113, 113, 1);
-}
-
-.text-gray-400 {
-  background-color: rgba(75, 85, 99, 0.15);
-  color: rgba(156, 163, 175, 1);
+  margin-top: 0.125rem;
 }
 
 /* Responsive */

@@ -97,26 +97,26 @@ function calcDR(level, hunterType) {
         return Math.ceil(ceiledInnerOzzy * factorOzzy1 * factorOzzy2 * factorOzzy3 * factorOzzy4 * factorOzzy5);
       } else {
         switch(exp) {
-          case 51: return Math.ceil(96.42e9);      // 96,42b = 96.42 × 10⁹
-          case 52: return Math.ceil(397.90e9);     // 397,90b = 397.90 × 10⁹
-          case 53: return Math.ceil(2.15e12);        // 2,15t  = 2.15 × 10¹²
-          case 54: return Math.ceil(11.75e12);       // 11,75t = 11.75 × 10¹²
-          case 55: return Math.ceil(90.60e12);       // 90,60t = 90.60 × 10¹²
-          case 56: return Math.ceil(704.28e12);      // 704,28t = 704.28 × 10¹²
-          case 57: return Math.ceil(8.28e15);        // 8,28qa = 8.28 × 10¹⁵
-          case 58: return Math.ceil(98.21e15);       // 98,21qa = 98.21 × 10¹⁵
-          case 59: return Math.ceil(1.88e18);        // 1,88qu = 1.88 × 10¹⁸
-          case 60: return Math.ceil(36.25e18);       // 36,25qu = 36.25 × 10¹⁸
-          case 61: return Math.ceil(1.20e21);        // 1,20sx = 1.20 × 10²¹
-          case 62: return Math.ceil(13.83e21);       // 13,83sx = 13.83 × 10²¹
-          case 63: return Math.ceil(273.33e21);      // 273,33sx = 273.33 × 10²¹
-          case 64: return Math.ceil(5.45e24);        // 5,45sp = 5.45 × 10²⁴
-          case 65: return Math.ceil(109.43e24);      // 109,43sp = 109.43 × 10²⁴
-          case 66: return Math.ceil(2.22e27);        // 2,22o  = 2.22 × 10²⁷
-          case 67: return Math.ceil(45.23e27);       // 45,23o = 45.23 × 10²⁷
-          case 68: return Math.ceil(930.41e27);      // 930,41o = 930.41 × 10²⁷
-          case 69: return Math.ceil(19.29e30);       // 19,29n = 19.29 × 10³⁰
-          case 70: return Math.ceil(403.01e30);      // 403,01n = 403.01 × 10³⁰
+          case 50: return Math.ceil(96.42e9);      // 96,42b = 96.42 × 10⁹
+          case 51: return Math.ceil(397.90e9);     // 397,90b = 397.90 × 10⁹
+          case 52: return Math.ceil(2.15e12);        // 2,15t  = 2.15 × 10¹²
+          case 53: return Math.ceil(11.75e12);       // 11,75t = 11.75 × 10¹²
+          case 54: return Math.ceil(90.60e12);       // 90,60t = 90.60 × 10¹²
+          case 55: return Math.ceil(704.28e12);      // 704,28t = 704.28 × 10¹²
+          case 56: return Math.ceil(8.28e15);        // 8,28qa = 8.28 × 10¹⁵
+          case 57: return Math.ceil(98.21e15);       // 98,21qa = 98.21 × 10¹⁵
+          case 58: return Math.ceil(1.88e18);        // 1,88qu = 1.88 × 10¹⁸
+          case 59: return Math.ceil(36.25e18);       // 36,25qu = 36.25 × 10¹⁸
+          case 60: return Math.ceil(1.20e21);        // 1,20sx = 1.20 × 10²¹
+          case 61: return Math.ceil(13.83e21);       // 13,83sx = 13.83 × 10²¹
+          case 62: return Math.ceil(273.33e21);      // 273,33sx = 273.33 × 10²¹
+          case 63: return Math.ceil(5.45e24);        // 5,45sp = 5.45 × 10²⁴
+          case 64: return Math.ceil(109.43e24);      // 109,43sp = 109.43 × 10²⁴
+          case 65: return Math.ceil(2.22e27);        // 2,22o  = 2.22 × 10²⁷
+          case 66: return Math.ceil(45.23e27);       // 45,23o = 45.23 × 10²⁷
+          case 67: return Math.ceil(930.41e27);      // 930,41o = 930.41 × 10²⁷
+          case 68: return Math.ceil(19.29e30);       // 19,29n = 19.29 × 10³⁰
+          case 69: return Math.ceil(403.01e30);      // 403,01n = 403.01 × 10³⁰
           default:
               // Für Levels außerhalb des definierten Bereichs hier ggf. eine Extrapolation oder Fehlermeldung einbauen
               return undefined;

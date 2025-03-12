@@ -1,9 +1,9 @@
-<!-- filepath: /c:/Users/igorn/projects/huntersim2/src/components/common/BuildModal.vue -->
+<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\common\BuildModal.vue -->
 <template>
   <div 
     v-if="isVisible" 
     class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4"
-    @click.self="handleClose"
+    @click.self="confirmClose"
   >
     <div 
       class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto animate-fade-in"
@@ -27,7 +27,7 @@
       <div class="p-4">
         <!-- Build Name Input für Mobile -->
         <div class="mb-5 bg-gray-700 rounded-lg p-4 border border-gray-600">
-          <label for="buildName" class="block text-sm font-medium text-gray-300 mb-2">Build Name</label>
+          <label for="buildName" class="block text-xs font-medium text-gray-300 mb-2">Build Name</label>
           
           <!-- Desktop Layout: Input und Buttons nebeneinander -->
           <div class="hidden md:flex gap-2">
@@ -43,7 +43,6 @@
               class="px-3 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-md"
               title="Customize game parameters for simulation"
             >
-              <IconAdjustments size="18" class="mr-1" />
               Overrides
             </button>
             <button 
@@ -69,7 +68,6 @@
                 class="flex-1 px-3 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-md flex items-center justify-center"
                 title="Customize game parameters for simulation"
               >
-                <IconAdjustments size="18" class="mr-1" />
                 Overrides
               </button>
               <button 
@@ -113,60 +111,110 @@
         <div class="mb-6">
           <h3 class="text-white font-medium py-2 border-b border-gray-600">Talents</h3>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
             <div 
               v-for="talent in talents" 
               :key="talent.key" 
-              class="bg-gray-700 rounded-lg p-3 border border-gray-600 hover:border-gray-500 transition-colors"
+              class="bg-gray-700 rounded-lg p-2 border border-gray-600 hover:border-gray-500 transition-colors"
             >
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium text-white">{{ talent.label }}</span>
-                <div class="flex items-center">
-                  <span :class="`text-base font-bold text-${hunterColor}-400`">
-                    {{ buildData.talents[talent.key] || 0 }}
-                  </span>
-                  <span class="text-xs text-gray-500 ml-1">
-                    /{{ talent.max }}
-                  </span>
+              <!-- Desktop Layout -->
+              <div class="hidden md:block">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-xs sm:text-sm font-medium text-white">{{ talent.label }}</span>
+                  <div class="flex items-center">
+                    <span :class="`text-base font-bold text-${hunterColor}-400`">
+                      {{ buildData.talents[talent.key] || 0 }}
+                    </span>
+                    <span class="text-xs text-gray-500 ml-1">
+                      /{{ talent.max }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Desktop Controls -->
+                <div class="flex items-center justify-between mt-2">
+                  <ControlButton 
+                    direction="left"
+                    :isFast="false"
+                    :item="getTalentItem(talent)"
+                    :getLevel="getTalentLevel"
+                    :handleStart="handleStart"
+                    :handleEnd="handleEnd"
+                    :handleTouchMove="handleTouchMove"
+                    :increment="increment"
+                    :decrement="decrement"
+                    :incrementFast="incrementFast"
+                    :decrementFast="decrementFast"
+                  />
+
+                  <ProgressBar 
+                    :value="buildData.talents[talent.key] || 0"
+                    :maxValue="talent.max"
+                    :color="hunterColor"
+                    class="flex-1 mx-1.5 h-5"
+                  />
+
+                  <ControlButton 
+                    direction="right"
+                    :isFast="false"
+                    :item="getTalentItem(talent)"
+                    :getLevel="getTalentLevel"
+                    :handleStart="handleStart"
+                    :handleEnd="handleEnd"
+                    :handleTouchMove="handleTouchMove"
+                    :increment="increment"
+                    :decrement="decrement"
+                    :incrementFast="incrementFast"
+                    :decrementFast="decrementFast"
+                  />
                 </div>
               </div>
+              
+              <!-- Mobile Layout -->
+              <div class="md:hidden">
+                <span class="text-xs font-medium text-white block mb-1">{{ talent.label }}</span>
+                
+                <!-- Mobile Controls -->
+                <div class="flex items-center justify-between mt-2">
+                  <ControlButton 
+                    direction="left"
+                    :isFast="false"
+                    :item="getTalentItem(talent)"
+                    :getLevel="getTalentLevel"
+                    :handleStart="handleStart"
+                    :handleEnd="handleEnd"
+                    :handleTouchMove="handleTouchMove"
+                    :increment="increment"
+                    :decrement="decrement"
+                    :incrementFast="incrementFast"
+                    :decrementFast="decrementFast"
+                    size="small"
+                  />
 
-              <!-- Controls -->
-              <div class="flex items-center justify-between mt-2">
-                <ControlButton 
-                  direction="left"
-                  :isFast="false"
-                  :item="getTalentItem(talent)"
-                  :getLevel="getTalentLevel"
-                  :handleStart="handleStart"
-                  :handleEnd="handleEnd"
-                  :handleTouchMove="handleTouchMove"
-                  :increment="increment"
-                  :decrement="decrement"
-                  :incrementFast="incrementFast"
-                  :decrementFast="decrementFast"
-                />
+                  <div class="flex items-center justify-center">
+                    <span :class="`text-base font-bold text-${hunterColor}-400 pr-1`">
+                      {{ buildData.talents[talent.key] || 0 }}
+                    </span>
+                    <span class="text-xs text-gray-500">
+                      /{{ talent.max }}
+                    </span>
+                  </div>
 
-                <ProgressBar 
-                  :value="buildData.talents[talent.key] || 0"
-                  :maxValue="talent.max"
-                  :color="hunterColor"
-                  class="flex-1 mx-1.5 h-5"
-                />
-
-                <ControlButton 
-                  direction="right"
-                  :isFast="false"
-                  :item="getTalentItem(talent)"
-                  :getLevel="getTalentLevel"
-                  :handleStart="handleStart"
-                  :handleEnd="handleEnd"
-                  :handleTouchMove="handleTouchMove"
-                  :increment="increment"
-                  :decrement="decrement"
-                  :incrementFast="incrementFast"
-                  :decrementFast="decrementFast"
-                />
+                  <ControlButton 
+                    direction="right"
+                    :isFast="false"
+                    :item="getTalentItem(talent)"
+                    :getLevel="getTalentLevel"
+                    :handleStart="handleStart"
+                    :handleEnd="handleEnd"
+                    :handleTouchMove="handleTouchMove"
+                    :increment="increment"
+                    :decrement="decrement"
+                    :incrementFast="incrementFast"
+                    :decrementFast="decrementFast"
+                    size="small"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -176,77 +224,177 @@
         <div class="mb-6">
           <h3 class="text-white font-medium py-2 border-b border-gray-600">Attributes</h3>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
             <div 
               v-for="attribute in attributes" 
               :key="attribute.key" 
               :class="[
-                'bg-gray-700 rounded-lg p-3 border border-gray-600 hover:border-gray-500 transition-colors',
+                'bg-gray-700 rounded-lg p-2 border border-gray-600 hover:border-gray-500 transition-colors',
                 {'bg-gray-700/20 border-gray-700/50': !canIncreaseAttribute(attribute)}
               ]"
             >
-              <div class="flex justify-between items-center mb-2">
-                <div class="flex flex-col">
-                  <span class="text-sm font-medium text-white">{{ attribute.label }}</span>
-                  <span class="text-xs text-gray-400">
-                    (Cost: {{ attribute.cost }} point<span v-if="attribute.cost > 1">s</span>)
-                  </span>
+              <!-- Desktop Layout -->
+              <div class="hidden md:block">
+                <div class="flex justify-between items-center mb-2">
+                  <div class="flex flex-col">
+                    <span class="text-xs sm:text-sm font-medium text-white">{{ attribute.label }}</span>
+                    <span class="text-xs text-gray-400">
+                      (Cost: {{ attribute.cost }} point<span v-if="attribute.cost > 1">s</span>)
+                    </span>
+                  </div>
+                  <div class="flex items-center">
+                    <span :class="`text-base font-bold text-${hunterColor}-400`">
+                      {{ buildData.attributes[attribute.key] || 0 }}
+                    </span>
+                    <span v-if="attribute.max !== Infinity" class="text-xs text-gray-500 ml-1">
+                      /{{ attribute.max }}
+                    </span>
+                  </div>
                 </div>
-                <div class="flex items-center">
-                  <span :class="`text-base font-bold text-${hunterColor}-400`">
-                    {{ buildData.attributes[attribute.key] || 0 }}
-                  </span>
-                  <span v-if="attribute.max !== Infinity" class="text-xs text-gray-500 ml-1">
-                    /{{ attribute.max }}
-                  </span>
+
+                <!-- Desktop Controls -->
+                <div class="flex items-center justify-between mt-2">
+                  <ControlButton 
+                    direction="left"
+                    :isFast="false"
+                    :item="getAttributeItem(attribute)"
+                    :getLevel="getAttributeLevel"
+                    :handleStart="handleStart"
+                    :handleEnd="handleEnd"
+                    :handleTouchMove="handleTouchMove"
+                    :increment="increment"
+                    :decrement="decrement"
+                    :incrementFast="incrementFast"
+                    :decrementFast="decrementFast"
+                    :disabled="!canDecreaseAttribute(attribute)"
+                  />
+
+                  <ProgressBar 
+                    :value="buildData.attributes[attribute.key] || 0"
+                    :maxValue="attribute.max === Infinity ? 100 : attribute.max"
+                    :color="hunterColor"
+                    class="flex-1 mx-1.5 h-5"
+                  />
+
+                  <ControlButton 
+                    direction="right"
+                    :isFast="false"
+                    :item="getAttributeItem(attribute)"
+                    :getLevel="getAttributeLevel"
+                    :handleStart="handleStart"
+                    :handleEnd="handleEnd"
+                    :handleTouchMove="handleTouchMove"
+                    :increment="increment"
+                    :decrement="decrement"
+                    :incrementFast="incrementFast"
+                    :decrementFast="decrementFast"
+                    :disabled="!canIncreaseAttribute(attribute)"
+                  />
                 </div>
               </div>
+              
+              <!-- Mobile Layout -->
+              <div class="md:hidden">
+                <div class="flex flex-col mb-1">
+                  <span class="text-xs font-medium text-white">{{ attribute.label }}</span>
+                </div>
+                
+                <!-- Mobile Controls -->
+                <div class="flex items-center justify-between mt-2">
+                  <ControlButton 
+                    direction="left"
+                    :isFast="false"
+                    :item="getAttributeItem(attribute)"
+                    :getLevel="getAttributeLevel"
+                    :handleStart="handleStart"
+                    :handleEnd="handleEnd"
+                    :handleTouchMove="handleTouchMove"
+                    :increment="increment"
+                    :decrement="decrement"
+                    :incrementFast="incrementFast"
+                    :decrementFast="decrementFast"
+                    :disabled="!canDecreaseAttribute(attribute)"
+                    size="small"
+                  />
 
-              <!-- Controls -->
-              <div class="flex items-center justify-between mt-2">
-                <ControlButton 
-                  direction="left"
-                  :isFast="false"
-                  :item="getAttributeItem(attribute)"
-                  :getLevel="getAttributeLevel"
-                  :handleStart="handleStart"
-                  :handleEnd="handleEnd"
-                  :handleTouchMove="handleTouchMove"
-                  :increment="increment"
-                  :decrement="decrement"
-                  :incrementFast="incrementFast"
-                  :decrementFast="decrementFast"
-                  :disabled="!canDecreaseAttribute(attribute)"
-                />
+                  <div class="flex items-center justify-center">
+                    <span :class="`text-base font-bold text-${hunterColor}-400 pr-1`">
+                      {{ buildData.attributes[attribute.key] || 0 }}
+                    </span>
+                    <span v-if="attribute.max !== Infinity" class="text-xs text-gray-500">
+                      /{{ attribute.max }}
+                    </span>
+                  </div>
 
-                <ProgressBar 
-                  :value="buildData.attributes[attribute.key] || 0"
-                  :maxValue="attribute.max === Infinity ? 100 : attribute.max"
-                  :color="hunterColor"
-                  class="flex-1 mx-1.5 h-5"
-                />
-
-                <ControlButton 
-                  direction="right"
-                  :isFast="false"
-                  :item="getAttributeItem(attribute)"
-                  :getLevel="getAttributeLevel"
-                  :handleStart="handleStart"
-                  :handleEnd="handleEnd"
-                  :handleTouchMove="handleTouchMove"
-                  :increment="increment"
-                  :decrement="decrement"
-                  :incrementFast="incrementFast"
-                  :decrementFast="decrementFast"
-                  :disabled="!canIncreaseAttribute(attribute)"
-                />
+                  <ControlButton 
+                    direction="right"
+                    :isFast="false"
+                    :item="getAttributeItem(attribute)"
+                    :getLevel="getAttributeLevel"
+                    :handleStart="handleStart"
+                    :handleEnd="handleEnd"
+                    :handleTouchMove="handleTouchMove"
+                    :increment="increment"
+                    :decrement="decrement"
+                    :incrementFast="incrementFast"
+                    :decrementFast="decrementFast"
+                    :disabled="!canIncreaseAttribute(attribute)"
+                    size="small"
+                  />
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Mobil: Buttons am unteren Rand -->
+        <div class="md:hidden bottom-0 bg-gray-800 p-4 border-t border-gray-600 mt-8">
+          <div class="flex gap-2">
+            <button 
+              @click="openOverrideModal"
+              class="flex-1 px-3 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-md flex items-center justify-center"
+            >
+              Overrides
+            </button>
+            <button 
+              @click="saveBuild"
+              class="flex-1 px-3 py-2 bg-blue-600 hover:bg-purple-600 text-white rounded-md flex items-center justify-center"
+            >
+              {{ isEditMode ? 'Update Build' : 'Create Build' }}
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
+  
+  <!-- Confirmation Dialog -->
+  <div 
+    v-if="showCloseConfirmation" 
+    class="fixed inset-0 z-[60] overflow-y-auto bg-black/70 flex items-center justify-center p-4"
+    @click.self="cancelClose"
+  >
+    <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md animate-fade-in p-5 border border-gray-600">
+      <h3 class="text-lg font-medium text-white mb-3">Discard changes?</h3>
+      <p class="text-gray-300 mb-5">You have unsaved changes in this build. Are you sure you want to discard them?</p>
+      
+      <div class="flex justify-end gap-3">
+        <button 
+          @click="cancelClose"
+          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
+        >
+          Cancel
+        </button>
+        <button 
+          @click="confirmAndClose"
+          class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-md"
+        >
+          Discard
+        </button>
+      </div>
+    </div>
+  </div>
+  
   <OverrideModal
     :isVisible="showOverrideModal"
     :hunterType="props.hunterType"
@@ -641,6 +789,38 @@ function handleClose() {
   emit('close');
 }
 
+// Füge einen ref für die Schließbestätigung hinzu
+const showCloseConfirmation = ref(false);
+
+// Prüfe, ob Änderungen vorhanden sind
+const hasChanges = computed(() => {
+  // Prüfen, ob irgendwelche Talent- oder Attributpunkte verteilt wurden
+  const hasTalentPoints = Object.values(buildData.value.talents).some(val => val > 0);
+  const hasAttributePoints = Object.values(buildData.value.attributes).some(val => val > 0);
+  
+  return hasTalentPoints || hasAttributePoints;
+});
+
+// Bestätigungsdialog beim Schließen anzeigen
+function confirmClose() {
+  if (hasChanges.value) {
+    showCloseConfirmation.value = true;
+  } else {
+    handleClose();
+  }
+}
+
+// Schließen abbrechen
+function cancelClose() {
+  showCloseConfirmation.value = false;
+}
+
+// Schließen bestätigen
+function confirmAndClose() {
+  showCloseConfirmation.value = false;
+  emit('close');
+}
+
 // Beobachter für Änderungen der Sichtbarkeit und des Hunter-Typs
 watch(() => props.isVisible, (newValue) => {
   if (newValue) {
@@ -680,6 +860,28 @@ onMounted(() => {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+/* Scrollbar-Stile */
+@media (min-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 14px; /* Erhöhe diese Zahl für eine breitere Scrollbar */
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(31, 41, 55, 0.5); /* Dunklerer Hintergrund für die Spur */
+    border-radius: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: rgba(75, 85, 99, 0.8); /* Farbe des Scrollbar-Daumens */
+    border-radius: 8px;
+    border: 2px solid rgba(31, 41, 55, 0.5); /* Abstand zwischen Daumen und Rand */
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(107, 114, 128, 0.9); /* Hellere Farbe beim Hover */
   }
 }
 </style>

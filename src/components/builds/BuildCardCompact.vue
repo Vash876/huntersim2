@@ -20,8 +20,8 @@
               {{ buildData.name || 'Unnamed Build' }}
               <span class="ml-2 text-xs bg-gray-700/50 px-2 py-0.5 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">Lvl {{ buildData.level }}</span>
               <span v-if="buildData.isArchived" class="ml-2 text-xs px-2 py-0.5 bg-gray-700/50 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">
-              Archived
-            </span>
+                Archived
+              </span>
             </h3>
           </div>
         </div>
@@ -30,53 +30,53 @@
         <div class="flex items-center gap-1">
           <button 
             @click="emit('edit', buildData)"
-            class="action-button-compact"
+            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Edit Build"
           >
-            <IconEdit size="18" />
+            <IconEdit size="16" />
           </button>
           <button 
             @click="emit('clone', buildData)"
-            class="action-button-compact"
+            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Clone Build"
           >
-            <IconCopy size="18" />
+            <IconCopy size="16" />
           </button>
           <button 
             @click="emit('overridesBuild', buildData)"
-            class="action-button-compact"
+            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Build Overrides"
           >
-            <IconAdjustmentsHorizontal size="18" />
+            <IconAdjustmentsHorizontal size="16" />
           </button>
           <button 
             v-if="enabledStats.includes('stageDistribution') && results?.stageDistribution?.length"
             @click="showDistributionModal = true"
-            class="action-button-compact"
+            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Show Stage Distribution"
           >
-            <IconChartBar size="18" />
+            <IconChartBar size="16" />
           </button>
           <button 
             @click="showCodeModal = true"
-            class="action-button-compact"
+            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Share Build"
           >
-            <IconShare size="18" />
+            <IconShare size="16" />
           </button>
           <button 
             @click="emit('archive', buildData)"
-            class="action-button-compact"
+            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             :title="buildData.isArchived ? 'Restore Build' : 'Archive Build'"
           >
-            <component :is="buildData.isArchived ? IconArchiveOff : IconArchive" size="18" />
+            <component :is="buildData.isArchived ? IconArchiveOff : IconArchive" size="16" />
           </button>
           <button
             @click="emit('delete', buildData)"
-            class="action-button-compact"
+            class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Delete Build"
           >
-            <IconTrash size="18" />
+            <IconTrash size="16" />
           </button>
         </div>
       </div>
@@ -114,166 +114,352 @@
         </div>
         
         <!-- Ergebnisse -->
-        <div v-else-if="results" class="flex flex-col space-y-2 ">
+        <div v-else-if="results" class="flex flex-col space-y-3">
           <!-- Stats Row -->
-          <div class="w-full grid gap-2" style="grid-template-columns: 11% 9.5% 9.5% 1px 11% 11% 11% 13% 1px auto;">
+          <div class="w-full grid gap-2" style="grid-template-columns: 7% 9% 9.2% 1px 13.6% 13.6% 13.6% 13.6% 1px auto;">
             <!-- Loot Score -->
             <div class="stat-box">
-              <div class="flex items-center justify-between">
+              <!-- Header mit Icon und Label -->
+              <div class="flex items-center justify-between border-b border-gray-700/50 pb-1 mb-2">
                 <div class="flex items-center">
-                  <IconReportMoney :size="14" class="text-amber-400" />
-                  <div class="text-xs text-gray-400 ml-1.5">
-                    {{ resultLabels.lootPerMin || 'Loot/Min' }}
-                  </div>
+                  <IconReportMoney :size="14" class="text-amber-400 mr-1" />
+                  <div class="text-xs text-gray-400">{{ resultLabels.lootPerMin || 'Loot/Min' }}</div>
                 </div>
-                <span 
-                  v-if="!isReferenceBuild && referenceResults?.lootPerMin"
-                  :class="getDiffClasses(results.lootPerMin, referenceResults.lootPerMin, true, true)"
-                  class="text-xs whitespace-nowrap flex items-center"
-                >
+              </div>
+              
+              <!-- Wert zentriert -->
+              <div class="flex justify-center items-center">
+                <span class="text-white font-medium text-center">{{ formatNumber(results.lootPerMin) }}</span>
+              </div>
+              
+              <!-- Prozentuale Abweichung zum Referenz-Build -->
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.lootPerMin"
+                class="flex items-center justify-center mt-1 w-full"
+              >
+                <div :class="getDiffClasses(results.lootPerMin, referenceResults.lootPerMin, true, true)" class="whitespace-nowrap inline-flex items-center">
                   <component :is="getDiffIcon(results.lootPerMin, referenceResults.lootPerMin)" size="11" class="mr-0.5 flex-shrink-0" />
                   <span>{{ getDiffText(results.lootPerMin, referenceResults.lootPerMin) }}</span>
-                </span>
-              </div>
-              <div class="flex items-center">
-                <span class="text-white font-medium pt-1">{{ formatNumber(results.lootPerMin) }}</span>
+                </div>
               </div>
             </div>
             
             <!-- Avg Stage -->
             <div class="stat-box">
-              <div class="flex items-center justify-between">
+              <!-- Header mit Icon und Label -->
+              <div class="flex items-center justify-between border-b border-gray-700/50 pb-1 mb-2">
                 <div class="flex items-center">
-                  <IconStairs :size="14" :class="`text-${hunterColor}-400`" />
-                  <div class="text-xs text-gray-400 ml-1.5">
-                    {{ resultLabels.avgStage || 'Avg Stage' }}
-                  </div>
+                  <IconStairs :size="14" :class="`text-${hunterColor}-400 mr-1`" />
+                  <div class="text-xs text-gray-400">{{ resultLabels.avgStage || 'Avg Stage' }} (Range)</div>
                 </div>
-                <span 
-                  v-if="!isReferenceBuild && referenceResults?.avgStage"
-                  :class="getAbsoluteDiffClasses(results.avgStage, referenceResults.avgStage, true, true)"
-                  class="text-xs whitespace-nowrap flex items-center"
-                >
+              </div>
+              
+              <!-- Wert und Range zentriert -->
+              <div class="flex justify-center items-center">
+                <span class="text-white font-medium text-center">{{ formatStage(results.avgStage, true) }}</span>
+                <span class="text-xs text-gray-400 ml-1">
+                  ({{ formatStage(results.minStage) }}-{{ formatStage(results.maxStage) }})
+                </span>
+              </div>
+              
+              <!-- Prozentuale Abweichung zum Referenz-Build -->
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.avgStage"
+                class="flex items-center justify-center mt-1 w-full"
+              >
+                <div :class="getAbsoluteDiffClasses(results.avgStage, referenceResults.avgStage, true, true)" class="whitespace-nowrap inline-flex items-center">
                   <component :is="getDiffIcon(results.avgStage, referenceResults.avgStage)" size="11" class="mr-0.5 flex-shrink-0" />
                   <span>{{ getAbsoluteDiffText(results.avgStage, referenceResults.avgStage) }}</span>
-                </span>
-              </div>
-              <div class="flex items-center">
-                <span class="text-white font-medium pt-1">{{ formatStage(results.avgStage, true) }}</span>
-              </div>
-              <!-- Min-Max Stage hinzugefügt -->
-              <div class="text-xs text-gray-500">
-                {{ formatStage(results.minStage) }}-{{ formatStage(results.maxStage) }}
+                </div>
               </div>
             </div>
-
+            
             <!-- Avg Time -->
             <div class="stat-box">
-              <div class="flex items-center justify-between">
+              <!-- Header mit Icon und Label -->
+              <div class="flex items-center justify-between border-b border-gray-700/50 pb-1 mb-2">
                 <div class="flex items-center">
-                  <IconClock :size="14" class="text-blue-400" />
-                  <div class="text-xs text-gray-400 ml-1.5">
-                    {{ resultLabels.avgTime || 'Run Time' }}
-                  </div>
+                  <IconClock :size="14" class="text-blue-400 mr-1" />
+                  <div class="text-xs text-gray-400">{{ resultLabels.avgTime || 'Run Time' }} (Runs/day)</div>
                 </div>
-                <span 
-                  v-if="!isReferenceBuild && referenceResults?.avgTime"
-                  :class="getTimeDiffClasses(results.avgTime, referenceResults.avgTime)"
-                  class="text-xs whitespace-nowrap flex items-center"
-                >
-                  <component :is="getDiffIcon(referenceResults.avgTime, results.avgTime)" size="11" class="mr-0.5 flex-shrink-0" />
-                  <span>{{ getTimeDiffText(results.avgTime, referenceResults.avgTime) }}</span>
+              </div>
+              
+              <!-- Wert und Runs/Day zentriert -->
+              <div class="flex justify-center items-center">
+                <span class="text-white font-medium text-center">{{ formatTime(results.avgTime) }}</span>
+                <span class="text-xs text-gray-400 ml-1">
+                  ({{ formatNumber(calculateRunsPerDay(results.avgTime)) }})
                 </span>
               </div>
-              <div class="flex items-center">
-                <span class="text-white font-medium">{{ formatTime(results.avgTime) }}</span>
-              </div>
-              <!-- Runs per Day hinzugefügt -->
-              <div class="text-xs text-gray-500">
-                {{ formatNumber(calculateRunsPerDay(results.avgTime)) }} Runs per day
+              
+              <!-- Prozentuale Abweichung zum Referenz-Build -->
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.avgTime"
+                class="flex items-center justify-center mt-1 w-full"
+              >
+                <div :class="getTimeDiffClasses(results.avgTime, referenceResults.avgTime, true)" class="whitespace-nowrap inline-flex items-center">
+                  <component :is="getDiffIcon(referenceResults.avgTime, results.avgTime)" size="11" class="mr-0.5 flex-shrink-0" />
+                  <span>{{ getTimeDiffText(results.avgTime, referenceResults.avgTime) }}</span>
+                </div>
               </div>
             </div>
             
             <!-- Trenner vor Resources -->
             <div class="border-r border-gray-700/30 h-full"></div>
             
-            <!-- XP Resource (18%) -->
+            <!-- XP Resource -->
             <div class="resource-box">
-              <div class="flex items-center mb-1">
+              <!-- Header mit Icon und Label -->
+              <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
                 <IconBrightness size="14" class="mr-1.5 text-blue-400" />
                 <span class="text-xs text-gray-300">{{ resultLabels.xp || 'XP' }}</span>
-                <span 
-                  v-if="!isReferenceBuild && referenceResults?.xp && results.xp"
-                  :class="getDiffClasses(results.xp, referenceResults.xp, true, true)"
-                  class="ml-auto resource-diff text-xs whitespace-nowrap"
-                >
-                  <component :is="getDiffIcon(results.xp, referenceResults.xp)" size="11" class="mr-0.5" />
-                  <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
-                </span>
               </div>
-              <div class="font-medium">{{ formatNumber(results.xp) }}</div>
-              <div class="text-xs text-gray-500">
-                {{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }} per day
+              
+              <!-- Run und Day nebeneinander mit vertikalen Labels -->
+              <div class="grid grid-cols-2 gap-1 mt-1.5 relative">
+                <!-- Per Run (links) -->
+                <div class="flex items-start">
+                  <div class="vertical-label mr-1.5">RUN</div>
+                  <div class="flex-1">
+                    <div class="font-medium text-center">{{ formatNumber(results.xp) }}</div>
+                    <div 
+                      v-if="!isReferenceBuild && referenceResults?.xp && results.xp"
+                      :class="getDiffClasses(results.xp, referenceResults.xp, true, true)"
+                      class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                    >
+                      <component :is="getDiffIcon(results.xp, referenceResults.xp)" size="11" class="mr-0.5" />
+                      <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Vertikaler Trennstrich -->
+                <div class="absolute border-l border-gray-700/30 h-full left-1/2"></div>
+                
+                <!-- Per Day (rechts) -->
+                <div class="flex items-start">
+                  <div class="vertical-label mr-1.5">DAY</div>
+                  <div class="flex-1">
+                    <div class="font-medium text-center">{{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }}</div>
+                    <div 
+                      v-if="!isReferenceBuild && referenceResults?.xp && referenceResults?.avgTime"
+                      :class="getDiffClasses(
+                        calculatePerDay(results.xp, results.avgTime), 
+                        calculatePerDay(referenceResults.xp, referenceResults.avgTime), 
+                        true, 
+                        true
+                      )"
+                      class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                    >
+                      <component 
+                        :is="getDiffIcon(
+                          calculatePerDay(results.xp, results.avgTime), 
+                          calculatePerDay(referenceResults.xp, referenceResults.avgTime)
+                        )" 
+                        size="11" 
+                        class="mr-0.5" 
+                      />
+                      <span>{{ 
+                        getDiffText(
+                          calculatePerDay(results.xp, results.avgTime), 
+                          calculatePerDay(referenceResults.xp, referenceResults.avgTime)
+                        )
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <!-- Material 1 (18%) -->
+            <!-- Material 1 -->
             <div class="resource-box">
-              <div class="flex items-center mb-1">
+              <!-- Header mit Icon und Label -->
+              <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
                 <IconDiamond size="14" class="mr-1.5 text-red-400" />
                 <span class="text-xs text-gray-300">{{ resultLabels.mat1 || 'Mat 1' }}</span>
-                <span 
-                  v-if="!isReferenceBuild && referenceResults?.mat1 && results.mat1"
-                  :class="getDiffClasses(results.mat1, referenceResults.mat1, true, true)"
-                  class="ml-auto resource-diff text-xs whitespace-nowrap"
-                >
-                  <component :is="getDiffIcon(results.mat1, referenceResults.mat1)" size="11" class="mr-0.5" />
-                  <span>{{ getDiffText(results.mat1, referenceResults.mat1) }}</span>
-                </span>
               </div>
-              <div class="font-medium">{{ formatNumber(results.mat1) }}</div>
-              <div class="text-xs text-gray-500">
-                {{ formatNumber(calculatePerDay(results.mat1, results.avgTime)) }} per day
+              
+              <!-- Run und Day nebeneinander mit vertikalen Labels -->
+              <div class="grid grid-cols-2 gap-1 mt-1.5 relative">
+                <!-- Per Run (links) -->
+                <div class="flex items-start">
+                  <div class="vertical-label mr-1.5">RUN</div>
+                  <div class="flex-1">
+                    <div class="font-medium text-center">{{ formatNumber(results.mat1) }}</div>
+                    <div 
+                      v-if="!isReferenceBuild && referenceResults?.mat1 && results.mat1"
+                      :class="getDiffClasses(results.mat1, referenceResults.mat1, true, true)"
+                      class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                    >
+                      <component :is="getDiffIcon(results.mat1, referenceResults.mat1)" size="11" class="mr-0.5" />
+                      <span>{{ getDiffText(results.mat1, referenceResults.mat1) }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Vertikaler Trennstrich -->
+                <div class="absolute border-l border-gray-700/30 h-full left-1/2"></div>
+                
+                <!-- Per Day (rechts) -->
+                <div class="flex items-start">
+                  <div class="vertical-label mr-1.5">DAY</div>
+                  <div class="flex-1">
+                    <div class="font-medium text-center">{{ formatNumber(calculatePerDay(results.mat1, results.avgTime)) }}</div>
+                    <div 
+                      v-if="!isReferenceBuild && referenceResults?.mat1 && referenceResults?.avgTime"
+                      :class="getDiffClasses(
+                        calculatePerDay(results.mat1, results.avgTime), 
+                        calculatePerDay(referenceResults.mat1, referenceResults.avgTime), 
+                        true, 
+                        true
+                      )"
+                      class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                    >
+                      <component 
+                        :is="getDiffIcon(
+                          calculatePerDay(results.mat1, results.avgTime), 
+                          calculatePerDay(referenceResults.mat1, referenceResults.avgTime)
+                        )" 
+                        size="11" 
+                        class="mr-0.5" 
+                      />
+                      <span>{{ 
+                        getDiffText(
+                          calculatePerDay(results.mat1, results.avgTime), 
+                          calculatePerDay(referenceResults.mat1, referenceResults.avgTime)
+                        )
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <!-- Material 2 (18%) -->
+            <!-- Material 2 -->
             <div class="resource-box">
-              <div class="flex items-center mb-1">
+              <!-- Header mit Icon und Label -->
+              <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
                 <IconHexagon size="14" class="mr-1.5 text-orange-400" />
                 <span class="text-xs text-gray-300">{{ resultLabels.mat2 || 'Mat 2' }}</span>
-                <span 
-                  v-if="!isReferenceBuild && referenceResults?.mat2 && results.mat2"
-                  :class="getDiffClasses(results.mat2, referenceResults.mat2, true, true)"
-                  class="ml-auto resource-diff text-xs whitespace-nowrap"
-                >
-                  <component :is="getDiffIcon(results.mat2, referenceResults.mat2)" size="11" class="mr-0.5" />
-                  <span>{{ getDiffText(results.mat2, referenceResults.mat2) }}</span>
-                </span>
               </div>
-              <div class="font-medium">{{ formatNumber(results.mat2) }}</div>
-              <div class="text-xs text-gray-500">
-                {{ formatNumber(calculatePerDay(results.mat2, results.avgTime)) }} per day
+              
+              <!-- Run und Day nebeneinander mit vertikalen Labels -->
+              <div class="grid grid-cols-2 gap-1 mt-1.5 relative">
+                <!-- Per Run (links) -->
+                <div class="flex items-start">
+                  <div class="vertical-label mr-1.5">RUN</div>
+                  <div class="flex-1">
+                    <div class="font-medium text-center">{{ formatNumber(results.mat2) }}</div>
+                    <div 
+                      v-if="!isReferenceBuild && referenceResults?.mat2 && results.mat2"
+                      :class="getDiffClasses(results.mat2, referenceResults.mat2, true, true)"
+                      class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                    >
+                      <component :is="getDiffIcon(results.mat2, referenceResults.mat2)" size="11" class="mr-0.5" />
+                      <span>{{ getDiffText(results.mat2, referenceResults.mat2) }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Vertikaler Trennstrich -->
+                <div class="absolute border-l border-gray-700/30 h-full left-1/2"></div>
+                
+                <!-- Per Day (rechts) -->
+                <div class="flex items-start">
+                  <div class="vertical-label mr-1.5">DAY</div>
+                  <div class="flex-1">
+                    <div class="font-medium text-center">{{ formatNumber(calculatePerDay(results.mat2, results.avgTime)) }}</div>
+                    <div 
+                      v-if="!isReferenceBuild && referenceResults?.mat2 && referenceResults?.avgTime"
+                      :class="getDiffClasses(
+                        calculatePerDay(results.mat2, results.avgTime), 
+                        calculatePerDay(referenceResults.mat2, referenceResults.avgTime), 
+                        true, 
+                        true
+                      )"
+                      class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                    >
+                      <component 
+                        :is="getDiffIcon(
+                          calculatePerDay(results.mat2, results.avgTime), 
+                          calculatePerDay(referenceResults.mat2, referenceResults.avgTime)
+                        )" 
+                        size="11" 
+                        class="mr-0.5" 
+                      />
+                      <span>{{ 
+                        getDiffText(
+                          calculatePerDay(results.mat2, results.avgTime), 
+                          calculatePerDay(referenceResults.mat2, referenceResults.avgTime)
+                        )
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <!-- Material 3 (18%) -->
+            <!-- Material 3 -->
             <div class="resource-box">
-              <div class="flex items-center mb-1">
+              <!-- Header mit Icon und Label -->
+              <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
                 <IconHexagons size="14" class="mr-1.5 text-amber-400" />
                 <span class="text-xs text-gray-300">{{ resultLabels.mat3 || 'Mat 3' }}</span>
-                <span 
-                  v-if="!isReferenceBuild && referenceResults?.mat3 && results.mat3"
-                  :class="getDiffClasses(results.mat3, referenceResults.mat3, true, true)"
-                  class="ml-auto resource-diff text-xs whitespace-nowrap"
-                >
-                  <component :is="getDiffIcon(results.mat3, referenceResults.mat3)" size="11" class="mr-0.5" />
-                  <span>{{ getDiffText(results.mat3, referenceResults.mat3) }}</span>
-                </span>
               </div>
-              <div class="font-medium">{{ formatNumber(results.mat3) }}</div>
-              <div class="text-xs text-gray-500">
-                {{ formatNumber(calculatePerDay(results.mat3, results.avgTime)) }} per day
+              
+              <!-- Run und Day nebeneinander mit vertikalen Labels -->
+              <div class="grid grid-cols-2 gap-1 mt-1.5 relative">
+                <!-- Per Run (links) -->
+                <div class="flex items-start">
+                  <div class="vertical-label mr-1.5">RUN</div>
+                  <div class="flex-1">
+                    <div class="font-medium text-center">{{ formatNumber(results.mat3) }}</div>
+                    <div 
+                      v-if="!isReferenceBuild && referenceResults?.mat3 && results.mat3"
+                      :class="getDiffClasses(results.mat3, referenceResults.mat3, true, true)"
+                      class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                    >
+                      <component :is="getDiffIcon(results.mat3, referenceResults.mat3)" size="11" class="mr-0.5" />
+                      <span>{{ getDiffText(results.mat3, referenceResults.mat3) }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Vertikaler Trennstrich -->
+                <div class="absolute border-l border-gray-700/30 h-full left-1/2"></div>
+                
+                <!-- Per Day (rechts) -->
+                <div class="flex items-start">
+                  <div class="vertical-label mr-1.5">DAY</div>
+                  <div class="flex-1">
+                    <div class="font-medium text-center">{{ formatNumber(calculatePerDay(results.mat3, results.avgTime)) }}</div>
+                    <div 
+                      v-if="!isReferenceBuild && referenceResults?.mat3 && referenceResults?.avgTime"
+                      :class="getDiffClasses(
+                        calculatePerDay(results.mat3, results.avgTime), 
+                        calculatePerDay(referenceResults.mat3, referenceResults.avgTime), 
+                        true, 
+                        true
+                      )"
+                      class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                    >
+                      <component 
+                        :is="getDiffIcon(
+                          calculatePerDay(results.mat3, results.avgTime), 
+                          calculatePerDay(referenceResults.mat3, referenceResults.avgTime)
+                        )" 
+                        size="11" 
+                        class="mr-0.5" 
+                      />
+                      <span>{{ 
+                        getDiffText(
+                          calculatePerDay(results.mat3, results.avgTime), 
+                          calculatePerDay(referenceResults.mat3, referenceResults.avgTime)
+                        )
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -282,55 +468,63 @@
             
             <!-- Boss Stats (flexibler Restplatz) -->
             <div class="grid grid-cols-2 gap-2 w-full">
-              <!-- Boss HP (wenn vorhanden oder Platzhalter) -->
+              <!-- Boss Kill Rate -->
               <div class="stat-box">
-                <div class="flex items-center justify-between">
+                <!-- Header mit Icon und Label -->
+                <div class="flex items-center justify-between border-b border-gray-700/50 pb-1 mb-2">
                   <div class="flex items-center">
-                    <IconHeartFilled :size="14" class="text-pink-400" />
-                    <div class="text-xs text-gray-400 ml-1.5">
-                      {{ resultLabels.bossHpPercent || 'Boss HP' }}
-                    </div>
+                    <IconSword :size="14" class="text-green-400 mr-1" />
+                    <div class="text-xs text-gray-400">{{ resultLabels.bossKillRate || 'Kill Rate' }}</div>
                   </div>
-                  <span 
-                    v-if="!isReferenceBuild && results.bossHpPercent !== '--' && referenceResults?.bossHpPercent && referenceResults.bossHpPercent !== '--'"
-                    :class="getBossStatDiffClasses((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent), true)"
-                    class="text-xs whitespace-nowrap flex items-center"
-                  >
-                    <component :is="getDiffIcon((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent))" size="11" class="mr-0.5 flex-shrink-0" />
-                    <span>{{ getBossStatDiffText(results.bossHpPercent, referenceResults.bossHpPercent) }}</span>
-                  </span>
                 </div>
-                <div class="flex items-center">
-                  <span v-if="results.bossHpPercent !== '--'" class="text-white font-medium pt-1">
-                    {{ formatPercent(results.bossHpPercent) }}
-                  </span>
-                  <span v-else class="text-gray-500 font-medium">--</span>
-                </div>
-              </div>
-
-              <!-- Boss Kill Rate (wenn vorhanden oder Platzhalter) -->
-              <div class="stat-box">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <IconSword :size="14" class="text-green-400" />
-                    <div class="text-xs text-gray-400 ml-1.5">
-                      {{ resultLabels.bossKillRate || 'Kill Rate' }}
-                    </div>
-                  </div>
-                  <span 
-                    v-if="!isReferenceBuild && results.bossKillRate !== '--' && referenceResults?.bossKillRate && referenceResults.bossKillRate !== '--'"
-                    :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true)"
-                    class="text-xs whitespace-nowrap flex items-center"
-                  >
-                    <component :is="getDiffIcon(results.bossKillRate, referenceResults.bossKillRate)" size="11" class="mr-0.5 flex-shrink-0" />
-                    <span>{{ getBossStatDiffText(results.bossKillRate, referenceResults.bossKillRate) }}</span>
-                  </span>
-                </div>
-                <div class="flex items-center">
-                  <span v-if="results.bossKillRate !== '--'" class="text-white font-medium pt-1">
+                
+                <!-- Wert zentriert -->
+                <div class="flex justify-center items-center">
+                  <span v-if="results.bossKillRate !== '--'" class="text-white font-medium text-center">
                     {{ formatPercent(results.bossKillRate) }}
                   </span>
-                  <span v-else class="text-gray-500 font-medium">--</span>
+                  <span v-else class="text-gray-500 font-medium text-center">--</span>
+                </div>
+                
+                <!-- Prozentuale Abweichung zum Referenz-Build -->
+                <div 
+                  v-if="!isReferenceBuild && results.bossKillRate !== '--' && referenceResults?.bossKillRate && referenceResults.bossKillRate !== '--'"
+                  class="flex items-center justify-center mt-1 w-full"
+                >
+                  <div :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true, true)" class="whitespace-nowrap inline-flex items-center">
+                    <component :is="getDiffIcon(results.bossKillRate, referenceResults.bossKillRate)" size="11" class="mr-0.5 flex-shrink-0" />
+                    <span>{{ getBossStatDiffText(results.bossKillRate, referenceResults.bossKillRate) }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Boss HP -->
+              <div class="stat-box">
+                <!-- Header mit Icon und Label -->
+                <div class="flex items-center justify-between border-b border-gray-700/50 pb-1 mb-2">
+                  <div class="flex items-center">
+                    <IconHeartFilled :size="14" class="text-pink-400 mr-1" />
+                    <div class="text-xs text-gray-400">{{ resultLabels.bossHpPercent || 'Boss HP' }}</div>
+                  </div>
+                </div>
+                
+                <!-- Wert zentriert -->
+                <div class="flex justify-center items-center">
+                  <span v-if="results.bossHpPercent !== '--'" class="text-white font-medium text-center">
+                    {{ formatPercent(results.bossHpPercent) }}
+                  </span>
+                  <span v-else class="text-gray-500 font-medium text-center">--</span>
+                </div>
+                
+                <!-- Prozentuale Abweichung zum Referenz-Build -->
+                <div 
+                  v-if="!isReferenceBuild && results.bossHpPercent !== '--' && referenceResults?.bossHpPercent && referenceResults.bossHpPercent !== '--'"
+                  class="flex items-center justify-center mt-1 w-full"
+                >
+                  <div :class="getBossStatDiffClasses((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent), true, true)" class="whitespace-nowrap inline-flex items-center">
+                    <component :is="getDiffIcon((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent))" size="11" class="mr-0.5 flex-shrink-0" />
+                    <span>{{ getBossStatDiffText(results.bossHpPercent, referenceResults.bossHpPercent) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -388,7 +582,7 @@ import {
   IconShare, IconRefresh, IconArchive, IconArchiveOff, IconTrash, 
   IconGripVertical, IconAdjustmentsHorizontal, IconChartBar, IconX,
   IconBrightness, IconDiamond, IconHexagon, IconHexagons,
-  IconReportMoney, IconStairs, IconClock, IconHeartFilled, IconSword
+  IconReportMoney, IconStairs, IconClock, IconSword, IconHeartFilled
 } from '@tabler/icons-vue';
 import { useRoute } from 'vue-router';
 import { useHunterStore } from '../../store/hunterStore';
@@ -789,13 +983,6 @@ function handleClickOutside(event) {
   }
 }
 
-// Funktion zum Behandeln des Modal-Schließen-Events
-function handleStatsModalClosed(event) {
-  if (event.detail?.hunterType === props.hunterId && props.autoEvaluate) {
-    evaluateBuild();
-  }
-}
-
 // Hilfsfunktion für Toasts
 function showToastMessage(message, type = 'success') {
   if (window.toast && typeof window.toast === 'function') {
@@ -885,16 +1072,10 @@ onMounted(async () => {
       evaluateBuild();
     }, props.index * 100); 
   }
-
-  // Event-Listener für Modal-Schließung
-  window.addEventListener('statsModalClosed', handleStatsModalClosed);
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
-
-  // Event-Listener entfernen
-  window.removeEventListener('statsModalClosed', handleStatsModalClosed);
 });
 </script>
 
@@ -915,21 +1096,33 @@ onUnmounted(() => {
   padding: 0.5rem;
   background-color: rgb(18, 26, 48);
   border-radius: 0.5rem;
+  position: relative; /* Wichtig für den absolut positionierten Trennstrich */
 }
 
-.action-button-compact {
+/* Vertikaler Text für Run und Day Labels */
+.vertical-label {
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  font-size: 0.7rem;
+  text-align: center;
+  color: #9ca3af; /* text-gray-400 */
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  width: 12px;
+  height: auto; /* Ändere height von 100% auf auto */
+  min-height: 28px; /* Minimalhöhe für die vertikalen Labels */
   display: flex;
   align-items: center;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  background-color: rgba(55, 65, 81, 0.3);
-  color: rgba(209, 213, 219, 1);
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  justify-content: center;
 }
 
-.action-button-compact:hover {
-  background-color: rgba(75, 85, 99, 0.5);
+/* Sorge dafür, dass die Inhalts-Container eine vernünftige Höhe haben */
+.flex.items-start {
+  align-self: flex-start;
 }
 
+/* Verbessere das Layout der Resource-Boxen */
+.resource-box .grid {
+  align-items: flex-start;
+}
 </style>
