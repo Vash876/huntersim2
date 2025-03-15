@@ -255,3 +255,16 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gadgets.anchor",  // Gadget (The Anchor of Ages)
   "upgrades.researches.res81", // Research#81
 ];
+
+export const STATS_RESULT_LABELS = [
+  { key: 'hp', label: 'MAX HP', unit: '', roundDigits: 0 },
+  { key: 'atk', label: 'ATK Power', unit: '', roundDigits: 0 },
+  { key: 'regen', label: 'HP Regen', unit: '/s', roundDigits: 1 },
+  { key: 'dr', label: 'DMG Reduction', unit: '%', roundDigits: 1, multiplier: 100 },
+  { key: 'block', label: 'Block Chance', unit: '%', roundDigits: 1, multiplier: 100 },
+  { key: 'effect', label: 'Effect Chance', unit: '%', roundDigits: 1, multiplier: 100 },
+  { key: 'chargechance', label: 'Charge Chance', unit: '%', roundDigits: 1, multiplier: 100 },
+  { key: 'chargegained', label: 'Charge Gained', unit: 'x', roundDigits: 2 },
+  { key: 'atkspeed', label: 'Reload Time', unit: '/s', roundDigits: 2 },
+  { key: 'souulschance', label: 'Souls Chance', unit: '%', roundDigits: 1, multiplier: 100 },
+];

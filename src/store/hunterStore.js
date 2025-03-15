@@ -703,6 +703,29 @@ function saveBuildsOrder(hunterId, builds) {
   }
 
   /**
+   * Benennt einen Build um
+   * @param {string} buildId - Die ID des Builds
+   * @param {string} newName - Der neue Name für den Build
+   * @returns {boolean} - True bei Erfolg, False bei Fehler
+   */
+  function renameBuild(buildId, newName) {
+    if (!buildId || !newName) return false;
+
+    // Durchsuche alle Hunter und ihre Builds
+    for (const hunterId in hunterBuilds.value) {
+      const index = hunterBuilds.value[hunterId].findIndex(build => build.id === buildId);
+      
+      if (index !== -1) {
+        // Build gefunden, Namen aktualisieren
+        hunterBuilds.value[hunterId][index].name = newName;
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
  * Aktualisiert die Overrides für einen bestimmten Build
  * @param {string} buildId - Die ID des Builds
  * @param {Object} overrides - Die neuen Overrides
@@ -783,6 +806,7 @@ function getDisplaySettings(hunterId) {
     addBuild,
     updateBuild,
     deleteBuild,
+    renameBuild,
     getBuildsForHunter,
     getBuildById,
     updateBuildOverrides,

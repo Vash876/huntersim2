@@ -413,20 +413,27 @@ function decreaseOverride(param) {
   
   if (!paramData) return;
   
+  const globalValue = paramData.globalValue;
+  
   if (localOverrides.value[param] === null) {
-    // If no override exists, start with global value - 1
-    localOverrides.value[param] = Math.floor(paramData.globalValue) - 1;
+    // Wenn kein Override existiert, starte mit globalValue - 1
+    localOverrides.value[param] = Math.floor(globalValue) - 1;
   } else {
-    // Always decrement by 1
+    // Verringere um 1
     localOverrides.value[param] -= 1;
+    
+    // Wenn der neue Wert dem globalen Wert entspricht, setze auf null zurück
+    if (Math.floor(localOverrides.value[param]) === Math.floor(globalValue)) {
+      localOverrides.value[param] = null;
+    }
   }
   
-  // Ensure value doesn't go below 0
-  if (localOverrides.value[param] < 0) {
+  // Stelle sicher, dass der Wert nicht unter 0 fällt
+  if (localOverrides.value[param] !== null && localOverrides.value[param] < 0) {
     localOverrides.value[param] = 0;
   }
   
-  // Update cost calculation
+  // Aktualisiere Kostenberechnung
   calculateTotalCost();
 }
 
@@ -440,19 +447,24 @@ function increaseOverride(param, maxValue) {
   const globalValue = paramData.globalValue;
   
   if (localOverrides.value[param] === null) {
-    // If no override exists, start with global value + 1
+    // Wenn kein Override existiert, starte mit globalValue + 1
     localOverrides.value[param] = Math.floor(globalValue) + 1;
   } else {
-    // Always increment by 1
+    // Erhöhe um 1
     localOverrides.value[param] += 1;
+    
+    // Wenn der neue Wert dem globalen Wert entspricht, setze auf null zurück
+    if (Math.floor(localOverrides.value[param]) === Math.floor(globalValue)) {
+      localOverrides.value[param] = null;
+    }
   }
   
-  // Clamp to max value
-  if (maxValue !== null && maxValue !== Infinity && localOverrides.value[param] > maxValue) {
+  // Begrenze auf den Maximalwert
+  if (localOverrides.value[param] !== null && maxValue !== null && maxValue !== Infinity && localOverrides.value[param] > maxValue) {
     localOverrides.value[param] = maxValue;
   }
 
-  // Update cost calculation
+  // Aktualisiere Kostenberechnung
   calculateTotalCost();
 }
 
@@ -604,12 +616,25 @@ function resetAllOverrides() {
 }
 
 function handleClose() {
-  // Filter out null values
+  // Filter out null values AND values that equal the global value
   const overridesToSave = {};
+  
   for (const [param, value] of Object.entries(localOverrides.value)) {
-    if (value !== null) {
-      overridesToSave[param] = value;
+    // Skip null values
+    if (value === null) continue;
+    
+    // Find the parameter data to get the global value
+    const paramData = parameterData.value
+      .flatMap(category => category.params)
+      .find(p => p.key === param);
+    
+    // If parameter data is not found or the override equals global value, skip it
+    if (!paramData || Math.floor(value) === Math.floor(paramData.globalValue)) {
+      continue;
     }
+    
+    // Only save values that differ from global
+    overridesToSave[param] = value;
   }
   
   // Wenn buildId vorhanden ist, im neuen Format emittieren

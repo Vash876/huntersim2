@@ -173,8 +173,8 @@ function parseEvalResults(evalResults, hunterId) {
       extraTess: result[13],   // Überschüssiges Tess
       extraXp: result[14],     // Überschüssiges XP
       expectedLvl: result[15], // Erwartetes Level
-      stats: result[16],       // Basis-Stats
-      soulStats: result[17],   // Soul-Buffed Stats
+      basisStats: result[16],       // Basis-Stats
+      stats: result[17],   // Soul-Buffed Stats
     });
     
     // Bei Knox können wir noch mehr Parameter haben

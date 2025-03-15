@@ -55,13 +55,17 @@ const props = defineProps({
   color: {
     type: String,
     default: 'gray'
+  },
+  // Füge die fehlende show-Property hinzu, die im Watch verwendet wird
+  show: {
+    type: Boolean,
+    default: true
   }
 });
 
 const chartRef = ref(null);
 const chartContainer = ref(null);
 const chart = ref(null);
-const isChartReady = ref(false);
 
 // Berechne minStage falls nicht bereitgestellt
 const computedMinStage = computed(() => {
@@ -102,107 +106,35 @@ function formatStage(stage) {
   return stage % 1 === 0 ? stage.toString() : stage.toFixed(1);
 }
 
-// Tracking der letzten Größe, um unnötige Neuinitialisierungen zu vermeiden
-const lastContainerSize = ref({ width: 0, height: 0 });
-const resizeThreshold = 10; // Mindeständerung in Pixeln, um neu zu rendern
-
-// Chart sicher aktualisieren statt komplett neu erstellen
-async function updateChart() {
-  if (!chart.value || !chartRef.value || !chartContainer.value) return;
-  
-  // Größenänderung überprüfen
-  const container = chartContainer.value;
-  const currentSize = {
-    width: container.clientWidth,
-    height: container.clientHeight
-  };
-  
-  // Nur aktualisieren, wenn sich die Größe wirklich signifikant geändert hat
-  const widthChanged = Math.abs(currentSize.width - lastContainerSize.value.width) > resizeThreshold;
-  const heightChanged = Math.abs(currentSize.height - lastContainerSize.value.height) > resizeThreshold;
-  
-  if (widthChanged || heightChanged) {
-    // Größe aktualisieren
-    lastContainerSize.value = { ...currentSize };
-    
-    // Aktuelle Daten beibehalten
-    try {
-      chart.value.resize();
-      chart.value.update('none'); // 'none' verhindert Animationen
-    } catch (e) {
-      console.warn('Error updating chart, will recreate:', e);
-      // Bei Fehler neu erstellen
-      scheduleChartInit();
-    }
-  }
-}
-
-// Sichere Chart-Initialisierung
+// Verbesserte Chart-Initialisierung mit nearest-tooltip
 async function initChart() {
+  // Zuerst altes Chart zerstören
+  destroyChart();
+  
+  // Warten auf DOM-Update
+  await nextTick();
+  
   try {
-    // Zuerst vorhandenes Chart zerstören
-    destroyChart();
-    
-    // Auf nächstes DOM-Update warten
-    await nextTick();
-    
-    // Zusätzlich warten, um sicherzustellen, dass das DOM vollständig gerendert ist
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
-    // Überprüfen, ob Container oder Canvas-Ref fehlt
-    if (!chartContainer.value || !chartRef.value) {
+    // Überprüfe Bedingungen für die Erstellung
+    if (!chartRef.value || !chartContainer.value) {
       console.log('Chart initialization skipped: container or canvas ref is null');
-      return false;
+      return;
     }
-
-    // Auf gültige Daten prüfen
+    
     if (!props.distribution || props.distribution.length === 0) {
       console.warn('No valid data for the chart.');
-      return false;
+      return;
     }
     
-    // Sicherstellen, dass Canvas richtig dimensioniert ist
-    const container = chartContainer.value;
-    const canvas = chartRef.value;
-    
-    // Sicherstellen, dass Chart-Container Dimensionen hat
-    if (container.clientWidth === 0 || container.clientHeight === 0) {
-      console.warn('Chart container has no dimensions yet');
-      return false;
-    }
-    
-    // Canvas-Kontext holen, mit mehreren Versuchen
-    let ctx = null;
-    let attempts = 0;
-    while (!ctx && attempts < 3) {
-      try {
-        ctx = canvas.getContext('2d');
-        if (!ctx) {
-          await new Promise(resolve => setTimeout(resolve, 50));
-          attempts++;
-        }
-      } catch (e) {
-        console.warn('Error getting canvas context, attempt ' + attempts, e);
-        await new Promise(resolve => setTimeout(resolve, 50));
-        attempts++;
-      }
-    }
-    
-    // Wenn nach 3 Versuchen kein Kontext, abbrechen
+    const ctx = chartRef.value.getContext('2d');
     if (!ctx) {
-      console.error('Could not get 2d context from canvas after multiple attempts');
-      return false;
+      console.error('Could not get 2d context from canvas');
+      return;
     }
     
     const colorRGB = getColorRGB(props.color);
     
-    // Aktuelle Größe speichern
-    lastContainerSize.value = {
-      width: container.clientWidth,
-      height: container.clientHeight
-    };
-    
-    // Chart erstellen
+    // Chart erstellen mit nearest-tooltip Optionen
     chart.value = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -220,17 +152,13 @@ async function initChart() {
         responsive: true,
         maintainAspectRatio: false,
         animation: {
-          duration: 250 // Schnellere Animationen für bessere Performance
+          duration: 150 // Kurze aber sichtbare Animation
         },
-        onResize: function(chart, size) {
-          // Integrierter Chart.js Resize-Handler
-          // Verhindert, dass das Chart automatisch neu gerendert wird
-        },
-        // Verbesserte Interaktionen mit stabileren Tooltips
+        // Nearest-Modus für Interaktionen aktivieren
         interaction: {
-          mode: 'index',       // Index basierte Interaktion ist stabiler
-          intersect: false,      // Auch ohne direktes Hovern anzeigen
-          includeInvisible: true // Auch Punkte berücksichtigen, die nicht sichtbar sind
+          mode: 'nearest',
+          axis: 'x',
+          intersect: false
         },
         plugins: {
           legend: {
@@ -239,17 +167,10 @@ async function initChart() {
           tooltip: {
             enabled: true,
             backgroundColor: 'rgba(17, 24, 39, 0.9)',
-            titleColor: 'rgba(255, 255, 255, 0.9)',
-            bodyColor: 'rgba(255, 255, 255, 0.9)',
-            borderColor: `rgba(${colorRGB}, 0.3)`,
-            borderWidth: 1,
-            padding: 10,
-            boxPadding: 5,
-            cornerRadius: 4,
-            displayColors: false,
-            // Feste Position statt "nearest"
-            position: 'nearest',  // Stabiler als 'average'
-            // Tooltip länger anzeigen
+            // Positionieren Sie den Tooltip oben statt standardmäßig
+            position: 'nearest',
+            // Tooltip anzeigen, auch wenn nicht direkt auf einem Punkt
+            intersect: false,
             callbacks: {
               label: function(context) {
                 const count = context.raw;
@@ -260,42 +181,13 @@ async function initChart() {
                 return `Stage ${context[0].label}`;
               }
             }
-          },
-          // Wir fügen eine benutzerdefinierte Plugin-Implementierung hinzu
-          tooltip2: {
-            id: 'customTooltipBehavior',
-            beforeEvent(chart, args) {
-              const event = args.event;
-              if (event.type === 'mousemove') {
-                // Reduziere die Anzahl der Tooltip-Updates
-                if (!event._throttled) {
-                  event._throttled = true;
-                  setTimeout(() => {
-                    if (event._latestEvent) delete event._latestEvent;
-                    event._throttled = false;
-                  }, 50); // 50ms Throttling
-                } else {
-                  event._latestEvent = true;
-                  return false; // Blockiere das Event
-                }
-              }
-            }
           }
-        },
-        // Tooltip-Verzögerung für mehr Stabilität
-        hover: {
-          animationDuration: 0, // Keine Animation beim Hover
-          delay: 100            // Leichte Verzögerung beim Anzeigen
         },
         scales: {
           y: {
             beginAtZero: true,
             grid: {
-              color: 'rgba(75, 85, 99, 0.2)',
-              drawBorder: false
-            },
-            ticks: {
-              color: 'rgba(156, 163, 175, 1)'
+              color: 'rgba(255, 255, 255, 0.05)'
             }
           },
           x: {
@@ -303,8 +195,6 @@ async function initChart() {
               display: false
             },
             ticks: {
-              color: 'rgba(156, 163, 175, 1)',
-              // Nur jeden X-ten Wert anzeigen, um Überfüllung zu vermeiden
               callback: function(value, index) {
                 const labels = this.chart.data.labels;
                 const step = Math.ceil(labels.length / 15);
@@ -312,67 +202,21 @@ async function initChart() {
               }
             }
           }
+        },
+        // Hover-Funktionalität für besseres Feedback
+        hover: {
+          mode: 'nearest',
+          axis: 'x',
+          intersect: false
         }
-      },
-      plugins: [
-        {
-          id: 'customTooltipBehavior',
-          beforeEvent(chart, args, options) {
-            const event = args.event;
-            // Stabilisierung der Tooltip-Position
-            if (event.type === 'mousemove') {
-              // Implementiere Debouncing für Mousemove-Events
-              if (!chart._tooltipDebounceTimeout) {
-                chart._tooltipDebounceTimeout = setTimeout(() => {
-                  chart._tooltipDebounceTimeout = null;
-                }, 30);
-              } else {
-                return false; // Event unterdrücken
-              }
-            }
-          }
-        }
-      ]
+      }
     });
-    
-    console.log('Chart successfully initialized');
-    return true;
   } catch (error) {
     console.error('Error creating chart:', error);
-    return false;
   }
 }
 
-// Debounce-optimierte Chart-Initialisierung
-const scheduleChartInit = debounce(async () => {
-  // Nicht bereit, warten und später erneut versuchen
-  if (!isChartReady.value) {
-    setTimeout(() => scheduleChartInit(), 100);
-    return;
-  }
-  
-  // Erster Versuch
-  let success = await initChart();
-  
-  // Bei Fehlversuch nach Verzögerung erneut versuchen
-  if (!success) {
-    setTimeout(async () => {
-      success = await initChart();
-      
-      // Bei wiederholtem Fehlversuch ein letztes Mal mit größerer Verzögerung versuchen
-      if (!success) {
-        setTimeout(async () => {
-          // Sicherstellen dass DOM vollständig geladen ist
-          await new Promise(resolve => requestAnimationFrame(resolve));
-          await nextTick();
-          initChart();
-        }, 300);
-      }
-    }, 150);
-  }
-}, 100);
-
-// Chart sicher zerstören
+// Verbesserte Chart-Zerstörung
 function destroyChart() {
   if (chart.value) {
     try {
@@ -384,83 +228,41 @@ function destroyChart() {
   }
 }
 
-const wheelHandler = debounce(() => {
-  if (chart.value) {
-    chart.value.update('none');
-  }
-}, 100);
-
-// Beobachte Änderungen an den Verteilungsdaten
-watch(() => props.distribution, () => {
-  scheduleChartInit();
-}, { deep: true });
-
-// Beobachte Änderungen an der Farbe
-watch(() => props.color, () => {
-  scheduleChartInit();
-});
-
-// Beobachte Änderungen an der Stichprobengröße
-watch(() => props.sampleSize, () => {
-  scheduleChartInit();
-});
-
-// Debounce-optimierter Handler für Größenänderungen
+// Einfacher Resize-Handler
 const handleResize = debounce(() => {
-  updateChart();
-}, 150);
-
-// Observer für DOM-Änderungen, die das Chart beeinflussen könnten
-let resizeObserver = null;
-
-// DOM-Observer und Event-Listener einrichten
-onMounted(async () => {
-  window.addEventListener('resize', handleResize);
-  
-  // ResizeObserver für Containergrößenänderungen verwenden
-  if (window.ResizeObserver) {
-    resizeObserver = new ResizeObserver(entries => {
-      if (isChartReady.value) {
-        // Nur auslösen, wenn sich die Größe tatsächlich geändert hat
-        const entry = entries[0];
-        if (entry && entry.contentRect.width > 0 && entry.contentRect.height > 0) {
-          handleResize();
-        }
-      }
-    });
-    
-    // Nach dem nächsten DOM-Update dem Observer hinzufügen
-    await nextTick();
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    if (chartContainer.value) {
-      resizeObserver.observe(chartContainer.value);
+  if (chart.value && chartRef.value && chartContainer.value) {
+    try {
+      chart.value.resize();
+    } catch (e) {
+      // Bei Fehler Chart neu initialisieren
+      initChart();
     }
   }
+}, 150);
+
+// Beobachte Änderungen an den Daten und Optionen
+watch([
+  () => props.distribution, 
+  () => props.color,
+  () => props.sampleSize
+], () => {
+  initChart();
+}, { deep: true });
+
+// DOM-Observer und Event-Listener einrichten
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
   
-  // Wheel-Event-Listener hinzufügen
-  window.addEventListener('wheel', wheelHandler, { passive: true });
-  
-  // Bei Montierung der Komponente Chart initialisieren
-  // Mit Verzögerung, um sicherzustellen, dass DOM vollständig geladen ist
-  setTimeout(() => {
-    isChartReady.value = true;
-    scheduleChartInit();
-  }, 200);
+  // Chart direkt initialisieren
+  nextTick(() => {
+    initChart();
+  });
 });
 
 // Aufräumen
 onUnmounted(() => {
   destroyChart();
   window.removeEventListener('resize', handleResize);
-  
-  if (resizeObserver) {
-    resizeObserver.disconnect();
-    resizeObserver = null;
-  }
-  
-  // Wheel-Event-Listener entfernen
-  window.removeEventListener('wheel', wheelHandler);
 });
 </script>
 

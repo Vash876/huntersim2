@@ -1,4 +1,3 @@
-<!-- filepath: /c:/Users/igorn/projects/huntersim2/src/components/builds/card-components/BuildHeader.vue -->
 <template>
   <div class="header-wrapper">
     <!-- Obere Zeile: Build-Titel und Status -->
@@ -8,46 +7,63 @@
         <div class="grip-handle mr-2 text-gray-500 hover:text-gray-400 cursor-grab active:cursor-grabbing flex-shrink-0">
           <IconGripVertical size="20" />
         </div>
-        <div class="flex items-baseline cursor-pointer overflow-hidden min-w-0" @click="startNameEdit">
-          <IconEditCircle size="22" class="text-gray-400 mr-1.5 flex-shrink-0" />
-          <div v-if="!isEditingName" class="flex items-baseline flex-wrap min-w-0 overflow-hidden">
-            <h3 class="text-lg font-semibold text-white truncate max-w-full"> <!-- max-width:full statt xs -->
+        <div class="flex overflow-hidden min-w-0">
+          <!-- Edit Icon separat klickbar -->
+          <div 
+            @click="startNameEdit" 
+            class="self-center cursor-pointer mr-1.5 flex-shrink-0 hover:text-gray-300 transition-colors"
+          >
+            <IconEditCircle size="20" class="text-gray-400" />
+          </div>
+          
+          <div class="flex items-baseline flex-wrap min-w-0 overflow-hidden">
+            <!-- Name klickbar zum Bearbeiten -->
+            <h3 
+              v-if="!isEditingName" 
+              @click="startNameEdit"
+              class="text-lg font-semibold text-white truncate max-w-full cursor-pointer hover:text-gray-300 transition-colors"
+            >
               {{ buildData.name }}
             </h3>
+            
+            <!-- Bearbeitungsfeld - nicht flex-grow verwenden -->
+            <div v-if="isEditingName" class="relative mr-2">
+              <input 
+                ref="nameInputRef"
+                type="text"
+                v-model="editableName"
+                @keyup.enter="saveName"
+                @blur="saveName"
+                class="text-lg font-semibold bg-gray-700 text-white rounded px-2 py-0.5 outline-none w-auto max-w-[170px]"
+              />
+            </div>
+            
+            <!-- Level-Badge - immer anzeigen -->
             <span class="ml-2 text-xs bg-gray-700/50 px-2 py-0.5 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">
               Lvl {{ buildData.level }}
             </span>
+            
+            <!-- Overrides Badge - nur anzeigen wenn Overrides vorhanden -->
+            <span 
+              v-if="hasOverrides" 
+              class="ml-2 text-xs px-2 py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center"
+              title="Build uses custom overrides"
+            >
+              <IconAdjustmentsHorizontal size="14" class="mr-1" />
+              Overrides
+            </span>
+            
             <span v-if="buildData.isArchived" class="ml-2 text-xs px-2 py-0.5 bg-gray-700/50 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">
               Archived
             </span>
           </div>
-          <div v-else class="relative flex-grow">
-            <input 
-              ref="nameInputRef"
-              type="text"
-              v-model="editableName"
-              @keyup.enter="saveName"
-              @blur="saveName"
-              class="text-lg font-semibold bg-gray-700 text-white rounded px-2 py-0.5 outline-none w-full"
-            />
-          </div>
         </div>
       </div>
-      
-      <!-- Re-evaluate Button - Hervorgehoben in der oberen Zeile 
-      <button 
-        @click="emit('reevaluate')"
-        class="action-button-primary ml-2"
-        title="Re-evaluate build">
-        <IconRefresh size="16" class="mr-1" />
-        <span class="text-sm">Re-Evaluate</span>
-      </button>-->
     </div>
     
     <!-- Untere Zeile: Aktionsleiste -->
     <div class="action-bar p-2 px-4 flex justify-between items-center bg-gray-800/70 border-t border-b border-gray-700/50">
       
-      <!-- Alle Aktionen in einer Reihe (kompakt aber ausreichend Platz) -->
       <div class="flex items-center gap-2 flex-1 justify-center">
         <button 
           @click="emit('edit')"
@@ -72,9 +88,9 @@
 
         <button 
           v-if="results?.stageDistribution?.length"
-          @click="showDistributionModal = true"
+          @click="emit('showDistribution')"
           class="action-button-compact"
-          title="Show Stage Distribution"
+          title="Show Build Statistics"
         >
           <IconChartBar size="16" />
         </button>
@@ -103,50 +119,16 @@
       </div>
     </div>
   </div>
-
-  <!-- Stage Distribution Modal -->
-  <Teleport to="body">
-    <div 
-      v-if="showDistributionModal" 
-      class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4"
-      @click.self="showDistributionModal = false"
-    >
-      <div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in border border-gray-700">
-        <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-4 border-b border-gray-600 flex justify-between items-center">
-          <h3 class="text-xl font-bold text-white flex items-center">
-            <IconChartBar size="20" class="mr-2" :class="`text-${hunterColor}-400`" />
-            Stage Distribution: {{ buildData.name }}
-          </h3>
-          <button 
-            @click="showDistributionModal = false"
-            class="text-gray-400 hover:text-white transition-colors"
-          >
-            <IconX size="20" />
-          </button>
-        </div>
-        <div class="p-4">
-          <StageDistributionChart 
-              :distribution="results.stageDistribution"
-              :avg-stage="results.avgStage"
-              :max-stage="results.maxStage"
-              :min-stage="results.minStage"
-              :color="hunterColor"
-            />
-        </div>
-      </div>
-    </div>
-  </Teleport>
-
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { ref, nextTick, onMounted, onBeforeUnmount, computed } from 'vue';
 import { 
   IconEdit, IconEditCircle, IconCopy, IconArchive, IconArchiveOff,
   IconTrash, IconGripVertical, IconDotsVertical, IconAdjustments,
-  IconShare, IconRefresh, IconChartBar, IconX
+  IconShare, IconRefresh, IconChartBar, IconX, IconCloudUpload,
+  IconAdjustmentsHorizontal
 } from '@tabler/icons-vue';
-import StageDistributionChart from '../../charts/StageDistributionChart.vue';
 
 const props = defineProps({
   buildData: { type: Object, required: true },
@@ -155,13 +137,21 @@ const props = defineProps({
   results: { type: Object, default: () => ({}) }
 });
 
-const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'reevaluate', 'showDistribution']);
+const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'reevaluate', 'showDistribution', 'showUploadDialog']);
 
 const isEditingName = ref(false);
 const editableName = ref('');
 const nameInputRef = ref(null);
 const showDropdown = ref(false);
-const showDistributionModal = ref(false); 
+// showDistributionModal wurde entfernt
+const showUploadDialog = ref(false);
+
+// Berechne, ob Overrides aktiv sind
+const hasOverrides = computed(() => {
+  // Prüfe, ob Overrides existieren und aktiv sind
+  return props.buildData.overrides && 
+         Object.keys(props.buildData.overrides).length > 0;
+});
 
 // Name editing functions
 function startNameEdit() {
@@ -177,19 +167,20 @@ function startNameEdit() {
 
 function saveName() {
   if (editableName.value && editableName.value !== props.buildData.name) {
-    emit('nameChanged', editableName.value);
+    // Sende Event mit korrekter Struktur
+    emit('nameChanged', {
+      buildId: props.buildData.id,
+      name: editableName.value
+    });
   }
   isEditingName.value = false;
 }
 
-// Dropdown functions
-function toggleDropdown() {
-  showDropdown.value = !showDropdown.value;
-}
-
-function handleAction(action) {
-  emit(action);
-  showDropdown.value = false;
+function handleBuildUploaded() {
+  // Show success toast
+  if (window.toast) {
+    window.toast.success('Build uploaded to database successfully');
+  }
 }
 
 // Close dropdown when clicking outside

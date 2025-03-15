@@ -1,4 +1,3 @@
-<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\builds\card-components\BuildBossStats.vue -->
 <template>
   <div>
     <h4 class="section-title">Boss Statistics</h4>
@@ -60,7 +59,7 @@ import { IconHeartFilled, IconSword, IconArrowUp, IconArrowDown, IconEqual } fro
 import { 
   getBossStatDiffClasses, getBossStatDiffText, formatPercent, 
   getDiffIcon
-} from '../utils/BuildComparisonUtils';
+} from '../../utils/BuildComparisonUtils';
 
 const props = defineProps({
   results: { type: Object, required: true },

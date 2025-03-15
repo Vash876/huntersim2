@@ -1,4 +1,3 @@
-<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\builds\card-components\BuildStatistics.vue -->
 <template>
   <div class="stats-container">  
     <h4 class="section-title">Main Statistics</h4>  
@@ -98,7 +97,7 @@ import {
   getDiffClasses, getTimeDiffClasses, getAbsoluteDiffClasses,
   getDiffIcon, getDiffText, getAbsoluteDiffText, getTimeDiffText,
   calculateRunsPerDay
-} from '../utils/BuildComparisonUtils';
+} from '../../utils/BuildComparisonUtils';
 
 const props = defineProps({
   results: { type: Object, required: true },

@@ -1,6 +1,19 @@
 <script setup>
-const changelog = [
-
+const changelog = 
+[
+  {
+    version: '2.0.2',
+    date: '2025-03-15',
+    baseVersion: 'Kylenator\'s Sheet v1.2.4',
+    changes: [
+      'Reorganized loot display for better readability',
+      'Added new statistics tab for Hunter Stats',
+      'Added validation check for invalid builds in build creator',
+      'Fixed build name edit button functionality',
+      'Added overrides display in build header',
+      'Slightly optimized spacing on Horizontal View for better readability'
+    ]
+  },
   {
     version: '2.0.1',
     date: '2025-03-12',

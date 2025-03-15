@@ -45,3 +45,7 @@ export function getHunterById(hunterId) {
   }
   return hunter;
 }
+
+export function getAllHunters() {
+  return HUNTERS;
+}

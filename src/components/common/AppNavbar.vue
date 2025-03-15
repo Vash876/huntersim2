@@ -71,7 +71,7 @@
           </div>
         </div>
 
-        <!-- Tools Links 
+        <!-- Tools Links -->
         <router-link 
           v-for="tool in navigation.tools" 
           :key="tool.id"
@@ -80,7 +80,7 @@
         >
           <component :is="tool.icon" class="w-5 h-5 text-white" />
           <span class="ml-1">{{ tool.name }}</span>
-        </router-link> -->
+        </router-link> 
         
         <!-- Settings Link (Desktop) -->
         <router-link 

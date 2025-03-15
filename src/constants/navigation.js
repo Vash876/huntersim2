@@ -13,7 +13,7 @@ import {
   IconCards,
   IconCreditCard,
   IconChartBar,
-  IconFileImport
+  IconDatabase
 } from '@tabler/icons-vue';
 
 export const NAVIGATION = {
@@ -73,18 +73,12 @@ export const NAVIGATION = {
     }
   ],
   
-  tools: [
+  /*tools: [
     {
-      id: 'compare',
-      name: 'Compare',
-      path: '/compare',
-      icon: IconChartBar
-    },
-    {
-      id: 'import',
-      name: 'Import/Export',
-      path: '/import',
-      icon: IconFileImport
+      id: 'database',
+      name: 'Build Database',
+      path: '/database',
+      icon: IconDatabase
     }
-  ]
+  ]*/
 };

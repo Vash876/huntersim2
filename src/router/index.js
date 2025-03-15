@@ -91,9 +91,9 @@ const routes = [
 
   // Other Routes
   {
-    path: '/compare',
-    name: 'Compare',
-    component: () => import('../views/CompareView.vue')
+    path: '/database',
+    name: 'Database',
+    component: () => import('../views/BuildDatabaseView.vue')
   },
   {
     path: '/import',

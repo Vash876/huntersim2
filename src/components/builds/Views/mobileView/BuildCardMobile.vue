@@ -1,4 +1,3 @@
-<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\builds\BuildCardMobile.vue -->
 <template>
   <div 
     class="build-compact border-l-4 bg-gray-800 rounded-lg shadow-md mb-3 overflow-hidden transition-all duration-200"
@@ -17,13 +16,64 @@
 
         <!-- Build-Name -->
         <div class="flex-1">
-          <div class="flex flex-wrap items-center">
-            <h3 class="text-white font-medium truncate mr-2">
-              {{ buildData.name || 'Unnamed Build' }}
+          <div class="flex items-center">
+            <!-- Name editing mode -->
+            <div v-if="isEditingName" class="flex-grow mr-2">
+              <input
+                ref="nameInputRef"
+                v-model="editableName"
+                class="bg-gray-700 text-white px-2 py-1 rounded border border-gray-600 focus:border-blue-500 outline-none w-52 max-w-[100%]"
+                @keyup.enter="saveName"
+                @keyup.esc="isEditingName = false"
+                @blur="saveName"
+              />
+            </div>
+            
+            <!-- Regular name display -->
+            <h3 v-else class="text-white font-medium truncate mr-2 flex items-center flex-grow">
+              <!-- Name edit button - vor dem Namen -->
+              <button 
+                @click="startNameEdit" 
+                class="mr-1.5 p-1 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white transition-colors flex-shrink-0"
+                title="Edit Build Name"
+              >
+                <IconEditCircle size="16" />
+              </button>
+              
+              <!-- Klickbarer Namenstext -->
+              <span 
+                @click="startNameEdit"
+                class="cursor-pointer hover:text-gray-300 transition-colors truncate"
+              >
+                {{ buildData.name || 'Unnamed Build' }}
+              </span>
             </h3>
-            <span class="text-xs bg-gray-700/50 px-2 py-0.5 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">
-              Lvl {{ buildData.level }}
-            </span>
+            
+            <!-- Badge-Container für Level, Overrides und Archived - immer rechts -->
+            <div class="flex items-center space-x-2 flex-shrink-0">
+              <!-- Archived Badge - falls nötig -->
+              <span 
+                v-if="buildData.isArchived" 
+                class="text-xs px-2 py-0.5 bg-gray-700/50 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0"
+              >
+                Archived
+              </span>
+
+              <!-- Overrides Badge - nur anzeigen wenn Overrides aktiv sind -->
+              <span 
+                v-if="hasOverrides" 
+                class="text-xs px-2 py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center"
+                title="Build uses custom overrides"
+              >
+                <IconAdjustmentsHorizontal size="12" class="mr-1" />
+                Overrides
+              </span>
+
+              <!-- Level Tag -->
+              <span class="text-xs bg-gray-700/50 px-2 py-0.5 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">
+                Lvl {{ buildData.level }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -108,7 +158,7 @@
                 <div class="text-white text-sm font-medium text-center">{{ formatStage(results.avgStage, true) }}</div>
                 <!-- Min-Max Stage Range hinzufügen -->
                 <div class="text-xs text-gray-500 text-center">
-                  {{ formatStage(results.minStage) }}-{{ formatStage(results.maxStage) }}
+                  {{ formatStage(results.minStage) }}-{{ formatStage(results.maxStage) }} (Range)
                 </div>
               </div>
             </div>
@@ -133,54 +183,8 @@
                 <div class="text-white text-sm font-medium text-center">{{ formatTime(results.avgTime) }}</div>
                 <!-- Runs per Day unter der Zeit -->
                 <div class="text-xs text-gray-500 text-center">
-                  <span>{{ formatNumber(calculateRunsPerDay(results.avgTime)) }}/day</span>
+                  <span>{{ formatNumber(calculateRunsPerDay(results.avgTime)) }} Runs/day</span>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mobile Layout: XP - eine Zeile pro Materialtyp -->
-          <div class="resource-box">
-            <!-- Neue Header Struktur: 2 Einheiten -->
-            <div class="grid grid-cols-2 gap-2 mb-1">
-              <!-- Erste Einheit: Label links und Run Diff rechts -->
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <IconBrightness size="14" class="text-blue-400" />
-                  <span class="text-xs text-gray-300 ml-1">{{ resultLabels.xp || 'XP' }}</span>
-                </div>
-                <span 
-                  v-if="!isReferenceBuild && referenceResults?.xp && results.xp"
-                  :class="getDiffClasses(results.xp, referenceResults.xp, true, true)"
-                  class="text-xs flex items-center"
-                >
-                  <component :is="getDiffIcon(results.xp, referenceResults.xp)" size="9" class="mr-0.5" />
-                  <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
-                </span>
-              </div>
-              
-              <!-- Zweite Einheit: "per day" und Day Diff rechts -->
-              <div class="flex items-center justify-between">
-                <span class="text-xs text-gray-400"></span>
-                <span 
-                  v-if="!isReferenceBuild && referenceResults?.xp && referenceResults?.avgTime"
-                  :class="getDiffClasses(calculatePerDay(results.xp, results.avgTime), calculatePerDay(referenceResults.xp, referenceResults.avgTime), true, true)"
-                  class="text-xs flex items-center"
-                >
-                  <component :is="getDiffIcon(calculatePerDay(results.xp, results.avgTime), calculatePerDay(referenceResults.xp, referenceResults.avgTime))" size="9" class="mr-0.5" />
-                  <span>{{ getDiffText(calculatePerDay(results.xp, results.avgTime), calculatePerDay(referenceResults.xp, referenceResults.avgTime)) }}</span>
-                </span>
-              </div>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-2">
-              <div class="text-sm font-medium text-center">
-                {{ formatNumber(results.xp) }}
-                <div class="text-xs text-gray-500">per run</div>
-              </div>
-              <div class="text-sm font-medium text-center">
-                {{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }}
-                <div class="text-xs text-gray-500">per day</div>
               </div>
             </div>
           </div>
@@ -322,6 +326,52 @@
               </div>
             </div>
           </div>
+
+          <!-- Mobile Layout: XP - eine Zeile pro Materialtyp -->
+          <div class="resource-box">
+            <!-- Neue Header Struktur: 2 Einheiten -->
+            <div class="grid grid-cols-2 gap-2 mb-1">
+              <!-- Erste Einheit: Label links und Run Diff rechts -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <IconBrightness size="14" class="text-blue-400" />
+                  <span class="text-xs text-gray-300 ml-1">{{ resultLabels.xp || 'XP' }}</span>
+                </div>
+                <span 
+                  v-if="!isReferenceBuild && referenceResults?.xp && results.xp"
+                  :class="getDiffClasses(results.xp, referenceResults.xp, true, true)"
+                  class="text-xs flex items-center"
+                >
+                  <component :is="getDiffIcon(results.xp, referenceResults.xp)" size="9" class="mr-0.5" />
+                  <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
+                </span>
+              </div>
+              
+              <!-- Zweite Einheit: "per day" und Day Diff rechts -->
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400"></span>
+                <span 
+                  v-if="!isReferenceBuild && referenceResults?.xp && referenceResults?.avgTime"
+                  :class="getDiffClasses(calculatePerDay(results.xp, results.avgTime), calculatePerDay(referenceResults.xp, referenceResults.avgTime), true, true)"
+                  class="text-xs flex items-center"
+                >
+                  <component :is="getDiffIcon(calculatePerDay(results.xp, results.avgTime), calculatePerDay(referenceResults.xp, referenceResults.avgTime))" size="9" class="mr-0.5" />
+                  <span>{{ getDiffText(calculatePerDay(results.xp, results.avgTime), calculatePerDay(referenceResults.xp, referenceResults.avgTime)) }}</span>
+                </span>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2">
+              <div class="text-sm font-medium text-center">
+                {{ formatNumber(results.xp) }}
+                <div class="text-xs text-gray-500">per run</div>
+              </div>
+              <div class="text-sm font-medium text-center">
+                {{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }}
+                <div class="text-xs text-gray-500">per day</div>
+              </div>
+            </div>
+          </div>
           
           <!-- Mobile Layout: Boss-Stats in einer Reihe -->
           <div class="flex gap-2" v-if="results.bossKillRate !== '--' || results.bossHpPercent !== '--'">
@@ -402,7 +452,7 @@
             v-if="enabledStats.includes('stageDistribution') && results?.stageDistribution?.length"
             @click="showDistributionModal = true"
             class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-            title="Show Stage Distribution"
+            title="Show Build Statistics"
           >
             <IconChartBar size="16" />
           </button>
@@ -433,60 +483,34 @@
     
     <!-- Modals -->
     <BuildCodeModal :show="showCodeModal" :build="buildData" @close="showCodeModal = false" />
-    
-    <Teleport to="body">
-      <div v-if="showDistributionModal && results?.stageDistribution" 
-          class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/90 flex items-center justify-center p-2"
-          @click.self="showDistributionModal = false">
-        <div 
-          class="bg-gray-800 rounded-xl shadow-2xl w-full overflow-hidden animate-fade-in border border-gray-700"
-          @click.stop
-        >
-          <!-- Header mit Schließ-Button -->
-          <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-3 border-b border-gray-600 flex justify-between items-center">
-            <h2 class="text-lg font-bold text-white flex items-center">
-              <IconChartBar size="18" class="mr-2" :class="`text-${hunterColor}-400`" />
-              <span class="truncate">{{ buildData.name }}</span>
-            </h2>
-            <button 
-              @click="showDistributionModal = false" 
-              class="p-1.5 rounded-full hover:bg-gray-700 transition-colors"
-            >
-              <IconX size="18" class="text-white" />
-            </button>
-          </div>
-          
-          <!-- Modal-Inhalt -->
-          <div class="p-3">
-            <StageDistributionChart 
-              :distribution="results.stageDistribution"
-              :avg-stage="results.avgStage"
-              :max-stage="results.maxStage"
-              :min-stage="results.minStage"
-              :sample-size="props.totalIterations || totalIterations.value"   
-              :color="hunterColor"
-            />
-          </div>
-        </div>
-      </div>
-    </Teleport>
+
+    <!-- Statistics Modal - ersetzt das alte Teleport-Modal -->
+    <StatisticsModal 
+      :show="showDistributionModal" 
+      :build-name="buildData.name"
+      :distribution="results?.stageDistribution"
+      :avg-stage="results?.avgStage"
+      :max-stage="results?.maxStage"
+      :min-stage="results?.minStage"
+      :sample-size="totalIterations"
+      :build-stats="formattedBuildStats"  
+      :color="hunterColor"
+      @close="showDistributionModal = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, inject, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, inject, nextTick } from 'vue';
 import { 
-  IconAlertCircle, IconUser, IconDotsVertical, IconEdit, IconCopy, 
+  IconAlertCircle, IconEditCircle, IconDotsVertical, IconEdit, IconCopy, 
   IconShare, IconRefresh, IconArchive, IconArchiveOff, IconTrash, 
   IconGripVertical, IconAdjustmentsHorizontal, IconChartBar, IconX,
   IconBrightness, IconDiamond, IconHexagon, IconHexagons,
   IconReportMoney, IconStairs, IconClock, IconHeartFilled, IconSword 
 } from '@tabler/icons-vue';
 import { useRoute } from 'vue-router';
-import { useHunterStore } from '../../store/hunterStore';
-import { evaluateBuildWithWorker } from '../../services/workerService';
-import { getHunterById } from '../../constants/hunters';
-import * as EvaluationCacheService from '../../services/evaluationCacheService';
+import { useBuildEvaluation } from '@/composables/useBuildEvaluation';
 import { 
   formatNumber, formatStage, formatTime, formatPercent, getColorRGB,
   getDiffClasses, getDiffIcon, getDiffText,
@@ -494,20 +518,9 @@ import {
   getTimeDiffClasses, getTimeDiffText,
   getBossStatDiffClasses, getBossStatDiffText,
   calculatePerDay, calculateRunsPerDay
-} from './utils/BuildComparisonUtils';
-
-// Unterkomponenten importieren
-import BuildCodeModal from './BuildCodeModal.vue';
-
-// Global evaluation cache and reference build
-const evaluationCache = inject('evaluationCache', ref({}));
-const referenceBuildId = inject('referenceBuildId', ref(null));
-const referenceBuildResults = inject('referenceBuildResults', ref({})); 
-const referenceUpdateCounter = inject('referenceUpdateCounter', ref(0));
-
-const actualIterations = computed(() => {
-  return props.totalIterations || totalIterations.value || 1000;
-});
+} from '../../utils/BuildComparisonUtils';
+import BuildCodeModal from '../../BuildCodeModal.vue';
+import StatisticsModal from '@/components/common/StatisticsModal.vue';
 
 // Props
 const props = defineProps({
@@ -515,15 +528,7 @@ const props = defineProps({
   hunterId: { type: String, required: true },
   buildData: { type: Object, required: true },
   autoEvaluate: { type: Boolean, default: true },
-  index: { type: Number, default: -1 },
-  isReferenceBuild: { type: Boolean, default: false },
-  referenceResults: { type: Object, default: () => ({}) },
-  results: { type: Object, default: null },
-  isLoading: { type: Boolean, default: false },
-  hasError: { type: Boolean, default: false },
-  progressIteration: { type: Number, default: 0 },
-  totalIterations: { type: Number, default: 1000 },
-  resultLabels: { type: Object, default: () => ({}) }
+  index: { type: Number, default: -1 }
 });
 
 const emit = defineEmits([
@@ -531,26 +536,23 @@ const emit = defineEmits([
   'overrides', 'share', 'overridesBuild', 'evaluated', 'reevaluate'
 ]);
 
-// State
+// Route und Refs
 const route = useRoute();
-const hunterStore = useHunterStore();
-const isLoading = ref(false);
-const hasError = ref(false);
-const results = ref(null);
-const resultLabels = ref({});
-const currentCacheKey = ref(null);
-const showCodeModal = ref(false);
-const showDeleteConfirm = ref(false);
-
-// Refs
 const menuContainer = ref(null);
 const showMenu = ref(false);
+const showCodeModal = ref(false);
+const showDeleteConfirm = ref(false);
 const showDistributionModal = ref(false);
 
-// Toggle Menu mit Klick-außerhalb-Schließen
-function toggleMenu() {
-  showMenu.value = !showMenu.value;
-}
+// Name editing state
+const isEditingName = ref(false);
+const editableName = ref('');
+const nameInputRef = ref(null);
+
+const hasOverrides = computed(() => {
+  return props.buildData.overrides && 
+         Object.keys(props.buildData.overrides).length > 0;
+});
 
 // Display settings
 const displaySettings = inject('displaySettings', ref({ 
@@ -564,315 +566,26 @@ const enabledStats = computed(() => {
   return displaySettings.value?.enabledStats || ['lootPerMin', 'avgStage', 'avgTime', 'stageDistribution'];
 });
 
-// Fortschritts-Tracking-Variablen
-const progressIteration = ref(0);
-const totalIterations = ref(1000);
-const progressPercent = computed(() => {
-  const percent = Math.round((progressIteration.value / totalIterations.value) * 100);
-  return Math.min(99, percent);
-});
+// Build-Evaluierung mit dem Composable
+const {
+  isLoading,
+  hasError,
+  results,
+  resultLabels,
+  progressIteration,
+  totalIterations,
+  progressPercent,
+  isReferenceBuild,
+  referenceResults,
+  hunterColor,
+  formattedBuildStats,
+  evaluateBuild,
+  handleReevaluate,
+  loadHunterLabels,
+  setupWatches,
+  showToastMessage
+} = useBuildEvaluation(props, emit);
 
-// Berechne, ob dies der Referenz-Build ist
-const isReferenceBuild = computed(() => {
-  return props.index === 0 || props.buildId === referenceBuildId.value;
-});
-
-// Referenz-Ergebnisse für Vergleiche
-const referenceResults = computed(() => {
-  if (isReferenceBuild.value) return {};
-  return referenceBuildResults.value && typeof referenceBuildResults.value === 'object' 
-    ? referenceBuildResults.value 
-    : {};
-});
-
-// Hunter-Info
-const hunterInfo = computed(() => getHunterById(props.hunterId));
-const hunterColor = computed(() => hunterInfo.value?.color || 'gray');
-
-// Erstelle eine kompakte Version der Stages-Distribution (max 15 Balken)
-function getCompactDistribution(distribution) {
-  if (!distribution || !distribution.length) return [];
-  
-  // Wenn wenige Einträge vorhanden sind, direkt zurückgeben
-  if (distribution.length <= 15) return distribution;
-  
-  // Sonst kombinieren wir benachbarte Stages
-  const factor = Math.ceil(distribution.length / 15);
-  const result = [];
-  
-  for (let i = 0; i < distribution.length; i += factor) {
-    const chunk = distribution.slice(i, i + factor);
-    
-    // Berechne Durchschnittswerte für diesen Chunk
-    const avgStage = chunk.reduce((sum, item) => sum + item.stage, 0) / chunk.length;
-    const totalCount = chunk.reduce((sum, item) => sum + item.count, 0);
-    const avgPercentage = chunk.reduce((sum, item) => sum + item.percentage, 0) / chunk.length;
-    
-    result.push({
-      stage: Math.round(avgStage),
-      count: totalCount,
-      percentage: avgPercentage
-    });
-  }
-  
-  return result;
-}
-
-// Laden der Hunter-spezifischen Labels
-async function loadHunterLabels() {
-  try {
-    const hunter = getHunterById(props.hunterId);
-    
-    if (hunter && hunter.statsModule) {
-      const module = await hunter.statsModule();
-      
-      if (module && module.EVAL_RESULT_LABELS) {
-        resultLabels.value = module.EVAL_RESULT_LABELS;
-      } else {
-        setDefaultLabels();
-      }
-    } else {
-      setDefaultLabels();
-    }
-  } catch (error) {
-    console.error(`Error loading labels for hunter ${props.hunterId}:`, error);
-    setDefaultLabels();
-  }
-}
-
-// Fallback-Labels
-function setDefaultLabels() {
-  resultLabels.value = {
-    lootPerMin: 'Loot/Min',
-    avgStage: 'Avg Stage',
-    avgTime: 'Run Time',
-    xp: 'XP',
-    mat1: 'Material 1',
-    mat2: 'Material 2', 
-    mat3: 'Material 3',
-    bossHpPercent: 'Boss HP',
-    bossKillRate: 'Kill Rate'
-  };
-}
-
-// Weiterleitung des nameChanged Events
-function handleNameChanged(newName) {
-  emit('nameChanged', { buildId: props.buildId, name: newName });
-}
-
-// Behandle manuelle Reevaluierungen
-async function handleReevaluate() {
-  try {
-    // Cache für diesen Build zurücksetzen
-    if (currentCacheKey.value) {
-      await EvaluationCacheService.clearCache(props.hunterId, currentCacheKey.value);
-      await EvaluationCacheService.invalidateCacheKey(props.hunterId, currentCacheKey.value);
-    }
-    
-    isLoading.value = true;
-    hasError.value = false;
-    progressIteration.value = 0;
-    
-    // Kurze Verzögerung für visuelle Rückmeldung
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // Build neu evaluieren und explizit cachen
-    const evalResult = await evaluateBuild(true);
-    
-    // Stelle sicher, dass das Ergebnis im Cache gespeichert wird
-    if (evalResult && currentCacheKey.value) {
-      const newCacheKey = await EvaluationCacheService.generateCacheKey({
-        hunterId: props.hunterId,
-        buildData: props.buildData,
-        hunterStore
-      });
-      
-      await EvaluationCacheService.cacheResult({
-        hunterId: props.hunterId,
-        buildData: props.buildData,
-        hunterStore,
-        result: evalResult,
-        cacheKey: newCacheKey
-      });
-      
-      currentCacheKey.value = newCacheKey;
-    }
-    
-    // Zeige eine Bestätigung an
-    showToastMessage(`Build "${props.buildData.name || 'unnamed'}" re-evaluated`);
-    
-    // Emittiere reevaluate-Event
-    emit('reevaluate', props.buildId);
-  } catch (error) {
-    console.error('Error during re-evaluation:', error);
-    hasError.value = true;
-    isLoading.value = false;
-  }
-}
-
-// Hauptfunktion: Build evaluieren mit Cache-Unterstützung
-async function evaluateBuild(forceEvaluation = false) {
-  if (isLoading.value && progressIteration.value > 0) {
-    return null;
-  }
-  
-  isLoading.value = true;
-  hasError.value = false;
-  progressIteration.value = 0;
-  
-  try {
-    await loadHunterLabels();
-    
-    let shouldEvaluate = forceEvaluation;
-    let cachedResult = null;
-    let cacheKey = null;
-    
-    if (!forceEvaluation) {
-      const cacheResult = await EvaluationCacheService.shouldEvaluate({
-        hunterId: props.hunterId,
-        buildData: props.buildData,
-        hunterStore
-      });
-      
-      shouldEvaluate = cacheResult.shouldEvaluate;
-      cachedResult = cacheResult.cachedResult;
-      cacheKey = cacheResult.cacheKey;
-      
-      currentCacheKey.value = cacheKey;
-    } else {
-      const newCacheKey = await EvaluationCacheService.generateCacheKey({
-        hunterId: props.hunterId,
-        buildData: props.buildData,
-        hunterStore
-      });
-      currentCacheKey.value = newCacheKey;
-      shouldEvaluate = true;
-    }
-    
-    if (!shouldEvaluate && !forceEvaluation && cachedResult) {
-      results.value = cachedResult;
-      
-      emit('evaluated', {
-        buildId: props.buildId,
-        results: results.value,
-        isReference: isReferenceBuild.value
-      });
-      
-      if (isReferenceBuild.value && results.value) {
-        referenceBuildResults.value = { ...results.value };
-        if (typeof referenceUpdateCounter.value === 'number') {
-          referenceUpdateCounter.value++;
-        }
-      }
-      
-      return cachedResult;
-    }
-    
-    let store = {
-      hunterStats: { ...hunterStore.hunterStats },
-      upgrades: { ...hunterStore.upgrades },
-      hunterIterations: hunterStore.hunterIterations
-    };
-    
-    if (props.buildData.overrides && Object.keys(props.buildData.overrides).length > 0) {
-      store = {
-        hunterStats: JSON.parse(JSON.stringify(store.hunterStats)),
-        upgrades: JSON.parse(JSON.stringify(store.upgrades)),
-        hunterIterations: store.hunterIterations
-      };
-      
-      if (!store.hunterStats[props.hunterId]) {
-        store.hunterStats[props.hunterId] = {};
-      }
-      
-      for (const [key, value] of Object.entries(props.buildData.overrides)) {
-        if (key.includes('.')) {
-          const parts = key.split('.');
-          
-          if (parts[0] === 'upgrades') {
-            if (parts.length === 3) {
-              const category = parts[1];
-              const itemId = parts[2];
-              
-              if (!store.upgrades[category]) {
-                store.upgrades[category] = {};
-              }
-              
-              store.upgrades[category][itemId] = value;
-            }
-            else if (parts.length === 4) {
-              const category = parts[1];
-              const subcategory = parts[2];
-              const itemId = parts[3];
-              
-              if (!store.upgrades[category]) {
-                store.upgrades[category] = {};
-              }
-              if (!store.upgrades[category][subcategory]) {
-                store.upgrades[category][subcategory] = {};
-              }
-              
-              store.upgrades[category][subcategory][itemId] = value;
-            }
-          }
-        } else {
-          store.hunterStats[props.hunterId][key] = value;
-        }
-      }
-    }
-    
-    totalIterations.value = store.hunterIterations?.[props.hunterId] || 1000;
-    
-    const evalResult = await evaluateBuildWithWorker(
-      props.hunterId, 
-      props.buildData, 
-      store, 
-      (progress) => {
-        progressIteration.value = progress.iteration;
-      }
-    );
-    
-    results.value = evalResult;
-    progressIteration.value = totalIterations.value;
-    
-    if (!forceEvaluation) {
-      await EvaluationCacheService.cacheResult({
-        hunterId: props.hunterId,
-        buildData: props.buildData,
-        hunterStore,
-        result: evalResult,
-        cacheKey: currentCacheKey.value
-      });
-    }
-    
-    if (isReferenceBuild.value && results.value) {
-      referenceBuildResults.value = { ...results.value };
-      if (typeof referenceUpdateCounter.value === 'number') {
-        referenceUpdateCounter.value++;
-      }
-    }
-    
-    emit('evaluated', {
-      buildId: props.buildId,
-      results: results.value,
-      isReference: isReferenceBuild.value
-    });
-    
-    return evalResult;
-    
-  } catch (error) {
-    console.error('Error evaluating build:', error);
-    hasError.value = true;
-    return null;
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-// Bestätigung vor dem Löschen
-function confirmDelete() {
-  emit('delete', props.buildData);
-}
 
 // Schließe das Dropdown-Menü, wenn außerhalb geklickt wird
 function handleClickOutside(event) {
@@ -888,91 +601,44 @@ function handleStatsModalClosed(event) {
   }
 }
 
-// Hilfsfunktion für Toasts
-function showToastMessage(message, type = 'success') {
-  if (window.toast && typeof window.toast === 'function') {
-    window.toast[type](message);
-  } else {
-    console.log(`Toast message (${type}):`, message);
-  }
+// Start name editing
+function startNameEdit() {
+  editableName.value = props.buildData.name;
+  isEditingName.value = true;
+  nextTick(() => {
+    if (nameInputRef.value) {
+      nameInputRef.value.focus();
+      nameInputRef.value.select();
+    }
+  });
 }
 
-// Watch für Änderungen an den Build-Daten
-watch(
-  () => [
-    props.buildData.talents, 
-    props.buildData.attributes,
-    props.buildData.overrides
-  ], 
-  () => {
-    evaluateBuild();
-  },
-  { deep: true }
-);
-
-// Watch für Änderungen der Level-Property
-watch(
-  () => props.buildData.level,
-  (newLevel, oldLevel) => {
-    if (newLevel !== oldLevel) {
-      evaluateBuild();
-    }
-  }
-);
-
-// Watch für Upgrade-Änderungen
-watch(
-  () => hunterStore.upgrades,
-  async () => {
-    const shouldUpdate = await EvaluationCacheService.shouldUpdateOnUpgradesChange({
-      hunterId: props.hunterId,
-      buildData: props.buildData,
-      hunterStore
-    });
-    
-    if (shouldUpdate) {
-      evaluateBuild();
-    }
-  },
-  { deep: true }
-);
-
-// Watch für Iterationen
-watch(
-  () => hunterStore.hunterIterations[props.hunterId],
-  (newIterations, oldIterations) => {
-    if (newIterations > oldIterations) {
-      evaluateBuild();
-    }
-  }
-);
-
-// Überwache Änderungen am Referenz-Counter
-watch(referenceUpdateCounter, () => {
-  if (!isReferenceBuild.value && results.value) {
-    const tempResults = { ...results.value };
-    nextTick(() => {
-      results.value = tempResults;
+// Save edited name
+function saveName() {
+  if (editableName.value && editableName.value !== props.buildData.name) {
+    // Emit mit korrekter Struktur
+    emit('nameChanged', {
+      buildId: props.buildData.id,
+      name: editableName.value
     });
   }
+  isEditingName.value = false;
+}
+
+// Computed für aktuelle Iterationen
+const actualIterations = computed(() => {
+  return props.totalIterations || totalIterations.value || 1000;
 });
 
-// Überwache Änderungen an isReferenceBuild
-watch(isReferenceBuild, (newValue) => {
-  if (newValue && results.value) {
-    referenceBuildResults.value = { ...results.value };
-    if (typeof referenceUpdateCounter.value === 'number') {
-      referenceUpdateCounter.value++;
-    }
-  }
-});
+// Watches einrichten
+setupWatches();
 
 // Lebenszyklusmethoden
 onMounted(async () => {
   await loadHunterLabels();
   document.addEventListener('click', handleClickOutside);
   
-  if (props.autoEvaluate && !props.results) {
+  if (props.autoEvaluate) {
     setTimeout(() => {
       evaluateBuild();
     }, props.index * 100); 
@@ -984,7 +650,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
-
   window.removeEventListener('statsModalClosed', handleStatsModalClosed);
 });
 </script>

@@ -396,3 +396,15 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
   "upgrades.researches.res81",     // Research#81
 ];
+
+export const STATS_RESULT_LABELS = [
+  { key: 'hp', label: 'MAX HP', unit: '', roundDigits: 0 },
+  { key: 'atk', label: 'ATK Power', unit: '', roundDigits: 0 },
+  { key: 'regen', label: 'HP Regen', unit: '/s', roundDigits: 1 },
+  { key: 'dr', label: 'DMG Reduction', unit: '%', roundDigits: 1, multiplier: 100 },
+  { key: 'evade', label: 'Evade Chance', unit: '%', roundDigits: 1, multiplier: 100 },
+  { key: 'effect', label: 'Effect Chance', unit: '%', roundDigits: 1, multiplier: 100 },
+  { key: 'critchance', label: 'Crit Chance', unit: '%', roundDigits: 1, multiplier: 100 },
+  { key: 'critpower', label: 'Crit Power', unit: 'x', roundDigits: 2 },
+  { key: 'atkspeed', label: 'ATK Speed', unit: '/s', roundDigits: 2 }
+];

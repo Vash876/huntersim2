@@ -1,6 +1,6 @@
 <!-- filepath: /c:/Users/igorn/projects/huntersim2/src/views/HunterView.vue -->
 <template>
-  <div class="p-4 container mx-auto">
+  <div class="px-0.5 py-4 container mx-auto">
     <!-- Top Section mit integriertem Header und Aktionsleiste -->
     <div class="mb-6 rounded-lg overflow-hidden shadow-lg">
       <!-- Header mit Farb-Gradient -->
@@ -105,9 +105,9 @@
     
     <!-- Neue Build-Resultate -->
     <div v-if="builds.length > 0">
-  <!-- Nur auf Desktop anzeigen: Detaillierte Ansicht oder Kompakte Ansicht -->
+  <!-- Nur auf Desktop anzeigen: Vertikale Ansicht oder Horizontale Ansicht -->
   <div class="hidden md:block">
-    <!-- Detaillierte Ansicht Draggable -->
+    <!-- Vertikale Ansicht Draggable -->
     <Draggable 
       v-if="displaySettings.displayMode === 'Vertical'"
       v-model="builds"
@@ -115,7 +115,7 @@
         tag: 'div',
         type: 'transition-group',
         name: 'flip-list',
-        class: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'
+        class: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
       }"
       handle=".grip-handle"
       :group="{ name: 'builds' }"
@@ -128,7 +128,7 @@
     >
       <template #item="{ element, index }">
         <div class="build-card-wrapper">
-          <BuildResultCard 
+          <BuildCardVertical 
             :build-id="element.id"
             :hunter-id="element.hunterId || route.params.hunterId"
             :build-data="element"
@@ -146,7 +146,7 @@
       </template>
     </Draggable>
 
-    <!-- Kompakte Ansicht Draggable -->
+    <!-- Horizontale Ansicht Draggable -->
     <Draggable 
       v-else
       v-model="builds"
@@ -167,7 +167,7 @@
     >
       <template #item="{ element, index }">
         <div class="build-compact-wrapper">
-          <BuildCardCompact 
+          <BuildCardHorizontal 
             :build-id="element.id"
             :hunter-id="element.hunterId || route.params.hunterId"
             :build-data="element"
@@ -378,12 +378,13 @@ import {
 import StatsModal from '../components/common/StatsModal.vue';
 import BuildModal from '@/components/common/BuildModal.vue';
 import IterationsModal from '@/components/common/IterationsModal.vue';
-import BuildResultCard from '@/components/builds/BuildResultCard.vue';
 import Draggable from 'vuedraggable';
 import OverrideModal from '../components/common/OverrideModal.vue';
 import BuildImportModal from '@/components/builds/BuildImportModal.vue';
 import StatisticsDisplayModal from '@/components/common/StatisticsDisplayModal.vue';
-import BuildCardCompact from '@/components/builds/BuildCardCompact.vue';
+import BuildCardVertical from '@/components/builds/Views/verticalView/BuildCardVertical.vue'; 
+import BuildCardHorizontal from '@/components/builds/Views/horizontalView/BuildCardHorizontal.vue';
+import BuildCardMobile from '@/components/builds/Views/mobileView/BuildCardMobile.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -776,8 +777,14 @@ onMounted(() => {
 function handleNameChanged(data) {
   const buildIndex = builds.value.findIndex(b => b.id === data.buildId);
   if (buildIndex !== -1) {
+    // Lokale Liste aktualisieren
     builds.value[buildIndex].name = data.name;
-    // Optional: Speichere Änderungen in der Datenbank/Store
+    
+    // Im Store speichern (WICHTIG: Diese Zeile fehlt bisher)
+    hunterStore.renameBuild(data.buildId, data.name);
+    
+    // Optional: Erfolgs-Toast anzeigen
+    showToastMessage(`Build renamed to "${data.name}"`, 'success');
   }
 }
 

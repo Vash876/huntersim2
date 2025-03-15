@@ -25,6 +25,21 @@
 
       <!-- Build-Form Inhalt -->
       <div class="p-4">
+        <!-- Fehlermeldung für ungültigen Build -->
+        <div 
+          v-if="showSaveError" 
+          class="mb-5 bg-red-900/30 border border-red-500 p-3 rounded-lg text-red-300 flex items-start"
+        >
+          <div class="mr-3 pt-0.5 flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div>
+            <p class="font-medium">{{ saveError }}</p>
+            <p class="mt-1 text-sm opacity-80">Please check the highlighted attributes and ensure that you have adequately distributed points in the base attributes.</p>
+          </div>
+        </div>
         <!-- Build Name Input für Mobile -->
         <div class="mb-5 bg-gray-700 rounded-lg p-4 border border-gray-600">
           <label for="buildName" class="block text-xs font-medium text-gray-300 mb-2">Build Name</label>
@@ -229,7 +244,10 @@
               v-for="attribute in attributes" 
               :key="attribute.key" 
               :class="[
-                'bg-gray-700 rounded-lg p-2 border border-gray-600 hover:border-gray-500 transition-colors',
+                'bg-gray-700 rounded-lg p-2 border transition-colors',
+                invalidAttributes.includes(attribute.key) 
+                  ? 'border-red-500 bg-red-900/10' 
+                  : 'border-gray-600 hover:border-gray-500',
                 {'bg-gray-700/20 border-gray-700/50': !canIncreaseAttribute(attribute)}
               ]"
             >
@@ -462,6 +480,52 @@ const buildData = ref({
   attributes: {},
   timestamp: Date.now()
 });
+
+// Neue Funktionen zum Validieren von Attributen basierend auf min-values
+const showSaveError = ref(false);
+const saveError = ref('');
+const invalidAttributes = ref([]);
+
+// Prüft, ob ein einzelnes Attribut gültig ist (Voraussetzungen erfüllt)
+function isAttributeValid(attributeKey) {
+  const minValue = attributeMinValues.value[attributeKey] || 0;
+  if (minValue <= 0) return true;
+  
+  // Summe der Attributpunkte von Attributen mit niedrigeren Mindestwert-Anforderungen
+  let totalPointsFromLowerAttributes = 0;
+  
+  // Iteriere durch alle Attribute und prüfe ihre Min-Werte
+  for (const attribute of attributes.value) {
+    const attrKey = attribute.key;
+    const attrMinValue = attributeMinValues.value[attrKey] || 0;
+    
+    // Attribute mit niedrigeren Mindestanforderungen berücksichtigen
+    if (attrMinValue < minValue) {
+      // Multipliziere mit den Kosten, falls vorhanden
+      const attrCost = attribute.cost || 1;
+      totalPointsFromLowerAttributes += (buildData.value.attributes[attrKey] || 0) * attrCost;
+    }
+  }
+  
+  return totalPointsFromLowerAttributes >= minValue;
+}
+
+// Überprüft alle Attribute und aktualisiert die invalidAttributes Liste
+function validateAllAttributes() {
+  const invalid = [];
+  
+  // Prüfe jedes Attribut, ob seine Mindestanforderungen erfüllt sind
+  for (const attribute of attributes.value) {
+    const attrKey = attribute.key;
+    // Nur Attribute mit Punkten müssen validiert werden
+    if ((buildData.value.attributes[attrKey] || 0) > 0 && !isAttributeValid(attrKey)) {
+      invalid.push(attrKey);
+    }
+  }
+  
+  invalidAttributes.value = invalid;
+  return invalid.length === 0; // true wenn alle Attribute gültig sind
+}
 
 // Öffnet das Override-Modal
 function openOverrideModal() {
@@ -751,6 +815,19 @@ const {
 
 // Build speichern
 function saveBuild() {
+  // Erst alle Attribute validieren
+  const isValid = validateAllAttributes();
+  
+  if (!isValid) {
+    saveError.value = "This Build is invalid. Please check the attributes.";
+    showSaveError.value = true;
+    return;
+  }
+  
+  // Wenn alles gültig ist, normal fortfahren
+  saveError.value = '';
+  showSaveError.value = false;
+
   // Level und Zeitstempel aktualisieren
   buildData.value.level = calculatedLevel.value;
   buildData.value.timestamp = Date.now();
@@ -839,6 +916,11 @@ watch(() => props.buildToEdit, () => {
     initBuildData();
   }
 });
+
+// Watcher für Attributänderungen
+watch(() => buildData.value.attributes, () => {
+  validateAllAttributes();
+}, { deep: true });
 
 onMounted(() => {
   if (props.isVisible) {

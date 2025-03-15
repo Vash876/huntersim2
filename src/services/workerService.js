@@ -4,7 +4,7 @@ import * as Comlink from 'comlink';
  * Worker-Pool für parallele Build-Evaluierungen
  */
 class WorkerPool {
-  constructor(poolSize = 4) {
+  constructor(poolSize = 8) {
     this.poolSize = Math.max(1, Math.min(poolSize, navigator.hardwareConcurrency || 4));
     this.workers = [];
     this.apis = [];

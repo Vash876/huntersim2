@@ -1,62 +1,7 @@
-<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\builds\card-components\BuildResources.vue -->
 <template>
   <div>
     <h4 class="section-title">Loot</h4>
     <div class="resource-grid mt-3">
-      <!-- XP-Karte -->
-      <div class="resource-card border-blue-600/30">
-        <div class="resource-icon bg-blue-900/20">
-          <IconBrightness :size="18" class="text-blue-300" />
-        </div>
-        <div class="resource-content">
-          <div class="grid grid-cols-3 mb-1.5">
-            <span class="resource-label self-center">{{ resultLabels.xp }}</span>
-            <div class="flex justify-center">
-              <div 
-                v-if="!isReferenceBuild && referenceResults?.xp && results.xp"
-                class="flex items-center mr-15"
-              >
-                <div :class="getDiffClasses(results.xp, referenceResults.xp, true, true)" class="whitespace-nowrap inline-flex items-center text-xs">
-                  <component :is="getDiffIcon(results.xp, referenceResults.xp)" size="11" class="mr-0.5 flex-shrink-0" />
-                  <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="flex justify-end">
-              <div 
-                v-if="!isReferenceBuild && referenceResults?.xp && referenceResults?.avgTime && results.xp && results.avgTime"
-                class="flex items-center"
-              >
-                <div :class="getDiffClasses(
-                  calculatePerDay(results.xp, results.avgTime), 
-                  calculatePerDay(referenceResults.xp, referenceResults.avgTime), 
-                  true, 
-                  true
-                )" class="whitespace-nowrap inline-flex items-center text-xs">
-                  <component :is="getDiffIcon(
-                    calculatePerDay(results.xp, results.avgTime), 
-                    calculatePerDay(referenceResults.xp, referenceResults.avgTime)
-                  )" size="11" class="mr-0.5 flex-shrink-0" />
-                  <span>{{ getDiffText(
-                    calculatePerDay(results.xp, results.avgTime), 
-                    calculatePerDay(referenceResults.xp, referenceResults.avgTime)
-                  ) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="resource-values">
-            <div class="flex flex-col">
-              <span class="value text-blue-300">{{ formatNumber(results.xp) }}</span>
-              <span class="unit">per run</span>
-            </div>
-            <div class="flex flex-col">
-              <span class="value text-blue-300">{{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }}</span>
-              <span class="unit">per day</span>
-            </div>
-          </div>
-        </div>
-      </div>
       
       <!-- Material 1 -->
       <div class="resource-card border-red-600/30">
@@ -222,6 +167,61 @@
           </div>
         </div>
       </div>
+      <!-- XP-Karte -->
+      <div class="resource-card border-blue-600/30">
+        <div class="resource-icon bg-blue-900/20">
+          <IconBrightness :size="18" class="text-blue-300" />
+        </div>
+        <div class="resource-content">
+          <div class="grid grid-cols-3 mb-1.5">
+            <span class="resource-label self-center">{{ resultLabels.xp }}</span>
+            <div class="flex justify-center">
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.xp && results.xp"
+                class="flex items-center mr-15"
+              >
+                <div :class="getDiffClasses(results.xp, referenceResults.xp, true, true)" class="whitespace-nowrap inline-flex items-center text-xs">
+                  <component :is="getDiffIcon(results.xp, referenceResults.xp)" size="11" class="mr-0.5 flex-shrink-0" />
+                  <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <div 
+                v-if="!isReferenceBuild && referenceResults?.xp && referenceResults?.avgTime && results.xp && results.avgTime"
+                class="flex items-center"
+              >
+                <div :class="getDiffClasses(
+                  calculatePerDay(results.xp, results.avgTime), 
+                  calculatePerDay(referenceResults.xp, referenceResults.avgTime), 
+                  true, 
+                  true
+                )" class="whitespace-nowrap inline-flex items-center text-xs">
+                  <component :is="getDiffIcon(
+                    calculatePerDay(results.xp, results.avgTime), 
+                    calculatePerDay(referenceResults.xp, referenceResults.avgTime)
+                  )" size="11" class="mr-0.5 flex-shrink-0" />
+                  <span>{{ getDiffText(
+                    calculatePerDay(results.xp, results.avgTime), 
+                    calculatePerDay(referenceResults.xp, referenceResults.avgTime)
+                  ) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="resource-values">
+            <div class="flex flex-col">
+              <span class="value text-blue-300">{{ formatNumber(results.xp) }}</span>
+              <span class="unit">per run</span>
+            </div>
+            <div class="flex flex-col">
+              <span class="value text-blue-300">{{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }}</span>
+              <span class="unit">per day</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -234,7 +234,7 @@ import {
 import { 
   getDiffClasses, getDiffIcon, getDiffText,
   formatNumber, calculatePerDay
-} from '../utils/BuildComparisonUtils';
+} from '../../utils/BuildComparisonUtils';
 
 const props = defineProps({
   results: { type: Object, required: true },
