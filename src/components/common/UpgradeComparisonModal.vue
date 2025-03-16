@@ -491,6 +491,7 @@ import { getHunterById } from '../../constants/hunters';
 import { UPGRADES } from '../../constants/upgrades';
 import { calcCostDifference, formatCost } from '../../utils/statCostUtils';
 import { calcRelicCostDifference } from '../../utils/relicCostUtils';
+import { calcGadgetCostDifference } from '../../utils/gadgetCostUtils';
 import { 
   formatNumber, formatStage, formatPercent, formatTime,
   getDiffClasses, getDiffIcon, getDiffText,
@@ -674,6 +675,10 @@ function calculateScenarioCost(scenarioIndex) {
         }
         
         totalCost += calcRelicCostDifference(relicType, baseValue, baseValue + incrementValue);
+      } else if (upgrade.key.startsWith('upgrades.gadgets.')) {
+        // Gadget-Kosten
+        const gadgetId = upgrade.key.split('.')[2]; // Extrahiert 'anchor'
+        totalCost += calcGadgetCostDifference(gadgetId, baseValue, baseValue + incrementValue);
       } else {
         // Stat-Kosten (basierend auf statCostUtils)
         totalCost += calcCostDifference(
@@ -968,6 +973,10 @@ function getNextUpgradeCost(key, scenarioIndex = -1) {
     }
     
     return calcRelicCostDifference(relicType, currentValue, currentValue + 1);
+  } else if (key.startsWith('upgrades.gadgets.')) {
+    // Gadget-Kosten
+    const gadgetId = key.split('.')[2]; // Extrahiert 'anchor'
+    return calcGadgetCostDifference(gadgetId, currentValue, currentValue + 1);
   } else {
     // Stat-Kosten (basierend auf statCostUtils)
     return calcCostDifference(

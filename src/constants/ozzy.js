@@ -375,3 +375,66 @@ export const STATS_RESULT_LABELS = [
   { key: 'multipower', label: 'Multistrike Power', unit: 'x', roundDigits: 2 },
   { key: 'atkspeed', label: 'ATK Speed', unit: '/s', roundDigits: 2 }
 ];
+
+//Kosten Effizienz
+export const CURRENCY_TYPES = {
+  FARAHYTE: 'mat1',
+  GALVARIUM: 'mat2',
+  VECTID: 'mat3',
+  FRAGS: 'frags',
+};
+
+// Mapping der Upgrades zu ihren Währungen
+export const UPGRADE_CURRENCIES = {
+  // Base Stats
+  hp: CURRENCY_TYPES.FARAHYTE,
+  atk: CURRENCY_TYPES.FARAHYTE,
+  regen: CURRENCY_TYPES.FARAHYTE,
+  
+  dr: CURRENCY_TYPES.GALVARIUM,
+  evade: CURRENCY_TYPES.GALVARIUM,
+  effect: CURRENCY_TYPES.GALVARIUM,
+
+  critchance: CURRENCY_TYPES.VECTID,
+  critpower: CURRENCY_TYPES.VECTID,
+  atkspeed: CURRENCY_TYPES.VECTID,
+
+  // Relics
+  'upgrades.relics.r4': CURRENCY_TYPES.FRAGS,
+  'upgrades.relics.r7': CURRENCY_TYPES.FRAGS,
+  'upgrades.relics.r17': CURRENCY_TYPES.FRAGS,
+}
+
+export const UPGRADES_BY_CURRENCY = {
+  [CURRENCY_TYPES.FARAHYTE]: [
+    { key: 'hp', label: 'MAX HP'},
+    { key: 'atk', label: 'ATK Power'},
+    { key: 'regen', label: 'HP Regen'},
+  ],
+  
+  [CURRENCY_TYPES.GALVARIUM]: [
+    { key: 'dr', label: 'DMG Reduction', max: 40 },
+    { key: 'evade', label: 'Evade Chance', max: 50 },
+    { key: 'effect', label: 'Effect Chance', max: 50 },
+  ],
+  
+  [CURRENCY_TYPES.VECTID]: [
+    { key: 'multichance', label: 'Multistrike Chance', max: 100 },
+    { key: 'multipower', label: 'Multistrike Power', max: 100 },
+    { key: 'atkspeed', label: 'ATK Speed', max: 100 },
+  ],
+
+  [CURRENCY_TYPES.FRAGS]: [
+    { key: 'upgrades.relics.r4', label: 'Relic #4', max: 100 },
+    { key: 'upgrades.relics.r7', label: 'Relic #7', max: 100 },
+    { key: 'upgrades.relics.r17', label: 'Relic #17', max: 100 },
+    { key: 'upgrades.relics.r19', label: 'Relic #19', max: 8 }
+  ]
+};
+
+export const CURRENCY_LABELS = {
+  [CURRENCY_TYPES.FARAHYTE]: 'Farahite Ore',
+  [CURRENCY_TYPES.GALVARIUM]: 'Galvarium',
+  [CURRENCY_TYPES.VECTID]: 'Vectid Crystals',
+  [CURRENCY_TYPES.FRAGS]: 'Fragments',
+};
