@@ -125,7 +125,7 @@
               <div class="text-gray-400" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
                 {{ resultLabels.avgTime || 'Run Time' }} 
                 <span :class="isLowResolution ? 'text-3xs' : 'text-2xs'">
-                  (Runs/day)
+                  (Runs/d)
                 </span>
               </div>
             </div>
