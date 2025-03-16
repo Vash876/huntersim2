@@ -422,6 +422,162 @@ export function useBuildEvaluation(props, emit) {
       }
     });
   }
+
+  // Import der Evaluierungsfunktionalität
+  async function evaluateBuildWithParams(buildParams) {
+    try {
+      // Wir verwenden den evaluateBuildWithWorker aus dem WorkerService
+      const { evaluateBuildWithWorker } = await import('../services/workerService');
+      
+      // Store-Daten vorbereiten, ähnlich wie in useBuildEvaluation
+      const store = {
+        hunterStats: { ...hunterStore.hunterStats },
+        upgrades: { ...hunterStore.upgrades },
+        hunterIterations: hunterStore.hunterIterations
+      };
+      
+      // Wenn die Build-Parameter Overrides enthalten, diese anwenden
+      if (buildParams.overrides && Object.keys(buildParams.overrides).length > 0) {
+        // Deep-Copy erstellen
+        const storeWithOverrides = {
+          hunterStats: JSON.parse(JSON.stringify(store.hunterStats)),
+          upgrades: JSON.parse(JSON.stringify(store.upgrades)),
+          hunterIterations: store.hunterIterations
+        };
+        
+        // Sicherstellen, dass der Hunter-Stats-Eintrag existiert
+        if (!storeWithOverrides.hunterStats[props.hunterId]) {
+          storeWithOverrides.hunterStats[props.hunterId] = {};
+        }
+        
+        // Alle Overrides auf den Store anwenden
+        for (const [key, value] of Object.entries(buildParams.overrides)) {
+          if (key.includes('.')) {
+            const parts = key.split('.');
+            
+            if (parts[0] === 'upgrades') {
+              if (parts.length === 3) {
+                const category = parts[1];
+                const itemId = parts[2];
+                
+                if (!storeWithOverrides.upgrades[category]) {
+                  storeWithOverrides.upgrades[category] = {};
+                }
+                
+                storeWithOverrides.upgrades[category][itemId] = value;
+              }
+              else if (parts.length === 4) {
+                const category = parts[1];
+                const subcategory = parts[2];
+                const itemId = parts[3];
+                
+                if (!storeWithOverrides.upgrades[category]) {
+                  storeWithOverrides.upgrades[category] = {};
+                }
+                if (!storeWithOverrides.upgrades[category][subcategory]) {
+                  storeWithOverrides.upgrades[category][subcategory] = {};
+                }
+                
+                storeWithOverrides.upgrades[category][subcategory][itemId] = value;
+              }
+            }
+          } else {
+            storeWithOverrides.hunterStats[props.hunterId][key] = value;
+          }
+        }
+        
+        // Evaluiere den Build mit den angewendeten Overrides
+        return await evaluateBuildWithWorker(
+          props.hunterId, 
+          buildParams, 
+          storeWithOverrides, 
+          (progress) => {
+            // Optional: Fortschrittsanzeige für große Iterationszahlen
+            // progressIteration.value = progress.iteration;
+          }
+        );
+      } else {
+        // Wenn keine Overrides vorhanden sind, einfach den Build evaluieren
+        return await evaluateBuildWithWorker(
+          props.hunterId, 
+          buildParams, 
+          store, 
+          null
+        );
+      }
+    } catch (error) {
+      console.error('Error in build evaluation:', error);
+      throw error;
+    }
+  }
+  
+// UI State
+const loadError = ref(null);
+const selectedCurrency = ref('');
+const isEvaluating = ref(false);
+
+// Szenarien (3 mögliche Upgrade-Pfade)
+const comparisonResults = ref([]);
+const scenarioCosts = ref([0, 0, 0]);
+
+// Vereinfachte compareScenarios-Funktion ohne überflüssige Fortschrittsvariablen
+async function compareScenarios(scenarioIncrementsData, getGlobalValueFn, calculateScenarioCostFn) {
+  isEvaluating.value = true;
+  comparisonResults.value = [];
+  scenarioCosts.value = [0, 0, 0];
+  
+  try {
+    // Basisbuild-Daten
+    const baseBuild = JSON.parse(JSON.stringify(props.buildData));
+    const validScenarios = [];
+    const tempResults = [];
+    
+    // Zähle die gültigen Szenarien
+    for (let i = 0; i < 3; i++) {
+      if (Object.values(scenarioIncrementsData[i]).every(val => val === 0)) continue;
+      validScenarios.push(i);
+    }
+    
+    if (validScenarios.length === 0) {
+      isEvaluating.value = false;
+      return;
+    }
+    
+    // Erstelle Promises für alle gültigen Szenarien
+    const evaluationPromises = validScenarios.map(i => {
+      const modifiedBuild = JSON.parse(JSON.stringify(baseBuild));
+      modifiedBuild.overrides = modifiedBuild.overrides || {};
+      
+      Object.entries(scenarioIncrementsData[i]).forEach(([key, increment]) => {
+        if (increment <= 0) return;
+        const baseValue = getGlobalValueFn(key);
+        modifiedBuild.overrides[key] = baseValue + increment;
+      });
+      
+      return evaluateBuildWithParams(modifiedBuild).then(evalResult => {
+        tempResults[i] = { ...evalResult, index: i };
+        scenarioCosts.value[i] = calculateScenarioCostFn(i);
+        return i;
+      });
+    });
+    
+    // Alle Evaluierungen parallel ausführen und auf Abschluss warten
+    if (evaluationPromises.length > 0) {
+      await Promise.all(evaluationPromises);
+      
+      // Null-Einträge entfernen und das Ergebnisarray kompakt halten
+      comparisonResults.value = tempResults.filter(Boolean);
+    }
+  } catch (error) {
+    console.error('Error comparing scenarios:', error);
+  } finally {
+    isEvaluating.value = false;
+  }
+}
+
+  function getCurrentResults() {
+    return results.value;
+  }
   
   return {
     // State
@@ -433,6 +589,9 @@ export function useBuildEvaluation(props, emit) {
     progressIteration,
     totalIterations,
     progressPercent,
+    isEvaluating,
+    comparisonResults,
+    scenarioCosts,
     
     // Computed
     isReferenceBuild,
@@ -446,6 +605,9 @@ export function useBuildEvaluation(props, emit) {
     handleReevaluate,
     loadHunterLabels,
     setupWatches,
-    showToastMessage
+    showToastMessage,
+    evaluateBuildWithParams,
+    compareScenarios,
+    getCurrentResults
   };
 }

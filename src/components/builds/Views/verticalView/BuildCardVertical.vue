@@ -18,6 +18,7 @@
       @reevaluate="handleReevaluate"
       @show-distribution="showDistributionModal = true" 
       @showUploadDialog="showUploadDialog = true" 
+      @upgradeComparison="handleUpgradeComparison"
     />
     
     <div class="p-4 pb-3">
@@ -118,6 +119,16 @@
         :color="hunterColor"
         @close="showDistributionModal = false"
       />
+
+      <!-- UpgradeComparison Modal -->
+      <UpgradeComparisonModal
+        v-if="showUpgradeComparisonModal"
+        :isVisible="showUpgradeComparisonModal"
+        :hunterId="props.hunterId"
+        :buildData="{...buildData, results}"
+        @close="showUpgradeComparisonModal = false"
+        @applyOverrides="handleApplyUpgradeOverrides"
+      />
     </div>
   </div>
 </template>
@@ -137,7 +148,8 @@ import BuildStatistics from './BuildStatistics.vue';
 import BuildResources from './BuildResources.vue';
 import BuildBossStats from './BuildBossStats.vue';
 import BuildCodeModal from '../../BuildCodeModal.vue';
-import StatisticsModal from '@/components/common/StatisticsModal.vue'; // Neuer Import!
+import StatisticsModal from '@/components/common/StatisticsModal.vue'; 
+import UpgradeComparisonModal from '@/components/common/UpgradeComparisonModal.vue';
 
 // Props
 const props = defineProps({
@@ -150,7 +162,7 @@ const props = defineProps({
 
 const emit = defineEmits([
   'edit', 'clone', 'archive', 'delete', 'nameChanged',
-  'overrides', 'share', 'overridesBuild', 'evaluated', 'reevaluate', 'showUploadDialog'
+  'overrides', 'share', 'overridesBuild', 'evaluated', 'reevaluate', 'showUploadDialog', 'upgradeComparison'
 ]);
 
 // State und Refs
@@ -159,6 +171,7 @@ const hunterStore = useHunterStore();
 const showCodeModal = ref(false);
 const showDistributionModal = ref(false);
 const showUploadDialog = ref(false);
+const showUpgradeComparisonModal = ref(false);
 
 // Build-Evaluierung mit dem Composable
 const {
@@ -178,19 +191,9 @@ const {
   handleReevaluate,
   loadHunterLabels,
   setupWatches,
+  getCurrentResults,
   showToastMessage
 } = useBuildEvaluation(props, emit);
-
-// Computed properties
-const hunterIcon = computed(() => hunterInfo.value?.icon || IconUser);
-
-// Weiterleitung des nameChanged Events
-function handleNameChanged(newName) {
-  emit('nameChanged', { buildId: props.buildId, name: newName });
-}
-
-// Event-Handler für die Distributions-Anzeige
-const showDistribution = ref(false);
 
 // Funktion zum Importieren eines Builds aus einem Code
 function importBuild(build) {
@@ -221,6 +224,36 @@ function handleStatsModalClosed(event) {
 
 function handleBuildUploaded() {
   if (window.toast) window.toast.success('Build uploaded to database successfully');
+}
+
+// Handler für Upgrade-Vergleich
+function handleUpgradeComparison() {
+  // Den Build mit den aktuellen Ergebnissen vorbereiten
+  const buildWithResults = {
+    ...props.buildData,
+    results: getCurrentResults() // Verwende die neue Funktion aus dem Composable
+  };
+  
+  // Das Modal anzeigen und den erweiterten Build übergeben
+  showUpgradeComparisonModal.value = true;
+}
+
+// Handler für das Anwenden von Overrides aus dem UpgradeComparisonModal
+function handleApplyUpgradeOverrides(overrides) {
+  // Übergebene Overrides an den globalen Build-State senden
+  emit('overridesBuild', {
+    ...buildData,
+    overrides: {
+      ...buildData.overrides,
+      ...overrides
+    }
+  });
+  
+  // Neuberechnung auslösen
+  handleReevaluate();
+  
+  // Success-Nachricht zeigen
+  showToastMessage('Upgrade-Änderungen angewendet');
 }
 
 // Watches einrichten - verwendet das Composable

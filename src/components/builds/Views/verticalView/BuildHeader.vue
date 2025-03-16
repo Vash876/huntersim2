@@ -87,6 +87,13 @@
         </button>
 
         <button 
+          @click="emit('upgradeComparison')"
+          class="action-button-compact"
+          title="Upgrade-Effizienz vergleichen">
+          <IconScale size="16" />
+        </button>
+
+        <button 
           v-if="results?.stageDistribution?.length"
           @click="emit('showDistribution')"
           class="action-button-compact"
@@ -127,7 +134,7 @@ import {
   IconEdit, IconEditCircle, IconCopy, IconArchive, IconArchiveOff,
   IconTrash, IconGripVertical, IconDotsVertical, IconAdjustments,
   IconShare, IconRefresh, IconChartBar, IconX, IconCloudUpload,
-  IconAdjustmentsHorizontal
+  IconAdjustmentsHorizontal, IconScale
 } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -137,13 +144,12 @@ const props = defineProps({
   results: { type: Object, default: () => ({}) }
 });
 
-const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'reevaluate', 'showDistribution', 'showUploadDialog']);
+const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'reevaluate', 'showDistribution', 'showUploadDialog', 'upgradeComparison']);
 
 const isEditingName = ref(false);
 const editableName = ref('');
 const nameInputRef = ref(null);
 const showDropdown = ref(false);
-// showDistributionModal wurde entfernt
 const showUploadDialog = ref(false);
 
 // Berechne, ob Overrides aktiv sind
@@ -174,13 +180,6 @@ function saveName() {
     });
   }
   isEditingName.value = false;
-}
-
-function handleBuildUploaded() {
-  // Show success toast
-  if (window.toast) {
-    window.toast.success('Build uploaded to database successfully');
-  }
 }
 
 // Close dropdown when clicking outside

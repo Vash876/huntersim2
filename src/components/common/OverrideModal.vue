@@ -164,8 +164,6 @@
           No parameters available
         </div>
       </div>
-
-      <!-- Entferne den Footer mit Save/Cancel Buttons -->
     </div>
   </div>
 </template>
