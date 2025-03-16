@@ -14,19 +14,20 @@ export default async function handler(request, context) {
     const hunterId = url.pathname.substring(1);
     const buildCode = url.searchParams.get('code');
     
-    // Statische Hunter-Daten direkt im Script
+    // Level aus Code schätzen
+    const level = getBuildLevel(buildCode);
+    
+    // URL zur eigenen Bildgenerator-Funktion
+    const imageUrl = `${url.origin}/.netlify/functions/generate-image?hunter=${hunterId}&level=${level}`;
+    
+    // Statische Hunter-Daten
     const hunters = {
-      borge: { name: 'Borge', color: '#ef4444', level: getBuildLevel(buildCode) },
-      ozzy: { name: 'Ozzy', color: '#22c55e', level: getBuildLevel(buildCode) },
-      knox: { name: 'Knox', color: '#3b82f6', level: getBuildLevel(buildCode) }
+      borge: { name: 'Borge' },
+      ozzy: { name: 'Ozzy' },
+      knox: { name: 'Knox' }
     };
     
-    // Hunter-Daten abrufen oder Fallback
-    const hunter = hunters[hunterId] || { name: 'Hunter', color: '#6b7280', level: getBuildLevel(buildCode) };
-    
-    // Statt Shields.io nutzen wir einen statischen Link zu einem einfachen Bild
-    // Dies ist ein Beispiel - idealer wäre eine eigene Netlify Function, die ein Bild generiert
-    const imageUrl = `https://via.placeholder.com/1200x630/${hunter.color.substring(1)}/FFFFFF?text=Hunter+${hunter.name}+-+Level+${hunter.level}`;
+    const hunter = hunters[hunterId] || { name: 'Hunter' };
     
     // HTML mit Meta-Tags zurückgeben
     const html = `
@@ -34,8 +35,8 @@ export default async function handler(request, context) {
       <html>
         <head>
           <title>Hunter Simulator 2 - ${hunter.name} Build</title>
-          <meta property="og:title" content="Hunter Simulator 2 - ${hunter.name} Build" />
-          <meta property="og:description" content="Level ${hunter.level} ${hunter.name} Build - Click to view stats and details" />
+          <meta property="og:title" content="${hunter.name} Build - Level ${level}" />
+          <meta property="og:description" content="Hunter Simulator 2 - ${hunter.name} Build mit Level ${level}" />
           <meta property="og:image" content="${imageUrl}" />
           <meta property="og:image:width" content="1200" />
           <meta property="og:image:height" content="630" />
