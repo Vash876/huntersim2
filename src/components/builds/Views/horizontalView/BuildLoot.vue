@@ -32,22 +32,27 @@
     </div>
     
     <!-- Ergebnisse -->
-    <div v-else-if="results" class="flex flex-col space-y-3">
+    <div v-else-if="results" class="flex flex-col space-y-3" :class="{'text-sm': isLowResolution}">
       <!-- Stats Row -->
-      <div class="w-full grid gap-1.5" style="grid-template-columns: 7% 9% 9.2% 1px 13.6% 13.6% 13.6% 13.6% 1px auto;">
+      <div class="w-full grid gap-1.5" :class="{'low-res': isLowResolution}"
+           style="grid-template-columns: 7% 9% 9.2% 1px 13.6% 13.6% 13.6% 13.6% 1px auto;">
         <!-- Loot Score -->
         <div class="stat-box">
           <!-- Header mit Icon und Label -->
           <div class="flex items-center justify-between border-b border-gray-700/50 pb-1 mb-2">
             <div class="flex items-center">
-              <IconReportMoney :size="14" class="text-amber-400 mr-1" />
-              <div class="text-xs text-gray-400">{{ resultLabels.lootPerMin || 'Loot/Min' }}</div>
+              <IconReportMoney :size="isLowResolution ? 12 : 14" class="text-amber-400 mr-1" />
+              <div class="text-gray-400" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
+                {{ resultLabels.lootPerMin || 'Loot/Min' }}
+              </div>
             </div>
           </div>
           
           <!-- Wert zentriert -->
           <div class="flex justify-center items-center">
-            <span class="text-white font-medium text-center">{{ formatNumber(results.lootPerMin) }}</span>
+            <span class="text-white text-center" :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
+              {{ formatNumber(results.lootPerMin) }}
+            </span>
           </div>
           
           <!-- Prozentuale Abweichung zum Referenz-Build -->
@@ -55,8 +60,14 @@
             v-if="!isReferenceBuild && referenceResults?.lootPerMin"
             class="flex items-center justify-center mt-1 w-full"
           >
-            <div :class="getDiffClasses(results.lootPerMin, referenceResults.lootPerMin, true, true)" class="whitespace-nowrap inline-flex items-center">
-              <component :is="getDiffIcon(results.lootPerMin, referenceResults.lootPerMin)" size="11" class="mr-0.5 flex-shrink-0" />
+            <div :class="[
+              getDiffClasses(results.lootPerMin, referenceResults.lootPerMin, true, true),
+              'whitespace-nowrap inline-flex items-center',
+              isLowResolution ? 'text-2xs' : 'text-xs'
+            ]">
+              <component :is="getDiffIcon(results.lootPerMin, referenceResults.lootPerMin)" 
+                        :size="isLowResolution ? 10 : 11" 
+                        class="mr-0.5 flex-shrink-0" />
               <span>{{ getDiffText(results.lootPerMin, referenceResults.lootPerMin) }}</span>
             </div>
           </div>
@@ -67,15 +78,22 @@
           <!-- Header mit Icon und Label -->
           <div class="flex items-center justify-between border-b border-gray-700/50 pb-1 mb-2">
             <div class="flex items-center">
-              <IconStairs :size="14" :class="`text-${hunterColor}-400 mr-1`" />
-              <div class="text-xs text-gray-400">{{ resultLabels.avgStage || 'Avg Stage' }} (Range)</div>
+              <IconStairs :size="isLowResolution ? 12 : 14" :class="`text-${hunterColor}-400 mr-1`" />
+              <div class="text-gray-400" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
+                {{ resultLabels.avgStage || 'Avg Stage' }} 
+                <span :class="isLowResolution ? 'text-3xs' : 'text-2xs'">
+                  (Range)
+                </span>
+              </div>
             </div>
           </div>
           
           <!-- Wert und Range zentriert -->
           <div class="flex justify-center items-center">
-            <span class="text-white font-medium text-center">{{ formatStage(results.avgStage, true) }}</span>
-            <span class="text-xs text-gray-400 ml-1">
+            <span class="text-white text-center" :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
+              {{ formatStage(results.avgStage, true) }}
+            </span>
+            <span class="text-gray-400 ml-1" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
               ({{ formatStage(results.minStage) }}-{{ formatStage(results.maxStage) }})
             </span>
           </div>
@@ -85,8 +103,14 @@
             v-if="!isReferenceBuild && referenceResults?.avgStage"
             class="flex items-center justify-center mt-1 w-full"
           >
-            <div :class="getAbsoluteDiffClasses(results.avgStage, referenceResults.avgStage, true, true)" class="whitespace-nowrap inline-flex items-center">
-              <component :is="getDiffIcon(results.avgStage, referenceResults.avgStage)" size="11" class="mr-0.5 flex-shrink-0" />
+            <div :class="[
+              getAbsoluteDiffClasses(results.avgStage, referenceResults.avgStage, true, true),
+              'whitespace-nowrap inline-flex items-center',
+              isLowResolution ? 'text-2xs' : 'text-xs'
+            ]">
+              <component :is="getDiffIcon(results.avgStage, referenceResults.avgStage)" 
+                        :size="isLowResolution ? 10 : 11" 
+                        class="mr-0.5 flex-shrink-0" />
               <span>{{ getAbsoluteDiffText(results.avgStage, referenceResults.avgStage) }}</span>
             </div>
           </div>
@@ -97,15 +121,22 @@
           <!-- Header mit Icon und Label -->
           <div class="flex items-center justify-between border-b border-gray-700/50 pb-1 mb-2">
             <div class="flex items-center">
-              <IconClock :size="14" class="text-blue-400 mr-1" />
-              <div class="text-xs text-gray-400">{{ resultLabels.avgTime || 'Run Time' }} (Runs/day)</div>
+              <IconClock :size="isLowResolution ? 12 : 14" class="text-blue-400 mr-1" />
+              <div class="text-gray-400" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
+                {{ resultLabels.avgTime || 'Run Time' }} 
+                <span :class="isLowResolution ? 'text-3xs' : 'text-2xs'">
+                  (Runs/day)
+                </span>
+              </div>
             </div>
           </div>
           
           <!-- Wert und Runs/Day zentriert -->
           <div class="flex justify-center items-center">
-            <span class="text-white font-medium text-center">{{ formatTime(results.avgTime) }}</span>
-            <span class="text-xs text-gray-400 ml-1">
+            <span class="text-white text-center" :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
+              {{ formatTime(results.avgTime) }}
+            </span>
+            <span class="text-gray-400 ml-1" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
               ({{ formatNumber(calculateRunsPerDay(results.avgTime)) }})
             </span>
           </div>
@@ -115,8 +146,14 @@
             v-if="!isReferenceBuild && referenceResults?.avgTime"
             class="flex items-center justify-center mt-1 w-full"
           >
-            <div :class="getTimeDiffClasses(results.avgTime, referenceResults.avgTime, true)" class="whitespace-nowrap inline-flex items-center">
-              <component :is="getDiffIcon(referenceResults.avgTime, results.avgTime)" size="11" class="mr-0.5 flex-shrink-0" />
+            <div :class="[
+              getTimeDiffClasses(results.avgTime, referenceResults.avgTime, true),
+              'whitespace-nowrap inline-flex items-center',
+              isLowResolution ? 'text-2xs' : 'text-xs'
+            ]">
+              <component :is="getDiffIcon(referenceResults.avgTime, results.avgTime)" 
+                        :size="isLowResolution ? 10 : 11" 
+                        class="mr-0.5 flex-shrink-0" />
               <span>{{ getTimeDiffText(results.avgTime, referenceResults.avgTime) }}</span>
             </div>
           </div>
@@ -124,28 +161,37 @@
         
         <!-- Trenner vor Resources -->
         <div class="border-r border-gray-700/30 h-full"></div>
-                
+          
         <!-- Material 1 -->
         <div class="resource-box">
           <!-- Header mit Icon und Label -->
           <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
-            <IconDiamond size="14" class="mr-1.5 text-red-400" />
-            <span class="text-xs text-gray-300">{{ resultLabels.mat1 || 'Mat 1' }}</span>
+            <IconDiamond :size="isLowResolution ? 12 : 14" class="mr-1.5 text-red-400" />
+            <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
+              {{ resultLabels.mat1 || 'Mat 1' }}
+            </span>
           </div>
           
           <!-- Run und Day nebeneinander mit vertikalen Labels -->
           <div class="grid grid-cols-2 gap-1 mt-1.5 relative">
             <!-- Per Run (links) -->
             <div class="flex items-start">
-              <div class="vertical-label mr-1.5">RUN</div>
+              <div class="vertical-label mr-1.5" :class="{'text-2xs': isLowResolution}">RUN</div>
               <div class="flex-1">
-                <div class="font-medium text-center">{{ formatNumber(results.mat1) }}</div>
+                <div class="text-center" :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
+                  {{ formatNumber(results.mat1) }}
+                </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat1 && results.mat1"
-                  :class="getDiffClasses(results.mat1, referenceResults.mat1, true, true)"
-                  class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                  :class="[
+                    getDiffClasses(results.mat1, referenceResults.mat1, true, true),
+                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]"
                 >
-                  <component :is="getDiffIcon(results.mat1, referenceResults.mat1)" size="11" class="mr-0.5" />
+                  <component :is="getDiffIcon(results.mat1, referenceResults.mat1)" 
+                            :size="isLowResolution ? 10 : 11" 
+                            class="mr-0.5" />
                   <span>{{ getDiffText(results.mat1, referenceResults.mat1) }}</span>
                 </div>
               </div>
@@ -156,25 +202,30 @@
             
             <!-- Per Day (rechts) -->
             <div class="flex items-start">
-              <div class="vertical-label mr-1.5">DAY</div>
+              <div class="vertical-label mr-1.5" :class="{'text-2xs': isLowResolution}">DAY</div>
               <div class="flex-1">
-                <div class="font-medium text-center">{{ formatNumber(calculatePerDay(results.mat1, results.avgTime)) }}</div>
+                <div class="text-center" :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
+                  {{ formatNumber(calculatePerDay(results.mat1, results.avgTime)) }}
+                </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat1 && referenceResults?.avgTime"
-                  :class="getDiffClasses(
-                    calculatePerDay(results.mat1, results.avgTime), 
-                    calculatePerDay(referenceResults.mat1, referenceResults.avgTime), 
-                    true, 
-                    true
-                  )"
-                  class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                  :class="[
+                    getDiffClasses(
+                      calculatePerDay(results.mat1, results.avgTime), 
+                      calculatePerDay(referenceResults.mat1, referenceResults.avgTime), 
+                      true, 
+                      true
+                    ),
+                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]"
                 >
                   <component 
                     :is="getDiffIcon(
                       calculatePerDay(results.mat1, results.avgTime), 
                       calculatePerDay(referenceResults.mat1, referenceResults.avgTime)
                     )" 
-                    size="11" 
+                    :size="isLowResolution ? 10 : 11"
                     class="mr-0.5" 
                   />
                   <span>{{ 
@@ -188,28 +239,37 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Material 2 -->
         <div class="resource-box">
           <!-- Header mit Icon und Label -->
           <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
-            <IconHexagon size="14" class="mr-1.5 text-orange-400" />
-            <span class="text-xs text-gray-300">{{ resultLabels.mat2 || 'Mat 2' }}</span>
+            <IconHexagon :size="isLowResolution ? 12 : 14" class="mr-1.5 text-orange-400" />
+            <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
+              {{ resultLabels.mat2 || 'Mat 2' }}
+            </span>
           </div>
           
           <!-- Run und Day nebeneinander mit vertikalen Labels -->
           <div class="grid grid-cols-2 gap-1 mt-1.5 relative">
             <!-- Per Run (links) -->
             <div class="flex items-start">
-              <div class="vertical-label mr-1.5">RUN</div>
+              <div class="vertical-label mr-1.5" :class="{'text-2xs': isLowResolution}">RUN</div>
               <div class="flex-1">
-                <div class="font-medium text-center">{{ formatNumber(results.mat2) }}</div>
+                <div class="text-center" :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
+                  {{ formatNumber(results.mat2) }}
+                </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat2 && results.mat2"
-                  :class="getDiffClasses(results.mat2, referenceResults.mat2, true, true)"
-                  class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                  :class="[
+                    getDiffClasses(results.mat2, referenceResults.mat2, true, true),
+                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]"
                 >
-                  <component :is="getDiffIcon(results.mat2, referenceResults.mat2)" size="11" class="mr-0.5" />
+                  <component :is="getDiffIcon(results.mat2, referenceResults.mat2)" 
+                            :size="isLowResolution ? 10 : 11" 
+                            class="mr-0.5" />
                   <span>{{ getDiffText(results.mat2, referenceResults.mat2) }}</span>
                 </div>
               </div>
@@ -220,25 +280,30 @@
             
             <!-- Per Day (rechts) -->
             <div class="flex items-start">
-              <div class="vertical-label mr-1.5">DAY</div>
+              <div class="vertical-label mr-1.5" :class="{'text-2xs': isLowResolution}">DAY</div>
               <div class="flex-1">
-                <div class="font-medium text-center">{{ formatNumber(calculatePerDay(results.mat2, results.avgTime)) }}</div>
+                <div class="text-center" :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
+                  {{ formatNumber(calculatePerDay(results.mat2, results.avgTime)) }}
+                </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat2 && referenceResults?.avgTime"
-                  :class="getDiffClasses(
-                    calculatePerDay(results.mat2, results.avgTime), 
-                    calculatePerDay(referenceResults.mat2, referenceResults.avgTime), 
-                    true, 
-                    true
-                  )"
-                  class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                  :class="[
+                    getDiffClasses(
+                      calculatePerDay(results.mat2, results.avgTime), 
+                      calculatePerDay(referenceResults.mat2, referenceResults.avgTime), 
+                      true, 
+                      true
+                    ),
+                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]"
                 >
                   <component 
                     :is="getDiffIcon(
                       calculatePerDay(results.mat2, results.avgTime), 
                       calculatePerDay(referenceResults.mat2, referenceResults.avgTime)
                     )" 
-                    size="11" 
+                    :size="isLowResolution ? 10 : 11"
                     class="mr-0.5" 
                   />
                   <span>{{ 
@@ -252,28 +317,37 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Material 3 -->
         <div class="resource-box">
           <!-- Header mit Icon und Label -->
           <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
-            <IconHexagons size="14" class="mr-1.5 text-amber-400" />
-            <span class="text-xs text-gray-300">{{ resultLabels.mat3 || 'Mat 3' }}</span>
+            <IconHexagons :size="isLowResolution ? 12 : 14" class="mr-1.5 text-amber-400" />
+            <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
+              {{ resultLabels.mat3 || 'Mat 3' }}
+            </span>
           </div>
           
           <!-- Run und Day nebeneinander mit vertikalen Labels -->
           <div class="grid grid-cols-2 gap-1 mt-1.5 relative">
             <!-- Per Run (links) -->
             <div class="flex items-start">
-              <div class="vertical-label mr-1.5">RUN</div>
+              <div class="vertical-label mr-1.5" :class="{'text-2xs': isLowResolution}">RUN</div>
               <div class="flex-1">
-                <div class="font-medium text-center">{{ formatNumber(results.mat3) }}</div>
+                <div class="text-center" :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
+                  {{ formatNumber(results.mat3) }}
+                </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat3 && results.mat3"
-                  :class="getDiffClasses(results.mat3, referenceResults.mat3, true, true)"
-                  class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                  :class="[
+                    getDiffClasses(results.mat3, referenceResults.mat3, true, true),
+                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]"
                 >
-                  <component :is="getDiffIcon(results.mat3, referenceResults.mat3)" size="11" class="mr-0.5" />
+                  <component :is="getDiffIcon(results.mat3, referenceResults.mat3)" 
+                            :size="isLowResolution ? 10 : 11" 
+                            class="mr-0.5" />
                   <span>{{ getDiffText(results.mat3, referenceResults.mat3) }}</span>
                 </div>
               </div>
@@ -284,25 +358,30 @@
             
             <!-- Per Day (rechts) -->
             <div class="flex items-start">
-              <div class="vertical-label mr-1.5">DAY</div>
+              <div class="vertical-label mr-1.5" :class="{'text-2xs': isLowResolution}">DAY</div>
               <div class="flex-1">
-                <div class="font-medium text-center">{{ formatNumber(calculatePerDay(results.mat3, results.avgTime)) }}</div>
+                <div class="text-center" :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
+                  {{ formatNumber(calculatePerDay(results.mat3, results.avgTime)) }}
+                </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat3 && referenceResults?.avgTime"
-                  :class="getDiffClasses(
-                    calculatePerDay(results.mat3, results.avgTime), 
-                    calculatePerDay(referenceResults.mat3, referenceResults.avgTime), 
-                    true, 
-                    true
-                  )"
-                  class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                  :class="[
+                    getDiffClasses(
+                      calculatePerDay(results.mat3, results.avgTime), 
+                      calculatePerDay(referenceResults.mat3, referenceResults.avgTime), 
+                      true, 
+                      true
+                    ),
+                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]"
                 >
                   <component 
                     :is="getDiffIcon(
                       calculatePerDay(results.mat3, results.avgTime), 
                       calculatePerDay(referenceResults.mat3, referenceResults.avgTime)
                     )" 
-                    size="11" 
+                    :size="isLowResolution ? 10 : 11"
                     class="mr-0.5" 
                   />
                   <span>{{ 
@@ -321,23 +400,32 @@
         <div class="resource-box">
           <!-- Header mit Icon und Label -->
           <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
-            <IconBrightness size="14" class="mr-1.5 text-blue-400" />
-            <span class="text-xs text-gray-300">{{ resultLabels.xp || 'XP' }}</span>
+            <IconBrightness :size="isLowResolution ? 12 : 14" class="mr-1.5 text-blue-400" />
+            <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
+              {{ resultLabels.xp || 'XP' }}
+            </span>
           </div>
           
           <!-- Run und Day nebeneinander mit vertikalen Labels -->
           <div class="grid grid-cols-2 gap-1 mt-1.5 relative">
             <!-- Per Run (links) -->
             <div class="flex items-start">
-              <div class="vertical-label mr-1.5">RUN</div>
+              <div class="vertical-label mr-1.5" :class="{'text-2xs': isLowResolution}">RUN</div>
               <div class="flex-1">
-                <div class="font-medium text-center">{{ formatNumber(results.xp) }}</div>
+                <div class="text-center" :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
+                  {{ formatNumber(results.xp) }}
+                </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.xp && results.xp"
-                  :class="getDiffClasses(results.xp, referenceResults.xp, true, true)"
-                  class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                  :class="[
+                    getDiffClasses(results.xp, referenceResults.xp, true, true),
+                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]"
                 >
-                  <component :is="getDiffIcon(results.xp, referenceResults.xp)" size="11" class="mr-0.5" />
+                  <component :is="getDiffIcon(results.xp, referenceResults.xp)" 
+                            :size="isLowResolution ? 10 : 11" 
+                            class="mr-0.5" />
                   <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
                 </div>
               </div>
@@ -348,25 +436,30 @@
             
             <!-- Per Day (rechts) -->
             <div class="flex items-start">
-              <div class="vertical-label mr-1.5">DAY</div>
+              <div class="vertical-label mr-1.5" :class="{'text-2xs': isLowResolution}">DAY</div>
               <div class="flex-1">
-                <div class="font-medium text-center">{{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }}</div>
+                <div class="text-center" :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
+                  {{ formatNumber(calculatePerDay(results.xp, results.avgTime)) }}
+                </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.xp && referenceResults?.avgTime"
-                  :class="getDiffClasses(
-                    calculatePerDay(results.xp, results.avgTime), 
-                    calculatePerDay(referenceResults.xp, referenceResults.avgTime), 
-                    true, 
-                    true
-                  )"
-                  class="text-xs whitespace-nowrap flex items-center mt-0.5 justify-center mt-1"
+                  :class="[
+                    getDiffClasses(
+                      calculatePerDay(results.xp, results.avgTime), 
+                      calculatePerDay(referenceResults.xp, referenceResults.avgTime), 
+                      true, 
+                      true
+                    ),
+                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]"
                 >
                   <component 
                     :is="getDiffIcon(
                       calculatePerDay(results.xp, results.avgTime), 
                       calculatePerDay(referenceResults.xp, referenceResults.avgTime)
                     )" 
-                    size="11" 
+                    :size="isLowResolution ? 10 : 11"
                     class="mr-0.5" 
                   />
                   <span>{{ 
@@ -391,17 +484,23 @@
             <!-- Header mit Icon und Label -->
             <div class="flex items-center justify-between border-b border-gray-700/50 pb-1 mb-2">
               <div class="flex items-center">
-                <IconSword :size="14" class="text-green-400 mr-1" />
-                <div class="text-xs text-gray-400">{{ resultLabels.bossKillRate || 'Kill Rate' }}</div>
+                <IconSword :size="isLowResolution ? 12 : 14" class="text-green-400 mr-1" />
+                <div class="text-gray-400" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
+                  {{ resultLabels.bossKillRate || 'Kill Rate' }}
+                </div>
               </div>
             </div>
             
             <!-- Wert zentriert -->
             <div class="flex justify-center items-center">
-              <span v-if="results.bossKillRate !== '--'" class="text-white font-medium text-center">
+              <span v-if="results.bossKillRate !== '--'" 
+                  class="text-white text-center"
+                  :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
                 {{ formatPercent(results.bossKillRate) }}
               </span>
-              <span v-else class="text-gray-500 font-medium text-center">--</span>
+              <span v-else 
+                  class="text-gray-500 text-center"
+                  :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">--</span>
             </div>
             
             <!-- Prozentuale Abweichung zum Referenz-Build -->
@@ -409,8 +508,14 @@
               v-if="!isReferenceBuild && results.bossKillRate !== '--' && referenceResults?.bossKillRate && referenceResults.bossKillRate !== '--'"
               class="flex items-center justify-center mt-1 w-full"
             >
-              <div :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true, true)" class="whitespace-nowrap inline-flex items-center">
-                <component :is="getDiffIcon(results.bossKillRate, referenceResults.bossKillRate)" size="11" class="mr-0.5 flex-shrink-0" />
+              <div :class="[
+                  getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true, true),
+                  'whitespace-nowrap inline-flex items-center',
+                  isLowResolution ? 'text-2xs' : 'text-xs'
+                ]">
+                <component :is="getDiffIcon(results.bossKillRate, referenceResults.bossKillRate)" 
+                          :size="isLowResolution ? 10 : 11" 
+                          class="mr-0.5 flex-shrink-0" />
                 <span>{{ getBossStatDiffText(results.bossKillRate, referenceResults.bossKillRate) }}</span>
               </div>
             </div>
@@ -421,17 +526,23 @@
             <!-- Header mit Icon und Label -->
             <div class="flex items-center justify-between border-b border-gray-700/50 pb-1 mb-2">
               <div class="flex items-center">
-                <IconHeartFilled :size="14" class="text-pink-400 mr-1" />
-                <div class="text-xs text-gray-400">{{ resultLabels.bossHpPercent || 'Boss HP' }}</div>
+                <IconHeartFilled :size="isLowResolution ? 12 : 14" class="text-pink-400 mr-1" />
+                <div class="text-gray-400" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
+                  {{ resultLabels.bossHpPercent || 'Boss HP' }}
+                </div>
               </div>
             </div>
             
             <!-- Wert zentriert -->
             <div class="flex justify-center items-center">
-              <span v-if="results.bossHpPercent !== '--'" class="text-white font-medium text-center">
+              <span v-if="results.bossHpPercent !== '--'" 
+                  class="text-white text-center"
+                  :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">
                 {{ formatPercent(results.bossHpPercent) }}
               </span>
-              <span v-else class="text-gray-500 font-medium text-center">--</span>
+              <span v-else 
+                  class="text-gray-500 text-center"
+                  :class="isLowResolution ? 'text-sm' : 'text-base font-medium'">--</span>
             </div>
             
             <!-- Prozentuale Abweichung zum Referenz-Build -->
@@ -439,8 +550,14 @@
               v-if="!isReferenceBuild && results.bossHpPercent !== '--' && referenceResults?.bossHpPercent && referenceResults.bossHpPercent !== '--'"
               class="flex items-center justify-center mt-1 w-full"
             >
-              <div :class="getBossStatDiffClasses((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent), true, true)" class="whitespace-nowrap inline-flex items-center">
-                <component :is="getDiffIcon((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent))" size="11" class="mr-0.5 flex-shrink-0" />
+              <div :class="[
+                  getBossStatDiffClasses((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent), true, true),
+                  'whitespace-nowrap inline-flex items-center',
+                  isLowResolution ? 'text-2xs' : 'text-xs'
+                ]">
+                <component :is="getDiffIcon((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent))" 
+                          :size="isLowResolution ? 10 : 11" 
+                          class="mr-0.5 flex-shrink-0" />
                 <span>{{ getBossStatDiffText(results.bossHpPercent, referenceResults.bossHpPercent) }}</span>
               </div>
             </div>
@@ -452,7 +569,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { 
   IconAlertCircle, IconBrightness, IconDiamond, IconHexagon, IconHexagons,
   IconReportMoney, IconStairs, IconClock, IconSword, IconHeartFilled
@@ -516,6 +633,26 @@ const progressPercent = computed(() => {
   const percent = Math.round((props.progressIteration / props.totalIterations) * 100);
   return Math.min(99, percent);
 });
+
+// Neue Computed Property für Bildschirmauflösung
+const isLowResolution = ref(false);
+
+// Überprüfe die Bildschirmauflösung beim Mounten der Komponente
+function checkResolution() {
+  isLowResolution.value = window.innerWidth < 1704; // Unter Full HD, etwas an mein tree style tab angepasst
+}
+
+onMounted(() => {
+  // Erste Prüfung beim Laden
+  checkResolution();
+  // Event-Listener für Größenänderungen
+  window.addEventListener('resize', checkResolution);
+});
+
+onUnmounted(() => {
+  // Event-Listener entfernen
+  window.removeEventListener('resize', checkResolution);
+});
 </script>
 
 <style scoped>
@@ -531,7 +668,7 @@ const progressPercent = computed(() => {
   padding: 0.5rem;
   background-color: rgb(18, 26, 48);
   border-radius: 0.5rem;
-  position: relative; /* Wichtig für den absolut positionierten Trennstrich */
+  position: relative;
 }
 
 /* Vertikaler Text für Run und Day Labels */
@@ -540,7 +677,7 @@ const progressPercent = computed(() => {
   transform: rotate(180deg);
   font-size: 0.7rem;
   text-align: center;
-  color: #9ca3af; /* text-gray-400 */
+  color: #9ca3af;
   letter-spacing: 0.05em;
   font-weight: 500;
   width: 12px;
@@ -551,9 +688,34 @@ const progressPercent = computed(() => {
   justify-content: center;
 }
 
-/* Sorge dafür, dass die Inhalts-Container eine vernünftige Höhe haben */
-.flex.items-start {
-  align-self: flex-start;
+/* Niedrigere Auflösungen - kleinere vertikale Labels */
+.vertical-label.text-2xs {
+  font-size: 0.65rem;
+  width: 10px;
+  min-height: 24px;
+  letter-spacing: 0.03em;
+}
+
+/* Kleinere Textgröße für niedrige Auflösungen */
+.text-2xs {
+  font-size: 0.65rem;
+  line-height: 1rem;
+}
+
+.text-3xs {
+  font-size: 0.6rem;
+  line-height: 0.9rem;
+  opacity: 0.85;
+}
+
+/* Verkleinere den Padding für niedrige Auflösungen */
+.low-res .stat-box, 
+.low-res .resource-box {
+  padding: 0.4rem;
+}
+
+.low-res .vertical-label {
+  min-height: 24px;
 }
 
 /* Verbessere das Layout der Resource-Boxen */
