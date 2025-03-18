@@ -413,8 +413,8 @@ export const UPGRADES_BY_CURRENCY = {
   ],
   
   [CURRENCY_TYPES.GALVARIUM]: [
-    { key: 'dr', label: 'DMG Reduction', max: 40 },
-    { key: 'evade', label: 'Evade Chance', max: 50 },
+    { key: 'dr', label: 'DMG Reduction', max: 70 },
+    { key: 'evade', label: 'Evade Chance', max: 40 },
     { key: 'effect', label: 'Effect Chance', max: 50 },
   ],
   
