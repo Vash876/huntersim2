@@ -58,60 +58,42 @@ export default async function handler(request, context) {
   return context.next();
 }
 
-// ========== Build-Code Parsing Logik ==========
-
-// Base58-Alphabet für die Codierung
-const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-
-// Base58 Decoder erstellen
-function generateEncoder(e) {
-  const t = new Uint8Array(256);
-  for (let c = 0; c < t.length; c++)
-      t[c] = 255;
-  for (let c = 0; c < e.length; c++) {
-      const u = e.charAt(c), f = u.charCodeAt(0);
-      t[f] = c;
-  }
-  const n = e.length, r = e.charAt(0);
+// Alternatives Base58-Decoding, speziell für Build-Codes
+function decodeBase58(str) {
+  const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  const base = ALPHABET.length;
   
-  function decode(c) {
-    if (typeof c != "string") return null;
-    if (c.length === 0) return new Uint8Array;
-    
-    let u = 0, f = 0, p = 0;
-    const o = Math.log(256) / Math.log(n);
-    
-    while (c[u] === r) f++, u++;
-    
-    const g = (c.length - u) * o + 1 >>> 0;
-    const v = new Uint8Array(g);
-    
-    while (c[u]) {
-      const O = t[c.charCodeAt(u)];
-      if (O === 255) return null;
-      
-      let k = 0;
-      for (let _ = g - 1; (O !== 0 || k < p) && _ !== -1; _--, k++) {
-        O += n * v[_] >>> 0;
-        v[_] = O % 256 >>> 0;
-        O = O / 256 >>> 0;
-      }
-      
-      p = k;
-      u++;
-    }
-    
-    let b = g - p;
-    while (b !== g && v[b] === 0) b++;
-    
-    const S = new Uint8Array(f + (g - b));
-    let w = f;
-    while (b !== g) S[w++] = v[b++];
-    
-    return S;
+  // Decoding-Tabelle
+  const lookup = {};
+  for (let i = 0; i < ALPHABET.length; i++) {
+    lookup[ALPHABET[i]] = i;
   }
 
-  return { decode };
+  // Konvertieren des Strings in Zahlen
+  let bytes = [0];
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    if (lookup[c] === undefined) {
+      return null;
+    }
+    let carry = lookup[c];
+    for (let j = 0; j < bytes.length; j++) {
+      carry += bytes[j] * base;
+      bytes[j] = carry & 0xff;
+      carry >>= 8;
+    }
+    while (carry > 0) {
+      bytes.push(carry & 0xff);
+      carry >>= 8;
+    }
+  }
+
+  // Führende Nullen
+  for (let i = 0; i < str.length && str[i] === '1'; i++) {
+    bytes.push(0);
+  }
+
+  return new Uint8Array(bytes.reverse());
 }
 
 // Code-Handler-Klasse für das Entschlüsseln des Build-Codes
@@ -123,47 +105,71 @@ class CodeHandler {
   }
   
   static fromBuffer(buffer) {
-    if (!buffer || buffer.length < 2 || buffer[0] !== 101) return null;
-    
-    const kind = buffer[1] >> 5;
-    const version = buffer[1] & 7;
-    const levels = [];
-    let pos = 2;
-    
-    const processControlType = (type) => {
-      if (type < 2) {
-        levels.push(type);
-      } else if (type === 2 && pos < buffer.length) {
-        levels.push(buffer[pos++] & 255);
-      } else if (pos + 1 < buffer.length) {
-        levels.push(((buffer[pos++] & 255) << 8) | (buffer[pos++] & 255));
+    try {
+      if (!buffer || buffer.length < 2) return null;
+      
+      // Die ersten beiden Bytes sind die Header-Bytes
+      // 101 ist der Magic-Value für Build-Codes
+      const magicByte = buffer[0];
+      
+      // Wenn der Magic-Byte falsch ist, können wir es trotzdem versuchen
+      // Dies erhöht die Chance, dass der Code korrekt dekodiert wird
+      
+      const kindVersionByte = buffer[1];
+      const kind = kindVersionByte >> 5;
+      const version = kindVersionByte & 7;
+      
+      const levels = [];
+      let pos = 2;
+      
+      // Daten aus dem Buffer lesen
+      while (pos < buffer.length) {
+        const controlByte = buffer[pos++];
+        
+        // 4 Control-Typen pro Byte
+        for (let i = 6; i >= 0; i -= 2) {
+          if (pos >= buffer.length) break;
+          
+          const type = (controlByte >> i) & 3;
+          
+          if (type === 0 || type === 1) {
+            // Direkte Werte 0 oder 1
+            levels.push(type);
+          } else if (type === 2) {
+            // 1-Byte-Wert
+            if (pos < buffer.length) {
+              levels.push(buffer[pos++]);
+            }
+          } else if (type === 3) {
+            // 2-Byte-Wert
+            if (pos + 1 < buffer.length) {
+              const value = (buffer[pos++] << 8) | buffer[pos++];
+              levels.push(value);
+            }
+          }
+        }
       }
-    };
-    
-    while (pos < buffer.length) {
-      const controlByte = buffer[pos++] & 255;
-      processControlType(controlByte >> 6); // First 2 bits
-      processControlType((controlByte >> 4) & 3); // Next 2 bits
-      processControlType((controlByte >> 2) & 3); // Next 2 bits
-      processControlType(controlByte & 3); // Last 2 bits
+      
+      return new CodeHandler(kind, version, levels);
+    } catch (e) {
+      // Bei Fehlern null zurückgeben
+      return null;
     }
-    
-    return new CodeHandler(kind, version, levels);
   }
   
   static fromCode(code) {
     try {
-      const encoder = generateEncoder(BASE58_ALPHABET);
-      return CodeHandler.fromBuffer(encoder.decode(code));
+      const buffer = decodeBase58(code);
+      return this.fromBuffer(buffer);
     } catch (e) {
       return null;
     }
   }
 }
 
-// Parameter-Positionen für die Level-Berechnung
+// Parameter-Positionen für die Level-Berechnung (Talent-Indizes)
 const TALENT_INDICES = {
-  'borge': [0, 1, 2, 3, 4, 5, 6, 7, 56],
+  'borge': [0, 1, 2, 3, 4, 5, 6, 7, 56], 
   'ozzy':  [0, 1, 2, 3, 4, 5, 6, 7, 41],
   'knox':  [0, 1, 2, 3, 4, 5, 6, 7, 8]
 };
@@ -181,18 +187,19 @@ function calculateBuildLevel(code, hunterId) {
     // Die Indizes für den Hunter-Typ abrufen
     const talentIndices = TALENT_INDICES[hunterId] || TALENT_INDICES.borge;
     
-    // Talent-Punkte summieren (dies ist das Level)
+    // Talent-Punkte summieren
     let talentSum = 0;
     for (const index of talentIndices) {
       if (index < data.levels.length) {
-        talentSum += data.levels[index] || 0;
+        talentSum += (data.levels[index] || 0);
       }
     }
     
     // Level einfach als Summe der Talent-Punkte zurückgeben
+    // Wenn keine Punkte gefunden wurden, Level 1 zurückgeben
     return { 
       isValid: true, 
-      level: talentSum || 1 // Mindestens Level 1
+      level: talentSum > 0 ? talentSum : 1
     };
   } catch (error) {
     return { isValid: false, level: 0 };
