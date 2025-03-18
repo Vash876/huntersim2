@@ -46,11 +46,10 @@
             <!-- Overrides Badge - nur anzeigen wenn Overrides vorhanden -->
             <span 
               v-if="hasOverrides" 
-              class="ml-2 text-xs px-2 py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center"
+              class="ml-2 text-xs pl-2 pr-1  py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center"
               title="Build uses custom overrides"
             >
               <IconAdjustmentsHorizontal size="14" class="mr-1" />
-              Overrides
             </span>
             
             <span v-if="buildData.isArchived" class="ml-2 text-xs px-2 py-0.5 bg-gray-700/50 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">

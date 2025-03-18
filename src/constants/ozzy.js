@@ -438,3 +438,10 @@ export const CURRENCY_LABELS = {
   [CURRENCY_TYPES.VECTID]: 'Vectid Crystals',
   [CURRENCY_TYPES.FRAGS]: 'Fragments',
 };
+
+export const CURRENCY_LABELS_SHORT = {
+  [CURRENCY_TYPES.FARAHYTE]: 'Fara',
+  [CURRENCY_TYPES.GALVARIUM]: 'Galv',
+  [CURRENCY_TYPES.VECTID]: 'Vectid',
+  [CURRENCY_TYPES.FRAGS]: 'Frags',
+};

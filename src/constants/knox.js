@@ -315,7 +315,13 @@ export const UPGRADES_BY_CURRENCY = {
 };
 
 export const CURRENCY_LABELS = {
-  [CURRENCY_TYPES.GLACIUM]: 'Galcium',
+  [CURRENCY_TYPES.GLACIUM]: 'Glacium',
   [CURRENCY_TYPES.QUARTZ]: 'Aquarius Quartz',
   [CURRENCY_TYPES.TESSARECTS]: 'Tessarects',
+};
+
+export const CURRENCY_LABELS_SHORT = {
+  [CURRENCY_TYPES.GLACIUM]: 'Glac',
+  [CURRENCY_TYPES.QUARTZ]: 'Quartz',
+  [CURRENCY_TYPES.TESSARECTS]: 'Tess',
 };

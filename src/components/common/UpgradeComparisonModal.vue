@@ -54,7 +54,8 @@
               :key="currency"
               @click="selectedCurrency = currency"
               :class="[
-                'px-4 py-2 cursor-pointer whitespace-nowrap flex items-center',
+                'cursor-pointer whitespace-nowrap flex items-center',
+                'px-4 py-2 md:px-4 md:py-2 sm:px-2 sm:py-1', // Reduzierte Abstände für mobile Geräte
                 selectedCurrency === currency 
                   ? 'border-b-2 border-blue-500 text-white' 
                   : 'text-gray-400 hover:text-gray-200'
@@ -63,9 +64,10 @@
               <component 
                 :is="getCurrencyIcon(currency)" 
                 :size="16" 
-                :class="`text-${getCurrencyColor(currency)} mr-1.5`" 
+                :class="`text-${getCurrencyColor(currency)} mr-1 md:mr-1.5`"
               />
-              {{ currencyLabels[currency] }}
+              <span class="hidden md:inline">{{ currencyLabels[currency] }}</span>
+              <span class="md:hidden text-xs">{{ currencyLabelsShort[currency] || currencyLabels[currency] }}</span>
             </div>
           </div>
         </div>
@@ -88,13 +90,17 @@
                   <span v-if="upgrade.max" class="text-xs text-gray-500 ml-1">(max {{ upgrade.max }})</span>
                 </label>
                 <div class="flex items-center justify-between">
-                  <!-- Global Value Display -->
+                  <!-- Build Value Display -->
                   <div class="flex items-center">
-                    <div class="text-[10px] mr-2 text-gray-400 uppercase">global</div>
-                    <div class="text-xs text-gray-300">
-                      {{ getGlobalValue(upgrade.key) }}
+                    <div class="text-[10px] mr-2 uppercase" 
+                        :class="isOverrideValue(upgrade.key) ? 'text-blue-400' : 'text-gray-400'">
+                      {{ isOverrideValue(upgrade.key) ? 'override' : 'global' }}
                     </div>
-                    <!-- Next Cost Display - NEU -->
+                    <div class="text-xs" 
+                        :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
+                      {{ getBaseValue(upgrade.key) }}
+                    </div>
+                    <!-- Next Cost Display bleibt gleich -->
                     <div class="text-[10px] ml-3 text-yellow-400 uppercase">
                       next: {{ formatCost(getNextUpgradeCost(upgrade.key, 0)) }}
                     </div>
@@ -153,13 +159,17 @@
                   <span v-if="upgrade.max" class="text-xs text-gray-500 ml-1">(max {{ upgrade.max }})</span>
                 </label>
                 <div class="flex items-center justify-between">
-                  <!-- Global Value Display -->
+                  <!-- Build Value Display -->
                   <div class="flex items-center">
-                    <div class="text-[10px] mr-2 text-gray-400 uppercase">global</div>
-                    <div class="text-xs text-gray-300">
-                      {{ getGlobalValue(upgrade.key) }}
+                    <div class="text-[10px] mr-2 uppercase" 
+                        :class="isOverrideValue(upgrade.key) ? 'text-blue-400' : 'text-gray-400'">
+                      {{ isOverrideValue(upgrade.key) ? 'override' : 'global' }}
                     </div>
-                    <!-- Next Cost Display - NEU -->
+                    <div class="text-xs" 
+                        :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
+                      {{ getBaseValue(upgrade.key) }}
+                    </div>
+                    <!-- Next Cost Display bleibt gleich -->
                     <div class="text-[10px] ml-3 text-yellow-400 uppercase">
                       next: {{ formatCost(getNextUpgradeCost(upgrade.key, 1)) }}
                     </div>
@@ -218,13 +228,17 @@
                   <span v-if="upgrade.max" class="text-xs text-gray-500 ml-1">(max {{ upgrade.max }})</span>
                 </label>
                 <div class="flex items-center justify-between">
-                  <!-- Global Value Display -->
+                  <!-- Build Value Display -->
                   <div class="flex items-center">
-                    <div class="text-[10px] mr-2 text-gray-400 uppercase">global</div>
-                    <div class="text-xs text-gray-300">
-                      {{ getGlobalValue(upgrade.key) }}
+                    <div class="text-[10px] mr-2 uppercase" 
+                        :class="isOverrideValue(upgrade.key) ? 'text-blue-400' : 'text-gray-400'">
+                      {{ isOverrideValue(upgrade.key) ? 'override' : 'global' }}
                     </div>
-                    <!-- Next Cost Display - NEU -->
+                    <div class="text-xs" 
+                        :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
+                      {{ getBaseValue(upgrade.key) }}
+                    </div>
+                    <!-- Next Cost Display bleibt gleich -->
                     <div class="text-[10px] ml-3 text-yellow-400 uppercase">
                       next: {{ formatCost(getNextUpgradeCost(upgrade.key, 2)) }}
                     </div>
@@ -268,10 +282,63 @@
           </div>
         </div>
 
+        <!-- Loot Collection Time Table -->
+        <div class="mt-6">
+          <div class="text-lg text-white mb-3 flex items-center">
+            <IconClock size="20" class="mr-2 text-blue-400" />
+            Loot Collection Time
+            <span class="ml-2 text-xs text-gray-400">(not applicable for Fragments)</span>
+          </div>
+          
+          <!-- Container mit responsiver Breite -->
+          <div class="bg-gray-850 border border-gray-700 p-4 rounded-lg overflow-x-auto md:max-w-lg">
+            <table class="w-full text-sm">
+              <colgroup>
+                <col class="w-[25%]" /> <!-- Scenario -->
+                <col class="w-[25%]" /> <!-- Cost -->
+                <!--<col class="w-[20%]" />  Runs Needed -->
+                <col class="w-[40%]" /> <!-- Collection Time -->
+              </colgroup>
+              <thead>
+                <tr class="border-b border-gray-700">
+                  <th class="py-2 px-4 text-left text-gray-400">Scenario</th>
+                  <th class="py-2 px-6 text-left text-gray-400">Cost</th>
+                  <!--<th class="py-2 px-6 text-center text-gray-400">Runs Needed</th>-->
+                  <th class="py-2 px-6 text-right text-gray-400">Collection Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Eine Zeile für jedes Szenario -->
+                <tr 
+                  v-for="(_, index) in scenarios" 
+                  :key="`time-${index}`"
+                  :class="[
+                    'border-gray-700',
+                    index < scenarios.length - 1 ? 'border-b' : ''
+                  ]"
+                >
+                  <td class="py-2 px-4 text-gray-300 font-medium">
+                    {{ index + 1 }}
+                  </td>
+                  <td class="py-2 px-6 text-left text-white">
+                    {{ formatCost(scenarioCosts[index]) }} 
+                  </td>
+                  <!--<td class="py-2 px-6 text-center text-gray-300">
+                    {{ calculateRunsNeeded(index) }}
+                  </td>-->
+                  <td class="py-2 px-6 text-right">
+                    {{ formatCollectionTime(getCollectionTimeInMinutes(index)) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Compare Button -->
         <div class="mt-6 flex justify-center">
           <button 
-            @click="() => compareScenarios(scenarioIncrements, getGlobalValue, calculateScenarioCost)"
+            @click="() => compareScenarios(scenarioIncrements, getBaseValue, calculateScenarioCost)"
             class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center transition-colors"
             :disabled="isEvaluating || !hasAnyChanges"
           >
@@ -290,7 +357,7 @@
         </div>
 
         <!-- Results -->
-        <div v-if="comparisonResults.length > 0" class="mt-6">
+        <div v-if="comparisonResults.length > 0 && !hideResults" class="mt-6 results-container">
           <div class="text-lg text-white mb-3 flex items-center">
             <IconChartPie size="20" class="mr-2 text-blue-400" />
             Results
@@ -454,7 +521,7 @@
                 </tr>
                 
                 <!-- Costs -->
-                <tr class="border-b border-gray-700">
+                <tr>
                   <td class="py-2 px-4 text-gray-300">Costs</td>
                   <td class="py-2 px-6 text-right bg-gray-800/50">
                     0
@@ -466,6 +533,25 @@
                     :class="getLowestCostClass(result.index)"
                   >
                     {{ formatCost(scenarioCosts[result.index]) }}
+                  </td>
+                </tr>
+
+                <!-- Apply Buttons -->
+                <tr>
+                  <td class="py-2 px-4 text-gray-300"></td>
+                  <td class="py-2 px-6 text-right bg-gray-800/50"></td>
+                  <td 
+                    v-for="(result, i) in comparisonResults" 
+                    :key="`apply-${result.index}`" 
+                    class="py-2 px-6 text-right"
+                  >
+                    <button
+                      @click="applyScenario(result.index)"
+                      class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded transition-colors flex items-center ml-auto"
+                    >
+                      <IconCheck size="14" class="mr-1" />
+                      Apply to Build
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -484,7 +570,7 @@ import {
   IconCheck, IconLoader2, IconCircle1, IconCircle2, IconCircle3,
   IconDiamond, IconHexagon, IconHexagons, IconPuzzle,
   IconAlertCircle, IconChevronLeft, IconChevronRight,
-  IconBrightness, IconHeart, IconSword
+  IconBrightness, IconClock, IconBug
 } from '@tabler/icons-vue';
 import { useHunterStore } from '../../store/hunterStore';
 import { getHunterById } from '../../constants/hunters';
@@ -524,25 +610,21 @@ const recommendation = ref('');
 const recommendedScenario = ref(null);
 const originalResults = ref(null);
 
-// Neue Variablen für den Fortschritt hinzufügen
-const scenarioProgress = ref([
-  { index: 0, completed: false, active: false },
-  { index: 1, completed: false, active: false },
-  { index: 2, completed: false, active: false }
-]);
-const overallProgressPercent = ref(0);
 
 
 // Hunter und Upgrade-Parameter
 const hunterModule = ref(null);
 const availableCurrencies = ref([]);
 const currencyLabels = ref({});
+const currencyLabelsShort = ref({}); 
 const upgradesByCurrency = ref({});
 
 // Hunter-Informationen aus den Konstanten holen
 const hunterInfo = computed(() => getHunterById(props.hunterId));
 const hunterName = computed(() => hunterInfo.value.name);
 const hunterColor = computed(() => hunterInfo.value.color);
+
+const hideResults = ref(false);
 
 const { 
   evaluateBuildWithParams, 
@@ -580,6 +662,7 @@ async function loadHunterData() {
     
     // Konstanten extrahieren
     currencyLabels.value = hunterModule.value.CURRENCY_LABELS || {};
+    currencyLabelsShort.value = hunterModule.value.CURRENCY_LABELS_SHORT || {};
     upgradesByCurrency.value = hunterModule.value.UPGRADES_BY_CURRENCY || {};
     availableCurrencies.value = Object.keys(upgradesByCurrency.value);
     
@@ -616,7 +699,7 @@ function initializeScenarios() {
   availableCurrencies.value.forEach(currency => {
     upgradesByCurrency.value[currency]?.forEach(upgrade => {
       // Globalen Wert für dieses Upgrade ermitteln
-      const globalValue = getGlobalValue(upgrade.key);
+      const globalValue = getBaseValue(upgrade.key);
       
       // Startwerte für alle Szenarien setzen
       scenarios.value.forEach((scenario, index) => {
@@ -630,8 +713,19 @@ function initializeScenarios() {
   calculateAllScenarioCosts();
 }
 
-// Globalen Wert für ein bestimmtes Upgrade oder Stat abrufen
-function getGlobalValue(key) {
+// Prüft, ob ein Wert aus den Build-Overrides stammt
+function isOverrideValue(key) {
+  return props.buildData?.overrides && props.buildData.overrides[key] !== undefined;
+}
+
+// holt entweder den globalen oder override wert aus dem store
+function getBaseValue(key) {
+  // Zuerst nach Overrides in buildData schauen
+  if (props.buildData?.overrides && props.buildData.overrides[key] !== undefined) {
+    return props.buildData.overrides[key];
+  }
+  
+  // Wenn kein Override vorhanden, auf Store-Werte zurückgreifen
   // Für Upgrades
   if (key.startsWith('upgrades.')) {
     const parts = key.split('.');
@@ -654,7 +748,7 @@ function calculateScenarioCost(scenarioIndex) {
   let totalCost = 0;
   
   upgradesByCurrency.value[currency]?.forEach(upgrade => {
-    const baseValue = getGlobalValue(upgrade.key);
+    const baseValue = getBaseValue(upgrade.key);
     const incrementValue = scenarioIncrements.value[scenarioIndex][upgrade.key] || 0;
     
     if (incrementValue > 0) {
@@ -707,7 +801,7 @@ function incrementScenarioValue(scenarioIndex, key, maxValue) {
   }
   
   // Berechne den globalen Wert und das Maximum
-  const globalValue = getGlobalValue(key);
+  const globalValue = getBaseValue(key);
   const max = maxValue !== undefined ? maxValue : Infinity;
   const currentIncrement = scenarioIncrements.value[scenarioIndex][key];
   
@@ -783,12 +877,9 @@ function analyzeResults() {
 function getBestValueClass(index, field, includeOriginal = false) {
   if (comparisonResults.value.length === 0) return '';
   
+  // Nur die Ergebnisse aus den Szenarien berücksichtigen, nicht das Original
   const values = comparisonResults.value.map(result => result[field]);
-    
-  if (includeOriginal && originalResults.value && originalResults.value[field]) {
-    values.push(originalResults.value[field]);
-  }
-    
+  
   if (values.length === 0) return '';
   
   const maxValue = Math.max(...values);
@@ -796,7 +887,7 @@ function getBestValueClass(index, field, includeOriginal = false) {
   // Suche das Ergebnis mit dem entsprechenden Index
   const result = comparisonResults.value.find(r => r.index === index);
   
-  // Wenn der Wert der maximale ist (auch im Vergleich zum Original)
+  // Nur der höchste Wert soll grün dargestellt werden
   return result && result[field] === maxValue ? 'text-green-400' : '';
 }
 
@@ -811,59 +902,24 @@ function getLowestCostClass(index) {
   return scenarioCosts.value[index] === minCost ? 'text-green-400' : '';
 }
 
-function getBestEfficiencyClass(index) {
-  if (comparisonResults.value.length <= 1) return '';
-  
-  const efficiencies = comparisonResults.value
-    .map((result, idx) => result ? result.lootPerMin / scenarioCosts.value[idx] : 0)
-    .filter(e => e > 0);
-    
-  if (efficiencies.length === 0) return '';
-  
-  const maxEfficiency = Math.max(...efficiencies);
-  const currentEfficiency = comparisonResults.value[index] 
-    ? comparisonResults.value[index].lootPerMin / scenarioCosts.value[index]
-    : 0;
-  
-  return currentEfficiency === maxEfficiency ? 'text-green-400 font-medium' : '';
-}
-
-// Funktionen für Vergleiche und Differenzen
+// Neutraler Stil für Differenzwerte, immer weiß
 function getDiffClass(value, baseValue) {
-  if (value === baseValue) return 'text-gray-500';
-  return value > baseValue ? 'text-green-400' : 'text-red-400';
+  // Immer weiß zurückgeben, unabhängig vom Wert
+  return 'text-white';
 }
 
+// Zusätzlich die Formatierung für die Prozentanzeige
 function formatDiffPercent(value, baseValue) {
   if (value === baseValue) return '±0%';
   const diff = ((value / baseValue) - 1) * 100;
   return diff > 0 ? `+${diff.toFixed(1)}%` : `${diff.toFixed(1)}%`;
 }
 
+// Auch Absolutwert-Differenzen immer weiß darstellen
 function formatDiff(value, baseValue) {
   if (value === baseValue) return '±0';
   const diff = value - baseValue;
   return diff > 0 ? `+${diff.toFixed(1)}` : `${diff.toFixed(1)}`;
-}
-
-// Empfohlenes Szenario anwenden
-function applyRecommendation() {
-  if (recommendedScenario.value === null) return;
-  
-  const scenarioIndex = recommendedScenario.value;
-  const overrides = {};
-  
-  // Änderungen als Overrides erfassen
-  Object.entries(scenarioIncrements.value[scenarioIndex]).forEach(([key, increment]) => {
-    if (increment <= 0) return;
-    
-    const baseValue = getGlobalValue(key);
-    overrides[key] = baseValue + increment;
-  });
-  
-  // Overrides an den Parent-Komponenten senden
-  emit('applyOverrides', overrides);
-  emit('close');
 }
 
 // Icons für die Währungen
@@ -926,7 +982,7 @@ function getAvailableUpgrades(currency) {
   
   return upgradesByCurrency.value[currency].filter(upgrade => {
     // Globalen Wert ermitteln
-    const globalValue = getGlobalValue(upgrade.key);
+    const globalValue = getBaseValue(upgrade.key);
     // Wenn kein Maximum definiert ist, immer anzeigen
     if (upgrade.max === undefined) return true;
     // Sonst nur anzeigen, wenn das Maximum noch nicht erreicht ist
@@ -938,8 +994,15 @@ function getAvailableUpgrades(currency) {
 function formatMaterialPerDay(value) {
   if (!value) return '0';
   
-  // Berechne Werte pro Tag (1440 Minuten/Tag)
-  const valuePerDay = value * 1440;
+  // Wenn keine avgTime vorhanden ist, Fallback auf 2h (120 Minuten)
+  const avgRunTimeMinutes = originalResults.value?.avgTime || 120;
+  
+  // Berechne die Anzahl der Runs pro Tag
+  const runsPerDay = 1440 / avgRunTimeMinutes; // 1440 Minuten pro Tag
+  
+  // Berechne den Wert pro Tag
+  const valuePerDay = value * runsPerDay;
+  
   return formatNumber(valuePerDay);
 }
 
@@ -947,7 +1010,7 @@ function formatMaterialPerDay(value) {
 // Berechnet die Kosten für ein einzelnes Upgrade-Level, unter Berücksichtigung der Szenario-Inkremente
 function getNextUpgradeCost(key, scenarioIndex = -1) {
   // Basiswert ist der globale Wert
-  const baseValue = getGlobalValue(key);
+  const baseValue = getBaseValue(key);
   
   // Wenn ein Szenario angegeben ist, addiere die aktuellen Inkremente dieses Szenarios
   const currentIncrements = scenarioIndex >= 0 ? 
@@ -988,6 +1051,121 @@ function getNextUpgradeCost(key, scenarioIndex = -1) {
   }
 }
 
+// Verbindung zwischen Währungstypen und Materialien herstellen
+function getCurrencyMaterial(currencyType) {
+  // Mapping von Währungen zu Materialen
+  const currencyMaterials = {
+    'mat1': 'mat1',
+    'mat2': 'mat2',
+    'mat3': 'mat3'
+  };
+  
+  return currencyMaterials[currencyType];
+}
+
+// Berechnungsfunktion für die Zeit - korrekt mit avgTime
+function getCollectionTimeInMinutes(scenarioIndex) {
+  const cost = scenarioCosts.value[scenarioIndex];
+  if (cost <= 0) return 0;
+  
+  const currencyType = selectedCurrency.value;
+  const materialType = getCurrencyMaterial(currencyType);
+  
+  if (!materialType || !originalResults.value || !originalResults.value[materialType]) {
+    return Infinity; // Kann nicht berechnet werden
+  }
+  
+  // Material pro Run
+  const materialPerRun = originalResults.value[materialType];
+  if (materialPerRun <= 0) return Infinity;
+  
+  // Run-Dauer aus avgTime nehmen
+  const avgRunTimeMinutes = originalResults.value.avgTime || 120; // Fallback auf 2h wenn nicht vorhanden
+  
+  // Anzahl benötigter Runs
+  const runsNeeded = cost / materialPerRun;
+  
+  // Gesamtzeit in Minuten
+  return runsNeeded * avgRunTimeMinutes;
+}
+
+// Formatierung der Zeit in Tagen, Stunden, Minuten - mit Jahren
+function formatCollectionTime(minutes) {
+  if (!isFinite(minutes) || minutes <= 0) return '-';
+  
+  // Prüfen ob über 100 Jahre (100 * 365 Tage * 1440 Minuten)
+  if (minutes > 52560000) { // 100 Jahre in Minuten
+    return 'Not in your lifetime';
+  }
+  
+  // Umrechnung in Zeiteinheiten
+  const years = Math.floor(minutes / 525600); // 365 Tage * 1440 Minuten
+  const days = Math.floor((minutes % 525600) / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const mins = Math.floor(minutes % 60);
+  
+  // Formatierung basierend auf der längsten Zeiteinheit
+  if (years > 0) {
+    return `${years}y ${days}d`; 
+  } else if (days > 0) {
+    return `${days}d ${hours}h`;
+  } else if (hours > 0) {
+    return `${hours}h ${mins}m`;
+  } else {
+    return `${mins}m`;
+  }
+}
+
+// Berechnete Runs für ein Szenario
+function calculateRunsNeeded(scenarioIndex) {
+  const cost = scenarioCosts.value[scenarioIndex];
+  if (cost <= 0) return '0';
+  
+  const currencyType = selectedCurrency.value;
+  const materialType = getCurrencyMaterial(currencyType);
+  
+  if (!materialType || !originalResults.value || !originalResults.value[materialType]) {
+    return 'N/A';
+  }
+  
+  // Material pro Run
+  const materialPerRun = originalResults.value[materialType];
+  if (materialPerRun <= 0) return 'N/A';
+  
+  // Runs berechnen und auf 1 Dezimalstelle formatieren
+  const runsNeeded = cost / materialPerRun;
+  return runsNeeded.toFixed(1);
+}
+
+// Ändere die applyScenario-Funktion
+function applyScenario(scenarioIndex) {
+  const overrides = {};
+  
+  // Änderungen als Overrides erfassen
+  Object.entries(scenarioIncrements.value[scenarioIndex]).forEach(([key, increment]) => {
+    if (increment <= 0) return;
+    
+    const baseValue = getBaseValue(key);
+    overrides[key] = baseValue + increment;
+  });
+  
+  // Das Ergebnis des ausgewählten Szenarios finden
+  // Hier verwendest du scenarioIndex statt index!
+  const selectedResult = comparisonResults.value.find(result => result.index === scenarioIndex);
+  
+  // Overrides und bereits berechnete Ergebnisse an den Parent-Komponenten senden
+  emit('applyOverrides', {
+    overrides: overrides,
+    precomputedResults: selectedResult
+  });
+  
+  // Ergebnisse von comparisonResults direkt leeren - damit wird die erste Bedingung false
+  comparisonResults.value = [];
+  
+  // Zusätzliche Vorsichtsmaßnahme: hideResults auf true setzen
+  hideResults.value = true;
+}
+
 // Überwacht Änderungen an isVisible und lädt Daten, wenn das Modal geöffnet wird
 watch(() => props.isVisible, (newValue) => {
   if (newValue) {
@@ -1010,6 +1188,14 @@ watch(() => JSON.stringify(scenarioIncrements.value), () => {
 // Bei Änderung der ausgewählten Währung die Kosten neu berechnen
 watch(() => selectedCurrency.value, () => {
   calculateAllScenarioCosts();
+});
+
+watch(() => isEvaluating.value, (newValue) => {
+  // Setze hideResults auf false, WENN eine neue Evaluierung beginnt
+  // Dies bewirkt, dass !hideResults true wird und die Tabelle nach einem Vergleich angezeigt wird
+  if (newValue) {
+    hideResults.value = false;
+  }
 });
 
 onMounted(() => {
@@ -1065,5 +1251,22 @@ onMounted(() => {
 /* Hintergrund für die Szenarien */
 .bg-gray-850 {
   background-color: rgba(31, 35, 42, 0.8);
+}
+
+@media (max-width: 640px) {
+  /* Kleinere Padding für Tab-Items auf mobilen Geräten */
+  .flex.border-b > div {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  /* Kleinere Schrift für Tab-Labels auf mobilen Geräten */
+  .flex.border-b .md\:hidden {
+    font-size: 0.75rem; /* 12px */
+  }
+  
+  /* Kleinerer Abstand zwischen Icon und Text */
+  .flex.border-b component + span {
+    margin-left: 0.25rem;
+  }
 }
 </style>

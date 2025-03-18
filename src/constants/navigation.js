@@ -22,9 +22,8 @@ export const NAVIGATION = {
       id: 'borge',
       name: 'Borge',
       path: '/borge',
-      icon: IconTool, // Direkte Verwendung der Komponente
+      icon: IconTool,
       color: 'red',
-      description: 'Ein mächtiger Krieger mit hohem Schaden und Überlebensfähigkeiten.'
     },
     {
       id: 'ozzy',
@@ -32,7 +31,6 @@ export const NAVIGATION = {
       path: '/ozzy',
       icon: IconProng,
       color: 'green',
-      description: 'Ein geschickter Jäger mit einzigartigen Fähigkeiten und starken Debuffs.'
     },
     {
       id: 'knox',
@@ -40,7 +38,6 @@ export const NAVIGATION = {
       path: '/knox',
       icon: IconAnchor,
       color: 'blue',
-      description: 'Ein erfahrener Pirat mit strategischen Fähigkeiten und mächtigen Torpedos.'
     }
   ],
   

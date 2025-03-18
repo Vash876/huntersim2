@@ -239,21 +239,37 @@ function handleUpgradeComparison() {
 }
 
 // Handler für das Anwenden von Overrides aus dem UpgradeComparisonModal
-function handleApplyUpgradeOverrides(overrides) {
-  // Übergebene Overrides an den globalen Build-State senden
-  emit('overridesBuild', {
-    ...buildData,
+function handleApplyUpgradeOverrides(payload) {
+  // Wenn keine Daten übergeben wurden, nichts tun
+  if (!payload || !payload.overrides) {
+    return;
+  }
+  
+  const { overrides, precomputedResults } = payload;
+  
+  // Erstelle eine Kopie des Build-Objekts mit den neuen Overrides
+  const updatedBuild = {
+    ...props.buildData,
     overrides: {
-      ...buildData.overrides,
-      ...overrides
+      ...(props.buildData.overrides || {}),
+      ...(overrides || {})
     }
-  });
+  };
   
-  // Neuberechnung auslösen
-  handleReevaluate();
+  // Übergebene Overrides an den globalen Build-State senden
+  emit('overridesBuild', updatedBuild);
   
-  // Success-Nachricht zeigen
-  showToastMessage('Upgrade-Änderungen angewendet');
+  // Wenn vorberechnete Ergebnisse vorhanden sind, diese direkt übernehmen
+  if (precomputedResults) {
+    // Setze die vorberechneten Ergebnisse direkt in den Build
+    updatedBuild.results = precomputedResults;
+    emit('updateBuild', updatedBuild);
+    showToastMessage('Upgrade changes applied to build');
+  } else {
+    // Nur neu evaluieren, wenn keine vorberechneten Ergebnisse vorhanden sind
+    handleReevaluate();
+    showToastMessage('Upgrade changes applied to build');
+  }
 }
 
 // Watches einrichten - verwendet das Composable

@@ -62,11 +62,10 @@
               <!-- Overrides Badge - nur anzeigen wenn Overrides aktiv sind -->
               <span 
                 v-if="hasOverrides" 
-                class="text-xs px-2 py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center"
+                class="text-xs pl-2 pr-1 py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center"
                 title="Build uses custom overrides"
               >
                 <IconAdjustmentsHorizontal size="12" class="mr-1" />
-                Overrides
               </span>
 
               <!-- Level Tag -->
@@ -190,7 +189,7 @@
           </div>
           
           <!-- Material 1 -->
-          <div class="resource-box">
+          <div class="resource-box" v-if="lootFilters.mat1">
             <!-- Neue Header Struktur: 2 Einheiten -->
             <div class="grid grid-cols-2 gap-2 mb-1">
               <!-- Erste Einheit: Label links und Run Diff rechts -->
@@ -236,7 +235,7 @@
           </div>
           
           <!-- Material 2 -->
-          <div class="resource-box">
+          <div class="resource-box" v-if="lootFilters.mat2">
             <!-- Neue Header Struktur: 2 Einheiten -->
             <div class="grid grid-cols-2 gap-2 mb-1">
               <!-- Erste Einheit: Label links und Run Diff rechts -->
@@ -282,7 +281,7 @@
           </div>
           
           <!-- Material 3 -->
-          <div class="resource-box">
+          <div class="resource-box" v-if="lootFilters.mat3">
             <!-- Neue Header Struktur: 2 Einheiten -->
             <div class="grid grid-cols-2 gap-2 mb-1">
               <!-- Erste Einheit: Label links und Run Diff rechts -->
@@ -328,7 +327,7 @@
           </div>
 
           <!-- Mobile Layout: XP - eine Zeile pro Materialtyp -->
-          <div class="resource-box">
+          <div class="resource-box" v-if="lootFilters.xp">
             <!-- Neue Header Struktur: 2 Einheiten -->
             <div class="grid grid-cols-2 gap-2 mb-1">
               <!-- Erste Einheit: Label links und Run Diff rechts -->
@@ -449,6 +448,13 @@
             <IconAdjustmentsHorizontal size="16" />
           </button>
           <button 
+            @click="handleUpgradeComparison"
+            class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            title="Upgrade Comparison"
+          >
+            <IconScale size="16" />
+          </button>
+          <button 
             v-if="enabledStats.includes('stageDistribution') && results?.stageDistribution?.length"
             @click="showDistributionModal = true"
             class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
@@ -484,7 +490,7 @@
     <!-- Modals -->
     <BuildCodeModal :show="showCodeModal" :build="buildData" @close="showCodeModal = false" />
 
-    <!-- Statistics Modal - ersetzt das alte Teleport-Modal -->
+    <!-- Statistics Modal -->
     <StatisticsModal 
       :show="showDistributionModal" 
       :build-name="buildData.name"
@@ -497,6 +503,16 @@
       :color="hunterColor"
       @close="showDistributionModal = false"
     />
+
+    <!-- UpgradeComparison Modal -->
+    <UpgradeComparisonModal
+      v-if="showUpgradeComparisonModal"
+      :isVisible="showUpgradeComparisonModal"
+      :hunterId="props.hunterId"
+      :buildData="{...buildData, results}"
+      @close="showUpgradeComparisonModal = false"
+      @applyOverrides="handleApplyUpgradeOverrides"
+    />
   </div>
 </template>
 
@@ -505,7 +521,7 @@ import { ref, computed, onMounted, onUnmounted, inject, nextTick } from 'vue';
 import { 
   IconAlertCircle, IconEditCircle, IconDotsVertical, IconEdit, IconCopy, 
   IconShare, IconRefresh, IconArchive, IconArchiveOff, IconTrash, 
-  IconGripVertical, IconAdjustmentsHorizontal, IconChartBar, IconX,
+  IconGripVertical, IconAdjustmentsHorizontal, IconChartBar, IconScale,
   IconBrightness, IconDiamond, IconHexagon, IconHexagons,
   IconReportMoney, IconStairs, IconClock, IconHeartFilled, IconSword 
 } from '@tabler/icons-vue';
@@ -521,6 +537,7 @@ import {
 } from '../../utils/BuildComparisonUtils';
 import BuildCodeModal from '../../BuildCodeModal.vue';
 import StatisticsModal from '@/components/common/StatisticsModal.vue';
+import UpgradeComparisonModal from '@/components/common/UpgradeComparisonModal.vue';
 
 // Props
 const props = defineProps({
@@ -533,7 +550,8 @@ const props = defineProps({
 
 const emit = defineEmits([
   'edit', 'clone', 'archive', 'delete', 'nameChanged',
-  'overrides', 'share', 'overridesBuild', 'evaluated', 'reevaluate'
+  'overrides', 'share', 'overridesBuild', 'evaluated', 'reevaluate',
+  'updateBuild'
 ]);
 
 // Route und Refs
@@ -543,6 +561,7 @@ const showMenu = ref(false);
 const showCodeModal = ref(false);
 const showDeleteConfirm = ref(false);
 const showDistributionModal = ref(false);
+const showUpgradeComparisonModal = ref(false);
 
 // Name editing state
 const isEditingName = ref(false);
@@ -554,7 +573,7 @@ const hasOverrides = computed(() => {
          Object.keys(props.buildData.overrides).length > 0;
 });
 
-// Display settings
+// Display settings und Filter
 const displaySettings = inject('displaySettings', ref({ 
   displayMode: 'compact',
   enabledStats: ['lootPerMin', 'avgStage', 'avgTime', 'stageDistribution'],
@@ -565,6 +584,15 @@ const displaySettings = inject('displaySettings', ref({
 const enabledStats = computed(() => {
   return displaySettings.value?.enabledStats || ['lootPerMin', 'avgStage', 'avgTime', 'stageDistribution'];
 });
+
+// Loot Filter injizieren
+const lootFilters = inject('lootFilters', ref({
+  mat1: true,
+  mat2: true, 
+  mat3: true,
+  xp: true
+}));
+
 
 // Build-Evaluierung mit dem Composable
 const {
@@ -585,6 +613,45 @@ const {
   setupWatches,
   showToastMessage
 } = useBuildEvaluation(props, emit);
+
+// Handler für Upgrade-Vergleich
+function handleUpgradeComparison() {
+  showUpgradeComparisonModal.value = true;
+}
+
+// Handler für das Anwenden von Overrides aus dem UpgradeComparisonModal
+function handleApplyUpgradeOverrides(payload) {
+  // Wenn keine Daten übergeben wurden, nichts tun
+  if (!payload || !payload.overrides) {
+    return;
+  }
+  
+  const { overrides, precomputedResults } = payload;
+  
+  // Erstelle eine Kopie des Build-Objekts mit den neuen Overrides
+  const updatedBuild = {
+    ...props.buildData,
+    overrides: {
+      ...(props.buildData.overrides || {}),
+      ...(overrides || {})
+    }
+  };
+  
+  // Übergebene Overrides an den globalen Build-State senden
+  emit('overridesBuild', updatedBuild);
+  
+  // Wenn vorberechnete Ergebnisse vorhanden sind, diese direkt übernehmen
+  if (precomputedResults) {
+    // Setze die vorberechneten Ergebnisse direkt in den Build
+    updatedBuild.results = precomputedResults;
+    emit('updateBuild', updatedBuild);
+    showToastMessage('Upgrade changes applied to build');
+  } else {
+    // Nur neu evaluieren, wenn keine vorberechneten Ergebnisse vorhanden sind
+    handleReevaluate();
+    showToastMessage('Upgrade changes applied to build');
+  }
+}
 
 
 // Schließe das Dropdown-Menü, wenn außerhalb geklickt wird

@@ -36,7 +36,7 @@ export default async function handler(request, context) {
         <head>
           <title>Hunter Simulator 2 - ${hunter.name} Build</title>
           <meta property="og:title" content="${hunter.name} Build - Level ${level}" />
-          <meta property="og:description" content="Hunter Simulator 2 - ${hunter.name} Build mit Level ${level}" />
+          <meta property="og:description" content="Hunter Simulator - ${hunter.name} Build with Level ${level}" />
           <meta property="og:image" content="${imageUrl}" />
           <meta property="og:image:width" content="1200" />
           <meta property="og:image:height" content="630" />
