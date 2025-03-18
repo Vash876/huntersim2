@@ -73,7 +73,7 @@
       <button 
         @click="emit('clone', buildData)"
         class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-        title="Clone Build"
+        title="Copy Build"
       >
         <IconCopy size="16" />
       </button>
