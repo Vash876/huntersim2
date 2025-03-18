@@ -87,7 +87,7 @@
       <button 
         @click="emit('upgradeComparison', buildData)"
         class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-        title="Upgrade Comparison"
+        title="Compare upgrade efficiency"
       >
         <IconScale size="16" />
       </button>
