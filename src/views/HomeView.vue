@@ -2,6 +2,17 @@
 const changelog = 
 [
   {
+    version: '2.1.0',
+    date: '2025-03-18',
+    baseVersion: 'Kylenator\'s Sheet v1.2.4',
+    changes: [
+      'New Upgrade Comparison Window: Compare different upgrade paths with detailed stat changes and loot collection time calculations',
+      'Added Loot Filters for Mobile View: Customize your resource display for cleaner build comparisons',
+      'Introduced Discord Build Preview: Build links now show proper level information when shared on Discord and make builds easier to find in search',
+      'Fixed minor UI alignment issues in build cards'
+    ]
+  },
+  {
     version: '2.0.2',
     date: '2025-03-15',
     baseVersion: 'Kylenator\'s Sheet v1.2.4',
