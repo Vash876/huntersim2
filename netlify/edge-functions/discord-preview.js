@@ -1,8 +1,3 @@
-import { CodeHandler, encoder, generateEncoder } from '../../src/utils/BuildCodeHandler';
-
-// Base58-Alphabet für die Codierung (importiert aus BuildCodeHandler, hier zur Sicherheit)
-const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-
 export default async function handler(request, context) {
   const url = new URL(request.url);
   const userAgent = request.headers.get('user-agent') || '';
@@ -19,8 +14,9 @@ export default async function handler(request, context) {
     const hunterId = url.pathname.substring(1);
     const buildCode = url.searchParams.get('code');
     
-    // Level aus Code berechnen mit der verbesserten Funktion
-    const level = getBuildLevel(buildCode, hunterId);
+    // Level aus Code berechnen oder "Invalid Build Code" anzeigen
+    const buildInfo = calculateBuildLevel(buildCode, hunterId);
+    const levelText = buildInfo.isValid ? `Level ${buildInfo.level}` : 'Invalid Build Code';
     
     // Statische Hunter-Daten
     const hunters = {
@@ -36,8 +32,8 @@ export default async function handler(request, context) {
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Hunter Simulator 2 - ${hunter.name} Build (Level ${level})</title>
-          <meta property="og:title" content="${hunter.name} Build - Level ${level}" />
+          <title>Hunter Simulator 2 - ${hunter.name} ${levelText}</title>
+          <meta property="og:title" content="${hunter.name} ${levelText}" />
           <meta property="og:description" content="Check out this ${hunter.name} build for Hunter Simulator." />
           <meta property="og:url" content="${url.href}" />
           <meta property="og:type" content="website" />
@@ -62,60 +58,143 @@ export default async function handler(request, context) {
   return context.next();
 }
 
-/**
- * Verbesserte Funktion zum Ermitteln des Build-Levels basierend auf Talents und Attributen
- */
-function getBuildLevel(code, hunterType) {
-  try {
-    // Versuchen, den Code zu decodieren
-    const localEncoder = generateEncoder(BASE58_ALPHABET);
-    const data = CodeHandler.fromCode(code);
+// ========== Build-Code Parsing Logik ==========
+
+// Base58-Alphabet für die Codierung
+const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
+// Base58 Decoder erstellen
+function generateEncoder(e) {
+  const t = new Uint8Array(256);
+  for (let c = 0; c < t.length; c++)
+      t[c] = 255;
+  for (let c = 0; c < e.length; c++) {
+      const u = e.charAt(c), f = u.charCodeAt(0);
+      t[f] = c;
+  }
+  const n = e.length, r = e.charAt(0);
+  
+  function decode(c) {
+    if (typeof c != "string") return null;
+    if (c.length === 0) return new Uint8Array;
     
-    if (!data) return 1; // Fallback bei Decodierungsfehler
+    let u = 0, f = 0, p = 0;
+    const o = Math.log(256) / Math.log(n);
     
-    // Parameter-Indizes für Talente und Attribute nach Hunter-Typ
-    const talentIndices = {
-      'borge': {
-        talents: [10, 11, 12, 13, 14, 15, 16, 17, 18], // Indizes der Talente im borge.js BUILD_CODE_PARAMS Array
-        attributes: [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33] // Indizes der Attribute
-      },
-      'ozzy': {
-        talents: [10, 11, 12, 13, 14, 15, 16, 17, 18],
-        attributes: [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]
-      },
-      'knox': {
-        talents: [11, 12, 13, 14, 15, 16, 17, 18, 19],
-        attributes: [20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    while (c[u] === r) f++, u++;
+    
+    const g = (c.length - u) * o + 1 >>> 0;
+    const v = new Uint8Array(g);
+    
+    while (c[u]) {
+      const O = t[c.charCodeAt(u)];
+      if (O === 255) return null;
+      
+      let k = 0;
+      for (let _ = g - 1; (O !== 0 || k < p) && _ !== -1; _--, k++) {
+        O += n * v[_] >>> 0;
+        v[_] = O % 256 >>> 0;
+        O = O / 256 >>> 0;
+      }
+      
+      p = k;
+      u++;
+    }
+    
+    let b = g - p;
+    while (b !== g && v[b] === 0) b++;
+    
+    const S = new Uint8Array(f + (g - b));
+    let w = f;
+    while (b !== g) S[w++] = v[b++];
+    
+    return S;
+  }
+
+  return { decode };
+}
+
+// Code-Handler-Klasse für das Entschlüsseln des Build-Codes
+class CodeHandler {
+  constructor(kind, version, levels) {
+    this.kind = kind;
+    this.version = version;
+    this.levels = levels;
+  }
+  
+  static fromBuffer(buffer) {
+    if (!buffer || buffer.length < 2 || buffer[0] !== 101) return null;
+    
+    const kind = buffer[1] >> 5;
+    const version = buffer[1] & 7;
+    const levels = [];
+    let pos = 2;
+    
+    const processControlType = (type) => {
+      if (type < 2) {
+        levels.push(type);
+      } else if (type === 2 && pos < buffer.length) {
+        levels.push(buffer[pos++] & 255);
+      } else if (pos + 1 < buffer.length) {
+        levels.push(((buffer[pos++] & 255) << 8) | (buffer[pos++] & 255));
       }
     };
     
-    // Standardmäßig borge verwenden, wenn der Hunter-Typ ungültig ist
-    const indices = talentIndices[hunterType] || talentIndices.borge;
+    while (pos < buffer.length) {
+      const controlByte = buffer[pos++] & 255;
+      processControlType(controlByte >> 6); // First 2 bits
+      processControlType((controlByte >> 4) & 3); // Next 2 bits
+      processControlType((controlByte >> 2) & 3); // Next 2 bits
+      processControlType(controlByte & 3); // Last 2 bits
+    }
     
-    // Talent-Punkte summieren
-    let talentPoints = 0;
-    indices.talents.forEach(index => {
+    return new CodeHandler(kind, version, levels);
+  }
+  
+  static fromCode(code) {
+    try {
+      const encoder = generateEncoder(BASE58_ALPHABET);
+      return CodeHandler.fromBuffer(encoder.decode(code));
+    } catch (e) {
+      return null;
+    }
+  }
+}
+
+// Parameter-Positionen für die Level-Berechnung
+const TALENT_INDICES = {
+  'borge': [0, 1, 2, 3, 4, 5, 6, 7, 56],
+  'ozzy':  [0, 1, 2, 3, 4, 5, 6, 7, 41],
+  'knox':  [0, 1, 2, 3, 4, 5, 6, 7, 8]
+};
+
+// Build-Level berechnen
+function calculateBuildLevel(code, hunterId) {
+  try {
+    // Versuchen, den Code zu decodieren
+    const data = CodeHandler.fromCode(code);
+    
+    if (!data || !data.levels || !data.levels.length) {
+      return { isValid: false, level: 0 };
+    }
+    
+    // Die Indizes für den Hunter-Typ abrufen
+    const talentIndices = TALENT_INDICES[hunterId] || TALENT_INDICES.borge;
+    
+    // Talent-Punkte summieren (dies ist das Level)
+    let talentSum = 0;
+    for (const index of talentIndices) {
       if (index < data.levels.length) {
-        talentPoints += data.levels[index] || 0;
+        talentSum += data.levels[index] || 0;
       }
-    });
+    }
     
-    // Attribut-Punkte summieren
-    let attributePoints = 0;
-    indices.attributes.forEach(index => {
-      if (index < data.levels.length) {
-        attributePoints += data.levels[index] || 0;
-      }
-    });
-    
-    // Build-Level basierend auf Talent-Punkten berechnen (vereinfachte Annäherung)
-    // Jeder Talent-Punkt repräsentiert ungefähr 10-15 Level, Attribute geben zusätzlich Level
-    const estimatedLevel = 1 + Math.floor(talentPoints * 1.2) + Math.floor(attributePoints * 0.5);
-    
-    // Zwischen 1 und 99 begrenzen
-    return Math.max(1, Math.min(99, estimatedLevel));
+    // Level einfach als Summe der Talent-Punkte zurückgeben
+    return { 
+      isValid: true, 
+      level: talentSum || 1 // Mindestens Level 1
+    };
   } catch (error) {
-    console.error('Error calculating build level:', error);
-    return 1; // Fallback bei Fehler
+    return { isValid: false, level: 0 };
   }
 }
