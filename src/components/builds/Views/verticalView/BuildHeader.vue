@@ -61,7 +61,7 @@
     </div>
     
     <!-- Untere Zeile: Aktionsleiste -->
-    <div class="action-bar p-2 px-4 flex justify-between items-center bg-gray-800/70 border-t border-b border-gray-700/50">
+    <div class="action-bar p-2 px-1 flex justify-between items-center bg-gray-800/70 border-t border-b border-gray-700/50">
       
       <div class="flex items-center gap-2 flex-1 justify-center">
         <button 
