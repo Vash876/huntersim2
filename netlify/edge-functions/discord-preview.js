@@ -17,32 +17,27 @@ export default async function handler(request, context) {
     // Level aus Code schätzen
     const level = getBuildLevel(buildCode);
     
-    // URL zur eigenen Bildgenerator-Funktion
-    const imageUrl = `${url.origin}/.netlify/functions/generate-image?hunter=${hunterId}&level=${level}`;
-    
     // Statische Hunter-Daten
     const hunters = {
-      borge: { name: 'Borge' },
-      ozzy: { name: 'Ozzy' },
-      knox: { name: 'Knox' }
+      borge: { name: 'Borge', color: '#ef4444' },
+      ozzy: { name: 'Ozzy', color: '#22c55e' },
+      knox: { name: 'Knox', color: '#3b82f6' }
     };
     
-    const hunter = hunters[hunterId] || { name: 'Hunter' };
+    const hunter = hunters[hunterId] || { name: 'Hunter', color: '#9ca3af' };
     
-    // HTML mit Meta-Tags zurückgeben
+    // HTML mit Meta-Tags zurückgeben, aber ohne Bild
     const html = `
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Hunter Simulator 2 - ${hunter.name} Build</title>
+          <title>Hunter Simulator 2 - ${hunter.name} Build (Level ${level})</title>
           <meta property="og:title" content="${hunter.name} Build - Level ${level}" />
-          <meta property="og:description" content="Hunter Simulator - ${hunter.name} Build with Level ${level}" />
-          <meta property="og:image" content="${imageUrl}" />
-          <meta property="og:image:width" content="1200" />
-          <meta property="og:image:height" content="630" />
+          <meta property="og:description" content="Check out this ${hunter.name} build on Hunter Simulator. " />
           <meta property="og:url" content="${url.href}" />
           <meta property="og:type" content="website" />
-          <meta property="twitter:card" content="summary_large_image" />
+          <meta property="og:site_name" content="Hunter Simulator" />
+          <meta property="theme-color" content="${hunter.color}" />
           
           <!-- Weiterleitung für normale Browser -->
           <meta http-equiv="refresh" content="0;url=${url.href}">
