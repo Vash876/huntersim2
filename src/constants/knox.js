@@ -301,7 +301,7 @@ export const UPGRADES_BY_CURRENCY = {
   ],
   
   [CURRENCY_TYPES.QUARTZ]: [
-    { key: 'dr', label: 'DMG Reduction', max: 40 },
+    { key: 'dr', label: 'DMG Reduction', max: 50 },
     { key: 'block', label: 'Block Chance', max: 50 },
     { key: 'effect', label: 'Effect Chance', max: 50 },
   ],
