@@ -5,6 +5,3 @@
 [[edge_functions]]
   path = "/*"
   function = "discord-preview"
-
-[[plugins]]
-  package = "@napi-rs/canvas-build"
