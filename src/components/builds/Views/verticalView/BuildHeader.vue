@@ -88,7 +88,7 @@
         <button 
           @click="emit('upgradeComparison')"
           class="action-button-compact"
-          title="Upgrade-Effizienz vergleichen">
+          title="Compare upgrade efficiency">
           <IconScale size="16" />
         </button>
 
