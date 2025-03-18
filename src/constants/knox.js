@@ -268,3 +268,60 @@ export const STATS_RESULT_LABELS = [
   { key: 'atkspeed', label: 'Reload Time', unit: '/s', roundDigits: 2 },
   { key: 'souulschance', label: 'Souls Chance', unit: '%', roundDigits: 1, multiplier: 100 },
 ];
+
+//Kosten Effizienz
+export const CURRENCY_TYPES = {
+  GLACIUM: 'mat1',
+  QUARTZ: 'mat2',
+  TESSARECTS: 'mat3',
+};
+
+// Mapping der Upgrades zu ihren Währungen
+export const UPGRADE_CURRENCIES = {
+  // Base Stats
+  hp: CURRENCY_TYPES.GLACIUM,
+  atk: CURRENCY_TYPES.GLACIUM,
+  regen: CURRENCY_TYPES.GLACIUM,
+  
+  dr: CURRENCY_TYPES.QUARTZ,
+  block: CURRENCY_TYPES.QUARTZ,
+  effect: CURRENCY_TYPES.QUARTZ,
+  
+  charge: CURRENCY_TYPES.TESSARECTS,
+  chargeGain: CURRENCY_TYPES.TESSARECTS,
+  reload: CURRENCY_TYPES.TESSARECTS,
+  'upgrades.gadgets.anchor': CURRENCY_TYPES.TESSARECTS,
+}
+
+export const UPGRADES_BY_CURRENCY = {
+  [CURRENCY_TYPES.GLACIUM]: [
+    { key: 'hp', label: 'MAX HP'},
+    { key: 'atk', label: 'ATK Power'},
+    { key: 'regen', label: 'HP Regen'},
+  ],
+  
+  [CURRENCY_TYPES.QUARTZ]: [
+    { key: 'dr', label: 'DMG Reduction', max: 40 },
+    { key: 'block', label: 'Block Chance', max: 50 },
+    { key: 'effect', label: 'Effect Chance', max: 50 },
+  ],
+  
+  [CURRENCY_TYPES.TESSARECTS]: [
+    { key: 'charge', label: 'Charge Chance', max: 100 },
+    { key: 'chargeGain', label: 'Charge Gained', max: 100 },
+    { key: 'reload', label: 'Reload Time', max: 100 },
+    { key: 'upgrades.gadgets.anchor', label: 'The Anchor of Ages' },
+  ],
+};
+
+export const CURRENCY_LABELS = {
+  [CURRENCY_TYPES.GLACIUM]: 'Glacium',
+  [CURRENCY_TYPES.QUARTZ]: 'Aquarius Quartz',
+  [CURRENCY_TYPES.TESSARECTS]: 'Tessarects',
+};
+
+export const CURRENCY_LABELS_SHORT = {
+  [CURRENCY_TYPES.GLACIUM]: 'Glac',
+  [CURRENCY_TYPES.QUARTZ]: 'Quartz',
+  [CURRENCY_TYPES.TESSARECTS]: 'Tess',
+};

@@ -85,6 +85,13 @@
         <IconAdjustmentsHorizontal size="16" />
       </button>
       <button 
+        @click="emit('upgradeComparison', buildData)"
+        class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+        title="Upgrade Comparison"
+      >
+        <IconScale size="16" />
+      </button>
+      <button 
         v-if="enabledStats.includes('stageDistribution') && results?.stageDistribution?.length"
         @click="emit('showDistribution')"
         class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
@@ -122,7 +129,7 @@ import { ref, nextTick, computed } from 'vue';
 import { 
   IconEdit, IconEditCircle, IconCopy, IconShare, IconArchive, 
   IconArchiveOff, IconTrash, IconGripVertical, 
-  IconAdjustmentsHorizontal, IconChartBar 
+  IconAdjustmentsHorizontal, IconChartBar, IconScale
 } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -143,7 +150,7 @@ const props = defineProps({
 const emit = defineEmits([
   'edit', 'clone', 'archive', 'delete', 
   'overridesBuild', 'showCode', 'showDistribution',
-  'nameChanged'
+  'nameChanged', 'upgradeComparison'
 ]);
 
 // Name editing state

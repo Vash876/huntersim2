@@ -99,6 +99,13 @@
               <span class="ml-1 text-xs opacity-75">({{ archivedBuildsCount }})</span>
             </button>
           </div>
+          <button 
+            @click="showLootFilterModal = true"
+            class="md:hidden flex items-center gap-1 px-3 py-1 bg-gray-700 hover:bg-gray-650 rounded-md text-sm transition-colors"
+          >
+            <IconFilter size="14" class="text-blue-400" />
+            <span>Loot Filter</span>
+          </button>        
         </div>
       </div>
     </div>
@@ -349,6 +356,15 @@
       @close="closeOverrideModal"
       @overridesUpdated="onOverridesUpdated"
     />
+
+    <!-- MobileLootFilterModal -->
+    <MobileLootFilterModal
+      :isVisible="showLootFilterModal"
+      :filters="lootFilters"
+      :hunterId="route.params.hunterId"
+      @close="showLootFilterModal = false"
+      @update:filters="updateLootFilters"
+    />
   </div>
 </template>
 
@@ -372,7 +388,8 @@ import {
   IconAlertCircle,
   IconInfoCircle,
   IconLayoutDistributeVertical,
-  IconLayoutDistributeHorizontal
+  IconLayoutDistributeHorizontal,
+  IconFilter
 } from '@tabler/icons-vue';
 
 import StatsModal from '../components/common/StatsModal.vue';
@@ -385,6 +402,7 @@ import StatisticsDisplayModal from '@/components/common/StatisticsDisplayModal.v
 import BuildCardVertical from '@/components/builds/Views/verticalView/BuildCardVertical.vue'; 
 import BuildCardHorizontal from '@/components/builds/Views/horizontalView/BuildCardHorizontal.vue';
 import BuildCardMobile from '@/components/builds/Views/mobileView/BuildCardMobile.vue';
+import MobileLootFilterModal from '@/components/common/MobileLootFilterModal.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -434,11 +452,23 @@ const buildToEdit = ref(null);
 const isOverrideModalOpen = ref(false);
 const selectedBuildForOverrides = ref(null);
 
+const builds = ref([]);
+
+// Refs für Mobile Filter Modal
+const showLootFilterModal = ref(false);
+const lootFilters = ref({
+  mat1: true,
+  mat2: true,
+  mat3: true,
+  xp: true
+});
+
 // Override-Modal öffnen
 function openOverrideModal(build) {
   selectedBuildForOverrides.value = build;
   isOverrideModalOpen.value = true;
 }
+
 
 // Override-Modal schließen
 function closeOverrideModal() {
@@ -714,14 +744,6 @@ function deleteBuild(build) {
   }
 }
 
-function onBuildEvaluated({ buildId, results }) {
-  // Optional: Speichere die Evaluierungs-Ergebnisse im Store oder Cache
-  console.log(`Build ${buildId} evaluiert:`, results);
-  // Wenn der evaluierte Build der Referenz-Build ist, aktualisiere die Referenzdaten
-  if (buildId === referenceBuildId.value) {
-    referenceBuildResults.value = results;
-  }
-}
 
 // Reagiere auf Änderungen der Route, um den richtigen Hunter anzuzeigen
 watch(
@@ -825,8 +847,17 @@ const filteredBuilds = computed(() => {
   );
 });
 
-// Verwende ref für die Draggable-Komponente, aber synchronisiere mit filteredBuilds
-const builds = ref([]);
+
+function updateLootFilters(newFilters) {
+  lootFilters.value = newFilters;
+  
+  // Speichere die Filter im localStorage für Persistenz
+  localStorage.setItem(`lootFilters_${route.params.hunterId}`, JSON.stringify(newFilters));
+  
+  showToastMessage('Loot filter updated', 'success', 1500);
+}
+
+provide('lootFilters', lootFilters);
 
 // Synchronisiere builds nur, wenn sich filteredBuilds tatsächlich geändert hat (nicht nach drag)
 // Vor der Übergabe an draggable, stelle sicher, dass alle Builds die hunterId haben
@@ -982,6 +1013,38 @@ function onBuildReevaluate(buildId) {
     }
   };
 }
+
+// Lade gespeicherte Filter beim Start
+onMounted(() => {
+  const savedFilters = localStorage.getItem(`lootFilters_${route.params.hunterId}`);
+  if (savedFilters) {
+    try {
+      lootFilters.value = JSON.parse(savedFilters);
+    } catch (e) {
+      console.error('Error parsing saved loot filters:', e);
+    }
+  }
+});
+
+// Aktualisiere die Filter, wenn sich der Hunter ändert
+watch(() => route.params.hunterId, (newHunterId) => {
+  const savedFilters = localStorage.getItem(`lootFilters_${newHunterId}`);
+  if (savedFilters) {
+    try {
+      lootFilters.value = JSON.parse(savedFilters);
+    } catch (e) {
+      console.error('Error parsing saved loot filters:', e);
+    }
+  } else {
+    // Setze auf Standardwerte zurück, wenn keine gespeicherten Filter vorhanden sind
+    lootFilters.value = {
+      mat1: true,
+      mat2: true,
+      mat3: true,
+      xp: true
+    };
+  }
+});
 
 // Stelle displaySettings zur Verfügung (provide/inject Pattern)
 provide('displaySettings', displaySettings);

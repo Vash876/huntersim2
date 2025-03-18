@@ -20,7 +20,8 @@
         @name-changed="emit('nameChanged', $event)"
         @showCode="showCodeModal = true"
         @showDistribution="showDistributionModal = true"
-        @reevaluate="handleReevaluate" 
+        @reevaluate="handleReevaluate"
+        @upgradeComparison="handleUpgradeComparison" 
       />
       
       <!-- Build-Ergebnisse (Loot, Statistiken) -->
@@ -55,6 +56,16 @@
       :color="hunterColor"
       @close="closeStatsModal"
     />
+
+    <!-- UpgradeComparison Modal -->
+    <UpgradeComparisonModal
+      v-if="showUpgradeComparisonModal"
+      :isVisible="showUpgradeComparisonModal"
+      :hunterId="props.hunterId"
+      :buildData="{...buildData, results}"
+      @close="showUpgradeComparisonModal = false"
+      @applyOverrides="handleApplyUpgradeOverrides"
+    />
   </div>
 </template>
 
@@ -67,6 +78,7 @@ import BuildHeader from './BuildHeader.vue';
 import BuildLoot from './BuildLoot.vue';
 import BuildCodeModal from '../../BuildCodeModal.vue';
 import StatisticsModal from '@/components/common/StatisticsModal.vue';
+import UpgradeComparisonModal from '@/components/common/UpgradeComparisonModal.vue';
 
 // Props definieren 
 const props = defineProps({
@@ -80,7 +92,8 @@ const props = defineProps({
 // Emits definieren 
 const emit = defineEmits([
   'edit', 'clone', 'archive', 'delete', 'nameChanged',
-  'overrides', 'share', 'overridesBuild', 'evaluated', 'reevaluate'
+  'overrides', 'share', 'overridesBuild', 'evaluated', 'reevaluate',
+  'updateBuild'
 ]);
 
 // DOM-Refs
@@ -89,6 +102,7 @@ const buildElement = ref(null);
 // UI-State
 const showCodeModal = ref(false);
 const showDistributionModal = ref(false);
+const showUpgradeComparisonModal = ref(false);
 
 // Display settings
 const displaySettings = inject('displaySettings', ref({ 
@@ -119,7 +133,8 @@ const {
   handleReevaluate,
   loadHunterLabels,
   setupWatches,
-  showToastMessage
+  showToastMessage,
+  getCurrentResults
 } = useBuildEvaluation(props, emit);
 
 // Neue Funktion: Modal schließen und bei Bedarf neu evaluieren
@@ -128,6 +143,46 @@ function closeStatsModal() {
   // Nach dem Schließen den Build neu evaluieren
   if (props.autoEvaluate) {
     evaluateBuild(true); // force evaluation
+  }
+}
+
+// Handler für Upgrade-Vergleich
+function handleUpgradeComparison() {
+  // Das Modal anzeigen und den Build mit Ergebnissen übergeben
+  showUpgradeComparisonModal.value = true;
+}
+
+// Handler für das Anwenden von Overrides aus dem UpgradeComparisonModal
+function handleApplyUpgradeOverrides(payload) {
+  // Wenn keine Daten übergeben wurden, nichts tun
+  if (!payload || !payload.overrides) {
+    return;
+  }
+  
+  const { overrides, precomputedResults } = payload;
+  
+  // Erstelle eine Kopie des Build-Objekts mit den neuen Overrides
+  const updatedBuild = {
+    ...props.buildData,
+    overrides: {
+      ...(props.buildData.overrides || {}),
+      ...(overrides || {})
+    }
+  };
+  
+  // Übergebene Overrides an den globalen Build-State senden
+  emit('overridesBuild', updatedBuild);
+  
+  // Wenn vorberechnete Ergebnisse vorhanden sind, diese direkt übernehmen
+  if (precomputedResults) {
+    // Setze die vorberechneten Ergebnisse direkt in den Build
+    updatedBuild.results = precomputedResults;
+    emit('updateBuild', updatedBuild);
+    showToastMessage('Upgrade changes applied to build');
+  } else {
+    // Nur neu evaluieren, wenn keine vorberechneten Ergebnisse vorhanden sind
+    handleReevaluate();
+    showToastMessage('Upgrade changes applied to build');
   }
 }
 

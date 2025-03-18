@@ -46,11 +46,10 @@
             <!-- Overrides Badge - nur anzeigen wenn Overrides vorhanden -->
             <span 
               v-if="hasOverrides" 
-              class="ml-2 text-xs px-2 py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center"
+              class="ml-2 text-xs pl-2 pr-1  py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center"
               title="Build uses custom overrides"
             >
               <IconAdjustmentsHorizontal size="14" class="mr-1" />
-              Overrides
             </span>
             
             <span v-if="buildData.isArchived" class="ml-2 text-xs px-2 py-0.5 bg-gray-700/50 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">
@@ -84,6 +83,13 @@
           class="action-button-compact"
           title="Overrides">
           <IconAdjustments size="16" />
+        </button>
+
+        <button 
+          @click="emit('upgradeComparison')"
+          class="action-button-compact"
+          title="Upgrade-Effizienz vergleichen">
+          <IconScale size="16" />
         </button>
 
         <button 
@@ -127,7 +133,7 @@ import {
   IconEdit, IconEditCircle, IconCopy, IconArchive, IconArchiveOff,
   IconTrash, IconGripVertical, IconDotsVertical, IconAdjustments,
   IconShare, IconRefresh, IconChartBar, IconX, IconCloudUpload,
-  IconAdjustmentsHorizontal
+  IconAdjustmentsHorizontal, IconScale
 } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -137,13 +143,12 @@ const props = defineProps({
   results: { type: Object, default: () => ({}) }
 });
 
-const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'reevaluate', 'showDistribution', 'showUploadDialog']);
+const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'reevaluate', 'showDistribution', 'showUploadDialog', 'upgradeComparison']);
 
 const isEditingName = ref(false);
 const editableName = ref('');
 const nameInputRef = ref(null);
 const showDropdown = ref(false);
-// showDistributionModal wurde entfernt
 const showUploadDialog = ref(false);
 
 // Berechne, ob Overrides aktiv sind
@@ -174,13 +179,6 @@ function saveName() {
     });
   }
   isEditingName.value = false;
-}
-
-function handleBuildUploaded() {
-  // Show success toast
-  if (window.toast) {
-    window.toast.success('Build uploaded to database successfully');
-  }
 }
 
 // Close dropdown when clicking outside
