@@ -439,8 +439,8 @@
                   >
                     {{ formatMaterialPerDay(result.mat1 || 0) }}
                     <div v-if="originalResults?.mat1" class="text-xs" 
-                        :class="getDiffClass(result.mat1 || 0, originalResults.mat1 || 0)">
-                      {{ formatDiffPercent(calculatePerDay(result.mat1 || 0), calculatePerDay(originalResults.mat1 || 0)) }}
+                        :class="getDiffClass(calculatePerDay(result.mat1, result), calculatePerDay(originalResults.mat1, originalResults))">
+                      {{ formatDayDiffPercent(result.mat1, originalResults.mat1, result) }}
                     </div>
                   </td>
                 </tr>
@@ -464,8 +464,8 @@
                   >
                     {{ formatMaterialPerDay(result.mat2 || 0) }}
                     <div v-if="originalResults?.mat2" class="text-xs" 
-                        :class="getDiffClass(result.mat2 || 0, originalResults.mat2 || 0)">
-                        {{ formatDiffPercent(calculatePerDay(result.mat2 || 0), calculatePerDay(originalResults.mat2 || 0)) }}
+                        :class="getDiffClass(calculatePerDay(result.mat2, result), calculatePerDay(originalResults.mat2, originalResults))">
+                      {{ formatDayDiffPercent(result.mat2, originalResults.mat2, result) }}
                     </div>
                   </td>
                 </tr>
@@ -489,8 +489,8 @@
                   >
                     {{ formatMaterialPerDay(result.mat3 || 0) }}
                     <div v-if="originalResults?.mat3" class="text-xs" 
-                        :class="getDiffClass(result.mat3 || 0, originalResults.mat3 || 0)">
-                        {{ formatDiffPercent(calculatePerDay(result.mat3 || 0), calculatePerDay(originalResults.mat3 || 0)) }}
+                        :class="getDiffClass(calculatePerDay(result.mat3, result), calculatePerDay(originalResults.mat3, originalResults))">
+                      {{ formatDayDiffPercent(result.mat3, originalResults.mat3, result) }}
                     </div>
                   </td>
                 </tr>
@@ -514,8 +514,8 @@
                   >
                     {{ formatMaterialPerDay(result.xp || 0) }}
                     <div v-if="originalResults?.xp" class="text-xs" 
-                        :class="getDiffClass(result.xp || 0, originalResults.xp || 0)">
-                        {{ formatDiffPercent(calculatePerDay(result.xp || 0), calculatePerDay(originalResults.xp || 0)) }}
+                        :class="getDiffClass(calculatePerDay(result.xp, result), calculatePerDay(originalResults.xp, originalResults))">
+                      {{ formatDayDiffPercent(result.xp, originalResults.xp, result) }}
                     </div>
                   </td>
                 </tr>
@@ -902,10 +902,11 @@ function getLowestCostClass(index) {
 }
 
 // Berechnet Werte pro Tag basierend auf der durchschnittlichen Run-Zeit
-function calculatePerDay(value) {
+function calculatePerDay(value, resultObj) {
   if (!value) return 0;
   
-  const avgRunTimeMinutes = originalResults.value?.avgTime || 120;
+  // Verwende die avgTime aus dem übergebenen Ergebnisobjekt oder Fallback
+  const avgRunTimeMinutes = resultObj?.avgTime || originalResults.value?.avgTime || 120;
   const runsPerDay = 1440 / avgRunTimeMinutes; // 1440 Minuten pro Tag
   
   return value * runsPerDay;
@@ -925,6 +926,19 @@ function formatDiffPercent(value, baseValue) {
   // Beide Werte repräsentieren bereits Tageswerte in der Tabelle,
   // daher direkter Vergleich ohne weitere Umrechnung
   const diff = ((value / baseValue) - 1) * 100;
+  return diff > 0 ? `+${diff.toFixed(1)}%` : `${diff.toFixed(1)}%`;
+}
+
+// Spezielle Funktion für Prozente im Tageswert-Vergleich
+function formatDayDiffPercent(resultValue, originalValue, resultObj) {
+  // Zunächst in Tageswerte umrechnen - unterschiedliche avgTime pro Szenario
+  const dayValue = calculatePerDay(resultValue, resultObj);
+  const dayBaseValue = calculatePerDay(originalValue, originalResults.value);
+  
+  if (!dayValue || !dayBaseValue) return '±0%';
+  if (dayValue === dayBaseValue) return '±0%';
+  
+  const diff = ((dayValue / dayBaseValue) - 1) * 100;
   return diff > 0 ? `+${diff.toFixed(1)}%` : `${diff.toFixed(1)}%`;
 }
 
@@ -1161,6 +1175,7 @@ function applyScenario(scenarioIndex) {
     const baseValue = getBaseValue(key);
     overrides[key] = baseValue + increment;
   });
+
   
   // Das Ergebnis des ausgewählten Szenarios finden
   // Hier verwendest du scenarioIndex statt index!
