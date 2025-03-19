@@ -917,9 +917,13 @@ function getDiffClass(value, baseValue) {
   return 'text-white';
 }
 
-// Zusätzlich die Formatierung für die Prozentanzeige
+// Zusätzlich die Formatierung für die Prozentanzeige bei Tageswerten
 function formatDiffPercent(value, baseValue) {
+  if (!value || !baseValue) return '±0%';
   if (value === baseValue) return '±0%';
+  
+  // Beide Werte repräsentieren bereits Tageswerte in der Tabelle,
+  // daher direkter Vergleich ohne weitere Umrechnung
   const diff = ((value / baseValue) - 1) * 100;
   return diff > 0 ? `+${diff.toFixed(1)}%` : `${diff.toFixed(1)}%`;
 }
