@@ -2,6 +2,14 @@
 const changelog = 
 [
   {
+    version: '2.1.1',
+    date: '2025-03-19',
+    baseVersion: 'Kylenator\'s Sheet v1.2.4',
+    changes: [
+      'Fixed percentage calculation in Upgrade Comparison Modal to correctly use daily values instead of per-run values'
+    ]
+  },
+  {
     version: '2.1.0',
     date: '2025-03-18',
     baseVersion: 'Kylenator\'s Sheet v1.2.4',

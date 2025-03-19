@@ -440,7 +440,7 @@
                     {{ formatMaterialPerDay(result.mat1 || 0) }}
                     <div v-if="originalResults?.mat1" class="text-xs" 
                         :class="getDiffClass(result.mat1 || 0, originalResults.mat1 || 0)">
-                      {{ formatDiffPercent(result.mat1 || 0, originalResults.mat1 || 0) }}
+                      {{ formatDiffPercent(calculatePerDay(result.mat1 || 0), calculatePerDay(originalResults.mat1 || 0)) }}
                     </div>
                   </td>
                 </tr>
@@ -465,7 +465,7 @@
                     {{ formatMaterialPerDay(result.mat2 || 0) }}
                     <div v-if="originalResults?.mat2" class="text-xs" 
                         :class="getDiffClass(result.mat2 || 0, originalResults.mat2 || 0)">
-                      {{ formatDiffPercent(result.mat2 || 0, originalResults.mat2 || 0) }}
+                        {{ formatDiffPercent(calculatePerDay(result.mat2 || 0), calculatePerDay(originalResults.mat2 || 0)) }}
                     </div>
                   </td>
                 </tr>
@@ -490,7 +490,7 @@
                     {{ formatMaterialPerDay(result.mat3 || 0) }}
                     <div v-if="originalResults?.mat3" class="text-xs" 
                         :class="getDiffClass(result.mat3 || 0, originalResults.mat3 || 0)">
-                      {{ formatDiffPercent(result.mat3 || 0, originalResults.mat3 || 0) }}
+                        {{ formatDiffPercent(calculatePerDay(result.mat3 || 0), calculatePerDay(originalResults.mat3 || 0)) }}
                     </div>
                   </td>
                 </tr>
@@ -515,7 +515,7 @@
                     {{ formatMaterialPerDay(result.xp || 0) }}
                     <div v-if="originalResults?.xp" class="text-xs" 
                         :class="getDiffClass(result.xp || 0, originalResults.xp || 0)">
-                      {{ formatDiffPercent(result.xp || 0, originalResults.xp || 0) }}
+                        {{ formatDiffPercent(calculatePerDay(result.xp || 0), calculatePerDay(originalResults.xp || 0)) }}
                     </div>
                   </td>
                 </tr>
@@ -581,8 +581,7 @@ import { calcGadgetCostDifference } from '../../utils/gadgetCostUtils';
 import { 
   formatNumber, formatStage, formatPercent, formatTime,
   getDiffClasses, getDiffIcon, getDiffText,
-  getAbsoluteDiffClasses, getAbsoluteDiffText,
-  calculatePerDay 
+  getAbsoluteDiffClasses, getAbsoluteDiffText, 
 } from '../../components/builds/utils/BuildComparisonUtils';
 import { useBuildEvaluation } from '../../composables/useBuildEvaluation';
 
@@ -900,6 +899,16 @@ function getLowestCostClass(index) {
   const minCost = Math.min(...validCosts);
   
   return scenarioCosts.value[index] === minCost ? 'text-green-400' : '';
+}
+
+// Berechnet Werte pro Tag basierend auf der durchschnittlichen Run-Zeit
+function calculatePerDay(value) {
+  if (!value) return 0;
+  
+  const avgRunTimeMinutes = originalResults.value?.avgTime || 120;
+  const runsPerDay = 1440 / avgRunTimeMinutes; // 1440 Minuten pro Tag
+  
+  return value * runsPerDay;
 }
 
 // Neutraler Stil für Differenzwerte, immer weiß
