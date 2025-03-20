@@ -640,9 +640,29 @@ const hasAnyChanges = computed(() => {
   });
 });
 
+function resetModalState() {
+  // Ergebnis-bezogene Zustände
+  comparisonResults.value = [];
+  originalResults.value = null;
+  
+  // Szenario-bezogene Zustände
+  scenarioIncrements.value = [{}, {}, {}];
+  scenarioCosts.value = [0, 0, 0];
+  scenarios.value = [{}, {}, {}];
+  
+  // UI-Zustände
+  hideResults.value = false;
+  isEvaluating.value = false;
+  loadError.value = null;
+  
+  console.log('Modal state has been reset');
+}
+
+// 2. Verbesserte Ladesequenz mit expliziter Reihenfolge
 // Hunter-Daten und Upgrades laden
 async function loadHunterData() {
   try {
+    resetModalState(); // Zustandsreset vor dem Laden
     isLoading.value = true;
     loadError.value = null;
     
@@ -665,23 +685,24 @@ async function loadHunterData() {
     upgradesByCurrency.value = hunterModule.value.UPGRADES_BY_CURRENCY || {};
     availableCurrencies.value = Object.keys(upgradesByCurrency.value);
     
-    // Stelle sicher, dass Hunter im Store initialisiert ist
+    // Stelle sicher, dass Hunter im Store initialisiert ist - vor allen anderen Schritten
     await hunterStore.initHunterConfig(props.hunterId);
     
-    // Standard-Währung auswählen
+    // Erst nach erfolgreicher Initialisierung Szenarien und Währungen einrichten
     if (availableCurrencies.value.length > 0) {
       selectedCurrency.value = availableCurrencies.value[0];
     }
 
-    // Szenarien initialisieren
+    // Dann Szenarien initialisieren
     initializeScenarios();
     
-    // Nehme die vorhandenen Ergebnisse direkt aus dem buildData
-    if (props.buildData.results) {
+    // Ergebnisse erst am Ende setzen und validieren
+    if (props.buildData.results && typeof props.buildData.results === 'object') {
       console.log('Using existing results:', props.buildData.results);
-      originalResults.value = props.buildData.results;
+      originalResults.value = {...props.buildData.results}; // Sicherstellen, dass wir eine Kopie erstellen
     } else {
-      console.warn('No results found in buildData');
+      console.warn('No results found in buildData, calculating new ones');
+      // Hier könntest du eine Initialberechnung durchführen
     }
     
     isLoading.value = false;
@@ -902,14 +923,36 @@ function getLowestCostClass(index) {
 }
 
 // Berechnet Werte pro Tag basierend auf der durchschnittlichen Run-Zeit
+// 4. Validierung in calculatePerDay hinzufügen
 function calculatePerDay(value, resultObj) {
   if (!value) return 0;
   
-  // Verwende die avgTime aus dem übergebenen Ergebnisobjekt oder Fallback
-  const avgRunTimeMinutes = resultObj?.avgTime || originalResults.value?.avgTime || 120;
-  const runsPerDay = 1440 / avgRunTimeMinutes; // 1440 Minuten pro Tag
+  // Explizite Typprüfungen und Validierung
+  if (typeof value !== 'number') {
+    console.warn('Invalid value in calculatePerDay:', value);
+    return 0;
+  }
   
-  return value * runsPerDay;
+  // Validiere die avgTime aus verschiedenen Quellen mit klaren Fallbacks
+  let avgRunTimeMinutes = 120; // Standard-Fallback
+  
+  if (resultObj && typeof resultObj === 'object' && typeof resultObj.avgTime === 'number') {
+    avgRunTimeMinutes = resultObj.avgTime;
+  } else if (originalResults.value && typeof originalResults.value.avgTime === 'number') {
+    avgRunTimeMinutes = originalResults.value.avgTime;
+  }
+  
+  // Validiere das Ergebnis
+  const runsPerDay = 1440 / avgRunTimeMinutes;
+  const result = value * runsPerDay;
+  
+  // Prüfe auf NaN oder Infinity
+  if (!isFinite(result)) {
+    console.warn('Invalid result in calculatePerDay:', result, 'from value:', value, 'and avgTime:', avgRunTimeMinutes);
+    return 0;
+  }
+  
+  return result;
 }
 
 // Neutraler Stil für Differenzwerte, immer weiß
@@ -1194,9 +1237,11 @@ function applyScenario(scenarioIndex) {
   hideResults.value = true;
 }
 
+// 3. Watch-Funktionen verbessern
 // Überwacht Änderungen an isVisible und lädt Daten, wenn das Modal geöffnet wird
 watch(() => props.isVisible, (newValue) => {
   if (newValue) {
+    resetModalState(); // Explizit zurücksetzen bevor wir laden
     loadHunterData();
   }
 });
