@@ -2,6 +2,15 @@
 const changelog = 
 [
   {
+    version: '2.1.2',
+    date: '2025-03-21',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      'Updated to latest sheet version (1.2.5)',
+      'Fixed i87 and i84 to be additive instead of multiplicative',
+    ]
+  },
+  {
     version: '2.1.1',
     date: '2025-03-19',
     baseVersion: 'Kylenator\'s Sheet v1.2.4',
