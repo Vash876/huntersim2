@@ -2,6 +2,16 @@
 const changelog = 
 [
   {
+    version: '2.1.3',
+    date: '2025-03-22',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      'Added new Gadget Calculator to plan and visualize Tessarect costs (only visible in Knox Tab)',
+      'Enhanced UI controls in Override and Upgrade Comparison Window',
+      'Added a Buy me a Coffee link to support the project',
+    ]
+  },
+  {
     version: '2.1.2',
     date: '2025-03-21',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
@@ -15,7 +25,7 @@ const changelog =
     date: '2025-03-19',
     baseVersion: 'Kylenator\'s Sheet v1.2.4',
     changes: [
-      'Fixed percentage calculation in Upgrade Comparison Modal to correctly use daily values instead of per-run values'
+      'Fixed percentage calculation in Upgrade Comparison Window to correctly use daily values instead of per-run values'
     ]
   },
   {

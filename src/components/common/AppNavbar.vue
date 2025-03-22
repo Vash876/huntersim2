@@ -89,6 +89,17 @@
         >
           <IconSettings size="18" />
         </router-link>
+
+        <!-- Buymeacoffee Link -->
+        <a 
+          href="https://buymeacoffee.com/VashCifi" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="px-4 py-2 rounded-lg hover:bg-gray-700/50 transition-colors flex items-center ml-2"
+          title="Buy me a coffee"
+        >
+          <IconCoffee size="18"/>
+        </a>
       </nav>
     </div>
     
@@ -222,6 +233,16 @@
                   <IconSettings class="w-4 h-4 mr-2" />
                   <span>Settings</span>
                 </router-link>
+
+                <a 
+                  href="https://buymeacoffee.com/VashCifi" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  class="flex items-center text-sm text-gray-400 hover:text-gray-300"
+                >
+                  <IconCoffee class="w-4 h-4 mr-2" />
+                  <span>Buy me a coffee</span>
+                </a>
               </div>
               
               <div class="mt-4 text-center text-xs text-gray-500">
@@ -251,7 +272,8 @@ import {
   IconArrowUpCircle,
   IconMenu2,
   IconX,
-  IconSettings
+  IconSettings,
+  IconCoffee
 } from '@tabler/icons-vue';
 
 const navigation = NAVIGATION;

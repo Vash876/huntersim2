@@ -73,9 +73,9 @@
         </div>
 
         <!-- Upgrade Scenarios -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
           <!-- Scenario 1 -->
-          <div class="bg-gray-850 border border-gray-700 p-4 rounded-lg">
+          <div class="bg-gray-850 border border-gray-700 px-2 py-4 rounded-lg">
             <div class="font-medium text-white mb-2 flex items-center">
               <IconCircle1 size="18" class="mr-1.5 text-blue-400" /> Scenario 1
             </div>
@@ -93,11 +93,11 @@
                   <!-- Build Value Display -->
                   <div class="flex items-center">
                     <div class="text-[10px] mr-2 uppercase" 
-                        :class="isOverrideValue(upgrade.key) ? 'text-blue-400' : 'text-gray-400'">
+                         :class="isOverrideValue(upgrade.key) ? 'text-blue-400' : 'text-gray-400'">
                       {{ isOverrideValue(upgrade.key) ? 'override' : 'global' }}
                     </div>
                     <div class="text-xs" 
-                        :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
+                         :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
                       {{ getBaseValue(upgrade.key) }}
                     </div>
                     <!-- Next Cost Display bleibt gleich -->
@@ -106,31 +106,17 @@
                     </div>
                   </div>
                   
-                  <!-- Increment Input with Arrows -->
+                  <!-- Ersetzen mit ValueControls für Szenario 1 -->
                   <div class="flex items-center">
-                    <div class="relative flex overflow-hidden rounded">
-                      <button 
-                        @click="decrementScenarioValue(0, upgrade.key)"
-                        class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-l-md"
-                      >
-                        <IconChevronLeft size="14" />
-                      </button>
-                      
-                      <div 
-                        class="w-10 text-center bg-gray-800 py-[1px] relative flex items-center justify-center h-6 border-y border-gray-600"
-                      >
-                        <span class="text-blue-400">
-                          {{ scenarioIncrements[0][upgrade.key] || 0 }}
-                        </span>
-                      </div>
-                      
-                      <button 
-                        @click="incrementScenarioValue(0, upgrade.key, upgrade.max)"
-                        class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-r-md"
-                      >
-                        <IconChevronRight size="14" />
-                      </button>
-                    </div>
+                    <ValueControls
+                      :value="scenarioIncrements[0][upgrade.key] || 0"
+                      :minValue="0"
+                      :maxValue="upgrade.max ? upgrade.max - getBaseValue(upgrade.key) : Infinity"
+                      :showFastControls="true"
+                      :step="1"
+                      :valueClass="'text-blue-400'"
+                      @update:value="(newVal) => updateScenarioValue(0, upgrade.key, newVal, upgrade.max)"
+                    />
                   </div>
                 </div>
               </div>
@@ -144,7 +130,7 @@
           </div>
 
           <!-- Scenario 2 -->
-          <div class="bg-gray-850 border border-gray-700 p-4 rounded-lg">
+          <div class="bg-gray-850 border border-gray-700 px-2 py-4 rounded-lg">
             <div class="font-medium text-white mb-2 flex items-center">
               <IconCircle2 size="18" class="mr-1.5 text-blue-400" /> Scenario 2
             </div>
@@ -162,11 +148,11 @@
                   <!-- Build Value Display -->
                   <div class="flex items-center">
                     <div class="text-[10px] mr-2 uppercase" 
-                        :class="isOverrideValue(upgrade.key) ? 'text-blue-400' : 'text-gray-400'">
+                         :class="isOverrideValue(upgrade.key) ? 'text-blue-400' : 'text-gray-400'">
                       {{ isOverrideValue(upgrade.key) ? 'override' : 'global' }}
                     </div>
                     <div class="text-xs" 
-                        :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
+                         :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
                       {{ getBaseValue(upgrade.key) }}
                     </div>
                     <!-- Next Cost Display bleibt gleich -->
@@ -175,31 +161,17 @@
                     </div>
                   </div>
                   
-                  <!-- Increment Input with Arrows -->
+                  <!-- Ersetzen mit ValueControls für Szenario 2 -->
                   <div class="flex items-center">
-                    <div class="relative flex overflow-hidden rounded">
-                      <button 
-                        @click="decrementScenarioValue(1, upgrade.key)"
-                        class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-l-md"
-                      >
-                        <IconChevronLeft size="14" />
-                      </button>
-                      
-                      <div 
-                        class="w-10 text-center bg-gray-800 py-[1px] relative flex items-center justify-center h-6 border-y border-gray-600"
-                      >
-                        <span class="text-blue-400">
-                          {{ scenarioIncrements[1][upgrade.key] || 0 }}
-                        </span>
-                      </div>
-                      
-                      <button 
-                        @click="incrementScenarioValue(1, upgrade.key, upgrade.max)"
-                        class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-r-md"
-                      >
-                        <IconChevronRight size="14" />
-                      </button>
-                    </div>
+                    <ValueControls
+                      :value="scenarioIncrements[1][upgrade.key] || 0"
+                      :minValue="0"
+                      :maxValue="upgrade.max ? upgrade.max - getBaseValue(upgrade.key) : Infinity"
+                      :showFastControls="true"
+                      :step="1"
+                      :valueClass="'text-blue-400'"
+                      @update:value="(newVal) => updateScenarioValue(1, upgrade.key, newVal, upgrade.max)"
+                    />
                   </div>
                 </div>
               </div>
@@ -213,7 +185,7 @@
           </div>
 
           <!-- Scenario 3 -->
-          <div class="bg-gray-850 border border-gray-700 p-4 rounded-lg">
+          <div class="bg-gray-850 border border-gray-700 px-2 py-4 rounded-lg">
             <div class="font-medium text-white mb-2 flex items-center">
               <IconCircle3 size="18" class="mr-1.5 text-blue-400" /> Scenario 3
             </div>
@@ -231,11 +203,11 @@
                   <!-- Build Value Display -->
                   <div class="flex items-center">
                     <div class="text-[10px] mr-2 uppercase" 
-                        :class="isOverrideValue(upgrade.key) ? 'text-blue-400' : 'text-gray-400'">
+                         :class="isOverrideValue(upgrade.key) ? 'text-blue-400' : 'text-gray-400'">
                       {{ isOverrideValue(upgrade.key) ? 'override' : 'global' }}
                     </div>
                     <div class="text-xs" 
-                        :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
+                         :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
                       {{ getBaseValue(upgrade.key) }}
                     </div>
                     <!-- Next Cost Display bleibt gleich -->
@@ -244,31 +216,17 @@
                     </div>
                   </div>
                   
-                  <!-- Increment Input with Arrows -->
+                  <!-- Ersetzen mit ValueControls für Szenario 3 -->
                   <div class="flex items-center">
-                    <div class="relative flex overflow-hidden rounded">
-                      <button 
-                        @click="decrementScenarioValue(2, upgrade.key)"
-                        class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-l-md"
-                      >
-                        <IconChevronLeft size="14" />
-                      </button>
-                      
-                      <div 
-                        class="w-10 text-center bg-gray-800 py-[1px] relative flex items-center justify-center h-6 border-y border-gray-600"
-                      >
-                        <span class="text-blue-400">
-                          {{ scenarioIncrements[2][upgrade.key] || 0 }}
-                        </span>
-                      </div>
-                      
-                      <button 
-                        @click="incrementScenarioValue(2, upgrade.key, upgrade.max)"
-                        class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-r-md"
-                      >
-                        <IconChevronRight size="14" />
-                      </button>
-                    </div>
+                    <ValueControls
+                      :value="scenarioIncrements[2][upgrade.key] || 0"
+                      :minValue="0"
+                      :maxValue="upgrade.max ? upgrade.max - getBaseValue(upgrade.key) : Infinity"
+                      :showFastControls="true"
+                      :step="1"
+                      :valueClass="'text-blue-400'"
+                      @update:value="(newVal) => updateScenarioValue(2, upgrade.key, newVal, upgrade.max)"
+                    />
                   </div>
                 </div>
               </div>
@@ -296,14 +254,12 @@
               <colgroup>
                 <col class="w-[25%]" /> <!-- Scenario -->
                 <col class="w-[25%]" /> <!-- Cost -->
-                <!--<col class="w-[20%]" />  Runs Needed -->
                 <col class="w-[40%]" /> <!-- Collection Time -->
               </colgroup>
               <thead>
                 <tr class="border-b border-gray-700">
                   <th class="py-2 px-4 text-left text-gray-400">Scenario</th>
                   <th class="py-2 px-6 text-left text-gray-400">Cost</th>
-                  <!--<th class="py-2 px-6 text-center text-gray-400">Runs Needed</th>-->
                   <th class="py-2 px-6 text-right text-gray-400">Collection Time</th>
                 </tr>
               </thead>
@@ -323,9 +279,6 @@
                   <td class="py-2 px-6 text-left text-white">
                     {{ formatCost(scenarioCosts[index]) }} 
                   </td>
-                  <!--<td class="py-2 px-6 text-center text-gray-300">
-                    {{ calculateRunsNeeded(index) }}
-                  </td>-->
                   <td class="py-2 px-6 text-right">
                     {{ formatCollectionTime(getCollectionTimeInMinutes(index)) }}
                   </td>
@@ -584,6 +537,7 @@ import {
   getAbsoluteDiffClasses, getAbsoluteDiffText, 
 } from '../../components/builds/utils/BuildComparisonUtils';
 import { useBuildEvaluation } from '../../composables/useBuildEvaluation';
+import ValueControls from '../common/ValueControls.vue';
 
 const props = defineProps({
   isVisible: { type: Boolean, default: false },
@@ -608,8 +562,6 @@ const scenarioCosts = ref([0, 0, 0]);
 const recommendation = ref('');
 const recommendedScenario = ref(null);
 const originalResults = ref(null);
-
-
 
 // Hunter und Upgrade-Parameter
 const hunterModule = ref(null);
@@ -658,7 +610,6 @@ function resetModalState() {
   console.log('Modal state has been reset');
 }
 
-// 2. Verbesserte Ladesequenz mit expliziter Reihenfolge
 // Hunter-Daten und Upgrades laden
 async function loadHunterData() {
   try {
@@ -813,36 +764,21 @@ function calculateAllScenarioCosts() {
   scenarioCosts.value = scenarios.value.map((_, index) => calculateScenarioCost(index));
 }
 
-// Funktionen für die Inkrementierung von Szenariowerten mit den Pfeilen
-function incrementScenarioValue(scenarioIndex, key, maxValue) {
-  // Stelle sicher, dass der aktuelle Wert initialisiert ist
-  if (!scenarioIncrements.value[scenarioIndex][key]) {
-    scenarioIncrements.value[scenarioIndex][key] = 0;
-  }
-  
-  // Berechne den globalen Wert und das Maximum
+// Neue Funktion für ValueControls - ersetzt increment/decrementScenarioValue
+function updateScenarioValue(scenarioIndex, key, newValue, maxValue) {
+  // Stelle sicher, dass der Wert im gültigen Bereich liegt
   const globalValue = getBaseValue(key);
   const max = maxValue !== undefined ? maxValue : Infinity;
-  const currentIncrement = scenarioIncrements.value[scenarioIndex][key];
   
-  // Erhöhe den Wert um 1, wenn das Maximum nicht erreicht ist
-  if (globalValue + currentIncrement < max) {
-    scenarioIncrements.value[scenarioIndex][key] += 1;
-  }
-}
-
-function decrementScenarioValue(scenarioIndex, key) {
-  // Stelle sicher, dass der aktuelle Wert initialisiert ist
-  if (!scenarioIncrements.value[scenarioIndex][key]) {
-    scenarioIncrements.value[scenarioIndex][key] = 0;
-  }
+  // Begrenze auf 0 und maxValue-globalValue
+  newValue = Math.max(0, Math.min(newValue, max - globalValue));
   
-  // Verringere den Wert, aber nicht unter 0
-  if (scenarioIncrements.value[scenarioIndex][key] > 0) {
-    scenarioIncrements.value[scenarioIndex][key] -= 1;
-  }
+  // Update des Werts
+  scenarioIncrements.value[scenarioIndex][key] = newValue;
+  
+  // Kostenberechnung aktualisieren
+  calculateAllScenarioCosts();
 }
-
 
 // Analysiert die Ergebnisse und ermittelt die beste Option
 function analyzeResults() {
@@ -923,7 +859,6 @@ function getLowestCostClass(index) {
 }
 
 // Berechnet Werte pro Tag basierend auf der durchschnittlichen Run-Zeit
-// 4. Validierung in calculatePerDay hinzufügen
 function calculatePerDay(value, resultObj) {
   if (!value) return 0;
   
@@ -1076,7 +1011,6 @@ function formatMaterialPerDay(value) {
   return formatNumber(valuePerDay);
 }
 
-// Berechnet die Kosten für ein einzelnes Upgrade-Level
 // Berechnet die Kosten für ein einzelnes Upgrade-Level, unter Berücksichtigung der Szenario-Inkremente
 function getNextUpgradeCost(key, scenarioIndex = -1) {
   // Basiswert ist der globale Wert
@@ -1221,7 +1155,6 @@ function applyScenario(scenarioIndex) {
 
   
   // Das Ergebnis des ausgewählten Szenarios finden
-  // Hier verwendest du scenarioIndex statt index!
   const selectedResult = comparisonResults.value.find(result => result.index === scenarioIndex);
   
   // Overrides und bereits berechnete Ergebnisse an den Parent-Komponenten senden
@@ -1237,7 +1170,7 @@ function applyScenario(scenarioIndex) {
   hideResults.value = true;
 }
 
-// 3. Watch-Funktionen verbessern
+// Watch-Funktionen
 // Überwacht Änderungen an isVisible und lädt Daten, wenn das Modal geöffnet wird
 watch(() => props.isVisible, (newValue) => {
   if (newValue) {

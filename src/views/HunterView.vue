@@ -76,6 +76,17 @@
               <span>Horizontal</span>
             </button>
           </div>
+        <!-- Gadget Cost Calculator Button (nur für Knox)-->
+        <button
+          v-if="route.params.hunterId === 'knox'"
+          @click="openGadgetCostModal"
+          class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-700 transition-colors"
+          title="Gadget Cost Calculator"
+        >
+          <IconCalculator size="16" class="text-blue-400" />
+          <span class="hidden sm:inline">Gadget Calculator</span>
+          <span class="sm:hidden">Gadgets</span>
+        </button>
         </div>
         
         <!-- Build Filter Switch -->
@@ -365,6 +376,13 @@
       @close="showLootFilterModal = false"
       @update:filters="updateLootFilters"
     />
+
+    <!-- Gadgets Cost Modal -->
+    <GadgetsCostModal
+      :isVisible="isGadgetCostModalOpen"
+      :builds="builds"
+      @close="closeGadgetCostModal"
+    />
   </div>
 </template>
 
@@ -389,7 +407,8 @@ import {
   IconInfoCircle,
   IconLayoutDistributeVertical,
   IconLayoutDistributeHorizontal,
-  IconFilter
+  IconFilter,
+  IconCalculator
 } from '@tabler/icons-vue';
 
 import StatsModal from '../components/common/StatsModal.vue';
@@ -403,6 +422,7 @@ import BuildCardVertical from '@/components/builds/Views/verticalView/BuildCardV
 import BuildCardHorizontal from '@/components/builds/Views/horizontalView/BuildCardHorizontal.vue';
 import BuildCardMobile from '@/components/builds/Views/mobileView/BuildCardMobile.vue';
 import MobileLootFilterModal from '@/components/common/MobileLootFilterModal.vue';
+import GadgetsCostModal from '@/components/common/GadgetsCostModal.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -474,6 +494,20 @@ function openOverrideModal(build) {
 function closeOverrideModal() {
   isOverrideModalOpen.value = false;
   selectedBuildForOverrides.value = null;
+}
+
+// GadgetCostModal 
+// ref für Gadget Modal hinzu
+const isGadgetCostModalOpen = ref(false);
+
+// Funktion zum Öffnen des Gadget-Kosten-Modals
+function openGadgetCostModal() {
+  isGadgetCostModalOpen.value = true;
+}
+
+// Funktion zum Schließen des Gadget-Kosten-Modals
+function closeGadgetCostModal() {
+  isGadgetCostModalOpen.value = false;
 }
 
 // Event-Handler für aktualisierte Overrides

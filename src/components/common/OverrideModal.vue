@@ -1,4 +1,4 @@
-<!-- filepath: /c:/Users/igorn/projects/huntersim2/src/components/common/OverrideModal.vue -->
+<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\common\OverrideModal.vue -->
 <template>
   <div 
     v-if="isVisible" 
@@ -125,34 +125,17 @@
                   </button>
                 </div>
                 
-                <!-- Numeric Type Controls mit Cost -->
+                <!-- Numeric Type Controls mit ValueControls -->
                 <div v-else class="flex items-center">
-                  <div class="relative flex overflow-hidden rounded">
-                    <button 
-                      @click="decreaseOverride(param.key)"
-                      class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-l-md"
-                    >
-                      <IconChevronLeft size="14" />
-                    </button>
-                    
-                    <div 
-                      class="w-10 text-center bg-gray-800 py-[1px] relative flex items-center justify-center h-6 border-y border-gray-600"
-                    >
-                      <span 
-                        :class="getValueColorClass(param.key, param.globalValue)"
-                      >
-                        {{ localOverrides[param.key] === null ? param.globalValue : localOverrides[param.key] }}
-                      </span>
-                    </div>
-                    
-                    <button 
-                      @click="increaseOverride(param.key, param.maxValue)"
-                      class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-r-md"
-                    >
-                      <IconChevronRight size="14" />
-                    </button>
-                  </div>
-                  
+                  <ValueControls
+                    :value="localOverrides[param.key] === null ? param.globalValue : localOverrides[param.key]"
+                    :minValue="0"
+                    :maxValue="param.maxValue || 999"
+                    :showFastControls="true"
+                    :step="1"
+                    :valueClass="getValueColorClass(param.key, param.globalValue)"
+                    @update:value="(newVal) => updateOverrideValue(param.key, newVal, param)"
+                  />
                 </div>
               </div>
             </div>
@@ -179,6 +162,7 @@ import { UPGRADES } from '../../constants/upgrades';
 import { calcCostDifference, formatCost } from '../../utils/statCostUtils';
 import { getRelicCost, calcRelicCostDifference, formatRelicCost } from '../../utils/relicCostUtils';
 import { getGadgetCost, calcGadgetCostDifference, formatGadgetCost } from '../../utils/gadgetCostUtils';
+import ValueControls from './ValueControls.vue';
 
 const props = defineProps({
   isVisible: { type: Boolean, default: false },
@@ -403,7 +387,35 @@ const visibleCategories = computed(() => {
   return parameterData.value.filter(category => category.params.length > 0);
 });
 
-// Interaction functions for numeric parameters
+// NEUE Funktion für ValueControls
+function updateOverrideValue(paramKey, newValue, param) {
+  const globalValue = param.globalValue;
+  
+  // Runde den Wert, da wir mit ganzen Zahlen arbeiten
+  newValue = Math.floor(newValue);
+  
+  // Wenn der neue Wert dem globalen Wert entspricht, setze auf null zurück
+  if (Math.floor(newValue) === Math.floor(globalValue)) {
+    localOverrides.value[paramKey] = null;
+  } else {
+    localOverrides.value[paramKey] = newValue;
+  }
+  
+  // Begrenze auf den Maximalwert
+  if (localOverrides.value[paramKey] !== null && param.maxValue !== null && param.maxValue !== Infinity && localOverrides.value[paramKey] > param.maxValue) {
+    localOverrides.value[paramKey] = param.maxValue;
+  }
+  
+  // Stelle sicher, dass der Wert nicht unter 0 fällt
+  if (localOverrides.value[paramKey] !== null && localOverrides.value[paramKey] < 0) {
+    localOverrides.value[paramKey] = 0;
+  }
+  
+  // Aktualisiere Kostenberechnung
+  calculateTotalCost();
+}
+
+// ALTE Funktionen (bleiben für die Rückwärtskompatibilität)
 function decreaseOverride(param) {
   const paramData = parameterData.value
     .flatMap(category => category.params)
