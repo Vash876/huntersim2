@@ -1,6 +1,14 @@
 <script setup>
 const changelog = 
 [
+{
+    version: '2.1.4',
+    date: '2025-03-22',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      'Fixed Calculations on Upgrade Comparison Window',
+    ]
+  },
   {
     version: '2.1.3',
     date: '2025-03-22',
