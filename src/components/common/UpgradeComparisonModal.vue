@@ -373,7 +373,7 @@
                   </td>
                 </tr>
                 
-                <!-- Material 1 (z.B. Obsidian) -->
+                <!-- Material 1 -->
                 <tr class="border-b border-gray-700" v-if="hasLootProperty('mat1', true)">
                   <td class="py-2 px-4 text-gray-300">
                     <div class="flex items-center">
@@ -382,7 +382,7 @@
                     </div>
                   </td>
                   <td class="py-2 px-6 text-right bg-gray-800/50">
-                    {{ originalResults ? formatMaterialPerDay(originalResults.mat1 || 0) : '-' }}
+                    {{ originalResults ? formatMaterialPerDay(originalResults.mat1 || 0, originalResults) : '-' }}
                   </td>
                   <td 
                     v-for="(result, i) in comparisonResults" 
@@ -390,15 +390,15 @@
                     class="py-2 px-6 text-right"
                     :class="getBestValueClass(result.index, 'mat1', true)"
                   >
-                    {{ formatMaterialPerDay(result.mat1 || 0) }}
+                    {{ formatMaterialPerDay(result.mat1 || 0, result) }}
                     <div v-if="originalResults?.mat1" class="text-xs" 
-                        :class="getDiffClass(calculatePerDay(result.mat1, result), calculatePerDay(originalResults.mat1, originalResults))">
+                        :class="getDiffClass(result.mat1, originalResults.mat1)">
                       {{ formatDayDiffPercent(result.mat1, originalResults.mat1, result) }}
                     </div>
                   </td>
                 </tr>
                 
-                <!-- Material 2 (z.B. Behlium) -->
+                <!-- Material 2 -->
                 <tr class="border-b border-gray-700" v-if="hasLootProperty('mat2', true)">
                   <td class="py-2 px-4 text-gray-300">
                     <div class="flex items-center">
@@ -407,7 +407,7 @@
                     </div>
                   </td>
                   <td class="py-2 px-6 text-right bg-gray-800/50">
-                    {{ originalResults ? formatMaterialPerDay(originalResults.mat2 || 0) : '-' }}
+                    {{ originalResults ? formatMaterialPerDay(originalResults.mat2 || 0, originalResults) : '-' }}
                   </td>
                   <td 
                     v-for="(result, i) in comparisonResults" 
@@ -415,15 +415,15 @@
                     class="py-2 px-6 text-right"
                     :class="getBestValueClass(result.index, 'mat2', true)"
                   >
-                    {{ formatMaterialPerDay(result.mat2 || 0) }}
+                    {{ formatMaterialPerDay(result.mat2 || 0, result) }}
                     <div v-if="originalResults?.mat2" class="text-xs" 
-                        :class="getDiffClass(calculatePerDay(result.mat2, result), calculatePerDay(originalResults.mat2, originalResults))">
+                        :class="getDiffClass(result.mat2, originalResults.mat2)">
                       {{ formatDayDiffPercent(result.mat2, originalResults.mat2, result) }}
                     </div>
                   </td>
                 </tr>
 
-                <!-- Material 3 (z.B. Biomatter) -->
+                <!-- Material 3 -->
                 <tr class="border-b border-gray-700" v-if="hasLootProperty('mat3', true)">
                   <td class="py-2 px-4 text-gray-300">
                     <div class="flex items-center">
@@ -432,7 +432,7 @@
                     </div>
                   </td>
                   <td class="py-2 px-6 text-right bg-gray-800/50">
-                    {{ originalResults ? formatMaterialPerDay(originalResults.mat3 || 0) : '-' }}
+                    {{ originalResults ? formatMaterialPerDay(originalResults.mat3 || 0, originalResults) : '-' }}
                   </td>
                   <td 
                     v-for="(result, i) in comparisonResults" 
@@ -440,9 +440,9 @@
                     class="py-2 px-6 text-right"
                     :class="getBestValueClass(result.index, 'mat3', true)"
                   >
-                    {{ formatMaterialPerDay(result.mat3 || 0) }}
+                    {{ formatMaterialPerDay(result.mat3 || 0, result) }}
                     <div v-if="originalResults?.mat3" class="text-xs" 
-                        :class="getDiffClass(calculatePerDay(result.mat3, result), calculatePerDay(originalResults.mat3, originalResults))">
+                        :class="getDiffClass(result.mat3, originalResults.mat3)">
                       {{ formatDayDiffPercent(result.mat3, originalResults.mat3, result) }}
                     </div>
                   </td>
@@ -457,7 +457,7 @@
                     </div>
                   </td>
                   <td class="py-2 px-6 text-right bg-gray-800/50">
-                    {{ originalResults ? formatMaterialPerDay(originalResults.xp || 0) : '-' }}
+                    {{ originalResults ? formatMaterialPerDay(originalResults.xp || 0, originalResults) : '-' }}
                   </td>
                   <td 
                     v-for="(result, i) in comparisonResults" 
@@ -465,9 +465,9 @@
                     class="py-2 px-6 text-right"
                     :class="getBestValueClass(result.index, 'xp', true)"
                   >
-                    {{ formatMaterialPerDay(result.xp || 0) }}
+                    {{ formatMaterialPerDay(result.xp || 0, result) }}
                     <div v-if="originalResults?.xp" class="text-xs" 
-                        :class="getDiffClass(calculatePerDay(result.xp, result), calculatePerDay(originalResults.xp, originalResults))">
+                        :class="getDiffClass(result.xp, originalResults.xp)">
                       {{ formatDayDiffPercent(result.xp, originalResults.xp, result) }}
                     </div>
                   </td>
@@ -829,22 +829,51 @@ function analyzeResults() {
   }
 }
 
-// Style-Hilfsfunktionen für die Ergebnistabelle (aktualisiert)
+// Style-Hilfsfunktionen für die Ergebnistabelle
 function getBestValueClass(index, field, includeOriginal = false) {
   if (comparisonResults.value.length === 0) return '';
   
-  // Nur die Ergebnisse aus den Szenarien berücksichtigen, nicht das Original
-  const values = comparisonResults.value.map(result => result[field]);
+  // Für Materialien und XP müssen wir die Tageswerte vergleichen, nicht die Rohwerte
+  const isMaterialField = ['mat1', 'mat2', 'mat3', 'xp'].includes(field);
+  
+  // Finde das aktuelle result anhand des index
+  const result = comparisonResults.value.find(r => r.index === index);
+  if (!result) return '';
+  
+  // Tageswerte aller Ergebnisse berechnen, wenn es sich um ein Materialfeld handelt
+  const values = comparisonResults.value.map(r => {
+    if (isMaterialField) {
+      // Bei Materialien den Tageswert berechnen
+      const avgTime = r.avgTime || 120;
+      const runsPerDay = 1440 / avgTime;
+      return (r[field] || 0) * runsPerDay;
+    } else {
+      // Bei anderen Metriken den direkten Wert verwenden
+      return r[field] || 0;
+    }
+  });
   
   if (values.length === 0) return '';
   
+  // Maximalen Wert finden
   const maxValue = Math.max(...values);
   
-  // Suche das Ergebnis mit dem entsprechenden Index
-  const result = comparisonResults.value.find(r => r.index === index);
+  // Aktuellen Tageswert berechnen
+  let currentValue;
+  if (isMaterialField) {
+    const avgTime = result.avgTime || 120;
+    const runsPerDay = 1440 / avgTime;
+    currentValue = (result[field] || 0) * runsPerDay;
+  } else {
+    currentValue = result[field] || 0;
+  }
+  
+  // Prüfen, ob der aktuelle Wert der höchste ist
+  // Wir verwenden eine kleine Toleranz, um Rundungsfehler zu berücksichtigen
+  const isMaxValue = Math.abs(currentValue - maxValue) < 0.001;
   
   // Nur der höchste Wert soll grün dargestellt werden
-  return result && result[field] === maxValue ? 'text-green-400' : '';
+  return isMaxValue ? 'text-green-400' : '';
 }
 
 function getLowestCostClass(index) {
@@ -909,15 +938,38 @@ function formatDiffPercent(value, baseValue) {
 
 // Spezielle Funktion für Prozente im Tageswert-Vergleich
 function formatDayDiffPercent(resultValue, originalValue, resultObj) {
-  // Zunächst in Tageswerte umrechnen - unterschiedliche avgTime pro Szenario
-  const dayValue = calculatePerDay(resultValue, resultObj);
-  const dayBaseValue = calculatePerDay(originalValue, originalResults.value);
+  if (!resultValue || !originalValue || !resultObj || !originalResults.value) {
+    return '±0%';
+  }
   
-  if (!dayValue || !dayBaseValue) return '±0%';
-  if (dayValue === dayBaseValue) return '±0%';
-  
-  const diff = ((dayValue / dayBaseValue) - 1) * 100;
-  return diff > 0 ? `+${diff.toFixed(1)}%` : `${diff.toFixed(1)}%`;
+  try {
+    // Original avgTime und Szenario avgTime verwenden
+    const originalAvgTime = originalResults.value.avgTime || 120;
+    const scenarioAvgTime = resultObj.avgTime || 120;
+    
+    // Runs pro Tag für beide berechnen
+    const originalRunsPerDay = 1440 / originalAvgTime;
+    const scenarioRunsPerDay = 1440 / scenarioAvgTime;
+    
+    // Tageswerte berechnen
+    const originalPerDay = originalValue * originalRunsPerDay;
+    const resultPerDay = resultValue * scenarioRunsPerDay;
+    
+    // Prozentualer Unterschied zum Original
+    const diffPercent = ((resultPerDay / originalPerDay) - 1) * 100;
+    
+    // Sicherstellen, dass wir einen gültigen Wert haben
+    if (!isFinite(diffPercent)) {
+      return '±0%';
+    }
+    
+    return diffPercent > 0 
+        ? `+${diffPercent.toFixed(1)}%` 
+        : `${diffPercent.toFixed(1)}%`;
+  } catch (error) {
+    console.error('Error in formatDayDiffPercent:', error);
+    return '±0%';
+  }
 }
 
 // Auch Absolutwert-Differenzen immer weiß darstellen
@@ -996,11 +1048,16 @@ function getAvailableUpgrades(currency) {
 }
 
 // Funktion zum Formatieren der Tageswerte für Materialien und XP
-function formatMaterialPerDay(value) {
+function formatMaterialPerDay(value, resultObj) {
   if (!value) return '0';
   
-  // Wenn keine avgTime vorhanden ist, Fallback auf 2h (120 Minuten)
-  const avgRunTimeMinutes = originalResults.value?.avgTime || 120;
+  // Verwende die tatsächliche avgTime des jeweiligen Szenarios oder des Originals
+  let avgRunTimeMinutes;
+  if (resultObj && resultObj.avgTime) {
+    avgRunTimeMinutes = resultObj.avgTime;
+  } else {
+    avgRunTimeMinutes = originalResults.value?.avgTime || 120;
+  }
   
   // Berechne die Anzahl der Runs pro Tag
   const runsPerDay = 1440 / avgRunTimeMinutes; // 1440 Minuten pro Tag
