@@ -162,6 +162,7 @@ import { UPGRADES } from '../../constants/upgrades';
 import { calcCostDifference, formatCost } from '../../utils/statCostUtils';
 import { getRelicCost, calcRelicCostDifference, formatRelicCost } from '../../utils/relicCostUtils';
 import { getGadgetCost, calcGadgetCostDifference, formatGadgetCost } from '../../utils/gadgetCostUtils';
+import { getInscryptionCost, calcInscryptionCostDifference, formatInscryptionCost } from '../../utils/inscryptionCostUtils';
 import ValueControls from './ValueControls.vue';
 
 const props = defineProps({
@@ -515,6 +516,12 @@ function showCostForParam(param) {
     return localOverrides.value[param.key] !== null &&
            localOverrides.value[param.key] > param.globalValue;
   }
+
+  // Für Inscryptions nur wenn Override höher als global
+  if (param.key.startsWith('upgrades.inscryptions.')) {
+  return localOverrides.value[param.key] !== null &&
+         localOverrides.value[param.key] > param.globalValue;
+}
   
   return false;
 }
@@ -552,6 +559,19 @@ function getParamCost(param) {
     
     // Direkt den gadgetId verwenden - unsere gadgetCostUtils kennt 'wrench', 'zaptron', usw.
     return calcGadgetCostDifference(gadgetId, fromLevel, toLevel);
+  }
+
+  // Für Inscryptions
+  if (param.key.startsWith('upgrades.inscryptions.')) {
+    // Format ist upgrades.inscryptions.inscryptionId, z.B. upgrades.inscryptions.i80
+    const inscryptionId = param.key.split('.')[2]; // Extrahiert 'i80'
+    
+    // Prüfen ob für diese inscryption eine Kostenfunktion vorhanden ist
+    const supportedInscryptions = ['i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92'];
+    
+    if (supportedInscryptions.includes(inscryptionId)) {
+      return calcInscryptionCostDifference(inscryptionId, fromLevel, toLevel);
+    }
   }
   
   // Für normale Stats

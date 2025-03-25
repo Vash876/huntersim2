@@ -531,6 +531,7 @@ import { UPGRADES } from '../../constants/upgrades';
 import { calcCostDifference, formatCost } from '../../utils/statCostUtils';
 import { calcRelicCostDifference } from '../../utils/relicCostUtils';
 import { calcGadgetCostDifference } from '../../utils/gadgetCostUtils';
+import { calcInscryptionCostDifference } from '../../utils/inscryptionCostUtils';
 import { 
   formatNumber, formatStage, formatPercent, formatTime,
   getDiffClasses, getDiffIcon, getDiffText,
@@ -744,6 +745,16 @@ function calculateScenarioCost(scenarioIndex) {
         // Gadget-Kosten
         const gadgetId = upgrade.key.split('.')[2]; // Extrahiert 'anchor'
         totalCost += calcGadgetCostDifference(gadgetId, baseValue, baseValue + incrementValue);
+      } else if (upgrade.key.startsWith('upgrades.inscryptions.')) {
+        // Inscryption-Kosten
+        const inscryptionId = upgrade.key.split('.')[2]; // Extrahiert 'i80'
+        
+        // Prüfen ob für diese Inscryption eine Kostenfunktion vorhanden ist
+        const supportedInscryptions = ['i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92'];
+        
+        if (supportedInscryptions.includes(inscryptionId)) {
+          totalCost += calcInscryptionCostDifference(inscryptionId, baseValue, baseValue + incrementValue);
+        }
       } else {
         // Stat-Kosten (basierend auf statCostUtils)
         totalCost += calcCostDifference(
@@ -1101,6 +1112,18 @@ function getNextUpgradeCost(key, scenarioIndex = -1) {
     // Gadget-Kosten
     const gadgetId = key.split('.')[2]; // Extrahiert 'anchor'
     return calcGadgetCostDifference(gadgetId, currentValue, currentValue + 1);
+  } else if (key.startsWith('upgrades.inscryptions.')) {
+    // Inscryption-Kosten
+    const inscryptionId = key.split('.')[2]; // Extrahiert 'i80'
+    
+    // Prüfen ob für diese Inscryption eine Kostenfunktion vorhanden ist
+    const supportedInscryptions = ['i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92'];
+    
+    if (supportedInscryptions.includes(inscryptionId)) {
+      return calcInscryptionCostDifference(inscryptionId, currentValue, currentValue + 1);
+    }
+    
+    return 0; // Keine Kostenfunktion verfügbar
   } else {
     // Stat-Kosten (basierend auf statCostUtils)
     return calcCostDifference(

@@ -12,7 +12,7 @@
       <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-2 border-b border-gray-600 sticky top-0 z-10">
         <div class="flex justify-between items-center">
           <h2 class="text-base sm:text-lg font-bold text-white truncate mr-2 flex items-center">
-            <IconTool size="18" class="mr-1.5 text-blue-400" />
+            <IconAnchor size="18" class="mr-1.5 text-blue-400" />
             <span class="text-blue-400">Knox</span>
             <span class="ml-1"> - Gadget Calculator</span>
           </h2>
@@ -128,17 +128,20 @@
           <!-- Gadget Grid -->
           <div class="grid grid-cols-1 gap-1.5">
             <div 
-  v-for="gadget in GADGETS" 
-  :key="gadget.id" 
-  class="custom-gadget-item rounded-md p-2 transition-colors border border-transparent hover:border-gray-600"
-  :class="{ 'active-gadget': hasLevelChanges(gadget.id) }"
->
-              <div class="flex justify-between items-center mb-1">
-                <span class="text-sm font-medium text-white">{{ gadget.label }}</span>
-                <div v-if="getGadgetCost(gadget.id) > 0" class="text-yellow-400 text-xs font-medium">
-                  {{ formatGadgetCost(getGadgetCost(gadget.id)) }}
-                </div>
+              v-for="gadget in GADGETS" 
+              :key="gadget.id" 
+              class="custom-gadget-item rounded-md p-2 transition-colors border border-transparent hover:border-gray-600"
+              :class="{ 'active-gadget': hasLevelChanges(gadget.id) }"
+            >
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-sm font-medium text-white">
+                {{ gadget.label }}
+                <span class="text-xs text-gray-400 ml-1">({{ gadget.boost }})</span>
+              </span>
+              <div v-if="getGadgetCost(gadget.id) > 0" class="text-yellow-400 text-xs font-medium">
+                {{ formatGadgetCost(getGadgetCost(gadget.id)) }}
               </div>
+            </div>
               
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <!-- Current Level Controls -->
@@ -183,7 +186,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { 
-  IconX, IconChevronLeft, IconChevronRight, IconAlertCircle, IconTool
+  IconX, IconChevronLeft, IconChevronRight, IconAlertCircle, IconAnchor
 } from '@tabler/icons-vue';
 import { GADGETS, getGadgetLabel } from '../../constants/gadgets.js';
 import { useHunterStore } from '../../store/hunterStore';

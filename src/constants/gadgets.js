@@ -1,23 +1,23 @@
 /**
  * Konstanten für die Gadgets
- * @type {Array<{id: string, label: string}>}
+ * @type {Array<{id: string, label: string, boost: string}>}
  */
 export const GADGETS = [
-  { id: 'g1', label: 'Handheld Sonic Scansys-4000' },
-  { id: 'g2', label: 'Portable Mini MK1 Generator' },
-  { id: 'g3', label: 'Flergonator Navigator' },
-  { id: 'g4', label: 'Serpents Connection Band' },
-  { id: 'wrench', label: 'The Wrench of Gore' },
-  { id: 'zaptron', label: 'Zaptron-533 Bio-Repair Tool' },
-  { id: 'g7', label: 'Academy Upgraded Standard Issue Double Barrel Module' },
-  { id: 'g8', label: 'Heavy-Duty Auto Extractor-Drill' },
-  { id: 'g9', label: 'Anti-Bricking Assistance Device' },
-  { id: 'g10', label: 'Chad\'s Custom Tokenium Storage Unit' },
-  { id: 'g11', label: 'Pocket-Dimension Petri Dish' },
-  { id: 'g12', label: 'Local Fragment Magnet' },
-  { id: 'g13', label: 'Mech Engineer Tool-Pants' },
-  { id: 'g14', label: 'Galactic Fragment Magnet' },
-  { id: 'anchor', label: 'The Anchor of Ages' }
+  { id: 'g1', label: 'Handheld Sonic Scansys-4000', boost: 'All Gens, RP' },
+  { id: 'g2', label: 'Portable Mini MK1 Generator', boost: 'Cells, RP' },
+  { id: 'g3', label: 'Flergonator Navigator', boost: 'Cells, MP, Shards' },
+  { id: 'g4', label: 'Serpents Connection Band', boost: 'Orbs' },
+  { id: 'wrench', label: 'The Wrench of Gore', boost: 'Borge' },
+  { id: 'zaptron', label: 'Zaptron-533 Bio-Repair Tool', boost: 'Ozzy' },
+  { id: 'g7', label: 'Academy Upgraded Standard Issue Double Barrel Module', boost: 'AP' },
+  { id: 'g8', label: 'Heavy-Duty Auto Extractor-Drill', boost: 'Mats' },
+  { id: 'g9', label: 'Anti-Bricking Assistance Device', boost: 'Loop Req' },
+  { id: 'g10', label: 'Chad\'s Custom Tokenium Storage Unit', boost: 'Tokens' },
+  { id: 'g11', label: 'Pocket-Dimension Petri Dish', boost: 'Cells' },
+  { id: 'g12', label: 'Local Fragment Magnet', boost: 'Farm Fragments' },
+  { id: 'g13', label: 'Mech Engineer Tool-Pants', boost: 'Mech Cap' },
+  { id: 'g14', label: 'Galactic Fragment Magnet', boost: 'Campaign Fragments' },
+  { id: 'anchor', label: 'The Anchor of Ages', boost: 'Knox' }
 ];
 
 /**

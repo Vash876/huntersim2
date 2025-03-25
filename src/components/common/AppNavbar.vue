@@ -71,16 +71,40 @@
           </div>
         </div>
 
-        <!-- Tools Links -->
-        <router-link 
-          v-for="tool in navigation.tools" 
-          :key="tool.id"
-          :to="tool.path" 
-          class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center"
-        >
-          <component :is="tool.icon" class="w-5 h-5 text-white" />
-          <span class="ml-1">{{ tool.name }}</span>
-        </router-link> 
+        <!-- Tools Dropdown
+        <div class="relative group">
+          <button 
+            class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-1"
+            :class="{'bg-gray-750': activeCategory === 'Tools'}"
+            @click="toggleCategory('Tools')"
+          >
+            <IconTools size="18" />
+            <span class="ml-1">Tools</span>
+            <IconChevronDown 
+              size="16" class="ml-1 transition-transform duration-200"
+              :class="{'rotate-180': activeCategory === 'Tools'}"
+            />
+          </button>
+          
+          <!-- Tools Dropdown Menu
+          <div 
+            class="absolute top-full right-0 mt-1 bg-gray-800 rounded-lg shadow-xl transform transition-all duration-200 origin-top-right z-50 border border-gray-700 w-56" 
+            :class="activeCategory === 'Tools' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'"
+          >
+            <div class="py-2">
+              <router-link 
+                v-for="tool in navigation.tools" 
+                :key="tool.id"
+                :to="tool.path" 
+                class="flex items-center px-4 py-2 hover:bg-gray-700 transition-colors"
+                @click="activeCategory = null"
+              >
+                <component :is="tool.icon" class="w-5 h-5 mr-2" />
+                <span>{{ tool.name }}</span>
+              </router-link>
+            </div>
+          </div>
+        </div> -->
         
         <!-- Settings Link (Desktop) -->
         <router-link 
@@ -203,7 +227,7 @@
                 </div>
               </div>
 
-              <!-- Tools Section 
+              <!-- Tools Section
               <div class="mb-6">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tools</h3>
                 
@@ -273,7 +297,8 @@ import {
   IconMenu2,
   IconX,
   IconSettings,
-  IconCoffee
+  IconCoffee,
+  IconTools
 } from '@tabler/icons-vue';
 
 const navigation = NAVIGATION;

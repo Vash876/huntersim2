@@ -1,7 +1,18 @@
 <script setup>
 const changelog = 
 [
-{
+  {
+    version: '2.1.5',
+    date: '2025-03-25',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      'Added boost type information to gadget labels in Gadget Calculator',
+      'Added cost calculation for Inscryptions #80+ in Override Modal',
+      'Added Inscryption cost support in Upgrade Comparison Window',
+      'Early-game players: Please ping me on Discord with screenshots of your Hunter relevant Inscryptions below #80 so I can add their cost calculations too!'
+    ]
+  },
+  {
     version: '2.1.4',
     date: '2025-03-22',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',

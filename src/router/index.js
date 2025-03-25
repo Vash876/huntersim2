@@ -89,22 +89,12 @@ const routes = [
     component: () => import('../views/upgrades/Ultima.vue')
   },
 
-  // Other Routes
+  /*/ Other Routes
   {
-    path: '/database',
-    name: 'Database',
-    component: () => import('../views/BuildDatabaseView.vue')
-  },
-  {
-    path: '/import',
-    name: 'Import',
-    component: () => import('../views/ImportExportView.vue')
-  },
-  {
-    path: '/settings',
-    name: 'Settings',
-    component: () => import('../views/SettingsView.vue')
-  },
+    path: '/tools/tr-planner',
+    name: 'TR Planner',
+    component: () => import('../views/tools/TRPlanner.vue'),
+  },*/
   // 404 Route
   {
     path: '/:pathMatch(.*)*',

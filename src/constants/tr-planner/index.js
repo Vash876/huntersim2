@@ -1,24 +1,77 @@
-/**************************************************************************************************** 
-key: Der Schlüssel des Boosts
-label: Der Name des Boosts
-mlabel: Für mobile Ansicht
-type: Der Typ des Boosts (number oder boolean)
-expand: wird benutzt um die checkbox zu deaktivieren, wenn der max Wert erreicht ist
-tooltip: Der Tooltip-Text für den Boost
-permanent: wird benutzt um den Boost in weiteren Shorts nicht kleiner zu machen, als er im Fenster oben drüber ist
-multiplier: Der Multiplikator für den Boost
-fragmulti: Der Multiplikator für die Campaign Frags
-max: Der maximale Wert, um den der Boost erweitert werden kann
-*****************************************************************************************************/ 
+// Boost-Kategorien und ihre zugehörigen Boosts
+export const boostCategories = [
+  {
+    id: 'time',
+    label: 'Time Related',
+  },
+  {
+    id: 'milestone',
+    label: 'Milestones',
+  },
+  {
+    id: 'relic',
+    label: 'Relics',
+  },
+  {
+    id: 'inscryption',
+    label: 'Inscryptions',
+  },
+  {
+    id: 'boonE',
+    label: 'Boon E',
+  },
+  {
+    id: 'boonH',
+    label: 'Boon H',
+  },
+  {
+    id: 'gadget',
+    label: 'Gadgets',
+  },
+  {
+    id: 'research',
+    label: 'Researches',
+  },
+  {
+    id: 'premium',
+    label: 'Premium',
+  },
+  {
+    id: 'gem',
+    label: 'Gems',
+  },
+  {
+    id: 'badge',
+    label: 'Void Badges',
+  }
+];
 
-export const boosts = [
+// General Stats für das StatsInputModal
+export const generalStats = [
+  {
+    key: 'trCount',
+    label: 'TR Count',
+    type: 'number',
+    uiOnly: true, 
+  },
+  {
+    key: 'allTimeOrbs',
+    label: 'All-Time Orbs',
+    type: 'number',
+    uiOnly: true, 
+  }
+];
+
+// Alle Boosts mit Kategoriezuordnung
+export const allBoosts = [
+  // Time Related
   {
     key: 'hoursInTR',
     label: 'Hours in TR',
-    mlabel: 'Hours',
+    category: 'time',
     type: 'number',
-    orbcalc: 1,
-    expand: '1',
+    orbcalc: true,
+    permanent: true,
     tooltip: '0',
     multiplier: (value, allValues) => {
       const hoursInTR = value || 0;
@@ -33,53 +86,39 @@ export const boosts = [
       return Math.pow(1 + hoursTerm * loopModsTerm, 0.06); 
     },
   },
-  
   {
     key: 'loopMods',
     label: 'Loop Mods',
-    mlabel: 'LMs',
+    category: 'time',
     type: 'number',
-    orbcalc: 1,
-    expand: '1',
+    orbcalc: true,
+    permanent: true,
     tooltip: '0',
     multiplier: 1,
   },
 
-  {
-    key: 'tr5Special',
-    label: 'Diamond Special',
-    mlabel: 'Diamond',
-    type: 'number',
-    orbcalc: 1,
-    expand: '0',
-    tooltip: '0',
-    permanent: 1,
-    multiplier: (value) => 1 + 0.01 * value,
-    max: 10
-  },
-
+  // Milestones
   {
     key: 'm0',
     label: 'Milestone #0',
-    mlabel: 'm0',
+    category: 'milestone',
     type: 'number',
-    orbcalc: 1,
-    expand: '1',
-    tooltip: 'For Campaign Frags Multiplier Attraction Gem Quality #3 required',
-    permanent: 1,
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
     multiplier: (value) => Math.pow(1.1, value),
     fragmulti: (value) => Math.pow(1.011, value),
   },
 
+  // Relics
   {
     key: 'r6',
     label: 'Relic #6',
-    mlabel: 'R6',
+    category: 'relic',
     type: 'number',
-    orbcalc: 0,
-    expand: '0',
+    orbcalc: false,
+    permanent: true,
     tooltip: '0',
-    permanent: 1,
     fragmulti: (value) => {
       const part1 = 2.75 * value;
       const part2 = Math.pow(1.05, value); 
@@ -87,137 +126,149 @@ export const boosts = [
     },
     max: 11
   },
-
   {
     key: 'r9',
     label: 'Relic #9',
-    mlabel: 'R9',
+    category: 'relic',
     type: 'number',
-    orbcalc: 1,
-    expand: '0',
+    orbcalc: true,
+    permanent: true,
     tooltip: '0',
-    permanent: 1,
     multiplier: (value) => Math.pow(1.08, value),
     max: 100
   },
 
+  // Inscriptions
   {
-    key: 'inscryption52',
+    key: 'i52',
     label: 'Inscryption #52',
-    mlabel: 'i#52',
+    category: 'inscryption',
     type: 'number',
-    orbcalc: 1,
-    expand: '0',
+    orbcalc: true,
+    permanent: true,
     tooltip: '0',
-    permanent: 1,
     multiplier: (value) => Math.pow(1.03, value),
     max: 8
   },
-
   {
-    key: 'inscryption78',
-    label: 'Inscryption #78',
-    mlabel: 'i#78',
+    key: 'i78',
+    label: 'Inscryiption #78',
+    category: 'inscryption',
     type: 'number',
-    orbcalc: 1,
-    expand: '0',
+    orbcalc: true,
+    permanent: true,
     tooltip: '0',
-    permanent: 1,
     multiplier: (value) => Math.pow(1.08, value),
     max: 8
   },
-
   {
-    key: 'inscryption101',
+    key: 'i101',
     label: 'Inscryption #101',
-    mlabel: 'i#101',
+    category: 'inscryption',
     type: 'number',
-    orbcalc: 1,
-    expand: '0',
+    orbcalc: true,
+    permanent: true,
     tooltip: '0',
-    permanent: 1,
     multiplier: (value) => Math.pow(1.08, value),
     max: 8
   },
 
+  // Boon E
+  {
+    key: 'boonELevel',
+    label: 'Boon E Level',
+    category: 'boonE',
+    type: 'number',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: 1, // Ergänze die korrekte Formel
+  },
   {
     key: 'campaigns',
     label: 'Campaigns',
-    mlabel: 'Camps',
+    category: 'boonE',
     type: 'number',
-    orbcalc: 1,
-    expand: '1',
+    orbcalc: true,
+    permanent: true,
     tooltip: 'Boon e1750 MP required, else 0',
     multiplier: (value) => Math.pow(1.006, value),
     fragmulti: (value) => Math.pow(1.03, value),
   },
 
+  // Boon H
+  {
+    key: 'boonHLevel',
+    label: 'Boon H Level',
+    category: 'boonH',
+    type: 'number',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: 1, // Ergänze die korrekte Formel
+  },
   {
     key: 'shipinstalls',
     label: 'Ship Installs',
-    mlabel: 'Installs',
+    category: 'boonH',
     type: 'number',
-    orbcalc: 1,
-    expand: '1',
-    tooltip: 'Boon e4600 MP required, else 0',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
     multiplier: (value) => Math.pow(1.000015, value),
   },
-
   {
     key: 'ouroinstalls',
     label: 'Ouro Installs',
-    mlabel: 'OuroInstalls',
+    category: 'boonH',
     type: 'number',
-    orbcalc: 0,
-    expand: '1',
-    tooltip: 'Boon e4600 MP required, else 0',
-    permanent: 1,
+    orbcalc: false,
+    permanent: true,
+    tooltip: '0',
     fragmulti: (value) => Math.pow(1.01, value),
   },
 
+  // Gadgets
   {
     key: 'oogadget',
     label: 'Orb Gadget',
-    mlabel: 'OOdget',
+    category: 'gadget',
     type: 'number',
-    orbcalc: 1,
-    expand: '1',
+    orbcalc: true,
+    permanent: true,
     tooltip: '0',
-    permanent: 1,
     multiplier: (value) => {
       const baseMultiplier = Math.pow(1 + 0.0035, value);
       const levelMultiplier = Math.pow(1.04, Math.floor(value / 10));
 
-      return 1 * baseMultiplier * levelMultiplier;
+      return baseMultiplier * levelMultiplier;
     }
   },
-
   {
     key: 'campfragdet',
     label: 'Camp Fradget',
-    mlabel: 'Starmie',
+    category: 'gadget',
     type: 'number',
-    orbcalc: 0,
-    expand: '1',
+    orbcalc: false,
+    permanent: true,
     tooltip: '0',
-    permanent: 1,
     fragmulti: (value) => {
       const baseMultiplier = Math.pow(1 + 0.01, value);
       const levelMultiplier = Math.pow(1.08, Math.floor(value / 10));
 
-      return 1 * baseMultiplier * levelMultiplier;
+      return baseMultiplier * levelMultiplier;
     }
   },
 
+  // Researches
   {
     key: 'research',
     label: 'Research Points',
-    mlabel: 'RP',
+    category: 'research',
     type: 'number',
-    orbcalc: 1,
-    expand: '1',
-    tooltip: 'Type in your RP without e, \n e.g. 1e3000 = 3000 \n It will automatically calculate the multiplier of the 4 Reasearches',
-    permanent: 0,
+    orbcalc: true,
+    permanent: false,
+    tooltip: 'Type in your RP without e, \n e.g. 1e3000 = 3000 \n It will automatically calculate the multiplier of all Reasearches',
     multiplier: (value) => {
       let overallMultiplier = 1;
     
@@ -243,16 +294,14 @@ export const boosts = [
       return overallMultiplier;
     },
   },
-
   {
     key: 'research89',
     label: 'Research #89',
-    mlabel: 'Res#89',
+    category: 'research',
     type: 'number',
-    orbcalc: 0,
-    expand: '0',
+    orbcalc: false,
+    permanent: true,
     tooltip: '0',
-    permanent: 1,
     fragmulti: (value) => {
       // Array mit Multiplikatoren für Level 1 bis 6
       const multipliers = [1.1, 1.1, 1.14, 1.14, 1.18, 1.18];
@@ -271,130 +320,136 @@ export const boosts = [
     max: 6
   },
 
+  // Premium
+  {
+    key: 'tr5Special',
+    label: 'Diamond Special',
+    category: 'premium',
+    type: 'number',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: (value) => 1 + 0.01 * value,
+    max: 10
+  },
   {
     key: 'iap',
     label: 'IAP Trav. Pack',
-    mlabel: 'IAP',
+    category: 'premium',
     type: 'boolean',
-    orbcalc: 1,
-    expand: '0',
+    orbcalc: true,
+    permanent: false,
     tooltip: '0',
     multiplier: 1.25,
   },
-
   {
     key: 'hera',
     label: 'Hera Card',
-    mlabel: 'Card#1',
+    category: 'premium',
     type: 'boolean',
-    orbcalc: 1,
-    expand: '0',
+    orbcalc: true,
+    permanent: false,
     tooltip: '0',
     multiplier: 1.05,
   },
-
   {
     key: 'jaxis',
     label: 'Jaxis Card',
-    mlabel: 'Card#2',
+    category: 'premium',
     type: 'boolean',
-    orbcalc: 1,
-    expand: '0',
+    orbcalc: true,
+    permanent: false,
     tooltip: '0',
     multiplier: 1.05,
   },
 
-  {
-    key: 'db2',
-    label: 'Void Badge #1',
-    mlabel: 'VB#1',
-    type: 'boolean',
-    orbcalc: 1,
-    expand: '1',
-    tooltip: '0',
-    multiplier: 1.25,
-  },
-
-  {
-    key: 'db4',
-    label: 'Void Badge #2',
-    mlabel: 'VB#2',
-    type: 'boolean',
-    orbcalc: 1,
-    expand: '1',
-    tooltip: '0',
-    multiplier: 1.25,
-  },
-
-  {
-    key: 'db6',
-    label: 'Void Badge #3',
-    mlabel: 'VB#3',
-    type: 'boolean',
-    orbcalc: 1,
-    expand: '1',
-    tooltip: '0',
-    multiplier: 1.25,
-  },
-
-  {
-    key: 'db8',
-    label: 'Void Badge #4',
-    mlabel: 'VB#4',
-    type: 'boolean',
-    orbcalc: 1,
-    expand: '1',
-    tooltip: '0',
-    multiplier: 1.5,
-  },
-
-  {
-    key: 'db10',
-    label: 'Void Badge #5',
-    mlabel: 'VB#5',
-    type: 'boolean',
-    orbcalc: 1,
-    expand: '1',
-    tooltip: '0',
-    multiplier: 2,
-  },
-
+  // Gems
   {
     key: 'attr3',
     label: 'Attraction Gem #3',
-    mlabel: 'AttrGem#3',
+    category: 'gem',
     type: 'boolean',
-    orbcalc: 0,
-    expand: '0',
-    permanent: 1,
+    orbcalc: false,
+    permanent: true,
     tooltip: '0',
     fragmulti: 1,
   },
-
   {
     key: 'attr1',
     label: 'Attraction GN #1',
-    mlabel: 'AttrGN#1',
+    category: 'gem',
     type: 'boolean',
-    orbcalc: 0,
-    expand: '0',
+    orbcalc: false,
+    permanent: false,
     tooltip: '0',
     fragmulti: 1.5,
   },
-
   {
     key: 'pow2',
     label: 'Power GN #2',
-    mlabel: 'PowGN#2',
+    category: 'gem',
     type: 'boolean',
-    orbcalc: 0,
-    expand: '0',
+    orbcalc: false,
+    permanent: false,
     tooltip: '0',
     fragmulti: 2,
   },
+
+  // Void Badges
+  {
+    key: 'vb1',
+    label: 'Void Badge #1',
+    category: 'badge',
+    type: 'boolean',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: 1.25,
+  },
+  {
+    key: 'vb2',
+    label: 'Void Badge #2',
+    category: 'badge',
+    type: 'boolean',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: 1.25,
+  },
+  {
+    key: 'vb3',
+    label: 'Void Badge #3',
+    category: 'badge',
+    type: 'boolean',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: 1.25,
+  },
+  {
+    key: 'vb4',
+    label: 'Void Badge #4',
+    category: 'badge',
+    type: 'boolean',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: 1.5,
+  },
+  {
+    key: 'vb5',
+    label: 'Void Badge #5',
+    category: 'badge',
+    type: 'boolean',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: 2,
+  },
 ];
 
-const researchData = {
+// Research data for multiplier calculations
+export const researchData = {
   '85': [
     { level: 1, price: 2840, multiplier: 1.01 },
     { level: 2, price: 2985, multiplier: 1.02 },
@@ -428,3 +483,9 @@ const researchData = {
     { level: 6, price: 4465, multiplier: 1.21 }
   ]
 };
+
+// Helper function to get boosts by category
+export const boostsByCategory = boostCategories.map(category => ({
+  ...category,
+  boosts: allBoosts.filter(boost => boost.category === category.id)
+}));

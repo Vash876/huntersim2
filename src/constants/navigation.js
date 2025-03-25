@@ -12,7 +12,7 @@ import {
   IconDiamond,
   IconCards,
   IconCreditCard,
-  IconChartBar,
+  IconClockFilled,
   IconDatabase
 } from '@tabler/icons-vue';
 
@@ -70,12 +70,12 @@ export const NAVIGATION = {
     }
   ],
   
-  /*tools: [
+  tools: [
     {
-      id: 'database',
-      name: 'Build Database',
-      path: '/database',
-      icon: IconDatabase
+      id: 'trplanner',
+      name: 'TR Planner',
+      path: '/tools/tr-planner',
+      icon: IconClockFilled
     }
-  ]*/
+  ]
 };

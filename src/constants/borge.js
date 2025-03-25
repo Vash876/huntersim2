@@ -451,11 +451,17 @@ export const UPGRADES_BY_CURRENCY = {
     { key: 'evade', label: 'Evade Chance', max: 50 },
     { key: 'effect', label: 'Effect Chance', max: 50 },
   ],
-  
+
   [CURRENCY_TYPES.BIOMATTER]: [
     { key: 'critchance', label: 'Crit Chance', max: 100 },
     { key: 'critpower', label: 'Crit Power', max: 100 },
     { key: 'atkspeed', label: 'ATK Speed', max: 100 },
+    { key: 'upgrades.inscryptions.i80', label: 'Inscryption #80', max: 10 },
+    { key: 'upgrades.inscryptions.i84', label: 'Inscryption #84', max: 10 },
+    { key: 'upgrades.inscryptions.i87', label: 'Inscryption #87', max: 10 },
+    { key: 'upgrades.inscryptions.i88', label: 'Inscryption #88', max: 7 },
+    { key: 'upgrades.inscryptions.i89', label: 'Inscryption #89', max: 7 },
+    { key: 'upgrades.inscryptions.i91', label: 'Inscryption #91', max: 7 },
   ],
 
   [CURRENCY_TYPES.FRAGS]: [
