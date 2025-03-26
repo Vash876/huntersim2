@@ -89,12 +89,21 @@ const routes = [
     component: () => import('../views/upgrades/Ultima.vue')
   },
 
+
+  // Tools Routes
   /*/ Other Routes
   {
     path: '/tools/tr-planner',
     name: 'TR Planner',
     component: () => import('../views/tools/TRPlanner.vue'),
   },*/
+
+  // Settings Route
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: () => import('../views/SettingsView.vue')
+  },
   // 404 Route
   {
     path: '/:pathMatch(.*)*',
