@@ -219,7 +219,6 @@ export const OVERRIDES = {
     "upgrades.relics.r4",            // Relic #4
     "upgrades.relics.r7",            // Relic #7
     "upgrades.relics.r17",           // Relic #16
-    "upgrades.relics.r19",           // Relic #19
   ],
 
   // Inscriptions
