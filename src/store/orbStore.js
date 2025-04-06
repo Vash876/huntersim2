@@ -12,7 +12,7 @@ export const useTRPlannerStore = defineStore('trPlanner', {
     
     // Speichert die Planner-Konfiguration
     plannerConfig: useStorage('trplanner_config', {
-      trCount: 10,
+      trCount: 0,
       allTimeOrbs: 0,
       startDate: new Date().toISOString().split('T')[0],
       calculateCampaignFrags: false

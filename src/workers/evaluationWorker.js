@@ -50,13 +50,6 @@ function extractParamValue(storeData, hunterId, buildData, param) {
     // Muss explizit prüfen, ob der Wert === false ist
     const seedSetting = storeData.hunterSeedSettings?.[hunterId];
     
-    // Debug-Ausgabe zur Überprüfung des Werts
-    console.log(`[SEED DEBUG] Extrahiere useSeeded für ${hunterId}:`, {
-      roher_wert: seedSetting,
-      typ: typeof seedSetting,
-      ist_false: seedSetting === false
-    });
-    
     // Korrekte Prüfung für Boolean-Werte
     if (seedSetting === false) {
       return false;

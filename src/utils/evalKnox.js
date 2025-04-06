@@ -1,4 +1,4 @@
-export function EVALKNOX(lvl,maxStage,hp,atk,regen,dr,block,effect,charge,chargeGain,reload,proj,revival,calyp,ua,ghost,omen,ll,pog,finish,kraken,amp,dead,sear,pirate,timeless,torpedos,charger,armory,elixer,reflect,gadget,iters,iap,special,ultima,glac,quartz,tess,reviveCd,respec,bossLootRate,iterative,glacRate1,quartzRate1,tessRate1,xpRate1,hp1,atk1,regen1,dr1,block1,effect1,charge1,chargeGain1,reload1,proj1,gadget1,lvl1,time1,research81) {
+export function EVALKNOX(lvl,maxStage,hp,atk,regen,dr,block,effect,charge,chargeGain,reload,proj,revival,calyp,ua,ghost,omen,ll,pog,finish,kraken,amp,dead,sear,pirate,timeless,torpedos,charger,armory,elixer,reflect,gadget,iters,iap,special,ultima,glac,quartz,tess,reviveCd,respec,bossLootRate,iterative,glacRate1,quartzRate1,tessRate1,xpRate1,hp1,atk1,regen1,dr1,block1,effect1,charge1,chargeGain1,reload1,proj1,gadget1,lvl1,time1,research81,useSeeded,cm46,cm47,cm48) {
 
   if(iterative && !lvl1){
     return 'Waiting for previous build'
@@ -46,8 +46,33 @@ for(var i = 0;i<=1000;i++){
     enemies.push(simEnemy(i))
 }
 
-var ck = (chance) => {
-  return chance && chance > Math.random()
+var ck;
+if (useSeeded) {
+  // Seeded RNG für deterministische Ergebnisse
+  ck = (() => {
+    const s = new Uint32Array([123456789, 362436069, 521288629, 88675123]);
+    
+    return (chance) => {
+      if (!chance) return false;
+      
+      const result = (s[0] + s[3]) >>> 0;
+      
+      const t = s[1] << 9;
+      s[2] ^= s[0];
+      s[3] ^= s[1];
+      s[1] ^= s[2];
+      s[0] ^= s[3];
+      s[2] ^= t;
+      s[3] = ((s[3] << 11) | (s[3] >>> 21)) >>> 0;
+      
+      return chance > (result * 2.3283064365386963e-10);
+    };
+  })();
+} else {
+  // Einfache Math.random() basierte RNG für echte Zufallsergebnisse
+  ck = (chance) => {
+    return chance && chance > Math.random();
+  };
 }
 var getBaseStats = ()=>{
     return {
@@ -510,7 +535,7 @@ var sim = (knox) => {
     var enemiesInSection = 1010;
     var excludedXpMultis = 1;//None for now
     var includedMultis = (1+knox.timeless*.13) * gadgetLootMulti;
-    var excludedMultis = Math.max(Number(special),1)*(Boolean(iap)?1.25:1)*Math.max(Number(ultima),1)*(Number(research81)>=3?1.1:1)*(Number(research81)>=6?1.2:1);
+    var excludedMultis = Math.max(Number(special),1)*(Boolean(iap)?1.25:1)*Math.max(Number(ultima),1)*(Number(research81)>=3?1.1:1)*(Number(research81)>=6?1.2:1)*(Number(cm46)>0?1.03:1)*(Number(cm47)>0?1.02:1)*(Number(cm48)>0?1.07:1);
     var loopLoot = normalized*((Math.pow(stageGrowth,Math.floor(Math.min(enem,enemiesInSection-10)/10))-1)/(stageGrowth-1)*10+(Math.min(enem,enemiesInSection-10)-Math.floor(Math.min(enem,enemiesInSection-10)/10)*10)*Math.pow(stageGrowth,Math.floor(Math.min(enem,enemiesInSection-10)/10)))*includedMultis*(1+knox.ll*.2*knox.effect);
     var bonusMulti = 1;
     var tempEnem = enem;

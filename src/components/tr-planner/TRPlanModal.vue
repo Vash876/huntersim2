@@ -440,7 +440,7 @@
                         <td class="px-3 py-2.5 text-center font-mono text-green-400">
                           {{ formatNumber(getStepOrbGains(step)) }}
                         </td>
-                        <td class="px-3 py-2.5 text-center font-mono text-blue-400">
+                        <td class="px-3 py-2.5 text-center font-mono text-orange-400">
                           {{ formatNumber(getStepFragGains(step)) }}
                         </td>
                         <td class="px-3 py-2.5 text-center">
@@ -548,13 +548,24 @@
   </div>
 
   <TRUpdateModal
-  v-if="showTRUpdateModal"
-  :planId="'temp'"
-  :trNumber="trCount"
-  :orbGains="trSteps.length > 0 ? getStepOrbGains(trSteps[0]) : 0"
-  @close="closeTRUpdateModal"
-  @update="handleTRUpdate"
-/>
+    v-if="showTRUpdateModal"
+    :planId="'temp'"
+    :trNumber="trCount"
+    :orbGains="trSteps.length > 0 ? getStepOrbGains(trSteps[0]) : 0"
+    @close="closeTRUpdateModal"
+    @update="handleTRUpdate"
+  />
+
+  <AlertDialog
+    :isVisible="showAlertDialog"
+    :title="alertTitle"
+    :message="alertMessage"
+    :type="alertType"
+    :showCancel="true"
+    confirmText="OK"
+    @confirm="handleAlertClose"
+    @cancel="showAlertDialog = false"
+  />
 </template>
 
 <script setup>
@@ -563,6 +574,7 @@ import { useNow } from '@vueuse/core';
 import { allBoosts, boostsByCategory, generalStats } from '@/constants/tr-planner';
 import TRUpdateModal from './TRUpdateModal.vue';
 import TRValueControls from '@/composables/TRValueControls.vue';
+import AlertDialog from '@/components/common/AlertDialog.vue';
 import { formatMultiplier, formatNumber, parseNumberWithSuffix, formatSuffixNotation } from '@/composables/format';
 import { calculateOrbRequirement, calculateOrbGains, calculateCampaignFragGains, calculateMissingHours } from '@/composables/calculations';
 import { 
@@ -622,6 +634,12 @@ const showTRUpdateModal = ref(false);
 const now = useNow();
 const trStartDate = ref(new Date().toISOString().split('T')[0]); // Format: YYYY-MM-DD
 const trStartTime = ref(new Date().toTimeString().split(' ')[0].slice(0, 5)); // Format: HH:MM
+
+// Alerts
+const showAlertDialog = ref(false);
+const alertMessage = ref('');
+const alertTitle = ref('TR Planner');
+const alertType = ref('info');
 
 // Berechnung der TR-Endzeit basierend auf Start und Gesamtstunden
 const formatTREndDate = computed(() => {
@@ -1469,7 +1487,7 @@ function createPlan() {
   
   // Der erste TR muss immer gültig sein
   if (!getStepRequirementMet(firstStep, 0)) {
-    alert("First TR requirements not met. Please adjust your boosts to meet the requirements.");
+    showAlert("First TR requirements not met. Please adjust your Stats to meet the requirements.", 'Warning', 'warning');
     return;
   }
   
@@ -1535,8 +1553,19 @@ function createPlan() {
             const prevStepLevel = prevStepTargetLevels[key] || prevStepStats[key] || 0;
             const targetLevel = step.targetLevels[key] || 0;
             
-            // Nur Boosts mit tatsächlicher Änderung hinzufügen
-            if (targetLevel > prevStepLevel) {
+            // hoursInTR immer speichern, auch wenn der Wert gleich bleibt
+            if (key === 'hoursInTR') {
+              stepBoosts.push({
+                key,
+                type: 'number',
+                label: boost.label || key,
+                currentLevel: prevStepLevel,
+                targetLevel,
+                remainingLevels: targetLevel - prevStepLevel
+              });
+            }
+            // Für alle anderen numerischen Boosts nur speichern, wenn sie sich erhöht haben
+            else if (targetLevel > prevStepLevel) {
               stepBoosts.push({
                 key,
                 type: 'number',
@@ -1571,23 +1600,25 @@ function createPlan() {
               return;
             }
             
-            // Sicherstellen dass targetBools und stats existieren
-            const prevStepTargetBools = prevStep.targetBools || {};
+            // Sicherstellen dass targetLevels und stats existieren
+            const prevStepTargetLevels = prevStep.targetLevels || {};
             const prevStepStats = prevStep.stats || {};
-            const prevStepValue = prevStepTargetBools[key] || !!(prevStepStats[key] || 0);
+            const prevStepLevel = prevStepTargetLevels[key] || prevStepStats[key] || 0;
+            const targetLevel = step.targetLevels[key] || 0;
             
-            // Wenn der vorherige Zustand bereits 'true' ist, nicht hinzufügen
-            if (!prevStepValue) {
+            // Für alle anderen Boosts nur speichern, wenn sie sich erhöht haben
+            if (targetLevel > prevStepLevel) {
               stepBoosts.push({
                 key,
-                type: 'boolean',
+                type: 'number',
                 label: boost.label || key,
-                currentState: false,
-                targetState: true
+                currentLevel: prevStepLevel,
+                targetLevel,
+                remainingLevels: targetLevel - prevStepLevel
               });
             }
           } catch (e) {
-            console.error(`Error processing boolean boost ${key}:`, e);
+            console.error(`Error processing numeric boost ${key}:`, e);
           }
         });
         
@@ -1671,18 +1702,35 @@ function createPlan() {
   
   // Wenn eine Warnung angezeigt werden soll, dass nicht alle TRs gültig waren
   if (trSteps.length > 1 && validChainSteps.length < trSteps.length - 1) {
-    alert(`Only ${validChainSteps.length + 1} of ${trSteps.length} TRs were saved. Invalid TRs have been removed from the plan.`);
+    showAlert(
+      `Only ${validChainSteps.length + 1} of ${trSteps.length} TRs were saved. Invalid TRs have been removed from the plan.`, 
+      'Warning', 
+      'warning'
+    );
+    
+    // Event emittieren
+    emit('save', planId);
+
+    return; 
   }
-  
-  // Event emittieren
+
+  // Nur wenn keine Warnung angezeigt wird, direkt schließen
   emit('save', planId);
-  
-  // Modal schließen
   cancelAndClose();
 }
 
 function cancelAndClose() {
   emit('close');
+}
+
+function handleAlertClose() {
+  showAlertDialog.value = false;
+  
+  // Prüfen, ob wir uns im Speichervorgang befinden
+  if (alertType.value === 'warning' && alertTitle.value === 'Warning') {
+    // Hier das Modal schließen
+    cancelAndClose();
+  }
 }
 
 // Beobachte Änderungen der editPlanId und isVisible Props
@@ -2066,11 +2114,6 @@ function closeTRUpdateModal() {
 
 // Funktion zum Aktualisieren des TR-Plans nach Abschluss
 function handleTRUpdate() {
-  if (trSteps.length <= 1) {
-    alert("Cannot update progress: There must be at least one more TR in the plan.");
-    return;
-  }
-
   // TR-Count und All-Time-Orbs aus dem ersten TR aktualisieren
   const firstStep = trSteps[0];
   const orbGains = getStepOrbGains(firstStep);
@@ -2110,6 +2153,13 @@ function handleTRUpdate() {
   
   // Update-Modal schließen
   closeTRUpdateModal();
+}
+
+function showAlert(message, title = 'TR Planner', type = 'info') {
+  alertMessage.value = message;
+  alertTitle.value = title;
+  alertType.value = type;
+  showAlertDialog.value = true;
 }
 
 watch(trSteps, () => {

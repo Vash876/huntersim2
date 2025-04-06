@@ -11,7 +11,7 @@ export function formatNumber(value) {
   
   // Sonderbehandlung für Werte sehr nahe bei Null
   if (Math.abs(value) < 0.01) {
-    return value.toExponential(2);
+    return '0';
   }
   
   // Behandlung für kleine Werte zwischen 0.01 und 1

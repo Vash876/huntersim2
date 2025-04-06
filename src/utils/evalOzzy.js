@@ -1,4 +1,4 @@
-export function EVALOZZY(lvl,maxStage,hp,atk,regen,dr,evade,effect,multistrike,multistrikePower,aspd,revival,trickster,ua,thousandNeedles,omen,ll,crippling,ultimaTalent,echoBullets,lotl,exo,scorp,dod,cat,timeless,wings,exterm,medusa,scarab,vectid,snek,cod,dwd,sisters,gadget,iap,special,ultima,reviveCd,scavengers,m0,r4,r7,r17,i31,i32,i33,i36,i37,i40,i81,i86,i92,innoGN2,innoGN3,attrGN3,attr,catchup99gu,lootgu,card,research81,iters) {
+export function EVALOZZY(lvl,maxStage,hp,atk,regen,dr,evade,effect,multistrike,multistrikePower,aspd,revival,trickster,ua,thousandNeedles,omen,ll,crippling,ultimaTalent,echoBullets,lotl,exo,scorp,dod,cat,timeless,wings,exterm,medusa,scarab,vectid,snek,cod,dwd,sisters,gadget,iap,special,ultima,reviveCd,scavengers,m0,r4,r7,r17,i31,i32,i33,i36,i37,i40,i81,i86,i92,innoGN2,innoGN3,attrGN3,attr,catchup99gu,lootgu,card,research81,iters,useSeeded,cm46,cm47,cm48) {
   var multi = (enemyNum) => Math.max(1, 1 +
 Math.max(0,(enemyNum - 149) * .006)+
 Math.max(0,(enemyNum - 199) * .006)+
@@ -31,25 +31,34 @@ var enemies = [];
 for(var i = 0;i<=1000;i++){
     enemies.push(simEnemy(i))
 }
-var ck = (() => {
-  const state = new Uint32Array([123456789, 362436069, 521288629, 88675123]);
-  
-  return (chance) => {
-    if (!chance) return false;
+var ck;
+if (useSeeded) {
+  // Seeded RNG für deterministische Ergebnisse
+  ck = (() => {
+    const s = new Uint32Array([123456789, 362436069, 521288629, 88675123]);
     
-    const result = (state[0] + state[3]) >>> 0;
-    
-    const t = state[1] << 9;
-    state[2] ^= state[0];
-    state[3] ^= state[1];
-    state[1] ^= state[2];
-    state[0] ^= state[3];
-    state[2] ^= t;
-    state[3] = (state[3] << 11) | (state[3] >>> 21);
-    
-    return chance > (result / 4294967296);
+    return (chance) => {
+      if (!chance) return false;
+      
+      const result = (s[0] + s[3]) >>> 0;
+      
+      const t = s[1] << 9;
+      s[2] ^= s[0];
+      s[3] ^= s[1];
+      s[1] ^= s[2];
+      s[0] ^= s[3];
+      s[2] ^= t;
+      s[3] = ((s[3] << 11) | (s[3] >>> 21)) >>> 0;
+      
+      return chance > (result * 2.3283064365386963e-10);
+    };
+  })();
+} else {
+  // Einfache Math.random() basierte RNG für echte Zufallsergebnisse
+  ck = (chance) => {
+    return chance && chance > Math.random();
   };
-})();
+}
 var getBaseStats = ()=>{
     return {
         maxHp: (16+(2+Math.floor(hp/5)*.03)*hp)*gadgetMulti*(1+.03*r4)*(Boolean(card)?1.03:1),
@@ -354,7 +363,7 @@ var sim = (ozzy) => {
     var enemiesInSection = 1010;
     var excludedXpMultis = Math.pow(1.75,Number(i33))*Math.pow(2,Math.floor((Number(maxStage)-1)/100))
     var includedMultis = (1+ozzy.timeless*.16)*(1+.05*ozzy.scarab)*gadgetLootMulti*(Boolean(card)?1.05:1);
-    var excludedMultis = Math.max(Number(special),1)*(Boolean(iap)?1.25:1)*Math.max(Number(ultima),1)*Math.pow(1.05,Number(scavengers))*Math.pow(1.02,Number(m0))*Math.pow(1.05,Number(r7))*(Boolean(attrGN3)?1.25:1)*(Math.pow(Math.pow(1.04,Number(lootgu)),1+Number(attr)*.1-.1))*Math.pow(1.5,Number(i32))*Math.pow(1.1,Number(i81))*(Number(research81)>=2?1.1:1)*(Number(research81)>=5?1.2:1);
+    var excludedMultis = Math.max(Number(special),1)*(Boolean(iap)?1.25:1)*Math.max(Number(ultima),1)*Math.pow(1.05,Number(scavengers))*Math.pow(1.02,Number(m0))*Math.pow(1.05,Number(r7))*(Boolean(attrGN3)?1.25:1)*(Math.pow(Math.pow(1.04,Number(lootgu)),1+Number(attr)*.1-.1))*Math.pow(1.5,Number(i32))*Math.pow(1.1,Number(i81))*(Number(research81)>=2?1.1:1)*(Number(research81)>=5?1.2:1)*(Number(cm46)>0?1.03:1)*(Number(cm47)>0?1.02:1)*(Number(cm48)>0?1.07:1);
     var loopLoot = normalized*((Math.pow(stageGrowth,Math.floor(Math.min(enem,enemiesInSection-10)/10))-1)/(stageGrowth-1)*10+(Math.min(enem,enemiesInSection-10)-Math.floor(Math.min(enem,enemiesInSection-10)/10)*10)*Math.pow(stageGrowth,Math.floor(Math.min(enem,enemiesInSection-10)/10)))*includedMultis*(1+ozzy.ll*.2*ozzy.effect);
     var bonusMulti = 1;
     var tempEnem = enem;
