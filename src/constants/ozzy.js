@@ -84,6 +84,7 @@ export const HUNTER_UPGRADES = {
   loopmods: ["scavenger2"],
   shardmilestones: ["m0"],
   researches: ["res81"],
+  cms: ["cm46", "cm47", "cm48"],
   diamondspecials: ["hunterloot", "reviveboost"],
   diamondcards: ["iridian"],	
   iap: ["travpack"],
@@ -166,6 +167,9 @@ export const EVAL_PARAMS = [
   "upgrades.diamondcards.iridian",       // Diamond Card (Iridian)
   "upgrades.researches.res81",           // Research#81
   "iterations",                          // Anzahl der Iterationen
+  "upgrades.cms.cm46",              // Construction Milestone 46
+  "upgrades.cms.cm47",              // Construction Milestone 47
+  "upgrades.cms.cm48",              // Construction Milestone 48
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -239,6 +243,13 @@ export const OVERRIDES = {
     "upgrades.researches.res81",     // Research#81
   ],
 
+  // Construction Milestones
+  cms: [
+    "upgrades.cms.cm46",
+    "upgrades.cms.cm47",
+    "upgrades.cms.cm48",
+  ],
+
   // Loopmods
   loopmods: [
     "upgrades.loopmods.scavenger2",   // Scavengers Advantage
@@ -284,6 +295,7 @@ export const OVERRIDES_FLAT = [
   ...OVERRIDES.relics,
   ...OVERRIDES.inscryptions,
   ...OVERRIDES.researches,
+  ...OVERRIDES.cms,
   ...OVERRIDES.loopmods,
   ...OVERRIDES.shardMilestones,
   ...OVERRIDES.diamondSpecials,
@@ -300,6 +312,7 @@ export const OVERRIDE_CATEGORY_LABELS = {
   relics: "Relics",
   inscryptions: "Inscryptions",
   researches: "Researches",
+  cms: "Construction Milestones",
   loopmods: "Loop Mods",
   shardMilestones: "Shard Milestones",
   diamondSpecials: "Diamond Specials",
@@ -360,7 +373,6 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gadgets.zaptron",  // Gadget (KORRIGIERT: von "hatch" zu "zaptron")
   "upgrades.diamondcards.iridian", // Diamond Card (KORRIGIERT: von "gaiden" zu "iridian")
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
-  "upgrades.researches.res81",     // Research#81
 ];
 
 export const STATS_RESULT_LABELS = [

@@ -31,9 +31,25 @@ var enemies = [];
 for(var i = 0;i<=1000;i++){
     enemies.push(simEnemy(i))
 }
-var ck = (chance) => {
-  return chance && chance > Math.random()
-}
+var ck = (() => {
+  const state = new Uint32Array([123456789, 362436069, 521288629, 88675123]);
+  
+  return (chance) => {
+    if (!chance) return false;
+    
+    const result = (state[0] + state[3]) >>> 0;
+    
+    const t = state[1] << 9;
+    state[2] ^= state[0];
+    state[3] ^= state[1];
+    state[1] ^= state[2];
+    state[0] ^= state[3];
+    state[2] ^= t;
+    state[3] = (state[3] << 11) | (state[3] >>> 21);
+    
+    return chance > (result / 4294967296);
+  };
+})();
 var getBaseStats = ()=>{
     return {
         maxHp: (16+(2+Math.floor(hp/5)*.03)*hp)*gadgetMulti*(1+.03*r4)*(Boolean(card)?1.03:1),

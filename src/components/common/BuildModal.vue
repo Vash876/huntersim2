@@ -474,6 +474,7 @@ const showOverrideModal = ref(false);
 const buildData = ref({
   id: null,
   name: '',
+  isNew: true,
   hunter: props.hunterType,
   level: 1,
   talents: {},
@@ -871,18 +872,59 @@ const showCloseConfirmation = ref(false);
 
 // Prüfe, ob Änderungen vorhanden sind
 const hasChanges = computed(() => {
-  // Prüfen, ob irgendwelche Talent- oder Attributpunkte verteilt wurden
-  const hasTalentPoints = Object.values(buildData.value.talents).some(val => val > 0);
-  const hasAttributePoints = Object.values(buildData.value.attributes).some(val => val > 0);
-  
-  return hasTalentPoints || hasAttributePoints;
+  // Für einen komplett neuen Build
+  if (!props.buildToEdit) {
+    // Prüfen, ob irgendwelche Talent- oder Attributpunkte verteilt wurden
+    const hasTalentPoints = Object.values(buildData.value.talents).some(val => val > 0);
+    const hasAttributePoints = Object.values(buildData.value.attributes).some(val => val > 0);
+    const hasName = buildData.value.name.trim().length > 0;
+    const hasOverrides = Object.keys(buildData.value.overrides || {}).length > 0;
+    
+    return hasTalentPoints || hasAttributePoints || hasName || hasOverrides;
+  } 
+  // Für einen editierten Build - Vergleich mit dem Original
+  else {
+    const original = props.buildToEdit;
+    
+    // Name hat sich geändert
+    if (buildData.value.name !== original.name) return true;
+    
+    // Overrides haben sich geändert
+    const originalOverrides = original.overrides || {};
+    const newOverrides = buildData.value.overrides || {};
+    
+    if (Object.keys(originalOverrides).length !== Object.keys(newOverrides).length) return true;
+    
+    for (const key in newOverrides) {
+      if (newOverrides[key] !== originalOverrides[key]) return true;
+    }
+    
+    // Talente haben sich geändert
+    for (const key in buildData.value.talents) {
+      const newValue = buildData.value.talents[key] || 0;
+      const oldValue = original.talents?.[key] || 0;
+      if (newValue !== oldValue) return true;
+    }
+    
+    // Attribute haben sich geändert
+    for (const key in buildData.value.attributes) {
+      const newValue = buildData.value.attributes[key] || 0;
+      const oldValue = original.attributes?.[key] || 0;
+      if (newValue !== oldValue) return true;
+    }
+    
+    // Keine Änderungen gefunden
+    return false;
+  }
 });
 
-// Bestätigungsdialog beim Schließen anzeigen
+// confirmClose-Funktion:
 function confirmClose() {
+  // Nur den Dialog anzeigen, wenn tatsächlich Änderungen vorliegen
   if (hasChanges.value) {
     showCloseConfirmation.value = true;
   } else {
+    // Keine Änderungen? Direkt schließen
     handleClose();
   }
 }

@@ -13,10 +13,18 @@
           <div class="flex">
             <button 
               @click="openStatsModal"
-              class="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm"
+              class="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-l-md border-r border-blue-700 transition-colors shadow-sm"
             >
               <IconChartBar size="16" class="mr-2" />
               <span>Stats</span>
+            </button>
+            <!-- Build Code (Import) - rechter Button mit abgerundeter rechter Ecke -->
+            <button
+              class="px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded-r-md flex items-center gap-2 transition-colors shadow-sm"
+              @click="openTRPlanModal"
+            >
+              <IconPlus size="16" />
+              <span>New Plan</span>
             </button>
           </div>
         </div>
@@ -25,16 +33,8 @@
       <!-- Settings Bar -->
       <div class="bg-gray-800 py-3 px-4 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-400">Settings:</span>
-          
-          <!-- Campaign Fragments Toggle -->
-          <button
-            class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-700 transition-colors"
-            @click="toggleCampaignFrags"
-          >
-            <IconStar size="16" :class="trPlannerStore.plannerConfig.calculateCampaignFrags ? 'text-yellow-400' : 'text-gray-400'" />
-            <span>Campaign Frags</span>
-          </button>
+         <!--  <span class="text-sm text-gray-400">Plans:</span>
+          <span class="text-sm text-blue-400 font-semibold">{{ trPlannerStore.trPlanCount }}</span>-->
         </div>
         
         <!-- Reset Button -->
@@ -48,55 +48,51 @@
       </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="flex flex-col md:flex-row items-start gap-6">
-      <!-- Linke Seite: Einstellungen und TR-Konfiguration -->
-      <div class="w-full md:w-1/3 space-y-6">
-        <PlannerForm 
-          :plannerConfig="trPlannerStore.plannerConfig"
-          @update:config="updatePlannerConfig"
-        />
-        
-        <div class="bg-gray-850 rounded-lg p-4 border border-gray-700">
-          <h2 class="text-xl font-bold mb-4">Your Shorts</h2>
-          <div v-if="trPlannerStore.shorts.length === 0" class="text-gray-500 italic">
-            No shorts added yet. Configure your settings above and add your first short.
-          </div>
-          <div v-else class="space-y-4">
-            <ShortEntryCard 
-              v-for="(short, index) in trPlannerStore.shorts" 
-              :key="`short-${short.id || index}`"
-              :short="short"
-              :index="index"
-              @edit="editShort"
-              @delete="deleteShort"
-            />
-          </div>
-          <button 
-            @click="addNewShort"
-            class="mt-4 w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-          >
-            Add Another Short
-          </button>
-        </div>
+    <!-- Main Content - Plan Grid -->
+    <div class="mt-6">
+      <!-- Keine Pläne Nachricht -->
+      <div v-if="trPlannerStore.trPlanCount === 0" class="bg-gray-850 rounded-lg p-8 text-center border border-gray-700">
+        <IconFile size="48" class="text-gray-600 mx-auto mb-4" />
+        <h3 class="text-xl font-bold text-gray-300 mb-2">No Plans Created</h3>
+        <p class="text-gray-400 mb-6">Create your first TR plan to get started with optimizing your gameplay.</p>
+        <button
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-md flex items-center gap-2 mx-auto transition-colors"
+          @click="openTRPlanModal"
+        >
+          <IconPlus size="16" />
+          <span>Create First Plan</span>
+        </button>
       </div>
       
-      <!-- Rechte Seite: Ergebnisse und Statistiken -->
-      <div class="w-full md:w-2/3">
-        <div class="bg-gray-850 rounded-lg p-4 border border-gray-700 mb-6">
-          <h2 class="text-xl font-bold mb-4">Overview</h2>
-          <ResultsChart :shorts="trPlannerStore.shorts" />
-        </div>
-        
-        <div class="bg-gray-850 rounded-lg p-4 border border-gray-700">
-          <h2 class="text-xl font-bold mb-4">Statistics</h2>
-          <PlannerStats 
-            :shorts="trPlannerStore.shorts" 
-            :config="trPlannerStore.plannerConfig" 
-            :stats="stats"
-          />
-        </div>
+      <!-- Plan Grid -->
+      <div v-else>
+  <Draggable 
+    v-model="filteredPlans" 
+    tag="div"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" 
+    handle=".grip-handle"
+    :group="{ name: 'plans', pull: false, put: false }"
+    item-key="id"
+    :animation="200"
+    ghost-class="ghost"
+    chosen-class="chosen"
+    drag-class="dragging"
+    @change="onDragEnd"
+  >
+    <template #item="{ element }">
+      <div class="card-wrapper">
+        <TRPlanCard
+          :plan="element"
+          :currentStats="currentStats"
+          @click="openTRPlanDetailModal(element.id)"
+          @edit="handleEditPlan(element.id)"
+          @copy="handleCopyPlan(element.id)"
+          @delete="handleDeletePlan(element.id)"
+        />
       </div>
+    </template>
+  </Draggable>
+</div>
     </div>
     
     <!-- Stats Input Modal -->
@@ -104,9 +100,30 @@
       v-if="showStatsModal"
       :isVisible="showStatsModal"
       :currentStats="trPlannerStore.userStats"
-      :showFragmultiBoosts="trPlannerStore.plannerConfig.calculateCampaignFrags"
+      :showFragmultiBoosts="true"
       @close="showStatsModal = false"
       @save="saveUserStats"
+    />
+
+    <!-- TR Plan Modal -->
+    <TRPlanModal
+      v-if="showTRPlanModal"
+      :isVisible="showTRPlanModal"
+      :currentStats="trPlannerStore.userStats"
+      :editPlanId="editingPlanId"
+      @close="closeTRPlanModal"
+      @save="handlePlanSaved"
+    />
+    
+    <!-- Plan Detail Modal -->
+    <TRPlanDetailModal 
+      v-if="selectedPlanId"
+      :isVisible="!!selectedPlanId"
+      :planId="selectedPlanId"
+      :currentStats="trPlannerStore.userStats"
+      @close="selectedPlanId = null"
+      @edit="handleEditPlan"
+      @delete="handleDeletePlan"
     />
     
     <!-- Toast Notification -->
@@ -136,20 +153,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import PlannerForm from '@/components/tr-planner/PlannerForm.vue';
-import ShortEntryCard from '@/components/tr-planner/TREntryCard.vue';
-import ResultsChart from '@/components/tr-planner/ResultsChart.vue';
-import PlannerStats from '@/components/tr-planner/PlannerStats.vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import StatsInputModal from '@/components/tr-planner/StatsInputModal.vue';
+import TRPlanModal from '@/components/tr-planner/TRPlanModal.vue';
+import TRPlanCard from '@/components/tr-planner/TRPlanCard.vue';
+import TRPlanDetailModal from '@/components/tr-planner/TRPlanDetailModal.vue';
+import Draggable from 'vuedraggable';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { 
   IconChartBar, 
-  IconStar, 
+  IconPlus, 
   IconRefresh,
   IconCircleCheck,
   IconAlertCircle,
-  IconInfoCircle
+  IconInfoCircle,
+  IconFile,
+  IconGripVertical
 } from '@tabler/icons-vue';
 
 // Pinia Store einbinden
@@ -157,22 +176,47 @@ const trPlannerStore = useTRPlannerStore();
 
 // Modal state
 const showStatsModal = ref(false);
+const showTRPlanModal = ref(false);
+const selectedPlanId = ref(null);
+const editingPlanId = ref(null);
 
 // Toast notification
 const toast = ref({ show: false, message: '', type: 'info' });
 
-// Stats für Komponenten-Kompatibilität
-const stats = computed(() => {
-  return {
-    totalOrbMultiplier: trPlannerStore.totalOrbMultiplier,
-    totalFragMultiplier: trPlannerStore.totalFragMultiplier,
-    activeBoosts: trPlannerStore.activeBoosts,
-  };
+const filteredPlans = ref([]);
+
+const currentStats = computed(() => {
+  return trPlannerStore.userStats || {};
 });
 
 // Open stats modal
 function openStatsModal() {
   showStatsModal.value = true;
+}
+
+// Open TR Plan Modal für einen neuen Plan
+function openTRPlanModal() {
+  // Zurücksetzen des Bearbeitungsmodus
+  editingPlanId.value = null;
+  
+  // Kopie-Daten zurücksetzen, falls vorhanden
+  if (trPlannerStore.copyPlanData) {
+    trPlannerStore.setCopyPlanData(null);
+  }
+  
+  // Modal öffnen
+  showTRPlanModal.value = true;
+}
+
+// Open TR Plan Detail modal
+function openTRPlanDetailModal(planId) {
+  selectedPlanId.value = planId;
+}
+
+// Close TR Plan Detail modal
+function closeTRPlanModal() {
+  showTRPlanModal.value = false;
+  editingPlanId.value = null;
 }
 
 // Save user stats from modal
@@ -187,59 +231,96 @@ function saveUserStats(newStats) {
   showToastMessage('Stats updated successfully', 'success');
 }
 
-// Toggle campaign fragments calculation
-function toggleCampaignFrags() {
-  trPlannerStore.updatePlannerConfig({
-    calculateCampaignFrags: !trPlannerStore.plannerConfig.calculateCampaignFrags
-  });
+// Select Plan to view details
+function handleSelectPlan(planId) {
+  selectedPlanId.value = planId;
 }
 
-// Update planner config
-function updatePlannerConfig(newConfig) {
-  trPlannerStore.updatePlannerConfig(newConfig);
+// Edit Plan
+function handleEditPlan(planId) {
+  editingPlanId.value = planId;
+  showTRPlanModal.value = true;
 }
 
-// Add new short
-function addNewShort() {
-  // Erstelle einen neuen Short mit Standardwerten
-  const newShort = {
-    name: `TR #${trPlannerStore.shortCount + 1}`,
-    duration: 24, // Standarddauer in Stunden
-    orbs: 0,      // Berechnete Orbs
-    frags: 0,     // Berechnete Fragments
-    // Weitere Eigenschaften können hier hinzugefügt werden
-  };
+// Handle new plan created/updated
+function handlePlanSaved(planId) {
+  const isEditing = editingPlanId.value !== null;
+  showToastMessage(
+    isEditing ? 'Plan updated successfully' : 'Plan created successfully', 
+    'success'
+  );
   
-  // Füge den Short im Store hinzu
-  trPlannerStore.addShort(newShort);
-}
-
-// Edit short
-function editShort(index, updatedShort) {
-  const shortId = trPlannerStore.shorts[index]?.id;
-  if (shortId) {
-    trPlannerStore.updateShort(shortId, updatedShort);
+  // Schließe Detail-Ansicht, falls wir den aktuell angezeigten Plan bearbeiten
+  if (selectedPlanId.value === planId) {
+    selectedPlanId.value = null;
   }
 }
 
-// Delete short
-function deleteShort(index) {
-  if (confirm('Are you sure you want to delete this short?')) {
-    const shortId = trPlannerStore.shorts[index]?.id;
-    if (shortId) {
-      trPlannerStore.deleteShort(shortId);
-    }
+function handleCopyPlan(planId) {
+  // Zuerst den Plan aus dem Store holen
+  const originalPlan = trPlannerStore.getTRPlanById(planId);
+  
+  if (!originalPlan) {
+    console.error('Plan nicht gefunden:', planId);
+    return;
   }
+
+  // Wir erstellen eine tiefe Kopie des Plans
+  const planCopy = JSON.parse(JSON.stringify(originalPlan));
+  
+  // Den Namen ändern, um anzuzeigen, dass es sich um eine Kopie handelt
+  planCopy.name = `${planCopy.name} (Copy)`;
+  
+  // Die ID und Zeitstempel entfernen, damit ein neuer Plan erstellt wird
+  delete planCopy.id;
+  delete planCopy.createdAt;
+  delete planCopy.updatedAt;
+  
+  // Den aktuellen Fortschritt zurücksetzen
+  if (planCopy.progress) {
+    planCopy.progress.completed = false;
+    planCopy.progress.lastUpdated = new Date().toISOString();
+  } else {
+    planCopy.progress = { 
+      completed: false,
+      lastUpdated: new Date().toISOString() 
+    };
+  }
+    
+  // TR-Planer-Modal öffnen für die Bearbeitung
+  // Dabei als neue Erstellung mit vorgefüllten Daten behandeln
+  editingPlanId.value = null; // Kein Edit, sondern New
+  showTRPlanModal.value = true;
+  
+  // Die Daten des kopierten Plans an das Modal übergeben
+  trPlannerStore.setCopyPlanData(planCopy);
+  
+  // Feedback anzeigen
+  showToastMessage('Creating a copy of the plan', 'info');
+}
+
+// Delete plan
+function handleDeletePlan(planId) {
+  trPlannerStore.deleteTRPlan(planId);
+  showToastMessage('Plan deleted', 'info');
 }
 
 // Reset planner
 function resetPlanner() {
-  if (confirm('Are you sure you want to reset the planner? This will delete all your shorts.')) {
+  if (confirm('Are you sure you want to reset the planner? This will delete all your plans.')) {
     // Reset planner über Store-Action
-    trPlannerStore.resetPlanner();
+    trPlannerStore.clearTRPlans();
     
     showToastMessage('Planner has been reset', 'info');
   }
+}
+
+function onDragEnd(event) {
+  console.log('Drag event ended', event);
+  console.log('Neue Reihenfolge:', filteredPlans.value.map(p => p.id));
+  
+  // Wichtig: Übergebe eine Kopie des Arrays, damit Vue die Änderung erkennt
+  trPlannerStore.saveOrderedPlans([...filteredPlans.value]);
 }
 
 // Show toast message
@@ -253,12 +334,33 @@ function showToastMessage(message, type = 'success', duration = 3000) {
 
 // Load data when component is mounted
 onMounted(() => {
-  // Keine zusätzliche Initialisierung notwendig, da der Store 
-  // automatisch die Daten aus dem localStorage lädt
+  // Andere Initialisierungen...
+  
+  // Lade die Pläne
+  trPlannerStore.loadTRPlans();
+  
+  // Initialisiere filteredPlans aus dem Store
+  filteredPlans.value = [...trPlannerStore.trPlans];
 });
+
+// Watch für Änderungen im Store
+watch(() => trPlannerStore.trPlans, (newPlans) => {
+  console.log('trPlans im Store geändert, aktualisiere filteredPlans');
+  // Nur aktualisieren, wenn sich die Länge oder IDs geändert haben
+  const currentIds = filteredPlans.value.map(p => p.id).join(',');
+  const newIds = newPlans.map(p => p.id).join(',');
+  
+  if (filteredPlans.value.length !== newPlans.length || currentIds !== newIds) {
+    filteredPlans.value = [...newPlans];
+  }
+}, { deep: true });
 </script>
 
 <style scoped>
+.bg-gray-850 {
+  background-color: rgba(26, 29, 36, 1);
+}
+
 /* Toast Animation */
 .toast-enter-active,
 .toast-leave-active {
@@ -269,5 +371,42 @@ onMounted(() => {
 .toast-leave-to {
   opacity: 0;
   transform: translateY(30px);
+}
+
+.flip-list-move {
+  transition: transform 0.5s;
+}
+
+.flip-list-enter-active, 
+.flip-list-leave-active {
+  transition: all 0.5s;
+}
+
+.flip-list-enter-from, 
+.flip-list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.ghost {
+  opacity: 0.5;
+  background-color: rgba(51, 51, 51, 0.3) !important;
+  border: 1px dashed rgba(156, 163, 175, 0.7) !important;
+}
+
+.chosen {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.dragging {
+  opacity: 0.8;
+}
+
+.grip-handle {
+  cursor: grab;
+}
+
+.grip-handle:active {
+  cursor: grabbing;
 }
 </style>

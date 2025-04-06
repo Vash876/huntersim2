@@ -1,4 +1,4 @@
-export function EVALBORGE(lvl,maxStage,hp,atk,regen,dr,evade,effect,critRate,critPower,aspd,revival,life,ua,impacts,omen,ll,pog,ultimaTalent,fow,ares,ylith,spartan,timeless,bfb,athena,baal,sensors,atlas,mino,helltouch,punches,weakspot,hermes,inhaler,gadget,iap,special,ultima,reviveCd,trample,scavengers,m0,r4,r7,r16,r19,i3,i4,i11,i13,i14,i23,i24,i27,i44,i60,i80,i84,i87,i88,i89,i91,creaGN1,creaGN2,creaGN3,innoGN3,attrGN2,attrGN3,attr,catchup99gu,lootgu,card,research81,iters) {
+export function EVALBORGE(lvl,maxStage,hp,atk,regen,dr,evade,effect,critRate,critPower,aspd,revival,life,ua,impacts,omen,ll,pog,ultimaTalent,fow,ares,ylith,spartan,timeless,bfb,athena,baal,sensors,atlas,mino,helltouch,punches,weakspot,hermes,inhaler,gadget,iap,special,ultima,reviveCd,trample,scavengers,m0,r4,r7,r16,r19,i3,i4,i11,i13,i14,i23,i24,i27,i44,i60,i80,i84,i87,i88,i89,i91,creaGN1,creaGN2,creaGN3,innoGN3,attrGN2,attrGN3,attr,catchup99gu,lootgu,card,research81,iters,useSeeded,cm46,cm47,cm48) {
   
   var multi = (enemyNum) => Math.max(1, 1 +
 Math.max(0,(enemyNum - 149) * .006)+
@@ -31,9 +31,36 @@ var enemies = [];
 for(var i = 0;i<=1000;i++){
     enemies.push(simEnemy(i))
 }
-var ck = (chance) => {
-  return chance && chance > Math.random()
+var ck;
+if (useSeeded) {
+  // Seeded RNG für deterministische Ergebnisse
+  ck = (() => {
+    const s = new Uint32Array([123456789, 362436069, 521288629, 88675123]);
+    
+    return (chance) => {
+      if (!chance) return false;
+      
+      const result = (s[0] + s[3]) >>> 0;
+      
+      const t = s[1] << 9;
+      s[2] ^= s[0];
+      s[3] ^= s[1];
+      s[1] ^= s[2];
+      s[0] ^= s[3];
+      s[2] ^= t;
+      s[3] = ((s[3] << 11) | (s[3] >>> 21)) >>> 0;
+      
+      return chance > (result * 2.3283064365386963e-10);
+    };
+  })();
+} else {
+  // Einfache Math.random() basierte RNG für echte Zufallsergebnisse
+  ck = (chance) => {
+    return chance && chance > Math.random();
+  };
 }
+
+
 var getBaseStats = ()=>{
     return {
         maxHp: (43+Number(i3)*6+Number(i27)*24+(2.5+Math.floor(hp/5)*.01)*hp)*gadgetMulti*(1+.03*r4)*(Boolean(card)?1.03:1)*(Boolean(creaGN1)?1.2:1)*(Boolean(creaGN2)?1.02:1)*(Boolean(creaGN3)?1+(Math.max(0,(Number(lvl)-39)*.015)):1)*(1+Number(i60)*.03)*(1+.05*Number(i84)),
@@ -349,7 +376,7 @@ var sim = (borge) => {
     var enemiesInSection = 1010;
     var excludedXpMultis = (Boolean(attrGN2)?1.5:1)*Math.pow(2,Math.floor((Number(maxStage)-1)/100))*Math.pow(2,Number(r19))
     var includedMultis = (1+borge.timeless*.14)*gadgetLootMulti*(Boolean(card)?1.05:1)*(1+Number(i60)*.03);
-    var excludedMultis = Math.max(Number(special),1)*(Boolean(iap)?1.25:1)*Math.max(Number(ultima),1)*Math.pow(1.05,Number(scavengers))*Math.pow(1.02,Number(m0))*Math.pow(1.05,Number(r7))*(Boolean(attrGN3)?1.25:1)*(Math.pow(Math.pow(1.07,Number(lootgu)),1+Number(attr)*.1-.1))*Math.pow(1.1,Number(i14))*Math.pow(1.1,Number(i80))*Math.pow(1.08,Number(i44))*(Number(research81)>=1?1.1:1)*(Number(research81)>=4?1.2:1);
+    var excludedMultis = Math.max(Number(special),1)*(Boolean(iap)?1.25:1)*Math.max(Number(ultima),1)*Math.pow(1.05,Number(scavengers))*Math.pow(1.02,Number(m0))*Math.pow(1.05,Number(r7))*(Boolean(attrGN3)?1.25:1)*(Math.pow(Math.pow(1.07,Number(lootgu)),1+Number(attr)*.1-.1))*Math.pow(1.1,Number(i14))*Math.pow(1.1,Number(i80))*Math.pow(1.08,Number(i44))*(Number(research81)>=1?1.1:1)*(Number(research81)>=4?1.2:1)*(Number(cm46)>0?1.03:1)*(Number(cm47)>0?1.02:1)*(Number(cm48)>0?1.07:1);
     var loopLoot = normalized*((Math.pow(stageGrowth,Math.floor(Math.min(enem,enemiesInSection-10)/10))-1)/(stageGrowth-1)*10+(Math.min(enem,enemiesInSection-10)-Math.floor(Math.min(enem,enemiesInSection-10)/10)*10)*Math.pow(stageGrowth,Math.floor(Math.min(enem,enemiesInSection-10)/10)))*includedMultis*(1+borge.ll*.2*borge.effect);
     var bonusMulti = 1;
     var tempEnem = enem;
@@ -430,5 +457,3 @@ var sim = (borge) => {
             })
             return result;
 }
-
-

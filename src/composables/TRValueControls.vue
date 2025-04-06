@@ -3,6 +3,7 @@
     <!-- Fast Decrement -->
     <button 
       v-if="showFastControls"
+      tabindex="-1"
       @mousedown="onButtonDown(decrementFast)"
       @touchstart.prevent="onTouchStart(decrementFast)"
       @touchmove="onTouchMove"
@@ -21,6 +22,7 @@
     
     <!-- Decrement -->
     <button 
+      tabindex="-1"
       @mousedown="onButtonDown(decrement)"
       @touchstart.prevent="onTouchStart(decrement)"
       @touchmove="onTouchMove"
@@ -48,6 +50,7 @@
           ref="inputField"
           type="number" 
           v-model.number="inputValue"
+          :tabindex="tabIndex"
           @blur="finishEditing"
           @keydown.enter="finishEditing"
           @keydown.escape="cancelEditing"
@@ -61,7 +64,11 @@
         <span 
           v-else 
           :class="valueClass"
+          :tabindex="tabIndex"
           @click="startEditing"
+          @keydown.enter="startEditing"
+          @keydown.space="startEditing"
+          @focus="onSpanFocus"
           class="cursor-pointer select-none w-full text-center px-2 hover:bg-gray-700"
           :title="disabled ? '' : 'Click to edit'"
         >
@@ -72,6 +79,7 @@
     
     <!-- Increment -->
     <button 
+      tabindex="-1"
       @mousedown="onButtonDown(increment)"
       @touchstart.prevent="onTouchStart(increment)"
       @touchmove="onTouchMove"
@@ -91,6 +99,7 @@
     <!-- Fast Increment -->
     <button 
       v-if="showFastControls"
+      tabindex="-1"
       @mousedown="onButtonDown(incrementFast)"
       @touchstart.prevent="onTouchStart(incrementFast)"
       @touchmove="onTouchMove"
@@ -110,7 +119,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeUnmount, nextTick, watchEffect } from 'vue';
+import { ref, computed, onBeforeUnmount, nextTick, watchEffect, onMounted } from 'vue';
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -145,6 +154,14 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false
+  },
+  tabIndex: {
+    type: Number,
+    default: 0
+  },
+  autoEdit: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -163,6 +180,13 @@ const inputValue = ref(props.value);
 watchEffect(() => {
   inputValue.value = props.value;
 });
+
+// Funktion für den Focus-Handler, der automatisch in den Bearbeitungsmodus wechselt
+function onSpanFocus(event) {
+  if (props.autoEdit && !props.disabled) {
+    startEditing();
+  }
+}
 
 // Startet den Bearbeitungsmodus
 function startEditing() {

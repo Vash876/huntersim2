@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.2.0',
+    date: '2025-04-06',
+    baseVersion: 'Kylenator\'s Sheet v1.2.6',
+    changes: [
+      'Added Construction Milestones',
+      'Implemented Seeded/Random evaluation toggle for more accurate build comparisons',
+      'Improved Build Creator confirmation dialog to only show when changes have been made',
+      'Added new Tools section:',
+      '- TR Planner: Comprehensive replacement for the Shorts Planner with enhanced QoL features, visual progress indicators, and advanced optimization options',
+    ]
+  },
+  {
     version: '2.1.5',
     date: '2025-03-25',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
@@ -9,7 +21,7 @@ const changelog =
       'Added boost type information to gadget labels in Gadget Calculator',
       'Added cost calculation for Inscryptions #80+ in Override Modal',
       'Added Inscryption cost support in Upgrade Comparison Window',
-      'Early-game players: Please ping me on Discord with screenshots of your Hunter relevant Inscryptions below #80 so I can add their cost calculations too!'
+      'Early-game players: Please ping or DM me on Discord with screenshots of your Hunter relevant Inscryptions below #80 so I can add their cost calculations too!'
     ]
   },
   {

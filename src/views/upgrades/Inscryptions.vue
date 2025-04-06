@@ -13,10 +13,13 @@
           @click="selectedHunter = hunter.id"
           class="px-4 py-2 rounded-md transition-colors"
           :class="{
-            'bg-red-600/70 text-white': selectedHunter === hunter.id && hunter.color === 'red',
-            'bg-green-600/70 text-white': selectedHunter === hunter.id && hunter.color === 'green',
-            'bg-blue-600/70 text-white': selectedHunter === hunter.id && hunter.color === 'blue',
-            'bg-gray-700/50 text-gray-300 hover:bg-gray-700': selectedHunter !== hunter.id
+            'bg-red-600 text-white': selectedHunter === hunter.id && hunter.color === 'red',
+            'bg-green-600 text-white': selectedHunter === hunter.id && hunter.color === 'green',
+            'bg-blue-600 text-white': selectedHunter === hunter.id && hunter.color === 'blue',
+            'bg-red-600/30 text-white hover:bg-red-600/50': selectedHunter !== hunter.id && hunter.color === 'red',
+            'bg-green-600/30 text-white hover:bg-green-600/50': selectedHunter !== hunter.id && hunter.color === 'green',
+            'bg-blue-600/30 text-white hover:bg-blue-600/50': selectedHunter !== hunter.id && hunter.color === 'blue',
+            'bg-gray-700/50 text-gray-300 hover:bg-gray-700': selectedHunter !== hunter.id && !hunter.color
           }"
         >
           {{ hunter.name }}

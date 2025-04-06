@@ -33,6 +33,10 @@ export const boostCategories = [
     label: 'Researches',
   },
   {
+    id: 'cm',
+    label: 'Construction Milestones',
+  },
+  {
     id: 'premium',
     label: 'Premium',
   },
@@ -52,26 +56,22 @@ export const generalStats = [
     key: 'trCount',
     label: 'TR Count',
     type: 'number',
-    uiOnly: true, 
   },
   {
     key: 'allTimeOrbs',
     label: 'All-Time Orbs',
     type: 'number',
-    uiOnly: true, 
   }
 ];
 
 // Alle Boosts mit Kategoriezuordnung
 export const allBoosts = [
-  // Time Related
   {
     key: 'hoursInTR',
     label: 'Hours in TR',
     category: 'time',
     type: 'number',
     orbcalc: true,
-    permanent: true,
     tooltip: '0',
     multiplier: (value, allValues) => {
       const hoursInTR = value || 0;
@@ -92,14 +92,13 @@ export const allBoosts = [
     category: 'time',
     type: 'number',
     orbcalc: true,
-    permanent: true,
     tooltip: '0',
     multiplier: 1,
   },
 
   // Milestones
   {
-    key: 'm0',
+    key: 'ms0',
     label: 'Milestone #0',
     category: 'milestone',
     type: 'number',
@@ -107,7 +106,13 @@ export const allBoosts = [
     permanent: true,
     tooltip: '0',
     multiplier: (value) => Math.pow(1.1, value),
-    fragmulti: (value) => Math.pow(1.011, value),
+    fragmulti: (value, allValues) => {
+      if (allValues.attr3) {
+        return Math.pow(1.011, value);
+      }
+      
+      return 1;
+    },
   },
 
   // Relics
@@ -173,6 +178,18 @@ export const allBoosts = [
     max: 8
   },
 
+  //Construction Milestones
+  {
+    key: 'cm47',
+    label: 'Construction Milestone #47',
+    category: 'cm',
+    type: 'boolean',
+    orbcalc: true,
+    permanent: false,
+    tooltip: '0',
+    multiplier: 1.04,
+  },
+
   // Boon E
   {
     key: 'boonELevel',
@@ -182,7 +199,7 @@ export const allBoosts = [
     orbcalc: true,
     permanent: true,
     tooltip: '0',
-    multiplier: 1, // Ergänze die korrekte Formel
+    max: 2
   },
   {
     key: 'campaigns',
@@ -190,10 +207,39 @@ export const allBoosts = [
     category: 'boonE',
     type: 'number',
     orbcalc: true,
-    permanent: true,
-    tooltip: 'Boon e1750 MP required, else 0',
-    multiplier: (value) => Math.pow(1.006, value),
-    fragmulti: (value) => Math.pow(1.03, value),
+    tooltip: '0',
+    // Orb-Multiplikator mit Boon E Level Abhängigkeit
+    multiplier: (value, allValues) => {
+      const boonLevel = allValues.boonELevel || 0;
+      
+      // Level 0: Neutral
+      if (boonLevel === 0) return 1;
+      
+      // Basis-Multiplikator
+      const baseMultiplier = Math.pow(1.006, value);
+      
+      // Level 1: Normaler Multiplikator
+      if (boonLevel === 1) return baseMultiplier;
+      
+      // Level 2+: Potenziert mit dem Boon-Level
+      return Math.pow(baseMultiplier, boonLevel);
+    },
+    // Fragment-Multiplikator mit Boon E Level Abhängigkeit
+    fragmulti: (value, allValues) => {
+      const boonLevel = allValues.boonELevel || 0;
+      
+      // Level 0: Neutral
+      if (boonLevel === 0) return 1;
+      
+      // Basis-Multiplikator
+      const baseMultiplier = Math.pow(1.03, value);
+      
+      // Level 1: Normaler Multiplikator
+      if (boonLevel === 1) return baseMultiplier;
+      
+      // Level 2+: Potenziert mit dem Boon-Level
+      return Math.pow(baseMultiplier, boonLevel);
+    },
   },
 
   // Boon H
@@ -205,7 +251,7 @@ export const allBoosts = [
     orbcalc: true,
     permanent: true,
     tooltip: '0',
-    multiplier: 1, // Ergänze die korrekte Formel
+    max: 2
   },
   {
     key: 'shipinstalls',
@@ -213,9 +259,23 @@ export const allBoosts = [
     category: 'boonH',
     type: 'number',
     orbcalc: true,
-    permanent: true,
     tooltip: '0',
-    multiplier: (value) => Math.pow(1.000015, value),
+    // Orb-Multiplikator mit Boon H Level Abhängigkeit
+    multiplier: (value, allValues) => {
+      const boonLevel = allValues.boonHLevel || 0;
+      
+      // Level 0: Neutral
+      if (boonLevel === 0) return 1;
+      
+      // Basis-Multiplikator
+      const baseMultiplier = Math.pow(1.000015, value);
+      
+      // Level 1: Normaler Multiplikator
+      if (boonLevel === 1) return baseMultiplier;
+      
+      // Level 2+: Potenziert mit dem Boon-Level
+      return Math.pow(baseMultiplier, boonLevel);
+    },
   },
   {
     key: 'ouroinstalls',
@@ -225,13 +285,28 @@ export const allBoosts = [
     orbcalc: false,
     permanent: true,
     tooltip: '0',
-    fragmulti: (value) => Math.pow(1.01, value),
+    // Fragment-Multiplikator mit Boon H Level Abhängigkeit
+    fragmulti: (value, allValues) => {
+      const boonLevel = allValues.boonHLevel || 0;
+      
+      // Level 0: Neutral
+      if (boonLevel === 0) return 1;
+      
+      // Basis-Multiplikator
+      const baseMultiplier = Math.pow(1.01, value);
+      
+      // Level 1: Normaler Multiplikator
+      if (boonLevel === 1) return baseMultiplier;
+      
+      // Level 2+: Potenziert mit dem Boon-Level
+      return Math.pow(baseMultiplier, boonLevel);
+    },
   },
 
   // Gadgets
   {
     key: 'oogadget',
-    label: 'Orb Gadget',
+    label: 'Serpents Connection Band',
     category: 'gadget',
     type: 'number',
     orbcalc: true,
@@ -246,7 +321,7 @@ export const allBoosts = [
   },
   {
     key: 'campfragdet',
-    label: 'Camp Fradget',
+    label: 'Galactic Fragment Magnet',
     category: 'gadget',
     type: 'number',
     orbcalc: false,
@@ -268,7 +343,7 @@ export const allBoosts = [
     type: 'number',
     orbcalc: true,
     permanent: false,
-    tooltip: 'Type in your RP without e, \n e.g. 1e3000 = 3000 \n It will automatically calculate the multiplier of all Reasearches',
+    tooltip: '0',
     multiplier: (value) => {
       let overallMultiplier = 1;
     
@@ -293,6 +368,7 @@ export const allBoosts = [
     
       return overallMultiplier;
     },
+    max: 4465
   },
   {
     key: 'research89',
@@ -338,7 +414,7 @@ export const allBoosts = [
     category: 'premium',
     type: 'boolean',
     orbcalc: true,
-    permanent: false,
+    permanent: true,
     tooltip: '0',
     multiplier: 1.25,
   },
@@ -348,7 +424,7 @@ export const allBoosts = [
     category: 'premium',
     type: 'boolean',
     orbcalc: true,
-    permanent: false,
+    permanent: true,
     tooltip: '0',
     multiplier: 1.05,
   },
@@ -358,7 +434,7 @@ export const allBoosts = [
     category: 'premium',
     type: 'boolean',
     orbcalc: true,
-    permanent: false,
+    permanent: true,
     tooltip: '0',
     multiplier: 1.05,
   },
@@ -372,7 +448,6 @@ export const allBoosts = [
     orbcalc: false,
     permanent: true,
     tooltip: '0',
-    fragmulti: 1,
   },
   {
     key: 'attr1',
@@ -380,7 +455,7 @@ export const allBoosts = [
     category: 'gem',
     type: 'boolean',
     orbcalc: false,
-    permanent: false,
+    permanent: true,
     tooltip: '0',
     fragmulti: 1.5,
   },
@@ -390,7 +465,7 @@ export const allBoosts = [
     category: 'gem',
     type: 'boolean',
     orbcalc: false,
-    permanent: false,
+    permanent: true,
     tooltip: '0',
     fragmulti: 2,
   },
@@ -402,7 +477,7 @@ export const allBoosts = [
     category: 'badge',
     type: 'boolean',
     orbcalc: true,
-    permanent: true,
+    permanent: false,
     tooltip: '0',
     multiplier: 1.25,
   },
@@ -412,7 +487,7 @@ export const allBoosts = [
     category: 'badge',
     type: 'boolean',
     orbcalc: true,
-    permanent: true,
+    permanent: false,
     tooltip: '0',
     multiplier: 1.25,
   },
@@ -422,7 +497,7 @@ export const allBoosts = [
     category: 'badge',
     type: 'boolean',
     orbcalc: true,
-    permanent: true,
+    permanent: false,
     tooltip: '0',
     multiplier: 1.25,
   },
@@ -432,7 +507,7 @@ export const allBoosts = [
     category: 'badge',
     type: 'boolean',
     orbcalc: true,
-    permanent: true,
+    permanent: false,
     tooltip: '0',
     multiplier: 1.5,
   },
@@ -442,7 +517,7 @@ export const allBoosts = [
     category: 'badge',
     type: 'boolean',
     orbcalc: true,
-    permanent: true,
+    permanent: false,
     tooltip: '0',
     multiplier: 2,
   },

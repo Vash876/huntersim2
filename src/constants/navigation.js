@@ -13,7 +13,8 @@ import {
   IconCards,
   IconCreditCard,
   IconClockFilled,
-  IconDatabase
+  IconCrane,
+  IconBuildingCottage,
 } from '@tabler/icons-vue';
 
 export const NAVIGATION = {
@@ -57,6 +58,7 @@ export const NAVIGATION = {
         { label: 'Loop Mods', path: '/upgrades/loopmods', icon: IconRefresh },
         { label: 'Shard Milestones', path: '/upgrades/milestones', icon: IconHammer },
         { label: 'Researches', path: '/upgrades/researches', icon: IconMicroscope },
+        { label: 'Construction Milest.', path: '/upgrades/cms', icon: IconCrane },
       ]
     },
     {
@@ -76,6 +78,7 @@ export const NAVIGATION = {
       name: 'TR Planner',
       path: '/tools/tr-planner',
       icon: IconClockFilled
-    }
+    },
+
   ]
 };

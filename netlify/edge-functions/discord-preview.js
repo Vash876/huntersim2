@@ -2,18 +2,30 @@ export default async function handler(request, context) {
   const url = new URL(request.url);
   const userAgent = request.headers.get('user-agent') || '';
   
-  // Discord Bot erkennen
-  const isDiscordBot = userAgent.includes('Discordbot') || url.searchParams.has('preview');
+  // Discord Bot oder Entwicklungsmodus erkennen
+  const isDiscordBot = userAgent.includes('Discordbot');
+  const isDevelopmentMode = url.searchParams.has('preview');
   
   // Prüfen, ob es ein Build-Link ist
-  if (isDiscordBot && 
-      url.pathname.match(/\/[a-zA-Z0-9]+/) && 
+  if (url.pathname.match(/\/[a-zA-Z0-9]+/) && 
       url.searchParams.has('code')) {
     
     // Hunter-ID aus der URL extrahieren
     const hunterId = url.pathname.substring(1);
     const buildCode = url.searchParams.get('code');
     
+    // Für normale Browser direkt zur eigentlichen App weiterleiten (ohne Edge Function zu belasten)
+    if (!isDiscordBot && !isDevelopmentMode) {
+      return new Response('Redirecting...', {
+        status: 302,
+        headers: {
+          'Location': `https://hunter-sim2.netlify.app${url.pathname}?code=${buildCode}`,
+          'Cache-Control': 'public, max-age=86400'
+        }
+      });
+    }
+    
+    // Ab hier nur Discord Bot und Preview-Modus (Entwicklung)
     // Level aus Code berechnen oder "Invalid Build Code" anzeigen
     const buildInfo = calculateBuildLevel(buildCode, hunterId);
     const levelText = buildInfo.isValid ? `Level ${buildInfo.level}` : 'Invalid Build Code';
@@ -27,7 +39,7 @@ export default async function handler(request, context) {
     
     const hunter = hunters[hunterId] || { name: 'Hunter', color: '#9ca3af' };
     
-    // HTML mit Meta-Tags zurückgeben, aber ohne Bild
+    // HTML mit Meta-Tags zurückgeben (unverändert)
     const html = `
       <!DOCTYPE html>
       <html>
@@ -49,15 +61,21 @@ export default async function handler(request, context) {
       </html>
     `;
     
+    // Mit Cache-Kontrolle zurückgeben (24 Stunden)
     return new Response(html, {
-      headers: { 'content-type': 'text/html' },
+      headers: { 
+        'Content-Type': 'text/html',
+        'Cache-Control': 'public, max-age=86400, s-maxage=86400', // 24 Stunden
+        'Surrogate-Control': 'public, max-age=86400, s-maxage=86400',
+        'Cache-Tag': `discord-preview-${hunterId}-${buildCode}`,
+        'Vary': 'User-Agent'
+      }
     });
   }
   
   // Für alle anderen Anfragen: normale Seite anzeigen
   return context.next();
 }
-
 // ========== Build-Code Parsing Logik ==========
 
 // Base58-Alphabet für die Codierung

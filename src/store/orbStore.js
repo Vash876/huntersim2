@@ -28,7 +28,11 @@ export const useTRPlannerStore = defineStore('trPlanner', {
     ui: useStorage('trplanner_ui', {
       showAdvancedControls: false,
       lastViewedTab: 'overview'
-    })
+    }),
+
+    // Neue State-Eigenschaft für TR-Pläne
+    trPlans: useStorage('trplanner_plans', []),
+    copyPlanData: null
   }),
   
   getters: {
@@ -108,7 +112,28 @@ export const useTRPlannerStore = defineStore('trPlanner', {
     /**
      * Gibt die Anzahl der aktiven Shorts zurück
      */
-    shortCount: (state) => state.shorts.length
+    shortCount: (state) => state.shorts.length,
+
+    /**
+     * Gibt alle TR-Pläne sortiert nach Erstellungsdatum (neueste zuerst) zurück
+     */
+    sortedTRPlans: (state) => {
+      return [...state.trPlans].sort((a, b) => 
+        new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    },
+    
+    /**
+     * Gibt die Anzahl der gespeicherten TR-Pläne zurück
+     */
+    trPlanCount: (state) => state.trPlans.length,
+    
+    /**
+     * Findet einen TR-Plan anhand seiner ID
+     */
+    getTRPlanById: (state) => (id) => {
+      return state.trPlans.find(plan => plan.id === id);
+    }
   },
   
   actions: {
@@ -219,9 +244,149 @@ export const useTRPlannerStore = defineStore('trPlanner', {
      */
     updateUISettings(newSettings) {
       this.ui = { ...this.ui, ...newSettings };
+    },
+
+    /**
+     * Fügt einen neuen TR-Plan hinzu
+     * @param {Object} plan - Der neue TR-Plan
+     * @returns {String} Die ID des neuen Plans
+     */
+    addTRPlan(plan) {
+      // Stelle sicher, dass der Plan eine eindeutige ID und ein Erstellungsdatum hat
+      const newPlan = {
+        ...plan,
+        id: plan.id || `trplan_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        createdAt: plan.createdAt || new Date().toISOString()
+      };
+      
+      this.trPlans.push(newPlan);
+      return newPlan.id;
+    },
+    
+    /**
+     * Aktualisiert einen vorhandenen TR-Plan
+     * @param {String} planId - Die ID des Plans
+     * @param {Object} updatedData - Die aktualisierten Daten
+     * @returns {Boolean} true, wenn der Plan aktualisiert wurde, sonst false
+     */
+    updateTRPlan(planId, updatedData) {
+      const index = this.trPlans.findIndex(p => p.id === planId);
+      if (index !== -1) {
+        this.trPlans[index] = {
+          ...this.trPlans[index],
+          ...updatedData,
+          updatedAt: new Date().toISOString()
+        };
+        return true;
+      }
+      return false;
+    },
+    
+    /**
+     * Löscht einen TR-Plan
+     * @param {String} planId - Die ID des Plans
+     * @returns {Boolean} true, wenn der Plan gelöscht wurde, sonst false
+     */
+    deleteTRPlan(planId) {
+      const index = this.trPlans.findIndex(p => p.id === planId);
+      if (index !== -1) {
+        this.trPlans.splice(index, 1);
+        return true;
+      }
+      return false;
+    },
+
+    setCopyPlanData(planData) {
+      this.copyPlanData = planData;
+    },
+    
+    /**
+     * Löscht alle TR-Pläne
+     */
+    clearTRPlans() {
+      this.trPlans = [];
+    },
+    
+    /**
+     * Aktualisiert die Fortschrittsinformationen eines Plans
+     * @param {String} planId - Die ID des Plans
+     * @param {Object} progressData - Daten zum Fortschritt
+     */
+    updateTRPlanProgress(planId, progressData) {
+      const index = this.trPlans.findIndex(p => p.id === planId);
+      if (index !== -1) {
+        this.trPlans[index].progress = {
+          ...this.trPlans[index].progress || {},
+          ...progressData,
+          lastUpdated: new Date().toISOString()
+        };
+        return true;
+      }
+      return false;
+    },
+
+    saveOrderedPlans(orderedPlans) {
+      console.log('Speichere geordnete Pläne im Store:', orderedPlans.map(p => p.id));
+      
+      // IDs der geordneten Pläne speichern
+      const orderedIds = orderedPlans.map(plan => plan.id);
+      localStorage.setItem('trPlanOrderIds', JSON.stringify(orderedIds));
+      
+      // Aktualisiere den Store mit den neu geordneten Plänen
+      this.trPlans = [...orderedPlans];
+    },
+    
+    // Beim Laden der Pläne
+    loadTRPlans() {
+      console.log('Lade TR Pläne...');
+      
+      try {
+        // Pläne aus dem LocalStorage laden - dies könnte bereits durch useStorage erledigt werden
+        const storedPlans = localStorage.getItem('trplanner_plans');
+        if (storedPlans) {
+          const parsedPlans = JSON.parse(storedPlans);
+          if (Array.isArray(parsedPlans)) {
+            this.trPlans = [...parsedPlans];
+          }
+        }
+        
+        // Plane nach gespeicherter Reihenfolge sortieren
+        const orderedIdsStr = localStorage.getItem('trPlanOrderIds');
+        if (orderedIdsStr) {
+          const orderedIds = JSON.parse(orderedIdsStr);
+          console.log('Gefundene Reihenfolge:', orderedIds);
+          
+          if (Array.isArray(orderedIds) && orderedIds.length > 0) {
+            // Eine Kopie der Pläne erstellen und sortieren
+            const sortedPlans = [...this.trPlans];
+            sortedPlans.sort((a, b) => {
+              const indexA = orderedIds.indexOf(a.id);
+              const indexB = orderedIds.indexOf(b.id);
+              
+              // Wenn ein Plan nicht in der gespeicherten Reihenfolge ist, ans Ende setzen
+              if (indexA === -1) return 1;
+              if (indexB === -1) return -1;
+              
+              return indexA - indexB;
+            });
+            
+            // Die sortierten Pläne in den Store speichern
+            this.trPlans = sortedPlans;
+            console.log('Pläne nach Reihenfolge sortiert:', this.trPlans.map(p => p.id));
+          }
+        }
+      } catch (e) {
+        console.error('Fehler beim Laden der TR Pläne:', e);
+      }
+    },
+
+    init() {
+      // Pläne aus dem LocalStorage laden und sortieren
+      this.loadTRPlans();
     }
   }
 });
+
 
 /**
  * Initialisiert die Standard-Statistiken basierend auf den definierten Boosts

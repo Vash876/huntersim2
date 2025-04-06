@@ -537,36 +537,62 @@ export const UPGRADES = {
 
   ///////////////LOOPMODS////////////////
   
-    loopmods: [
-      {
-        id: "trample",
-        name: "Trample: Borge",
-        hunter: "borge",
-        type: "boolean",
-        upgradeType: "effect", // Spezialeffekt-Upgrade
-        description: "Enables Borge Trample Effect",
-      },
-      {
-        id: "scavenger",
-        name: "Scavengers Advantage",
-        hunter: "borge",
-        type: "level",
-        upgradeType: "multiplicative",
-        value: 1.05,  // multipliziert mit 1.05 pro Level
-        maxLevel: 25,
-        description: "Borge Loot Rewards",
-      },
-      {
-        id: "scavenger2",
-        name: "Scavengers Advantage 2",
-        hunter: "ozzy",
-        type: "level",
-        upgradeType: "multiplicative",
-        value: 1.05,  // multipliziert mit 1.05 pro Level
-        maxLevel: 25,
-        description: "Ozzy Loot Rewards",
-      },
-    ],
+  loopmods: [
+    {
+      id: "trample",
+      name: "Trample: Borge",
+      hunter: "borge",
+      type: "boolean",
+      upgradeType: "effect", // Spezialeffekt-Upgrade
+      description: "Enables Borge Trample Effect",
+    },
+    {
+      id: "scavenger",
+      name: "Scavengers Advantage",
+      hunter: "borge",
+      type: "level",
+      upgradeType: "multiplicative",
+      value: 1.05,  // multipliziert mit 1.05 pro Level
+      maxLevel: 25,
+      description: "Loot Rewards",
+    },
+    {
+      id: "scavenger2",
+      name: "Scavengers Advantage 2",
+      hunter: "ozzy",
+      type: "level",
+      upgradeType: "multiplicative",
+      value: 1.05,  // multipliziert mit 1.05 pro Level
+      maxLevel: 25,
+      description: "Loot Rewards",
+    },
+  ],
+
+  ///////////////CONSTRUCTION MILESTONES////////////////
+  
+  cms: [
+    {
+      id: "cm46",
+      name: "CM #46",
+      type: "boolean",
+      value: 1.03,
+      multitext: "Hunter Loot Rewards",
+    },
+    {
+      id: "cm47",
+      name: "CM #47",
+      type: "boolean",
+      value: 1.02,
+      multitext: "Hunter Loot Rewards",
+    },
+    {
+      id: "cm48",
+      name: "CM #48",
+      type: "boolean",
+      value: 1.07,
+      multitext: "Hunter Loot Rewards",
+    },
+  ],
 
   ///////////////IAP////////////////
 

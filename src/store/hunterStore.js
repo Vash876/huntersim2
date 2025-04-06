@@ -28,6 +28,9 @@ export const useHunterStore = defineStore('hunter', () => {
   // Stelle sicher, dass der State und die Funktionen im store definiert sind
   const displaySettings = ref({});
 
+  // Seed-Einstellungen pro Hunter
+  const hunterSeedSettings = ref({});
+
   /**
    * Generiert die initiale Upgrades-Struktur basierend auf den UPGRADES-Konstanten
    * @param {Object} upgradesConfig - Die UPGRADES-Konstante
@@ -752,6 +755,68 @@ function updateBuildOverrides(buildId, overrides) {
   return false;
 }
 
+/**
+ * Gibt die Seed-Einstellung für einen bestimmten Hunter zurück
+ * @param {string} hunterId - Die ID des Hunters
+ * @returns {boolean} - True für seeded (deterministisch), False für random
+ */
+function getHunterSeedSetting(hunterId) {
+  // Default: true (seeded) wenn nicht explizit gesetzt
+  return hunterSeedSettings.value[hunterId] !== undefined ? 
+    hunterSeedSettings.value[hunterId] : true;
+}
+
+/**
+ * Speichert die Seed-Einstellung für einen bestimmten Hunter
+ * @param {string} hunterId - Die ID des Hunters
+ * @param {boolean} useSeeded - Ob die Evaluation mit Seed sein soll
+ */
+function saveHunterSeedSetting(hunterId, useSeeded) {
+  if (!hunterId) return;
+  
+  hunterSeedSettings.value = {
+    ...hunterSeedSettings.value,
+    [hunterId]: useSeeded
+  };
+  
+  console.log(`Seed setting saved for ${hunterId}:`, useSeeded);
+}
+
+/**
+ * Lädt alle Seed-Einstellungen aus dem LocalStorage
+ * Diese Methode ist meist nicht nötig, da Pinia mit persist automatisch lädt
+ */
+function loadHunterSeedSettings() {
+  // In der Regel wird dies automatisch durch Pinia's persist-Plugin erledigt
+  console.log("Current seed settings:", hunterSeedSettings.value);
+}
+
+// Erweitere initHunterConfig, um sicherzustellen, dass eine Seed-Einstellung existiert
+async function initHunterConfig(hunterId) {
+  // Bestehende Initialisierungen...
+  if (!hunterBuilds.value[hunterId]) {
+    hunterBuilds.value[hunterId] = [];
+  }
+  
+  if (hunterIterations.value[hunterId] === undefined) {
+    hunterIterations.value[hunterId] = 1000;
+  }
+  
+  // Stelle sicher, dass eine Seed-Einstellung existiert
+  if (hunterSeedSettings.value[hunterId] === undefined) {
+    // Default-Wert: true (seeded)
+    hunterSeedSettings.value[hunterId] = true;
+  }
+  
+  return { 
+    hunterStats: hunterStats.value, 
+    upgrades: upgrades.value, 
+    hunterBuilds: hunterBuilds.value, 
+    hunterIterations: hunterIterations.value,
+    hunterSeedSettings: hunterSeedSettings.value
+  };
+}
+
 // Display-Einstellungen speichern
 function saveDisplaySettings(hunterId, settings) {
   if (!hunterId) return;
@@ -780,14 +845,17 @@ function getDisplaySettings(hunterId) {
 }
 
 
+  // Im return-Statement am Ende des Stores:
   return {
     hunterStats,
     upgrades,
     hunterBuilds,
-    hunterIterations, // Neue Zustandsvariable
-    buildOrders, // Neue Zustandsvariable
-    evaluationCache, // Neue Zustandsvariable
+    hunterIterations,
+    buildOrders,
+    evaluationCache,
     displaySettings,
+    hunterSeedSettings, // Die State-Variable
+    
     // Hunter Stats Funktionen
     initHunterStats,
     initHunterBuilds,
@@ -796,12 +864,14 @@ function getDisplaySettings(hunterId) {
     importStats,
     getStats,
     cloneStats,
+    
     // Upgrade Funktionen
     updateUpgrade,
     getUpgradeValue,
     resetUpgradeCategory,
     resetAllUpgrades,
     getUpgradesForHunter,
+    
     // Build-Management Funktionen
     addBuild,
     updateBuild,
@@ -810,26 +880,45 @@ function getDisplaySettings(hunterId) {
     getBuildsForHunter,
     getBuildById,
     updateBuildOverrides,
-    // Iterations-Funktionen (ohne manuelle localStorage-Funktionen)
+    
+    // Iterations-Funktionen
     initHunterConfig,
     getIterations,
     updateIterations,
+    
     // Build Order Funktionen
     saveBuildsOrder,
     loadBuildsOrder,
     getOrderedBuildsForHunter,
-    // Neue Funktionen für den Evaluierungs-Cache
+    
+    // Cache-Funktionen
     cacheEvaluationResult,
     getCachedEvaluationResult,
     clearEvaluationCache,
     findSimilarCachedResult,
+    
+    // Display-Einstellungen
     saveDisplaySettings,
-    getDisplaySettings
+    getDisplaySettings,
+    
+    // Seed-Einstellungen - Hier fehlten die Funktionen
+    getHunterSeedSetting,
+    saveHunterSeedSetting,
+    loadHunterSeedSettings
   };
 }, {
   persist: {
     key: 'hunter-data',
     storage: localStorage,
-    paths: ['hunterStats', 'upgrades', 'hunterBuilds', 'hunterIterations', 'buildOrders', 'evaluationCache', 'displaySettings',]
+    paths: [
+      'hunterStats', 
+      'upgrades', 
+      'hunterBuilds', 
+      'hunterIterations', 
+      'buildOrders', 
+      'evaluationCache', 
+      'displaySettings',
+      'hunterSeedSettings'  // Neue Variable zur Persistenz hinzufügen
+    ]
   }
 });

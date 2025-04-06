@@ -193,14 +193,16 @@ export function useBuildEvaluation(props, emit) {
       let store = {
         hunterStats: { ...hunterStore.hunterStats },
         upgrades: { ...hunterStore.upgrades },
-        hunterIterations: hunterStore.hunterIterations
+        hunterIterations: hunterStore.hunterIterations,
+        hunterSeedSettings: hunterStore.hunterSeedSettings
       };
       
       if (props.buildData.overrides && Object.keys(props.buildData.overrides).length > 0) {
         store = {
           hunterStats: JSON.parse(JSON.stringify(store.hunterStats)),
           upgrades: JSON.parse(JSON.stringify(store.upgrades)),
-          hunterIterations: store.hunterIterations
+          hunterIterations: store.hunterIterations,
+          hunterSeedSettings: hunterStore.hunterSeedSettings
         };
         
         if (!store.hunterStats[props.hunterId]) {
@@ -244,6 +246,10 @@ export function useBuildEvaluation(props, emit) {
       }
       
       totalIterations.value = store.hunterIterations?.[props.hunterId] || 1000;
+      
+      // Debug-Log für den aktuellen Seed-Modus
+      const useSeeded = hunterStore.getHunterSeedSetting(props.hunterId);
+      console.log(`Evaluating build ${props.buildData.name || 'unnamed'} with seed mode: ${useSeeded ? 'Seeded' : 'Random'}`);
       
       const evalResult = await evaluateBuildWithWorker(
         props.hunterId, 
@@ -421,20 +427,43 @@ export function useBuildEvaluation(props, emit) {
         }
       }
     });
+
+    // Watch für Änderungen an der Seed-Einstellung
+    watch(
+      () => hunterStore.getHunterSeedSetting(props.hunterId),
+      (newSeedSetting, oldSeedSetting) => {
+        if (newSeedSetting !== oldSeedSetting) {
+          console.log(`Seed setting changed for ${props.hunterId}: ${oldSeedSetting} -> ${newSeedSetting}`);
+          
+          // Wenn von Seeded (true) zu Random (false) gewechselt wird, immer neu evaluieren
+          if (newSeedSetting === false) {
+            console.log(`Switched to Random mode, forcing re-evaluation`);
+            evaluateBuild(true); // Force re-evaluation
+          } 
+          // Wenn von Random zu Seeded gewechselt wird, erst Cache prüfen
+          else {
+            console.log(`Switched to Seeded mode, checking cache first`);
+            evaluateBuild(false); // Nicht forcieren, erst Cache prüfen
+          }
+        }
+      }
+    );
   }
 
   // Import der Evaluierungsfunktionalität
   async function evaluateBuildWithParams(buildParams) {
     try {
-      // Wir verwenden den evaluateBuildWithWorker aus dem WorkerService
-      const { evaluateBuildWithWorker } = await import('../services/workerService');
-      
-      // Store-Daten vorbereiten, ähnlich wie in useBuildEvaluation
+      // Store-Daten vorbereiten
       const store = {
         hunterStats: { ...hunterStore.hunterStats },
         upgrades: { ...hunterStore.upgrades },
-        hunterIterations: hunterStore.hunterIterations
+        hunterIterations: hunterStore.hunterIterations,
+        hunterSeedSettings: hunterStore.hunterSeedSettings
       };
+      
+      // Debug-Log für den aktuellen Seed-Modus
+      const useSeeded = hunterStore.getHunterSeedSetting(props.hunterId);
+      console.log(`Evaluating build params with seed mode: ${useSeeded ? 'Seeded' : 'Random'}`);
       
       // Wenn die Build-Parameter Overrides enthalten, diese anwenden
       if (buildParams.overrides && Object.keys(buildParams.overrides).length > 0) {
@@ -442,7 +471,8 @@ export function useBuildEvaluation(props, emit) {
         const storeWithOverrides = {
           hunterStats: JSON.parse(JSON.stringify(store.hunterStats)),
           upgrades: JSON.parse(JSON.stringify(store.upgrades)),
-          hunterIterations: store.hunterIterations
+          hunterIterations: store.hunterIterations,
+          hunterSeedSettings: hunterStore.hunterSeedSettings
         };
         
         // Sicherstellen, dass der Hunter-Stats-Eintrag existiert

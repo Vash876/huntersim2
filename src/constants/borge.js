@@ -83,6 +83,7 @@ export const HUNTER_UPGRADES = {
   loopmods: ["trample", "scavenger"],
   shardmilestones: ["m0"],
   researches: ["res81"],
+  cms: ["cm46", "cm47", "cm48"],
   diamondspecials: ["hunterloot", "reviveboost"],
   diamondcards: ["gaiden"],
   iap: ["travpack"],
@@ -176,7 +177,11 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.attraction_lootBorge", // Loot (Borge)
   "upgrades.diamondcards.gaiden",         // Diamond Card (Gaiden)
   "upgrades.researches.res81",            // Research#81
-  "iterations"                            // Anzahl der Iterationen (aus hunterIterations)
+  "iterations",                    // Anzahl der Iterationen (aus hunterIterations)
+  "useSeeded",                    // Verwendung deterministischer RNG (true) oder echter Zufallswerte (false)   
+  "upgrades.cms.cm46",            // Construction Milestone #46
+  "upgrades.cms.cm47",            // Construction Milestone #47
+  "upgrades.cms.cm48",            // Construction Milestone #48
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -252,6 +257,13 @@ export const OVERRIDES = {
     "upgrades.inscryptions.i91",     // Inscription #91
   ],
 
+  //Construction Milestones
+  cms: [
+    "upgrades.cms.cm46",            // Construction Milestone #46
+    "upgrades.cms.cm47",            // Construction Milestone #47
+    "upgrades.cms.cm48",            // Construction Milestone #48
+  ],
+
   // Research
   researches: [
     "upgrades.researches.res81",     // Research#81
@@ -306,6 +318,7 @@ export const OVERRIDES_FLAT = [
   ...OVERRIDES.relics,
   ...OVERRIDES.inscryptions,
   ...OVERRIDES.researches,
+  ...OVERRIDES.cms,
   ...OVERRIDES.loopmods,
   ...OVERRIDES.shardMilestones,
   ...OVERRIDES.diamondSpecials,
@@ -322,6 +335,7 @@ export const OVERRIDE_CATEGORY_LABELS = {
   relics: "Relics",
   inscryptions: "Inscryptions",
   researches: "Researches",
+  cms: "Construction Milestones",
   loopmods: "Loop Mods",
   shardMilestones: "Shard Milestones",
   diamondSpecials: "Diamond Specials",
@@ -394,7 +408,6 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gadgets.wrench",   // Gadget (The Wrench of Gore)
   "upgrades.diamondcards.gaiden", // Diamond Card (Gaiden)
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
-  "upgrades.researches.res81",     // Research#81
 ];
 
 export const STATS_RESULT_LABELS = [

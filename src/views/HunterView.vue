@@ -48,12 +48,18 @@
           
           <!-- Iterations -->
           <button
-            class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-700 transition-colors"
+            class="flex items-center gap-2 px-1 py-1.5 rounded-md hover:bg-gray-700 transition-colors"
             @click="openIterationsModal"
           >
             <IconRepeat size="16" class="text-blue-400" />
             <span>{{ iterationValue }} iterations</span>
           </button>
+          
+          <!-- Seed Toggle -->
+          <SeedToggle 
+            v-model="useSeededEvaluation" 
+            :hunterId="route.params.hunterId" 
+          />
           
           <!-- Statistics -->
           <div class="hidden md:flex items-center gap-2">
@@ -408,7 +414,8 @@ import {
   IconLayoutDistributeVertical,
   IconLayoutDistributeHorizontal,
   IconFilter,
-  IconCalculator
+  IconCalculator,
+  IconSeedling
 } from '@tabler/icons-vue';
 
 import StatsModal from '../components/common/StatsModal.vue';
@@ -423,6 +430,7 @@ import BuildCardHorizontal from '@/components/builds/Views/horizontalView/BuildC
 import BuildCardMobile from '@/components/builds/Views/mobileView/BuildCardMobile.vue';
 import MobileLootFilterModal from '@/components/common/MobileLootFilterModal.vue';
 import GadgetsCostModal from '@/components/common/GadgetsCostModal.vue';
+import SeedToggle from '@/components/common/SeedToggle.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -1082,6 +1090,18 @@ watch(() => route.params.hunterId, (newHunterId) => {
 
 // Stelle displaySettings zur Verfügung (provide/inject Pattern)
 provide('displaySettings', displaySettings);
+
+// Neue reactive ref für die Seed-Einstellung
+const useSeededEvaluation = computed({
+  get: () => hunterStore.getHunterSeedSetting(route.params.hunterId),
+  set: (value) => {
+    hunterStore.saveHunterSeedSetting(route.params.hunterId, value);
+    showToastMessage(`Evaluation mode changed to ${value ? 'Seeded' : 'Random'}`, 'info', 1500);
+  }
+});
+
+// Stelle den Wert über provide/inject bereit
+provide('useSeededEvaluation', useSeededEvaluation);
 </script>
 
 <style scoped>

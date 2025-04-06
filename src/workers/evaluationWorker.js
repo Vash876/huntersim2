@@ -42,15 +42,38 @@ async function initializeWorker() {
 }
 
 /**
- * Parameter-Extraktion
+ * Parameter-Extraktion mit Unterstützung für useSeeded
  */
 function extractParamValue(storeData, hunterId, buildData, param) {
+  // Spezielle Behandlung für useSeeded-Parameter
+  if (param === 'useSeeded') {    
+    // Muss explizit prüfen, ob der Wert === false ist
+    const seedSetting = storeData.hunterSeedSettings?.[hunterId];
+    
+    // Debug-Ausgabe zur Überprüfung des Werts
+    console.log(`[SEED DEBUG] Extrahiere useSeeded für ${hunterId}:`, {
+      roher_wert: seedSetting,
+      typ: typeof seedSetting,
+      ist_false: seedSetting === false
+    });
+    
+    // Korrekte Prüfung für Boolean-Werte
+    if (seedSetting === false) {
+      return false;
+    }
+    
+    return true;
+  }
+
   // Override-Werte haben höchste Priorität
   if (buildData?.overrides && param in buildData.overrides) {
     // Spezielle Behandlung für diamondspecials.hunterloot in Overrides
     if (param === 'upgrades.diamondspecials.hunterloot') {
       const level = buildData.overrides[param] || 0;
       return 1 + level * 0.025; // Level 10 = 1.25
+    } else if (param === 'upgrades.diamondspecials.reviveboost') {
+      const level = buildData.overrides[param] || 0;
+      return level * 3; // Level 10 = 30
     }
     return buildData.overrides[param];
   }
@@ -94,6 +117,9 @@ function extractParamValue(storeData, hunterId, buildData, param) {
       if (category === 'diamondspecials' && key === 'hunterloot') {
         const level = storeData.upgrades?.[category]?.[key] || 0;
         return 1 + level * 0.025; // Level 10 = 1.25
+      } else if (category === 'diamondspecials' && key === 'reviveboost') {
+        const level = storeData.upgrades?.[category]?.[key] || 0;
+        return level * 3;
       }
       
       value = storeData.upgrades?.[category]?.[key];
@@ -105,7 +131,7 @@ function extractParamValue(storeData, hunterId, buildData, param) {
           value = storeData.upgrades?.relics?.[key.substring(1)]; // "r17" -> "17"
         }
         
-        // Format für Inscryptions könnte anders sein
+        // Format für Inscryptions 
         if (category === 'inscryptions' && key.startsWith('i')) {
           value = storeData.upgrades?.inscryptions?.[key.substring(1)]; // "i31" -> "31"
           // Oder möglicherweise als "inscryp31"
@@ -114,7 +140,7 @@ function extractParamValue(storeData, hunterId, buildData, param) {
           }
         }
         
-        // Format für gems_nodes könnte anders sein
+        // Format für gems_nodes
         if (category === 'gems_nodes') {
           // Beispiel: "attraction_gem3" -> "attraction.nodes.gem3"
           const nodeParts = key.split('_');
@@ -227,9 +253,7 @@ function parseEvalResults(evalResults, hunterId) {
 /**
  * Evaluiert einen Build
  */
-async function evaluate(hunterId, buildData, storeData) {
-  // Keine Initialisierung mehr nötig
-  
+async function evaluate(hunterId, buildData, storeData) {  
   const evalFn = evalFunctions[hunterId];
   const paramConfig = paramsConfig[hunterId];
   

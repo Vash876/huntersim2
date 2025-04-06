@@ -68,6 +68,7 @@ export const ATTRIBUTE_MIN_VALUE = {
 export const HUNTER_UPGRADES = {
   gadgets: ["anchor"],
   researches: ["res81"],
+  cms: ["cm46", "cm47", "cm48"],
   diamondspecials: ["hunterloot", "reviveboost"],
   iap: ["travpack"],
   ultima: ["ulti"],
@@ -147,8 +148,10 @@ export const EVAL_PARAMS = [
   "lvl1",                         // Alternativer Level-Wert
   "time1",                        // Alternativer Time-Wert
   
-  // Recherchen - mit "upgrades." Präfix
-  "upgrades.researches.res81"      // Research#81
+  "upgrades.researches.res81",      // Research#81
+  "upgrades.cms.cm46",              // Construction Milestone 46
+  "upgrades.cms.cm47",              // Construction Milestone 47
+  "upgrades.cms.cm48",              // Construction Milestone 48
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -202,13 +205,26 @@ export const OVERRIDES = {
     "upgrades.researches.res81",     // Research#81
   ],
 
+  // Construction Milestones
+  cms: [
+    "upgrades.cms.cm46",             // CM46
+    "upgrades.cms.cm47",             // CM47
+    "upgrades.cms.cm48",             // CM48
+  ],
+
+  diamondSpecials: [
+    "upgrades.diamondspecials.reviveboost", // Revive Cooldown
+  ],
+
 };
 
-// Für den Fall, dass du auch ein flaches Array benötigst
+// flaches Array für alle Overrides
 export const OVERRIDES_FLAT = [
   ...OVERRIDES.baseStats,
   ...OVERRIDES.gadgets,
   ...OVERRIDES.researches,
+  ...OVERRIDES.cms,
+  ...OVERRIDES.diamondSpecials,
 ];
 
 // Kategorie-Namen für das UI
@@ -216,6 +232,8 @@ export const OVERRIDE_CATEGORY_LABELS = {
   baseStats: "Base Stats",
   gadgets: "Gadgets",
   researches: "Researches",
+  cms: "Construction Milestones",
+  diamondSpecials: "Diamond Specials",
 };
 
 export const BUILD_CODE_PARAMS = [
@@ -253,7 +271,6 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
   "stage",          // Highest Stage Reached
   "upgrades.gadgets.anchor",  // Gadget (The Anchor of Ages)
-  "upgrades.researches.res81", // Research#81
 ];
 
 export const STATS_RESULT_LABELS = [

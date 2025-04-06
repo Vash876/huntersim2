@@ -143,6 +143,11 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore }) {
     // Aktuelle Werte für Upgrades holen
     const upgradeValues = getCurrentUpgradeValues(upgradeParams, hunterStore);
     
+    // Seed-Einstellung holen
+    const useSeeded = hunterStore.getHunterSeedSetting ? 
+      hunterStore.getHunterSeedSetting(hunterId) :
+      hunterStore.hunterSeedSettings?.[hunterId] !== false;
+    
     // Relevante Build-Daten extrahieren
     const relevantBuildData = {
       level: buildData.level || 0,
@@ -154,7 +159,8 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore }) {
     // Relevante Store-Daten extrahieren
     const relevantStoreData = {
       iterations: hunterStore.hunterIterations?.[hunterId] || 1000,
-      hunterStats: sortObjectProperties(hunterStore.hunterStats?.[hunterId] || {})
+      hunterStats: sortObjectProperties(hunterStore.hunterStats?.[hunterId] || {}),
+      useSeeded: useSeeded // Hier die Seed-Einstellung hinzufügen
     };
     
     // Alle relevanten Daten zum Hashing zusammenfassen
@@ -162,7 +168,7 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore }) {
       hunterId,
       buildData: relevantBuildData,
       storeData: relevantStoreData,
-      upgrades: upgradeValues // Explizit die Upgrade-Werte einbeziehen
+      upgrades: upgradeValues
     };
     
     // Hash des JSON-Strings als Cache-Key
@@ -170,7 +176,7 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore }) {
     const hash = stringToHash(jsonStr);
     
     // Debug-Log
-    console.log(`[Cache] Generated cache key for ${buildData.name || 'unnamed'}: ${hash}`);
+    console.log(`[Cache] Generated cache key for ${buildData.name || 'unnamed'}: ${hash}, useSeeded=${useSeeded}`);
     
     return hash;
   } catch (error) {
@@ -227,6 +233,20 @@ export function simplifyResultForStorage(result) {
  */
 export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
   try {
+    // Neue Builds sofort evaluieren, ohne den Cache für andere zu beeinflussen
+    if (buildData.isNew === true) {
+      console.log(`[Cache] New build detected, will evaluate directly:`, buildData.name || 'unnamed');
+      
+      // Das Flag entfernen, damit der Build beim nächsten Mal normal behandelt wird
+      delete buildData.isNew;
+      
+      return {
+        shouldEvaluate: true,
+        cachedResult: null,
+        cacheKey: `new_build_${Date.now()}`
+      };
+    }
+    
     // Generiere den Cache-Schlüssel
     const cacheKey = await generateCacheKey({ hunterId, buildData, hunterStore });
     

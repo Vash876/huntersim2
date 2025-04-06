@@ -117,6 +117,11 @@ function sanitizeForWorker(obj) {
  */
 export async function evaluateBuildWithWorker(hunterId, buildData, store, progressCallback = null) {
   // Hole einen verfügbaren Worker aus dem Pool
+  console.log("Store input check:", {
+    hasHunterSeedSettings: !!store?.hunterSeedSettings,
+    hunterSeedSettings: store?.hunterSeedSettings,
+    borgeSeeded: store?.hunterSeedSettings?.borge
+  });
   const { worker, api, release } = await workerPool.getAvailableWorker();
   
   try {
@@ -134,7 +139,8 @@ export async function evaluateBuildWithWorker(hunterId, buildData, store, progre
     const storeData = {
       hunterStats: sanitizeForWorker(store?.hunterStats || {}),
       upgrades: sanitizeForWorker(store?.upgrades || {}),
-      hunterIterations: sanitizeForWorker(store?.hunterIterations || {})
+      hunterIterations: sanitizeForWorker(store?.hunterIterations || {}),
+      hunterSeedSettings: sanitizeForWorker(store?.hunterSeedSettings || {})
     };
 
     // Die Iterations-Informationen

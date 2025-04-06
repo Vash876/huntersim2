@@ -69,6 +69,11 @@ const routes = [
     component: () => import('../views/upgrades/Milestones.vue')
   },
   {
+    path: '/upgrades/cms',
+    name: 'Construction Milestones',
+    component: () => import('../views/upgrades/ConstructionMilestones.vue')
+  },
+  {
     path: '/upgrades/diamondspecials',
     name: 'Diamond Specials',
     component: () => import('../views/upgrades/DiamondSpecials.vue')
@@ -91,12 +96,18 @@ const routes = [
 
 
   // Tools Routes
-  /*/ Other Routes
+  /*/ Other Routes*/
   {
     path: '/tools/tr-planner',
     name: 'TR Planner',
     component: () => import('../views/tools/TRPlanner.vue'),
-  },*/
+  },
+  {
+    path: '/tools/farm-planner',
+    name: 'Farm Planner',
+    component: () => import('../views/tools/FarmPlanner.vue'),
+  },
+
 
   // Settings Route
   {

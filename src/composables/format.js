@@ -70,6 +70,11 @@ export function formatGrowth(value, includeSign = true) {
     return '0%';
   }
   
+  // Für Werte sehr nahe bei Null, immer 0% anzeigen
+  if (Math.abs(value) < 0.0001) {
+    return '0%';
+  }
+  
   // Formatieren als Prozentsatz
   const percentage = value * 100;
   const sign = includeSign && percentage > 0 ? '+' : '';
@@ -106,4 +111,83 @@ export function formatTimespan(hours) {
       return `${days}d ${remainingHours}h`;
     }
   }
+}
+
+/**
+ * Parst einen String mit Suffixen (k, m, b, etc.) in eine Zahl
+ * 
+ * @param {string} input - Der zu parsende String
+ * @returns {number|null} - Die geparste Zahl oder null bei ungültigem Input
+ */
+export function parseNumberWithSuffix(input) {
+  if (!input || typeof input !== 'string') {
+    return 0;
+  }
+  
+  const trimmedInput = input.trim();
+  
+  // Nur Ziffern -> direkter Wert
+  if (/^\d+(\.\d+)?$/.test(trimmedInput)) {
+    return parseFloat(trimmedInput);
+  }
+  
+  // Suffix-Notation wie "1.5b" oder "2k"
+  const suffixMatch = trimmedInput.match(/^(\d+(\.\d+)?)([kmbtqsond])([aeixpu])?$/i);
+  if (suffixMatch) {
+    const num = parseFloat(suffixMatch[1]);
+    const primarySuffix = suffixMatch[3].toLowerCase();
+    const secondarySuffix = suffixMatch[4]?.toLowerCase() || '';
+    
+    const suffixMap = {
+      'k': 1e3,
+      'm': 1e6,
+      'b': 1e9,
+      't': 1e12,
+      'q': secondarySuffix === 'a' ? 1e15 : secondarySuffix === 'i' || secondarySuffix === 'u' ? 1e18 : 1e15,
+      's': secondarySuffix === 'x' ? 1e21 : secondarySuffix === 'p' ? 1e24 : 1e21,
+      'o': secondarySuffix === 'c' ? 1e27 : 1e27,
+      'n': 1e30,
+      'd': 1e33
+    };
+    
+    return num * (suffixMap[primarySuffix] || 1);
+  }
+  
+  return null; // Ungültiges Format
+}
+
+/**
+ * Generiert eine schöne Anzeige für Zahlen mit Suffix-Notation
+ * 
+ * @param {number} value - Der umzuwandelnde Wert
+ * @returns {string} - Formatierter String mit Suffix
+ */
+export function formatSuffixNotation(value) {
+  if (typeof value !== 'number' || isNaN(value)) {
+    return '0';
+  }
+  
+  if (value < 1000) return value.toString();
+  
+  const suffixPairs = [
+    [1e33, 'd'],
+    [1e30, 'n'],
+    [1e27, 'oc'],
+    [1e24, 'sp'],
+    [1e21, 'sx'],
+    [1e18, 'qi'],
+    [1e15, 'qa'],
+    [1e12, 't'],
+    [1e9, 'b'],
+    [1e6, 'm'],
+    [1e3, 'k']
+  ];
+  
+  for (const [threshold, suffix] of suffixPairs) {
+    if (value >= threshold) {
+      return (value / threshold).toFixed(2).replace(/\.?0+$/, '') + suffix;
+    }
+  }
+  
+  return value.toString();
 }
