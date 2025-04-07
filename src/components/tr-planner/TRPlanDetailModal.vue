@@ -547,6 +547,12 @@ const allImprovedBoosts = computed(() => {
     boostsByKey[boost.key] = boost;
   });
   
+  // Sammle die Startwerte aus den updatedStats oder currentStats
+  const initialValues = { 
+    ...(props.currentStats || {}),
+    ...(plan.value.updatedStats || {})
+  };
+  
   // Setze die Ausgangswerte aus dem ersten TR (targetLevel als Startpunkt)
   if (plan.value.boosts && Array.isArray(plan.value.boosts)) {
     plan.value.boosts.forEach(boost => {
@@ -557,7 +563,7 @@ const allImprovedBoosts = computed(() => {
           boostedStats.set(boost.key, {
             key: boost.key,
             label: boost.label || boost.key,
-            startValue: boost.targetLevel,  // Wichtig: Der Startwert ist der targetLevel aus dem ersten TR
+            startValue: boost.targetLevel,  // Startwert nach dem ersten TR
             endValue: boost.targetLevel,    // Initial der gleiche Wert
             category: boostInfo.category
           });
@@ -578,10 +584,13 @@ const allImprovedBoosts = computed(() => {
             // Falls ein Boost nur in der Chain auftaucht, aber nicht im ersten TR
             const boostInfo = boostsByKey[boost.key];
             if (boostInfo && boostInfo.category !== 'time') {
+              // Hier ist die Änderung: Hole den Startwert aus initialValues oder setze 0
+              const startValue = initialValues[boost.key] || 0;
+              
               boostedStats.set(boost.key, {
                 key: boost.key,
                 label: boost.label || boost.key,
-                startValue: boost.currentLevel,
+                startValue: startValue, // FIX: Verwende den Wert aus initialValues
                 endValue: boost.targetLevel,
                 category: boostInfo.category
               });
@@ -592,9 +601,21 @@ const allImprovedBoosts = computed(() => {
     });
   }
   
+  // Debug-Ausgabe für problematische Stats
+  const problematicStats = ['shipinstalls', 'campaigns', 'boonHLevel', 'ms0'];
+  problematicStats.forEach(key => {
+    if (boostedStats.has(key)) {
+      console.log(`Stats-Progression für ${key}: ${boostedStats.get(key).startValue} → ${boostedStats.get(key).endValue}`);
+    } else {
+      console.log(`Stat ${key} nicht in boostedStats gefunden`);
+    }
+  });
+  
   // Konvertiere die Map in ein Array, filtere nach verbesserten Boosts und sortiere
   for (const boost of boostedStats.values()) {
-    if (boost.endValue > boost.startValue) {
+    // Nur Boosts einschließen, bei denen eine Verbesserung stattfindet
+    // ODER die einen Wert > 0 haben (damit auch vorhandene Stats angezeigt werden)
+    if (boost.endValue > boost.startValue || boost.endValue > 0) {
       result.push(boost);
     }
   }

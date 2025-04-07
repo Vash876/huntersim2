@@ -1104,9 +1104,75 @@ function getStepOrbsAvailable(step) {
 
 // Anforderung erfüllt?
 function getStepRequirementMet(step, stepIndex) {
+  // Debug-Informationen sammeln
   const orbGains = getStepOrbGains(step);
   const orbReq = getStepOrbRequirement(step, stepIndex);
-  return orbGains >= orbReq;
+  
+  // Detaillierte Logging-Informationen
+  console.log(`%c[TR${stepIndex + 1} Requirement Check]`, 'background: #3e4c59; color: white; padding: 2px 5px; border-radius: 3px;');
+  console.log(`  TR #${step.stats.trCount || trCount.value + stepIndex} (Step Index: ${stepIndex})`);
+  console.log(`  Orb Requirement: ${orbReq.toLocaleString()}`);
+  console.log(`  Orb Gains: ${orbGains.toLocaleString()}`);
+  console.log(`  All-Time Orbs: ${(step.stats.allTimeOrbs || 0).toLocaleString()}`);
+  console.log(`  Hours in TR: ${(step.targetLevels['hoursInTR'] || step.stats.hoursInTR || 0)}`);
+  console.group('  Boost Levels:');
+  
+  // Alle relevanten Orb-Boosts loggen
+  const orbCalcBoosts = allBoosts.filter(b => b.orbcalc);
+  orbCalcBoosts.forEach(boost => {
+    const key = boost.key;
+    const targetLevel = step.targetLevels[key] !== undefined ? step.targetLevels[key] : step.stats[key] || 0;
+    const multiplier = getBoostMultiplier(boost, targetLevel, {...step.stats, ...step.targetLevels});
+    
+    if (boost.type === 'boolean') {
+      const isActive = step.targetBools[key] !== undefined ? step.targetBools[key] : !!(step.stats[key] || 0);
+      console.log(`    - ${key}: ${isActive ? 'ON' : 'OFF'} (${multiplier ? '×' + multiplier.toFixed(2) : 'N/A'})`);
+    } else {
+      console.log(`    - ${key}: ${targetLevel} (${multiplier ? '×' + multiplier.toFixed(2) : 'N/A'})`);
+    }
+  });
+  console.groupEnd();
+  
+  // Ergebnis der Prüfung
+  const meetsRequirement = orbGains >= orbReq;
+  console.log(`  Result: ${meetsRequirement ? '✅ MEETS REQUIREMENT' : '❌ DOES NOT MEET REQUIREMENT'} (Difference: ${(orbGains - orbReq).toLocaleString()})`);
+  console.log('\n'); // Leerzeile für bessere Lesbarkeit
+
+  return meetsRequirement;
+}
+
+// Hilfsfunktion zum Abrufen des Multiplikators für einen Boost
+function getBoostMultiplier(boost, level, stats) {
+  if (!boost || boost.multiplier === undefined) return null;
+  
+  if (boost.type === 'boolean') {
+    // Boolean boosts
+    const isActive = stats[boost.key] || false;
+    if (typeof boost.multiplier === 'number') {
+      return isActive ? boost.multiplier : 1;
+    } else if (typeof boost.multiplier === 'function') {
+      try {
+        return isActive ? boost.multiplier(1, stats) : 1;
+      } catch (e) {
+        console.error(`Error calculating multiplier for ${boost.key}:`, e);
+        return null;
+      }
+    }
+  } else {
+    // Numeric boosts
+    if (typeof boost.multiplier === 'number') {
+      return boost.multiplier;
+    } else if (typeof boost.multiplier === 'function') {
+      try {
+        return boost.multiplier(level, stats);
+      } catch (e) {
+        console.error(`Error calculating multiplier for ${boost.key}:`, e);
+        return null;
+      }
+    }
+  }
+  
+  return null;
 }
 
 // Hilfsfunktionen für Multiplier-Anzeige für einen bestimmten Schritt
