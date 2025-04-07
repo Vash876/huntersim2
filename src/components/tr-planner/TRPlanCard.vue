@@ -86,7 +86,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, watch, ref } from 'vue';
 import { 
   IconCalendarEvent, 
   IconEdit, 
@@ -108,14 +108,31 @@ const props = defineProps({
   }
 });
 
-// TR Count (1 + Anzahl der TR-Chain Steps)
+// Debug-Update für die Plan-Änderungen
+watch(() => props.plan, (newPlan) => {
+  console.log("Plan updated:", newPlan.name);
+  // Forciere eine Neuberechnung aller computed-Werte
+  forceUpdateCounter.value++;
+}, { deep: true });
+
+// Verwende eine Counter-Variable, um bei Änderungen eine Neuberechnung zu erzwingen
+const forceUpdateCounter = ref(0);
+
+// TR Count (1 + Anzahl der TR-Chain Steps) - mit Reaktivität sichergestellt
 const totalTRs = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
   // Basis-TR
   let count = 1;
   
   // TRs aus der TR-Chain
   if (props.plan.trChain && Array.isArray(props.plan.trChain)) {
-    count += props.plan.trChain.length;
+    // Zähle nur gültige Einträge (verhindert Fehler durch leere oder ungültige Einträge)
+    count += props.plan.trChain.filter(step => step && typeof step === 'object').length;
+    
+    // Debug-Info
+    console.log(`Plan ${props.plan.name}: ${count} TRs gefunden (1 + ${props.plan.trChain.filter(step => step).length})`);
   }
   
   return count;
@@ -123,6 +140,9 @@ const totalTRs = computed(() => {
 
 // Totale Orb-Gewinne
 const totalOrbGains = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
   let total = 0;
   
   // Orbs vom ersten TR
@@ -133,7 +153,7 @@ const totalOrbGains = computed(() => {
   // Orbs aus der TR-Chain
   if (props.plan.trChain && Array.isArray(props.plan.trChain)) {
     props.plan.trChain.forEach(step => {
-      if (step.results && step.results.orbGains) {
+      if (step && step.results && step.results.orbGains) {
         total += step.results.orbGains;
       }
     });
@@ -144,6 +164,9 @@ const totalOrbGains = computed(() => {
 
 // Totale Fragment-Gewinne
 const totalFragGains = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
   let total = 0;
   
   // Frags vom ersten TR
@@ -154,7 +177,7 @@ const totalFragGains = computed(() => {
   // Frags aus der TR-Chain
   if (props.plan.trChain && Array.isArray(props.plan.trChain)) {
     props.plan.trChain.forEach(step => {
-      if (step.results && step.results.campaignFragGains) {
+      if (step && step.results && step.results.campaignFragGains) {
         total += step.results.campaignFragGains;
       }
     });
@@ -165,6 +188,9 @@ const totalFragGains = computed(() => {
 
 // Start- und Endzeit des Plans
 const planStartDate = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
   if (!props.plan.trStartDate || !props.plan.trStartTime) return null;
   
   const [year, month, day] = props.plan.trStartDate.split('-').map(Number);
@@ -175,6 +201,9 @@ const planStartDate = computed(() => {
 
 // Formatiertes Enddatum für die Anzeige
 const formatPlanEndDate = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
   if (!planEndDate.value) return 'Unknown end date';
   
   const options = { 
@@ -189,6 +218,9 @@ const formatPlanEndDate = computed(() => {
 });
 
 const planEndDate = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
   if (!planStartDate.value) return null;
   
   // Gesamtstunden berechnen
@@ -203,9 +235,11 @@ const planEndDate = computed(() => {
   // Stunden aus der TR-Chain
   if (props.plan.trChain && Array.isArray(props.plan.trChain)) {
     props.plan.trChain.forEach(step => {
-      const chainHoursBoost = step.boosts?.find(b => b.key === 'hoursInTR');
-      if (chainHoursBoost) {
-        totalHours += chainHoursBoost.targetLevel || 0;
+      if (step) {
+        const chainHoursBoost = step.boosts?.find(b => b.key === 'hoursInTR');
+        if (chainHoursBoost) {
+          totalHours += chainHoursBoost.targetLevel || 0;
+        }
       }
     });
   }
@@ -219,6 +253,9 @@ const planEndDate = computed(() => {
 
 // Formatierung der Dauer
 const formatDuration = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
   if (!planStartDate.value || !planEndDate.value) return 'N/A';
   
   const diffMs = planEndDate.value - planStartDate.value;
@@ -242,6 +279,9 @@ const formatDuration = computed(() => {
 
 // Progress-Berechnung basierend auf der Zeit
 const progressPercentage = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
   // Wenn Start- oder Enddatum fehlt, kein Progress
   if (!planStartDate.value || !planEndDate.value) return 0;
   
@@ -263,6 +303,9 @@ const progressPercentage = computed(() => {
 
 // Progress Status Text
 const progressStatus = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
   if (!planStartDate.value || !planEndDate.value) return 'No timing info';
   
   const now = new Date();
@@ -315,6 +358,9 @@ const progressStatus = computed(() => {
 
 // Farbe des Fortschrittsbalkens basierend auf dem Status
 const progressColor = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
   if (!planStartDate.value || !planEndDate.value) return 'text-gray-400';
   
   const now = new Date();
@@ -331,17 +377,11 @@ const progressColor = computed(() => {
   return 'text-green-400';
 });
 
-// Formatiere das Datum für die Anzeige
-function formatDate(dateString) {
-  if (!dateString) return '';
-  
-  const date = new Date(dateString);
-  const options = { year: 'numeric', month: 'short', day: 'numeric' };
-  return date.toLocaleDateString(undefined, options);
-}
-
-// Formatiertes Startdatum für die Anzeige
+// Formatierte Zeit für die Anzeige
 const formatPlanStartDate = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
   if (!props.plan.trStartDate) return 'No start date';
   
   // Falls wir Datum und Zeit haben

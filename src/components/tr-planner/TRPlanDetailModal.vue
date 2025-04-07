@@ -41,85 +41,85 @@
       </div>
       
       <div v-else>
-<!-- Plan Overview mit festgelegten prozentuellen Breiten -->
-<div class="p-4 bg-gray-750/60 border-b border-gray-700">
-  <h3 class="text-sm font-bold mb-3 text-blue-300">Plan Overview</h3>
-  
-  <div class="bg-gray-750/60 rounded-lg border border-gray-700 shadow-lg p-3">
-    <div class="flex flex-wrap w-full">
-      <!-- TR Information - 20% Breite -->
-      <div class="w-full sm:w-1/5 p-2">
-        <div class="flex items-center">
-          <div class="bg-blue-900/30 p-2 rounded-lg mr-3">
-            <IconRepeat size="20" class="text-blue-400" />
-          </div>
-          <div>
-            <div class="text-xs text-gray-400">TR Progress</div>
-            <div class="text-sm text-white font-medium">
-              {{ plan.updatedStats?.trCount || currentTrCount }} → {{ (plan.updatedStats?.trCount || currentTrCount) + totalTRsInPlan }}
+        <!-- Plan Overview mit festgelegten prozentuellen Breiten -->
+        <div class="p-4 bg-gray-750/60 border-b border-gray-700">
+          <h3 class="text-sm font-bold mb-3 text-blue-300">Plan Overview</h3>
+          
+          <div class="bg-gray-750/60 rounded-lg border border-gray-700 shadow-lg p-3">
+            <div class="flex flex-wrap w-full">
+              <!-- TR Information - 20% Breite -->
+              <div class="w-full sm:w-1/5 p-2">
+                <div class="flex items-center">
+                  <div class="bg-blue-900/30 p-2 rounded-lg mr-3">
+                    <IconRepeat size="20" class="text-blue-400" />
+                  </div>
+                  <div>
+                    <div class="text-xs text-gray-400">TR Progress</div>
+                    <div class="text-sm text-white font-medium">
+                      {{ plan.updatedStats?.trCount || currentTrCount }} → {{ (plan.updatedStats?.trCount || currentTrCount) + totalTRsInPlan }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Total Orbs - 25% Breite -->
+              <div class="w-full sm:w-1/4 p-2">
+                <div class="flex items-center">
+                  <div class="bg-green-900/30 p-2 rounded-lg mr-3">
+                    <IconCircle size="20" class="text-green-400" />
+                  </div>
+                  <div>
+                    <div class="text-xs text-gray-400">All-Time Orbs</div>
+                    <div class="text-sm text-white font-medium">
+                      {{ formatNumber(baseAllTimeOrbs) }} → {{ formatNumber(finalAllTimeOrbs) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Timeline - 20% Breite -->
+              <div class="w-full sm:w-1/5 p-2">
+                <div class="flex items-center">
+                  <div class="bg-purple-900/30 p-2 rounded-lg mr-3">
+                    <IconCalendarEvent size="20" class="text-purple-400" />
+                  </div>
+                  <div>
+                    <div class="text-xs text-gray-400">Timeline</div>
+                    <div class="text-sm text-white font-medium">
+                      {{ formatDate(planStartDate, false) }} - {{ formatDate(planEndDate, false) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Duration - 15% Breite -->
+              <div class="w-full sm:w-[15%] p-2">
+                <div class="flex items-center">
+                  <div class="bg-indigo-900/30 p-2 rounded-lg mr-3">
+                    <IconClock size="20" class="text-indigo-400" />
+                  </div>
+                  <div>
+                    <div class="text-xs text-gray-400">Duration</div>
+                    <div class="text-sm text-white font-medium">{{ formatDuration }}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Progress - 20% Breite -->
+              <div class="w-full sm:w-1/5 p-2">
+                <div class="flex-grow">
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs text-gray-400">Progress</span>
+                    <span class="text-xs" :class="progressColor">{{ progressStatus }}</span>
+                  </div>
+                  <div class="w-full bg-gray-700 rounded-full h-1.5">
+                    <div class="h-1.5 rounded-full" :class="progressBarColor" :style="{ width: `${progressPercentage}%` }"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      
-      <!-- Total Orbs - 25% Breite -->
-      <div class="w-full sm:w-1/4 p-2">
-        <div class="flex items-center">
-          <div class="bg-green-900/30 p-2 rounded-lg mr-3">
-            <IconCircle size="20" class="text-green-400" />
-          </div>
-          <div>
-            <div class="text-xs text-gray-400">All-Time Orbs</div>
-            <div class="text-sm text-white font-medium">
-              {{ formatNumber(baseAllTimeOrbs) }} → {{ formatNumber(finalAllTimeOrbs) }}
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Timeline - 20% Breite -->
-      <div class="w-full sm:w-1/5 p-2">
-        <div class="flex items-center">
-          <div class="bg-purple-900/30 p-2 rounded-lg mr-3">
-            <IconCalendarEvent size="20" class="text-purple-400" />
-          </div>
-          <div>
-            <div class="text-xs text-gray-400">Timeline</div>
-            <div class="text-sm text-white font-medium">
-              {{ formatDate(planStartDate, false) }} - {{ formatDate(planEndDate, false) }}
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Duration - 15% Breite -->
-      <div class="w-full sm:w-[15%] p-2">
-        <div class="flex items-center">
-          <div class="bg-indigo-900/30 p-2 rounded-lg mr-3">
-            <IconClock size="20" class="text-indigo-400" />
-          </div>
-          <div>
-            <div class="text-xs text-gray-400">Duration</div>
-            <div class="text-sm text-white font-medium">{{ formatDuration }}</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Progress - 20% Breite -->
-      <div class="w-full sm:w-1/5 p-2">
-        <div class="flex-grow">
-          <div class="flex justify-between items-center mb-1">
-            <span class="text-xs text-gray-400">Progress</span>
-            <span class="text-xs" :class="progressColor">{{ progressStatus }}</span>
-          </div>
-          <div class="w-full bg-gray-700 rounded-full h-1.5">
-            <div class="h-1.5 rounded-full" :class="progressBarColor" :style="{ width: `${progressPercentage}%` }"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
         
         <!-- TR Chain Overview -->
         <div class="p-4 border-b border-gray-700">
@@ -239,7 +239,7 @@
             </div>
             <div class="flex gap-2">
               <button
-                @click="$emit('delete', plan.id)"
+                @click="handleDelete(plan.id)"
                 class="px-3 py-1.5 bg-red-700 hover:bg-red-600 text-white rounded-md text-xs flex items-center gap-1.5"
               >
                 <IconTrash size="14" />
@@ -547,7 +547,7 @@ const allImprovedBoosts = computed(() => {
     boostsByKey[boost.key] = boost;
   });
   
-  // Setze die Ausgangswerte aus dem ersten TR
+  // Setze die Ausgangswerte aus dem ersten TR (targetLevel als Startpunkt)
   if (plan.value.boosts && Array.isArray(plan.value.boosts)) {
     plan.value.boosts.forEach(boost => {
       if (boost.type === 'number') {
@@ -557,8 +557,8 @@ const allImprovedBoosts = computed(() => {
           boostedStats.set(boost.key, {
             key: boost.key,
             label: boost.label || boost.key,
-            startValue: boost.currentLevel,  // Wichtig: Der Startwert ist der currentLevel aus dem ersten TR
-            endValue: boost.targetLevel,     // Initial der Zielwert des ersten TR
+            startValue: boost.targetLevel,  // Wichtig: Der Startwert ist der targetLevel aus dem ersten TR
+            endValue: boost.targetLevel,    // Initial der gleiche Wert
             category: boostInfo.category
           });
         }
@@ -867,8 +867,13 @@ function getChainStepRequirement(chainStep, index) {
 }
 
 function handleEdit(planId) {
-  emit('close'); // Zuerst schließen
-  emit('edit', planId); // Dann bearbeiten
+  emit('close'); 
+  emit('edit', planId); 
+}
+
+function handleDelete(planId) {
+  emit('delete', planId);
+  emit('close');
 }
 </script>
 

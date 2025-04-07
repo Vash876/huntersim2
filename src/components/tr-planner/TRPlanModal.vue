@@ -387,7 +387,7 @@
                         <td class="px-3 py-2.5 text-center font-mono text-green-400">
                           {{ formatNumber(getStepOrbGains(trSteps[0])) }}
                         </td>
-                        <td class="px-3 py-2.5 text-center font-mono text-blue-400">
+                        <td class="px-3 py-2.5 text-center font-mono text-orange-400">
                           {{ formatNumber(getStepFragGains(trSteps[0])) }}
                         </td>
                         <td class="px-3 py-2.5 text-center">

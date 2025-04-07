@@ -9,6 +9,7 @@ const changelog =
       'Added Construction Milestones',
       'Implemented Seeded/Random evaluation toggle for more accurate build comparisons',
       'Improved Build Creator confirmation dialog to only show when changes have been made',
+      'Fixed Revive Boost not getting applied correctly in the Build Evaluation',
       'Added new Tools section:',
       '- TR Planner: Comprehensive replacement for the Shorts Planner with enhanced QoL features, visual progress indicators, and advanced optimization options',
     ]

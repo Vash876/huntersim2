@@ -1,8 +1,8 @@
 <template>
   <div class="flex items-center gap-2 px-1 py-1.5 rounded-md hover:bg-gray-700 transition-colors">
     <div class="flex items-center">
-      <IconSeedling 
-        :class="modelValue ? 'text-green-400' : 'text-gray-400'" 
+      <IconArrowsShuffle 
+        class="text-green-400" 
         size="16" 
       />
       <span class="ml-2">{{ modelValue ? 'Seeded' : 'Random' }}</span>
@@ -48,7 +48,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
-import { IconSeedling, IconHelp } from '@tabler/icons-vue';
+import { IconArrowsShuffle, IconHelp } from '@tabler/icons-vue';
 
 const props = defineProps({
   modelValue: {

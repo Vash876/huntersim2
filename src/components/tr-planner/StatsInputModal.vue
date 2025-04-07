@@ -13,7 +13,7 @@
         <div class="flex justify-between items-center">
           <h2 class="text-base sm:text-lg font-bold text-white truncate mr-2">
             <span class="text-blue-400">TR Planner</span>
-            <span class=""> - Current Stats</span>
+            <span class=""> - Max Level Stats</span>
           </h2>
           <div class="flex items-center gap-2">
             <button 
@@ -35,8 +35,8 @@
       <!-- Description Area -->
       <div class="p-3 bg-gray-750/60 border-b border-gray-700">
         <p class="text-xs text-gray-300">
-          These values will be automatically applied to new plans. 
-          Maxed Stats will be hidden in plan creation but still included in all calculations.
+          Set your maxed-out Stats here. These values will be automatically applied to new plans. 
+          Maxed Stats will be hidden in the plan creation interface to reduce clutter, but they will still be included in all calculations.
         </p>
       </div>
       
@@ -209,9 +209,14 @@ const valueControls = ref([]);
 const filteredBoostsByCategory = computed(() => {
   return boostsByCategory
     .map(category => {
-      // Alle Boosts außer hoursInTR und loopMods
+      // Filter: Nur Boosts mit max Level oder Boolean-Typ anzeigen
       const filteredBoosts = category.boosts.filter(boost => 
-        boost.key !== 'hoursInTR' && boost.key !== 'loopMods'
+        // Ausschließen: hoursInTR und loopMods
+        boost.key !== 'hoursInTR' && boost.key !== 'loopMods' &&
+        // Einschließen: Alle Boolean-Boosts
+        (boost.type === 'boolean' ||
+        // Einschließen: Alle numerischen Boosts mit max-Property
+        (boost.type === 'number'))
       );
       
       return {
