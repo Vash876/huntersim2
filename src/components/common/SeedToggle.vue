@@ -40,6 +40,8 @@
           <span class="font-semibold">Seeded (Recommended):</span> Uses deterministic RNG for consistent results across evaluations. Great for comparing builds.
           <br><br>
           <span class="font-semibold">Random:</span> Uses true randomness. Results may vary between evaluations but better represents real gameplay variance.
+          <br><br>
+          <i>Switching from Seeded back to Random will force a re-evaluation with new random values.</i>
         </p>
       </div>
     </div>

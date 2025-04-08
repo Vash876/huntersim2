@@ -7,6 +7,7 @@ const changelog =
     baseVersion: 'Kylenator\'s Sheet v1.2.6',
     changes: [
       'Added Construction Milestones',
+      'Changed Inscryption #87 to be multiplicative',
       'Implemented Seeded/Random evaluation toggle for more accurate build comparisons',
       'Improved Build Creator confirmation dialog to only show when changes have been made',
       'Fixed Revive Boost not getting applied correctly in the Build Evaluation',
