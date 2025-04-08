@@ -65,7 +65,7 @@ var getBaseStats = ()=>{
     return {
         maxHp: (43+Number(i3)*6+Number(i27)*24+(2.5+Math.floor(hp/5)*.01)*hp)*gadgetMulti*(1+.03*r4)*(Boolean(card)?1.03:1)*(Boolean(creaGN1)?1.2:1)*(Boolean(creaGN2)?1.02:1)*(Boolean(creaGN3)?1+(Math.max(0,(Number(lvl)-39)*.015)):1)*(1+Number(i60)*.03)*(1+.05*Number(i84)),
         hp: 43+(3+Math.floor(hp/5)*.06)*hp*gadgetMulti,
-        atk: (3+Number(i13)+2*Number(impacts)+(.5+Math.floor(atk/10)*.01)*atk)*gadgetMulti*(1+.03*r16)*(Boolean(innoGN3)?1.03:1)*(Boolean(card)?1.03:1)*(Boolean(creaGN2)?1.02:1)*(Boolean(creaGN3)?1+(Math.max(0,(Number(lvl)-39)*.01)):1)*(1+Number(i60)*.03)*(1+.05*Number(i87)),
+        atk: (3+Number(i13)+2*Number(impacts)+(.5+Math.floor(atk/10)*.01)*atk)*gadgetMulti*(1+.03*r16)*(Boolean(innoGN3)?1.03:1)*(Boolean(card)?1.03:1)*(Boolean(creaGN2)?1.02:1)*(Boolean(creaGN3)?1+(Math.max(0,(Number(lvl)-39)*.01)):1)*(1+Number(i60)*.03)*Math.pow(1.05,Number(i87)),
         regen: (.02+.04*Number(ylith)+(.03+Math.floor(regen/30)*.01)*regen)*gadgetMulti*(Boolean(card)?1.03:1)*(Boolean(creaGN2)?1.02:1)*(Boolean(creaGN3)?1+(Math.max(0,(Number(lvl)-39)*.005)):1),
         dr: .0144*dr+(Boolean(creaGN2)?.02:0)+Number(i24)*.004+Number(i91)*.002,
         evade: .0034*evade+.01,

@@ -94,7 +94,7 @@
           <div class="bg-gray-750/60 rounded-md p-2 border border-transparent hover:border-gray-600">
             <div class="flex flex-col">
               <label class="text-xs font-medium text-gray-300 mb-1.5">TR Count</label>
-              <div class="w-full flex items-center justify-center h-[33px]">
+              <div class="w-full flex items-center justify-start h-[33px]">
                 <TRValueControls
                   :value="trCount"
                   :minValue="0"
@@ -937,57 +937,157 @@ function toggleBooleanTarget(stepId, boostKey) {
   if (stepIndex !== -1) {
     const step = trSteps[stepIndex];
     step.targetBools[boostKey] = !step.targetBools[boostKey];
+    
+    // NEU: Aktualisiere alle nachfolgenden TR-Steps mit den neuen akkumulierten Stats
+    updateFollowingStepsStats(stepIndex);
   }
 }
 
 // Target Level für einen bestimmten Schritt aktualisieren
 function updateTargetLevel(stepId, boostKey, newValue) {
   const stepIndex = trSteps.findIndex(step => step.id === stepId);
-  if (stepIndex !== -1) {
-    const step = trSteps[stepIndex];
-    const boost = allBoosts.find(b => b.key === boostKey);
+  if (stepIndex === -1) return;
+  
+  const step = trSteps[stepIndex];
+  const boost = allBoosts.find(b => b.key === boostKey);
+  
+  if (boost) {
+    let minLevel = 0;
     
-    if (boost) {
-      let minLevel = 0;
-      
-      // Bei permanenten Boosts kann der Wert nicht unter dem Startwert liegen
-      if (boost.permanent) {
-        if (stepIndex === 0) {
-          // Im ersten Schritt ist der Minimalwert der aktuelle Stats-Wert
-          minLevel = props.currentStats[boostKey] || 0;
-        } else {
-          // In späteren Schritten ist der Minimalwert das Ergebnis des vorherigen Schritts
-          minLevel = trSteps[stepIndex - 1].stats[boostKey] || 0;
-          if (trSteps[stepIndex - 1].targetLevels[boostKey] !== undefined) {
-            minLevel = trSteps[stepIndex - 1].targetLevels[boostKey];
-          }
+    // Bei permanenten Boosts kann der Wert nicht unter dem Startwert liegen
+    if (boost.permanent) {
+      if (stepIndex === 0) {
+        // Im ersten Schritt ist der Minimalwert der aktuelle Stats-Wert
+        minLevel = props.currentStats[boostKey] || 0;
+      } else {
+        // In späteren Schritten ist der Minimalwert das Ergebnis des vorherigen Schritts
+        minLevel = trSteps[stepIndex - 1].stats[boostKey] || 0;
+        if (trSteps[stepIndex - 1].targetLevels[boostKey] !== undefined) {
+          minLevel = trSteps[stepIndex - 1].targetLevels[boostKey];
         }
       }
-      
-      // Wert validieren
-      let validValue = Math.max(Math.floor(newValue), minLevel);
-      
-      // Max Level beachten wenn vorhanden
-      if (boost.max !== undefined) {
-        validValue = Math.min(validValue, boost.max);
-      }
-      
-      // Wert im aktuellen Schritt aktualisieren
-      step.targetLevels[boostKey] = validValue;
-      
-      // Für Boon-Level-Änderungen den gesamten targetLevels-Eintrag neu setzen,
-      // damit Vue die Änderung erkennt
-      if (boostKey === 'boonELevel' || boostKey === 'boonHLevel') {
-        step.targetLevels = { ...step.targetLevels };
-      }
-      
-      // Wenn der Boost permanent ist, in allen nachfolgenden TRs anpassen
-      if (boost.permanent) {
-        updatePermanentBoostsInFollowingSteps(stepIndex, boostKey, validValue);
-      }
     }
+    
+    // Wert validieren
+    let validValue = Math.max(Math.floor(newValue), minLevel);
+    
+    // Max Level beachten wenn vorhanden
+    if (boost.max !== undefined) {
+      validValue = Math.min(validValue, boost.max);
+    }
+    
+    // Wert im aktuellen Schritt aktualisieren
+    step.targetLevels[boostKey] = validValue;
+    
+    // Für Boon-Level-Änderungen den gesamten targetLevels-Eintrag neu setzen
+    if (boostKey === 'boonELevel' || boostKey === 'boonHLevel') {
+      step.targetLevels = { ...step.targetLevels };
+    }
+    
+    // NEU: Aktualisiere alle nachfolgenden TR-Steps mit den neuen akkumulierten Stats
+    updateFollowingStepsStats(stepIndex);
   }
 }
+
+// Hilfsfunktion, um zu prüfen, ob ein Boost "permanent" ist
+function isPermanentBoost(key) {
+  const found = allBoosts.find(b => b.key === key);
+  return found && found.permanent;
+}
+
+function updateFollowingStepsStats(modifiedStepIndex) {
+  // Wenn der letzte TR-Schritt geändert wurde, gibt es keine Folge-Schritte
+  if (modifiedStepIndex >= trSteps.length - 1) return;
+
+  // 1) Orb-Gewinne im gerade veränderten Schritt berechnen
+  const modifiedStep = trSteps[modifiedStepIndex];
+  const orbGains = getStepOrbGains(modifiedStep);
+
+  // 2) Nimm eine Kopie der (alten) Stats des modifizierten Schritts
+  let accumulatedStats = { ...modifiedStep.stats };
+
+  // Target-Levels und -Bools vom modifizierten Schritt einrechnen
+  Object.entries(modifiedStep.targetLevels).forEach(([key, value]) => {
+    accumulatedStats[key] = value;
+  });
+  Object.entries(modifiedStep.targetBools).forEach(([key, boolVal]) => {
+    if (boolVal) accumulatedStats[key] = 1;
+  });
+
+  // TR-Count und All-Time-Orbs für "nächsten" Schritt erhöhen
+  accumulatedStats.trCount += 1;
+  accumulatedStats.allTimeOrbs += orbGains;
+
+  // 3) Jetzt durch alle folgenden TR-Schritte iterieren und aktualisieren
+  for (let i = modifiedStepIndex + 1; i < trSteps.length; i++) {
+    const nextStep = trSteps[i];
+    // Kopie seiner Stats
+    let newStats = { ...nextStep.stats };
+
+    // Keys, die IMMER aktualisiert werden müssen
+    const alwaysUpdateKeys = ['trCount', 'allTimeOrbs'];
+
+    // 3a) Stats jedes Folgeschritts anpassen
+    Object.keys(accumulatedStats).forEach(key => {
+      // 1) Sachen, die immer aktualisiert werden
+      if (alwaysUpdateKeys.includes(key)) {
+        newStats[key] = accumulatedStats[key];
+      }
+      // 2) Wenn der Boost permanent ist ODER nicht via Checkbox “gesperrt”
+      else if (isPermanentBoost(key) || !nextStep.selectedForNextTR.includes(key)) {
+        newStats[key] = accumulatedStats[key];
+      }
+      // 3) Wenn NICHT permanent und in selectedForNextTR, lassen wir den Wert in Ruhe
+    });
+
+    // 3b) Zielwerte (targetLevels) erzwingen: 
+    //     Falls es ein permanenter Boost ist, darf die Eingabe nicht niedriger sein als der alte Wert
+    let newTargetLevels = { ...nextStep.targetLevels };
+    Object.keys(newTargetLevels).forEach(boostKey => {
+      if (isPermanentBoost(boostKey)) {
+        // Wenn das manuell eingetragene Ziel unter dem "accumulatedStats"-Wert liegt, überschreiben
+        if (newTargetLevels[boostKey] < newStats[boostKey]) {
+          newTargetLevels[boostKey] = newStats[boostKey];
+        }
+      }
+    });
+
+    // Boolean-Zielwerte ggf. klonen (wenn du hier nichts änderst, reicht auch einfach Kopie)
+    let newTargetBools = { ...nextStep.targetBools };
+
+    // 3c) Den Schritt im Array komplett neu zuweisen
+    trSteps[i] = {
+      ...nextStep,
+      stats: newStats,            // aktualisierte Basis-Stats
+      targetLevels: newTargetLevels,
+      targetBools: newTargetBools
+    };
+
+    // 4) Wenn das NICHT der letzte Schritt ist: prepare Stats für den Schritt i+1
+    if (i < trSteps.length - 1) {
+      const nextOrbGains = getStepOrbGains(trSteps[i]);
+
+      // Trage die jetzt gültigen targetLevels / -Bools in accumulatedStats ein
+      Object.entries(trSteps[i].targetLevels).forEach(([key, value]) => {
+        accumulatedStats[key] = value;
+      });
+      Object.entries(trSteps[i].targetBools).forEach(([key, boolVal]) => {
+        if (boolVal) accumulatedStats[key] = 1;
+      });
+
+      // TR-Count + All-Time-Orbs hochsetzen
+      accumulatedStats.trCount += 1;
+      accumulatedStats.allTimeOrbs += nextOrbGains;
+    }
+  }
+
+  // 5) Am Ende einmal das Array durch ein neues ersetzen, damit Vue alles neu rendert
+  nextTick(() => {
+    const newTrSteps = [...trSteps];
+    trSteps.splice(0, trSteps.length, ...newTrSteps);
+  });
+}
+
 
 // Target Boolean für einen Schritt abrufen
 function getTargetBool(stepId, boostKey) {
@@ -1865,32 +1965,6 @@ function getHoursNeededText(step, stepIndex) {
   } catch (e) {
     console.error("Error in getHoursNeededText:", e);
     return "Error calculating";
-  }
-}
-
-// Funktion zur automatischen Aktualisierung permanenter Boosts in nachfolgenden TRs
-function updatePermanentBoostsInFollowingSteps(modifiedStepIndex, modifiedKey, newValue) {
-  // Nur ausführen, wenn es ein permanenter Boost und ein veränderter Wert ist
-  const boost = allBoosts.find(b => b.key === modifiedKey);
-  if (!boost || !boost.permanent) return;
-
-  // Nur die nachfolgenden Schritte ab dem nächsten nach dem modifizierten aktualisieren
-  for (let i = modifiedStepIndex + 1; i < trSteps.length; i++) {
-    const step = trSteps[i];
-    
-    // Wenn der Boost im Zielschritt einen niedrigeren Wert hat als der neue Wert, aktualisieren
-    const currentStepValue = step.targetLevels[modifiedKey] !== undefined ? 
-                           step.targetLevels[modifiedKey] : 
-                           step.stats[modifiedKey] || 0;
-    
-    if (currentStepValue < newValue) {
-      // Den Target-Level aktualisieren
-      step.targetLevels[modifiedKey] = newValue;
-      
-      // Für boostierte Ergebnisanzeige den Wert hervorheben
-      if (!step.autoupdatedBoosts) step.autoupdatedBoosts = {};
-      step.autoupdatedBoosts[modifiedKey] = true;
-    }
   }
 }
 

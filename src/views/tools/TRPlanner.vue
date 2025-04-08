@@ -16,7 +16,7 @@
               class="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-l-md border-r border-blue-700 transition-colors shadow-sm"
             >
               <IconChartBar size="16" class="mr-2" />
-              <span>Stats</span>
+              <span>Max Level Stats</span>
             </button>
             <!-- Neuer Orb Calculator Button 
             <button 

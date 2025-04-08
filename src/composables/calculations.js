@@ -186,6 +186,7 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
     if (i === 35) campaignMulti = 2;
     if (i === 39) campaignMulti = 3;
     if (i === 43) campaignMulti = 13;
+    if (i === 47) campaignMulti = 25;
     
     // Skalierung und Gesamtfragmente berechnen
     const fragGain = baseFrags * campaignMulti * Math.pow(1.03, i);

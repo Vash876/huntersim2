@@ -259,7 +259,13 @@ export const useTRPlannerStore = defineStore('trPlanner', {
         createdAt: plan.createdAt || new Date().toISOString()
       };
       
+      // Plan zum Array hinzufügen
       this.trPlans.push(newPlan);
+      
+      // Aktualisiere die gespeicherte Sortierreihenfolge, um den neuen Plan am Ende zu behalten
+      const orderedIds = this.trPlans.map(p => p.id);
+      localStorage.setItem('trPlanOrderIds', JSON.stringify(orderedIds));
+      
       return newPlan.id;
     },
     
@@ -341,7 +347,7 @@ export const useTRPlannerStore = defineStore('trPlanner', {
       console.log('Lade TR Pläne...');
       
       try {
-        // Pläne aus dem LocalStorage laden - dies könnte bereits durch useStorage erledigt werden
+        // Pläne aus dem LocalStorage laden
         const storedPlans = localStorage.getItem('trplanner_plans');
         if (storedPlans) {
           const parsedPlans = JSON.parse(storedPlans);
@@ -356,24 +362,36 @@ export const useTRPlannerStore = defineStore('trPlanner', {
           const orderedIds = JSON.parse(orderedIdsStr);
           console.log('Gefundene Reihenfolge:', orderedIds);
           
-          if (Array.isArray(orderedIds) && orderedIds.length > 0) {
-            // Eine Kopie der Pläne erstellen und sortieren
-            const sortedPlans = [...this.trPlans];
-            sortedPlans.sort((a, b) => {
-              const indexA = orderedIds.indexOf(a.id);
-              const indexB = orderedIds.indexOf(b.id);
-              
-              // Wenn ein Plan nicht in der gespeicherten Reihenfolge ist, ans Ende setzen
-              if (indexA === -1) return 1;
-              if (indexB === -1) return -1;
-              
-              return indexA - indexB;
+          if (Array.isArray(orderedIds)) {
+            // Eine Kopie der Pläne erstellen
+            const sortedPlans = [];
+            
+            // Zuerst füge Pläne in der gespeicherten Reihenfolge hinzu
+            orderedIds.forEach(id => {
+              const plan = this.trPlans.find(p => p.id === id);
+              if (plan) {
+                sortedPlans.push(plan);
+              }
+            });
+            
+            // Dann füge alle Pläne hinzu, die noch nicht in der Reihenfolge sind (neu hinzugefügt)
+            this.trPlans.forEach(plan => {
+              if (!orderedIds.includes(plan.id)) {
+                sortedPlans.push(plan); // Neu hinzugefügte Pläne ans Ende
+              }
             });
             
             // Die sortierten Pläne in den Store speichern
             this.trPlans = sortedPlans;
+            
+            // Aktualisiere die gespeicherte Reihenfolge
+            localStorage.setItem('trPlanOrderIds', JSON.stringify(sortedPlans.map(p => p.id)));
+            
             console.log('Pläne nach Reihenfolge sortiert:', this.trPlans.map(p => p.id));
           }
+        } else {
+          // Wenn keine Reihenfolge gespeichert ist, aktuelle Reihenfolge speichern
+          localStorage.setItem('trPlanOrderIds', JSON.stringify(this.trPlans.map(p => p.id)));
         }
       } catch (e) {
         console.error('Fehler beim Laden der TR Pläne:', e);

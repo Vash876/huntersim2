@@ -35,8 +35,8 @@
       <!-- Description Area -->
       <div class="p-3 bg-gray-750/60 border-b border-gray-700">
         <p class="text-xs text-gray-300">
-          Set your maxed-out Stats here. These values will be automatically applied to new plans. 
-          Maxed Stats will be hidden in the plan creation interface to reduce clutter, but they will still be included in all calculations.
+          These values will be automatically applied to new plans. 
+          Maxed Stats will be hidden in plan creation but still included in all calculations.
         </p>
       </div>
       

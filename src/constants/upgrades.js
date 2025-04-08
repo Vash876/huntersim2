@@ -432,11 +432,10 @@ export const UPGRADES = {
       name: "Inscryption #87", 
       hunter: "borge", 
       type: "level", 
-      add: 5,
-      //multiplier: 1.05, 
+      multiplier: 1.05, 
       maxLevel: 10, 
       description: "Borge ATK Power", 
-      format: "percent", //eigentlich multiplier
+      format: "multiplier",
       color: "red" 
     },
     { 
