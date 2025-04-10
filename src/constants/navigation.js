@@ -79,6 +79,5 @@ export const NAVIGATION = {
       path: '/tools/tr-planner',
       icon: IconClockFilled
     },
-
   ]
 };

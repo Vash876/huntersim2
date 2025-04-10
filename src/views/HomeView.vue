@@ -2,6 +2,14 @@
 const changelog = 
 [
 {
+    version: '2.2.1',
+    date: '2025-04-06',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      'Removed Tools Section temporarily to fix some bugs',
+    ]
+  },
+{
     version: '2.2.0',
     date: '2025-04-06',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',

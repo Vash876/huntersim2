@@ -1038,18 +1038,14 @@ function updateFollowingStepsStats(modifiedStepIndex) {
     accumulatedStats[key] = value;
   });
   
-  // Hier die Änderung: Boolean-Boosts nur setzen, wenn sie permanent sind oder aktiviert wurden
   Object.entries(modifiedStep.targetBools).forEach(([key, boolVal]) => {
     const boost = allBoosts.find(b => b.key === key);
     
     if (boolVal) {
-      // Wenn der Boost aktiviert ist, setzen wir ihn immer
       accumulatedStats[key] = 1;
     } else if (boost && !boost.permanent) {
-      // Wenn der Boost nicht permanent ist und deaktiviert, explizit auf 0 setzen
       accumulatedStats[key] = 0;
     }
-    // Permanente und bereits aktivierte Boosts bleiben unverändert
   });
 
   // 3) Jetzt durch alle folgenden TR-Schritte iterieren und aktualisieren
@@ -1066,7 +1062,6 @@ function updateFollowingStepsStats(modifiedStepIndex) {
     // Die All-Time Orbs sollten eine Akkumulation aus dem vorherigen Schritt sein
     if (i === modifiedStepIndex + 1) {
       // Erster Folgeschritt: Nimm die Orbs aus dem modifizierten Schritt + seine Gains
-      const modifiedStep = trSteps[modifiedStepIndex];
       newStats.allTimeOrbs = (modifiedStep.stats.allTimeOrbs || allTimeOrbs.value) + getStepOrbGains(modifiedStep);
     } else {
       // Spätere Folgeschritte: Nimm die Orbs aus dem vorherigen Schritt + seine Gains
@@ -1080,69 +1075,48 @@ function updateFollowingStepsStats(modifiedStepIndex) {
       if (alwaysUpdateKeys.includes(key)) {
         newStats[key] = accumulatedStats[key];
       }
-      // 2) Wenn der Boost permanent ist ODER nicht via Checkbox “gesperrt”
+      // 2) Wenn der Boost permanent ist ODER nicht via Checkbox "gesperrt"
       else if (isPermanentBoost(key) || !nextStep.selectedForNextTR.includes(key)) {
         newStats[key] = accumulatedStats[key];
       }
       // 3) Wenn NICHT permanent und in selectedForNextTR, lassen wir den Wert in Ruhe
     });
 
-    // 3b) Zielwerte (targetLevels) erzwingen: 
-    //     Falls es ein permanenter Boost ist, darf die Eingabe nicht niedriger sein als der alte Wert
+    // 3b) Zielwerte (targetLevels) erzwingen für permanente Boosts
     let newTargetLevels = { ...nextStep.targetLevels };
     Object.keys(newTargetLevels).forEach(boostKey => {
       if (isPermanentBoost(boostKey)) {
-        // Wenn das manuell eingetragene Ziel unter dem "accumulatedStats"-Wert liegt, überschreiben
         if (newTargetLevels[boostKey] < newStats[boostKey]) {
           newTargetLevels[boostKey] = newStats[boostKey];
         }
       }
     });
 
-    // Änderung hier: Boolean-Boosts mit permanentem Flag prüfen
-    Object.entries(nextStep.targetBools).forEach(([key, boolVal]) => {
-      const boost = allBoosts.find(b => b.key === key);
-      
-      if (boolVal) {
-        // Aktivierte Boosts immer setzen
-        accumulatedStats[key] = 1;
-      } else if (boost && !boost.permanent) {
-        // Deaktivierte nicht-permanente Boosts explizit zurücksetzen
-        accumulatedStats[key] = 0;
-      }
-      // Permanente und bereits aktivierte Boosts bleiben unverändert
-    });
-
-    // Boolean-Zielwerte ggf. klonen (wenn du hier nichts änderst, reicht auch einfach Kopie)
-    let newTargetBools = { ...nextStep.targetBools };
-
-    // 3c) Den Schritt im Array komplett neu zuweisen
+    // WICHTIG: Wir setzen den neuen TR-Step mit den angepassten Werten
     trSteps[i] = {
       ...nextStep,
-      stats: newStats,            // aktualisierte Basis-Stats
-      targetLevels: newTargetLevels,
-      targetBools: newTargetBools
+      stats: newStats,
+      targetLevels: newTargetLevels
     };
 
-    // 4) Wenn das NICHT der letzte Schritt ist: prepare Stats für den Schritt i+1
+    // 4) Für den nächsten Schritt: prepare Stats
     if (i < trSteps.length - 1) {
-      const nextOrbGains = getStepOrbGains(trSteps[i]);
-
-      // Trage die jetzt gültigen targetLevels / -Bools in accumulatedStats ein
+      // Aktualisiere die akkumulierten Stats mit den Zielen des aktuellen Schritts
       Object.entries(trSteps[i].targetLevels).forEach(([key, value]) => {
         accumulatedStats[key] = value;
       });
+      
       Object.entries(trSteps[i].targetBools).forEach(([key, boolVal]) => {
         if (boolVal) accumulatedStats[key] = 1;
       });
 
-      // TR-Count + All-Time-Orbs hochsetzen
-      accumulatedStats.trCount += 1;
-      accumulatedStats.allTimeOrbs += nextOrbGains;
+      // Inkrementiere TR-Count und addiere Orb-Gains
+      accumulatedStats.trCount = newStats.trCount + 1;
+      accumulatedStats.allTimeOrbs = newStats.allTimeOrbs + getStepOrbGains(trSteps[i]);
     }
   }
 
-  // 5) Am Ende einmal das Array durch ein neues ersetzen, damit Vue alles neu rendert
+  // 5) WICHTIG: Explizit Array neu zuweisen, damit Vue die Änderungen erkennt
   nextTick(() => {
     const newTrSteps = [...trSteps];
     trSteps.splice(0, trSteps.length, ...newTrSteps);
@@ -1190,12 +1164,11 @@ function getCurrentLevel(boost, step) {
   return step.stats[boost.key] || 0;
 }
 
-// TR Requirement für einen Schritt berechnen
 function getStepOrbRequirement(step, stepIndex) {
   // TR-Count für diesen Schritt korrekt berechnen
-  // Für den ersten Schritt: Aktuelle TR + 1
-  // Für weitere Schritte: TR aus den Stats + 1 (für den nächsten TR)
-  const stepTRCount = stepIndex === 0 ? 
+  // Für den ersten Schritt: Aktuelle TR
+  // Für weitere Schritte: TR aus den stats des Steps
+  const currentTR = stepIndex === 0 ? 
     trCount.value : 
     (step.stats.trCount || 0);
   
@@ -1204,9 +1177,10 @@ function getStepOrbRequirement(step, stepIndex) {
     allTimeOrbs.value : 
     step.stats.allTimeOrbs || 0;
   
-  console.log(`Calculating requirement for Step ${stepIndex}, TR ${stepTRCount}, AllTimeOrbs: ${stepAllTimeOrbs}`);
+  console.log(`Calculating requirement for Step ${stepIndex}, Current TR ${currentTR}, Next TR ${currentTR + 1}, AllTimeOrbs: ${stepAllTimeOrbs}`);
   
-  return calculateOrbRequirement(stepTRCount, stepAllTimeOrbs);
+  // Immer für die NÄCHSTE TR berechnen (currentTR + 1)
+  return calculateOrbRequirement(currentTR, stepAllTimeOrbs);
 }
 
 // Orb Gains für einen Schritt berechnen
