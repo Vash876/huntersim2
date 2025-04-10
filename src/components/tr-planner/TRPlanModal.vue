@@ -108,6 +108,7 @@
                     trCountDisplay = newVal.toString();
                     if (trSteps.length > 0) {
                       trSteps[0].stats.trCount = newVal;
+                      updateFollowingStepsStats(0);
                     }
                   }"
                 />
@@ -779,12 +780,18 @@ function addTRStep() {
     // Neuen Schritt erstellen
     const newStep = createNewTRStep();
     
+    // Der letzte Schritt, dessen Werte wir übernehmen möchten
+    const lastStep = trSteps[trSteps.length - 1];
+    
     // Für jeden vorgemerkten Boost das aktuelle Level als Ziel setzen
     uniqueSelectedBoosts.forEach(boostKey => {
       const boost = allBoosts.find(b => b.key === boostKey);
       if (boost) {
         if (boost.type === 'boolean') {
-          newStep.targetBools[boostKey] = true;
+          // KORREKTUR: Nicht-permanente Boolean-Boosts sollen den Zustand vom vorherigen TR übernehmen
+          // wenn sie markiert wurden, anstatt standardmäßig deaktiviert zu sein
+          const wasActiveInPreviousStep = lastStep.targetBools[boostKey] || false;
+          newStep.targetBools[boostKey] = wasActiveInPreviousStep;
         } else {
           newStep.targetLevels[boostKey] = newStep.stats[boostKey] || 0;
         }
@@ -792,6 +799,9 @@ function addTRStep() {
     });
     
     trSteps.push(newStep);
+    
+    // Nach dem Hinzufügen alle Stats aktualisieren
+    updateFollowingStepsStats(trSteps.length - 2);
   }
 }
 
@@ -821,6 +831,23 @@ function toggleBoostForNextTR(stepId, boostKey) {
     
     if (selectedIndex === -1) {
       step.selectedForNextTR.push(boostKey);
+      
+      // Für bestehende TR Steps: Prüfe bei allen nachfolgenden TRs, ob wir dort den Boost
+      // automatisch mit dem aktuellen Zustand hinzufügen müssen
+      const currentState = step.targetBools[boostKey] || false;
+      
+      // Füge den Boost zu allen nachfolgenden TR-Steps hinzu
+      for (let i = stepIndex + 1; i < trSteps.length; i++) {
+        // Wenn dieser Boost noch nicht in selectedForNextTR ist, füge ihn hinzu
+        if (!trSteps[i].selectedForNextTR.includes(boostKey)) {
+          trSteps[i].selectedForNextTR.push(boostKey);
+        }
+        
+        // Setze den initialen Zustand gemäß dem Zustand vom ersten TR
+        if (trSteps[i].targetBools[boostKey] === undefined) {
+          trSteps[i].targetBools[boostKey] = currentState;
+        }
+      }
     } else {
       step.selectedForNextTR.splice(selectedIndex, 1);
     }
@@ -1010,13 +1037,20 @@ function updateFollowingStepsStats(modifiedStepIndex) {
   Object.entries(modifiedStep.targetLevels).forEach(([key, value]) => {
     accumulatedStats[key] = value;
   });
+  
+  // Hier die Änderung: Boolean-Boosts nur setzen, wenn sie permanent sind oder aktiviert wurden
   Object.entries(modifiedStep.targetBools).forEach(([key, boolVal]) => {
-    if (boolVal) accumulatedStats[key] = 1;
+    const boost = allBoosts.find(b => b.key === key);
+    
+    if (boolVal) {
+      // Wenn der Boost aktiviert ist, setzen wir ihn immer
+      accumulatedStats[key] = 1;
+    } else if (boost && !boost.permanent) {
+      // Wenn der Boost nicht permanent ist und deaktiviert, explizit auf 0 setzen
+      accumulatedStats[key] = 0;
+    }
+    // Permanente und bereits aktivierte Boosts bleiben unverändert
   });
-
-  // TR-Count und All-Time-Orbs für "nächsten" Schritt erhöhen
-  accumulatedStats.trCount += 1;
-  accumulatedStats.allTimeOrbs += orbGains;
 
   // 3) Jetzt durch alle folgenden TR-Schritte iterieren und aktualisieren
   for (let i = modifiedStepIndex + 1; i < trSteps.length; i++) {
@@ -1050,6 +1084,20 @@ function updateFollowingStepsStats(modifiedStepIndex) {
           newTargetLevels[boostKey] = newStats[boostKey];
         }
       }
+    });
+
+    // Änderung hier: Boolean-Boosts mit permanentem Flag prüfen
+    Object.entries(nextStep.targetBools).forEach(([key, boolVal]) => {
+      const boost = allBoosts.find(b => b.key === key);
+      
+      if (boolVal) {
+        // Aktivierte Boosts immer setzen
+        accumulatedStats[key] = 1;
+      } else if (boost && !boost.permanent) {
+        // Deaktivierte nicht-permanente Boosts explizit zurücksetzen
+        accumulatedStats[key] = 0;
+      }
+      // Permanente und bereits aktivierte Boosts bleiben unverändert
     });
 
     // Boolean-Zielwerte ggf. klonen (wenn du hier nichts änderst, reicht auch einfach Kopie)
@@ -1149,8 +1197,17 @@ function getStepOrbGains(step) {
   });
   
   // Boolean Boosts aus targetBools
+  // Hier müssen wir zwischen permanenten und nicht-permanenten Boosts unterscheiden
   Object.entries(step.targetBools).forEach(([key, isActive]) => {
-    if (isActive) {
+    const boost = allBoosts.find(b => b.key === key);
+    
+    // Wenn der Boost nicht permanent ist und in diesem Step deaktiviert wurde,
+    // dann explizit auf 0 setzen (auch wenn er in früheren TRs aktiviert war)
+    if (boost && !boost.permanent) {
+      planStats[key] = isActive ? 1 : 0;
+    } 
+    // Sonst normal verarbeiten (permanente Boosts oder aktive Boosts)
+    else if (isActive) {
       planStats[key] = 1;
     }
   });
@@ -1623,6 +1680,7 @@ function createPlan() {
   
   // Boolean Boosts aus dem ersten Schritt
   Object.entries(firstStep.targetBools || {}).forEach(([key, isActive]) => {
+    // WICHTIG: Auch Boosts hinzufügen, die bereits aktiv sind
     if (!isActive) return; // Nur aktive Boosts berücksichtigen
     
     const boost = allBoosts.find(b => b.key === key);
@@ -1630,16 +1688,14 @@ function createPlan() {
     
     const currentState = !!(props.currentStats[key] || 0);
     
-    // Wenn der aktuelle Zustand bereits 'true' ist, nicht hinzufügen
-    if (!currentState) {
-      boostDetails.push({
-        key,
-        type: 'boolean',
-        label: boost.label || key,
-        currentState,
-        targetState: true
-      });
-    }
+    // ÄNDERUNG: ALLE aktiven Boolean-Boosts hinzufügen, unabhängig vom aktuellen Zustand
+    boostDetails.push({
+      key,
+      type: 'boolean',
+      label: boost.label || key,
+      currentState,
+      targetState: true
+    });
   });
   
   // Ergebnisse der Berechnung hinzufügen
@@ -1766,25 +1822,19 @@ function createPlan() {
               return;
             }
             
-            // Sicherstellen dass targetLevels und stats existieren
-            const prevStepTargetLevels = prevStep.targetLevels || {};
-            const prevStepStats = prevStep.stats || {};
-            const prevStepLevel = prevStepTargetLevels[key] || prevStepStats[key] || 0;
-            const targetLevel = step.targetLevels[key] || 0;
+            // Boolean-Boosts korrekt hinzufügen
+            const prevStepBoolean = prevStep.targetBools[key] || false;
             
-            // Für alle anderen Boosts nur speichern, wenn sie sich erhöht haben
-            if (targetLevel > prevStepLevel) {
-              stepBoosts.push({
-                key,
-                type: 'number',
-                label: boost.label || key,
-                currentLevel: prevStepLevel,
-                targetLevel,
-                remainingLevels: targetLevel - prevStepLevel
-              });
-            }
+            // WICHTIG: ALLE aktiven Boolean-Boosts hinzufügen - das ist der Fix
+            stepBoosts.push({
+              key,
+              type: 'boolean',  // Typ muss 'boolean' sein, nicht 'number'
+              label: boost.label || key,
+              currentState: prevStepBoolean,
+              targetState: true  // Immer auf true setzen, wenn isActive true ist
+            });
           } catch (e) {
-            console.error(`Error processing numeric boost ${key}:`, e);
+            console.error(`Error processing boolean boost ${key}:`, e);
           }
         });
         

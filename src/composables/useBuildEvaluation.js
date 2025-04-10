@@ -435,14 +435,19 @@ export function useBuildEvaluation(props, emit) {
         if (newSeedSetting !== oldSeedSetting) {
           console.log(`Seed setting changed for ${props.hunterId}: ${oldSeedSetting} -> ${newSeedSetting}`);
           
-          // Wenn von Seeded (true) zu Random (false) gewechselt wird, immer neu evaluieren
-          if (newSeedSetting === false) {
-            console.log(`Switched to Random mode, forcing re-evaluation`);
+          // Prüfe, ob eine Neuevaluierung erforderlich ist
+          const needsReEvaluation = EvaluationCacheService.handleSeedSettingChange(
+            props.hunterId, 
+            props.buildData, 
+            oldSeedSetting, 
+            newSeedSetting
+          );
+          
+          if (needsReEvaluation) {
+            console.log(`Re-evaluation needed after seed mode change to ${newSeedSetting ? 'seeded' : 'random'}`);
             evaluateBuild(true); // Force re-evaluation
-          } 
-          // Wenn von Random zu Seeded gewechselt wird, erst Cache prüfen
-          else {
-            console.log(`Switched to Seeded mode, checking cache first`);
+          } else {
+            console.log(`No re-evaluation needed after seed mode change to ${newSeedSetting ? 'seeded' : 'random'}`);
             evaluateBuild(false); // Nicht forcieren, erst Cache prüfen
           }
         }

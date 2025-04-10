@@ -750,7 +750,7 @@ function calculateScenarioCost(scenarioIndex) {
         const inscryptionId = upgrade.key.split('.')[2]; // Extrahiert 'i80'
         
         // Prüfen ob für diese Inscryption eine Kostenfunktion vorhanden ist
-        const supportedInscryptions = ['i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92'];
+        const supportedInscryptions = ['i60', 'i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92'];
         
         if (supportedInscryptions.includes(inscryptionId)) {
           totalCost += calcInscryptionCostDifference(inscryptionId, baseValue, baseValue + incrementValue);
@@ -1117,7 +1117,7 @@ function getNextUpgradeCost(key, scenarioIndex = -1) {
     const inscryptionId = key.split('.')[2]; // Extrahiert 'i80'
     
     // Prüfen ob für diese Inscryption eine Kostenfunktion vorhanden ist
-    const supportedInscryptions = ['i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92'];
+    const supportedInscryptions = ['i60', 'i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92'];
     
     if (supportedInscryptions.includes(inscryptionId)) {
       return calcInscryptionCostDifference(inscryptionId, currentValue, currentValue + 1);

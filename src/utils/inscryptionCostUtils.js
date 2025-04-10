@@ -3,6 +3,42 @@
  */
 
 /**
+ * Berechnet die Kosten für Inscryption #60
+ * @param {number} level - Das aktuelle Level (1-basiert)
+ * @returns {number} - Die Kosten für dieses Level
+ */
+function calculateI32(level) {
+  const startValue = 90000;
+  const multi = 3;
+  if (level <= 1) return startValue;
+  return startValue * Math.pow(multi, level - 1);
+}
+
+/**
+ * Berechnet die Kosten für Inscryption #60
+ * @param {number} level - Das aktuelle Level (1-basiert)
+ * @returns {number} - Die Kosten für dieses Level
+ */
+function calculateI33(level) {
+  const startValue = 91200;
+  const multi = 5;
+  if (level <= 1) return startValue;
+  return startValue * Math.pow(multi, level - 1);
+}
+
+/**
+ * Berechnet die Kosten für Inscryption #60
+ * @param {number} level - Das aktuelle Level (1-basiert)
+ * @returns {number} - Die Kosten für dieses Level
+ */
+function calculateI60(level) {
+  const startValue = 4000000000;
+  const multi = 4;
+  if (level <= 1) return startValue;
+  return startValue * Math.pow(multi, level - 1);
+}
+
+/**
  * Berechnet die Kosten für Inscryption #80
  * @param {number} level - Das aktuelle Level (1-basiert)
  * @returns {number} - Die Kosten für dieses Level
@@ -120,6 +156,12 @@ function getInscryptionCost(InscryptionId, level) {
   if (level <= 0) return 0;
   
   switch (InscryptionId) {
+    case 'i32':
+      return calculateI32(level);
+    case 'i33':
+      return calculateI33(level);
+    case 'i60':
+      return calculateI60(level);
     case 'i80':
       return calculateI80(level);
     case 'i81':
@@ -192,6 +234,19 @@ function formatInscryptionCost(value) {
 }
 
 // Einzelexporte der spezifischen Inscryption-Funktionen
+
+export function getI32Cost(level) {
+  return getInscryptionCost('i32', level);
+}
+
+export function getI33Cost(level) {
+  return getInscryptionCost('i33', level);
+}
+
+export function getI60Cost(level) {
+  return getInscryptionCost('i60', level);
+}
+
 export function getI80Cost(level) {
   return getInscryptionCost('i80', level);
 }
@@ -233,6 +288,9 @@ export {
   getInscryptionCost,
   calcInscryptionCostDifference,
   formatInscryptionCost,
+  calculateI32,
+  calculateI33,
+  calculateI60,
   calculateI80,
   calculateI81,
   calculateI84,

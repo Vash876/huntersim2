@@ -222,14 +222,45 @@
           </div>
         </div>
 
-        <!-- Efficiency Chart - Ersetzt die Timeline 
-        <div class="p-4">
-          <h3 class="text-sm font-bold mb-3 text-blue-300">Performance Analysis</h3>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
-          </div>
-        </div>-->
+<!-- TR-Requirements Projektion mit Chart.js -->
+<div class="p-4 border-b border-gray-700">
+  <h3 class="text-sm font-bold mb-3 text-blue-300">Future TR Requirements Projection</h3>
+  
+  <div class="bg-gray-750/60 rounded-lg border border-gray-700 shadow-lg p-3">
+    <div class="flex items-center justify-between mb-2">
+      <div class="text-xs text-gray-400">
+        Projecting next {{ futureTRsToProject }} TRs after TR{{ (plan?.updatedStats?.trCount || currentTrCount) + totalTRsInPlan }}
+      </div>
+      <div class="flex gap-2 items-center">
+        <button 
+          @click="futureTRsToProject = Math.max(5, futureTRsToProject - 5)"
+          class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded"
+        >-5</button>
+        <button 
+          @click="futureTRsToProject += 5"
+          class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded"
+        >+5</button>
+      </div>
+    </div>
+    
+    <!-- Chart.js Graph Container -->
+    <div class="h-60 w-full">
+      <canvas ref="chartRef" height="240"></canvas>
+    </div>
+    
+    <!-- Legende -->
+    <div class="flex items-center justify-center gap-3 text-xs mt-4">
+      <div class="flex items-center">
+        <div class="w-3 h-3 bg-red-500/70 mr-1"></div>
+        <span>Required</span>
+      </div>
+      <div class="flex items-center">
+        <div class="w-3 h-3 bg-green-500/70 mr-1"></div>
+        <span>Available</span>
+      </div>
+    </div>
+  </div>
+</div>
         
         <!-- Footer buttons -->
         <div class="bg-gray-750/60 p-3 border-t border-gray-700">
@@ -267,10 +298,12 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted, watch, nextTick } from 'vue';
+import { Chart, registerables } from 'chart.js';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { allBoosts } from '@/constants/tr-planner';
 import { formatNumber } from '@/composables/format';
+import { calculateOrbRequirement } from '@/composables/calculations';
 import { 
   IconX, 
   IconCircleCheck, 
@@ -838,45 +871,6 @@ function getChainStepOrbsPerHour(chainStep) {
   return (chainStep.results?.orbGains || 0) / Math.max(1, getChainTrHours(chainStep));
 }
 
-// Prüfen, ob sichtbare Balken vorhanden sind
-const hasVisibleBars = computed(() => {
-  // Prüfe, ob der erste TR einen sichtbaren Balken hat
-  const firstBarHeight = (firstTrOrbsPerHour.value / Math.max(1, maxOrbsPerHour.value)) * 100;
-  if (firstBarHeight > 1) return true;
-  
-  // Prüfe, ob eines der Chain-TRs einen sichtbaren Balken hat
-  if (plan.value?.trChain) {
-    for (const chainStep of plan.value.trChain) {
-      const chainStepHeight = 
-        (getChainStepOrbsPerHour(chainStep) / Math.max(1, maxOrbsPerHour.value)) * 100;
-      if (chainStepHeight > 1) return true;
-    }
-  }
-  
-  return false;
-});
-
-// Bestimme den maximalen Y-Wert für die Skala
-const maxYValue = computed(() => {
-  let max = finalAllTimeOrbs.value;
-  
-  // Prüfe auch die TR-Requirements für jeden Schritt
-  if (plan.value) {
-    const firstReq = getStepOrbRequirement(plan.value, 0);
-    max = Math.max(max, firstReq);
-    
-    if (plan.value.trChain) {
-      plan.value.trChain.forEach((step, index) => {
-        const req = getChainStepRequirement(step, index);
-        max = Math.max(max, req);
-      });
-    }
-  }
-  
-  // Etwas Platz nach oben für bessere Darstellung
-  return max * 1.1;
-});
-
 // TR-Requirement für den ersten Schritt
 function getStepOrbRequirement(step, index) {
   return step?.results?.orbRequirement || 0;
@@ -896,6 +890,186 @@ function handleDelete(planId) {
   emit('delete', planId);
   emit('close');
 }
+
+
+// Chart.js registrieren
+Chart.register(...registerables);
+
+// Chart-Referenz
+const chartRef = ref(null);
+let trRequirementsChart = null;
+
+// Anzahl der zukünftigen TRs, die projiziert werden sollen
+const futureTRsToProject = ref(10);
+
+// Berechne die TR-Requirements-Projektionen für zukünftige TRs
+const futureTRProjections = computed(() => {
+  if (!plan.value) return [];
+  
+  const projections = [];
+  
+  // Startpunkt: Letzter TR im Plan (nicht +1 wie bisher)
+  let startTR = (plan.value.updatedStats?.trCount || currentTrCount.value) + totalTRsInPlan.value;
+  let accumulatedOrbs = finalAllTimeOrbs.value;
+  
+  console.log("--- TR Requirement Debug ---");
+  console.log(`StartTR: ${startTR}, Start All-Time Orbs: ${formatNumber(accumulatedOrbs)}`);
+  
+  // Generiere Projektionen für die angegebene Anzahl von zukünftigen TRs
+  for (let i = 0; i < futureTRsToProject.value; i++) {
+    // Jetzt beginnen wir mit dem letzten TR aus dem Plan (ohne +1)
+    const trCount = startTR + i;
+    
+    // Berechne Requirement für den aktuellen TR
+    const requirement = calculateOrbRequirement(trCount, accumulatedOrbs);
+    
+    console.log(`TR ${trCount} Requirement: ${formatNumber(requirement)}`);
+    console.log(`Current All-Time Orbs: ${formatNumber(accumulatedOrbs)}`);
+    
+    // Wir speichern die aktuelle Situation für diesen TR
+    projections.push({
+      trCount,
+      requirement,
+      orbsAvailable: accumulatedOrbs,
+      sufficient: accumulatedOrbs >= requirement
+    });
+    
+    // WICHTIG: Erst NACH dem Speichern des Projektion-Objekts addieren wir
+    // das Requirement zu den All-Time Orbs für den nächsten TR
+    console.log(`Adding current requirement ${formatNumber(requirement)} to All-Time Orbs`);
+    accumulatedOrbs += requirement;
+    console.log(`New All-Time Orbs value: ${formatNumber(accumulatedOrbs)}`);
+    console.log("---");
+  }
+  
+  console.log("Projections calculated:", projections.length);
+  return projections;
+});
+
+// Funktion zum Rendern des Charts
+function renderTRProjectionsChart() {
+  if (!chartRef.value || !futureTRProjections.value.length) return;
+  
+  // Alte Chart-Instanz zerstören, wenn vorhanden
+  if (trRequirementsChart) {
+    trRequirementsChart.destroy();
+  }
+  
+  // Chart-Daten vorbereiten
+  const labels = futureTRProjections.value.map(proj => `TR${proj.trCount}`);
+  const requirementData = futureTRProjections.value.map(proj => proj.requirement);
+  const availableData = futureTRProjections.value.map(proj => proj.orbsAvailable);
+  
+  // Chart erstellen
+  const ctx = chartRef.value.getContext('2d');
+  trRequirementsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'TR Requirement',
+          data: requirementData,
+          backgroundColor: 'rgba(239, 68, 68, 0.7)',
+          borderColor: 'rgba(239, 68, 68, 1)',
+          borderWidth: 1
+        },
+        {
+          label: 'All-Time Orbs',
+          data: availableData,
+          backgroundColor: 'rgba(74, 222, 128, 0.7)',
+          borderColor: 'rgba(74, 222, 128, 1)',
+          borderWidth: 1,
+          // Typ auf 'line' ändern, damit die All-Time-Orbs als Linie dargestellt werden
+          type: 'line',
+          fill: false,
+          tension: 0.1,
+          pointBackgroundColor: 'rgba(74, 222, 128, 1)',
+          pointRadius: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          type: 'logarithmic',
+          grid: {
+            color: 'rgba(107, 114, 128, 0.2)'
+          },
+          ticks: {
+            color: 'rgba(156, 163, 175, 1)',
+            callback: function(value) {
+              return formatNumber(value);
+            }
+          }
+        },
+        x: {
+          grid: {
+            color: 'rgba(107, 114, 128, 0.2)'
+          },
+          ticks: {
+            color: 'rgba(156, 163, 175, 1)'
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: {
+            color: 'rgba(156, 163, 175, 1)'
+          }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: function(context) {
+              let label = context.dataset.label || '';
+              if (label) {
+                label += ': ';
+              }
+              if (context.parsed.y !== null) {
+                label += formatNumber(context.parsed.y);
+              }
+              return label;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+// Chart neu rendern, wenn sich die Projektionsdaten ändern
+watch(futureTRProjections, () => {
+  nextTick(() => {
+    renderTRProjectionsChart();
+  });
+}, { deep: true });
+
+// Chart neu rendern, wenn sich die Anzahl der zu projizierenden TRs ändert
+watch(futureTRsToProject, () => {
+  nextTick(() => {
+    renderTRProjectionsChart();
+  });
+});
+
+// Chart rendern, wenn die Komponente gemountet wird
+onMounted(() => {
+  nextTick(() => {
+    renderTRProjectionsChart();
+  });
+});
+
+// Chart neu rendern, wenn das Fenster die Größe ändert
+window.addEventListener('resize', () => {
+  nextTick(() => {
+    renderTRProjectionsChart();
+  });
+});
 </script>
 
 <style scoped>

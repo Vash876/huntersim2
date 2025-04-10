@@ -31,9 +31,8 @@ var enemies = [];
 for(var i = 0;i<=1000;i++){
     enemies.push(simEnemy(i))
 }
-var ck;
+/*var ck;
 if (useSeeded) {
-  // Seeded RNG für deterministische Ergebnisse
   ck = (() => {
     const s = new Uint32Array([123456789, 362436069, 521288629, 88675123]);
     
@@ -54,10 +53,12 @@ if (useSeeded) {
     };
   })();
 } else {
-  // Einfache Math.random() basierte RNG für echte Zufallsergebnisse
   ck = (chance) => {
     return chance && chance > Math.random();
   };
+}*/
+var ck = (chance) => {
+  return chance && chance > Math.random()
 }
 
 

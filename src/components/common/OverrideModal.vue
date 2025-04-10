@@ -566,12 +566,7 @@ function getParamCost(param) {
     // Format ist upgrades.inscryptions.inscryptionId, z.B. upgrades.inscryptions.i80
     const inscryptionId = param.key.split('.')[2]; // Extrahiert 'i80'
     
-    // Prüfen ob für diese inscryption eine Kostenfunktion vorhanden ist
-    const supportedInscryptions = ['i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92'];
-    
-    if (supportedInscryptions.includes(inscryptionId)) {
       return calcInscryptionCostDifference(inscryptionId, fromLevel, toLevel);
-    }
   }
   
   // Für normale Stats

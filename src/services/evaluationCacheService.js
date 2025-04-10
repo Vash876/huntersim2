@@ -7,11 +7,56 @@
 
 import { getHunterById } from '../constants/hunters';
 
-// In-Memory Cache
-let memoryCache = {};
-
 // Speichere eine Liste von ungültigen Cache-Keys
 const invalidCacheKeys = {};
+
+let evaluatedBuildsTracking = loadEvaluationTracking();
+
+/**
+ * Initialisiert den Memory-Cache aus dem localStorage beim Start
+ * @returns {Object} Initialisierter Memory-Cache
+ */
+function initializeMemoryCacheFromLocalStorage() {
+  const cache = {};
+  
+  try {
+    // Alle Cache-Einträge aus dem localStorage laden
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('huntersim_cache_')) continue;
+      
+      // Format: huntersim_cache_hunterId_cacheKey
+      const parts = key.split('_');
+      if (parts.length < 4) continue;
+      
+      try {
+        const hunterId = parts[2];
+        const cacheKey = parts.slice(3).join('_'); // Falls der Cache-Key Unterstriche enthält
+        const data = localStorage.getItem(key);
+        
+        if (data) {
+          const parsed = JSON.parse(data);
+          if (parsed && parsed.result) {
+            // In Memory-Cache speichern
+            cache[cacheKey] = parsed.result;
+          }
+        }
+      } catch (parseErr) {
+        console.warn(`[Cache] Could not parse data for ${key}:`, parseErr);
+      }
+    }
+    
+    console.log(`[Cache] Initialized memory cache with ${Object.keys(cache).length} entries from localStorage`);
+  } catch (e) {
+    console.warn('[Cache] Error initializing memory cache from localStorage:', e);
+  }
+  
+  return cache;
+}
+
+// In-Memory Cache
+let memoryCache = initializeMemoryCacheFromLocalStorage();
+
 
 /**
  * Generiert einen eindeutigen Hash für einen String
@@ -30,6 +75,208 @@ export function stringToHash(str) {
   }
   
   return hash;
+}
+
+/**
+ * Behandelt die Änderung der Seed-Einstellung für einen Build
+ * @param {string} hunterId - Hunter-ID
+ * @param {Object} buildData - Build-Daten
+ * @param {boolean} oldSeedSetting - Alte Seed-Einstellung
+ * @param {boolean} newSeedSetting - Neue Seed-Einstellung
+ * @returns {boolean} - True, wenn eine Neuevaluierung erforderlich ist
+ */
+export function handleSeedSettingChange(hunterId, buildData, oldSeedSetting, newSeedSetting) {
+  // Wenn sich die Seed-Einstellung nicht geändert hat, nichts tun
+  if (oldSeedSetting === newSeedSetting) return false;
+  
+  console.log(`[Cache] Seed setting changed for build '${buildData.name || 'unnamed'}' from ${oldSeedSetting} to ${newSeedSetting}`);
+  
+  // Wenn von Random zu Seeded gewechselt wird, prüfen ob der Build bereits mit Seeded evaluiert wurde
+  if (newSeedSetting === true) {
+    const alreadyEvaluatedWithSeeded = isBuildEvaluated(hunterId, buildData, true);
+    
+    if (!alreadyEvaluatedWithSeeded) {
+      console.log(`[Cache] Build '${buildData.name || 'unnamed'}' has not been evaluated with seeded mode yet, will force re-evaluation`);
+      return true; // Eine Neuevaluierung ist erforderlich
+    } else {
+      console.log(`[Cache] Build has already been evaluated with seeded mode, can use cached result`);
+      return false; // Keine Neuevaluierung erforderlich
+    }
+  }
+  
+  // Wenn von Seeded zu Random gewechselt wird, immer neu evaluieren
+  if (newSeedSetting === false) {
+    console.log(`[Cache] Switched to Random mode, always force re-evaluation`);
+    return true; // Immer neu evaluieren bei Random
+  }
+  
+  return false;
+}
+
+/**
+ * Speichert einen Cache-Key in localStorage, damit er wiederverwendet werden kann
+ * @param {string} hunterId - Hunter-ID
+ * @param {Object} buildData - Build-Daten
+ * @param {number} cacheKey - Der generierte Cache-Key
+ */
+export function storeCacheKeyMapping(hunterId, buildData, cacheKey) {
+  if (!buildData || !buildData.id || !hunterId || !cacheKey) return;
+  
+  try {
+    // Holen der vorhandenen Mappings oder Erstellen eines neuen Mappings
+    const mappingKey = `huntersim_keymap_${hunterId}`;
+    let existingMappings = {};
+    
+    try {
+      const storedMappings = localStorage.getItem(mappingKey);
+      if (storedMappings) {
+        existingMappings = JSON.parse(storedMappings);
+      }
+    } catch (e) {
+      console.warn("[Cache] Could not parse existing key mappings", e);
+    }
+    
+    // Nur aktualisieren, wenn der Key sich geändert hat oder neu ist
+    const existingEntry = existingMappings[buildData.id];
+    if (existingEntry && existingEntry.key === cacheKey) {
+      // Nichts zu tun, der Key ist bereits korrekt gespeichert
+      return;
+    }
+    
+    // Füge den neuen Schlüssel hinzu oder aktualisiere ihn
+    existingMappings[buildData.id] = {
+      key: cacheKey,
+      timestamp: Date.now(),
+      name: buildData.name || 'unnamed'
+    };
+    
+    // Speichere das aktualisierte Mapping
+    localStorage.setItem(mappingKey, JSON.stringify(existingMappings));
+    
+    console.log(`[Cache] Stored cache key mapping for build '${buildData.name || 'unnamed'}': ${cacheKey}`);
+  } catch (e) {
+    console.warn("[Cache] Could not store cache key mapping:", e);
+  }
+}
+
+/**
+ * Holt einen gespeicherten Cache-Key aus dem localStorage
+ * @param {string} hunterId - Hunter-ID
+ * @param {Object} buildData - Build-Daten
+ * @returns {number|null} - Der gespeicherte Cache-Key oder null
+ */
+export function getStoredCacheKey(hunterId, buildData) {
+  if (!buildData || !buildData.id || !hunterId) return null;
+  
+  try {
+    const mappingKey = `huntersim_keymap_${hunterId}`;
+    const storedMappings = localStorage.getItem(mappingKey);
+    
+    if (storedMappings) {
+      const mappings = JSON.parse(storedMappings);
+      const buildMapping = mappings[buildData.id];
+      
+      if (buildMapping && buildMapping.key) {
+        console.log(`[Cache] Retrieved stored cache key for build '${buildData.name || 'unnamed'}': ${buildMapping.key}`);
+        return buildMapping.key;
+      }
+    }
+  } catch (e) {
+    console.warn("[Cache] Could not get stored cache key:", e);
+  }
+  
+  return null;
+}
+
+/**
+ * Lädt das Tracking für evaluierte Builds aus localStorage
+ * @returns {Object} Tracking-Objekt
+ */
+function loadEvaluationTracking() {
+  const tracking = {};
+  try {
+    const storedTracking = localStorage.getItem('huntersim_evaluated_builds');
+    if (storedTracking) {
+      return JSON.parse(storedTracking);
+    }
+  } catch (e) {
+    console.warn('[Cache] Could not load evaluation tracking:', e);
+  }
+  return tracking;
+}
+
+/**
+ * Speichert das Tracking für evaluierte Builds im localStorage
+ */
+function saveEvaluationTracking() {
+  try {
+    localStorage.setItem('huntersim_evaluated_builds', JSON.stringify(evaluatedBuildsTracking));
+  } catch (e) {
+    console.warn('[Cache] Could not save evaluation tracking:', e);
+  }
+}
+
+/**
+ * Markiert einen Build als evaluiert mit einem bestimmten Seed-Modus
+ * 
+ * @param {string} hunterId - Hunter-ID
+ * @param {Object} buildData - Build-Daten
+ * @param {boolean} isSeeded - Ob der Build im Seeded-Modus evaluiert wurde
+ */
+export function markBuildAsEvaluated(hunterId, buildData, isSeeded) {
+  if (!hunterId || !buildData || !buildData.id) return;
+  
+  try {
+    if (!evaluatedBuildsTracking[hunterId]) {
+      evaluatedBuildsTracking[hunterId] = {};
+    }
+    
+    if (!evaluatedBuildsTracking[hunterId][buildData.id]) {
+      evaluatedBuildsTracking[hunterId][buildData.id] = { seeded: false, random: false };
+    }
+    
+    // Markierung setzen basierend auf dem Seeded-Status
+    if (isSeeded) {
+      evaluatedBuildsTracking[hunterId][buildData.id].seeded = true;
+    } else {
+      evaluatedBuildsTracking[hunterId][buildData.id].random = true;
+    }
+    
+    console.log(`[Cache] Marked build '${buildData.name || 'unnamed'}' as evaluated with ${isSeeded ? 'seeded' : 'random'} mode`);
+    
+    // Tracking speichern
+    saveEvaluationTracking();
+  } catch (e) {
+    console.warn('[Cache] Could not mark build as evaluated:', e);
+  }
+}
+
+/**
+ * Prüft, ob ein Build bereits mit einem bestimmten Seed-Modus evaluiert wurde
+ * 
+ * @param {string} hunterId - Hunter-ID
+ * @param {Object} buildData - Build-Daten
+ * @param {boolean} isSeeded - Der zu prüfende Seed-Modus
+ * @returns {boolean} - True, wenn der Build bereits evaluiert wurde
+ */
+export function isBuildEvaluated(hunterId, buildData, isSeeded) {
+  if (!hunterId || !buildData || !buildData.id) return false;
+  
+  try {
+    if (!evaluatedBuildsTracking[hunterId]) return false;
+    if (!evaluatedBuildsTracking[hunterId][buildData.id]) return false;
+    
+    const result = isSeeded 
+      ? evaluatedBuildsTracking[hunterId][buildData.id].seeded 
+      : evaluatedBuildsTracking[hunterId][buildData.id].random;
+    
+    console.log(`[Cache] Build '${buildData.name || 'unnamed'}' evaluated with ${isSeeded ? 'seeded' : 'random'} mode: ${result}`);
+    
+    return result;
+  } catch (e) {
+    console.warn('[Cache] Error checking if build was evaluated:', e);
+    return false;
+  }
 }
 
 /**
@@ -233,13 +480,10 @@ export function simplifyResultForStorage(result) {
  */
 export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
   try {
-    // Neue Builds sofort evaluieren, ohne den Cache für andere zu beeinflussen
+    // Neue Builds sofort evaluieren
     if (buildData.isNew === true) {
       console.log(`[Cache] New build detected, will evaluate directly:`, buildData.name || 'unnamed');
-      
-      // Das Flag entfernen, damit der Build beim nächsten Mal normal behandelt wird
       delete buildData.isNew;
-      
       return {
         shouldEvaluate: true,
         cachedResult: null,
@@ -247,15 +491,29 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
       };
     }
     
-    // Generiere den Cache-Schlüssel
-    const cacheKey = await generateCacheKey({ hunterId, buildData, hunterStore });
+    // Prüfe den aktuellen Seeded-Status
+    const useSeeded = hunterStore.getHunterSeedSetting ? 
+      hunterStore.getHunterSeedSetting(hunterId) :
+      hunterStore.hunterSeedSettings?.[hunterId] !== false;
     
-    // Debug-Log
-    console.log(`[Cache] Checking if build '${buildData.name || 'unnamed'}' needs evaluation. Key: ${cacheKey}`);
+    // WICHTIG: Prüfe, ob der Build mit diesem Seed-Modus bereits evaluiert wurde
+    const alreadyEvaluated = isBuildEvaluated(hunterId, buildData, useSeeded);
     
-    // Prüfe, ob der Key als ungültig markiert wurde
-    if (invalidCacheKeys[hunterId] && invalidCacheKeys[hunterId].has(cacheKey)) {
-      console.log(`Cache key ${cacheKey} was invalidated, forcing evaluation`);
+    // KRITISCHER FIXPUNKT: Wenn noch nicht mit dem aktuellen Modus evaluiert, immer neu evaluieren
+    if (!alreadyEvaluated) {
+      const seedModeText = useSeeded ? 'seeded' : 'random';
+      console.log(`[Cache] Build '${buildData.name || 'unnamed'}' has not been evaluated with ${seedModeText} mode yet, forcing evaluation`);
+      
+      // KRITISCHE ÄNDERUNG: Bestehenden Cache-Key entfernen, damit er nicht wiederverwendet wird
+      const existingKey = getStoredCacheKey(hunterId, buildData);
+      if (existingKey) {
+        await clearCache(hunterId, existingKey);
+        console.log(`[Cache] Cleared existing cache key ${existingKey} because build needs evaluation with new seed mode`);
+      }
+      
+      // Generiere einen neuen Cache-Key für die spätere Verwendung
+      const cacheKey = await generateCacheKey({ hunterId, buildData, hunterStore });
+      
       return {
         shouldEvaluate: true,
         cachedResult: null,
@@ -263,7 +521,96 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
       };
     }
     
-    // Prüfe den In-Memory-Cache
+    // NEUE LOGIK: Versuche zuerst, einen gespeicherten Cache-Key zu verwenden
+    const storedKey = getStoredCacheKey(hunterId, buildData);
+    if (storedKey) {
+      console.log(`[Cache] Using stored cache key ${storedKey} for build '${buildData.name || 'unnamed'}'`);
+      
+      // Prüfe zuerst den In-Memory-Cache
+      if (memoryCache[storedKey]) {
+        console.log(`[Cache] Found result in memory cache using stored key for build '${buildData.name || 'unnamed'}'`);
+        return { 
+          shouldEvaluate: false, 
+          cachedResult: memoryCache[storedKey],
+          cacheKey: storedKey
+        };
+      }
+      
+      // Prüfe den Store-Cache
+      if (hunterStore.evaluationCache && 
+          hunterStore.evaluationCache[hunterId] && 
+          hunterStore.evaluationCache[hunterId][storedKey]) {
+        
+        const cachedResult = hunterStore.evaluationCache[hunterId][storedKey];
+        console.log(`[Cache] Found result in store cache using stored key for build '${buildData.name || 'unnamed'}'`);
+        
+        // Auch in In-Memory-Cache speichern
+        memoryCache[storedKey] = cachedResult;
+        
+        return { 
+          shouldEvaluate: false, 
+          cachedResult,
+          cacheKey: storedKey
+        };
+      }
+      
+      // Prüfe localStorage mit dem gespeicherten Schlüssel
+      try {
+        const storageKey = `huntersim_cache_${hunterId}_${storedKey}`;
+        const cachedData = localStorage.getItem(storageKey);
+        
+        if (cachedData) {
+          try {
+            const parsedData = JSON.parse(cachedData);
+            
+            // Führe eine Gültigkeitsprüfung durch
+            if (parsedData.result && 
+                typeof parsedData.result === 'object' && 
+                parsedData.result.summary) {
+              
+              console.log(`[Cache] Found result in localStorage using stored key for build '${buildData.name || 'unnamed'}'`);
+              
+              // In Memory-Cache speichern
+              memoryCache[storedKey] = parsedData.result;
+              
+              // In Store-Cache speichern
+              if (hunterStore.cacheEvaluationResult) {
+                hunterStore.cacheEvaluationResult(hunterId, storedKey, parsedData.result);
+              }
+              
+              return { 
+                shouldEvaluate: false, 
+                cachedResult: parsedData.result,
+                cacheKey: storedKey
+              };
+            }
+          } catch (parseErr) {
+            console.warn('[Cache] Error parsing cached data:', parseErr);
+          }
+        }
+      } catch (err) {
+        console.warn('[Cache] Error accessing localStorage:', err);
+      }
+    }
+    
+    // Wenn kein gespeicherter Schlüssel gefunden oder er nicht mehr gültig ist,
+    // generiere einen neuen wie bisher
+    const cacheKey = await generateCacheKey({ hunterId, buildData, hunterStore });
+    
+    // Speichere den neuen Cache-Key für die Zukunft
+    storeCacheKeyMapping(hunterId, buildData, cacheKey);
+    
+    // Prüfe, ob der Key als ungültig markiert wurde
+    if (invalidCacheKeys[hunterId] && invalidCacheKeys[hunterId].has(cacheKey)) {
+      console.log(`[Cache] Cache key ${cacheKey} was invalidated, forcing evaluation`);
+      return {
+        shouldEvaluate: true,
+        cachedResult: null,
+        cacheKey
+      };
+    }
+    
+    // Prüfe den In-Memory-Cache mit dem neuen Schlüssel
     if (memoryCache[cacheKey]) {
       console.log(`[Cache] Found result in memory cache for build '${buildData.name || 'unnamed'}'`);
       return { 
@@ -291,32 +638,48 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
       };
     }
     
-    // Optional: Prüfe localStorage
+    // Prüfe localStorage
     try {
       const storageKey = `huntersim_cache_${hunterId}_${cacheKey}`;
       const cachedData = localStorage.getItem(storageKey);
       
       if (cachedData) {
-        const parsedData = JSON.parse(cachedData);
-        const cacheAge = Date.now() - (parsedData.timestamp || 0);
-        const MAX_CACHE_AGE = 24 * 60 * 60 * 1000; // 24 Stunden
-        
-        if (cacheAge < MAX_CACHE_AGE) {
-          console.log(`[Cache] Found result in localStorage for build '${buildData.name || 'unnamed'}'`);
+        try {
+          const parsedData = JSON.parse(cachedData);
+          const cacheAge = Date.now() - (parsedData.timestamp || 0);
+          const MAX_CACHE_AGE = 7 * 24 * 60 * 60 * 1000; // Eine Woche
           
-          // In Memory-Cache speichern
-          memoryCache[cacheKey] = parsedData.result;
-          
-          // Optional: In Store-Cache speichern
-          if (hunterStore.cacheEvaluationResult) {
-            hunterStore.cacheEvaluationResult(hunterId, cacheKey, parsedData.result);
+          if (cacheAge < MAX_CACHE_AGE) {
+            console.log(`[Cache] Found result in localStorage for build '${buildData.name || 'unnamed'}'`);
+            
+            // WICHTIG: Verifiziere, dass das Ergebnis vollständig und gültig ist
+            if (parsedData.result && 
+                typeof parsedData.result === 'object' && 
+                parsedData.result.summary) {
+              
+              // In Memory-Cache speichern
+              memoryCache[cacheKey] = parsedData.result;
+              
+              // In Store-Cache speichern
+              if (hunterStore.cacheEvaluationResult) {
+                hunterStore.cacheEvaluationResult(hunterId, cacheKey, parsedData.result);
+              }
+              
+              return { 
+                shouldEvaluate: false, 
+                cachedResult: parsedData.result,
+                cacheKey 
+              };
+            } else {
+              console.warn(`[Cache] Found incomplete result in localStorage, will re-evaluate`);
+            }
+          } else {
+            console.log(`[Cache] Cache is too old (${Math.round(cacheAge/86400000)} days), will re-evaluate`);
           }
-          
-          return { 
-            shouldEvaluate: false, 
-            cachedResult: parsedData.result,
-            cacheKey 
-          };
+        } catch (parseErr) {
+          console.warn('[Cache] Error parsing cached data:', parseErr);
+          // Ungültigen Cache-Eintrag entfernen
+          localStorage.removeItem(storageKey);
         }
       }
     } catch (err) {
@@ -351,11 +714,17 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
  * @returns {Promise<void>}
  */
 export async function cacheResult({ hunterId, buildData, hunterStore, result, cacheKey = null }) {
-  if (!result) return;
+  if (!result || !buildData || !buildData.id) return;
   
   try {
-    // Cache-Key generieren, wenn nicht vorhanden
-    const key = cacheKey || await generateCacheKey({ hunterId, buildData, hunterStore });
+    // Wenn kein cacheKey übergeben wurde, versuche zuerst, einen gespeicherten Schlüssel zu verwenden
+    let key = cacheKey;
+    if (!key) {
+      key = getStoredCacheKey(hunterId, buildData) || await generateCacheKey({ hunterId, buildData, hunterStore });
+    }
+    
+    // Key speichern für späteren Gebrauch 
+    storeCacheKeyMapping(hunterId, buildData, key);
     
     // In Memory-Cache speichern
     memoryCache[key] = result;
@@ -370,15 +739,30 @@ export async function cacheResult({ hunterId, buildData, hunterStore, result, ca
       const simplifiedResult = simplifyResultForStorage(result);
       const storageKey = `huntersim_cache_${hunterId}_${key}`;
       
+      // Aktuellen Seeded-Status ermitteln
+      const useSeeded = hunterStore.getHunterSeedSetting ? 
+        hunterStore.getHunterSeedSetting(hunterId) :
+        hunterStore.hunterSeedSettings?.[hunterId] !== false;
+      
+      // Ergebnis im localStorage speichern
       localStorage.setItem(storageKey, JSON.stringify({
         timestamp: Date.now(),
-        result: simplifiedResult
+        result: simplifiedResult,
+        buildName: buildData.name || 'unnamed',
+        buildId: buildData.id,
+        isSeeded: useSeeded // Seeded-Status mit speichern
       }));
+      
+      // WICHTIG: Build als evaluiert markieren mit dem aktuellen Seeded-Status
+      markBuildAsEvaluated(hunterId, buildData, useSeeded);
+      
+      console.log(`[Cache] Marked build '${buildData.name || 'unnamed'}' as evaluated with ${useSeeded ? 'seeded' : 'random'} mode`);
+      
     } catch (e) {
       console.warn('[Cache] Could not save to localStorage:', e);
     }
     
-    console.log(`[Cache] Stored result for build '${buildData.name || 'unnamed'}'. Key: ${key}`);
+    console.log(`[Cache] Stored result for build '${buildData.name || 'unnamed'}'. Key: ${key}, seeded: ${hunterStore.getHunterSeedSetting ? hunterStore.getHunterSeedSetting(hunterId) : 'unknown'}`);
   } catch (error) {
     console.error('[Cache] Error saving to cache:', error);
   }

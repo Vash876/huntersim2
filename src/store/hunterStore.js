@@ -351,13 +351,39 @@ export const useHunterStore = defineStore('hunter', () => {
     
     // Entferne den Build aus der Liste
     hunterBuilds.value[hunterId] = hunterBuilds.value[hunterId].filter(build => build.id !== buildId);
-
+  
     // Aktualisiere die Build-Reihenfolge
     const orderIds = loadBuildsOrder(hunterId) || [];
     if (Array.isArray(orderIds)) {
       // Sicherstellen, dass nur gültige IDs gefiltert werden
       const updatedOrder = orderIds.filter(id => id && id !== buildId);
       saveBuildsOrder(hunterId, updatedOrder);
+    }
+    
+    // WICHTIG: Nur den Cache für diesen spezifischen Build löschen
+    if (evaluationCache.value[hunterId]) {
+      // Durchsuche den Cache nach Einträgen, die zu diesem Build gehören
+      const cachesToRemove = [];
+      const hunterCache = evaluationCache.value[hunterId];
+      
+      // Finde alle Cache-Schlüssel, die diesem Build zugeordnet sind
+      for (const cacheKey in hunterCache) {
+        const cacheEntry = hunterCache[cacheKey];
+        // Prüfe, ob der Cache-Eintrag zu diesem Build gehört
+        if (cacheEntry && (
+          (cacheEntry.buildId === buildId) || 
+          (cacheEntry.params && cacheEntry.params.buildId === buildId)
+        )) {
+          cachesToRemove.push(cacheKey);
+        }
+      }
+      
+      // Lösche die gefundenen Cache-Einträge
+      cachesToRemove.forEach(key => {
+        delete hunterCache[key];
+      });
+      
+      console.log(`Cache entries related to build ${buildId} removed: ${cachesToRemove.length}`);
     }
   }
 

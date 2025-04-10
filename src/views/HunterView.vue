@@ -55,11 +55,11 @@
             <span>{{ iterationValue }} iterations</span>
           </button>
           
-          <!-- Seed Toggle -->
+          <!-- Seed Toggle 
           <SeedToggle 
             v-model="useSeededEvaluation" 
             :hunterId="route.params.hunterId" 
-          />
+          />-->
           
           <!-- Statistics -->
           <div class="hidden md:flex items-center gap-2">

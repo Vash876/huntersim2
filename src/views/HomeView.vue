@@ -1,18 +1,19 @@
 <script setup>
 const changelog = 
 [
-  {
+{
     version: '2.2.0',
     date: '2025-04-06',
-    baseVersion: 'Kylenator\'s Sheet v1.2.6',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
     changes: [
       'Added Construction Milestones',
       'Changed Inscryption #87 to be multiplicative',
-      'Implemented Seeded/Random evaluation toggle for more accurate build comparisons',
       'Improved Build Creator confirmation dialog to only show when changes have been made',
       'Fixed Revive Boost not getting applied correctly in the Build Evaluation',
+      'Added Inscryption #32, #33 and #60 Cost Calculation',
+      '• If you want to see more Inscryptions added, please contribute by helping filling out this sheet: <a href="https://docs.google.com/spreadsheets/d/1Vimt3zGCnQ_VeNgA_-hspX26Nk_YvOLdXDnYxRJ24Z4/edit?gid=1637743449" target="_blank" class="text-blue-400 hover:underline">Google Spreadsheet Link</a>',
       'Added new Tools section:',
-      '- TR Planner: Comprehensive replacement for the Shorts Planner with enhanced QoL features, visual progress indicators, and advanced optimization options',
+      '• TR Planner: Comprehensive replacement for the Shorts Planner with enhanced QoL features, visual progress indicators, and advanced optimization options',
     ]
   },
   {
@@ -159,7 +160,8 @@ const changelog =
         <p class="text-gray-400 mb-4">Based on {{ release.baseVersion }}</p>
         <ul class="list-disc list-inside space-y-2">
           <li v-for="change in release.changes" :key="change" class="text-gray-200">
-            {{ change }}
+            <!-- Hier v-html verwenden, um HTML-Tags zu interpretieren -->
+            <span v-html="change"></span>
           </li> 
         </ul>
       </div>

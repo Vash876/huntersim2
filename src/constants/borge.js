@@ -469,6 +469,8 @@ export const UPGRADES_BY_CURRENCY = {
     { key: 'critchance', label: 'Crit Chance', max: 100 },
     { key: 'critpower', label: 'Crit Power', max: 100 },
     { key: 'atkspeed', label: 'ATK Speed', max: 100 },
+
+    { key: 'upgrades.inscryptions.i60', label: 'Inscryption #60', max: 10 },
     { key: 'upgrades.inscryptions.i80', label: 'Inscryption #80', max: 10 },
     { key: 'upgrades.inscryptions.i84', label: 'Inscryption #84', max: 10 },
     { key: 'upgrades.inscryptions.i87', label: 'Inscryption #87', max: 10 },
