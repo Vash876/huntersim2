@@ -1057,9 +1057,22 @@ function updateFollowingStepsStats(modifiedStepIndex) {
     const nextStep = trSteps[i];
     // Kopie seiner Stats
     let newStats = { ...nextStep.stats };
-
-    // Keys, die IMMER aktualisiert werden müssen
-    const alwaysUpdateKeys = ['trCount', 'allTimeOrbs'];
+    
+    // EXPLIZIT setzen des trCount-Werts
+    // Der TR-Count für den Schritt i sollte sein: Basis-TR-Count + i
+    newStats.trCount = trCount.value + i;
+    
+    // EXPLIZIT setzen des allTimeOrbs-Werts
+    // Die All-Time Orbs sollten eine Akkumulation aus dem vorherigen Schritt sein
+    if (i === modifiedStepIndex + 1) {
+      // Erster Folgeschritt: Nimm die Orbs aus dem modifizierten Schritt + seine Gains
+      const modifiedStep = trSteps[modifiedStepIndex];
+      newStats.allTimeOrbs = (modifiedStep.stats.allTimeOrbs || allTimeOrbs.value) + getStepOrbGains(modifiedStep);
+    } else {
+      // Spätere Folgeschritte: Nimm die Orbs aus dem vorherigen Schritt + seine Gains
+      const prevStep = trSteps[i-1];
+      newStats.allTimeOrbs = prevStep.stats.allTimeOrbs + getStepOrbGains(prevStep);
+    }
 
     // 3a) Stats jedes Folgeschritts anpassen
     Object.keys(accumulatedStats).forEach(key => {
@@ -1179,9 +1192,19 @@ function getCurrentLevel(boost, step) {
 
 // TR Requirement für einen Schritt berechnen
 function getStepOrbRequirement(step, stepIndex) {
-  // TR-Count und AllTimeOrbs aus step.stats oder aus dem ersten Schritt verwenden
-  const stepTRCount = stepIndex === 0 ? trCount.value : step.stats.trCount || 0;
-  const stepAllTimeOrbs = stepIndex === 0 ? allTimeOrbs.value : step.stats.allTimeOrbs || 0;
+  // TR-Count für diesen Schritt korrekt berechnen
+  // Für den ersten Schritt: Aktuelle TR + 1
+  // Für weitere Schritte: TR aus den Stats + 1 (für den nächsten TR)
+  const stepTRCount = stepIndex === 0 ? 
+    trCount.value : 
+    (step.stats.trCount || 0);
+  
+  // All-Time Orbs bis zu diesem Punkt
+  const stepAllTimeOrbs = stepIndex === 0 ? 
+    allTimeOrbs.value : 
+    step.stats.allTimeOrbs || 0;
+  
+  console.log(`Calculating requirement for Step ${stepIndex}, TR ${stepTRCount}, AllTimeOrbs: ${stepAllTimeOrbs}`);
   
   return calculateOrbRequirement(stepTRCount, stepAllTimeOrbs);
 }
