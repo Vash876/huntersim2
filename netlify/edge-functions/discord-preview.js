@@ -14,12 +14,22 @@ export default async function handler(request, context) {
     const hunterId = url.pathname.substring(1);
     const buildCode = url.searchParams.get('code');
     
+    // Ziel-URL für die normale App
+    const destinationUrl = `https://hunter-sim2.netlify.app${url.pathname}?code=${buildCode}`;
+    
+    // WICHTIG: Prüfen, ob wir bereits auf der richtigen Domain sind, um Redirect-Schleifen zu vermeiden
+    // Wenn die aktuelle URL bereits hunter-sim2.netlify.app ist, nicht weiterleiten
+    if (url.hostname === 'hunter-sim2.netlify.app') {
+      // Wir sind bereits auf der Hauptapp-Domain, direkt durchlassen
+      return context.next();
+    }
+    
     // Für normale Browser direkt zur eigentlichen App weiterleiten (ohne Edge Function zu belasten)
     if (!isDiscordBot && !isDevelopmentMode) {
       return new Response('Redirecting...', {
         status: 302,
         headers: {
-          'Location': `https://hunter-sim2.netlify.app${url.pathname}?code=${buildCode}`,
+          'Location': destinationUrl,
           'Cache-Control': 'public, max-age=86400'
         }
       });
@@ -39,7 +49,7 @@ export default async function handler(request, context) {
     
     const hunter = hunters[hunterId] || { name: 'Hunter', color: '#9ca3af' };
     
-    // HTML mit Meta-Tags zurückgeben (unverändert)
+    // HTML mit Meta-Tags zurückgeben
     const html = `
       <!DOCTYPE html>
       <html>
@@ -53,7 +63,7 @@ export default async function handler(request, context) {
           <meta property="theme-color" content="${hunter.color}" />
           
           <!-- Weiterleitung für normale Browser zur Hauptanwendung -->
-          <meta http-equiv="refresh" content="0;url=https://hunter-sim2.netlify.app${url.pathname}?code=${buildCode}">
+          <meta http-equiv="refresh" content="0;url=${destinationUrl}">
         </head>
         <body>
           <p>Redirecting to Hunter Simulator...</p>
