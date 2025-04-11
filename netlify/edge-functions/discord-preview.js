@@ -52,8 +52,8 @@ export default async function handler(request, context) {
           <meta property="og:site_name" content="Hunter Simulator" />
           <meta property="theme-color" content="${hunter.color}" />
           
-          <!-- Weiterleitung für normale Browser -->
-          <meta http-equiv="refresh" content="0;url=${url.href}">
+          <!-- Weiterleitung für normale Browser zur Hauptanwendung -->
+          <meta http-equiv="refresh" content="0;url=https://hunter-sim2.netlify.app${url.pathname}?code=${buildCode}">
         </head>
         <body>
           <p>Redirecting to Hunter Simulator...</p>
