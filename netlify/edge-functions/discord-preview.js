@@ -3,8 +3,13 @@ export default async function handler(request, context) {
   const userAgent = request.headers.get('user-agent') || '';
   
   // Discord Bot oder Entwicklungsmodus erkennen
-  const isDiscordBot = userAgent.includes('Discordbot');
+  const isDiscordBot = userAgent.includes('Discordbot') || userAgent.includes('bot') || userAgent.includes('Bot');
   const isDevelopmentMode = url.searchParams.has('preview');
+  
+  // WICHTIG: Prüfen, ob wir bereits auf der richtigen Domain sind
+  if (url.hostname === 'hunter-sim2.netlify.app') {
+    return context.next();
+  }
   
   // Prüfen, ob es ein Build-Link ist
   if (url.pathname.match(/\/[a-zA-Z0-9]+/) && 
@@ -17,14 +22,7 @@ export default async function handler(request, context) {
     // Ziel-URL für die normale App
     const destinationUrl = `https://hunter-sim2.netlify.app${url.pathname}?code=${buildCode}`;
     
-    // WICHTIG: Prüfen, ob wir bereits auf der richtigen Domain sind, um Redirect-Schleifen zu vermeiden
-    // Wenn die aktuelle URL bereits hunter-sim2.netlify.app ist, nicht weiterleiten
-    if (url.hostname === 'hunter-sim2.netlify.app') {
-      // Wir sind bereits auf der Hauptapp-Domain, direkt durchlassen
-      return context.next();
-    }
-    
-    // Für normale Browser direkt zur eigentlichen App weiterleiten (ohne Edge Function zu belasten)
+    // Für normale Browser direkt zur eigentlichen App weiterleiten
     if (!isDiscordBot && !isDevelopmentMode) {
       return new Response('Redirecting...', {
         status: 302,
@@ -49,36 +47,50 @@ export default async function handler(request, context) {
     
     const hunter = hunters[hunterId] || { name: 'Hunter', color: '#9ca3af' };
     
-    // HTML mit Meta-Tags zurückgeben
+    // HTML mit Meta-Tags zurückgeben - ERWEITERT mit mehr Meta-Tags für Discord
     const html = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>Hunter Simulator 2 - ${hunter.name} ${levelText}</title>
+          
+          <!-- Standard Meta-Tags -->
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          
+          <!-- Open Graph / Discord Meta-Tags -->
           <meta property="og:title" content="${hunter.name} ${levelText}" />
           <meta property="og:description" content="Check out this ${hunter.name} build on Hunter Simulator." />
           <meta property="og:url" content="${url.href}" />
           <meta property="og:type" content="website" />
           <meta property="og:site_name" content="Hunter Simulator" />
+          <meta property="og:image" content="https://hunter-sim2.netlify.app/hunter-${hunterId}.png" />
           <meta property="theme-color" content="${hunter.color}" />
           
+          <!-- Twitter Card Meta-Tags -->
+          <meta name="twitter:card" content="summary" />
+          <meta name="twitter:title" content="${hunter.name} ${levelText}" />
+          <meta name="twitter:description" content="Check out this ${hunter.name} build on Hunter Simulator." />
+          
           <!-- Weiterleitung für normale Browser zur Hauptanwendung -->
-          <meta http-equiv="refresh" content="0;url=${destinationUrl}">
+          <meta http-equiv="refresh" content="2;url=${destinationUrl}">
         </head>
-        <body>
+        <body style="background-color: #111827; color: white; font-family: sans-serif; padding: 20px; text-align: center;">
+          <h1 style="color: ${hunter.color};">${hunter.name} ${levelText}</h1>
           <p>Redirecting to Hunter Simulator...</p>
+          <p><a href="${destinationUrl}" style="color: ${hunter.color};">Click here if you are not redirected automatically</a></p>
         </body>
       </html>
     `;
     
-    // Mit Cache-Kontrolle zurückgeben (24 Stunden)
+    // Mit Cache-Kontrolle zurückgeben, aber mit NO-CACHE für Discord-Bots
     return new Response(html, {
       headers: { 
         'Content-Type': 'text/html',
-        'Cache-Control': 'public, max-age=86400, s-maxage=86400', // 24 Stunden
-        'Surrogate-Control': 'public, max-age=86400, s-maxage=86400',
-        'Cache-Tag': `discord-preview-${hunterId}-${buildCode}`,
-        'Vary': 'User-Agent'
+        'Cache-Control': isDiscordBot ? 'no-cache, no-store' : 'public, max-age=86400',
+        'Vary': 'User-Agent',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Bot-Type': isDiscordBot ? 'discord' : 'browser'
       }
     });
   }
@@ -86,6 +98,7 @@ export default async function handler(request, context) {
   // Für alle anderen Anfragen: normale Seite anzeigen
   return context.next();
 }
+
 // ========== Build-Code Parsing Logik ==========
 
 // Base58-Alphabet für die Codierung
