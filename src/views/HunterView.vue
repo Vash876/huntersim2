@@ -509,7 +509,7 @@ const lootFilters = ref({
 const hunterImage = computed(() => {
   const hunterId = route.params.hunterId || 'borge';
   const hunter = getHunterById(hunterId);
-  return hunter?.icon || ''; // Verwende die Icon-URL aus hunters.js
+  return hunter?.image || ''; // Verwende die Icon-URL aus hunters.js
 });
 
 // Override-Modal öffnen

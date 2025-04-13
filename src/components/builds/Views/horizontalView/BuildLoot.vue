@@ -171,7 +171,7 @@
               :src="icons.mat1" 
               alt="Material 1" 
               class="mr-1.5"
-              :style="{ width: isLowResolution ? '16px' : '19px', height: isLowResolution ? '16px' : '19px' }" 
+              :style="{ width: isLowResolution ? '16px' : '20px', height: isLowResolution ? '16px' : '20px' }" 
             />
             <IconDiamond v-else :size="isLowResolution ? 12 : 14" class="mr-1.5 text-red-400" />
             <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
@@ -256,7 +256,7 @@
               :src="icons.mat2" 
               alt="Material 2" 
               class="mr-1.5"
-              :style="{ width: isLowResolution ? '16px' : '19px', height: isLowResolution ? '16px' : '19px' }" 
+              :style="{ width: isLowResolution ? '16px' : '20px', height: isLowResolution ? '16px' : '20px' }" 
             />
             <IconHexagon v-else :size="isLowResolution ? 12 : 14" class="mr-1.5 text-orange-400" />
             <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
@@ -341,7 +341,7 @@
               :src="icons.mat3" 
               alt="Material 3" 
               class="mr-1.5"
-              :style="{ width: isLowResolution ? '16px' : '19px', height: isLowResolution ? '16px' : '19px' }" 
+              :style="{ width: isLowResolution ? '16px' : '20px', height: isLowResolution ? '16px' : '20px' }" 
             />
             <IconHexagons v-else :size="isLowResolution ? 12 : 14" class="mr-1.5 text-amber-400" />
             <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
@@ -426,7 +426,7 @@
               :src="icons.xp" 
               alt="XP" 
               class="mr-1.5"
-              :style="{ width: isLowResolution ? '16px' : '19px', height: isLowResolution ? '16px' : '19px' }" 
+              :style="{ width: isLowResolution ? '16px' : '20px', height: isLowResolution ? '16px' : '20px' }" 
             />
             <IconBrightness v-else :size="isLowResolution ? 12 : 14" class="mr-1.5 text-blue-400" />
             <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
@@ -701,7 +701,7 @@ onUnmounted(() => {
 
 .resource-box {
   min-width: 0;
-  padding: 0.5rem;
+  padding: 0.35rem;
   background-color: rgb(18, 26, 48);
   border-radius: 0.5rem;
   position: relative;

@@ -19,21 +19,24 @@ export const HUNTERS = [
     id: 'borge',
     name: 'Borge',
     color: 'red',
-    icon: iconBorge,
+    icon: IconTool,
+    image: iconBorge,
     statsModule: () => import('./borge'),
   },
   {
     id: 'ozzy',
     name: 'Ozzy',
     color: 'green',
-    icon: iconOzzy,
+    icon: IconProng,
+    image: iconOzzy,
     statsModule: () => import('./ozzy'),
   },
   {
     id: 'knox',
     name: 'Knox',
     color: 'blue',
-    icon: iconKnox,
+    icon: IconAnchor,
+    image: iconKnox,
     statsModule: () => import('./knox'),
   }
 ];
