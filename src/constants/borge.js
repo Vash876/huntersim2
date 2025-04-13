@@ -500,3 +500,17 @@ export const CURRENCY_LABELS_SHORT = {
   [CURRENCY_TYPES.BIOMATTER]: 'HBM',
   [CURRENCY_TYPES.FRAGS]: 'Frags',
 };
+
+// Direkte Imports für die Bilder
+import mat1Icon from '../assets/borge/loot_mat1.png';
+import mat2Icon from '../assets/borge/loot_mat2.png';
+import mat3Icon from '../assets/borge/loot_mat3.png';
+import xpIcon from '../assets/borge/loot_xp.png';
+
+// Pfade zu den Loot-Icons mit direkten Imports
+export const LOOT_ICONS = {
+  mat1: mat1Icon,
+  mat2: mat2Icon,
+  mat3: mat3Icon,
+  xp: xpIcon,
+};

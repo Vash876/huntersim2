@@ -195,7 +195,15 @@
               <!-- Erste Einheit: Label links und Run Diff rechts -->
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  <IconDiamond size="14" class="text-red-400" />
+                  <!-- Benutze das custom Icon, wenn verfügbar, sonst das Standard-Icon -->
+                  <img 
+                    v-if="hasIcon('mat1')" 
+                    :src="icons.mat1" 
+                    alt="Material 1" 
+                    class="mr-1.5 resource-image" 
+                    :style="{ width: '20px', height: '20px' }" 
+                  />
+                  <IconDiamond v-else size="14" class="text-red-400 mr-1.5" />
                   <span class="text-xs text-gray-300 ml-1">{{ resultLabels.mat1 || 'Mat 1' }}</span>
                 </div>
                 <span 
@@ -241,7 +249,15 @@
               <!-- Erste Einheit: Label links und Run Diff rechts -->
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  <IconHexagon size="14" class="text-orange-400" />
+                  <!-- Benutze das custom Icon, wenn verfügbar, sonst das Standard-Icon -->
+                  <img 
+                    v-if="hasIcon('mat2')" 
+                    :src="icons.mat2" 
+                    alt="Material 2" 
+                    class="mr-1.5 resource-image" 
+                    :style="{ width: '20px', height: '20px' }" 
+                  />
+                  <IconHexagon v-else size="14" class="text-orange-400 mr-1.5" />
                   <span class="text-xs text-gray-300 ml-1">{{ resultLabels.mat2 || 'Mat 2' }}</span>
                 </div>
                 <span 
@@ -287,7 +303,15 @@
               <!-- Erste Einheit: Label links und Run Diff rechts -->
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  <IconHexagons size="14" class="text-amber-400" />
+                  <!-- Benutze das custom Icon, wenn verfügbar, sonst das Standard-Icon -->
+                  <img 
+                    v-if="hasIcon('mat3')" 
+                    :src="icons.mat3" 
+                    alt="Material 3" 
+                    class="mr-1.5 resource-image" 
+                    :style="{ width: '20px', height: '20px' }" 
+                  />
+                  <IconHexagons v-else size="14" class="text-amber-400 mr-1.5" />
                   <span class="text-xs text-gray-300 ml-1">{{ resultLabels.mat3 || 'Mat 3' }}</span>
                 </div>
                 <span 
@@ -333,7 +357,15 @@
               <!-- Erste Einheit: Label links und Run Diff rechts -->
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  <IconBrightness size="14" class="text-blue-400" />
+                  <!-- Benutze das custom Icon, wenn verfügbar, sonst das Standard-Icon -->
+                  <img 
+                    v-if="hasIcon('xp')" 
+                    :src="icons.xp" 
+                    alt="XP" 
+                    class="mr-1.5 resource-image" 
+                    :style="{ width: '20px', height: '20px' }" 
+                  />
+                  <IconBrightness v-else size="14" class="text-blue-400 mr-1.5" />
                   <span class="text-xs text-gray-300 ml-1">{{ resultLabels.xp || 'XP' }}</span>
                 </div>
                 <span 
@@ -527,6 +559,7 @@ import {
 } from '@tabler/icons-vue';
 import { useRoute } from 'vue-router';
 import { useBuildEvaluation } from '@/composables/useBuildEvaluation';
+import { useLootIcons } from '@/composables/useLootIcons'; // Importiere useLootIcons
 import { 
   formatNumber, formatStage, formatTime, formatPercent, getColorRGB,
   getDiffClasses, getDiffIcon, getDiffText,
@@ -593,6 +626,8 @@ const lootFilters = inject('lootFilters', ref({
   xp: true
 }));
 
+// Zusätzliche Imports und Logik für die Loot-Icons
+const { icons, hasIcon } = useLootIcons(props.hunterId);
 
 // Build-Evaluierung mit dem Composable
 const {
@@ -738,6 +773,12 @@ onUnmounted(() => {
   padding: 0.5rem;
   background-color: rgb(18, 26, 48);
   border-radius: 0.5rem;
+}
+
+.resource-image {
+  object-fit: contain;
+  display: inline-flex;
+  vertical-align: middle;
 }
 
 @media (max-width: 640px) {

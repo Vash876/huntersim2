@@ -68,6 +68,7 @@
           :reference-results="referenceResults"
           :is-reference-build="isReferenceBuild"
           :result-labels="resultLabels"
+          :hunterId="hunterId"
         />
         
         <!-- Boss-Statistiken -->

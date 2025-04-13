@@ -17,6 +17,7 @@ import {
   IconBuildingCottage,
 } from '@tabler/icons-vue';
 
+
 export const NAVIGATION = {
   hunters: [
     {

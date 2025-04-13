@@ -342,3 +342,17 @@ export const CURRENCY_LABELS_SHORT = {
   [CURRENCY_TYPES.QUARTZ]: 'Quartz',
   [CURRENCY_TYPES.TESSARECTS]: 'Tess',
 };
+
+// Direkte Imports für die Bilder
+import mat1Icon from '../assets/knox/loot_mat1.png';
+import mat2Icon from '../assets/knox/loot_mat2.png';
+import mat3Icon from '../assets/knox/loot_mat3.png';
+import xpIcon from '../assets/knox/loot_xp.png';
+
+// Pfade zu den Loot-Icons mit direkten Imports
+export const LOOT_ICONS = {
+  mat1: mat1Icon,
+  mat2: mat2Icon,
+  mat3: mat3Icon,
+  xp: xpIcon,
+};

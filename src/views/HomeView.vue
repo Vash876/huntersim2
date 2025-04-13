@@ -1,7 +1,17 @@
 <script setup>
 const changelog = 
 [
-{
+
+  {
+    version: '2.2.2',
+    date: '2025-04-13',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      'Integrated original Hunter and Resource icons from CIFI',
+      'Special thanks to Chrysto / Octocube Games for providing the official assets!'
+    ]
+  },
+  {
     version: '2.2.1',
     date: '2025-04-06',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
@@ -9,7 +19,7 @@ const changelog =
       'Removed Tools Section temporarily to fix some bugs',
     ]
   },
-{
+  {
     version: '2.2.0',
     date: '2025-04-06',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',

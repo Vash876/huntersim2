@@ -1,21 +1,23 @@
 <!-- filepath: /c:/Users/igorn/projects/huntersim2/src/App.vue -->
 <script setup>
 import AppNavbar from './components/common/AppNavbar.vue';
+import AppFooter from './components/common/AppFooter.vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-900 text-white">
+  <div class="flex flex-col min-h-screen bg-slate-900 text-white">
     <AppNavbar />
-    <main>
+    <main class="flex-1">
       <router-view v-slot="{ Component, route }">
         <transition name="page" mode="out-in">
           <component :is="Component" :key="route.fullPath" />
         </transition>
       </router-view>
     </main>
+    <AppFooter />
   </div>
 </template>
 

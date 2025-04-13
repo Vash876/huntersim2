@@ -165,8 +165,15 @@
         <!-- Material 1 -->
         <div class="resource-box">
           <!-- Header mit Icon und Label -->
-          <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
-            <IconDiamond :size="isLowResolution ? 12 : 14" class="mr-1.5 text-red-400" />
+          <div class="flex items-center border-b border-gray-700/50 pb-0.5 mb-1.5">
+            <img 
+              v-if="hasIcon('mat1')" 
+              :src="icons.mat1" 
+              alt="Material 1" 
+              class="mr-1.5"
+              :style="{ width: isLowResolution ? '16px' : '19px', height: isLowResolution ? '16px' : '19px' }" 
+            />
+            <IconDiamond v-else :size="isLowResolution ? 12 : 14" class="mr-1.5 text-red-400" />
             <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
               {{ resultLabels.mat1 || 'Mat 1' }}
             </span>
@@ -243,8 +250,15 @@
         <!-- Material 2 -->
         <div class="resource-box">
           <!-- Header mit Icon und Label -->
-          <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
-            <IconHexagon :size="isLowResolution ? 12 : 14" class="mr-1.5 text-orange-400" />
+          <div class="flex items-center border-b border-gray-700/50 pb-0.5 mb-1.5">
+            <img 
+              v-if="hasIcon('mat2')" 
+              :src="icons.mat2" 
+              alt="Material 2" 
+              class="mr-1.5"
+              :style="{ width: isLowResolution ? '16px' : '19px', height: isLowResolution ? '16px' : '19px' }" 
+            />
+            <IconHexagon v-else :size="isLowResolution ? 12 : 14" class="mr-1.5 text-orange-400" />
             <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
               {{ resultLabels.mat2 || 'Mat 2' }}
             </span>
@@ -321,8 +335,15 @@
         <!-- Material 3 -->
         <div class="resource-box">
           <!-- Header mit Icon und Label -->
-          <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
-            <IconHexagons :size="isLowResolution ? 12 : 14" class="mr-1.5 text-amber-400" />
+          <div class="flex items-center border-b border-gray-700/50 pb-0.5 mb-1.5">
+            <img 
+              v-if="hasIcon('mat3')" 
+              :src="icons.mat3" 
+              alt="Material 3" 
+              class="mr-1.5"
+              :style="{ width: isLowResolution ? '16px' : '19px', height: isLowResolution ? '16px' : '19px' }" 
+            />
+            <IconHexagons v-else :size="isLowResolution ? 12 : 14" class="mr-1.5 text-amber-400" />
             <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
               {{ resultLabels.mat3 || 'Mat 3' }}
             </span>
@@ -399,8 +420,15 @@
         <!-- XP Resource -->
         <div class="resource-box">
           <!-- Header mit Icon und Label -->
-          <div class="flex items-center border-b border-gray-700/50 pb-1 mb-1.5">
-            <IconBrightness :size="isLowResolution ? 12 : 14" class="mr-1.5 text-blue-400" />
+          <div class="flex items-center border-b border-gray-700/50 pb-0.5 mb-1.5">
+            <img 
+              v-if="hasIcon('xp')" 
+              :src="icons.xp" 
+              alt="XP" 
+              class="mr-1.5"
+              :style="{ width: isLowResolution ? '16px' : '19px', height: isLowResolution ? '16px' : '19px' }" 
+            />
+            <IconBrightness v-else :size="isLowResolution ? 12 : 14" class="mr-1.5 text-blue-400" />
             <span class="text-gray-300" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
               {{ resultLabels.xp || 'XP' }}
             </span>
@@ -574,6 +602,7 @@ import {
   IconAlertCircle, IconBrightness, IconDiamond, IconHexagon, IconHexagons,
   IconReportMoney, IconStairs, IconClock, IconSword, IconHeartFilled
 } from '@tabler/icons-vue';
+import { useLootIcons } from '@/composables/useLootIcons';
 import { 
   formatNumber, formatStage, formatTime, formatPercent,
   getDiffClasses, getDiffIcon, getDiffText,
@@ -623,10 +652,17 @@ const props = defineProps({
   hunterColor: { 
     type: String,
     default: 'blue'
+  },
+  hunterId: { 
+    type: String,
+    required: true
   }
 });
 
 const emit = defineEmits(['reevaluate']);
+
+// Loot-Icons für den aktuellen Hunter laden
+const { icons, hasIcon } = useLootIcons(props.hunterId);
 
 // Fortschrittsanzeige Prozentsatz
 const progressPercent = computed(() => {
@@ -721,5 +757,12 @@ onUnmounted(() => {
 /* Verbessere das Layout der Resource-Boxen */
 .resource-box .grid {
   align-items: flex-start;
+}
+
+/* Zusätzlicher Style für die Icon-Bilder */
+img.resource-icon {
+  object-fit: contain;
+  display: inline-flex;
+  vertical-align: middle;
 }
 </style>

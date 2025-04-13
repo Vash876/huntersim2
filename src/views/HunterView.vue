@@ -4,11 +4,24 @@
     <!-- Top Section mit integriertem Header und Aktionsleiste -->
     <div class="mb-6 rounded-lg overflow-hidden shadow-lg">
       <!-- Header mit Farb-Gradient -->
-      <div :class="`bg-gradient-to-r ${getGradientColors()} p-5 border-b border-gray-600`">
+      <div :class="`bg-gradient-to-r ${getGradientColors()} px-5 py-5 sm:py-0.5 border-b border-gray-600`">
         <div class="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 class="text-2xl font-bold mb-1">{{ currentHunter.name }} Simulator</h1>
-            <p class="text-sm text-gray-300">Compare builds and optimize your performance</p>
+          <div class="flex items-center gap-4">
+            <!-- Hunter-Bild -->
+            <div class="hidden sm:flex items-center justify-center">
+              <img 
+                :src="hunterImage" 
+                :alt="currentHunter.name" 
+                class="object-contain rounded-lg"
+                style="filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5));"
+              />
+            </div>
+            
+            <!-- Titel und Beschreibung -->
+            <div>
+              <h1 class="text-2xl font-bold mb-1">{{ currentHunter.name }} Simulator</h1>
+              <p class="text-sm text-gray-300">Compare builds and optimize your performance</p>
+            </div>
           </div>
           
           <div class="flex">
@@ -397,6 +410,7 @@ import { ref, computed, watch, onMounted, provide, watchEffect } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { NAVIGATION } from '../constants/navigation';
 import { useHunterStore } from '../store/hunterStore';
+import { getHunterById } from '../constants/hunters'; 
 import { 
   IconChartBar, 
   IconPlus, 
@@ -489,6 +503,13 @@ const lootFilters = ref({
   mat2: true,
   mat3: true,
   xp: true
+});
+
+// Hunter-Bild-URL direkt aus dem hunters.js-Modul
+const hunterImage = computed(() => {
+  const hunterId = route.params.hunterId || 'borge';
+  const hunter = getHunterById(hunterId);
+  return hunter?.icon || ''; // Verwende die Icon-URL aus hunters.js
 });
 
 // Override-Modal öffnen

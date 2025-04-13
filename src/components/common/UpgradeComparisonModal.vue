@@ -61,7 +61,15 @@
                   : 'text-gray-400 hover:text-gray-200'
               ]"
             >
+              <!-- Verwende das Bild, wenn verfügbar, sonst das Tabler-Icon -->
+              <img 
+                v-if="hasIcon(currency)" 
+                :src="icons[currency]" 
+                :alt="currency"
+                class="w-5 h-5 mr-1 md:mr-1.5"
+              />
               <component 
+                v-else
                 :is="getCurrencyIcon(currency)" 
                 :size="16" 
                 :class="`text-${getCurrencyColor(currency)} mr-1 md:mr-1.5`"
@@ -377,7 +385,14 @@
                 <tr class="border-b border-gray-700" v-if="hasLootProperty('mat1', true)">
                   <td class="py-2 px-4 text-gray-300">
                     <div class="flex items-center">
-                      <IconDiamond size="14" class="mr-1.5 text-red-400" />
+                      <!-- Verwende das Bild, wenn verfügbar, sonst das Tabler-Icon -->
+                      <img 
+                        v-if="hasIcon('mat1')" 
+                        :src="icons.mat1" 
+                        :alt="getMaterialLabel('mat1')" 
+                        class="w-6 h-6 mr-1.5"
+                      />
+                      <IconDiamond v-else size="14" class="mr-1.5 text-red-400" />
                       {{ getMaterialLabel('mat1') }} (per Day)
                     </div>
                   </td>
@@ -402,7 +417,14 @@
                 <tr class="border-b border-gray-700" v-if="hasLootProperty('mat2', true)">
                   <td class="py-2 px-4 text-gray-300">
                     <div class="flex items-center">
-                      <IconHexagon size="14" class="mr-1.5 text-orange-400" />
+                      <!-- Verwende das Bild, wenn verfügbar, sonst das Tabler-Icon -->
+                      <img 
+                        v-if="hasIcon('mat2')" 
+                        :src="icons.mat2" 
+                        :alt="getMaterialLabel('mat2')" 
+                        class="w-6 h-6 mr-1.5"
+                      />
+                      <IconHexagon v-else size="14" class="mr-1.5 text-orange-400" />
                       {{ getMaterialLabel('mat2') }} (per Day)
                     </div>
                   </td>
@@ -427,7 +449,14 @@
                 <tr class="border-b border-gray-700" v-if="hasLootProperty('mat3', true)">
                   <td class="py-2 px-4 text-gray-300">
                     <div class="flex items-center">
-                      <IconHexagons size="14" class="mr-1.5 text-amber-400" />
+                      <!-- Verwende das Bild, wenn verfügbar, sonst das Tabler-Icon -->
+                      <img 
+                        v-if="hasIcon('mat3')" 
+                        :src="icons.mat3" 
+                        :alt="getMaterialLabel('mat3')" 
+                        class="w-6 h-6 mr-1.5"
+                      />
+                      <IconHexagons v-else size="14" class="mr-1.5 text-amber-400" />
                       {{ getMaterialLabel('mat3') }} (per Day)
                     </div>
                   </td>
@@ -452,7 +481,14 @@
                 <tr class="border-b border-gray-700" v-if="hasLootProperty('xp', true)">
                   <td class="py-2 px-4 text-gray-300">
                     <div class="flex items-center">
-                      <IconBrightness size="14" class="mr-1.5 text-blue-400" />
+                      <!-- Verwende das Bild, wenn verfügbar, sonst das Tabler-Icon -->
+                      <img 
+                        v-if="hasIcon('xp')" 
+                        :src="icons.xp" 
+                        :alt="XP" 
+                        class="w-6 h-6 mr-1.5"
+                      />
+                      <IconBrightness v-else size="14" class="mr-1.5 text-blue-400" />
                       XP (per Day)
                     </div>
                   </td>
@@ -525,6 +561,7 @@ import {
   IconAlertCircle, IconChevronLeft, IconChevronRight,
   IconBrightness, IconClock, IconBug
 } from '@tabler/icons-vue';
+import { useLootIcons } from '../../composables/useLootIcons';
 import { useHunterStore } from '../../store/hunterStore';
 import { getHunterById } from '../../constants/hunters';
 import { UPGRADES } from '../../constants/upgrades';
@@ -585,6 +622,8 @@ const {
   isEvaluating
 } = useBuildEvaluation(props, emit);
 
+// Verwende das useLootIcons Composable
+const { icons, hasIcon } = useLootIcons(props.hunterId);
 
 // Computed, um zu prüfen, ob es irgendwelche Änderungen in den Szenarien gibt
 const hasAnyChanges = computed(() => {
@@ -990,16 +1029,23 @@ function formatDiff(value, baseValue) {
   return diff > 0 ? `+${diff.toFixed(1)}` : `${diff.toFixed(1)}`;
 }
 
-// Icons für die Währungen
+// Icons für die Währungen - AKTUALISIERT für die originalen Icons
 function getCurrencyIcon(currencyType) {
-  const icons = {
+  // Wenn der Hunter-spezifische Icon vorhanden ist, wird null zurückgegeben
+  // damit wir im Template prüfen können, ob wir das Bild oder das Tabler-Icon anzeigen sollen
+  if (hasIcon(currencyType)) {
+    return null;
+  }
+  
+  // Fallback auf Tabler-Icons
+  const fallbackIcons = {
     'mat1': IconDiamond,
     'mat2': IconHexagon, 
     'mat3': IconHexagons,
     'frags': IconPuzzle
   };
   
-  return icons[currencyType] || IconDiamond;
+  return fallbackIcons[currencyType] || IconDiamond;
 }
 
 // Farbe für die Währungs-Icons
@@ -1354,5 +1400,12 @@ onMounted(() => {
   .flex.border-b component + span {
     margin-left: 0.25rem;
   }
+}
+
+/* Stil für die Icons */
+img.w-4, img.w-3\.5 {
+  object-fit: contain;
+  display: inline-flex;
+  vertical-align: middle;
 }
 </style>

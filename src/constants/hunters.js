@@ -10,26 +10,30 @@ import {
   IconAnchor,
 } from '@tabler/icons-vue';
 
+import iconBorge from '../assets/borge/hunter_small.png';
+import iconOzzy from '../assets/ozzy/hunter_small.png';
+import iconKnox from '../assets/knox/hunter_small.png';
+
 export const HUNTERS = [
   {
     id: 'borge',
     name: 'Borge',
     color: 'red',
-    icon: IconTool,
+    icon: iconBorge,
     statsModule: () => import('./borge'),
   },
   {
     id: 'ozzy',
     name: 'Ozzy',
     color: 'green',
-    icon: IconProng,
+    icon: iconOzzy,
     statsModule: () => import('./ozzy'),
   },
   {
     id: 'knox',
     name: 'Knox',
     color: 'blue',
-    icon: IconAnchor,
+    icon: iconKnox,
     statsModule: () => import('./knox'),
   }
 ];

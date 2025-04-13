@@ -5,8 +5,9 @@
       
       <!-- Material 1 -->
       <div class="resource-card border-red-600/30">
-        <div class="resource-icon bg-red-900/20">
-          <IconDiamond :size="18" class="text-red-300" />
+        <div class="resource-icon">
+          <img v-if="hasIcon('mat1')" :src="icons.mat1" alt="Material 1" class="resource-image" />
+          <IconDiamond v-else :size="18" class="text-red-300" />
         </div>
         <div class="resource-content">
           <div class="grid grid-cols-3 mb-1.5">
@@ -60,8 +61,9 @@
       
       <!-- Material 2 -->
       <div class="resource-card border-orange-600/30">
-        <div class="resource-icon bg-orange-900/20">
-          <IconHexagon :size="18" class="text-orange-300" />
+        <div class="resource-icon">
+          <img v-if="hasIcon('mat2')" :src="icons.mat2" alt="Material 2" class="resource-image" />
+          <IconHexagon v-else :size="18" class="text-orange-300" />
         </div>
         <div class="resource-content">
           <div class="grid grid-cols-3 mb-1.5">
@@ -115,8 +117,9 @@
       
       <!-- Material 3 -->
       <div class="resource-card border-amber-600/30">
-        <div class="resource-icon bg-amber-900/20">
-          <IconHexagons :size="18" class="text-amber-300" />
+        <div class="resource-icon">
+          <img v-if="hasIcon('mat3')" :src="icons.mat3" alt="Material 3" class="resource-image" />
+          <IconHexagons v-else :size="18" class="text-amber-300" />
         </div>
         <div class="resource-content">
           <div class="grid grid-cols-3 mb-1.5">
@@ -169,8 +172,9 @@
       </div>
       <!-- XP-Karte -->
       <div class="resource-card border-blue-600/30">
-        <div class="resource-icon bg-blue-900/20">
-          <IconBrightness :size="18" class="text-blue-300" />
+        <div class="resource-icon">
+          <img v-if="hasIcon('xp')" :src="icons.xp" alt="XP" class="resource-image" />
+          <IconBrightness v-else :size="18" class="text-blue-300" />
         </div>
         <div class="resource-content">
           <div class="grid grid-cols-3 mb-1.5">
@@ -227,21 +231,19 @@
 </template>
 
 <script setup>
-import { 
-  IconBrightness, IconDiamond, IconHexagon, IconHexagons,
-  IconArrowUp, IconArrowDown, IconEqual
-} from '@tabler/icons-vue';
-import { 
-  getDiffClasses, getDiffIcon, getDiffText,
-  formatNumber, calculatePerDay
-} from '../../utils/BuildComparisonUtils';
+import { useLootIcons } from '@/composables/useLootIcons';
+import { IconBrightness, IconDiamond, IconHexagon, IconHexagons } from '@tabler/icons-vue';
+import { getDiffClasses, getDiffIcon, getDiffText, formatNumber, calculatePerDay } from '../../utils/BuildComparisonUtils';
 
 const props = defineProps({
   results: { type: Object, required: true },
   referenceResults: { type: Object, default: () => ({}) },
   isReferenceBuild: { type: Boolean, default: false },
-  resultLabels: { type: Object, required: true }
+  resultLabels: { type: Object, required: true },
+  hunterId: { type: String, required: true }
 });
+
+const { icons, hasIcon } = useLootIcons(props.hunterId);
 </script>
 
 <style scoped>
@@ -309,6 +311,13 @@ const props = defineProps({
   color: rgba(156, 163, 175, 0.8);
   line-height: 1;
   margin-top: 0.125rem;
+}
+
+/* Neuer Style für die Icons als Bilder */
+.resource-image {
+  width: 35px;
+  height: 35px;
+  object-fit: contain;
 }
 
 /* Responsive */

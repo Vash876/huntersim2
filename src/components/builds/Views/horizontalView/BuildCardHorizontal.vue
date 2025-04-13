@@ -37,6 +37,7 @@
         :totalIterations="totalIterations"
         :hunterColor="hunterColor"
         @reevaluate="handleReevaluate"
+        :hunterId="hunterId"
       />
     </div>
     
