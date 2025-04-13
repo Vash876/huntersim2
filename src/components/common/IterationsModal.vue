@@ -31,18 +31,26 @@
         <div class="mb-6">
           <div class="flex justify-between text-xs text-gray-400 mb-1">
             <span>250</span>
-            <span>4000</span>
+            <span>{{ maxIterations }}</span> <!-- Dynamischer Wert -->
           </div>
           <input 
             type="range"
             min="250"
-            max="4000"
-            step="250"
+            :max="maxIterations"
+            :step="maxIterations > 10000 ? 250 : 250" 
             v-model.number="localIterationValue"
             class="w-full accent-blue-500"
           />
           <div class="text-center mt-2 bg-gray-700 py-1.5 px-2 rounded-md">
             <span class="text-blue-400 font-medium">{{ localIterationValue }}</span> iterations
+          </div>
+          
+          <!-- Warnhinweis bei sehr hohen Iterationen -->
+          <div v-if="localIterationValue > 10000" class="mt-2 p-2 bg-amber-900/30 rounded border border-amber-800/50">
+            <p class="text-amber-400 text-xs flex items-center">
+              <IconAlertTriangle size="14" class="mr-1 flex-shrink-0" />
+              High iterations will take significantly longer to compute.
+            </p>
           </div>
         </div>
 
@@ -64,8 +72,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
-import { IconAdjustmentsHorizontal, IconX } from '@tabler/icons-vue';
+import { ref, computed, watch, onMounted } from 'vue';
+import { IconAdjustmentsHorizontal, IconX, IconAlertTriangle } from '@tabler/icons-vue';
 import { getHunterById, HUNTERS } from '../../constants/hunters';
 import { useHunterStore } from '../../store/hunterStore';
 
@@ -98,6 +106,9 @@ const hunterColor = computed(() => hunterInfo.value.color);
 // Lokale Werte
 const localIterationValue = ref(props.currentIterations);
 const applyToAllHunters = ref(false);
+
+// Max Iterations basierend auf dem Developer-Mode
+const maxIterations = ref(4000);
 
 // Presets für Iterations-Werte
 function setIterationValue(value) {
@@ -149,6 +160,28 @@ watch(() => props.hunterType, async (newValue) => {
     if (storedValue !== undefined) {
       localIterationValue.value = storedValue;
     }
+  }
+});
+
+// Prüfe beim Mounten, ob der High Iterations Mode aktiviert ist
+onMounted(() => {
+  checkHighIterationsMode();
+});
+
+// Funktion zum Prüfen des High Iterations Mode
+function checkHighIterationsMode() {
+  const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
+  if (highIterationsMode === 'true') {
+    maxIterations.value = 100000;
+  } else {
+    maxIterations.value = 4000;
+  }
+}
+
+// Überprüfe den Modus, wenn das Modal geöffnet wird
+watch(() => props.isVisible, (isVisible) => {
+  if (isVisible) {
+    checkHighIterationsMode();
   }
 });
 </script>

@@ -229,6 +229,53 @@
           <span>{{ toast.message }}</span>
         </div>
       </Transition>
+
+      <!-- Enthusiast Mode -->
+      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mt-8">
+        <div class="header p-4 flex justify-between items-center">
+          <h3 class="text-lg font-semibold text-white flex items-center">
+            <IconCode size="20" class="mr-2 text-purple-400" />
+            Enthusiast Mode
+          </h3>
+        </div>
+        
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h4 class="text-white text-md font-medium">Enable High Iterations Mode</h4>
+              <p class="text-gray-300 text-sm mt-1">
+                Allows setting iterations up to 100,000 in build evaluation for higher precision results.
+                <span class="text-amber-400">Note: Higher iterations require significantly more processing time.</span>
+              </p>
+            </div>
+            <div class="flex items-center">
+              <button 
+                @click="toggleHighIterationsMode" 
+                class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                :class="{
+                  'bg-purple-600': highIterationsEnabled,
+                  'bg-gray-600': !highIterationsEnabled
+                }"
+              >
+                <span 
+                  class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                  :class="{
+                    'translate-x-6': highIterationsEnabled,
+                    'translate-x-1': !highIterationsEnabled
+                  }"
+                ></span>
+              </button>
+            </div>
+          </div>
+
+          <div v-if="highIterationsEnabled" class="mt-3 p-3 bg-purple-900/30 rounded-lg border border-purple-900/50">
+            <div class="flex items-center text-xs text-purple-300">
+              <IconAlertTriangle size="14" class="mr-1.5" />
+              High iterations mode is enabled. You can now set up to 100,000 iterations for more accurate evaluations.
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -250,7 +297,8 @@ import {
   IconAlertCircle,
   IconInfoCircle,
   IconCircleCheck,
-  IconRefresh
+  IconRefresh,
+  IconCode // Neues Icon
 } from '@tabler/icons-vue';
 
 // Stores
@@ -265,6 +313,31 @@ const isRestoring = ref(false);
 const showResetConfirmation = ref(false);
 const fileInput = ref(null);
 const toast = ref({ show: false, message: '', type: 'info' });
+const highIterationsEnabled = ref(false); // Neue Zustandsvariable
+
+// Initialisieren der highIterationsEnabled-Variable aus localStorage
+onMounted(() => {
+  // Bestehendes onMounted-Setup
+  
+  // High Iterations Mode aus dem localStorage laden
+  const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
+  highIterationsEnabled.value = highIterationsMode === 'true';
+});
+
+// Toggle High Iterations Mode
+function toggleHighIterationsMode() {
+  highIterationsEnabled.value = !highIterationsEnabled.value;
+  
+  // In localStorage speichern
+  localStorage.setItem('huntersim_high_iterations_mode', highIterationsEnabled.value);
+  
+  // Benachrichtigung anzeigen
+  if (highIterationsEnabled.value) {
+    showToast('High iterations mode enabled - Up to 100,000 iterations available', 'info');
+  } else {
+    showToast('High iterations mode disabled - Max iterations reset to 4,000', 'info');
+  }
+}
 
 // Create base58-encoded backup
 async function createBackup() {
