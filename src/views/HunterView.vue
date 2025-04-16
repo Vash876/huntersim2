@@ -551,7 +551,7 @@ function onOverridesUpdated(payload) {
       // Aktualisiere nur die Overrides des Builds, NICHT die globalen Werte
       builds.value[buildIndex].overrides = { ...overrides };
       
-      // Aktualisiere im Store (WICHTIG: Stelle sicher, dass updateBuildOverrides richtig implementiert ist)
+      // Aktualisiere im Store
       hunterStore.updateBuildOverrides(buildId, overrides);
     }
   } else {
@@ -583,9 +583,6 @@ function getGradientColors() {
 }
 
 // Aktionen
-function newBuild() {
-  router.push(`/${route.params.hunterId}/buildform?new=true`);
-}
 
 function openStatsModal() {
   showStatsModal.value = true;
@@ -606,10 +603,6 @@ function closeIterationsModal() {
 function updateIterationValue(newValue) {
   // Der Store wird direkt durch das Modal aktualisiert
   // Kein explizites Update notwendig
-}
-
-function openStatisticsModal() {
-  isStatisticsModalOpen.value = true;
 }
 
 function closeStatisticsModal() {
