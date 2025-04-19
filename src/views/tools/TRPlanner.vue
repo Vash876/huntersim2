@@ -3,14 +3,42 @@
     <!-- Top Section mit Header und Aktionsleiste -->
     <div class="mb-6 rounded-lg overflow-hidden shadow-lg">
       <!-- Header mit Farb-Gradient -->
-      <div class="bg-gradient-to-r from-purple-900 to-gray-800 p-5 border-b border-gray-600">
-        <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="bg-gradient-to-r from-purple-900 to-gray-800 p-4 sm:p-5 border-b border-gray-600">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 class="text-2xl font-bold mb-1">TR Planner</h1>
             <p class="text-sm text-gray-300">Plan and optimize your Traversal Resets</p>
           </div>
           
-          <div class="flex">
+          <!-- Mobile: Die Buttons untereinander in einer Button-Gruppe mit Icons -->
+          <div class="flex flex-col sm:hidden w-full gap-2">
+            <button 
+              @click="openStatsModal"
+              class="flex items-center justify-between px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm"
+            >
+              <span>Maxed Boosts</span>
+              <IconChartBar size="16" />
+            </button>
+            
+            <button 
+              @click="openOrbCalculatorModal"
+              class="flex items-center justify-between px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors shadow-sm"
+            >
+              <span>Orb Calculator</span>
+              <IconCalculator size="16" />
+            </button>
+            
+            <button
+              @click="openTRPlanModal"
+              class="flex items-center justify-between px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm"
+            >
+              <span>New Plan</span>
+              <IconPlus size="16" />
+            </button>
+          </div>
+          
+          <!-- Desktop: Die Buttons nebeneinander wie bisher -->
+          <div class="hidden sm:flex">
             <button 
               @click="openStatsModal"
               class="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-l-md border-r border-blue-700 transition-colors shadow-sm"
@@ -18,7 +46,7 @@
               <IconChartBar size="16" class="mr-2" />
               <span>Maxed Boosts</span>
             </button>
-            <!-- Neuer Orb Calculator Button -->
+            
             <button 
               @click="openOrbCalculatorModal"
               class="flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white border-r border-gray-700 transition-colors shadow-sm"
@@ -26,7 +54,7 @@
               <IconCalculator size="16" class="mr-2" />
               <span>Orb Calculator</span>
             </button>
-            <!-- Build Code (Import) - rechter Button mit abgerundeter rechter Ecke -->
+            
             <button
               class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-r-md flex items-center gap-2 transition-colors shadow-sm"
               @click="openTRPlanModal"
