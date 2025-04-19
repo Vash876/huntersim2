@@ -71,7 +71,7 @@
           </div>
         </div>
 
-        <!-- Tools Dropdown
+        <!-- Tools Dropdown -->
         <div class="relative group">
           <button 
             class="px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors flex items-center space-x-1"
@@ -84,9 +84,9 @@
               size="16" class="ml-1 transition-transform duration-200"
               :class="{'rotate-180': activeCategory === 'Tools'}"
             />
-          </button>-->
+          </button>
           
-          <!-- Tools Dropdown Menu
+          <!-- Tools Dropdown Menu -->
           <div 
             class="absolute top-full right-0 mt-1 bg-gray-800 rounded-lg shadow-xl transform transition-all duration-200 origin-top-right z-50 border border-gray-700 w-56" 
             :class="activeCategory === 'Tools' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'"
@@ -104,7 +104,7 @@
               </router-link>
             </div>
           </div>
-        </div> -->
+        </div> 
         
         <!-- Settings Link (Desktop) -->
         <router-link 
@@ -227,7 +227,7 @@
                 </div>
               </div>
 
-              <!-- Tools Section
+              <!-- Tools Section -->
               <div class="mb-6">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Tools</h3>
                 
@@ -243,7 +243,7 @@
                     <span>{{ tool.name }}</span>
                   </router-link>
                 </div>
-              </div> -->
+              </div> 
             </div>
             
             <!-- Mobile Menu Footer -->
