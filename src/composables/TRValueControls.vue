@@ -188,6 +188,8 @@ const inputField = ref(null);
 const isEditing = ref(false);
 const inputValue = ref(props.value);
 
+const isIncrementing = ref(false);
+
 // Wenn sich der externe Wert ändert, aktualisiere auch den inputValue
 watchEffect(() => {
   inputValue.value = props.value;
@@ -287,6 +289,9 @@ function cancelEditing() {
 // Aktionen
 function increment() {
   if (props.value < props.maxValue && !props.disabled) {
+    // Neue Logik: Setze isIncrementing auf true, bevor wir erhöhen
+    isIncrementing.value = true;
+    
     const newValue = Math.min(props.maxValue, props.value + props.step);
     
     if (props.validateOnFinalOnly) {
@@ -294,6 +299,11 @@ function increment() {
     } else {
       emit('update:value', newValue);
     }
+    
+    // Nach kurzer Zeit zurücksetzen
+    setTimeout(() => {
+      isIncrementing.value = false;
+    }, 300);
   }
 }
 
@@ -311,6 +321,9 @@ function decrement() {
 
 function incrementFast() {
   if (props.value < props.maxValue && !props.disabled) {
+    // Neue Logik: Setze isIncrementing auf true, bevor wir erhöhen
+    isIncrementing.value = true;
+    
     const newValue = Math.min(props.maxValue, props.value + props.fastStep);
     
     if (props.validateOnFinalOnly) {
@@ -318,6 +331,11 @@ function incrementFast() {
     } else {
       emit('update:value', newValue);
     }
+    
+    // Nach kurzer Zeit zurücksetzen
+    setTimeout(() => {
+      isIncrementing.value = false;
+    }, 300);
   }
 }
 

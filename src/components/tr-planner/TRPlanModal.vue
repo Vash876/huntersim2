@@ -901,91 +901,126 @@ const isPlanValid = computed(() => {
 
 // Gefilterte Boosts nach Kategorien
 function getFilteredBoostsByCategory(step) {
-  // Finde den Index des aktuellen Schritts
-  const stepIndex = trSteps.findIndex(s => s.id === step.id);
-  // Prüfe, ob es ein Folge-TR (nicht der erste) ist
-  const isFollowUpTR = stepIndex > 0;
-  
-  // Ausgewählte Boosts von ALLEN vorherigen TRs sammeln
-  let selectedBoostsForTR = [];
-  if (isFollowUpTR) {
-    // Gehe alle vorherigen TR-Steps durch
-    for (let i = 0; i < stepIndex; i++) {
-      // Sammle alle ausgewählten Boosts dieses vorherigen Schritts
-      selectedBoostsForTR = [...selectedBoostsForTR, ...trSteps[i].selectedForNextTR];
-    }
-    // Entferne Duplikate
-    selectedBoostsForTR = [...new Set(selectedBoostsForTR)];
-    
-    // Sicherstellen, dass hoursInTR immer enthalten ist
-    if (!selectedBoostsForTR.includes('hoursInTR')) {
-      selectedBoostsForTR.push('hoursInTR');
-    }
-  }
-  
   try {
     // Versuche die maxLevelStats aus dem localStorage zu laden
     const maxStatsJSON = localStorage.getItem('trplanner_userstats');
     const maxStats = maxStatsJSON ? JSON.parse(maxStatsJSON) : {};
     
-    return boostsByCategory.map(category => {
-      // Die Kategorie kopieren
+    // WICHTIG: Die im OrbCalc gemaxten Boosts identifizieren
+    const orbCalcMaxedBoosts = step.stats._orbCalcMaxedBoosts || {};
+    
+    console.log("DEBUG in getFilteredBoostsByCategory - orbCalcMaxedBoosts:", orbCalcMaxedBoosts);
+    
+    // Finde den Index des aktuellen Schritts
+    const stepIndex = trSteps.findIndex(s => s.id === step.id);
+    // Prüfe, ob es ein Folge-TR (nicht der erste) ist
+    const isFollowUpTR = stepIndex > 0;
+    
+    // Ausgewählte Boosts von ALLEN vorherigen TRs sammeln
+    let selectedBoostsForTR = [];
+    if (isFollowUpTR) {
+      // Gehe alle vorherigen TR-Steps durch
+      for (let i = 0; i < stepIndex; i++) {
+        // Sammle alle ausgewählten Boosts dieses vorherigen Schritts
+        selectedBoostsForTR = [...selectedBoostsForTR, ...trSteps[i].selectedForNextTR];
+      }
+      // Entferne Duplikate
+      selectedBoostsForTR = [...new Set(selectedBoostsForTR)];
+      
+      // Sicherstellen, dass hoursInTR immer enthalten ist
+      if (!selectedBoostsForTR.includes('hoursInTR')) {
+        selectedBoostsForTR.push('hoursInTR');
+      }
+    }
+    
+    // Filterung der Kategorien
+    const filteredCategories = [];
+    
+    for (const category of boostsByCategory) {
       const newCategory = { ...category };
-      
-      // Stats für diesen Schritt ermitteln
       const stepStats = step.stats;
+      const filteredBoosts = [];
       
-      // Alle Boosts filtern
-      newCategory.boosts = category.boosts.filter(boost => {
+      for (const boost of category.boosts) {
         // Wenn es ein Folge-TR ist und dieser Boost nicht in irgendeinem vorherigen TR ausgewählt wurde, ausfiltern
         // Ausnahme: hoursInTR wird immer angezeigt
         if (isFollowUpTR && !selectedBoostsForTR.includes(boost.key) && boost.key !== 'hoursInTR') {
-          return false;
+          continue;
         }
         
-        // WICHTIG: Prüfe, ob der Boost im StatsInputModal maximiert wurde
-        // Boolean-Boosts: Wenn im localStorage als true markiert, ausblenden
-        if (boost.type === 'boolean' && maxStats[boost.key] === true) {
-          return false;
-        }
-        
-        // Numerische Boosts mit Maximum: Wenn im localStorage als max oder höher markiert, ausblenden
-        if (boost.type === 'number' && boost.max !== undefined) {
+        // WICHTIG: Spezielle Behandlung für Boolean-Boosts
+        if (boost.type === 'boolean') {
+          // Prüfe, ob der Boost in maxStats als true markiert ist
           const maxValue = maxStats[boost.key];
-          if (maxValue !== undefined && maxValue >= boost.max) {
-            return false;
+          
+          // KRITISCH: Wenn der Boost in maxStats=true ist UND NICHT in orbCalcMaxedBoosts markiert ist
+          if (maxValue === true && !orbCalcMaxedBoosts[boost.key]) {
+            console.log(`### Boolean Boost ${boost.key} ist in maxStats=true und NICHT in orbCalcMaxed markiert - AUSBLENDEN`);
+            continue; // Ausblenden
+          }
+          
+          // WICHTIG: Wenn der Boost in orbCalcMaxedBoosts markiert ist, IMMER anzeigen, unabhängig von maxStats
+          if (orbCalcMaxedBoosts[boost.key]) {
+            console.log(`### Boolean Boost ${boost.key} ist in orbCalcMaxed markiert - ANZEIGEN`);
+            filteredBoosts.push(boost);
+            continue;
           }
         }
         
-        // Die ursprüngliche Logik bleibt bestehen
+        // KRITISCH: Numerische Boosts mit Maximum überprüfen
+        if (boost.type === 'number' && boost.max !== undefined) {
+          // Prüfe, ob der Boost in maxStats maximal ist
+          const maxValue = maxStats[boost.key];
+          
+          // Wenn der Boost in maxStats maximal ist UND NICHT in orbCalcMaxedBoosts markiert ist
+          if (maxValue !== undefined && maxValue >= boost.max && !orbCalcMaxedBoosts[boost.key]) {
+            console.log(`### Boost ${boost.key} ist maximal in maxStats und NICHT in orbCalcMaxed markiert - AUSBLENDEN`);
+            continue; // Ausblenden
+          }
+          
+          // WICHTIG: Wenn der Boost in orbCalcMaxedBoosts markiert ist, IMMER anzeigen, unabhängig von maxStats
+          if (orbCalcMaxedBoosts[boost.key]) {
+            console.log(`### Boost ${boost.key} ist in orbCalcMaxed markiert - ANZEIGEN`);
+            filteredBoosts.push(boost);
+            continue;
+          }
+        }
+        
         // BOOLEAN BOOSTS: Nur ausfiltern, wenn es KEINE Folge-TR ist ODER der Boost nicht ausgewählt ist
         if (boost.type === 'boolean' && stepStats[boost.key] && 
             (!isFollowUpTR || !selectedBoostsForTR.includes(boost.key))) {
-          return false;
+          continue;
         }
         
         // NUMERISCHE BOOSTS: Wenn der Boost ein max hat UND wir das Maximum erreicht haben, ausfiltern
         // Ausnahme: In Folge-TRs zeigen wir ausgewählte Boosts immer an, auch wenn sie am Maximum sind
         if (boost.type === 'number' && boost.max !== undefined && stepStats[boost.key] >= boost.max &&
             (!isFollowUpTR || !selectedBoostsForTR.includes(boost.key))) {
-          return false;
+          continue;
         }
         
         // Nach Suchbegriff filtern, falls vorhanden
         if (searchQuery.value.trim()) {
           const query = searchQuery.value.toLowerCase();
-          return boost.label.toLowerCase().includes(query) || 
-                 boost.key.toLowerCase().includes(query);
+          if (!(boost.label.toLowerCase().includes(query) || boost.key.toLowerCase().includes(query))) {
+            continue;
+          }
         }
         
-        // Alle anderen Boosts behalten
-        return true;
-      });
+        // Wenn kein Filter zugeschlagen hat, behalte den Boost
+        filteredBoosts.push(boost);
+      }
       
-      return newCategory;
-    }).filter(category => category.boosts.length > 0); // Leere Kategorien entfernen
+      // Nur wenn die Kategorie gefilterte Boosts hat, füge sie hinzu
+      if (filteredBoosts.length > 0) {
+        newCategory.boosts = filteredBoosts;
+        filteredCategories.push(newCategory);
+      }
+    }
+    
+    return filteredCategories;
   } catch (error) {
-    console.error("Fehler beim Laden der maxLevelStats:", error);
+    console.error("### Fehler beim Laden der maxLevelStats:", error);
     // Falls ein Fehler auftritt, Standard-Filterung ohne maxLevelStats
     return boostsByCategory;
   }
@@ -2209,6 +2244,17 @@ function initializeWithCopyData(copyData) {
     // Zuerst alle vorherigen Steps löschen
     trSteps.length = 0;
     
+    // WICHTIG: Hier die maxLevelStats aus dem localStorage laden
+    let maxStats = {};
+    try {
+      const maxStatsJSON = localStorage.getItem('trplanner_userstats');
+      if (maxStatsJSON) {
+        maxStats = JSON.parse(maxStatsJSON);
+      }
+    } catch (e) {
+      console.error("Error reading maxLevelStats from localStorage:", e);
+    }
+    
     // Erster TR-Step mit den Basis-Daten aus copyData
     const firstStep = {
       id: `step_copy_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
@@ -2218,10 +2264,41 @@ function initializeWithCopyData(copyData) {
       stats: { ...copyData }  // Direkt alle Werte aus copyData als Stats übernehmen
     };
     
-    // Übernehme alle numerischen Boosts aus copyData als targetLevels
+    // WICHTIG: _orbCalcMaxedBoosts von copyData übernehmen, falls vorhanden
+    if (copyData._orbCalcMaxedBoosts) {
+      firstStep.stats._orbCalcMaxedBoosts = { ...copyData._orbCalcMaxedBoosts };
+    }
+    
+    // Übernehme alle numerischen Boosts aus copyData und maxStats als targetLevels
     allBoosts.forEach(boost => {
       const value = copyData[boost.key];
       
+      // WICHTIG: Hier zuerst prüfen, ob der Boost in maxStats maximal ist,
+      // aber NICHT in orbCalcMaxedBoosts
+      if (boost.type === 'number' && boost.max !== undefined) {
+        const maxValue = maxStats[boost.key];
+        const isOrbCalcMaxed = copyData._orbCalcMaxedBoosts && copyData._orbCalcMaxedBoosts[boost.key];
+        
+        if (maxValue !== undefined && maxValue >= boost.max && !isOrbCalcMaxed) {
+          console.log(`Boost ${boost.key} ist maximal in maxLevelStats (${maxValue}), wird in targetLevels gesetzt`);
+          firstStep.targetLevels[boost.key] = maxValue;
+          firstStep.stats[boost.key] = maxValue; // Auch in stats eintragen
+          return; // Skip weiteren Code für diesen Boost
+        }
+      }
+      
+      if (boost.type === 'boolean' && maxStats[boost.key] === true) {
+        const isOrbCalcActive = copyData._orbCalcMaxedBoosts && copyData._orbCalcMaxedBoosts[boost.key];
+        
+        if (!isOrbCalcActive) {
+          console.log(`Boolean Boost ${boost.key} ist true in maxLevelStats, wird in targetBools gesetzt`);
+          firstStep.targetBools[boost.key] = true;
+          firstStep.stats[boost.key] = 1; // Auch in stats eintragen
+          return; // Skip weiteren Code für diesen Boost
+        }
+      }
+      
+      // Nur wenn nicht bereits maximal, normale Logik anwenden
       if (boost.type === 'number' && value !== undefined) {
         firstStep.targetLevels[boost.key] = value;
       } else if (boost.type === 'boolean' && value === true) {
@@ -2359,59 +2436,159 @@ function resetForm() {
 
 // Plan mit den aktuellen Werten erstellen
 function createPlanWithCurrentValues() {
-  // Bestehende Werte verwenden und Modal schließen
-  emit('save', null);
-  showCreateOptions.value = false;
+  console.log("========== DEBUG CREATE PLAN ==========");
+  console.log("1. Creating plan with current values in OrbCalculatorModal");
   
-  // Timer setzen, um das neue Plan-Modal zu öffnen
-  setTimeout(() => {
-    // Store Funktion aufrufen, um den aktuellen Status als Basis zu setzen
-    trPlannerStore.setCopyPlanData(null);
-    // Signal senden, dass ein neuer Plan mit aktuellen Werten erstellt werden soll
-    emit('openNewPlan', 'current');
-  }, 100);
-}
-
-// Plan mit den Zielwerten erstellen
-function createPlanWithTargetValues() {
-  if (trSteps.length === 0) {
-    showAlert("No target values available", "Warning", "warning");
-    return;
-  }
+  // Bereite die Daten für den neuen Plan vor
+  const currentValues = { ...props.currentStats };
   
-  // Erste TR-Step als Basis nehmen
-  const firstStep = trSteps[0];
-  
-  // Kombinierte Werte aus den aktuellen Stats und Target-Werten erstellen
-  const targetStats = { 
-    ...props.currentStats,
-    trCount: trCount.value,
-    allTimeOrbs: allTimeOrbs.value
-  };
-  
-  // Target-Level hinzufügen
-  Object.entries(firstStep.targetLevels).forEach(([key, value]) => {
-    targetStats[key] = value;
-  });
-  
-  // Target-Booleans hinzufügen
-  Object.entries(firstStep.targetBools).forEach(([key, value]) => {
-    if (value) {
-      targetStats[key] = 1;
+  // Aktualisiere mit den currentBoosts
+  Object.entries(currentBoosts.value).forEach(([key, value]) => {
+    if (value !== undefined) {
+      currentValues[key] = value;
     }
   });
   
-  // Modal schließen und Timer setzen
-  showCreateOptions.value = false;
-  emit('save', null);
+  // WICHTIG: Markiere alle Boosts, die im OrbCalculatorModal auf max level gesetzt wurden,
+  // aber NICHT im StatsInputModal (maxLevelStats) maxed sind
+  currentValues._orbCalcMaxedBoosts = {};
   
-  // Timer setzen, um das neue Plan-Modal zu öffnen
-  setTimeout(() => {
-    // Target-Stats im Store speichern
-    trPlannerStore.setTargetStatsAsCurrentStats(targetStats);
-    // Signal senden, dass ein neuer Plan mit Zielwerten erstellt werden soll
-    emit('openNewPlan', 'target');
-  }, 100);
+  allBoosts.forEach(boost => {
+    if (boost.max !== undefined && boost.type === 'number') {
+      // Prüfe, ob der Boost in CurrentBoosts maximal ist
+      const currentValue = currentBoosts.value[boost.key];
+      if (currentValue !== undefined && currentValue >= boost.max) {
+        // Prüfe, ob der Boost NICHT in maxLevelStats maximal ist
+        const maxLevelValue = maxLevelStats.value[boost.key];
+        if (maxLevelValue === undefined || maxLevelValue < boost.max) {
+          // Diesen Boost als "nur im OrbCalc maximiert" markieren
+          currentValues._orbCalcMaxedBoosts[boost.key] = true;
+        }
+      }
+    }
+    else if (boost.type === 'boolean') {
+      // Prüfe, ob der Boolean-Boost in CurrentBoosts aktiviert ist
+      const isActive = currentBoosts.value[boost.key];
+      if (isActive === true) {
+        // Prüfe, ob der Boost NICHT in maxLevelStats aktiviert ist
+        const isMaxedActive = maxLevelStats.value[boost.key];
+        if (isMaxedActive !== true) {
+          // Diesen Boost als "nur im OrbCalc aktiviert" markieren
+          currentValues._orbCalcMaxedBoosts[boost.key] = true;
+        }
+      }
+    }
+  });
+  
+  // Stelle sicher, dass trCount und allTimeOrbs gesetzt sind
+  currentValues.trCount = trCount.value;
+  currentValues.allTimeOrbs = allTimeOrbs.value;
+  
+  // NEU: Füge die aktuelle Uhrzeit und das Datum hinzu
+  const now = new Date();
+  currentValues.trStartDate = now.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  currentValues.trStartTime = now.toTimeString().split(' ')[0].slice(0, 5); // Format: HH:MM
+  
+  // Speichere die Daten in trPlannerStore.tempPlanData
+  trPlannerStore.tempPlanData = JSON.parse(JSON.stringify(currentValues));
+  
+  console.log("Daten für neuen Plan vorbereitet:", trPlannerStore.tempPlanData);
+  
+  // Modal schließen
+  emit('close');
+  console.log("1.2. Emitted 'close' event");
+  
+  // Daten auch in copyPlanData speichern für die Übergabe
+  trPlannerStore.setCopyPlanData(JSON.parse(JSON.stringify(currentValues)));
+  
+  // Setze Flag im Store, dass TRPlanModal geöffnet werden soll
+  trPlannerStore.planModalShouldOpen = 'current';
+  
+  console.log("1.3. Set planModalShouldOpen flag in store:", trPlannerStore.planModalShouldOpen);
+}
+
+// Vollständige Funktion createPlanWithTargetValues
+function createPlanWithTargetValues() {
+  // Prüfe, ob wir überhaupt Target-Werte haben
+  const hasTargetValues = Object.keys(targetBoosts.value).length > 0;
+  
+  if (!hasTargetValues) {
+    console.warn("No target values available");
+    return;
+  }
+  
+  // Erstelle ein Objekt mit den Zielwerten für den neuen Plan
+  const targetStats = { ...props.currentStats };
+  
+  // Füge erst alle Current-Werte hinzu
+  Object.entries(currentBoosts.value).forEach(([key, value]) => {
+    if (value !== undefined) {
+      targetStats[key] = value;
+    }
+  });
+  
+  // Füge dann alle Target-Werte hinzu
+  Object.entries(targetBoosts.value).forEach(([key, value]) => {
+    if (value !== undefined) {
+      targetStats[key] = value;
+    }
+  });
+  
+  // WICHTIG: Markiere alle Boosts, die im OrbCalculatorModal auf max level gesetzt wurden,
+  // aber NICHT im StatsInputModal (maxLevelStats) maxed sind
+  targetStats._orbCalcMaxedBoosts = {};
+  
+  allBoosts.forEach(boost => {
+    if (boost.max !== undefined && boost.type === 'number') {
+      // Prüfe, ob der Boost in targetBoosts maximal ist
+      const targetValue = targetBoosts.value[boost.key];
+      if (targetValue !== undefined && targetValue >= boost.max) {
+        // Prüfe, ob der Boost NICHT in maxLevelStats maximal ist
+        const maxLevelValue = maxLevelStats.value[boost.key];
+        if (maxLevelValue === undefined || maxLevelValue < boost.max) {
+          // Diesen Boost als "nur im OrbCalc maximiert" markieren
+          targetStats._orbCalcMaxedBoosts[boost.key] = true;
+        }
+      }
+    }
+    else if (boost.type === 'boolean') {
+      // Prüfe, ob der Boolean-Boost in targetBoosts aktiviert ist
+      const isActive = targetBoosts.value[boost.key];
+      if (isActive === true) {
+        // Prüfe, ob der Boost NICHT in maxLevelStats aktiviert ist
+        const isMaxedActive = maxLevelStats.value[boost.key];
+        if (isMaxedActive !== true) {
+          // Diesen Boost als "nur im OrbCalc aktiviert" markieren
+          targetStats._orbCalcMaxedBoosts[boost.key] = true;
+        }
+      }
+    }
+  });
+  
+  // Stelle sicher, dass trCount und allTimeOrbs gesetzt sind
+  targetStats.trCount = trCount.value;
+  targetStats.allTimeOrbs = allTimeOrbs.value;
+  
+  // NEU: Füge die aktuelle Uhrzeit und das Datum hinzu
+  const now = new Date();
+  targetStats.trStartDate = now.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  targetStats.trStartTime = now.toTimeString().split(' ')[0].slice(0, 5); // Format: HH:MM
+  
+  // Speichere die Daten in trPlannerStore.tempPlanData
+  trPlannerStore.tempPlanData = JSON.parse(JSON.stringify(targetStats));
+  
+  console.log("Daten für neuen Plan (Target) vorbereitet:", trPlannerStore.tempPlanData);
+  
+  // Modal schließen
+  emit('close');
+  
+  // Daten auch in copyPlanData speichern
+  trPlannerStore.setCopyPlanData(JSON.parse(JSON.stringify(targetStats)));
+  
+  // Setze Flag im Store, dass TRPlanModal geöffnet werden soll
+  trPlannerStore.planModalShouldOpen = 'target';
+  
+  console.log("Target plan flag set in store:", trPlannerStore.planModalShouldOpen);
 }
 </script>
 

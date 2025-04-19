@@ -220,23 +220,26 @@
                     <template v-else>
                       <div class="w-full flex justify-center">
                         <TRValueControls
-      :value="targetBoosts[boost.key] || 0"
-      :minValue="0"  
-      :maxValue="boost.max || 999999"
-      :showFastControls="true"
-      :step="boost.normalControl || 1"
-      :fastStep="boost.fastControl || 10"
-      :valueClass="'text-white'"
-      :compact="true"
-      :autoEdit="true"  
-      :tabIndex="getTabIndex(boost, 'target')"
-      :validateOnFinalOnly="true"
-      class="tr-value-control"
-      :class="{ 'tr-improved-value': (targetBoosts[boost.key] || 0) > (currentBoosts[boost.key] || 0) }" 
-      @update:raw-value="(newVal) => updateRawTargetValue(boost, newVal)"
-      @finalize:value="() => finalizeTargetValue(boost)"
-      @blur="() => finalizeTargetValue(boost)"
-    />
+  :value="targetBoosts[boost.key] || 0"
+  :minValue="0"  
+  :maxValue="boost.max || 999999"
+  :showFastControls="true"
+  :step="boost.normalControl || 1"
+  :fastStep="boost.fastControl || 10"
+  :valueClass="'text-white'"
+  :compact="true"
+  :autoEdit="true"  
+  :tabIndex="getTabIndex(boost, 'target')"
+  :validateOnFinalOnly="true"
+  class="tr-value-control"
+  :class="{ 
+    'tr-improved-value': (targetBoosts[boost.key] || 0) > (currentBoosts[boost.key] || 0),
+    'tr-min-value': (targetBoosts[boost.key] || 0) <= (currentBoosts[boost.key] || 0)
+  }" 
+  @update:raw-value="(newVal) => updateRawTargetValue(boost, newVal)"
+  @finalize:value="() => finalizeTargetValue(boost)"
+  @blur="() => finalizeTargetValue(boost)"
+/>
                       </div>
                     </template>
                   </td>
@@ -360,6 +363,7 @@
       :autoEdit="true"  
       :tabIndex="getTabIndex(boost, 'target')"
       :validateOnFinalOnly="true"
+      :disableDecrement="(targetBoosts[boost.key] || 0) <= (currentBoosts[boost.key] || 0)"
       class="tr-value-control"
       :class="{ 'tr-improved-value': (targetBoosts[boost.key] || 0) > (currentBoosts[boost.key] || 0) }" 
       @update:raw-value="(newVal) => updateRawTargetValue(boost, newVal)"
@@ -748,8 +752,8 @@ const missingHours = computed(() => {
     return calculateMissingHours(
       hoursInTR.value,
       orbRequirement.value,
-      effectiveStats.value,              // Anstelle von currentBoosts.value
-      effectiveTargetStats.value,        // Anstelle von { ...currentBoosts.value, ...targetBoosts.value }
+      effectiveStats.value,              
+      effectiveTargetStats.value,        
       multiplierBoosts.value,
       1000
     );
@@ -916,40 +920,40 @@ function updateBoostTarget(boost, newValue) {
 }
 
 function updateRawTargetValue(boost, newValue) {
-  // Diese Funktion akzeptiert jeden Wert ohne Validierung
-  targetBoosts.value[boost.key] = newValue;
+  const currentValue = currentBoosts.value[boost.key] || 0;
+
+  // WICHTIG: Stelle sicher, dass der target-Wert nicht unter den current-Wert fallen kann
+  if (newValue < currentValue) {
+    // Wenn der neue Wert unter dem Current-Wert liegt, direkt auf Current-Wert setzen
+    targetBoosts.value[boost.key] = currentValue;
+    console.log(`Verhindere Target-Wert ${newValue} unter Current-Wert ${currentValue} für ${boost.key}`);
+  } else {
+    // Ansonsten den neuen Wert normal setzen
+    targetBoosts.value[boost.key] = newValue;
+  }
   
-  // Berechnungen bei jeder Änderung aktualisieren, aber ohne Minimalwert-Validierung
+  // Berechnungen aktualisieren
   recalculateAll();
 }
 
-// Überarbeite die finalizeTargetValue-Funktion
+// Überarbeitete finalizeTargetValue-Funktion - doppelte Absicherung gegen Werte unter Current-Value
 function finalizeTargetValue(boost) {
-  // Diese Funktion wird aufgerufen, wenn der Benutzer fertig mit der Eingabe ist
+  const currentValue = currentBoosts.value[boost.key] || 0;
+  const targetValue = targetBoosts.value[boost.key] || 0;
   
-  // Extrahiere den aktuellen Wert
-  const currentValue = targetBoosts.value[boost.key] || 0;
-  const minAllowedValue = currentBoosts.value[boost.key] || 0;
-  
-  // Validiere den Wert - jetzt erst den Mindest-Wert prüfen
-  let validValue = Math.max(Math.floor(currentValue), 0);
-  
-  // Value can't be below current - DIESE PRÜFUNG ERST BEI FINALIZE
-  if (validValue < minAllowedValue) {
-    console.log(`Target value ${validValue} for ${boost.key} too low, increasing to ${minAllowedValue}`);
-    validValue = minAllowedValue;
+  // Wenn der targetValue kleiner ist als currentValue, korrigieren
+  if (targetValue < currentValue) {
+    console.log(`Korrigiere Target-Wert für ${boost.key}: ${targetValue} -> ${currentValue}`);
+    targetBoosts.value[boost.key] = currentValue;
+    recalculateAll();
+    return;
   }
   
-  // Respect max level if available
-  if (boost.max !== undefined) {
-    validValue = Math.min(validValue, boost.max);
+  // Max-Level prüfen falls vorhanden
+  if (boost.max !== undefined && targetValue > boost.max) {
+    targetBoosts.value[boost.key] = boost.max;
+    recalculateAll();
   }
-  
-  // Update value
-  targetBoosts.value[boost.key] = validValue;
-  
-  // Update calculations
-  recalculateAll();
 }
 
 function toggleTargetBoolean(key) {
@@ -1252,12 +1256,12 @@ function saveOrbCalcToLocalStorage() {
       currentBoosts: { ...currentBoosts.value },
       targetBoosts: { ...targetBoosts.value },
       trCount: trCount.value,
-      allTimeOrbs: allTimeOrbs.value,
+      allTimeOrbs: allTimeOrbs.value, // Wichtig: allTimeOrbs direkt speichern
       lastUpdated: new Date().toISOString()
     };
     
     localStorage.setItem('trplanner_orbcalc', JSON.stringify(orbCalcData));
-    console.log('Orb Calculator data saved to localStorage');
+    console.log('Orb Calculator data saved to localStorage with allTimeOrbs:', allTimeOrbs.value);
   } catch (e) {
     console.error("Error saving to localStorage:", e);
   }
@@ -1274,10 +1278,13 @@ function loadOrbCalcFromLocalStorage() {
       if (parsedData.currentBoosts) currentBoosts.value = parsedData.currentBoosts;
       if (parsedData.targetBoosts) targetBoosts.value = parsedData.targetBoosts;
       if (parsedData.trCount !== undefined) trCount.value = parsedData.trCount;
-      if (parsedData.allTimeOrbs !== undefined) allTimeOrbs.value = parsedData.allTimeOrbs;
       
-      // Display aktualisieren mit 2 Nachkommastellen
-      allTimeOrbsDisplay.value = formatSuffixWithDecimals(allTimeOrbs.value, 2);
+      // WICHTIG: All-Time-Orbs laden
+      if (parsedData.allTimeOrbs !== undefined) {
+        allTimeOrbs.value = parsedData.allTimeOrbs;
+        allTimeOrbsDisplay.value = formatSuffixWithDecimals(parsedData.allTimeOrbs, 2);
+        console.log('Loaded allTimeOrbs from localStorage:', parsedData.allTimeOrbs);
+      }
       
       console.log('Orb Calculator data loaded from localStorage');
       
@@ -1418,6 +1425,7 @@ function resetForm() {
   resetToCurrentStats();
 }
 
+// Vollständige und korrigierte createPlanWithCurrentValues-Funktion
 function createPlanWithCurrentValues() {
   console.log("========== DEBUG CREATE PLAN ==========");
   console.log("1. Creating plan with current values in OrbCalculatorModal");
@@ -1431,6 +1439,68 @@ function createPlanWithCurrentValues() {
       currentValues[key] = value;
     }
   });
+  
+  // WICHTIG: Markiere alle Boosts, die im OrbCalculatorModal auf max level gesetzt wurden,
+  // aber NICHT im StatsInputModal (maxLevelStats) maxed sind
+  currentValues._orbCalcMaxedBoosts = {};
+  
+  // Lade maxLevelStats für den Vergleich
+  let maxStats;
+  try {
+    const maxStatsJSON = localStorage.getItem('trplanner_userstats');
+    maxStats = maxStatsJSON ? JSON.parse(maxStatsJSON) : {};
+  } catch (e) {
+    console.error("Error loading maxLevelStats:", e);
+    maxStats = {};
+  }
+  
+  // Überprüfe alle Boosts
+  console.log("Vergleiche Boosts für _orbCalcMaxedBoosts Flag:");
+  
+  allBoosts.forEach(boost => {
+    // Für numerische Boosts mit maximalen Wert
+    if (boost.max !== undefined && boost.type === 'number') {
+      // Aktueller Wert im OrbCalculator
+      const currentValue = currentBoosts.value[boost.key];
+      
+      // Wenn der Boost im OrbCalculator maximal ist...
+      if (currentValue !== undefined && currentValue >= boost.max) {
+        // Wert aus maxLevelStats (StatsInputModal)
+        const maxLevelValue = maxStats[boost.key];
+        
+        // Wenn maxLevelValue nicht existiert oder kleiner als max ist,
+        // dann wurde dieser Boost nur im OrbCalculator maximiert
+        if (maxLevelValue === undefined || maxLevelValue < boost.max) {
+          console.log(`Boost ${boost.key} ist maximal in OrbCalc (${currentValue}/${boost.max}) aber nicht in maxLevelStats (${maxLevelValue}) - markiere als OrbCalcMaxed`);
+          currentValues._orbCalcMaxedBoosts[boost.key] = true;
+        } else {
+          console.log(`Boost ${boost.key} ist maximal sowohl in OrbCalc als auch in maxLevelStats - kein Flag nötig`);
+        }
+      }
+    }
+    // Für boolean Boosts
+    else if (boost.type === 'boolean') {
+      // Ist der Boost im OrbCalculator aktiviert?
+      const isActive = currentBoosts.value[boost.key];
+      
+      // Wenn der Boost im OrbCalculator aktiviert ist...
+      if (isActive === true) {
+        // Ist der Boost im StatsInputModal aktiviert?
+        const isMaxedActive = maxStats[boost.key] === true;
+        
+        // Wenn der Boost nicht im StatsInputModal aktiviert ist,
+        // dann wurde er nur im OrbCalculator aktiviert
+        if (!isMaxedActive) {
+          console.log(`Boolean Boost ${boost.key} ist aktiv in OrbCalc aber nicht in maxLevelStats - markiere als OrbCalcMaxed`);
+          currentValues._orbCalcMaxedBoosts[boost.key] = true;
+        } else {
+          console.log(`Boolean Boost ${boost.key} ist aktiv sowohl in OrbCalc als auch in maxLevelStats - kein Flag nötig`);
+        }
+      }
+    }
+  });
+  
+  console.log("Finale _orbCalcMaxedBoosts:", currentValues._orbCalcMaxedBoosts);
   
   // Stelle sicher, dass trCount und allTimeOrbs gesetzt sind
   currentValues.trCount = trCount.value;
@@ -1448,18 +1518,15 @@ function createPlanWithCurrentValues() {
   
   // Modal schließen
   emit('close');
-  console.log("1.2. Emitted 'close' event");
   
   // Daten auch in copyPlanData speichern für die Übergabe
   trPlannerStore.setCopyPlanData(JSON.parse(JSON.stringify(currentValues)));
   
   // Setze Flag im Store, dass TRPlanModal geöffnet werden soll
   trPlannerStore.planModalShouldOpen = 'current';
-  
-  console.log("1.3. Set planModalShouldOpen flag in store:", trPlannerStore.planModalShouldOpen);
 }
 
-// Ändere auch die createPlanWithTargetValues-Funktion:
+// Vollständige und korrigierte createPlanWithTargetValues-Funktion
 function createPlanWithTargetValues() {
   // Prüfe, ob wir überhaupt Target-Werte haben
   const hasTargetValues = Object.keys(targetBoosts.value).length > 0;
@@ -1486,6 +1553,68 @@ function createPlanWithTargetValues() {
     }
   });
   
+  // WICHTIG: Markiere alle Boosts, die im OrbCalculatorModal auf max level gesetzt wurden,
+  // aber NICHT im StatsInputModal (maxLevelStats) maxed sind
+  targetStats._orbCalcMaxedBoosts = {};
+  
+  // Lade maxLevelStats für den Vergleich
+  let maxStats;
+  try {
+    const maxStatsJSON = localStorage.getItem('trplanner_userstats');
+    maxStats = maxStatsJSON ? JSON.parse(maxStatsJSON) : {};
+  } catch (e) {
+    console.error("Error loading maxLevelStats:", e);
+    maxStats = {};
+  }
+  
+  // Überprüfe alle Boosts
+  console.log("Vergleiche Boosts für _orbCalcMaxedBoosts Flag (Target):");
+  
+  allBoosts.forEach(boost => {
+    // Für numerische Boosts mit maximalen Wert
+    if (boost.max !== undefined && boost.type === 'number') {
+      // Target-Wert im OrbCalculator
+      const targetValue = targetBoosts.value[boost.key];
+      
+      // Wenn der Boost im OrbCalculator Target maximal ist...
+      if (targetValue !== undefined && targetValue >= boost.max) {
+        // Wert aus maxLevelStats (StatsInputModal)
+        const maxLevelValue = maxStats[boost.key];
+        
+        // Wenn maxLevelValue nicht existiert oder kleiner als max ist,
+        // dann wurde dieser Boost nur im OrbCalculator maximiert
+        if (maxLevelValue === undefined || maxLevelValue < boost.max) {
+          console.log(`Boost ${boost.key} ist maximal in OrbCalc Target (${targetValue}/${boost.max}) aber nicht in maxLevelStats (${maxLevelValue}) - markiere als OrbCalcMaxed`);
+          targetStats._orbCalcMaxedBoosts[boost.key] = true;
+        } else {
+          console.log(`Boost ${boost.key} ist maximal sowohl in OrbCalc Target als auch in maxLevelStats - kein Flag nötig`);
+        }
+      }
+    }
+    // Für boolean Boosts
+    else if (boost.type === 'boolean') {
+      // Ist der Boost im OrbCalculator Target aktiviert?
+      const isActive = targetBoosts.value[boost.key];
+      
+      // Wenn der Boost im OrbCalculator Target aktiviert ist...
+      if (isActive === true) {
+        // Ist der Boost im StatsInputModal aktiviert?
+        const isMaxedActive = maxStats[boost.key] === true;
+        
+        // Wenn der Boost nicht im StatsInputModal aktiviert ist,
+        // dann wurde er nur im OrbCalculator aktiviert
+        if (!isMaxedActive) {
+          console.log(`Boolean Boost ${boost.key} ist aktiv in OrbCalc Target aber nicht in maxLevelStats - markiere als OrbCalcMaxed`);
+          targetStats._orbCalcMaxedBoosts[boost.key] = true;
+        } else {
+          console.log(`Boolean Boost ${boost.key} ist aktiv sowohl in OrbCalc Target als auch in maxLevelStats - kein Flag nötig`);
+        }
+      }
+    }
+  });
+  
+  console.log("Finale _orbCalcMaxedBoosts (Target):", targetStats._orbCalcMaxedBoosts);
+  
   // Stelle sicher, dass trCount und allTimeOrbs gesetzt sind
   targetStats.trCount = trCount.value;
   targetStats.allTimeOrbs = allTimeOrbs.value;
@@ -1508,14 +1637,41 @@ function createPlanWithTargetValues() {
   
   // Setze Flag im Store, dass TRPlanModal geöffnet werden soll
   trPlannerStore.planModalShouldOpen = 'target';
-  
-  console.log("Target plan flag set in store:", trPlannerStore.planModalShouldOpen);
 }
 
 function createPlan() {
   if (isPlanValid.value) {
     console.log("Saving plan...");
   }
+}
+
+// Funktion updateAllTimeOrbs überarbeiten
+function updateAllTimeOrbs(event) {
+  allTimeOrbsRawInput.value = event.target.value.trim();
+  isEditingAllTimeOrbs.value = true;
+}
+
+// Funktion finalizeAllTimeOrbsInput überarbeiten
+function finalizeAllTimeOrbsInput() {
+  isEditingAllTimeOrbs.value = false;
+  const input = allTimeOrbsRawInput.value.trim();
+  const parsed = parseNumberWithSuffix(input);
+  
+  if (parsed !== null) {
+    allTimeOrbs.value = parsed;
+    const formattedValue = formatSuffixWithDecimals(parsed, 2);
+    allTimeOrbsDisplay.value = formattedValue;
+    
+    // Direkt nach dem Ändern der All-Time-Orbs den Wert ins localStorage speichern
+    saveOrbCalcToLocalStorage();
+  } else {
+    allTimeOrbs.value = 0;
+    allTimeOrbsDisplay.value = "0.00";
+    saveOrbCalcToLocalStorage();
+  }
+  
+  // Berechnungen aktualisieren
+  recalculateAll();
 }
 </script>
 
@@ -1549,5 +1705,23 @@ function createPlan() {
 :deep(.tr-improved-value) {
   border-color: rgb(34, 197, 94) !important;
   box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2);
+}
+
+/* NEUER STIL: Visueller Indikator für Werte am Minimum */
+:deep(.tr-min-value) button:first-child,
+:deep(.tr-min-value) button:nth-child(2) {
+  position: relative;
+  overflow: hidden;
+}
+
+:deep(.tr-min-value) button:first-child::after,
+:deep(.tr-min-value) button:nth-child(2)::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(26, 31, 43, 0.6); /* semitransparent overlay */
 }
 </style>
