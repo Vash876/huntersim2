@@ -18,11 +18,11 @@ export const boostCategories = [
   },
   {
     id: 'boonE',
-    label: 'Boon E',
+    label: 'Boon Eternity',
   },
   {
     id: 'boonH',
-    label: 'Boon H',
+    label: 'Boon Hegemony',
   },
   {
     id: 'gadget',
@@ -73,6 +73,7 @@ export const allBoosts = [
     type: 'number',
     orbcalc: true,
     tooltip: '0',
+    fastControl: 24,
     multiplier: (value, allValues) => {
       const hoursInTR = value || 0;
       const loopMods = allValues.loopMods || 0;
@@ -93,6 +94,8 @@ export const allBoosts = [
     type: 'number',
     orbcalc: true,
     tooltip: '0',
+    normalControl: 100,
+    fastControl: 1000,
     multiplier: 1,
   },
 
@@ -146,7 +149,7 @@ export const allBoosts = [
   // Inscriptions
   {
     key: 'i52',
-    label: 'Inscryption #52',
+    label: 'Inscryp. #52',
     category: 'inscryption',
     type: 'number',
     orbcalc: true,
@@ -157,7 +160,7 @@ export const allBoosts = [
   },
   {
     key: 'i78',
-    label: 'Inscryiption #78',
+    label: 'Inscryp. #78',
     category: 'inscryption',
     type: 'number',
     orbcalc: true,
@@ -168,7 +171,7 @@ export const allBoosts = [
   },
   {
     key: 'i101',
-    label: 'Inscryption #101',
+    label: 'Inscryp. #101',
     category: 'inscryption',
     type: 'number',
     orbcalc: true,
@@ -181,7 +184,7 @@ export const allBoosts = [
   //Construction Milestones
   {
     key: 'cm47',
-    label: 'Construction Milestone #47',
+    label: 'CM #47',
     category: 'cm',
     type: 'boolean',
     orbcalc: true,
@@ -199,6 +202,7 @@ export const allBoosts = [
     orbcalc: true,
     permanent: true,
     tooltip: '0',
+    multiplier: 1,
     max: 2
   },
   {
@@ -251,6 +255,7 @@ export const allBoosts = [
     orbcalc: true,
     permanent: true,
     tooltip: '0',
+    multiplier: 1,
     max: 2
   },
   {
@@ -260,6 +265,8 @@ export const allBoosts = [
     type: 'number',
     orbcalc: true,
     tooltip: '0',
+    normalControl: 100,
+    fastControl: 1000,
     // Orb-Multiplikator mit Boon H Level Abhängigkeit
     multiplier: (value, allValues) => {
       const boonLevel = allValues.boonHLevel || 0;
@@ -344,6 +351,8 @@ export const allBoosts = [
     orbcalc: true,
     permanent: false,
     tooltip: '0',
+    normalControl: 100,
+    fastControl: 1000,
     multiplier: (value) => {
       let overallMultiplier = 1;
     
@@ -564,3 +573,8 @@ export const boostsByCategory = boostCategories.map(category => ({
   ...category,
   boosts: allBoosts.filter(boost => boost.category === category.id)
 }));
+
+export const alwaysUpdateKeys = [
+  ...allBoosts.map(boost => boost.key),
+  ...generalStats.map(stat => stat.key),
+];

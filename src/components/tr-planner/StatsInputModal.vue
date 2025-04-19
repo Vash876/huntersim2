@@ -13,7 +13,7 @@
         <div class="flex justify-between items-center">
           <h2 class="text-base sm:text-lg font-bold text-white truncate mr-2">
             <span class="text-blue-400">TR Planner</span>
-            <span class=""> - Max Level Stats</span>
+            <span class=""> - Maxed Boosts</span>
           </h2>
           <div class="flex items-center gap-2">
             <button 
@@ -35,8 +35,7 @@
       <!-- Description Area -->
       <div class="p-3 bg-gray-750/60 border-b border-gray-700">
         <p class="text-xs text-gray-300">
-          These values will be automatically applied to new plans. 
-          Maxed Stats will be hidden in plan creation but still included in all calculations.
+          Mark boosts that you've already maxed out in the game. Maxed boosts will be hidden in other calculator views to reduce clutter.
         </p>
       </div>
       
@@ -68,94 +67,39 @@
             <h3 class="font-medium text-sm text-blue-200">{{ category.label }}</h3>
           </div>
           
-          <!-- Boost Parameters Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+          <!-- Grid Layout - 1 Spalte auf Mobil, 2 Spalten auf Desktop -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- Einzelner Boost-Container -->
             <div 
               v-for="(boost, boostIndex) in category.boosts" 
-              :key="boost.key" 
-              class="bg-gray-750/60 rounded-md pl-1.5 bg-gray-700/60 transition-colors border border-transparent hover:border-gray-600"
+              :key="boost.key"
+              class="border border-gray-700 rounded-md hover:bg-gray-700/30"
             >
-              <!-- Oberer Bereich: Boost Name und Max Level -->
-              <div class="flex items-start justify-between mb-1">
-                <!-- Boost Name -->
-                <div class="flex-grow">
-                  <span class="text-xs font-medium text-gray-300">{{ boost.label }}</span>
-                </div>
-                
-                <!-- Max Level Badge (wenn vorhanden) - oben rechts -->
-                <div class="flex-shrink-0 ml-2">
-                  <span 
-                    v-if="boost.max !== undefined"
-                    class="text-[10px] px-1.5 py-0.5 rounded bg-gray-600/80 text-gray-300 font-medium inline-block"
-                  >
-                    max: {{ boost.max }}
-                  </span>
-                </div>
-              </div>
-              
-              <!-- Tooltip (optional) -->
-              <div v-if="boost.tooltip && boost.tooltip !== '0'" class="text-[10px] text-gray-400 mb-1">
-                {{ boost.tooltip }}
-              </div>
-              
-              <!-- Unterer Bereich: Multiplier Info und Controls - nebeneinander -->
-              <div class="flex items-center justify-between mt-1">
-                <!-- Multipliers Info -->
-                <div class="flex-grow text-[10px] text-gray-400">
-                  <!-- Spezialfall für R6 mit part1 und part2 -->
-                  <template v-if="boost.key === 'r6' && getFragMultiplierText(boost)">
-                    <span class="text-blue-400">
-                      {{ getFragMultiplierText(boost).part1 }} {{ getFragMultiplierText(boost).part2 }}
-                    </span>
-                  </template>
-                  
-                  <!-- Standard-Anzeige für andere Boosts -->
-                  <template v-else>
-                    <template v-if="getMultiplierText(boost) && getFragMultiplierText(boost)">
-                      {{ getMultiplierText(boost) }} / <span class="text-blue-400">{{ getFragMultiplierText(boost) }}</span>
-                    </template>
-                    <template v-else-if="getMultiplierText(boost)">
-                      {{ getMultiplierText(boost) }}
-                    </template>
-                    <template v-else-if="getFragMultiplierText(boost)">
-                      <span class="text-blue-400">{{ getFragMultiplierText(boost) }}</span>
-                    </template>
-                    <!-- Leerer Platzhalter, wenn kein Multiplier angezeigt wird -->
-                    <template v-else>
-                      <span class="text-transparent">×</span>
-                    </template>
-                  </template>
-                </div>
-                
-                <!-- Controls - rechts auf der gleichen Zeile wie Multiplier -->
-                <div class="flex-shrink-0 ml-2">
-                  <!-- Boolean Type Controls -->
-                  <div v-if="boost.type === 'boolean'" class="flex justify-end min-w-[40px]">
-                    <button 
-                      @click="toggleBooleanStat(boost.key)"
-                      class="text-xs px-1.5 py-0.5 rounded-sm"
-                      :class="statValues[boost.key] ? 'bg-green-700 text-green-100' : 'bg-gray-700 hover:bg-green-800/50 text-white'"
-                      :tabindex="getTabIndex(categoryIndex, boostIndex)"
-                    >
-                      {{ statValues[boost.key] ? 'ON' : 'OFF' }}
-                    </button>
+              <div class="flex justify-between items-center p-2">
+                <!-- Linke Seite: Boost-Info -->
+                <div class="flex-1 mr-2">
+                  <div class="text-xs font-medium text-gray-200">{{ boost.label }}</div>
+                  <div v-if="boost.tooltip && boost.tooltip !== '0'" class="text-[10px] text-gray-400">
+                    {{ boost.tooltip }}
                   </div>
-                  
-                  <!-- Numeric Type Controls -->
-                  <div v-else class="flex items-center justify-end min-w-[80px]">
-                    <TRValueControls
-                      ref="valueControls"
-                      :value="statValues[boost.key] || 0"
-                      :minValue="0"
-                      :maxValue="boost.max || 9999"
-                      :showFastControls="true"
-                      :step="1"
-                      :valueClass="'text-white'"
-                      :tabIndex="getTabIndex(categoryIndex, boostIndex)"
-                      :autoEdit="true"
-                      @update:value="(newVal) => updateStatValue(boost.key, newVal, boost)"
-                      :data-boost-key="boost.key"
-                    />
+                  <div class="text-[11px] text-gray-300 mt-0.5">
+                    Max: <span :class="boost.type === 'boolean' ? 'text-green-400' : 'text-blue-400'">
+                      {{ boost.type === 'boolean' ? 'ON' : boost.max || '-' }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Rechte Seite: Toggle -->
+                <div>
+                  <div 
+                    @click="toggleMaxedState(boost.key)"
+                    class="inline-block w-10 h-5 rounded-full p-0.5 cursor-pointer transition-colors"
+                    :class="maxedBoosts[boost.key] ? 'bg-green-600' : 'bg-gray-600'"
+                  >
+                    <div 
+                      class="h-4 w-4 rounded-full bg-white transform transition-transform"
+                      :class="maxedBoosts[boost.key] ? 'translate-x-5' : ''"
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -168,6 +112,29 @@
           No boosts available
         </div>
       </div>
+
+      <!-- Summary Footer -->
+      <div class="bg-gray-800 p-3 border-t border-gray-700 sticky bottom-0 z-10">
+        <div class="flex justify-between items-center">
+          <div class="text-xs text-gray-300">
+            {{ maxedBoostsCount }} boosts marked as maxed
+          </div>
+          <div class="flex space-x-2">
+            <button 
+              @click="markAllAsMaxed" 
+              class="px-2 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs"
+            >
+              Mark All
+            </button>
+            <button 
+              @click="saveAndClose"
+              class="px-2 py-1.5 bg-gray-600 hover:bg-gray-500 text-white rounded-md text-xs"
+            >
+              Save & Close
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -175,8 +142,6 @@
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { allBoosts, boostsByCategory } from '@/constants/tr-planner';
-import TRValueControls from '@/composables/TRValueControls.vue';
-import { formatMultiplier, formatNumber } from '@/composables/format';
 import { 
   IconX, 
   IconAlertCircle,
@@ -190,10 +155,6 @@ const props = defineProps({
   currentStats: {
     type: Object,
     required: true
-  },
-  showFragmultiBoosts: {
-    type: Boolean,
-    default: false
   }
 });
 
@@ -202,10 +163,9 @@ const emit = defineEmits(['close', 'save']);
 // State
 const isLoading = ref(true);
 const error = ref(null);
-const statValues = reactive({});
-const valueControls = ref([]);
+const maxedBoosts = reactive({});
 
-// Gefilterte Boosts - Alle Boosts außer hoursInTR und loopMods
+// Gefilterte Boosts - Alle Boosts mit max Level oder vom Typ Boolean
 const filteredBoostsByCategory = computed(() => {
   return boostsByCategory
     .map(category => {
@@ -213,10 +173,8 @@ const filteredBoostsByCategory = computed(() => {
       const filteredBoosts = category.boosts.filter(boost => 
         // Ausschließen: hoursInTR und loopMods
         boost.key !== 'hoursInTR' && boost.key !== 'loopMods' &&
-        // Einschließen: Alle Boolean-Boosts
-        (boost.type === 'boolean' ||
-        // Einschließen: Alle numerischen Boosts mit max-Property
-        (boost.type === 'number'))
+        // Einschließen: Alle Boolean-Boosts oder numerische Boosts mit max Level
+        (boost.type === 'boolean' || (boost.type === 'number' && boost.max !== undefined))
       );
       
       return {
@@ -227,133 +185,10 @@ const filteredBoostsByCategory = computed(() => {
     .filter(category => category.boosts.length > 0); // Nur Kategorien mit Boosts
 });
 
-// Tabindex berechnen
-function getTabIndex(categoryIndex, boostIndex) {
-  // Wir starten bei 1 (0 ist für die erste Komponente, die fokusiert werden kann)
-  // und berechnen einen eindeutigen Index basierend auf der Kategorie und dem Boost
-  let tabIndex = 1;
-  
-  // Sicherer Zugriff auf das computed property
-  const categories = filteredBoostsByCategory.value || [];
-  
-  // Für jede vorherige Kategorie zählen wir die Boosts
-  for (let i = 0; i < categoryIndex && i < categories.length; i++) {
-    if (categories[i] && categories[i].boosts) {
-      tabIndex += categories[i].boosts.length;
-    }
-  }
-  
-  // Plus den aktuellen Boost-Index
-  tabIndex += boostIndex;
-  
-  return tabIndex;
-}
-
-function getMultiplierText(boost) {
-  if (!boost || boost.multiplier === undefined) return null;
-  
-  // Aktuellen Level verwenden
-  const boostKey = boost.key;
-  const currentLevel = statValues[boostKey] || 0;
-  
-  // Wenn Level 0 ist, aber der Boost einen Multiplier hat, immer ×1.00 anzeigen
-  if (currentLevel === 0) {
-    return '×1.00';
-  }
-  
-  // Spezialfall für Boolean-Boosts
-  if (boost.type === 'boolean') {
-    // Status direkt aus statValues nehmen
-    const isActive = statValues[boostKey] || false;
-
-    if (typeof boost.multiplier === 'number') {
-      return isActive ? formatMultiplier(boost.multiplier) : '×1.00';
-    }
-    return isActive ? formatMultiplier(boost.multiplier(1, statValues)) : '×1.00';
-  }
-  
-  // Spezialfall für Research
-  if (boostKey === 'research') {
-    try {
-      const value = boost.multiplier(currentLevel, statValues);
-      return formatMultiplier(value);
-    } catch (e) {
-      console.error(`Error calculating research multiplier:`, e);
-      return '×1.00';
-    }
-  }
-  
-  // Standardfall für numerische Boosts
-  if (typeof boost.multiplier === 'number') {
-    return formatMultiplier(boost.multiplier);
-  } else if (typeof boost.multiplier === 'function') {
-    try {
-      const value = boost.multiplier(currentLevel, statValues);
-      return formatMultiplier(value);
-    } catch (e) {
-      console.error(`Error calculating multiplier for ${boostKey}:`, e);
-      return '×1.00';
-    }
-  }
-  
-  return null;
-}
-
-// Hilfsfunktion für Fragmulti-Anzeige
-function getFragMultiplierText(boost) {
-  if (!boost || boost.fragmulti === undefined) return null;
-  
-  // Aktuellen Level verwenden
-  const boostKey = boost.key;
-  const currentLevel = statValues[boostKey] || 0;
-  
-  // Wenn Level 0 ist, aber der Boost einen FragMultiplier hat, immer ×1.00 anzeigen
-  if (currentLevel === 0) {
-    // Spezialfall für R6, der auch bei 0 einen speziellen Text hat
-    if (boostKey === 'r6') {
-      return {
-        part1: '+0.00',
-        part2: '×1.00'
-      };
-    }
-    return '×1.00';
-  }
-  
-  // Spezialfall für R6 mit +x.xx Anzeige
-  if (boostKey === 'r6') {
-    try {
-      const value = currentLevel;
-      const part1 = 2.75 * value;
-      const part2 = Math.pow(1.05, value);
-      
-      return {
-        part1: `+${part1.toFixed(2)}`,
-        part2: formatMultiplier(part2)
-      };
-    } catch (e) {
-      console.error(`Error calculating r6 fragmulti:`, e);
-      return {
-        part1: '+0.00',
-        part2: '×1.00'
-      };
-    }
-  }
-  
-  // Standardfall für numerische Boosts
-  if (typeof boost.fragmulti === 'number') {
-    return formatMultiplier(boost.fragmulti);
-  } else if (typeof boost.fragmulti === 'function') {
-    try {
-      const value = boost.fragmulti(currentLevel, statValues);
-      return formatMultiplier(value);
-    } catch (e) {
-      console.error(`Error calculating fragmulti for ${boostKey}:`, e);
-      return '×1.00';
-    }
-  }
-  
-  return null;
-}
+// Anzahl der maxed Boosts
+const maxedBoostsCount = computed(() => {
+  return Object.values(maxedBoosts).filter(value => value).length;
+});
 
 // Boosts laden
 async function loadBoostData() {
@@ -361,8 +196,8 @@ async function loadBoostData() {
     isLoading.value = true;
     error.value = null;
     
-    // Initialisiere statValues mit Standardwerten
-    initializeStatValues();
+    // Initialisiere maxedBoosts mit Standardwerten
+    initializeMaxedState();
     
     isLoading.value = false;
   } catch (err) {
@@ -372,92 +207,89 @@ async function loadBoostData() {
   }
 }
 
-// Initialisiert die statValues mit Standardwerten
-function initializeStatValues() {
-  // Für jeden Boost außer hoursInTR und loopMods initialisieren wir einen Wert
+// Initialisieren des maxed-State basierend auf aktuellen Werten
+function initializeMaxedState() {
+  // Für jeden Boost überprüfen wir, ob er bereits maxed ist
   allBoosts.forEach(boost => {
     if (boost.key !== 'hoursInTR' && boost.key !== 'loopMods') {
-      const existingValue = props.currentStats[boost.key];
-      
       if (boost.type === 'boolean') {
-        statValues[boost.key] = existingValue !== undefined ? !!existingValue : false;
-      } else if (boost.type === 'number') {
-        statValues[boost.key] = existingValue !== undefined ? existingValue : 0;
+        // Boolean Boosts sind "maxed" wenn sie aktiviert sind
+        maxedBoosts[boost.key] = props.currentStats[boost.key] === true;
+      } else if (boost.type === 'number' && boost.max !== undefined) {
+        // Numerische Boosts mit max-Property sind "maxed" wenn sie das Maximum erreicht haben
+        const currentValue = props.currentStats[boost.key] || 0;
+        maxedBoosts[boost.key] = currentValue >= boost.max;
       }
     }
   });
 }
 
-// Aktualisiere statValues wenn props aktualisiert werden
-watch(() => props.currentStats, (newStats) => {
-  if (newStats && !isLoading.value) {
-    // Aktualisiere nur die Werte, die in newStats vorhanden sind, außer hoursInTR und loopMods
-    Object.keys(newStats).forEach(key => {
-      if (key in statValues && key !== 'hoursInTR' && key !== 'loopMods') {
-        statValues[key] = newStats[key];
-      }
+// Toggle maxed state for a specific boost
+function toggleMaxedState(boostKey) {
+  // DIREKTE ZUWEISUNG DES GEGENTEILS: WICHTIG FÜR REAKTIVITÄT!
+  maxedBoosts[boostKey] = !maxedBoosts[boostKey];
+}
+
+// Mark all boosts as maxed
+function markAllAsMaxed() {
+  // Für alle angezeigten Boosts den maxed-Status auf true setzen
+  filteredBoostsByCategory.value.forEach(category => {
+    category.boosts.forEach(boost => {
+      maxedBoosts[boost.key] = true;
     });
-  }
-}, { deep: true });
-
-// Update Booststats
-function updateStatValue(boostKey, newValue, boost) {
-  // Runde den Wert für bessere UX
-  newValue = Math.floor(newValue);
-  
-  // Setze neuen Wert
-  statValues[boostKey] = newValue;
-  
-  // Begrenze auf den Maximalwert
-  if (boost.max !== undefined && statValues[boostKey] > boost.max) {
-    statValues[boostKey] = boost.max;
-  }
-  
-  // Stelle sicher, dass der Wert nicht unter 0 fällt
-  if (statValues[boostKey] < 0) {
-    statValues[boostKey] = 0;
-  }
+  });
 }
 
-// Toggle boolean stats
-function toggleBooleanStat(boostKey) {
-  statValues[boostKey] = !statValues[boostKey];
-}
-
-// Reset all stats
+// Reset all stats to not maxed
 function resetAllStats() {
-  // Direkt ohne Bestätigung zurücksetzen
-  
-  // Alle Boosts zurücksetzen, außer hoursInTR und loopMods
-  allBoosts.forEach(boost => {
-    if (boost.key !== 'hoursInTR' && boost.key !== 'loopMods') {
-      if (boost.type === 'boolean') {
-        statValues[boost.key] = false;
-      } else {
-        statValues[boost.key] = 0;
-      }
-    }
+  // Alle Boosts auf nicht-maxed zurücksetzen
+  Object.keys(maxedBoosts).forEach(key => {
+    maxedBoosts[key] = false;
   });
 }
 
 // Speichern und schließen
 function saveAndClose() {
-  // Vorhandene hoursInTR und loopMods Werte beibehalten
-  const updatedStats = {
-    ...statValues,
-    hoursInTR: props.currentStats.hoursInTR || 0,
-    loopMods: props.currentStats.loopMods || 0
-  };
+  // Wir erstellen ein neues Objekt basierend auf currentStats
+  const updatedStats = { ...props.currentStats };
+  
+  // Für jeden Boost, der als maxed markiert ist, setzen wir den entsprechenden Wert
+  Object.keys(maxedBoosts).forEach(key => {
+    const boost = allBoosts.find(b => b.key === key);
+    
+    if (!boost) return;
+    
+    if (maxedBoosts[key]) {
+      // Wenn der Boost als maxed markiert ist, setzen wir ihn auf den Max-Wert
+      if (boost.type === 'boolean') {
+        updatedStats[key] = true;
+      } else if (boost.type === 'number' && boost.max !== undefined) {
+        updatedStats[key] = boost.max;
+      }
+    } else {
+      // Wenn der Boost nicht als maxed markiert ist, setzen wir ihn auf 0 oder false
+      if (boost.type === 'boolean') {
+        updatedStats[key] = false;
+      } else if (boost.type === 'number') {
+        // Wenn der Boost früher maxed war, setzen wir ihn zurück auf 0
+        const currentValue = props.currentStats[key] || 0;
+        if (boost.max !== undefined && currentValue >= boost.max) {
+          updatedStats[key] = 0;
+        }
+      }
+    }
+  });
+  
+  // Speichere im localStorage für direkte Verwendung in anderen Modals
+  try {
+    localStorage.setItem('trplanner_userstats', JSON.stringify(updatedStats));
+  } catch (e) {
+    console.error("Error saving stats to localStorage:", e);
+  }
   
   emit('save', updatedStats);
   emit('close');
 }
-
-// Reaktive Beobachtung der statValues, um die Anzeige zu aktualisieren
-watch(statValues, () => {
-  // Diese Funktion löst eine Neuberechnung der Template-Bindungen aus
-  // Keine spezifische Logik nötig, da Vue die Neubindung automatisch handhabt
-}, { deep: true });
 
 // Initialisiere das Modal beim Öffnen
 watch(() => props.isVisible, (newValue) => {

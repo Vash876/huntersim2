@@ -32,7 +32,11 @@ export const useTRPlannerStore = defineStore('trPlanner', {
 
     // Neue State-Eigenschaft für TR-Pläne
     trPlans: useStorage('trplanner_plans', []),
-    copyPlanData: null
+    copyPlanData: null,
+    targetStatsAsCurrentStats: null,
+    planModalShouldOpen: null,
+    tempPlanData: null,
+
   }),
   
   getters: {
@@ -304,6 +308,11 @@ export const useTRPlannerStore = defineStore('trPlanner', {
 
     setCopyPlanData(planData) {
       this.copyPlanData = planData;
+    },
+
+    setTargetStatsAsCurrentStats(stats) {
+      // Speichert die Target-Stats temporär, damit sie als Current-Stats für einen neuen Plan verwendet werden können
+      this.targetStatsAsCurrentStats = stats;
     },
     
     /**

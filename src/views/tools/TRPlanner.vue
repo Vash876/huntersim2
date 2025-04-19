@@ -16,19 +16,19 @@
               class="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-l-md border-r border-blue-700 transition-colors shadow-sm"
             >
               <IconChartBar size="16" class="mr-2" />
-              <span>Stats</span>
+              <span>Maxed Boosts</span>
             </button>
-            <!-- Neuer Orb Calculator Button 
+            <!-- Neuer Orb Calculator Button -->
             <button 
               @click="openOrbCalculatorModal"
               class="flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white border-r border-gray-700 transition-colors shadow-sm"
             >
               <IconCalculator size="16" class="mr-2" />
               <span>Orb Calculator</span>
-            </button>-->
+            </button>
             <!-- Build Code (Import) - rechter Button mit abgerundeter rechter Ecke -->
             <button
-              class="px-3 py-2 bg-gray-600 hover:bg-gray-700 rounded-r-md flex items-center gap-2 transition-colors shadow-sm"
+              class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-r-md flex items-center gap-2 transition-colors shadow-sm"
               @click="openTRPlanModal"
             >
               <IconPlus size="16" />
@@ -121,6 +121,7 @@
       :editPlanId="editingPlanId"
       @close="closeTRPlanModal"
       @save="handlePlanSaved"
+      @openNewPlan="handleOpenNewPlan"
     />
     
     <!-- Plan Detail Modal -->
@@ -138,7 +139,9 @@
     <OrbCalculatorModal
       v-if="showOrbCalculatorModal"
       :isVisible="showOrbCalculatorModal"
+      :currentStats="trPlannerStore.userStats"
       @close="showOrbCalculatorModal = false"
+      @openNewPlan="handleOpenNewPlan"
     />
     
     <!-- Toast Notification -->
@@ -383,6 +386,52 @@ function updatePlans() {
   });
 }
 
+async function handleOpenNewPlan(mode) {
+  console.log("2.1. handleOpenNewPlan called with mode:", mode);
+  
+  // Die temporären Daten für den neuen Plan verwenden
+  const tempPlanData = trPlannerStore.tempPlanData;
+  console.log("2.2. Temp plan data from store:", tempPlanData ? "exists" : "null", tempPlanData);
+  
+  // Hier auch die copyPlanData überprüfen als Backup
+  const copyData = trPlannerStore.copyPlanData;
+  console.log("2.3. Copy plan data from store:", copyData ? "exists" : "null");
+  
+  // Jetzt das OrbCalculatorModal schließen
+  console.log("2.4. Setting showOrbCalculatorModal to false");
+  showOrbCalculatorModal.value = false;
+  
+  await nextTick();
+  
+  // Kurze Verzögerung für das Schließen des ersten Modals
+  setTimeout(() => {
+    // Zurücksetzen des Bearbeitungsmodus
+    console.log("2.5. In timeout - resetting editingPlanId");
+    editingPlanId.value = null;
+    
+    // WICHTIG: Versuche erst tempPlanData, dann copyPlanData
+    const planData = tempPlanData || copyData;
+    
+    if (planData) {
+      console.log("2.6. Setting showTRPlanModal to true with plan data");
+      showTRPlanModal.value = true;
+      
+      // Die Daten in den Store-Mechanismus übergeben
+      // WICHTIG: Stelle sicher, dass die Daten korrekt übergeben werden
+      trPlannerStore.setCopyPlanData(JSON.parse(JSON.stringify(planData)));
+      
+      console.log("2.7. Plan data set in store:", planData);
+    } else {
+      console.warn("2.8. No plan data available, opening empty plan modal");
+      showTRPlanModal.value = true;
+    }
+    
+    // Temp data zurücksetzen NACHDEM wir sie in copyPlanData kopiert haben
+    trPlannerStore.tempPlanData = null;
+    
+  }, 200);
+}
+
 // Load data when component is mounted
 onMounted(() => {
   // Lade die Pläne
@@ -398,6 +447,18 @@ watch(() => trPlannerStore.trPlans, (newPlans) => {
   // Immer aktualisieren mit tiefer Kopie
   updatePlans();
 }, { deep: true });
+
+watch(() => trPlannerStore.planModalShouldOpen, (newValue) => {
+  if (newValue) {
+    console.log("TRPlanner: Detected planModalShouldOpen flag:", newValue);
+    
+    // Modal öffnen mit dem entsprechenden Modus
+    handleOpenNewPlan(newValue);
+    
+    // Flag zurücksetzen 
+    trPlannerStore.planModalShouldOpen = null;
+  }
+});
 </script>
 
 <style scoped>

@@ -11,12 +11,12 @@
       @touchcancel.prevent="onTouchEnd"
       @dragstart.prevent
       class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-l-md mr-px"
-      :class="{ 'opacity-20 cursor-not-allowed hover:bg-gray-900': value <= minValue }"
-      :disabled="value <= minValue"
+      :class="{ 'opacity-20 cursor-not-allowed hover:bg-gray-900': value <= minValue || disableDecrement }"
+      :disabled="value <= minValue || disableDecrement"
     >
       <div class="flex">
+        <IconChevronLeft size="14" class="-mr-2" />
         <IconChevronLeft size="14" />
-        <IconChevronLeft size="14" class="-ml-2" />
       </div>
     </button>
     
@@ -32,9 +32,9 @@
       class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white"
       :class="{
         'rounded-l-md': !showFastControls,
-        'opacity-20 cursor-not-allowed hover:bg-gray-900': value <= minValue
+        'opacity-20 cursor-not-allowed hover:bg-gray-900': value <= minValue || disableDecrement
       }"
-      :disabled="value <= minValue"
+      :disabled="value <= minValue || disableDecrement"
     >
       <IconChevronLeft size="14" />
     </button>
@@ -162,10 +162,22 @@ const props = defineProps({
   autoEdit: {
     type: Boolean,
     default: false
+  },
+  validateOnFinalOnly: {
+    type: Boolean,
+    default: false
+  },
+  compact: {
+    type: Boolean,
+    default: false
+  },
+  disableDecrement: {
+    type: Boolean,
+    default: false
   }
 });
 
-const emit = defineEmits(['update:value']);
+const emit = defineEmits(['update:value', 'update:raw-value', 'finalize:value', 'blur']);
 
 // Intervall-Referenz
 const buttonInterval = ref(null);
@@ -209,15 +221,26 @@ function validateInput(event) {
   // Entferne ungültige Zeichen
   if (event.target.value === '') return;
   
-  // Konvertieren in eine Zahl und Validieren
+  // Konvertieren in eine Zahl
   const numValue = Number(event.target.value);
   
-  // Begrenzen auf min und max (falls nötig)
-  if (!isNaN(numValue)) {
-    if (numValue < props.minValue) {
-      inputValue.value = props.minValue;
-    } else if (numValue > props.maxValue) {
-      inputValue.value = props.maxValue;
+  if (props.validateOnFinalOnly) {
+    // Bei validateOnFinalOnly wird der Rohwert direkt emittiert, ohne min/max Validierung
+    if (!isNaN(numValue)) {
+      emit('update:raw-value', numValue);
+    }
+  } else {
+    // Standard-Validierung
+    if (!isNaN(numValue)) {
+      if (numValue < props.minValue) {
+        inputValue.value = props.minValue;
+        emit('update:value', props.minValue);
+      } else if (numValue > props.maxValue) {
+        inputValue.value = props.maxValue;
+        emit('update:value', props.maxValue);
+      } else {
+        emit('update:value', numValue);
+      }
     }
   }
 }
@@ -232,19 +255,27 @@ function finishEditing() {
   // Wenn es keine gültige Zahl ist, behalte den alten Wert bei
   if (isNaN(numValue)) {
     inputValue.value = props.value;
+    emit('blur'); // Informiere den Parent über das Blur-Event
     return;
   }
   
-  // Begrenzen auf min und max
-  numValue = Math.max(props.minValue, Math.min(props.maxValue, numValue));
-  
-  // Nur emittieren, wenn sich der Wert tatsächlich geändert hat
-  if (numValue !== props.value) {
-    emit('update:value', numValue);
+  if (props.validateOnFinalOnly) {
+    // Bei validateOnFinalOnly wird die Finalisierung signalisiert
+    emit('finalize:value');
+    emit('blur');
+  } else {
+    // Standard-Validierung und Emittieren
+    numValue = Math.max(props.minValue, Math.min(props.maxValue, numValue));
+    
+    // Nur emittieren, wenn sich der Wert tatsächlich geändert hat
+    if (numValue !== props.value) {
+      emit('update:value', numValue);
+    }
+    
+    // In jedem Fall inputValue synchronisieren
+    inputValue.value = numValue;
+    emit('blur');
   }
-  
-  // In jedem Fall inputValue synchronisieren
-  inputValue.value = numValue;
 }
 
 // Bricht die Bearbeitung ab und stellt den ursprünglichen Wert wieder her
@@ -255,26 +286,50 @@ function cancelEditing() {
 
 // Aktionen
 function increment() {
-  if (props.value < props.maxValue) {
-    emit('update:value', Math.min(props.maxValue, props.value + props.step));
+  if (props.value < props.maxValue && !props.disabled) {
+    const newValue = Math.min(props.maxValue, props.value + props.step);
+    
+    if (props.validateOnFinalOnly) {
+      emit('update:raw-value', newValue);
+    } else {
+      emit('update:value', newValue);
+    }
   }
 }
 
 function decrement() {
-  if (props.value > props.minValue) {
-    emit('update:value', Math.max(props.minValue, props.value - props.step));
+  if (props.value > props.minValue && !props.disabled && !props.disableDecrement) {
+    const newValue = Math.max(props.minValue, props.value - props.step);
+    
+    if (props.validateOnFinalOnly) {
+      emit('update:raw-value', newValue);
+    } else {
+      emit('update:value', newValue);
+    }
   }
 }
 
 function incrementFast() {
-  if (props.value < props.maxValue) {
-    emit('update:value', Math.min(props.maxValue, props.value + props.fastStep));
+  if (props.value < props.maxValue && !props.disabled) {
+    const newValue = Math.min(props.maxValue, props.value + props.fastStep);
+    
+    if (props.validateOnFinalOnly) {
+      emit('update:raw-value', newValue);
+    } else {
+      emit('update:value', newValue);
+    }
   }
 }
 
 function decrementFast() {
-  if (props.value > props.minValue) {
-    emit('update:value', Math.max(props.minValue, props.value - props.fastStep));
+  if (props.value > props.minValue && !props.disabled && !props.disableDecrement) {
+    const newValue = Math.max(props.minValue, props.value - props.fastStep);
+    
+    if (props.validateOnFinalOnly) {
+      emit('update:raw-value', newValue);
+    } else {
+      emit('update:value', newValue);
+    }
   }
 }
 

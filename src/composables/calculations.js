@@ -88,28 +88,19 @@ export function calculateMultiplier(boost, value, allValues) {
  * Berechnet die Orb-Gewinne basierend auf den Plan-Stats
  * @param {Object} currentStats - Die aktuellen Stats
  * @param {Object} planStats - Die geplanten Stats
- * @returns {number} Geschätzte Orb-Gewinne
+ * @returns {number} Orb-Gewinne
  */
 export function calculateOrbGains(currentStats, planStats, boosts = []) {
-  // Importiere die Boosts, falls nicht übergeben
-  if (!boosts || boosts.length === 0) {
-    try {
-      // Versuche, die Boosts aus der Konstanten-Datei zu importieren
-      const { allBoosts } = require('@/constants/tr-planner');
-      boosts = allBoosts.filter(b => b.orbcalc); // Nur Boosts, die für Orb-Berechnung relevant sind
-    } catch (e) {
-      console.error('Error importing boosts:', e);
-      return 0;
-    }
-  }
-
+  // Stunden im TR abrufen
+  const hoursInTR = planStats.hoursInTR || 0;
+  
   // Basis-Orb-Rate 
   const baseOrbRate = 1; 
   
   let result = baseOrbRate;
 
   // Catch-Up Multiplier berechnen
-  const catchUpMultiplier = calculateCupMultiplier(planStats.hoursInTR || 0);
+  const catchUpMultiplier = calculateCupMultiplier(hoursInTR);
 
   // Durch alle relevanten Boosts iterieren und Multiplikatoren anwenden
   boosts.forEach((boost) => {
@@ -124,6 +115,63 @@ export function calculateOrbGains(currentStats, planStats, boosts = []) {
   result *= catchUpMultiplier;
 
   return result;
+}
+
+/**
+ * Berechnet die Orb-Gewinne basierend auf den Plan-Stats
+ * @param {Object} currentStats - Die aktuellen Stats
+ * @param {Object} planStats - Die geplanten Stats
+ * @returns {number} Orb-Gewinne
+ */
+export function calculateOrbGainsCalc(currentStats, planStats, boosts = []) {
+  // Basis-Orb-Rate 
+  const baseOrbRate = 1; 
+  
+  let result = baseOrbRate;
+
+  // Catch-Up Multiplier berechnen
+  const hoursInTR = planStats.hoursInTR || 0;
+  const catchUpMultiplier = calculateCupMultiplier(hoursInTR);
+
+  // Durch alle relevanten Boosts iterieren und Multiplikatoren anwenden
+  for (const boost of boosts) {
+    if (!boost.orbcalc) continue; // Nur relevante Boosts berücksichtigen
+    
+    const value = planStats[boost.key];
+    try {
+      let multiplier = 1;
+      
+      if (boost.type === 'boolean') {
+        if (value && typeof boost.multiplier === 'number') {
+          multiplier = boost.multiplier;
+        } else if (value && typeof boost.multiplier === 'function') {
+          multiplier = boost.multiplier(1, planStats);
+        }
+      } else if (value > 0) {
+        if (typeof boost.multiplier === 'number') {
+          multiplier = Math.pow(boost.multiplier, value);
+        } else if (typeof boost.multiplier === 'function') {
+          multiplier = boost.multiplier(value, planStats);
+        }
+      }
+      
+      // Schutz vor NaN und Infinity
+      if (isNaN(multiplier) || !isFinite(multiplier)) {
+        console.warn(`Ungültiger Multiplikator für ${boost.key}:`, multiplier);
+      } else {
+        result *= multiplier;
+      }
+    } catch (e) {
+      console.error(`Fehler bei Berechnung des Multiplikators für ${boost.key}:`, e);
+    }
+  }
+
+  // Catch-Up Multiplier anwenden
+  result *= catchUpMultiplier;
+
+  // WICHTIG: NICHT noch einmal mit hoursInTR multiplizieren,
+  // da der hoursInTR-Boost selbst bereits die Stunden berücksichtigt!
+  return isNaN(result) ? 0 : result;
 }
 
 /**
