@@ -330,8 +330,13 @@
                         <!-- Anpassung im Template: Anzeige der benötigten Stunden anstelle des Multipliers bei hoursInTR -->
                       </div>
                       
-                      <!-- Target Controls - rechts auf gleicher Höhe wie Multiplier -->
-                      <div class="flex-shrink-0 ml-2">
+                      <!-- Target Controls mit Kostenanzeige -->
+                      <div class="flex-shrink-0 ml-2 flex items-center">
+                        <!-- Kostenanzeige für numerische Boosts - mittig zwischen Multiplier und Controls -->
+                        <div v-if="boost.type !== 'boolean' && calculateUpgradeCost(boost, step)" class="mr-2 text-[10px] text-amber-400">
+                          {{ calculateUpgradeCost(boost, step) }}
+                        </div>
+                        
                         <!-- Boolean Type Controls -->
                         <div v-if="boost.type === 'boolean'" class="flex justify-end min-w-[40px]">
                           <button 
@@ -579,6 +584,9 @@
 import { ref, reactive, computed, watch, onMounted, nextTick, onBeforeUnmount } from 'vue';
 import { useNow } from '@vueuse/core';
 import { allBoosts, boostsByCategory, generalStats, alwaysUpdateKeys } from '@/constants/tr-planner';
+import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
+import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
+import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import TRUpdateModal from './TRUpdateModal.vue';
 import TRValueControls from '@/composables/TRValueControls.vue';
 import AlertDialog from '@/components/common/AlertDialog.vue';
@@ -623,7 +631,7 @@ const trPlannerStore = useTRPlannerStore();
 
 // State
 const error = ref(null);
-const planName = ref(`TR Plan ${new Date().toLocaleDateString()}`);
+const planName = ref(`Unnamed`);
 const searchQuery = ref('');
 
 // State für die Eingabefelder mit Display-Werten
@@ -2491,6 +2499,70 @@ function handleTRUpdate() {
   
   // Update-Modal schließen
   closeTRUpdateModal();
+}
+
+/**
+ * Berechnet die Kosten für die Differenz zwischen aktuellem und Ziel-Level
+ * @param {Object} boost - Der Boost, für den die Kosten berechnet werden sollen
+ * @param {Object} step - Der TR-Schritt mit den Stats und Zielwerten
+ * @returns {string} - Die formatierten Kosten oder einen leeren String
+ */
+ function calculateUpgradeCost(boost, step) {
+  // Finde den Index des Schritts
+  const stepIndex = trSteps.findIndex(s => s.id === step.id);
+  
+  // Wenn es der Haupt-TR (erster Schritt) ist, keine Kosten anzeigen
+  if (stepIndex === 0) return '';
+  
+  if (!boost || boost.type === 'boolean') return '';
+  
+  const boostKey = boost.key;
+  
+  // Aktueller Wert und Zielwert ermitteln
+  const currentLevel = step.stats[boostKey] || 0;
+  const targetLevel = step.targetLevels[boostKey] !== undefined ? 
+                      step.targetLevels[boostKey] : 
+                      currentLevel;
+  
+  // Wenn kein Upgrade, keine Kosten anzeigen
+  if (targetLevel <= currentLevel) return '';
+  
+  // Kosten basierend auf Boost-Kategorie berechnen
+  let totalCost = 0;
+  
+  // Für Relics
+  if (boost.category === 'relic') {
+    const relicId = `r${boost.key.replace('r', '')}`;
+    for (let level = currentLevel + 1; level <= targetLevel; level++) {
+      totalCost += getRelicCost(relicId, level);
+    }
+    return formatRelicCost(totalCost);
+  }
+  
+  // Für Inscriptions
+  else if (boost.category === 'inscryption') {
+    const inscryptionId = `i${boost.key.replace('i', '')}`;
+    for (let level = currentLevel + 1; level <= targetLevel; level++) {
+      totalCost += getInscryptionCost(inscryptionId, level);
+    }
+    return formatInscryptionCost(totalCost);
+  }
+  
+  // Für Gadgets
+  else if (boost.category === 'gadget') {
+    // Gadget-Typ ermitteln
+    let gadgetType = boost.key;
+    // Spezielle Mapping für bestimmte Gadgets
+    if (boost.key === 'oogadget') gadgetType = 'g4';
+    if (boost.key === 'campfragdet') gadgetType = 'g14';
+    
+    for (let level = currentLevel + 1; level <= targetLevel; level++) {
+      totalCost += getGadgetCost(gadgetType, level);
+    }
+    return formatGadgetCost(totalCost);
+  }
+  
+  return '';
 }
 
 function showAlert(message, title = 'TR Planner', type = 'info') {

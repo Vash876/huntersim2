@@ -31,6 +31,20 @@ function calculateRelic7(level) {
 }
 
 /**
+ * Relic 9 Kosten berechnen
+ * @param {number} level - Das aktuelle Level
+ * @returns {number} - Die berechneten Kosten
+ */
+function calculateRelic9(level) {
+  const J2 = 8, J3 = 1.8, J4 = 1.18;
+  const value = (J2 + J3 * (level - 1)) *
+                Math.pow(J4, level - 1) *
+                Math.pow(1.03, Math.max(0, level - 10)) *
+                Math.pow(1.08, Math.max(0, level - 20));
+  return Math.floor(value);
+}
+
+/**
  * Relic 16 Kosten berechnen
  * @param {number} level - Das aktuelle Level
  * @returns {number} - Die berechneten Kosten
@@ -84,6 +98,9 @@ function getRelicCost(relicType, level) {
     case 'relic07':
     case 'r7':
       return calculateRelic7(level);
+    case 'relic09':
+    case 'r9':
+      return calculateRelic9(level);
     case 'relic16':
     case 'r16':
       return calculateRelic16(level);
@@ -146,6 +163,10 @@ export function getRelic4Cost(lvl) {
 
 export function getRelic7Cost(lvl) {
   return getRelicCost('r7', lvl);
+}
+
+export function getRelic9Cost(lvl) {
+  return getRelicCost('r9', lvl);
 }
 
 export function getRelic16Cost(lvl) {

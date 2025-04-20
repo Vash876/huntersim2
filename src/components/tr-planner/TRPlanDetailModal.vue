@@ -203,6 +203,7 @@
           <h3 class="text-sm font-bold mb-3 text-blue-300">Stats Progression</h3>
           
           <div class="bg-gray-750/60 rounded-lg border border-gray-700 shadow-lg p-2">
+            <!-- Stats Progression -->
             <div v-if="!allImprovedBoosts.length" class="text-gray-400 text-center py-2 text-sm">
               No Stats improved in this plan.
             </div>
@@ -219,48 +220,67 @@
                 </div>
               </div>
             </div>
+            
+            <!-- Upgrade Costs -->
+            <div v-if="hasUpgradeCosts" class="mt-3 pt-3 border-t border-gray-700">
+              <h4 class="text-xs font-medium text-gray-300 mb-2">Upgrade Costs</h4>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <!-- Fragments (für Relics) -->
+                <div v-if="upgradeCosts.fragments > 0" 
+                     class="bg-gray-800/60 rounded border border-gray-700 p-1.5 flex items-center">
+                  <div class="w-3 h-3 rounded-full bg-purple-400 mr-2"></div>
+                  <div class="text-xs font-medium text-white mr-1">Fragments:</div>
+                  <div class="text-xs text-purple-400 ml-auto">{{ formatRelicCost(upgradeCosts.fragments) }}</div>
+                </div>
+                
+                <!-- Hellish-Biomatter (für Inscryptions) -->
+                <div v-if="upgradeCosts.hellishBiomatter > 0" 
+                     class="bg-gray-800/60 rounded border border-gray-700 p-1.5 flex items-center">
+                  <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                  <div class="text-xs font-medium text-white mr-1">Hellish-Biomatter:</div>
+                  <div class="text-xs text-red-400 ml-auto">{{ formatInscryptionCost(upgradeCosts.hellishBiomatter) }}</div>
+                </div>
+                
+                <!-- Tessarects (für Gadgets) -->
+                <div v-if="upgradeCosts.tessarects > 0" 
+                     class="bg-gray-800/60 rounded border border-gray-700 p-1.5 flex items-center">
+                  <div class="w-3 h-3 rounded-full bg-blue-400 mr-2"></div>
+                  <div class="text-xs font-medium text-white mr-1">Tessarects:</div>
+                  <div class="text-xs text-blue-400 ml-auto">{{ formatGadgetCost(upgradeCosts.tessarects) }}</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-<!-- TR-Requirements Projektion mit Chart.js -->
-<div class="p-4 border-b border-gray-700">
-  <h3 class="text-sm font-bold mb-3 text-blue-300">Future TR Requirements Projection</h3>
-  
-  <div class="bg-gray-750/60 rounded-lg border border-gray-700 shadow-lg p-3">
-    <div class="flex items-center justify-between mb-2">
-      <div class="text-xs text-gray-400">
-        Projecting next {{ futureTRsToProject }} TRs after TR{{ (plan?.updatedStats?.trCount || currentTrCount) + totalTRsInPlan }}
-      </div>
-      <div class="flex gap-2 items-center">
-        <button 
-          @click="futureTRsToProject = Math.max(5, futureTRsToProject - 5)"
-          class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded"
-        >-5</button>
-        <button 
-          @click="futureTRsToProject += 5"
-          class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded"
-        >+5</button>
-      </div>
-    </div>
-    
-    <!-- Chart.js Graph Container -->
-    <div class="h-60 w-full">
-      <canvas ref="chartRef" height="240"></canvas>
-    </div>
-    
-    <!-- Legende -->
-    <div class="flex items-center justify-center gap-3 text-xs mt-4">
-      <div class="flex items-center">
-        <div class="w-3 h-3 bg-red-500/70 mr-1"></div>
-        <span>Required</span>
-      </div>
-      <div class="flex items-center">
-        <div class="w-3 h-3 bg-green-500/70 mr-1"></div>
-        <span>Available</span>
-      </div>
-    </div>
-  </div>
-</div>
+        <!-- TR-Requirements Projektion mit Chart.js -->
+        <div class="p-4 border-b border-gray-700">
+          <h3 class="text-sm font-bold mb-3 text-blue-300">Future TR Requirements Projection</h3>
+          
+          <div class="bg-gray-750/60 rounded-lg border border-gray-700 shadow-lg p-3">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-xs text-gray-400">
+                Projecting next {{ futureTRsToProject }} TRs after TR{{ (plan?.updatedStats?.trCount || currentTrCount) + totalTRsInPlan }}
+              </div>
+              <div class="flex gap-2 items-center">
+                <button 
+                  @click="futureTRsToProject = Math.max(5, futureTRsToProject - 5)"
+                  class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded"
+                >-5</button>
+                <button 
+                  @click="futureTRsToProject += 5"
+                  class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded"
+                >+5</button>
+              </div>
+            </div>
+            
+            <!-- Chart.js Graph Container -->
+            <div class="h-60 w-full">
+              <canvas ref="chartRef" height="240"></canvas>
+            </div>
+          </div>
+        </div>
         
         <!-- Footer buttons -->
         <div class="bg-gray-750/60 p-3 border-t border-gray-700">
@@ -299,6 +319,9 @@
 
 <script setup>
 import { computed, ref, onMounted, watch, nextTick } from 'vue';
+import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
+import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
+import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import { Chart, registerables } from 'chart.js';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { allBoosts } from '@/constants/tr-planner';
@@ -647,8 +670,8 @@ const allImprovedBoosts = computed(() => {
   // Konvertiere die Map in ein Array, filtere nach verbesserten Boosts und sortiere
   for (const boost of boostedStats.values()) {
     // Nur Boosts einschließen, bei denen eine Verbesserung stattfindet
-    // ODER die einen Wert > 0 haben (damit auch vorhandene Stats angezeigt werden)
-    if (boost.endValue > boost.startValue || boost.endValue > 0) {
+    // ÄNDERUNG: Die Bedingung "|| boost.endValue > 0" entfernen
+    if (boost.endValue > boost.startValue) {
       result.push(boost);
     }
   }
@@ -1042,6 +1065,62 @@ function renderTRProjectionsChart() {
     }
   });
 }
+
+// Berechne die Upgrade-Kosten für alle verbesserten Boosts
+const upgradeCosts = computed(() => {
+  if (!allImprovedBoosts.value.length) return null;
+  
+  // Kosten nach Ressourcentyp gruppieren
+  const costs = {
+    fragments: 0,      // Für Relics
+    hellishBiomatter: 0, // Für Inscryptions
+    tessarects: 0      // Für Gadgets
+  };
+  
+  // Kosten für jeden verbesserten Boost berechnen
+  allImprovedBoosts.value.forEach(boost => {
+    // Nur wenn tatsächlich ein Upgrade stattfindet
+    if (boost.endValue > boost.startValue) {
+      // Relics (kosten Fragments)
+      if (boost.category === 'relic') {
+        const relicId = `r${boost.key.replace('r', '')}`;
+        for (let level = boost.startValue + 1; level <= boost.endValue; level++) {
+          costs.fragments += getRelicCost(relicId, level);
+        }
+      }
+      // Inscryptions (kosten Hellish-Biomatter)
+      else if (boost.category === 'inscryption') {
+        const inscrId = `i${boost.key.replace('i', '')}`;
+        for (let level = boost.startValue + 1; level <= boost.endValue; level++) {
+          costs.hellishBiomatter += getInscryptionCost(inscrId, level);
+        }
+      }
+      // Gadgets (kosten Tessarects)
+      else if (boost.category === 'gadget') {
+        // Spezialfall-Mapping für bestimmte Gadgets
+        let gadgetId = boost.key;
+        if (boost.key === 'oogadget') gadgetId = 'g4';
+        if (boost.key === 'campfragdet') gadgetId = 'g14';
+        
+        for (let level = boost.startValue + 1; level <= boost.endValue; level++) {
+          costs.tessarects += getGadgetCost(gadgetId, level);
+        }
+      }
+    }
+  });
+  
+  // Prüfen ob überhaupt Kosten angefallen sind
+  if (costs.fragments === 0 && costs.hellishBiomatter === 0 && costs.tessarects === 0) {
+    return null;
+  }
+  
+  return costs;
+});
+
+// Hilfsfunktion, um zu prüfen ob Kosten angezeigt werden sollen
+const hasUpgradeCosts = computed(() => {
+  return upgradeCosts.value !== null;
+});
 
 // Chart neu rendern, wenn sich die Projektionsdaten ändern
 watch(futureTRProjections, () => {

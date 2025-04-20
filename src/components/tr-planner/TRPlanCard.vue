@@ -12,7 +12,7 @@
             <div class="grip-handle mr-2 text-gray-500 hover:text-gray-400 cursor-grab active:cursor-grabbing flex-shrink-0">
               <IconGripVertical size="20" />
             </div>
-            <h3 class="text-lg font-bold text-white truncate pr-2">{{ plan.name }}</h3>
+            <h3 class="text-lg font-bold text-white pr-2">{{ truncatedPlanName }}</h3>
           </div>
           <div class="flex items-center space-x-2">
             <button 
@@ -35,7 +35,7 @@
             </button>
           </div>
         </div>
-        <div class="flex items-center text-xs text-gray-400 mt-1 ml-7"> <!-- Erhöhter Margin-Left, um mit Grip-Handle auszurichten -->
+        <div class="flex items-center text-xs text-gray-400 mt-1 ml-7"> 
           <IconCalendarEvent size="12" class="mr-1" />
           <span>{{ formatPlanStartDate }}</span>
           <span class="mx-1">-</span>
@@ -403,6 +403,17 @@ const formatPlanStartDate = computed(() => {
   
   // Falls wir nur das Datum haben
   return props.plan.trStartDate.split('-').reverse().join('.');
+});
+
+const truncatedPlanName = computed(() => {
+  if (!props.plan.name) return '';
+  
+  const maxLength = 17;
+  if (props.plan.name.length <= maxLength) {
+    return props.plan.name;
+  }
+  
+  return props.plan.name.substring(0, maxLength) + '...';
 });
 </script>
 

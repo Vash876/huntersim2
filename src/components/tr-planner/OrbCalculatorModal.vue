@@ -114,10 +114,11 @@
             <table class="w-full text-sm hidden sm:table">
               <thead>
                 <tr class="bg-gray-750">
-                  <th class="text-left py-1.5 px-2 w-[30%] text-xs text-gray-300">Boost</th>
-                  <th class="text-center py-1.5 px-2 w-[25%] text-xs text-gray-300">Multiplier</th>
-                  <th class="text-center py-1.5 px-2 w-[22.5%] text-xs text-gray-300">Current</th>
-                  <th class="text-center py-1.5 px-2 w-[22.5%] text-xs text-gray-300">Target</th>
+                  <th class="text-left py-1.5 px-2 w-[22%] text-xs text-gray-300">Boost</th>
+                  <th class="text-center py-1.5 px-2 w-[18%] text-xs text-gray-300">Costs</th>
+                  <th class="text-center py-1.5 px-2 w-[20%] text-xs text-gray-300">Multiplier</th>
+                  <th class="text-center py-1.5 px-2 w-[20%] text-xs text-gray-300">Current</th>
+                  <th class="text-center py-1.5 px-2 w-[20%] text-xs text-gray-300">Target</th>
                 </tr>
               </thead>
               <tbody>
@@ -129,6 +130,14 @@
                   <td class="py-1.5 px-2 text-xs text-gray-200">
                     <div>{{ boost.label }}</div>
                     <div v-if="boost.max !== undefined" class="text-[10px] text-gray-400">Max: {{ boost.max }}</div>
+                  </td>
+                  
+                  <!-- Neue Spalte für Kosten -->
+                  <td class="py-1.5 px-2 text-center">
+                    <div v-if="calculateUpgradeCost(boost)" class="text-xs text-amber-400">
+                      {{ calculateUpgradeCost(boost) }}
+                    </div>
+                    <div v-else class="text-xs text-gray-500">-</div>
                   </td>
                   <td class="py-1.5 px-2 text-center">
                     <div class="text-xs flex items-center justify-center space-x-1">
@@ -220,26 +229,26 @@
                     <template v-else>
                       <div class="w-full flex justify-center">
                         <TRValueControls
-  :value="targetBoosts[boost.key] || 0"
-  :minValue="0"  
-  :maxValue="boost.max || 999999"
-  :showFastControls="true"
-  :step="boost.normalControl || 1"
-  :fastStep="boost.fastControl || 10"
-  :valueClass="'text-white'"
-  :compact="true"
-  :autoEdit="true"  
-  :tabIndex="getTabIndex(boost, 'target')"
-  :validateOnFinalOnly="true"
-  class="tr-value-control"
-  :class="{ 
-    'tr-improved-value': (targetBoosts[boost.key] || 0) > (currentBoosts[boost.key] || 0),
-    'tr-min-value': (targetBoosts[boost.key] || 0) <= (currentBoosts[boost.key] || 0)
-  }" 
-  @update:raw-value="(newVal) => updateRawTargetValue(boost, newVal)"
-  @finalize:value="() => finalizeTargetValue(boost)"
-  @blur="() => finalizeTargetValue(boost)"
-/>
+                          :value="targetBoosts[boost.key] || 0"
+                          :minValue="0"  
+                          :maxValue="boost.max || 999999"
+                          :showFastControls="true"
+                          :step="boost.normalControl || 1"
+                          :fastStep="boost.fastControl || 10"
+                          :valueClass="'text-white'"
+                          :compact="true"
+                          :autoEdit="true"  
+                          :tabIndex="getTabIndex(boost, 'target')"
+                          :validateOnFinalOnly="true"
+                          class="tr-value-control"
+                          :class="{ 
+                            'tr-improved-value': (targetBoosts[boost.key] || 0) > (currentBoosts[boost.key] || 0),
+                            'tr-min-value': (targetBoosts[boost.key] || 0) <= (currentBoosts[boost.key] || 0)
+                          }" 
+                          @update:raw-value="(newVal) => updateRawTargetValue(boost, newVal)"
+                          @finalize:value="() => finalizeTargetValue(boost)"
+                          @blur="() => finalizeTargetValue(boost)"
+                        />
                       </div>
                     </template>
                   </td>
@@ -293,7 +302,7 @@
                   <div class="flex flex-col gap-2">
                     <!-- Current -->
                     <div class="flex items-center justify-between">
-                      <span class="text-xs text-gray-400 mr-2">Current:</span>
+                      <span class="text-xs text-gray-400 mr-2">Current</span>
                       
                       <!-- Boolean Current -->
                       <template v-if="boost.type === 'boolean'">
@@ -328,8 +337,17 @@
                     </div>
                     
                     <!-- Target -->
-                    <div class="flex items-center justify-between">
-                      <span class="text-xs text-gray-400 mr-2">Target:</span>
+                    <div class="flex items-center">
+                      <div class="flex items-center">
+                        <span class="text-xs text-gray-400 mr-2">Target</span>
+                        
+                        <!-- Kostenanzeige für numerische Boosts -->
+                        <span v-if="calculateUpgradeCost(boost)" class="text-[10px] text-amber-400 mr-2">
+                          Cost: {{ calculateUpgradeCost(boost) }}
+                        </span>
+                      </div>
+                      
+                      <div class="flex-grow"></div>
                       
                       <!-- Boolean Target -->
                       <template v-if="boost.type === 'boolean'">
@@ -352,24 +370,24 @@
                       <template v-else>
                         <div class="flex justify-end">
                           <TRValueControls
-      :value="targetBoosts[boost.key] || 0"
-      :minValue="0"  
-      :maxValue="boost.max || 999999"
-      :showFastControls="true"
-      :step="boost.normalControl || 1"
-      :fastStep="boost.fastControl || 10"
-      :valueClass="'text-white'"
-      :compact="true"
-      :autoEdit="true"  
-      :tabIndex="getTabIndex(boost, 'target')"
-      :validateOnFinalOnly="true"
-      :disableDecrement="(targetBoosts[boost.key] || 0) <= (currentBoosts[boost.key] || 0)"
-      class="tr-value-control"
-      :class="{ 'tr-improved-value': (targetBoosts[boost.key] || 0) > (currentBoosts[boost.key] || 0) }" 
-      @update:raw-value="(newVal) => updateRawTargetValue(boost, newVal)"
-      @finalize:value="() => finalizeTargetValue(boost)"
-      @blur="() => finalizeTargetValue(boost)"
-    />
+                            :value="targetBoosts[boost.key] || 0"
+                            :minValue="0"  
+                            :maxValue="boost.max || 999999"
+                            :showFastControls="true"
+                            :step="boost.normalControl || 1"
+                            :fastStep="boost.fastControl || 10"
+                            :valueClass="'text-white'"
+                            :compact="true"
+                            :autoEdit="true"  
+                            :tabIndex="getTabIndex(boost, 'target')"
+                            :validateOnFinalOnly="true"
+                            :disableDecrement="(targetBoosts[boost.key] || 0) <= (currentBoosts[boost.key] || 0)"
+                            class="tr-value-control"
+                            :class="{ 'tr-improved-value': (targetBoosts[boost.key] || 0) > (currentBoosts[boost.key] || 0) }" 
+                            @update:raw-value="(newVal) => updateRawTargetValue(boost, newVal)"
+                            @finalize:value="() => finalizeTargetValue(boost)"
+                            @blur="() => finalizeTargetValue(boost)"
+                          />
                         </div>
                       </template>
                     </div>
@@ -519,6 +537,9 @@ import { useTRPlannerStore } from '@/store/orbStore';
 import { allBoosts, boostsByCategory } from '@/constants/tr-planner';
 import TRValueControls from '@/composables/TRValueControls.vue';
 import { formatMultiplier, formatNumber, parseNumberWithSuffix, formatSuffixNotation } from '@/composables/format';
+import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
+import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
+import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import { 
   calculateOrbRequirement, 
   calculateOrbGainsCalc, 
@@ -1683,6 +1704,62 @@ function finalizeAllTimeOrbsInput() {
   
   // Berechnungen aktualisieren
   recalculateAll();
+}
+
+/**
+ * Berechnet die Kosten für die Differenz zwischen Current und Target Level
+ * @param {Object} boost - Der Boost, für den die Kosten berechnet werden sollen
+ * @returns {string} - Die formatierten Kosten oder einen leeren String
+ */
+ function calculateUpgradeCost(boost) {
+  if (!boost) return '';
+  
+  // Für Boolean-Boosts gibt es keine Kosten
+  if (boost.type === 'boolean') return '';
+  
+  // Current und Target Level
+  const currentLevel = currentBoosts.value[boost.key] || 0;
+  const targetLevel = targetBoosts.value[boost.key] || 0;
+  
+  // Wenn kein Upgrade, keine Kosten
+  if (targetLevel <= currentLevel) return '';
+  
+  // Kosten basierend auf Boost-Kategorie berechnen
+  let totalCost = 0;
+  
+  // Für Relics
+  if (boost.category === 'relic') {
+    // Ermitteln des Relic-Typs
+    for (let level = currentLevel + 1; level <= targetLevel; level++) {
+      totalCost += getRelicCost(`r${boost.key.replace('r', '')}`, level);
+    }
+    return formatRelicCost(totalCost);
+  }
+  
+  // Für Inscriptions
+  else if (boost.category === 'inscryption') {
+    // Ermitteln des Inscription-Typs
+    for (let level = currentLevel + 1; level <= targetLevel; level++) {
+      totalCost += getInscryptionCost(`i${boost.key.replace('i', '')}`, level);
+    }
+    return formatInscryptionCost(totalCost);
+  }
+  
+  // Für Gadgets
+  else if (boost.category === 'gadget') {
+    // Gadget-Typ ermitteln
+    let gadgetType = boost.key;
+    // Spezielle Mapping für bestimmte Gadgets
+    if (boost.key === 'oogadget') gadgetType = 'g4';
+    if (boost.key === 'campfragdet') gadgetType = 'g14';
+    
+    for (let level = currentLevel + 1; level <= targetLevel; level++) {
+      totalCost += getGadgetCost(gadgetType, level);
+    }
+    return formatGadgetCost(totalCost);
+  }
+  
+  return '';
 }
 </script>
 
