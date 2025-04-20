@@ -2830,6 +2830,16 @@ watch(
     }
   }
 );
+
+defineExpose({
+  trSteps,
+  trCount,
+  formatTREndDate,
+  getStepOrbRequirement,
+  getStepOrbGains, 
+  getStepFragGains,
+  getStepRequirementMet
+});
 </script>
 
 <style scoped>

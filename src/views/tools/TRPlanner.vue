@@ -143,6 +143,7 @@
 
     <!-- TR Plan Modal -->
     <TRPlanModal
+      ref="trPlanModalRef"
       v-if="showTRPlanModal"
       :isVisible="showTRPlanModal"
       :currentStats="trPlannerStore.userStats"
@@ -150,6 +151,17 @@
       @close="closeTRPlanModal"
       @save="handlePlanSaved"
       @openNewPlan="handleOpenNewPlan"
+    />
+
+    <TRResultsSidePanel
+      :isVisible="showTRPlanModal"
+      :trSteps="planSteps"
+      :trCount="trCount"
+      :trEndDate="formatTREndDate"
+      :getStepOrbRequirement="getStepOrbRequirement"
+      :getStepOrbGains="getStepOrbGains"
+      :getStepFragGains="getStepFragGains"
+      :getStepRequirementMet="getStepRequirementMet"
     />
     
     <!-- Plan Detail Modal -->
@@ -202,6 +214,7 @@
 import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import StatsInputModal from '@/components/tr-planner/StatsInputModal.vue';
 import TRPlanModal from '@/components/tr-planner/TRPlanModal.vue';
+import TRResultsSidePanel from '@/components/tr-planner/TRResultsSidePanel.vue';
 import TRPlanCard from '@/components/tr-planner/TRPlanCard.vue';
 import TRPlanDetailModal from '@/components/tr-planner/TRPlanDetailModal.vue';
 import OrbCalculatorModal from '@/components/tr-planner/OrbCalculatorModal.vue';
@@ -224,6 +237,7 @@ const trPlannerStore = useTRPlannerStore();
 // Modal state
 const showStatsModal = ref(false);
 const showTRPlanModal = ref(false);
+const trPlanModalRef = ref(null);
 const selectedPlanId = ref(null);
 const editingPlanId = ref(null);
 const showOrbCalculatorModal = ref(false);
@@ -458,6 +472,28 @@ async function handleOpenNewPlan(mode) {
     trPlannerStore.tempPlanData = null;
     
   }, 200);
+}
+
+// Computed properties, die auf die Daten der TRPlanModal zugreifen
+const planSteps = computed(() => trPlanModalRef.value?.trSteps || []);
+const trCount = computed(() => trPlanModalRef.value?.trCount || 0);
+const formatTREndDate = computed(() => trPlanModalRef.value?.formatTREndDate || '');
+
+// Funktionen, die an das Sidepanel weitergegeben werden
+function getStepOrbRequirement(step, index) {
+  return trPlanModalRef.value?.getStepOrbRequirement(step, index) || 0;
+}
+
+function getStepOrbGains(step) {
+  return trPlanModalRef.value?.getStepOrbGains(step) || 0;
+}
+
+function getStepFragGains(step) {
+  return trPlanModalRef.value?.getStepFragGains(step) || 0;
+}
+
+function getStepRequirementMet(step, index) {
+  return trPlanModalRef.value?.getStepRequirementMet(step, index) || false;
 }
 
 // Load data when component is mounted
