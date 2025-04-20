@@ -240,25 +240,17 @@ function formatInscryptionCost(value) {
   if (typeof value !== 'number' || isNaN(value) || value === 0) {
     return '0';
   }
-  
-  // Bei kleinen Zahlen normale Formatierung
-  if (value < 1e6) {
-    return value.toLocaleString();
+  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d'];
+  let tier = Math.floor(Math.log10(value) / 3);
+  if (tier === 0) {
+    return value.toFixed(2);
   }
-  
-  // Bei mittleren Zahlen Kurznotation mit Suffix
-  if (value < 1e15) {
-    const suffixes = ['', 'k', 'm', 'b', 't'];
-    const tier = Math.floor(Math.log10(value) / 3);
-    const suffix = suffixes[tier];
-    const scaled = value / Math.pow(10, tier * 3);
-    return `${scaled.toFixed(2)}${suffix}`;
+  if (tier >= suffixes.length) {
+    return value.toExponential(2);
   }
-  
-  // Bei großen Zahlen wissenschaftliche Notation
-  const exponent = Math.floor(Math.log10(value));
-  const mantissa = value / Math.pow(10, exponent);
-  return `${mantissa.toFixed(2)}e${exponent}`;
+  const suffix = suffixes[tier];
+  const scaledValue = value / Math.pow(10, tier * 3);
+  return `${scaledValue.toFixed(2)}${suffix}`;
 }
 
 // Einzelexporte der spezifischen Inscryption-Funktionen
