@@ -62,56 +62,131 @@
           >
             <h3 class="text-xs font-medium text-blue-400 mb-0.5 border-b border-gray-700/50 pb-0.5">{{ category.label }}</h3>
             <div class="grid grid-cols-1 gap-0.5">
-              <div v-for="boost in category.boosts" :key="boost.key" class="grid grid-cols-8 text-[12px]">
-                <div class="col-span-4 text-gray-300 truncate pr-1">{{ boost.label }}:</div>
+              <!-- Boost-Zeile mit mobiloptimiertem Layout -->
+              <div v-for="boost in category.boosts" :key="boost.key" 
+                   class="text-[12px] items-center border-gray-700/30 last:border-b-0 py-0.5">
+                <!-- Mobile-Layout: Boost-Name links, Werte rechts -->
+                <div class="sm:hidden flex justify-between items-center">
+                  <!-- Boost-Name -->
+                  <div class="text-gray-300 truncate">{{ boost.label }}:</div>
+                  
+                  <!-- Werte rechtsbündig -->
+                  <div class="flex items-center">
+                    <!-- Current Value -->
+                    <div class="text-right">
+                      <template v-if="boost.type === 'boolean'">
+                        <span :class="combinedCurrentStats[boost.key] ? 'text-white' : 'text-red-400'">
+                          {{ combinedCurrentStats[boost.key] ? 'ON' : 'OFF' }}
+                        </span>
+                      </template>
+                      <template v-else>
+                        <span :class="combinedCurrentStats[boost.key] > 0 ? 'text-white' : 'text-gray-400'">
+                          {{ combinedCurrentStats[boost.key] || 0 }}
+                        </span>
+                      </template>
+                    </div>
+                    
+                    <!-- Pfeil statt Separator -->
+                    <div class="text-gray-500 px-1"><IconArrowRight size="12" class="text-green-500" /></div>
+                    
+                    <!-- Target Value -->
+                    <div class="text-left">
+                      <template v-if="boost.type === 'boolean'">
+                        <span :class="{
+                          'text-green-400': targetStats[boost.key] && !combinedCurrentStats[boost.key],
+                          'text-white': targetStats[boost.key] && combinedCurrentStats[boost.key],
+                          'text-red-400': !targetStats[boost.key] && !combinedCurrentStats[boost.key]
+                        }">
+                          {{ (targetStats[boost.key] || combinedCurrentStats[boost.key]) ? 'ON' : 'OFF' }}
+                        </span>
+                      </template>
+                      <template v-else>
+                        <span :class="{
+                          'text-green-400': (targetStats[boost.key] || 0) > (combinedCurrentStats[boost.key] || 0),
+                          'text-white': (targetStats[boost.key] || 0) <= (combinedCurrentStats[boost.key] || 0) && (combinedCurrentStats[boost.key] > 0),
+                          'text-gray-400': (targetStats[boost.key] || 0) <= (combinedCurrentStats[boost.key] || 0) && (combinedCurrentStats[boost.key] <= 0)
+                        }">
+                          {{ Math.max(targetStats[boost.key] || 0, combinedCurrentStats[boost.key] || 0) }}
+                        </span>
+                      </template>
+                    </div>
+                  </div>
+                </div>
                 
-                <!-- Current Value -->
-                <div class="text-right pr-1">
-                  <template v-if="boost.type === 'boolean'">
-                    <span :class="combinedCurrentStats[boost.key] ? 'text-white' : 'text-red-400'">
-                      {{ combinedCurrentStats[boost.key] ? 'ON' : 'OFF' }}
-                    </span>
-                  </template>
-                  <template v-else>
-                    <span :class="combinedCurrentStats[boost.key] > 0 ? 'text-white' : 'text-gray-400'">
-                      {{ combinedCurrentStats[boost.key] || 0 }}
-                    </span>
-                  </template>
-                </div>
+                <!-- Desktop-Layout mit Grid-System -->
+                <div class="hidden sm:grid grid-cols-12 items-center">
+                  <div class="col-span-5 text-gray-300 truncate pr-1">{{ boost.label }}:</div>
+                  
+                  <!-- Current Value -->
+                  <div class="text-right pr-1">
+                    <template v-if="boost.type === 'boolean'">
+                      <span :class="combinedCurrentStats[boost.key] ? 'text-white' : 'text-red-400'">
+                        {{ combinedCurrentStats[boost.key] ? 'ON' : 'OFF' }}
+                      </span>
+                    </template>
+                    <template v-else>
+                      <span :class="combinedCurrentStats[boost.key] > 0 ? 'text-white' : 'text-gray-400'">
+                        {{ combinedCurrentStats[boost.key] || 0 }}
+                      </span>
+                    </template>
+                  </div>
 
-                <!-- Separator -->
-                <div class="text-gray-500 text-center">/</div>
+                  <!-- Separator für Desktop -->
+                  <div class="text-gray-500 text-center"><IconArrowRight size="12" class="text-green-500" /></div>
 
-                <!-- Target Value -->
-                <div class="text-left pl-1">
-                  <template v-if="boost.type === 'boolean'">
-                    <span :class="{
-                      'text-green-400': targetStats[boost.key] && !combinedCurrentStats[boost.key],
-                      'text-white': targetStats[boost.key] && combinedCurrentStats[boost.key],
-                      'text-red-400': !targetStats[boost.key] && !combinedCurrentStats[boost.key]
-                    }">
-                      {{ (targetStats[boost.key] || combinedCurrentStats[boost.key]) ? 'ON' : 'OFF' }}
-                    </span>
-                  </template>
-                  <template v-else>
-                    <span :class="{
-                      'text-green-400': (targetStats[boost.key] || 0) > (combinedCurrentStats[boost.key] || 0),
-                      'text-white': (targetStats[boost.key] || 0) <= (combinedCurrentStats[boost.key] || 0) && (combinedCurrentStats[boost.key] > 0),
-                      'text-gray-400': (targetStats[boost.key] || 0) <= (combinedCurrentStats[boost.key] || 0) && (combinedCurrentStats[boost.key] <= 0)
-                    }">
-                      {{ Math.max(targetStats[boost.key] || 0, combinedCurrentStats[boost.key] || 0) }}
-                    </span>
-                  </template>
+                  <!-- Target Value -->
+                  <div class="text-left pl-1">
+                    <template v-if="boost.type === 'boolean'">
+                      <span :class="{
+                        'text-green-400': targetStats[boost.key] && !combinedCurrentStats[boost.key],
+                        'text-white': targetStats[boost.key] && combinedCurrentStats[boost.key],
+                        'text-red-400': !targetStats[boost.key] && !combinedCurrentStats[boost.key]
+                      }">
+                        {{ (targetStats[boost.key] || combinedCurrentStats[boost.key]) ? 'ON' : 'OFF' }}
+                      </span>
+                    </template>
+                    <template v-else>
+                      <span :class="{
+                        'text-green-400': (targetStats[boost.key] || 0) > (combinedCurrentStats[boost.key] || 0),
+                        'text-white': (targetStats[boost.key] || 0) <= (combinedCurrentStats[boost.key] || 0) && (combinedCurrentStats[boost.key] > 0),
+                        'text-gray-400': (targetStats[boost.key] || 0) <= (combinedCurrentStats[boost.key] || 0) && (combinedCurrentStats[boost.key] <= 0)
+                      }">
+                        {{ Math.max(targetStats[boost.key] || 0, combinedCurrentStats[boost.key] || 0) }}
+                      </span>
+                    </template>
+                  </div>
+                  
+                  <!-- Cost Display für Desktop -->
+                  <div class="col-span-4 text-right text-amber-400">
+                    {{ boost.type !== 'boolean' && 
+                       targetStats[boost.key] > combinedCurrentStats[boost.key] && 
+                       getBoostCost(boost, combinedCurrentStats[boost.key] || 0, targetStats[boost.key]) ? 
+                       getBoostCost(boost, combinedCurrentStats[boost.key] || 0, targetStats[boost.key]).formattedValue : '' }}
+                  </div>
                 </div>
-                
-                <!-- Max Value -->
-                <div class="text-gray-200 text-right text-[10px] hidden sm:block" v-if="boost.max">
-                  /{{ boost.max }}
-                </div>
-                <div v-else></div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Debug Panel - direkt vor dem Footer einfügen -->
+      <div class="bg-gray-900 p-2 border-t border-gray-600" v-if="showDebugPanel">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-xs font-bold text-yellow-400">LocalStorage Debug</h3>
+          <button @click="refreshDebugData" class="text-xs px-2 py-0.5 bg-blue-700 hover:bg-blue-600 rounded">
+            Refresh
+          </button>
+        </div>
+        
+        <div class="bg-black/50 p-2 rounded text-[10px] font-mono max-h-64 overflow-y-auto">
+          <template v-if="debugStorageData.length > 0">
+            <div v-for="(item, index) in debugStorageData" :key="index" class="mb-1">
+              <div class="text-blue-300">{{ item.key }}:</div>
+              <div class="pl-2 text-green-300 break-all whitespace-pre-wrap">{{ item.value }}</div>
+            </div>
+          </template>
+          <div v-else class="text-red-400">No local storage data found</div>
         </div>
       </div>
 
@@ -138,11 +213,13 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { allBoosts, boostCategories } from '@/constants/tr-planner';
 import { formatNumber } from '@/composables/format';
-import { calculateOrbRequirement, calculateOrbGainsCalc } from '@/composables/calculations';
-import { IconX, IconCopy } from '@tabler/icons-vue';
+import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
+import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
+import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
+import { IconX, IconCopy, IconArrowRight } from '@tabler/icons-vue';
 
 const props = defineProps({
   isVisible: {
@@ -296,6 +373,119 @@ async function copyToClipboard() {
     alert("Error copying to clipboard.");
   }
 }
+
+// Berechnet die Kosten für einen Boost
+function getBoostCost(boost, currentValue, targetValue) {
+  if (targetValue <= currentValue) return null; // Keine Kosten wenn kein Upgrade
+  if (boost.type === 'boolean') return null; // Boolean-Boosts haben keine direkten Kosten
+  
+  // Bestimme den Boost-Typ basierend auf der Kategorie
+  const category = boost.category;
+  
+  try {
+    switch(category) {
+      case 'relic':
+        // Berechne Relic-Kosten
+        if (boost.key.startsWith('r')) {
+          return {
+            value: getRelicCost(boost.key, targetValue),
+            formattedValue: formatRelicCost(getRelicCost(boost.key, targetValue)),
+            type: 'fragments'
+          };
+        }
+        break;
+        
+      case 'inscryption':
+        // Berechne Inscryption-Kosten
+        if (boost.key.startsWith('i')) {
+          return {
+            value: getInscryptionCost(boost.key, targetValue),
+            formattedValue: formatInscryptionCost(getInscryptionCost(boost.key, targetValue)),
+            type: 'hellishBiomatter'
+          };
+        }
+        break;
+        
+      case 'gadget':
+        // Berechne Gadget-Kosten
+        if (boost.key.startsWith('g') || boost.key === 'oogadget' || boost.key === 'campfragdet') {
+          return {
+            value: getGadgetCost(boost.key, targetValue),
+            formattedValue: formatGadgetCost(getGadgetCost(boost.key, targetValue)),
+            type: 'tessarects'
+          };
+        }
+        break;
+      
+      // Für andere Kategorien könnten weitere Fallunterscheidungen hinzugefügt werden
+    }
+  } catch (e) {
+    console.error(`Fehler bei der Kostenberechnung für ${boost.key}:`, e);
+  }
+  
+  return null;
+}
+
+// Funktion, um die CSS-Klasse für Boost-Kosten zu bestimmen
+function getCostClass(costType) {
+  switch(costType) {
+    case 'fragments': return 'text-purple-400';
+    case 'hellishBiomatter': return 'text-red-400';
+    case 'tessarects': return 'text-blue-400';
+    default: return 'text-amber-400';
+  }
+}
+
+// Debug-Panel State
+const showDebugPanel = ref(true); // Auf false setzen, um standardmäßig zu verstecken
+const debugStorageData = ref([]);
+
+// Funktion zum Laden der localStorage-Daten
+function refreshDebugData() {
+  const data = [];
+  
+  try {
+    // Alle trplanner-bezogenen Einträge sammeln
+    Object.keys(localStorage)
+      .filter(key => key.includes('trplanner'))
+      .forEach(key => {
+        data.push({
+          key,
+          value: localStorage.getItem(key)
+        });
+      });
+    
+    // Auch die maxLevelStats und combinedCurrentStats anzeigen
+    data.push({
+      key: '⚠️ maxLevelStats (computed)',
+      value: JSON.stringify(maxLevelStats.value, null, 2)
+    });
+    
+    data.push({
+      key: '⚠️ combinedCurrentStats (computed)',
+      value: JSON.stringify(combinedCurrentStats.value, null, 2)
+    });
+    
+    debugStorageData.value = data;
+  } catch (e) {
+    console.error("Error loading debug data:", e);
+    debugStorageData.value = [{ key: 'ERROR', value: e.toString() }];
+  }
+}
+
+// Debug-Daten beim Laden des Modals initialisieren
+onMounted(() => {
+  if (props.isVisible) {
+    refreshDebugData();
+  }
+});
+
+// Debug-Daten aktualisieren, wenn das Modal angezeigt wird
+watch(() => props.isVisible, (newVal) => {
+  if (newVal) {
+    refreshDebugData();
+  }
+});
 </script>
 
 <style scoped>
