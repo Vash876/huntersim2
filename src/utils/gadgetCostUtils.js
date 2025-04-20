@@ -244,6 +244,7 @@ function getGadgetCost(gadgetType, level) {
       return calculateG2(level);
     case 'g3':
       return calculateG3(level);
+    case 'oogadget':
     case 'g4':
       return calculateG4(level);
     case 'wrench':
@@ -266,6 +267,7 @@ function getGadgetCost(gadgetType, level) {
       return calculateG12(level);
     case 'g13':
       return calculateG13(level);
+    case 'campfragdet':
     case 'g14':
       return calculateG14(level);
     case 'anchor':
