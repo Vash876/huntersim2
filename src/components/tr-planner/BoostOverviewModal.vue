@@ -13,7 +13,7 @@
         <div class="flex justify-between items-center">
           <h2 class="text-base font-bold text-white truncate mr-2">
             <span class="text-blue-400">Orb Calculator</span>
-            <span class=""> - Boost Overview</span>
+            <span class=""> - TR Overview</span>
           </h2>
           <div class="flex items-center">
             <button 
@@ -249,7 +249,7 @@ async function copyToClipboard() {
   
   try {
     // Create a text representation of boosts
-    let text = "=== Boost Overview ===\n";
+    let text = "=== TR Overview ===\n";
     text += `TR Count: ${props.trCount}\n`;  // Direct prop access
     text += `All-Time Orbs: ${formatNumber(props.allTimeOrbs)}\n`;  // Direct prop access
     text += `Orb Requirement: ${formatNumber(props.orbRequirement)}\n`;  // Direct prop access

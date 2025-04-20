@@ -146,7 +146,7 @@
                         </template>
                         <!-- Standardfall für numerische Boosts -->
                         <template v-else>
-                          {{ formatMultiplier(getBoostMultiplier(boost, currentBoosts[boost.key] || 0)) }}
+                          {{ ensureFormattedMultiplier(getBoostMultiplier(boost, currentBoosts[boost.key] || 0)) }}
                         </template>
                       </span>
                       <IconArrowRight size="12" class="text-green-500" />
@@ -161,7 +161,7 @@
                         </template>
                         <!-- Standardfall für numerische Boosts -->
                         <template v-else>
-                          {{ formatMultiplier(getBoostMultiplier(boost, targetBoosts[boost.key] || 0, true)) }}
+                          {{ ensureFormattedMultiplier(formatMultiplier(getBoostMultiplier(boost, targetBoosts[boost.key] || 0, true))) }}
                         </template>
                       </span>
                     </div>
@@ -279,11 +279,11 @@
                       <!-- Standardfall für numerische Boosts -->
                       <template v-else>
                         <span class="text-gray-400">
-                          {{ formatMultiplier(getBoostMultiplier(boost, currentBoosts[boost.key] || 0)) }}
+                          {{ ensureFormattedMultiplier(getBoostMultiplier(boost, currentBoosts[boost.key] || 0)) }}
                         </span>
                         <span class="mx-1 text-green-500">→</span>
                         <span class="text-white">
-                          {{ formatMultiplier(getBoostMultiplier(boost, targetBoosts[boost.key] || 0, true)) }}
+                          {{ ensureFormattedMultiplier(formatMultiplier(getBoostMultiplier(boost, targetBoosts[boost.key] || 0, true))) }}
                         </span>
                       </template>
                     </div>
@@ -483,7 +483,7 @@
               class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-md text-xs flex items-center"
             >
               <IconSearch size="14" class="mr-1" />
-              Boost Overview
+              TR Overview
             </button>
             
             <button 
@@ -1639,10 +1639,21 @@ function createPlanWithTargetValues() {
   trPlannerStore.planModalShouldOpen = 'target';
 }
 
-function createPlan() {
-  if (isPlanValid.value) {
-    console.log("Saving plan...");
+function ensureFormattedMultiplier(value) {
+  // Verwende die existierende formatMultiplier-Funktion
+  const formatted = formatMultiplier(value);
+  
+  // Wenn der formatierte Wert nur eine Zahl ist (ohne ×), füge × und .00 hinzu
+  if (/^[0-9]+$/.test(formatted)) {
+    return `×${formatted}.00`;
   }
+  
+  // Wenn der formatierte Wert bereits × enthält, aber keine Dezimalstellen hat
+  if (/^×[0-9]+$/.test(formatted)) {
+    return `${formatted}.00`;
+  }
+  
+  return formatted;
 }
 
 // Funktion updateAllTimeOrbs überarbeiten

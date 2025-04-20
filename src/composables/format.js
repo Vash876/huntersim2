@@ -52,7 +52,7 @@ export function formatNumber(value) {
  */
 export function formatMultiplier(value) {
   if (typeof value !== 'number') return value;
-  if (value === 1) return 1; // Wenn der Wert 1 ist, geben wir ihn unverändert zurück
+  if (value === 1) return 'x1.00'; // kein Multiplikator bei 1
   
   // Für Multiplikatoren verwenden wir das ×-Symbol und den formatierten Wert
   return `×${formatNumber(value)}`;

@@ -29,8 +29,8 @@
       <!-- Description Area -->
       <div class="p-3 bg-gray-750/60 border-b border-gray-700">
         <p class="text-xs text-gray-300">
-          Create a new TR Plan by setting target levels for Stats. Stats that are already at maximum level are not shown here but will be included in the Calculation.  
-          Click on the gray indicators on the left edge of each Stat to turn them green and include those Stats in future TRs.
+          Create a new TR Plan by setting target levels for boosts.  
+          <br><span class="text-yellow-300 mt-1 inline-block">To include boosts in future TRs, click the gray indicators on the left edge of each boost - they'll turn <span class="text-green-400">green</span> when selected.</span>
         </p>
       </div>
 
@@ -135,7 +135,7 @@
         </div>
       </div>
       
-      <!-- Search Field -->
+      <!-- Search Field
       <div class="p-3 border-b border-gray-700">
         <div class="relative">
           <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -155,7 +155,7 @@
             <IconX size="16" class="text-gray-400 hover:text-white" />
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Error state -->
       <div v-if="error" class="p-4 text-center">
@@ -337,7 +337,12 @@
                           <button 
                             @click.stop="toggleBooleanTarget(step.id, boost.key)"
                             class="text-xs px-1.5 py-0.5 rounded-sm"
-                            :class="getTargetBool(step.id, boost.key) ? 'bg-green-700 text-green-100' : 'bg-gray-700 hover:bg-green-800/50 text-white'"
+                            :class="{
+                              'bg-green-700 text-green-100': getTargetBool(step.id, boost.key),
+                              'bg-gray-700 hover:bg-green-800/50 text-white': !getTargetBool(step.id, boost.key) && (!boost.permanent || stepIndex === 0 || !isPermanentAndActivatedBefore(step.id, boost.key)),
+                              'bg-gray-500 text-gray-300 cursor-not-allowed': !getTargetBool(step.id, boost.key) && boost.permanent && stepIndex > 0 && isPermanentAndActivatedBefore(step.id, boost.key)
+                            }"
+                            :disabled="!getTargetBool(step.id, boost.key) && boost.permanent && stepIndex > 0 && isPermanentAndActivatedBefore(step.id, boost.key)"
                           >
                             {{ getTargetBool(step.id, boost.key) ? 'ON' : 'OFF' }}
                           </button>
@@ -350,7 +355,8 @@
                             :minValue="stepIndex === 0 ? (boost.permanent ? getCurrentLevel(boost, step) : 0) : (boost.permanent ? getPreviousStepLevel(stepIndex, boost.key) : 0)"  
                             :maxValue="boost.max || 999999"
                             :showFastControls="true"
-                            :step="1"
+                            :step="boost.normalControl || 1"
+                            :fastStep="boost.fastControl || 10"
                             :valueClass="'text-white'"
                             :autoEdit="true"
                             @update:value="(newVal) => updateTargetLevel(step.id, boost.key, newVal)"
@@ -824,36 +830,60 @@ function removeStep(index) {
 function toggleBoostForNextTR(stepId, boostKey) {
   // Verhindere Deaktivierung von hoursInTR
   if (boostKey === 'hoursInTR') return;
-  
+
   const stepIndex = trSteps.findIndex(step => step.id === stepId);
-  if (stepIndex !== -1) {
-    const step = trSteps[stepIndex];
-    const selectedIndex = step.selectedForNextTR.indexOf(boostKey);
-    
-    if (selectedIndex === -1) {
-      step.selectedForNextTR.push(boostKey);
-      
-      // Für bestehende TR Steps: Prüfe bei allen nachfolgenden TRs, ob wir dort den Boost
-      // automatisch mit dem aktuellen Zustand hinzufügen müssen
-      const currentState = step.targetBools[boostKey] || false;
-      
-      // Füge den Boost zu allen nachfolgenden TR-Steps hinzu
-      for (let i = stepIndex + 1; i < trSteps.length; i++) {
-        // Wenn dieser Boost noch nicht in selectedForNextTR ist, füge ihn hinzu
-        if (!trSteps[i].selectedForNextTR.includes(boostKey)) {
-          trSteps[i].selectedForNextTR.push(boostKey);
-        }
-        
-        // Setze den initialen Zustand gemäß dem Zustand vom ersten TR
-        if (trSteps[i].targetBools[boostKey] === undefined) {
-          trSteps[i].targetBools[boostKey] = currentState;
-        }
+  if (stepIndex === -1) return;
+  const step = trSteps[stepIndex];
+  const selectedIndex = step.selectedForNextTR.indexOf(boostKey);
+  const boost = allBoosts.find(b => b.key === boostKey);
+
+  if (selectedIndex === -1) {
+    // Markiere den Boost für alle zukünftigen Schritte
+    step.selectedForNextTR.push(boostKey);
+    const currentBool = step.targetBools[boostKey] || false;
+
+    for (let i = stepIndex + 1; i < trSteps.length; i++) {
+      const next = trSteps[i];
+
+      // Liste aktualisieren
+      if (!next.selectedForNextTR.includes(boostKey)) {
+        next.selectedForNextTR.push(boostKey);
       }
-    } else {
-      step.selectedForNextTR.splice(selectedIndex, 1);
+
+      if (boost.type === 'boolean') {
+        // Boolean-Boost: übernehme den Zustand
+        if (next.targetBools[boostKey] === undefined) {
+          next.targetBools[boostKey] = currentBool;
+        }
+      } else {
+        // Numerischer Boost: setze targetLevels, damit er in planStats auftaucht
+        next.targetLevels[boostKey] = next.stats[boostKey] || 0;
+      }
+    }
+  } else {
+    // Entferne den Boost aus allen zukünftigen Schritten
+    step.selectedForNextTR.splice(selectedIndex, 1);
+
+    for (let i = stepIndex + 1; i < trSteps.length; i++) {
+      const next = trSteps[i];
+
+      // aus selectedForNextTR entfernen
+      const idx = next.selectedForNextTR.indexOf(boostKey);
+      if (idx !== -1) {
+        next.selectedForNextTR.splice(idx, 1);
+      }
+
+      if (boost.type === 'boolean') {
+        // Boolean-Boost: entferne targetBools-Eintrag
+        delete next.targetBools[boostKey];
+      } else {
+        // Numerischer Boost: entferne targetLevels-Eintrag
+        delete next.targetLevels[boostKey];
+      }
     }
   }
 }
+
 
 // Prüfen ob ein Boost für den nächsten TR vorgemerkt ist
 function isBoostSelectedForNextTR(stepId, boostKey) {
@@ -988,7 +1018,8 @@ function getFilteredBoostsByCategory(step) {
         
         // BOOLEAN BOOSTS: Nur ausfiltern, wenn es KEINE Folge-TR ist ODER der Boost nicht ausgewählt ist
         if (boost.type === 'boolean' && stepStats[boost.key] && 
-            (!isFollowUpTR || !selectedBoostsForTR.includes(boost.key))) {
+            (!isFollowUpTR || !selectedBoostsForTR.includes(boost.key)) &&
+            !step.targetBools[boost.key]) {  // <-- Zusätzliche Bedingung
           continue;
         }
         
@@ -1028,14 +1059,67 @@ function getFilteredBoostsByCategory(step) {
 
 // Boolean Boost für einen bestimmten Schritt togglen
 function toggleBooleanTarget(stepId, boostKey) {
-  const stepIndex = trSteps.findIndex(step => step.id === stepId);
-  if (stepIndex !== -1) {
-    const step = trSteps[stepIndex];
-    step.targetBools[boostKey] = !step.targetBools[boostKey];
-    
-    // NEU: Aktualisiere alle nachfolgenden TR-Steps mit den neuen akkumulierten Stats
-    updateFollowingStepsStats(stepIndex);
+  const stepIndex = trSteps.findIndex(s => s.id === stepId);
+  if (stepIndex === -1) return;
+
+  const step = trSteps[stepIndex];
+  const boost = allBoosts.find(b => b.key === boostKey);
+  if (!boost) return;
+
+  /* --------------------------------------------------
+     A) Ausgangswerte                                 */
+  const inheritedVal = !!step.stats[boostKey];           // geerbter 0/1‑Wert
+  const currentVal   = getTargetBool(stepId, boostKey);  // was UI gerade zeigt
+  const newVal       = !currentVal;                      // toggeln
+
+  // Verhindern, dass permanente aktivierte Boosts deaktiviert werden
+  if (boost.permanent && !newVal) {
+    // In Folge-TRs: Prüfen ob der Boost in früheren TRs aktiviert wurde
+    if (stepIndex > 0) {
+      for (let i = 0; i < stepIndex; i++) {
+        const prevStep = trSteps[i];
+        const wasActive = prevStep.targetBools[boostKey] === true ||
+                         (prevStep.stats[boostKey] && !Object.prototype.hasOwnProperty.call(prevStep.targetBools, boostKey));
+        
+        if (wasActive) {
+          // Boost war in einem früheren TR aktiviert - deaktivieren nicht erlaubt
+          console.log(`Permanenter Boolean-Boost ${boostKey} kann nicht deaktiviert werden, da er in einem früheren TR aktiviert wurde`);
+          return; // Ohne Änderung abbrechen
+        }
+      }
+    }
   }
+
+  /* --------------------------------------------------
+     B) expliziten Eintrag setzen / entfernen          */
+  if (newVal === inheritedVal) {
+    // gleicher Wert wie geerbt ­→ kein Override nötig
+    delete step.targetBools[boostKey];
+  } else {
+    // anderer Wert ­→ Override speichern
+    step.targetBools[boostKey] = newVal;
+  }
+
+  /* --------------------------------------------------
+     C) bei nicht‑permanenten Boosts den realen        *
+     Stat‑Wert dieses TRs sofort angleichen            */
+  if (!boost.permanent) {
+    step.stats[boostKey] = newVal ? 1 : 0;
+  } else {
+    // WICHTIG: Bei permanenten Boosts, wenn sie aktiviert werden,
+    // auch in allen nachfolgenden TRs aktivieren
+    if (newVal) {
+      for (let i = stepIndex + 1; i < trSteps.length; i++) {
+        const nextStep = trSteps[i];
+        nextStep.targetBools[boostKey] = true; // In Folge-TRs aktivieren
+        nextStep.stats[boostKey] = 1;          // Auch in Stats setzen
+      }
+    }
+  }
+
+  /* --------------------------------------------------
+     D) Folge‑TRs neu aufbauen                         */
+  updateFollowingStepsStats(stepIndex);
 }
 
 // Target Level für einen bestimmten Schritt aktualisieren
@@ -1091,112 +1175,142 @@ function isPermanentBoost(key) {
 }
 
 function updateFollowingStepsStats(modifiedStepIndex) {
-  // Wenn der letzte TR-Schritt geändert wurde, gibt es keine Folge-Schritte
   if (modifiedStepIndex >= trSteps.length - 1) return;
 
-  // 1) Orb-Gewinne im gerade veränderten Schritt berechnen
-  const modifiedStep = trSteps[modifiedStepIndex];
-  const orbGains = getStepOrbGains(modifiedStep);
+  // ►   Referenz auf die Defaults des Haupt‑TR
+  const mainBoolDefaults = {};
+  allBoosts
+    .filter(b => b.type === 'boolean' && !b.permanent)
+    .forEach(b => { mainBoolDefaults[b.key] = !!trSteps[0].stats[b.key]; });
 
-  // 2) Nimm eine Kopie der (alten) Stats des modifizierten Schritts
-  let accumulatedStats = { ...modifiedStep.stats };
+  /* -------------------------------------------------------------
+     1. accumulatedStats des modifizierten Steps bilden
+  ----------------------------------------------------------------*/
+  let accumulatedStats = { ...trSteps[modifiedStepIndex].stats,
+                           ...trSteps[modifiedStepIndex].targetLevels };
 
-  // Target-Levels und -Bools vom modifizierten Schritt einrechnen
-  Object.entries(modifiedStep.targetLevels).forEach(([key, value]) => {
-    accumulatedStats[key] = value;
+  Object.entries(trSteps[modifiedStepIndex].targetBools).forEach(([k, on]) => {
+    accumulatedStats[k] = on ? 1 : 0;
   });
+
+  /* -------------------------------------------------------------
+     2. Prüfe für alle permanenten Boolean-Boosts, ob sie in irgendeinem
+        vorherigen TR aktiviert wurden
+  ----------------------------------------------------------------*/
+  // Map für permanente Boosts, die aktiviert sind
+  const activatedPermanentBoosts = {};
   
-  Object.entries(modifiedStep.targetBools).forEach(([key, boolVal]) => {
-    const boost = allBoosts.find(b => b.key === key);
+  // Durchlaufe alle früheren TRs
+  for (let i = 0; i <= modifiedStepIndex; i++) {
+    const earlierStep = trSteps[i];
     
-    if (boolVal) {
-      accumulatedStats[key] = 1;
-    } else if (boost && !boost.permanent) {
-      accumulatedStats[key] = 0;
-    }
-  });
-
-  // 3) Jetzt durch alle folgenden TR-Schritte iterieren und aktualisieren
-  for (let i = modifiedStepIndex + 1; i < trSteps.length; i++) {
-    const nextStep = trSteps[i];
-    // Kopie seiner Stats
-    let newStats = { ...nextStep.stats };
-    
-    // EXPLIZIT setzen des trCount-Werts
-    // Der TR-Count für den Schritt i sollte sein: Basis-TR-Count + i
-    newStats.trCount = trCount.value + i;
-    
-    // EXPLIZIT setzen des allTimeOrbs-Werts
-    // Die All-Time Orbs sollten eine Akkumulation aus dem vorherigen Schritt sein
-    if (i === modifiedStepIndex + 1) {
-      // Erster Folgeschritt: Nimm die Orbs aus dem modifizierten Schritt + seine Gains
-      newStats.allTimeOrbs = (modifiedStep.stats.allTimeOrbs || allTimeOrbs.value) + getStepOrbGains(modifiedStep);
-      console.log("After update - Folge-TR allTimeOrbs:", trSteps[1]?.stats.allTimeOrbs);
-    } else {
-      // Spätere Folgeschritte: Nimm die Orbs aus dem vorherigen Schritt + seine Gains
-      const prevStep = trSteps[i-1];
-      newStats.allTimeOrbs = prevStep.stats.allTimeOrbs + getStepOrbGains(prevStep);
-    }
-
-    // 3a) Stats jedes Folgeschritts anpassen
-    Object.keys(accumulatedStats).forEach(key => {
-      // 1) Sachen, die immer aktualisiert werden
-      if (alwaysUpdateKeys.includes(key)) {
-        newStats[key] = accumulatedStats[key];
-      }
-      // 2) Wenn der Boost permanent ist ODER nicht via Checkbox "gesperrt"
-      else if (isPermanentBoost(key) || !nextStep.selectedForNextTR.includes(key)) {
-        newStats[key] = accumulatedStats[key];
-      }
-      // 3) Wenn NICHT permanent und in selectedForNextTR, lassen wir den Wert in Ruhe
-    });
-
-    // 3b) Zielwerte (targetLevels) erzwingen für permanente Boosts
-    let newTargetLevels = { ...nextStep.targetLevels };
-    Object.keys(newTargetLevels).forEach(boostKey => {
-      if (isPermanentBoost(boostKey)) {
-        if (newTargetLevels[boostKey] < newStats[boostKey]) {
-          newTargetLevels[boostKey] = newStats[boostKey];
+    // Alle Boolean-Boosts prüfen
+    allBoosts
+      .filter(b => b.type === 'boolean' && b.permanent)
+      .forEach(b => {
+        const key = b.key;
+        // Ist der Boost in diesem TR aktiviert?
+        const isActive = earlierStep.targetBools[key] === true || 
+                        (earlierStep.stats[key] && !Object.prototype.hasOwnProperty.call(earlierStep.targetBools, key));
+        
+        if (isActive) {
+          activatedPermanentBoosts[key] = true;
         }
-      }
-    });
-
-    // WICHTIG: Wir setzen den neuen TR-Step mit den angepassten Werten
-    Object.assign(trSteps[i].stats, newStats);
-    Object.assign(trSteps[i].targetLevels, newTargetLevels);
-
-    // 4) Für den nächsten Schritt: prepare Stats
-    if (i < trSteps.length - 1) {
-      // Aktualisiere die akkumulierten Stats mit den Zielen des aktuellen Schritts
-      Object.entries(trSteps[i].targetLevels).forEach(([key, value]) => {
-        accumulatedStats[key] = value;
       });
-      
-      Object.entries(trSteps[i].targetBools).forEach(([key, boolVal]) => {
-        if (boolVal) accumulatedStats[key] = 1;
-      });
-
-      // Inkrementiere TR-Count und addiere Orb-Gains
-      accumulatedStats.trCount = newStats.trCount + 1;
-      accumulatedStats.allTimeOrbs = newStats.allTimeOrbs + getStepOrbGains(trSteps[i]);
-    }
   }
 
-  // 5) WICHTIG: Explizit Array neu zuweisen, damit Vue die Änderungen erkennt
-  nextTick(() => {
-    // Erzwinge Reaktivität für die gesamte Struktur
-    trSteps.length = trSteps.length; 
-  });
+  /* -------------------------------------------------------------
+     3. alle Folge‑TRs aktualisieren
+  ----------------------------------------------------------------*/
+  for (let i = modifiedStepIndex + 1; i < trSteps.length; i++) {
+    const step      = trSteps[i];
+    const prevStep  = i === modifiedStepIndex + 1
+                      ? trSteps[modifiedStepIndex]
+                      : trSteps[i - 1];
+    const prevGains = getStepOrbGains(prevStep);
+
+    /* ---- Basiswerte übernehmen --------------------------------*/
+    const oldFlags = step.stats._orbCalcMaxedBoosts || {};
+    step.stats = { ...step.stats, ...accumulatedStats };
+    if (Object.keys(oldFlags).length) step.stats._orbCalcMaxedBoosts = oldFlags;
+
+    step.stats.trCount     = trCount.value + i;
+    step.stats.allTimeOrbs = prevStep.stats.allTimeOrbs + prevGains;
+
+    /* ---- Permanente Level nicht unterschreiten ----------------*/
+    Object.keys(step.targetLevels).forEach(k => {
+      if (isPermanentBoost(k) && step.targetLevels[k] < step.stats[k]) {
+        step.targetLevels[k] = step.stats[k];
+      }
+    });
+
+    /* ---- Permanente Boolean-Boosts aus früheren TRs übernehmen ----*/
+    Object.keys(activatedPermanentBoosts).forEach(key => {
+      step.targetBools[key] = true;
+      step.stats[key] = 1;
+    });
+
+    /* ---- Boolean‑Status bestimmen -----------------------------*/
+    allBoosts
+      .filter(b => b.type === 'boolean' && !b.permanent)
+      .forEach(b => {
+        const key         = b.key;
+        const hasTarget   = Object.prototype.hasOwnProperty.call(step.targetBools, key);
+        const isSelected  = step.selectedForNextTR.includes(key);
+
+        if (hasTarget) {
+          // explizites ON / OFF
+          step.stats[key] = step.targetBools[key] ? 1 : 0;
+        }
+        else if (!isSelected) {
+          // nicht markiert  →  Wert aus Haupt‑TR
+          step.stats[key] = mainBoolDefaults[key] ? 1 : 0;
+        }
+        // sonst (markiert, aber ohne explizites Target) bleibt der
+        // bisherige inherited‑Wert in step.stats unverändert
+      });
+
+    /* ---- accumulatedStats für nächste Runde -------------------*/
+    accumulatedStats = { ...step.stats, ...step.targetLevels };
+    Object.entries(step.targetBools).forEach(([k, on]) => {
+      accumulatedStats[k] = on ? 1 : 0;
+    });
+  }
+
+  /* Reactivity kick */
+  nextTick(() => { trSteps.length = trSteps.length; });
 }
 
+function isPermanentAndActivatedBefore(stepId, boostKey) {
+  const stepIndex = trSteps.findIndex(s => s.id === stepId);
+  if (stepIndex <= 0) return false;
+  
+  const boost = allBoosts.find(b => b.key === boostKey);
+  if (!boost || !boost.permanent) return false;
+  
+  // Prüfen, ob in früheren TRs aktiviert
+  for (let i = 0; i < stepIndex; i++) {
+    const prevStep = trSteps[i];
+    const wasActive = prevStep.targetBools[boostKey] === true || 
+                     (prevStep.stats[boostKey] && !Object.prototype.hasOwnProperty.call(prevStep.targetBools, boostKey));
+    if (wasActive) return true;
+  }
+  
+  return false;
+}
 
 // Target Boolean für einen Schritt abrufen
 function getTargetBool(stepId, boostKey) {
-  const stepIndex = trSteps.findIndex(step => step.id === stepId);
-  if (stepIndex !== -1) {
-    return trSteps[stepIndex].targetBools[boostKey] || false;
+  const step = trSteps.find(s => s.id === stepId);
+  if (!step) return false;
+
+  // 1) expliziter Wert für diesen TR?
+  if (Object.prototype.hasOwnProperty.call(step.targetBools, boostKey)) {
+    return step.targetBools[boostKey];
   }
-  return false;
+
+  // 2) sonst geerbter Wert aus stats (Haupt‑TR oder vorheriger TR)
+  return !!step.stats[boostKey];
 }
 
 // Target Level für einen Schritt abrufen
@@ -1264,36 +1378,31 @@ function getStepOrbRequirement(step, stepIndex) {
 
 // Orb Gains für einen Schritt berechnen
 function getStepOrbGains(step) {
-  // Plan Stats für diesen Schritt zusammenstellen
-  const planStats = { ...step.stats };
-  
-  // Numerische Boosts aus targetLevels
-  Object.keys(step.targetLevels).forEach(key => {
-    planStats[key] = step.targetLevels[key];
-  });
-  
-  // Boolean Boosts aus targetBools
-  // Hier müssen wir zwischen permanenten und nicht-permanenten Boosts unterscheiden
-  Object.entries(step.targetBools).forEach(([key, isActive]) => {
-    const boost = allBoosts.find(b => b.key === key);
-    
-    // Wenn der Boost nicht permanent ist und in diesem Step deaktiviert wurde,
-    // dann explizit auf 0 setzen (auch wenn er in früheren TRs aktiviert war)
-    if (boost && !boost.permanent) {
-      planStats[key] = isActive ? 1 : 0;
-    } 
-    // Sonst normal verarbeiten (permanente Boosts oder aktive Boosts)
-    else if (isActive) {
-      planStats[key] = 1;
+  /* ---------------- Basis‑ und Ziel‑Stats bauen ---------------- */
+  const baseStats = { ...step.stats };           // Start in diesem TR
+  const planStats = { ...step.stats };           // nach allen Targets
+
+  /* numerische Ziele einblenden */
+  Object.entries(step.targetLevels).forEach(([k, v]) => { planStats[k] = v; });
+
+  /* Boolean‑Ziele verarbeiten */
+  Object.entries(step.targetBools).forEach(([k, active]) => {
+    const def = allBoosts.find(b => b.key === k);
+
+    if (def && !def.permanent) {
+      // nicht‑permanent → in BEIDEN Stat‑Sätzen fixieren
+      baseStats[k] = planStats[k] = active ? 1 : 0;
+    } else if (active) {
+      // permanent → nur Ziel‑Stats auf 1 setzen
+      planStats[k] = 1;
     }
   });
-  
-  // Orb-relevante Boosts filtern
+
+  /* ---------------- Orb‑Gains berechnen ------------------------ */
   const orbCalcBoosts = allBoosts.filter(b => b.orbcalc);
-  
-  // Orb-Gewinne berechnen
-  return calculateOrbGains(step.stats, planStats, orbCalcBoosts);
+  return calculateOrbGains(baseStats, planStats, orbCalcBoosts);
 }
+
 
 // Fragment Gains für einen Schritt berechnen
 function getStepFragGains(step) {
@@ -1549,184 +1658,223 @@ function clearSearch() {
   searchQuery.value = '';
 }
 
+function applyChainStepBoosts(newStep, chainStep) {
+  chainStep.boosts.forEach(boost => {
+    if (boost.type === 'number') {
+      newStep.targetLevels[boost.key] = boost.targetLevel;
+    } else if (boost.type === 'boolean') {
+      newStep.targetBools[boost.key] = boost.targetState; 
+    }
+  });
+}
+
 // Funktion zum Laden eines existierenden Plans
+// ---------------------------------------------------------------------------
+//  initData – TR‑Plan laden oder neu initialisieren
+// ---------------------------------------------------------------------------
 function initData() {
   try {
     error.value = null;
-    
-    // Zuerst alle Targets zurücksetzen
-    trSteps.length = 0; // Leere die Steps-Liste
-    
-    // Datum und Zeit initialisieren
+    trSteps.length = 0;
     initDateTimePicker();
-    
-    // Wenn wir im Edit-Modus sind, existierenden Plan laden
+
+    // Basis‑Stats aus props kopieren
+    const baseStats = {
+      ...props.currentStats,
+      trCount:     props.currentStats.trCount     || 0,
+      allTimeOrbs: props.currentStats.allTimeOrbs || 0
+    };
+
+    // ───────────────────────── erster Step ─────────────────────────
+    let firstStep;
     if (props.editPlanId) {
-      const existingPlan = trPlannerStore.getTRPlanById(props.editPlanId);
-      
-      if (existingPlan) {
-        // Plan-Namen setzen
-        planName.value = existingPlan.name;
-        
-        // Wenn TR Start-Zeit im Plan gespeichert ist, diese laden
-        if (existingPlan.trStartDate) {
-          trStartDate.value = existingPlan.trStartDate;
-        }
-        
-        if (existingPlan.trStartTime) {
-          trStartTime.value = existingPlan.trStartTime;
-        }
-        
-        // TR-Count und All-Time Orbs aus dem gespeicherten Plan übernehmen
-        trCount.value = existingPlan.updatedStats?.trCount ?? props.currentStats?.trCount ?? 0;
-        trCountDisplay.value = (existingPlan.updatedStats?.trCount ?? props.currentStats?.trCount ?? 0).toString();
-        
-        allTimeOrbs.value = existingPlan.updatedStats?.allTimeOrbs ?? props.currentStats?.allTimeOrbs ?? 0;
-        allTimeOrbsDisplay.value = formatSuffixNotation(existingPlan.updatedStats?.allTimeOrbs ?? props.currentStats?.allTimeOrbs ?? 0);
-        
-        // Erster TR-Step mit den Basis-Daten
-        const firstStep = {
-          id: `step_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-          targetLevels: {},
-          targetBools: {},
-          selectedForNextTR: existingPlan.selectedForNextTR ? 
-                          [...existingPlan.selectedForNextTR] : 
-                          ['hoursInTR'], // hoursInTR ist standardmäßig ausgewählt
-          stats: { ...props.currentStats, trCount: trCount.value, allTimeOrbs: allTimeOrbs.value }
-        };
-        
-        // Sicherstellen, dass hoursInTR immer in der Liste ist
-        if (!firstStep.selectedForNextTR.includes('hoursInTR')) {
-          firstStep.selectedForNextTR.push('hoursInTR');
-        }
-        
-        // Target-Levels aus dem Plan übernehmen
-        existingPlan.boosts.forEach(boost => {
-          if (boost.type === 'number') {
-            firstStep.targetLevels[boost.key] = boost.targetLevel;
-          } else if (boost.type === 'boolean') {
-            firstStep.targetBools[boost.key] = boost.targetState || true;
-          }
-        });
-        
-        // Step zur Liste hinzufügen
-        trSteps.push(firstStep);
-        
-        // Falls TR-Chain vorhanden ist, diese auch laden
-        if (existingPlan.trChain && Array.isArray(existingPlan.trChain) && existingPlan.trChain.length > 0) {
-          // Schrittweise TR Chain laden und dabei fortlaufende Stats aufbauen
-          let accumulatedStats = { ...firstStep.stats };
-          
-          // Ziellevel des ersten Schritts auch zu den akkumulierten Stats hinzufügen
-          Object.entries(firstStep.targetLevels).forEach(([key, value]) => {
-            accumulatedStats[key] = value;
-          });
-          
-          // Boolean-Werte aus dem ersten Schritt übernehmen
-          Object.entries(firstStep.targetBools).forEach(([key, value]) => {
-            if (value) accumulatedStats[key] = 1;
-          });
-          
-          // Erste TR-Orbs hinzufügen
-          accumulatedStats.trCount += 1;
-          accumulatedStats.allTimeOrbs += getStepOrbGains(firstStep);
-          
-          // Jetzt für jeden Folgeschritt in der Chain
-          existingPlan.trChain.forEach((chainStep, index) => {
-            // Neuen Schritt erstellen mit den akkumulierten Stats als Basis
-            const newStep = {
-              id: `step_chain_${Date.now()}_${Math.floor(Math.random() * 1000)}_${index}`,
-              targetLevels: {},
-              targetBools: {},
-              selectedForNextTR: chainStep.selectedForNextTR || ['hoursInTR'],
-              stats: { ...accumulatedStats } // Wichtig: Die progressiv aufgebauten Stats verwenden
-            };
-            
-            // Sicherstellen, dass hoursInTR immer in der Liste ist
-            if (!newStep.selectedForNextTR.includes('hoursInTR')) {
-              newStep.selectedForNextTR.push('hoursInTR');
-            }
-            
-            // Boosts aus der Chain übernehmen
-            chainStep.boosts.forEach(boost => {
-              if (boost.type === 'number') {
-                newStep.targetLevels[boost.key] = boost.targetLevel;
-              } else if (boost.type === 'boolean') {
-                newStep.targetBools[boost.key] = boost.targetState || true;
-              }
-            });
-            
-            // Step zur Liste hinzufügen
-            trSteps.push(newStep);
-            
-            // Für den nächsten Schritt: Stats aktualisieren
-            Object.entries(newStep.targetLevels).forEach(([key, value]) => {
-              accumulatedStats[key] = value;
-            });
-            
-            Object.entries(newStep.targetBools).forEach(([key, value]) => {
-              if (value) accumulatedStats[key] = 1;
-            });
-            
-            // TR-Orbs für den nächsten Schritt hinzufügen
-            accumulatedStats.trCount += 1;
-            accumulatedStats.allTimeOrbs += getStepOrbGains(newStep);
-          });
-        }
-      }
-    } else {
-      // Bei Neuanlage Standardwerte setzen
-      planName.value = `TR Plan ${new Date().toLocaleDateString()}`;
-      trCount.value = props.currentStats?.trCount || 0;
-      trCountDisplay.value = (props.currentStats?.trCount || 0).toString();
-      allTimeOrbs.value = props.currentStats?.allTimeOrbs || 0;
-      allTimeOrbsDisplay.value = formatSuffixNotation(props.currentStats?.allTimeOrbs || 0);
-      
-      // Erster TR-Step mit den Basis-Daten
-      const firstStep = {
-        id: `step_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-        targetLevels: {},
-        targetBools: {},
-        selectedForNextTR: ['hoursInTR'], // hoursInTR ist immer vorausgewählt
-        stats: { ...props.currentStats, trCount: trCount.value, allTimeOrbs: allTimeOrbs.value }
+      const plan = trPlannerStore.getTRPlanById(props.editPlanId);
+      if (!plan) throw new Error('Plan nicht gefunden');
+
+      // Meta‑Infos
+      planName.value    = plan.name;
+      trStartDate.value = plan.trStartDate || trStartDate.value;
+      trStartTime.value = plan.trStartTime || trStartTime.value;
+
+      trCount.value        = plan.updatedStats?.trCount     ?? baseStats.trCount;
+      trCountDisplay.value = String(trCount.value);
+      allTimeOrbs.value    = plan.updatedStats?.allTimeOrbs ?? baseStats.allTimeOrbs;
+      allTimeOrbsDisplay.value = formatSuffixNotation(allTimeOrbs.value);
+
+      const statsWithOrbCalcFlags = {
+        ...baseStats,
+        trCount:     trCount.value,
+        allTimeOrbs: allTimeOrbs.value
       };
       
-      // Step zur Liste hinzufügen
-      trSteps.push(firstStep);
+      // Wenn der gespeicherte Plan _orbCalcMaxedBoosts enthält, übernimm es
+      if (plan.updatedStats && plan.updatedStats._orbCalcMaxedBoosts) {
+        statsWithOrbCalcFlags._orbCalcMaxedBoosts = {...plan.updatedStats._orbCalcMaxedBoosts};
+        console.log("Wiederhergestellte _orbCalcMaxedBoosts-Flags:", statsWithOrbCalcFlags._orbCalcMaxedBoosts);
+      }
+
+      firstStep = {
+        id: `step_${Date.now()}`,
+        stats: statsWithOrbCalcFlags,
+        targetLevels:      {},
+        targetBools:       {},
+        selectedForNextTR: Array.isArray(plan.selectedForNextTR)
+                           ? [...plan.selectedForNextTR]
+                           : ['hoursInTR']
+      };
+      if (!firstStep.selectedForNextTR.includes('hoursInTR'))
+        firstStep.selectedForNextTR.push('hoursInTR');
+
+      // Boosts aus plan.boosts übernehmen
+      plan.boosts.forEach(b => {
+        if (b.type === 'number') {
+          firstStep.targetLevels[b.key] = b.targetLevel;
+          firstStep.stats[b.key]        = b.targetLevel;
+        } else if (b.type === 'boolean') {
+          const boostDef = allBoosts.find(x => x.key === b.key);
+          const state = Boolean(b.targetState);
+          firstStep.targetBools[b.key] = state;
+          firstStep.stats[b.key]       = state ? 1 : (boostDef?.permanent ? firstStep.stats[b.key] || 0 : 0);
+        }
+      });
+    } else {
+      // Neuer Plan
+      const statsWithFlags = { ...baseStats };
+
+      if (props.currentStats && props.currentStats._orbCalcMaxedBoosts) {
+        statsWithFlags._orbCalcMaxedBoosts = {...props.currentStats._orbCalcMaxedBoosts};
+        console.log("Übernommene _orbCalcMaxedBoosts-Flags aus currentStats:", statsWithFlags._orbCalcMaxedBoosts);
+      }
+
+      firstStep = {
+        id: `step_${Date.now()}`,
+        stats: statsWithFlags,
+        targetLevels: {},
+        targetBools:  {},
+        selectedForNextTR: ['hoursInTR']
+      };
     }
-    
+
+    trSteps.push(firstStep);
+
+    // ───────────────────────── Chain‑Schritte ─────────────────────────
+    if (props.editPlanId) {
+      const plan = trPlannerStore.getTRPlanById(props.editPlanId);
+      if (Array.isArray(plan.trChain) && plan.trChain.length) {
+        let acc = { ...firstStep.stats };
+        acc.trCount++;
+        acc.allTimeOrbs += getStepOrbGains(firstStep);
+
+        plan.trChain.forEach((chain, idx) => {
+          const step = {
+            id: `chain_${Date.now()}_${idx}`,
+            stats: { ...acc },
+            targetLevels:      {},
+            targetBools:       {},
+            selectedForNextTR: Array.isArray(chain.selectedForNextTR)
+                               ? [...chain.selectedForNextTR]
+                               : ['hoursInTR']
+          };
+          if (!step.selectedForNextTR.includes('hoursInTR'))
+            step.selectedForNextTR.push('hoursInTR');
+
+          // ---------------- numerische Boosts ----------------
+          chain.boosts
+            .filter(b => b.type === 'number')
+            .forEach(b => {
+              step.targetLevels[b.key] = b.targetLevel;
+              step.stats[b.key]        = b.targetLevel;
+            });
+
+          // ---------------- Boolean‑Boosts (Fix!) ----------------
+          chain.boosts
+            .filter(b => b.type === 'boolean')      // KEIN selectedForNextTR‑Filter mehr
+            .forEach(b => {
+              const def   = allBoosts.find(x => x.key === b.key);
+              const state = Boolean(b.targetState);
+
+              step.targetBools[b.key] = state;
+
+              // stats korrekt auf 0/1 setzen
+              if (def?.permanent) {
+                if (state) step.stats[b.key] = 1;
+              } else {
+                step.stats[b.key] = state ? 1 : 0;
+              }
+
+              // UI‑Merker ergänzen, falls noch nicht vorhanden
+              if (!step.selectedForNextTR.includes(b.key)) {
+                step.selectedForNextTR.push(b.key);
+              }
+            });
+
+          // ----- Boolean‑Reset: unmarkierte, nicht‑permanente Boosts sollen
+          //       denselben Wert haben wie im Haupt‑TR -------------------------
+          allBoosts
+            .filter(b => b.type === 'boolean' && !b.permanent)
+            .forEach(b => {
+              const key             = b.key;
+              const isMarked        = step.selectedForNextTR.includes(key);
+              const hasExplicitBool = Object.prototype.hasOwnProperty.call(step.targetBools, key);
+
+              if (!isMarked && !hasExplicitBool) {
+                // ⇒ graues Kästchen: Wert aus dem Haupt‑TR übernehmen
+                const prevBool = acc[key] || 0;    // Wert aus dem vorherigen Step
+                step.stats[key] = prevBool;        // nicht aus dem Haupt‑TR!
+              }
+            });
+
+          trSteps.push(step);
+
+          // neue akkumulierte Stats
+          acc = { ...step.stats };
+          acc.trCount++;
+          acc.allTimeOrbs += getStepOrbGains(step);
+        });
+      }
+    }
+
+    // Suchfeld zurücksetzen
     searchQuery.value = '';
-  } catch (err) {
-    console.error('Error initializing plan data:', err);
-    error.value = `Failed to initialize: ${err.message}`;
+
+    // Nachladen abhängiger Berechnungen
+    nextTick(() => updateFollowingStepsStats(0));
+  }
+  catch (e) {
+    console.error('initData Error:', e);
+    error.value = `Initialization failed: ${e.message}`;
   }
 }
+
+
+
 
 // Korrektur in der createPlan-Funktion
 function createPlan() {
   if (!isPlanValid.value) return;
-  
-  // Wir nehmen den ersten TR-Step als Basis für den Plan
+
+  // --- 1) Erster TR als Basis ---
   const firstStep = trSteps[0];
-  
-  // Aktualisierte Stats für den Plan
+
+  // --- 2) Aktualisierte Basis‑Stats für den Plan ---
   const updatedStats = {
     ...props.currentStats,
     trCount: trCount.value,
     allTimeOrbs: allTimeOrbs.value
   };
-  
+
+  // --- 3) Boost‑Details aus dem ersten Schritt (Plan.boosts) ---
+  if (firstStep.stats._orbCalcMaxedBoosts) {
+    updatedStats._orbCalcMaxedBoosts = { ...firstStep.stats._orbCalcMaxedBoosts };
+    console.log("_orbCalcMaxedBoosts in updatedStats übernommen:", updatedStats._orbCalcMaxedBoosts);
+  }
   const boostDetails = [];
-  
-  // Numerische Boosts aus dem ersten Schritt
-  Object.keys(firstStep.targetLevels || {}).forEach(key => {
+
+  // 3a) Numerische Boosts
+  Object.entries(firstStep.targetLevels || {}).forEach(([key, targetLevel]) => {
     const boost = allBoosts.find(b => b.key === key);
     if (!boost) return;
-    
     const currentLevel = props.currentStats[key] || 0;
-    const targetLevel = firstStep.targetLevels[key];
-    
-    // Nur Boosts mit tatsächlicher Änderung hinzufügen
     if (targetLevel > currentLevel) {
       boostDetails.push({
         key,
@@ -1738,263 +1886,177 @@ function createPlan() {
       });
     }
   });
-  
-  // Boolean Boosts aus dem ersten Schritt
-  Object.entries(firstStep.targetBools || {}).forEach(([key, isActive]) => {
-    // WICHTIG: Auch Boosts hinzufügen, die bereits aktiv sind
-    if (!isActive) return; // Nur aktive Boosts berücksichtigen
-    
-    const boost = allBoosts.find(b => b.key === key);
-    if (!boost) return;
-    
-    const currentState = !!(props.currentStats[key] || 0);
-    
-    // ÄNDERUNG: ALLE aktiven Boolean-Boosts hinzufügen, unabhängig vom aktuellen Zustand
-    boostDetails.push({
-      key,
-      type: 'boolean',
-      label: boost.label || key,
-      currentState,
-      targetState: true
+
+  // 3b) Boolean‑Boosts im ersten Schritt
+  Object.entries(firstStep.targetBools || {})
+    .forEach(([key, isActive]) => {
+      const boost = allBoosts.find(b => b.key === key);
+      if (!boost) return;
+      const currentState = !!props.currentStats[key];
+      boostDetails.push({
+        key,
+        type: 'boolean',
+        label: boost.label || key,
+        currentState,
+        targetState: isActive
+      });
     });
-  });
-  
-  // Ergebnisse der Berechnung hinzufügen
+
+  // --- 4) Ergebnisse für den ersten TR ---
   const calculatedResults = {
     orbRequirement: getStepOrbRequirement(firstStep, 0),
-    orbGains: getStepOrbGains(firstStep),
+    orbGains:        getStepOrbGains(firstStep),
     campaignFragGains: getStepFragGains(firstStep),
-    requirementMet: getStepRequirementMet(firstStep, 0),
-    orbsNeeded: getStepRequirementMet(firstStep, 0) ? 0 : getStepOrbRequirement(firstStep, 0) - getStepOrbsAvailable(firstStep)
+    requirementMet:  getStepRequirementMet(firstStep, 0),
+    orbsNeeded:      getStepRequirementMet(firstStep, 0)
+                      ? 0
+                      : getStepOrbRequirement(firstStep, 0) - getStepOrbsAvailable(firstStep)
   };
-  
-  // Der erste TR muss immer gültig sein
-  if (!getStepRequirementMet(firstStep, 0)) {
-    showAlert("First TR requirements not met. Please adjust your Stats to meet the requirements. The Plan will not be saved.", 'Warning', 'warning');
+
+  // Pflicht‑Check: erster TR muss gültig sein
+  if (!calculatedResults.requirementMet) {
+    showAlert(
+      "First TR requirements not met. Please adjust your Stats to meet the requirements. The Plan will not be saved.",
+      'Warning',
+      'warning'
+    );
     return;
   }
-  
-  // Finde nur die gültigen TR-Schritte für die Chain
+
+  // --- 5) Kette der Folge‑TRs aufbauen ---
   const validChainSteps = [];
-  let allRequirementsMet = true;
-  let validOrbsAccumulated = allTimeOrbs.value + calculatedResults.orbGains;
-  let validTrCount = trCount.value + 1;
-  
-  // Prüfe jeden Schritt in der Chain
-  if (trSteps.length > 1) {
-    for (let i = 1; i < trSteps.length; i++) {
-      // Wenn vorherige TRs nicht erfüllt waren, brechen wir ab
-      if (!allRequirementsMet) break;
-      
-      const step = trSteps[i];
-      
-      // Sicherstellen, dass step.stats existiert
-      if (!step || !step.stats) {
-        console.error(`Step ${i} or its stats are undefined`, step);
-        allRequirementsMet = false;
-        break;
+  let accOrbs   = allTimeOrbs.value + calculatedResults.orbGains;
+  let nextTR    = trCount.value + 1;
+
+  for (let i = 1; i < trSteps.length; i++) {
+    const step = trSteps[i];
+    // a) Stats für diesen Ketten‑Schritt anpassen
+    const adjusted = {
+      ...step,
+      stats: {
+        ...step.stats,
+        trCount:    nextTR,
+        allTimeOrbs: accOrbs
       }
-      
-      // Aktualisiere die Stats für diesen Schritt basierend auf den gültigen vorherigen TRs
-      const adjustedStep = {
-        ...step,
-        stats: {
-          ...step.stats,
-          trCount: validTrCount,
-          allTimeOrbs: validOrbsAccumulated
-        }
-      };
-      
-      // Prüfe ob dieser Schritt mit den angepassten Stats gültig ist
-      const stepIsValid = getStepRequirementMet(adjustedStep, validChainSteps.length + 1);
-      
-      if (stepIsValid) {
-        // Boosts für diesen Schritt zusammenstellen
-        const stepBoosts = [];
-        
-        // Numerische Boosts
-        Object.keys(step.targetLevels || {}).forEach(key => {
-          const boost = allBoosts.find(b => b.key === key);
-          if (!boost) return;
-          
-          try {
-            // Der vorherige Schritt kann entweder der letzte gültige Schritt in der Chain 
-            // oder der erste Schritt sein
-            const prevStep = validChainSteps.length > 0 
-              ? validChainSteps[validChainSteps.length - 1] 
-              : firstStep;
-            
-            // Sicherstellen, dass prevStep und seine Eigenschaften existieren
-            if (!prevStep) {
-              console.error('Previous step is undefined');
-              return;
-            }
-            
-            // Sicherstellen dass targetLevels und stats existieren
-            const prevStepTargetLevels = prevStep.targetLevels || {};
-            const prevStepStats = prevStep.stats || {};
-            const prevStepLevel = prevStepTargetLevels[key] || prevStepStats[key] || 0;
-            const targetLevel = step.targetLevels[key] || 0;
-            
-            // hoursInTR immer speichern, auch wenn der Wert gleich bleibt
-            if (key === 'hoursInTR') {
-              stepBoosts.push({
-                key,
-                type: 'number',
-                label: boost.label || key,
-                currentLevel: prevStepLevel,
-                targetLevel,
-                remainingLevels: targetLevel - prevStepLevel
-              });
-            }
-            // Für alle anderen numerischen Boosts nur speichern, wenn sie sich erhöht haben
-            else if (targetLevel > prevStepLevel) {
-              stepBoosts.push({
-                key,
-                type: 'number',
-                label: boost.label || key,
-                currentLevel: prevStepLevel,
-                targetLevel,
-                remainingLevels: targetLevel - prevStepLevel
-              });
-            }
-          } catch (e) {
-            console.error(`Error processing numeric boost ${key}:`, e);
-          }
-        });
-        
-        // Boolean Boosts
-        Object.entries(step.targetBools || {}).forEach(([key, isActive]) => {
-          if (!isActive) return;
-          
-          const boost = allBoosts.find(b => b.key === key);
-          if (!boost) return;
-          
-          try {
-            // Der vorherige Schritt kann entweder der letzte gültige Schritt in der Chain 
-            // oder der erste Schritt sein
-            const prevStep = validChainSteps.length > 0 
-              ? validChainSteps[validChainSteps.length - 1] 
-              : firstStep;
-            
-            // Sicherstellen, dass prevStep und seine Eigenschaften existieren
-            if (!prevStep) {
-              console.error('Previous step is undefined');
-              return;
-            }
-            
-            // Boolean-Boosts korrekt hinzufügen
-            const prevStepBoolean = prevStep.targetBools[key] || false;
-            
-            // WICHTIG: ALLE aktiven Boolean-Boosts hinzufügen - das ist der Fix
-            stepBoosts.push({
-              key,
-              type: 'boolean',  // Typ muss 'boolean' sein, nicht 'number'
-              label: boost.label || key,
-              currentState: prevStepBoolean,
-              targetState: true  // Immer auf true setzen, wenn isActive true ist
-            });
-          } catch (e) {
-            console.error(`Error processing boolean boost ${key}:`, e);
-          }
-        });
-        
-        // Ergebnisse für diesen Schritt
-        const stepResults = {
-          orbRequirement: getStepOrbRequirement(adjustedStep, validChainSteps.length + 1),
-          orbGains: getStepOrbGains(adjustedStep),
-          campaignFragGains: getStepFragGains(adjustedStep),
-          requirementMet: true // Der Schritt ist gültig, also sind die Anforderungen erfüllt
-        };
-        
-        // Schritt zur Chain hinzufügen mit alle notwendigen Eigenschaften
-        const validChainStep = {
-          trNumber: validTrCount,
-          boosts: stepBoosts,
-          results: stepResults,
-          selectedForNextTR: Array.isArray(step.selectedForNextTR) ? [...step.selectedForNextTR] : ['hoursInTR']
-        };
-        
-        validChainSteps.push(validChainStep);
-        
-        // Stats für den nächsten Schritt aktualisieren
-        validOrbsAccumulated += stepResults.orbGains;
-        validTrCount += 1;
-      } else {
-        // Wenn ein Schritt nicht gültig ist, brechen wir ab
-        allRequirementsMet = false;
-        break;
-      }
+    };
+
+    // b) Requirement prüfen
+    if (!getStepRequirementMet(adjusted, validChainSteps.length + 1)) {
+      break;
     }
+
+    // c) Boost‑Liste dieses Schritts
+    const stepBoosts = [];
+
+    // –– numerische Boosts wie gehabt
+    Object.entries(step.targetLevels || {}).forEach(([key, targetLevel]) => {
+      const boost = allBoosts.find(b => b.key === key);
+      if (!boost) return;
+      const prev = validChainSteps.length > 0
+        ? validChainSteps[validChainSteps.length - 1]
+        : firstStep;
+      const prevLevel = prev.targetLevels?.[key] ?? prev.stats?.[key] ?? 0;
+
+      if (key === 'hoursInTR' || !boost.permanent || targetLevel > prevLevel) {
+        stepBoosts.push({
+          key,
+          type: 'number',
+          label: boost.label || key,
+          currentLevel: prevLevel,
+          targetLevel,
+          remainingLevels: targetLevel - prevLevel
+        });
+      }
+    });
+
+    // –– Boolean‑Boosts: alle aktiven Toggles reinnehmen
+    Object.entries(step.targetBools || {})
+      .forEach(([key, isActive]) => {
+        const boost = allBoosts.find(b => b.key === key);
+        if (!boost) return;
+        const prev = validChainSteps.length > 0
+          ? validChainSteps[validChainSteps.length - 1]
+          : firstStep;
+        const prevState = !!prev.targetBools?.[key] || !!prev.stats?.[key];
+        stepBoosts.push({
+          key,
+          type: 'boolean',
+          label: boost.label || key,
+          currentState: prevState,
+          targetState: isActive
+        });
+      });
+
+    // d) Ergebnisse dieses Schritts
+    const stepResults = {
+      orbRequirement: getStepOrbRequirement(adjusted, validChainSteps.length + 1),
+      orbGains:        getStepOrbGains(adjusted),
+      campaignFragGains: getStepFragGains(adjusted),
+      requirementMet:  true
+    };
+
+    // e) In die Chain pushen
+    validChainSteps.push({
+      trNumber:        nextTR,
+      boosts:          stepBoosts,
+      results:         stepResults,
+      selectedForNextTR: Array.isArray(step.selectedForNextTR)
+        ? [...step.selectedForNextTR]
+        : ['hoursInTR']
+    });
+
+    // f) Akkumulierte Orbs/Count updaten
+    accOrbs += stepResults.orbGains;
+    nextTR++;
   }
-  
-  // Plan-Objekt erstellen mit Datums-/Zeitinformationen und selectedForNextTR
+
+  // --- 6) Endgültiges Plan‑Objekt ---
   const planData = {
-    name: planName.value.trim(),
-    trStartDate: trStartDate.value,
-    trStartTime: trStartTime.value,
-    boosts: boostDetails,
-    updatedStats: updatedStats,
-    results: calculatedResults,
-    trChain: validChainSteps,  // Nur gültige TRs speichern
-    selectedForNextTR: Array.isArray(firstStep.selectedForNextTR) ? 
-                       [...firstStep.selectedForNextTR] : 
-                       ['hoursInTR'], // Sicherstellen dass selectedForNextTR immer ein Array ist
+    name:              planName.value.trim(),
+    trStartDate:       trStartDate.value,
+    trStartTime:       trStartTime.value,
+    boosts:            boostDetails,
+    updatedStats,
+    results:           calculatedResults,
+    trChain:           validChainSteps,
+    selectedForNextTR: Array.isArray(firstStep.selectedForNextTR)
+                        ? [...firstStep.selectedForNextTR]
+                        : ['hoursInTR'],
     progress: {
-      completed: false,
+      completed:   false,
       lastUpdated: new Date().toISOString()
     }
   };
-  
+
+  // --- 7) Speichern / Update im Store ---
   let planId;
-  
-  // Bei Edit: bestehenden Plan aktualisieren
   if (props.editPlanId) {
-    // Originalplan holen, um unveränderte Daten zu erhalten
-    const originalPlan = trPlannerStore.getTRPlanById(props.editPlanId);
-    
-    // Neuen Plan erstellen, der den Original-Plan um die geänderten Daten erweitert
-    const updatedPlan = {
-      ...originalPlan,
-      ...planData,
-      updatedAt: new Date().toISOString()
-    };
-    
-    // Plan im Store aktualisieren
-    trPlannerStore.updateTRPlan(props.editPlanId, updatedPlan);
+    const original = trPlannerStore.getTRPlanById(props.editPlanId);
+    const updated  = { ...original, ...planData, updatedAt: new Date().toISOString() };
+    trPlannerStore.updateTRPlan(props.editPlanId, updated);
     planId = props.editPlanId;
-  } 
-  // Neuen Plan erstellen
-  else {
+  } else {
     planId = `trplan_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-    const newPlan = {
-      id: planId,
-      createdAt: new Date().toISOString(),
-      ...planData
-    };
-    
-    // Im Store speichern
-    trPlannerStore.addTRPlan(newPlan);
+    trPlannerStore.addTRPlan({ id: planId, createdAt: new Date().toISOString(), ...planData });
   }
-  
-  // Wenn eine Warnung angezeigt werden soll, dass nicht alle TRs gültig waren
+
+  // --- 8) Warnung, falls einige TRs herausgefallen sind ---
   if (trSteps.length > 1 && validChainSteps.length < trSteps.length - 1) {
     showAlert(
-      `Only ${validChainSteps.length + 1} of ${trSteps.length} TRs were saved. Invalid TRs have been removed from the plan.`, 
-      'Warning', 
+      `Only ${validChainSteps.length + 1} of ${trSteps.length} TRs were saved. Invalid TRs have been removed.`,
+      'Warning',
       'warning'
     );
-    
-    // Event emittieren
     emit('save', planId);
-
-    return; 
+    return;
   }
 
-  // Nur wenn keine Warnung angezeigt wird, direkt schließen
+  // --- 9) Abschluss ---
   emit('save', planId);
   cancelAndClose();
 }
+
+
 
 function cancelAndClose() {
   emit('close');
@@ -2180,6 +2242,8 @@ function handleScroll() {
   }
 }
 
+
+
 onMounted(() => {
   if (props.isVisible) {
     window.addEventListener('scroll', handleScroll);
@@ -2224,110 +2288,149 @@ onMounted(() => {
 function initializeWithCopyData(copyData) {
   try {
     console.log("Initializing TRPlanModal with copyData:", copyData);
-    
-    // Name setzen
+
+    // 1) Plan‑Metadaten setzen
     planName.value = copyData.name || `TR Plan ${new Date().toLocaleDateString()}`;
-    
-    // VERBESSERT: Datum/Zeit setzen mit Fallback auf aktuelle Werte
     trStartDate.value = copyData.trStartDate || new Date().toISOString().split('T')[0];
-    trStartTime.value = copyData.trStartTime || new Date().toTimeString().split(' ')[0].slice(0, 5);
-    
-    console.log(`Setze Startzeit auf: ${trStartDate.value} ${trStartTime.value}`);
-    
-    // TR-Count und AllTimeOrbs direkt aus den kopierten Daten übernehmen
+    trStartTime.value = copyData.trStartTime || new Date().toTimeString().slice(0,5);
     trCount.value = copyData.trCount || 0;
-    trCountDisplay.value = (copyData.trCount || 0).toString();
-    
+    trCountDisplay.value = String(trCount.value);
     allTimeOrbs.value = copyData.allTimeOrbs || 0;
-    allTimeOrbsDisplay.value = formatSuffixNotation(copyData.allTimeOrbs || 0);
-    
-    // Zuerst alle vorherigen Steps löschen
+    allTimeOrbsDisplay.value = formatSuffixNotation(allTimeOrbs.value);
+
+    // 2) Bestehende Schritte löschen
     trSteps.length = 0;
-    
-    // WICHTIG: Hier die maxLevelStats aus dem localStorage laden
-    let maxStats = {};
-    try {
-      const maxStatsJSON = localStorage.getItem('trplanner_userstats');
-      if (maxStatsJSON) {
-        maxStats = JSON.parse(maxStatsJSON);
-      }
-    } catch (e) {
-      console.error("Error reading maxLevelStats from localStorage:", e);
-    }
-    
-    // Erster TR-Step mit den Basis-Daten aus copyData
+
+    // 3) Basis‑Stats vom copyData übernehmen
+    const baseStats = {
+      ...props.currentStats,          // sichere Basis
+      ...copyData,                    // alle Werte aus copyData direkt übernehmen
+      trCount: copyData.trCount || 0,
+      allTimeOrbs: copyData.allTimeOrbs || 0
+    };
+
+    // 4) Ersten Schritt anlegen
     const firstStep = {
-      id: `step_copy_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      id: `step_copy_${Date.now()}`,
+      stats: { ...baseStats },        // Kopie der Basis-Stats
       targetLevels: {},
       targetBools: {},
-      selectedForNextTR: ['hoursInTR'],
-      stats: { ...copyData }  // Direkt alle Werte aus copyData als Stats übernehmen
+      selectedForNextTR: ['hoursInTR']  // hoursInTR ist immer vorausgewählt
     };
-    
-    // WICHTIG: _orbCalcMaxedBoosts von copyData übernehmen, falls vorhanden
-    if (copyData._orbCalcMaxedBoosts) {
-      firstStep.stats._orbCalcMaxedBoosts = { ...copyData._orbCalcMaxedBoosts };
+
+    // 5) Wenn es ein Plan aus dem OrbCalculatorModal ist, hat er keine boosts-Eigenschaft
+    // In diesem Fall müssen wir die Werte direkt aus dem copyData in targetLevels/targetBools übernehmen
+    if (!copyData.boosts) {
+      console.log("Initializing from OrbCalculatorModal data");
+      
+      // Für jeden Boost prüfen, ob er im copyData existiert und kein Meta-Feld ist
+      allBoosts.forEach(boost => {
+        const key = boost.key;
+        
+        // Meta-Felder überspringen
+        if (key === 'trCount' || key === 'allTimeOrbs' || key.startsWith('_')) {
+          return;
+        }
+        
+        // Wenn der Wert existiert und nicht undefined ist
+        if (copyData[key] !== undefined) {
+          // Für Boolean-Boosts
+          if (boost.type === 'boolean') {
+            // Nur auf true setzen, wenn der Wert wahr ist
+            if (copyData[key] === true || copyData[key] === 1) {
+              firstStep.targetBools[key] = true;
+              // Auch in den Stats setzen für korrekte Berechnung
+              firstStep.stats[key] = 1;
+            }
+          } 
+          // Für numerische Boosts
+          else if (boost.type === 'number') {
+            // Nur setzen, wenn der Wert > 0 ist
+            if (copyData[key] > 0) {
+              firstStep.targetLevels[key] = copyData[key];
+              // Auch in den Stats setzen für korrekte Berechnung
+              firstStep.stats[key] = copyData[key];
+            }
+          }
+        }
+      });
+      
+      // _orbCalcMaxedBoosts-Information übernehmen, falls vorhanden
+      if (copyData._orbCalcMaxedBoosts) {
+        firstStep.stats._orbCalcMaxedBoosts = { ...copyData._orbCalcMaxedBoosts };
+        console.log("Übernommene _orbCalcMaxedBoosts:", firstStep.stats._orbCalcMaxedBoosts);
+      }
+    } 
+    // 5b) Wenn es ein normaler Plan ist, die Boosts wie gewohnt verarbeiten
+    else {
+      // Spezieller Fall: selectedForNextTR aus copyData übernehmen
+      if (Array.isArray(copyData.selectedForNextTR)) {
+        firstStep.selectedForNextTR = [...copyData.selectedForNextTR];
+        if (!firstStep.selectedForNextTR.includes('hoursInTR')) {
+          firstStep.selectedForNextTR.push('hoursInTR');
+        }
+      }
+
+      // Boosts aus copyData.boosts übernehmen
+      copyData.boosts.forEach(b => {
+        const def = allBoosts.find(x => x.key === b.key);
+        if (!def) return;
+        
+        if (b.type === 'number') {
+          firstStep.targetLevels[b.key] = b.targetLevel;
+          firstStep.stats[b.key] = b.targetLevel;
+        } 
+        else if (b.type === 'boolean') {
+          const state = Boolean(b.targetState);
+          firstStep.targetBools[b.key] = state;
+          
+          // WICHTIG: Nicht‑permanente Booleans immer exakt 0/1 setzen
+          firstStep.stats[b.key] = def.permanent
+            ? (state ? 1 : (firstStep.stats[b.key] || 0))
+            : (state ? 1 : 0);
+        }
+      });
     }
-    
-    // Übernehme alle numerischen Boosts aus copyData und maxStats als targetLevels
-    allBoosts.forEach(boost => {
-      const value = copyData[boost.key];
-      
-      // WICHTIG: Hier zuerst prüfen, ob der Boost in maxStats maximal ist,
-      // aber NICHT in orbCalcMaxedBoosts
-      if (boost.type === 'number' && boost.max !== undefined) {
-        const maxValue = maxStats[boost.key];
-        const isOrbCalcMaxed = copyData._orbCalcMaxedBoosts && copyData._orbCalcMaxedBoosts[boost.key];
-        
-        if (maxValue !== undefined && maxValue >= boost.max && !isOrbCalcMaxed) {
-          console.log(`Boost ${boost.key} ist maximal in maxLevelStats (${maxValue}), wird in targetLevels gesetzt`);
-          firstStep.targetLevels[boost.key] = maxValue;
-          firstStep.stats[boost.key] = maxValue; // Auch in stats eintragen
-          return; // Skip weiteren Code für diesen Boost
-        }
-      }
-      
-      if (boost.type === 'boolean' && maxStats[boost.key] === true) {
-        const isOrbCalcActive = copyData._orbCalcMaxedBoosts && copyData._orbCalcMaxedBoosts[boost.key];
-        
-        if (!isOrbCalcActive) {
-          console.log(`Boolean Boost ${boost.key} ist true in maxLevelStats, wird in targetBools gesetzt`);
-          firstStep.targetBools[boost.key] = true;
-          firstStep.stats[boost.key] = 1; // Auch in stats eintragen
-          return; // Skip weiteren Code für diesen Boost
-        }
-      }
-      
-      // Nur wenn nicht bereits maximal, normale Logik anwenden
-      if (boost.type === 'number' && value !== undefined) {
-        firstStep.targetLevels[boost.key] = value;
-      } else if (boost.type === 'boolean' && value === true) {
-        firstStep.targetBools[boost.key] = true;
-      }
-    });
-    
-    // Logging
-    console.log("Erstellter erster TR-Step:", {
-      stats: { ...firstStep.stats },
-      targetLevels: { ...firstStep.targetLevels },
-      targetBools: { ...firstStep.targetBools },
-      datum: trStartDate.value,
-      zeit: trStartTime.value
-    });
-    
-    // Step zur Liste hinzufügen
+
     trSteps.push(firstStep);
-    
-    // Nach dem Hinzufügen alle Stats aktualisieren
-    nextTick(() => {
-      updateFollowingStepsStats(0);
-    });
-    
-    console.log('Copy data initialized successfully');
-  } catch (error) {
+
+    // 6) Folge‑TRs (trChain) laden, falls vorhanden
+    if (copyData.trChain && Array.isArray(copyData.trChain)) {
+      copyData.trChain.forEach((chainStep, index) => {
+        // Neuen TR-Step erstellen mit den Stats des vorherigen
+        const step = createNewTRStep();
+        
+        // Boosts aus dem Chain-Step kopieren
+        if (chainStep.boosts && Array.isArray(chainStep.boosts)) {
+          chainStep.boosts.forEach(b => {
+            if (b.type === 'boolean') {
+              step.targetBools[b.key] = b.targetState;
+            } else if (b.type === 'number') {
+              step.targetLevels[b.key] = b.targetLevel;
+            }
+          });
+        }
+        
+        // Wenn selectedForNextTR vorhanden, kopieren (oder sicherstellen, dass hoursInTR enthalten ist)
+        if (chainStep.selectedForNextTR && Array.isArray(chainStep.selectedForNextTR)) {
+          step.selectedForNextTR = [...chainStep.selectedForNextTR];
+          if (!step.selectedForNextTR.includes('hoursInTR')) {
+            step.selectedForNextTR.push('hoursInTR');
+          }
+        }
+        
+        trSteps.push(step);
+      });
+    }
+
+    // 7) Reaktivität erzwingen und Folge‑Steps neu berechnen
+    nextTick(() => updateFollowingStepsStats(0));
+
+    console.log("Copy data initialized successfully:", trSteps);
+  }
+  catch (error) {
     console.error('Error initializing copy data:', error);
-    
-    // Fallback: Standard-Initialisierung
+    // Wenn etwas schiefgeht, Fallback
     initData();
   }
 }

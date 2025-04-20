@@ -298,6 +298,7 @@ import {
   IconX,
   IconSettings,
   IconCoffee,
+  IconTools
 } from '@tabler/icons-vue';
 
 const navigation = NAVIGATION;

@@ -36,6 +36,7 @@
       <div class="p-3 bg-gray-750/60 border-b border-gray-700">
         <p class="text-xs text-gray-300">
           Mark boosts that you've already maxed out in the game. Maxed boosts will be hidden in other calculator views to reduce clutter.
+          <br><span class="text-yellow-300 mt-1 inline-block">Advice: For Void Badges, mark the ones you've completed minus 1.</span>
         </p>
       </div>
       
