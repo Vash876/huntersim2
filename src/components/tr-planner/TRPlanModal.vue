@@ -578,6 +578,18 @@
     @confirm="handleAlertClose"
     @cancel="showAlertDialog = false"
   />
+
+  <AlertDialog
+  :isVisible="showAlertDialog"
+  :title="alertTitle"
+  :message="alertMessage"
+  :type="alertType"
+  :showCancel="true"
+  :confirmText="alertTitle === 'Discard changes?' ? 'Discard' : 'OK'"
+  :cancelText="alertTitle === 'Discard changes?' ? 'Cancel' : 'Cancel'"
+  @confirm="handleAlertClose"
+  @cancel="showAlertDialog = false"
+/>
 </template>
 
 <script setup>
@@ -633,6 +645,7 @@ const trPlannerStore = useTRPlannerStore();
 const error = ref(null);
 const planName = ref(`Unnamed`);
 const searchQuery = ref('');
+const hasUnsavedChanges = ref(false);
 
 // State für die Eingabefelder mit Display-Werten
 const trCount = ref(props.currentStats?.trCount || 0);
@@ -2016,6 +2029,8 @@ function createPlan() {
     // f) Akkumulierte Orbs/Count updaten
     accOrbs += stepResults.orbGains;
     nextTR++;
+
+    hasUnsavedChanges.value = false;
   }
 
   // --- 6) Endgültiges Plan‑Objekt ---
@@ -2067,17 +2082,27 @@ function createPlan() {
 
 
 function cancelAndClose() {
-  emit('close');
+  if (hasUnsavedChanges.value) {
+    // Zeige Bestätigungsdialog
+    alertTitle.value = "Discard changes?";
+    alertMessage.value = "You have unsaved changes in this build. Are you sure you want to discard them?";
+    alertType.value = "warning";
+    showAlertDialog.value = true;
+  } else {
+    // Keine Änderungen, direkt schließen
+    emit('close');
+  }
 }
 
+// Funktion zum Behandeln der Bestätigung im Dialog
 function handleAlertClose() {
   showAlertDialog.value = false;
   
-  // Prüfen, ob wir uns im Speichervorgang befinden
-  if (alertType.value === 'warning' && alertTitle.value === 'Warning') {
-    // Hier das Modal schließen
-    cancelAndClose();
+  if (alertTitle.value === "Discard changes?") {
+    // Wenn der Benutzer im "Discard changes"-Dialog bestätigt hat
+    emit('close');
   }
+  // Andere Alert-Fälle bleiben unverändert
 }
 
 // Beobachte Änderungen der editPlanId und isVisible Props
@@ -2765,6 +2790,34 @@ function createPlanWithTargetValues() {
   
   console.log("Target plan flag set in store:", trPlannerStore.planModalShouldOpen);
 }
+
+watch(
+  [
+    () => planName.value,
+    () => trCount.value,
+    () => allTimeOrbs.value,
+    () => trSteps,
+    () => trStartDate.value,
+    () => trStartTime.value
+  ],
+  () => {
+    // Wenn das Modal geöffnet und nicht im Initialisierungsprozess ist
+    if (props.isVisible && !error.value) {
+      hasUnsavedChanges.value = true;
+    }
+  },
+  { deep: true }
+);
+
+// Beim Öffnen oder nach dem Speichern zurücksetzen
+watch(
+  () => props.isVisible,
+  (isVisible) => {
+    if (isVisible) {
+      hasUnsavedChanges.value = false;
+    }
+  }
+);
 </script>
 
 <style scoped>

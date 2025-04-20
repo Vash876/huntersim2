@@ -196,10 +196,21 @@ const maxLevelStats = computed(() => {
 
 // Kombiniere die Stats für die vollständige Anzeige
 const combinedCurrentStats = computed(() => {
-  return {
-    ...maxLevelStats.value,
-    ...props.currentStats
-  };
+  const combined = { ...props.currentStats };
+  
+  // Für maxed boosts die Werte aus maxLevelStats übernehmen
+  for (const [key, value] of Object.entries(maxLevelStats.value)) {
+    const boost = allBoosts.find(b => b.key === key);
+    if (!boost) continue;
+    
+    if (boost.type === 'boolean' && value === true) {
+      combined[key] = true;
+    } else if (typeof value === 'number' && boost.max !== undefined && value >= boost.max) {
+      combined[key] = value;
+    }
+  }
+  
+  return combined;
 });
 
 const categoryGroups = computed(() => {
