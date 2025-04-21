@@ -274,7 +274,7 @@ function saveAndClose() {
       } else if (boost.type === 'number') {
         // Wenn der Boost früher maxed war, setzen wir ihn zurück auf 0
         const currentValue = props.currentStats[key] || 0;
-        if (boost.max !== undefined && currentValue >= boost.max) {
+        if (!maxedBoosts[key]) {
           updatedStats[key] = 0;
         }
       }
