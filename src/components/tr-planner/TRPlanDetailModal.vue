@@ -200,12 +200,12 @@
         
         <!-- Boost Progression Section -->
         <div class="p-4 border-b border-gray-700">
-          <h3 class="text-sm font-bold mb-3 text-blue-300">Stats Progression</h3>
+          <h3 class="text-sm font-bold mb-3 text-blue-300">Boosts Progression</h3>
           
           <div class="bg-gray-750/60 rounded-lg border border-gray-700 shadow-lg p-2">
             <!-- Stats Progression -->
             <div v-if="!allImprovedBoosts.length" class="text-gray-400 text-center py-2 text-sm">
-              No Stats improved in this plan.
+              No Boosts improved in this plan.
             </div>
             
             <div v-else class="grid grid-cols-1 sm:grid-cols-4 gap-2">
@@ -256,7 +256,7 @@
 
         <!-- TR-Requirements Projektion mit Chart.js -->
         <div class="p-4 border-b border-gray-700">
-          <h3 class="text-sm font-bold mb-3 text-blue-300">Future TR Requirements Projection</h3>
+          <h3 class="text-sm font-bold mb-3 text-blue-300">Future Minimum TR Requirements Projection</h3>
           
           <div class="bg-gray-750/60 rounded-lg border border-gray-700 shadow-lg p-3">
             <div class="flex items-center justify-between mb-2">

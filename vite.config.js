@@ -38,6 +38,14 @@ export default defineConfig({
       compress: {
         drop_console: true,
         pure_funcs: ['console.log', 'console.debug', 'console.info']
+      },
+      format: {
+        comments: false
+      },
+      mangle: {
+        properties: {
+          regex: /_$/  // Ändere nur Properties die mit _ enden
+        }
       }
     },
     target: 'esnext',
