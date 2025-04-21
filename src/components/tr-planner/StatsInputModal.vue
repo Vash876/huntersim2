@@ -254,6 +254,9 @@ function saveAndClose() {
   // Wir erstellen ein neues Objekt basierend auf currentStats
   const updatedStats = { ...props.currentStats };
   
+  // _orbCalcMaxedBoosts-Objekt initialisieren oder aus bestehenden Stats übernehmen
+  updatedStats._orbCalcMaxedBoosts = updatedStats._orbCalcMaxedBoosts || {};
+  
   // Für jeden Boost, der als maxed markiert ist, setzen wir den entsprechenden Wert
   Object.keys(maxedBoosts).forEach(key => {
     const boost = allBoosts.find(b => b.key === key);
@@ -261,22 +264,22 @@ function saveAndClose() {
     if (!boost) return;
     
     if (maxedBoosts[key]) {
-      // Wenn der Boost als maxed markiert ist, setzen wir ihn auf den Max-Wert
+      // Wenn der Boost als maxed markiert ist
       if (boost.type === 'boolean') {
         updatedStats[key] = true;
+        updatedStats._orbCalcMaxedBoosts[key] = true; // In orbCalcMaxedBoosts markieren
       } else if (boost.type === 'number' && boost.max !== undefined) {
         updatedStats[key] = boost.max;
+        updatedStats._orbCalcMaxedBoosts[key] = true; // In orbCalcMaxedBoosts markieren
       }
     } else {
-      // Wenn der Boost nicht als maxed markiert ist, setzen wir ihn auf 0 oder false
+      // Wenn der Boost nicht als maxed markiert ist
       if (boost.type === 'boolean') {
         updatedStats[key] = false;
+        delete updatedStats._orbCalcMaxedBoosts[key]; // Aus orbCalcMaxedBoosts entfernen
       } else if (boost.type === 'number') {
-        // Wenn der Boost früher maxed war, setzen wir ihn zurück auf 0
-        const currentValue = props.currentStats[key] || 0;
-        if (!maxedBoosts[key]) {
-          updatedStats[key] = 0;
-        }
+        updatedStats[key] = 0; // Auf 0 zurücksetzen
+        delete updatedStats._orbCalcMaxedBoosts[key]; // Aus orbCalcMaxedBoosts entfernen
       }
     }
   });
