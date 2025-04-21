@@ -1,7 +1,24 @@
 <script setup>
 const changelog = 
 [
-
+  {
+    version: '2.3.0',
+    date: '2025-04-20',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      'Added XP Progress visualization in Upgrade Comparison Modal:',
+      '• Track your XP progress and estimate time to next level',
+      '• Interactive slider to adjust your current XP progress',
+      '• Available in the new "XP" tab in any Upgrade Comparison Window',
+      '• Calculates time remaining based on your XP gains per day',
+      'Re-enabled Tools section with improved stability',
+      'TR Planner enhancements:',
+      '• Visualize your TR progression with detailed step-by-step planning',
+      '• Live calculation of orb requirements and gains for each TR',
+      '• Calculate optimal boost combinations and their costs',
+      '• Interactive side panel showing real-time results while planning (Desktop only)',
+    ]
+  },
   {
     version: '2.2.2',
     date: '2025-04-13',

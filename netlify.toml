@@ -1,7 +1,0 @@
-[build]
-  publish = "dist"
-  
-
-[[edge_functions]]
-  path = "/*"
-  function = "discord-preview"

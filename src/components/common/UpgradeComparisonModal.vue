@@ -75,13 +75,104 @@
                 :class="`text-${getCurrencyColor(currency)} mr-1 md:mr-1.5`"
               />
               <span class="hidden md:inline">{{ currencyLabels[currency] }}</span>
-              <span class="md:hidden text-xs">{{ currencyLabelsShort[currency] || currencyLabels[currency] }}</span>
+              <span class="md:hidden text-xs"></span>
+            </div>
+            
+            <!-- XP Tab -->
+            <div 
+              @click="selectedCurrency = 'xp'"
+              :class="[
+                'cursor-pointer whitespace-nowrap flex items-center',
+                'px-4 py-2 md:px-4 md:py-2 sm:px-2 sm:py-1',
+                selectedCurrency === 'xp' 
+                  ? 'border-b-2 border-blue-500 text-white' 
+                  : 'text-gray-400 hover:text-gray-200'
+              ]"
+            >
+              <img 
+                v-if="hasIcon('xp')" 
+                :src="icons.xp" 
+                :alt="XP"
+                class="w-5 h-5 mr-1 md:mr-1.5"
+              />
+              <IconBrightness v-else size="16" class="text-blue-400 mr-1 md:mr-1.5" />
+              <span class="hidden md:inline">XP Progress</span>
+              <span class="md:hidden text-xs"></span>
             </div>
           </div>
         </div>
 
-        <!-- Upgrade Scenarios -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <!-- XP Progress Panel mit kombiniertem Fortschrittsbalken/Slider -->
+        <div v-if="selectedCurrency === 'xp'" class="bg-gray-850 border border-gray-700 rounded-lg p-4 mb-4">
+          <div class="text-lg text-white mb-4 flex items-center">
+            <img 
+                v-if="hasIcon('xp')" 
+                :src="icons.xp" 
+                :alt="XP"
+                class="w-5 h-5 mr-1 md:mr-1.5"
+              />
+            <IconBrightness v-else size="20" class="mr-2 text-blue-400" />
+            <span>Level: {{ currentLevel }}</span>
+          </div>
+
+          <div class="mb-6">
+            <div class="flex justify-between text-gray-400 text-sm mb-1">
+              <span>Current XP: {{ formatNumber(currentXP) }}</span>
+              <span>Next Level: {{ formatLevelCost(nextLevelCost) }}</span>
+            </div>
+            
+            <!-- Kombinierter XP Fortschrittsbalken und Slider -->
+            <div class="relative h-5">
+              <input 
+                type="range" 
+                v-model="xpPercentage" 
+                min="0" 
+                max="100" 
+                step="1"
+                class="w-full h-5 absolute z-10 opacity-0 cursor-pointer"
+              />
+              <div class="h-full bg-gray-700 rounded-full overflow-hidden absolute inset-0 pointer-events-none">
+                <div 
+                  class="h-full transition-all ease-in-out duration-300"
+                  :style="{
+                    width: `${levelProgressPercentage}%`,
+                    backgroundColor: `var(--color-${hunterColor}-500, #3B82F6)`
+                  }"
+                ></div>
+              </div>
+              <!-- Kleiner Slider-Knopf für visuelles Feedback -->
+              <div 
+                class="absolute top-1/2 -translate-y-1/2 z-5 w-6 h-6 rounded-full border-2 border-white shadow pointer-events-none"
+                :style="{
+                  left: `calc(${xpPercentage}% - 0.5rem)`,
+                  backgroundColor: `var(--color-${hunterColor}-500, #3B82F6)`
+                }"
+              ></div>
+            </div>
+            
+            <!-- XP verbleibend und Prozent-Anzeige -->
+            <div class="flex justify-between text-xs mt-1">
+              <span class="text-gray-500">{{ formatNumber(xpToNextLevel) }} XP needed</span>
+              <span class="text-gray-400">{{ xpPercentage }}%</span>
+              <span class="text-gray-500">{{ formatCollectionTime(timeToNextLevel) }} remaining</span>
+            </div>
+          </div>
+          
+          <!-- XP Rate aus Simulationsergebnissen -->
+          <div class="bg-gray-800/50 rounded-lg p-3 text-sm">
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-300">Current XP Rate:</span>
+              <span class="text-blue-300">{{ formatNumber(xpRate) }} per run</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-300">XP per Day:</span>
+              <span class="text-blue-300">{{ formatNumber(xpPerDay) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upgrade Scenarios (nur anzeigen, wenn keine XP ausgewählt ist) -->
+        <div v-if="selectedCurrency !== 'xp'" class="grid grid-cols-1 md:grid-cols-3 gap-2">
           <!-- Scenario 1 -->
           <div class="bg-gray-850 border border-gray-700 px-2 py-4 rounded-lg">
             <div class="font-medium text-white mb-2 flex items-center">
@@ -248,8 +339,8 @@
           </div>
         </div>
 
-        <!-- Loot Collection Time Table -->
-        <div class="mt-6">
+        <!-- Loot Collection Time Table - nur anzeigen, wenn nicht XP-Tab ausgewählt -->
+        <div class="mt-6" v-if="selectedCurrency !== 'xp'">
           <div class="text-lg text-white mb-3 flex items-center">
             <IconClock size="20" class="mr-2 text-blue-400" />
             Loot Collection Time
@@ -296,8 +387,8 @@
           </div>
         </div>
 
-        <!-- Compare Button -->
-        <div class="mt-6 flex justify-center">
+        <!-- Compare Button - nur anzeigen, wenn nicht XP-Tab ausgewählt -->
+        <div class="mt-6 flex justify-center" v-if="selectedCurrency !== 'xp'">
           <button 
             @click="() => compareScenarios(scenarioIncrements, getBaseValue, calculateScenarioCost)"
             class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg flex items-center transition-colors"
@@ -576,6 +667,7 @@ import {
 } from '../../components/builds/utils/BuildComparisonUtils';
 import { useBuildEvaluation } from '../../composables/useBuildEvaluation';
 import ValueControls from '../common/ValueControls.vue';
+import { getHunterLevelCost, formatLevelCost } from '../../utils/levelCostUtils';
 
 const props = defineProps({
   isVisible: { type: Boolean, default: false },
@@ -630,6 +722,28 @@ const hasAnyChanges = computed(() => {
   return scenarioIncrements.value.some(scenario => {
     return Object.values(scenario).some(val => val > 0);
   });
+});
+
+// Zusätzliche reaktive Variablen für XP-Tracking
+const xpPercentage = ref(20); // Standard-Fortschritt (20%)
+const currentLevel = computed(() => props.buildData?.level || 1);
+const nextLevelCost = computed(() => getHunterLevelCost(props.hunterId, currentLevel.value + 1));
+const currentXP = computed(() => Math.floor(nextLevelCost.value * (xpPercentage.value / 100)));
+const xpToNextLevel = computed(() => nextLevelCost.value - currentXP.value);
+const levelProgressPercentage = computed(() => xpPercentage.value);
+
+// XP Rate aus den Simulationsergebnissen
+const xpRate = computed(() => originalResults.value?.xp || 0);
+const xpPerDay = computed(() => {
+  if (!xpRate.value || !originalResults.value?.avgTime) return 0;
+  const runsPerDay = 1440 / originalResults.value.avgTime; // 1440 Minuten pro Tag
+  return xpRate.value * runsPerDay;
+});
+
+// Zeit bis zum nächsten Level
+const timeToNextLevel = computed(() => {
+  if (!xpRate.value || xpRate.value <= 0) return Infinity;
+  return (xpToNextLevel.value / xpRate.value) * (originalResults.value?.avgTime || 120);
 });
 
 function resetModalState() {
@@ -1407,5 +1521,54 @@ img.w-4, img.w-3\.5 {
   object-fit: contain;
   display: inline-flex;
   vertical-align: middle;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  background-color: rgba(75, 85, 99, 0.5);
+  border-radius: 0.25rem;
+  height: 0.5rem;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -0.25rem;
+  background-color: var(--color-blue-500, #3B82F6);
+  border-radius: 50%;
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Firefox */
+input[type=range]::-moz-range-track {
+  background-color: rgba(75, 85, 99, 0.5);
+  border-radius: 0.25rem;
+  height: 0.5rem;
+}
+
+input[type=range]::-moz-range-thumb {
+  background-color: var(--color-blue-500, #3B82F6);
+  border: none;
+  border-radius: 50%;
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Akzentfarbe dynamisch setzen */
+.accent-red-500 {
+  --color-accent: #EF4444;
+}
+.accent-green-500 {
+  --color-accent: #10B981;
+}
+.accent-blue-500 {
+  --color-accent: #3B82F6;
 }
 </style>
