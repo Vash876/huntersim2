@@ -202,15 +202,12 @@ var sim = (ozzy) => {
     var enemyAttack = () => {
       var dmg = currentEnemy.atk;
       
-      if(enem > 0 && enem % 1000 === 0 ){  // enem 3000 ist Stage 300
+      if(enem > 0 && enem % 1000 === 0){
         currentEnemy.enrage++;
         if(currentEnemy.enrage>200){
           dmg*=3
         } 
         nextEnemAtk = time + Math.max(.5,currentEnemy.atkSpd-currentEnemy.enrage*(currentEnemy.atkSpd/200))
-      }
-      else if(enem > 0 && enem % 1000 === 0 ) {
-        nextEnemAtk = time + currentEnemy.atkSpd
       }
       else{
         nextEnemAtk = time + currentEnemy.atkSpd
@@ -245,7 +242,7 @@ var sim = (ozzy) => {
       if(enem === 1000){
         ozzy.currentAtk/=(Math.pow(Math.pow(1.08,Number(catchup99gu)),1+Number(attr)*.1-.1))
       }
-      if(enem%1000 === 0 && enem>=2000 && enem !== 3000){
+      if(enem%1000 === 0 && enem>=2000){
         nextHarden = time+25
       }
       else{
@@ -298,8 +295,8 @@ var sim = (ozzy) => {
             ozzy.evadeStacks++;
           }
           if(time>hardenEnd && ozzy.thousandNeedles && ck(ozzy.effect)){
-            nextEnemAtk+=ozzy.thousandNeedles*.05/(enem%1000===0 && enem !== 3000?2:1)
-            currentEnemy.stunEnd = time + ozzy.thousandNeedles*.05/(enem%1000===0 && enem !== 3000?2:1);
+            nextEnemAtk+=ozzy.thousandNeedles*.05/(enem%1000===0?2:1)
+            currentEnemy.stunEnd = time + ozzy.thousandNeedles*.05/(enem%1000===0?2:1);
           }
         }
         var divisor = 1;

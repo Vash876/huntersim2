@@ -170,7 +170,7 @@
         </div>
       </div>
 
-      <!-- Debug Panel - direkt vor dem Footer einfügen -->
+      <!-- Debug Panel - direkt vor dem Footer einfügen 
       <div class="bg-gray-900 p-2 border-t border-gray-600" v-if="showDebugPanel">
         <div class="flex justify-between items-center mb-2">
           <h3 class="text-xs font-bold text-yellow-400">LocalStorage Debug</h3>
@@ -188,7 +188,7 @@
           </template>
           <div v-else class="text-red-400">No local storage data found</div>
         </div>
-      </div>
+      </div>-->
 
       <!-- Footer buttons -->
       <div class="bg-gray-800 p-2 border-t border-gray-700 sticky bottom-0 z-10">

@@ -37,6 +37,10 @@ export const boostCategories = [
     label: 'Construction Milestones',
   },
   {
+    id: 'badge',
+    label: 'Void Badges',
+  },
+  {
     id: 'premium',
     label: 'Premium',
   },
@@ -44,10 +48,6 @@ export const boostCategories = [
     id: 'gem',
     label: 'Gems',
   },
-  {
-    id: 'badge',
-    label: 'Void Badges',
-  }
 ];
 
 // General Stats für das StatsInputModal

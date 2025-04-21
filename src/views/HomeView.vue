@@ -6,17 +6,28 @@ const changelog =
     date: '2025-04-20',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
     changes: [
-      'Added XP Progress visualization in Upgrade Comparison Modal:',
-      '• Track your XP progress and estimate time to next level',
-      '• Interactive slider to adjust your current XP progress',
-      '• Available in the new "XP" tab in any Upgrade Comparison Window',
-      '• Calculates time remaining based on your XP gains per day',
-      'Re-enabled Tools section with improved stability',
-      'TR Planner enhancements:',
-      '• Visualize your TR progression with detailed step-by-step planning',
-      '• Live calculation of orb requirements and gains for each TR',
-      '• Calculate optimal boost combinations and their costs',
-      '• Interactive side panel showing real-time results while planning (Desktop only)',
+      {
+        text: 'Added XP Progress visualization in Upgrade Comparison Modal:',
+        subItems: [
+          'Interactive slider to adjust your current XP progress',
+          'Available in the new "XP" tab in any Upgrade Comparison Window',
+          'Calculates time remaining based on your XP gains per day'
+        ]
+      },
+      {
+        text: 'Re-enabled Tools section:',
+        subItems: [
+          {
+            text: 'TR Planner enhancements:',
+            subItems: [
+              'Visualize your TR progression with detailed step-by-step planning',
+              'Live calculation of orb requirements and gains for each TR',
+              'Calculate optimal boost combinations and their costs',
+              'Interactive side panel showing real-time results while planning (Desktop only)'
+            ]
+          }
+        ]
+      }
     ]
   },
   {
@@ -45,10 +56,18 @@ const changelog =
       'Changed Inscryption #87 to be multiplicative',
       'Improved Build Creator confirmation dialog to only show when changes have been made',
       'Fixed Revive Boost not getting applied correctly in the Build Evaluation',
-      'Added Inscryption #32, #33 and #60 Cost Calculation',
-      '• If you want to see more Inscryptions added, please contribute by helping filling out this sheet: <a href="https://docs.google.com/spreadsheets/d/1Vimt3zGCnQ_VeNgA_-hspX26Nk_YvOLdXDnYxRJ24Z4/edit?gid=1637743449" target="_blank" class="text-blue-400 hover:underline">Google Spreadsheet Link</a>',
-      'Added new Tools section:',
-      '• TR Planner: Comprehensive replacement for the Shorts Planner with enhanced QoL features, visual progress indicators, and advanced optimization options',
+      {
+        text: 'Added Inscryption #32, #33 and #60 Cost Calculation',
+        subItems: [
+          'If you want to see more Inscryptions added, please contribute by helping filling out this sheet: <a href="https://docs.google.com/spreadsheets/d/1Vimt3zGCnQ_VeNgA_-hspX26Nk_YvOLdXDnYxRJ24Z4/edit?gid=1637743449" target="_blank" class="text-blue-400 hover:underline">Google Spreadsheet Link</a>'
+        ]
+      },
+      {
+        text: 'Added new Tools section:',
+        subItems: [
+          'TR Planner: Comprehensive replacement for the Shorts Planner with enhanced QoL features, visual progress indicators, and advanced optimization options'
+        ]
+      }
     ]
   },
   {
@@ -187,18 +206,13 @@ const changelog =
     <h1 class="text-3xl font-bold mb-6 text-white">Changelog</h1>
     
     <div class="space-y-8">
-      <div v-for="release in changelog" :key="release.version" class="bg-gray-800 p-4 rounded-lg">
+      <div v-for="release in changelog" :key="release.version" class="bg-gray-800 p-4 pl-8 rounded-lg">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-bold text-white">Version {{ release.version }}</h2>
           <span class="text-gray-400">{{ release.date }}</span>
         </div>
         <p class="text-gray-400 mb-4">Based on {{ release.baseVersion }}</p>
-        <ul class="list-disc list-inside space-y-2">
-          <li v-for="change in release.changes" :key="change" class="text-gray-200">
-            <!-- Hier v-html verwenden, um HTML-Tags zu interpretieren -->
-            <span v-html="change"></span>
-          </li> 
-        </ul>
+        <ChangelogItem :items="release.changes" />
       </div>
     </div>
   </main>
