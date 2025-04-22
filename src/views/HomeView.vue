@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.3.2',
+    date: '2025-04-22',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'UI Improvements:',
+        subItems: [
+          'Improved visual feedback when reaching maximum level of any upgrade',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.3.1',
     date: '2025-04-22',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',

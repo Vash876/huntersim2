@@ -1,11 +1,11 @@
 <template>
   <div 
     class="w-full bg-gray-800 rounded overflow-hidden relative" 
-    :class="[sizeClass, borderColorClass]"
+    :class="[sizeClass, borderColorClass, {'maxed-progress': isMaxedComputed}]"
   >
     <div
       class="h-full transition-all duration-300"
-      :class="colorClass"
+      :class="[colorClass, {'maxed-gradient': isMaxedComputed}]"
       :style="{ width: `${getProgressPercentage}%` }"
     ></div>
   </div>
@@ -52,6 +52,11 @@ const effectiveMaxValue = computed(() => {
   return 1000;
 });
 
+// Automatische Berechnung des isMaxed-Status
+const isMaxedComputed = computed(() => {
+  return props.value >= effectiveMaxValue.value;
+});
+
 // Berechnung des Fortschritts in Prozent
 const getProgressPercentage = computed(() => {
   return Math.min(100, (props.value / effectiveMaxValue.value) * 100);
@@ -93,5 +98,18 @@ const sizeClass = computed(() => {
 /* Sicherstellen, dass Border die Größe nicht verändert */
 .border {
   box-sizing: border-box;
+}
+
+/* Spezielle Styles für maximierte Upgrades */
+.maxed-progress {
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+/* Subtiler stationärer Farbverlauf */
+.maxed-gradient {
+  background-image: linear-gradient(90deg, 
+    currentColor 0%, 
+    rgba(255, 255, 255, 0.4) 101%, 
+    currentColor 100%);
 }
 </style>
