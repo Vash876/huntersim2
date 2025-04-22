@@ -569,17 +569,6 @@
   />
 
   <AlertDialog
-    :isVisible="showAlertDialog"
-    :title="alertTitle"
-    :message="alertMessage"
-    :type="alertType"
-    :showCancel="true"
-    confirmText="OK"
-    @confirm="handleAlertClose"
-    @cancel="showAlertDialog = false"
-  />
-
-  <AlertDialog
   :isVisible="showAlertDialog"
   :title="alertTitle"
   :message="alertMessage"
@@ -588,7 +577,7 @@
   :confirmText="alertTitle === 'Discard changes?' ? 'Discard' : 'OK'"
   :cancelText="alertTitle === 'Discard changes?' ? 'Cancel' : 'Cancel'"
   @confirm="handleAlertClose"
-  @cancel="showAlertDialog = false"
+  @cancel="handleAlertCancel"
 />
 </template>
 
@@ -646,6 +635,8 @@ const error = ref(null);
 const planName = ref(`Unnamed`);
 const searchQuery = ref('');
 const hasUnsavedChanges = ref(false);
+const pendingSavePlanId = ref(null);
+const pendingSaveData = ref(null);
 
 // Neue Referenz-Variable für den ursprünglichen Zustand
 const originalState = ref(null);
@@ -1924,6 +1915,54 @@ function initData() {
               }
             });
 
+// ----- Boolean‑Reset: unmarkierte, nicht‑permanente Boosts sollen
+          //       denselben Wert haben wie im Haupt‑TR -------------------------
+          allBoosts
+            .filter(b => b.type === 'boolean' && !b.permanent)
+            .forEach(b => {
+              const key             = b.key;
+              const isMarked        = step.selectedForNextTR.includes(key);
+              const hasExplicitBool = Object.prototype.hasOwnProperty.call(step.targetBools, key);
+
+              if (!isMarked && !hasExplicitBool) {
+                // ⇒ graues Kästchen: Wert aus dem Haupt‑TR übernehmen
+                const prevBool = acc[key] || 0;    // Wert aus dem vorherigen Step
+                step.stats[key] = prevBool;        // nicht aus dem Haupt‑TR!
+              }
+            });
+
+// ----- Boolean‑Reset: unmarkierte, nicht‑permanente Boosts sollen
+          //       denselben Wert haben wie im Haupt‑TR -------------------------
+          allBoosts
+            .filter(b => b.type === 'boolean' && !b.permanent)
+            .forEach(b => {
+              const key             = b.key;
+              const isMarked        = step.selectedForNextTR.includes(key);
+              const hasExplicitBool = Object.prototype.hasOwnProperty.call(step.targetBools, key);
+
+              if (!isMarked && !hasExplicitBool) {
+                // ⇒ graues Kästchen: Wert aus dem Haupt‑TR übernehmen
+                const prevBool = acc[key] || 0;    // Wert aus dem vorherigen Step
+                step.stats[key] = prevBool;        // nicht aus dem Haupt‑TR!
+              }
+            });
+
+// ----- Boolean‑Reset: unmarkierte, nicht‑permanente Boosts sollen
+          //       denselben Wert haben wie im Haupt‑TR -------------------------
+          allBoosts
+            .filter(b => b.type === 'boolean' && !b.permanent)
+            .forEach(b => {
+              const key             = b.key;
+              const isMarked        = step.selectedForNextTR.includes(key);
+              const hasExplicitBool = Object.prototype.hasOwnProperty.call(step.targetBools, key);
+
+              if (!isMarked && !hasExplicitBool) {
+                // ⇒ graues Kästchen: Wert aus dem Haupt‑TR übernehmen
+                const prevBool = acc[key] || 0;    // Wert aus dem vorherigen Step
+                step.stats[key] = prevBool;        // nicht aus dem Haupt‑TR!
+              }
+            });
+
           // ----- Boolean‑Reset: unmarkierte, nicht‑permanente Boosts sollen
           //       denselben Wert haben wie im Haupt‑TR -------------------------
           allBoosts
@@ -2148,36 +2187,39 @@ function createPlan() {
     }
   };
 
-  // --- 7) Speichern / Update im Store ---
+  // --- 7) Plan-ID generieren, aber NICHT speichern ---
   let planId;
   if (props.editPlanId) {
-    const original = trPlannerStore.getTRPlanById(props.editPlanId);
-    const updated  = { ...original, ...planData, updatedAt: new Date().toISOString() };
-    trPlannerStore.updateTRPlan(props.editPlanId, updated);
     planId = props.editPlanId;
   } else {
     planId = `trplan_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-    trPlannerStore.addTRPlan({ id: planId, createdAt: new Date().toISOString(), ...planData });
   }
 
   // --- 8) Warnung, falls einige TRs herausgefallen sind ---
   if (trSteps.length > 1 && validChainSteps.length < trSteps.length - 1) {
+    pendingSavePlanId.value = planId;
+    pendingSaveData.value = planData; // Daten für später speichern
+    
     showAlert(
       `Only ${validChainSteps.length + 1} of ${trSteps.length} TRs were saved. Invalid TRs have been removed.`,
       'Warning',
       'warning'
     );
-    emit('save', planId);
     return;
   }
 
-  // --- 9) Abschluss ---
+  // --- 9) Wenn keine Warnung nötig, JETZT speichern ---
+  if (props.editPlanId) {
+    const original = trPlannerStore.getTRPlanById(props.editPlanId);
+    const updated = { ...original, ...planData, updatedAt: new Date().toISOString() };
+    trPlannerStore.updateTRPlan(props.editPlanId, updated);
+  } else {
+    trPlannerStore.addTRPlan({ id: planId, createdAt: new Date().toISOString(), ...planData });
+  }
+
   emit('save', planId);
-
-  // Nach dem Speichern den neuen Zustand als original setzen
   captureOriginalState();
-
-  cancelAndClose();
+  emit('close');
 }
 
 
@@ -2200,10 +2242,40 @@ function handleAlertClose() {
   showAlertDialog.value = false;
   
   if (alertTitle.value === "Discard changes?") {
-    // Wenn der Benutzer im "Discard changes"-Dialog bestätigt hat
+    // Wenn der Benutzer im "Discard changes?"-Dialog auf "Discard" klickt,
+    // soll das Modal geschlossen werden
     emit('close');
+  } else if (alertTitle.value === "Warning" && alertMessage.value.includes("TRs were saved")) {
+    // Jetzt erst speichern, wenn der Benutzer OK klickt
+    if (pendingSavePlanId.value && pendingSaveData.value) {
+      const planId = pendingSavePlanId.value;
+      const planData = pendingSaveData.value;
+      
+      if (props.editPlanId) {
+        const original = trPlannerStore.getTRPlanById(planId);
+        const updated = { ...original, ...planData, updatedAt: new Date().toISOString() };
+        trPlannerStore.updateTRPlan(planId, updated);
+      } else {
+        trPlannerStore.addTRPlan({ id: planId, createdAt: new Date().toISOString(), ...planData });
+      }
+      
+      emit('save', planId);
+      captureOriginalState();
+      emit('close');
+      pendingSavePlanId.value = null;
+    }
   }
-  // Andere Alert-Fälle bleiben unverändert
+}
+
+// Funktion zum Behandeln des Abbruchs im Dialog
+function handleAlertCancel() {
+  showAlertDialog.value = false;
+  
+  if (alertTitle.value === "Warning" && alertMessage.value.includes("TRs were saved")) {
+    // Bei Cancel die Speicherung abbrechen
+    pendingSavePlanId.value = null;
+    // Modal bleibt offen, damit der Benutzer weitere Änderungen vornehmen kann
+  }
 }
 
 // Beobachte Änderungen der editPlanId und isVisible Props

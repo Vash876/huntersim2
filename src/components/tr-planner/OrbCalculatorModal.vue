@@ -1446,6 +1446,28 @@ function resetForm() {
   resetToCurrentStats();
 }
 
+function calculateTRStartDateTime() {
+  // Verwende IMMER die current hoursInTR, nie target
+  const currentHours = currentBoosts.value.hoursInTR || 0;
+  
+  // Aktuelles Datum/Zeit
+  const now = new Date();
+  
+  // TR Startzeit berechnen: jetzt - currentHours in Millisekunden
+  const trStartTime = new Date(now.getTime() - (currentHours * 60 * 60 * 1000));
+  
+  // Formatieren für die Eingabefelder
+  const dateString = trStartTime.toISOString().split('T')[0]; // YYYY-MM-DD
+  const timeString = trStartTime.toTimeString().split(' ')[0].slice(0, 5); // HH:MM
+  
+  console.log(`TR Start berechnet: Jetzt (${now.toISOString()}) - ${currentHours}h = ${trStartTime.toISOString()}`);
+  
+  return {
+    date: dateString,
+    time: timeString
+  };
+}
+
 // Vollständige und korrigierte createPlanWithCurrentValues-Funktion
 function createPlanWithCurrentValues() {
   console.log("========== DEBUG CREATE PLAN ==========");
@@ -1526,11 +1548,11 @@ function createPlanWithCurrentValues() {
   // Stelle sicher, dass trCount und allTimeOrbs gesetzt sind
   currentValues.trCount = trCount.value;
   currentValues.allTimeOrbs = allTimeOrbs.value;
-  
-  // NEU: Füge die aktuelle Uhrzeit und das Datum hinzu
-  const now = new Date();
-  currentValues.trStartDate = now.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-  currentValues.trStartTime = now.toTimeString().split(' ')[0].slice(0, 5); // Format: HH:MM
+
+  // TR Startzeit berechnen basierend auf aktuellen hoursInTR
+  const trStartDateTime = calculateTRStartDateTime();
+  currentValues.trStartDate = trStartDateTime.date;
+  currentValues.trStartTime = trStartDateTime.time;
   
   // Speichere die Daten in trPlannerStore.tempPlanData
   trPlannerStore.tempPlanData = JSON.parse(JSON.stringify(currentValues));
@@ -1640,10 +1662,10 @@ function createPlanWithTargetValues() {
   targetStats.trCount = trCount.value;
   targetStats.allTimeOrbs = allTimeOrbs.value;
   
-  // NEU: Füge die aktuelle Uhrzeit und das Datum hinzu
-  const now = new Date();
-  targetStats.trStartDate = now.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-  targetStats.trStartTime = now.toTimeString().split(' ')[0].slice(0, 5); // Format: HH:MM
+  // TR Startzeit berechnen basierend auf aktuellen hoursInTR
+  const trStartDateTime = calculateTRStartDateTime();
+  targetStats.trStartDate = trStartDateTime.date;
+  targetStats.trStartTime = trStartDateTime.time;
   
   // Speichere die Daten in trPlannerStore.tempPlanData
   trPlannerStore.tempPlanData = JSON.parse(JSON.stringify(targetStats));

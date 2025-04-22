@@ -131,7 +131,8 @@
                 <tr>
                   <th scope="col" class="px-4 py-2 text-left font-medium">#</th>
                   <th scope="col" class="px-4 py-2 text-left font-medium">TR</th>
-                  <th scope="col" class="px-4 py-2 text-right font-medium">Hours</th>
+                  <th scope="col" class="px-4 py-2 text-left font-medium">Start Date</th>
+                  <th scope="col" class="px-4 py-2 text-right font-medium hidden sm:table-cell">Hours</th>
                   <th scope="col" class="px-4 py-2 text-right font-medium">Orbs</th>
                   <th scope="col" class="px-4 py-2 text-right font-medium">Frags</th>
                   <th scope="col" class="px-4 py-2 text-right font-medium">All-Time Orbs</th>
@@ -144,7 +145,10 @@
                   <td class="px-4 py-2.5">
                     {{ plan.updatedStats?.trCount || currentTrCount }} → {{ (plan.updatedStats?.trCount || currentTrCount) + 1 }}
                   </td>
-                  <td class="px-4 py-2.5 text-right font-mono">
+                  <td class="px-4 py-2.5">
+                    {{ formatDate(planStartDate, true) }}
+                  </td>
+                  <td class="px-4 py-2.5 text-right font-mono hidden sm:table-cell">
                     {{ firstTrHours }}
                   </td>
                   <td class="px-4 py-2.5 text-right font-mono text-green-400">
@@ -169,7 +173,10 @@
                     <td class="px-4 py-2.5">
                       {{ (plan.updatedStats?.trCount || currentTrCount) + index + 1 }} → {{ (plan.updatedStats?.trCount || currentTrCount) + index + 2 }}
                     </td>
-                    <td class="px-4 py-2.5 text-right font-mono">
+                    <td class="px-4 py-2.5">
+                      {{ formatDate(getChainStartDate(index), true) }}
+                    </td>
+                    <td class="px-4 py-2.5 text-right font-mono hidden sm:table-cell">
                       {{ getChainTrHours(chainStep) }}
                     </td>
                     <td class="px-4 py-2.5 text-right font-mono text-green-400">
@@ -188,7 +195,8 @@
               <tfoot class="bg-gray-800/60 text-xs text-white font-medium">
                 <tr>
                   <td colspan="2" class="px-4 py-2">TOTAL</td>
-                  <td class="px-4 py-2 text-right font-mono">{{ formatNumber(totalHoursInTR) }}</td>
+                  <td class="px-4 py-2">{{ formatDate(planEndDate, true) }}</td>
+                  <td class="px-4 py-2 text-right font-mono hidden sm:table-cell">{{ formatNumber(totalHoursInTR) }}</td>
                   <td class="px-4 py-2 text-right font-mono text-green-400">{{ formatNumber(totalOrbGains) }}</td>
                   <td class="px-4 py-2 text-right font-mono text-orange-400">{{ formatNumber(totalFragGains) }}</td>
                   <td class="px-4 py-2 text-right font-mono text-blue-400">{{ formatNumber(finalAllTimeOrbs) }}</td>
@@ -868,7 +876,6 @@ function formatDate(date, includeTime) {
   try {
     if (includeTime) {
       return date.toLocaleDateString(undefined, { 
-        year: 'numeric', 
         month: 'short', 
         day: 'numeric',
         hour: '2-digit', 
@@ -1121,6 +1128,24 @@ const upgradeCosts = computed(() => {
 const hasUpgradeCosts = computed(() => {
   return upgradeCosts.value !== null;
 });
+
+function getChainStartDate(index) {
+  // Beginne mit dem Startdatum des ersten TRs
+  let currentDate = new Date(planStartDate.value.getTime());
+  
+  // Addiere die Stunden des ersten TRs
+  currentDate = new Date(currentDate.getTime() + (firstTrHours.value * 60 * 60 * 1000));
+  
+  // Für alle TRs vor dem aktuellen, addiere deren Stunden
+  for (let i = 0; i < index; i++) {
+    if (plan.value?.trChain && plan.value.trChain[i]) {
+      const hours = getChainTrHours(plan.value.trChain[i]);
+      currentDate = new Date(currentDate.getTime() + (hours * 60 * 60 * 1000));
+    }
+  }
+  
+  return currentDate;
+}
 
 // Chart neu rendern, wenn sich die Projektionsdaten ändern
 watch(futureTRProjections, () => {

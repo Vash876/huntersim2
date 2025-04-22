@@ -2,6 +2,21 @@
 const changelog = 
 [
   {
+    version: '2.3.1',
+    date: '2025-04-22',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'TR Planner enhancements:',
+        subItems: [
+          'Added start date display for each TR in detail view',
+          'Automatically calculates TR start date based on Current Hours in TR when creating a plan via Orb Calculator',
+          'Various bug fixes'
+        ]
+      }
+    ]
+  },
+  {
     version: '2.3.0',
     date: '2025-04-20',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
