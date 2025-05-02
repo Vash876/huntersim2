@@ -1,4 +1,4 @@
-export function EVALKNOX(lvl,maxStage,hp,atk,regen,dr,block,effect,charge,chargeGain,reload,proj,revival,calyp,ua,ghost,omen,ll,pog,finish,kraken,amp,dead,sear,pirate,timeless,torpedos,charger,armory,elixer,reflect,gadget,iters,iap,special,ultima,glac,quartz,tess,reviveCd,respec,bossLootRate,iterative,glacRate1,quartzRate1,tessRate1,xpRate1,hp1,atk1,regen1,dr1,block1,effect1,charge1,chargeGain1,reload1,proj1,gadget1,lvl1,time1,research81,useSeeded,cm46,cm47,cm48) {
+export function EVALKNOX(lvl,maxStage,hp,atk,regen,dr,block,effect,charge,chargeGain,reload,proj,revival,calyp,ua,ghost,omen,ll,pog,finish,kraken,amp,dead,sear,pirate,timeless,torpedos,charger,armory,elixer,reflect,gadget,iters,iap,special,ultima,glac,quartz,tess,reviveCd,respec,bossLootRate,iterative,glacRate1,quartzRate1,tessRate1,xpRate1,hp1,atk1,regen1,dr1,block1,effect1,charge1,chargeGain1,reload1,proj1,gadget1,lvl1,time1,research81,cm46,cm47,cm48) {
 
   if(iterative && !lvl1){
     return 'Waiting for previous build'
@@ -46,32 +46,6 @@ for(var i = 0;i<=1000;i++){
     enemies.push(simEnemy(i))
 }
 
-/*var ck;
-if (useSeeded) {
-  ck = (() => {
-    const s = new Uint32Array([123456789, 362436069, 521288629, 88675123]);
-    
-    return (chance) => {
-      if (!chance) return false;
-      
-      const result = (s[0] + s[3]) >>> 0;
-      
-      const t = s[1] << 9;
-      s[2] ^= s[0];
-      s[3] ^= s[1];
-      s[1] ^= s[2];
-      s[0] ^= s[3];
-      s[2] ^= t;
-      s[3] = ((s[3] << 11) | (s[3] >>> 21)) >>> 0;
-      
-      return chance > (result * 2.3283064365386963e-10);
-    };
-  })();
-} else {
-  ck = (chance) => {
-    return chance && chance > Math.random();
-  };
-}*/
 var ck = (chance) => {
   return chance && chance > Math.random()
 }

@@ -4,8 +4,13 @@ import * as Comlink from 'comlink';
  * Worker-Pool für parallele Build-Evaluierungen
  */
 class WorkerPool {
-  constructor(poolSize = 8) {
-    this.poolSize = Math.max(1, Math.min(poolSize, navigator.hardwareConcurrency || 4));
+  constructor(poolSize = undefined) {
+    // Wenn poolSize nicht definiert ist, verwende alle verfügbaren Kerne
+    const maxCores = navigator.hardwareConcurrency || 4;
+    
+    // Wenn poolSize definiert ist, begrenzen, ansonsten alle Kerne verwenden
+    this.poolSize = poolSize ? Math.max(1, Math.min(poolSize, maxCores)) : maxCores;
+    
     this.workers = [];
     this.apis = [];
     this.busyWorkers = new Set();

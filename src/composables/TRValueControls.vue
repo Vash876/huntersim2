@@ -11,7 +11,10 @@
       @touchcancel.prevent="onTouchEnd"
       @dragstart.prevent
       class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-l-md mr-px"
-      :class="{ 'opacity-20 cursor-not-allowed hover:bg-gray-900': value <= minValue || disableDecrement }"
+      :class="[
+        { 'opacity-20 cursor-not-allowed hover:bg-gray-900': value <= minValue || disableDecrement },
+        buttonClass
+      ]"
       :disabled="value <= minValue || disableDecrement"
     >
       <div class="flex">
@@ -30,10 +33,11 @@
       @touchcancel.prevent="onTouchEnd"
       @dragstart.prevent
       class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white"
-      :class="{
-        'rounded-l-md': !showFastControls,
-        'opacity-20 cursor-not-allowed hover:bg-gray-900': value <= minValue || disableDecrement
-      }"
+      :class="[
+        {'rounded-l-md': !showFastControls},
+        {'opacity-20 cursor-not-allowed hover:bg-gray-900': value <= minValue || disableDecrement},
+        buttonClass
+      ]"
       :disabled="value <= minValue || disableDecrement"
     >
       <IconChevronLeft size="14" />
@@ -87,10 +91,11 @@
       @touchcancel.prevent="onTouchEnd"
       @dragstart.prevent
       class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white"
-      :class="{
-        'rounded-r-md': !showFastControls,
-        'opacity-20 cursor-not-allowed hover:bg-gray-900': value >= maxValue
-      }"
+      :class="[
+        {'rounded-r-md': !showFastControls},
+        {'opacity-20 cursor-not-allowed hover:bg-gray-900': value >= maxValue},
+        buttonClass
+      ]"
       :disabled="value >= maxValue"
     >
       <IconChevronRight size="14" />
@@ -107,7 +112,10 @@
       @touchcancel.prevent="onTouchEnd"
       @dragstart.prevent
       class="w-6 h-6 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-white rounded-r-md ml-px"
-      :class="{ 'opacity-20 cursor-not-allowed hover:bg-gray-900': value >= maxValue }"
+      :class="[
+        {'opacity-20 cursor-not-allowed hover:bg-gray-900': value >= maxValue},
+        buttonClass
+      ]"
       :disabled="value >= maxValue"
     >
       <div class="flex">
@@ -174,6 +182,10 @@ const props = defineProps({
   disableDecrement: {
     type: Boolean,
     default: false
+  },
+  buttonClass: {
+    type: String,
+    default: ''
   }
 });
 

@@ -107,7 +107,7 @@ export const allBoosts = [
     type: 'number',
     orbcalc: true,
     permanent: true,
-    tooltip: '0',
+    tooltip: 'For Campaign Fragments Multiplier Attraction Gem Level #3 required.',
     multiplier: (value) => Math.pow(1.1, value),
     fragmulti: (value, allValues) => {
       if (allValues.attr3) {
@@ -211,7 +211,11 @@ export const allBoosts = [
     category: 'boonE',
     type: 'number',
     orbcalc: true,
-    tooltip: '0',
+    tooltip: 'Total number of Campaign Missions completed.',
+    minRequirement: {
+      boost: 'boonELevel', 
+      level: 1          
+    },
     // Orb-Multiplikator mit Boon E Level Abhängigkeit
     multiplier: (value, allValues) => {
       const boonLevel = allValues.boonELevel || 0;
@@ -264,9 +268,13 @@ export const allBoosts = [
     category: 'boonH',
     type: 'number',
     orbcalc: true,
-    tooltip: '0',
+    tooltip: 'Total number of ship installs across all ships.',
     normalControl: 100,
     fastControl: 1000,
+    minRequirement: {
+      boost: 'boonHLevel', 
+      level: 1          
+    },
     // Orb-Multiplikator mit Boon H Level Abhängigkeit
     multiplier: (value, allValues) => {
       const boonLevel = allValues.boonHLevel || 0;
@@ -292,6 +300,10 @@ export const allBoosts = [
     orbcalc: false,
     permanent: true,
     tooltip: '0',
+    minRequirement: {
+      boost: 'boonHLevel', 
+      level: 1          
+    },
     // Fragment-Multiplikator mit Boon H Level Abhängigkeit
     fragmulti: (value, allValues) => {
       const boonLevel = allValues.boonHLevel || 0;
@@ -344,16 +356,38 @@ export const allBoosts = [
 
   // Researches
   {
+    key: 'innogem',
+    label: 'Innovation Gem Level',
+    category: 'research',
+    type: 'number',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: 1,
+    max: 2
+  },
+
+  {
     key: 'research',
     label: 'Research Points',
     category: 'research',
     type: 'number',
     orbcalc: true,
     permanent: false,
-    tooltip: '0',
+    tooltip: 'Type in your RP without e, e.g. 1e3000 = 3000. It will automatically calculate the multiplier of the 4 Researches.',
     normalControl: 100,
     fastControl: 1000,
-    multiplier: (value) => {
+    minRequirement: {
+      boost: 'innogem', 
+      level: 2          
+    },
+    multiplier: (value, allValues) => {
+      // Prüfen ob Innovation Gem Level 2 ist
+      const innovationGemLevel = allValues.innogem || 0;
+      if (innovationGemLevel < 2) {
+        return 1; // Kein Multiplikator wenn Innovation Gem unter Level 2
+      }
+      
       let overallMultiplier = 1;
     
       // Für jede Research (85, 87, 88, 90)
@@ -379,6 +413,7 @@ export const allBoosts = [
     },
     max: 4465
   },
+
   {
     key: 'research89',
     label: 'Research #89',
@@ -451,7 +486,7 @@ export const allBoosts = [
   // Gems
   {
     key: 'attr3',
-    label: 'Attraction Gem #3',
+    label: 'Attraction Gem Level #3',
     category: 'gem',
     type: 'boolean',
     orbcalc: false,

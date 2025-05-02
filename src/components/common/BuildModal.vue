@@ -126,7 +126,7 @@
         <div class="mb-6">
           <h3 class="text-white font-medium py-2 border-b border-gray-600">Talents</h3>
           
-          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 mt-3">
             <div 
               v-for="talent in talents" 
               :key="talent.key" 
@@ -239,7 +239,7 @@
         <div class="mb-6">
           <h3 class="text-white font-medium py-2 border-b border-gray-600">Attributes</h3>
           
-          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+          <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 mt-3">
             <div 
               v-for="attribute in attributes" 
               :key="attribute.key" 

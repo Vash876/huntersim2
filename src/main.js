@@ -4,6 +4,8 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import App from './App.vue'
 import router from './router'
 import './assets/css/main.css'
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)

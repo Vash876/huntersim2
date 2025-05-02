@@ -80,9 +80,6 @@
                 <!-- Linke Seite: Boost-Info -->
                 <div class="flex-1 mr-2">
                   <div class="text-xs font-medium text-gray-200">{{ boost.label }}</div>
-                  <div v-if="boost.tooltip && boost.tooltip !== '0'" class="text-[10px] text-gray-400">
-                    {{ boost.tooltip }}
-                  </div>
                   <div class="text-[11px] text-gray-300 mt-0.5">
                     Max: <span :class="boost.type === 'boolean' ? 'text-green-400' : 'text-blue-400'">
                       {{ boost.type === 'boolean' ? 'ON' : boost.max || '-' }}

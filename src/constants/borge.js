@@ -177,8 +177,7 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.attraction_lootBorge", // Loot (Borge)
   "upgrades.diamondcards.gaiden",         // Diamond Card (Gaiden)
   "upgrades.researches.res81",            // Research#81
-  "iterations",                    // Anzahl der Iterationen (aus hunterIterations)
-  "useSeeded",                    // Verwendung deterministischer RNG (true) oder echter Zufallswerte (false)   
+  "iterations",                    // Anzahl der Iterationen (aus hunterIterations)  
   "upgrades.cms.cm46",            // Construction Milestone #46
   "upgrades.cms.cm47",            // Construction Milestone #47
   "upgrades.cms.cm48",            // Construction Milestone #48

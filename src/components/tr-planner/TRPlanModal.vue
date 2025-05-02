@@ -265,9 +265,16 @@
                   <div class="pl-[16px]">
                     <!-- Oberer Bereich: Boost Name und Max Level -->
                     <div class="flex items-start justify-between mb-1">
-                      <!-- Boost Name -->
-                      <div class="flex-grow">
+                      <div class="flex-grow flex items-start">
                         <span class="text-xs font-medium text-gray-300">{{ boost.label }}</span>
+                        
+                        <!-- Info-Icon mit Tooltip -->
+                        <InfoTooltip 
+                          v-if="hasTooltipContent(boost, step)"
+                          :content="getFullTooltipContent(boost, step)"
+                          placement="right"
+                          class="ml-1 mt-0.5"
+                        />
                       </div>
                       
                       <!-- Max Level Badge (wenn vorhanden) - oben rechts -->
@@ -281,13 +288,13 @@
                       </div>
                     </div>
 
-                    <!-- Tooltip (optional) -->
+                    <!-- Tooltip (optional) 
                     <div v-if="boost.tooltip && boost.tooltip !== '0'" class="text-[10px] text-gray-400 mb-1">
                       {{ boost.tooltip }}
-                    </div>
+                    </div>-->
                     
                     <!-- Unterer Bereich: Multiplier Info und Controls nebeneinander -->
-                    <div class="flex items-center justify-between">
+                    <div class="flex items-center justify-between flex-wrap-nowrap min-h-[24px]">
                       <!-- Multipliers Info -->
                       <div class="flex-grow text-[10px] text-gray-400">
                         <!-- Spezialfall für R6 mit part1 und part2 -->
@@ -364,7 +371,9 @@
                             :fastStep="boost.fastControl || 10"
                             :valueClass="'text-white'"
                             :autoEdit="true"
-                            @update:value="(newVal) => updateTargetLevel(step.id, boost.key, newVal)"
+                            :disabled="!isBoostAvailable(boost, step)"
+                            :buttonClass="isBoostAvailable(boost, step) ? '' : 'opacity-50 cursor-not-allowed'"
+                            @update:value="(newVal) => isBoostAvailable(boost, step) && updateTargetLevel(step.id, boost.key, newVal)"
                           />
                         </div>
                       </div>
@@ -604,8 +613,9 @@ import {
   IconCircleX,
   IconEdit,
   IconCheck,
-  IconArrowRight
+  IconLock
 } from '@tabler/icons-vue';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
 
 // Imports für Pinia Store hinzufügen
 import { useTRPlannerStore } from '@/store/orbStore';
@@ -2499,9 +2509,9 @@ function initializeWithCopyData(copyData) {
     planName.value = copyData.name || `TR Plan ${new Date().toLocaleDateString()}`;
     trStartDate.value = copyData.trStartDate || new Date().toISOString().split('T')[0];
     trStartTime.value = copyData.trStartTime || new Date().toTimeString().slice(0,5);
-    trCount.value = copyData.trCount || 0;
+    trCount.value = copyData.trCount || copyData.updatedStats?.trCount || 0;
     trCountDisplay.value = String(trCount.value);
-    allTimeOrbs.value = copyData.allTimeOrbs || 0;
+    allTimeOrbs.value = copyData.allTimeOrbs || copyData.updatedStats?.allTimeOrbs || 0;
     allTimeOrbsDisplay.value = formatSuffixNotation(allTimeOrbs.value);
 
     // 2) Bestehende Schritte löschen
@@ -2874,6 +2884,62 @@ function createPlanWithTargetValues() {
   trPlannerStore.planModalShouldOpen = 'target';
   
   console.log("Target plan flag set in store:", trPlannerStore.planModalShouldOpen);
+}
+
+function isBoostAvailable(boost, step) {
+  // Wenn keine Mindestanforderungen definiert sind, ist der Boost immer verfügbar
+  if (!boost.minRequirement) return true;
+  
+  // Prüfen, ob der erforderliche Boost existiert und das Mindestlevel erreicht hat
+  const requiredBoostKey = boost.minRequirement.boost;
+  const requiredLevel = boost.minRequirement.level;
+  
+  // Wert aus den aktuellen Zielen oder geerbten Stats verwenden
+  let currentLevel;
+  
+  // Prüfen, ob der Wert im targetLevels vorhanden ist
+  if (step.targetLevels[requiredBoostKey] !== undefined) {
+    currentLevel = step.targetLevels[requiredBoostKey];
+  } else {
+    // Ansonsten aus den Stats nehmen
+    currentLevel = step.stats[requiredBoostKey] || 0;
+  }
+  
+  return currentLevel >= requiredLevel;
+}
+
+function getBoostRequirementText(boost) {
+  if (!boost.minRequirement) return '';
+  
+  // Boost-Objekt für den erforderlichen Boost finden
+  const requiredBoost = allBoosts.find(b => b.key === boost.minRequirement.boost);
+  if (!requiredBoost) return 'Unknown requirement';
+  
+  // Text für das Mindestlevel erstellen
+  return `${requiredBoost.label} ${boost.minRequirement.level}`;
+}
+
+// Hilfsfunktionen für Tooltips
+function hasTooltipContent(boost, step) {
+  return (boost.tooltip && boost.tooltip !== '0') || 
+         (boost.minRequirement && !isBoostAvailable(boost, step));
+}
+
+function getFullTooltipContent(boost, step) {
+  let content = '';
+  
+  // Boost-Tooltip anzeigen, wenn vorhanden
+  if (boost.tooltip && boost.tooltip !== '0') {
+    content += boost.tooltip;
+  }
+  
+  // Anforderungen hinzufügen, falls vorhanden und nicht erfüllt
+  if (boost.minRequirement) {
+    if (content) content += '<br><br>'; // Trennzeile, falls schon Text vorhanden
+    content += `<span style="color: #EAB308;">⚠️ Requires ${getBoostRequirementText(boost)}</span>`;
+  }
+  
+  return content;
 }
 
 watch(

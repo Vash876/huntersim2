@@ -2,6 +2,27 @@
 const changelog = 
 [
   {
+    version: '2.3.3',
+    date: '2025-05-01',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'TR Planner:',
+        subItems: [
+          'Added tooltips for boosts with informative descriptions',
+          'Implemented boost dependencies - required upgrades must be unlocked before dependent boosts can be adjusted',
+          'Bug fix: TR Count and All-Time Orbs are now correctly preserved when copying plans'
+        ]
+      },
+      {
+      text: 'Settings Improvements:',
+      subItems: [
+        'Expanded Reset/Backup functionality to include TR Planner and Gadget Calculator data',
+      ]
+    }
+    ]
+  },
+  {
     version: '2.3.2',
     date: '2025-04-22',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',

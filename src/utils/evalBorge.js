@@ -1,4 +1,4 @@
-export function EVALBORGE(lvl,maxStage,hp,atk,regen,dr,evade,effect,critRate,critPower,aspd,revival,life,ua,impacts,omen,ll,pog,ultimaTalent,fow,ares,ylith,spartan,timeless,bfb,athena,baal,sensors,atlas,mino,helltouch,punches,weakspot,hermes,inhaler,gadget,iap,special,ultima,reviveCd,trample,scavengers,m0,r4,r7,r16,r19,i3,i4,i11,i13,i14,i23,i24,i27,i44,i60,i80,i84,i87,i88,i89,i91,creaGN1,creaGN2,creaGN3,innoGN3,attrGN2,attrGN3,attr,catchup99gu,lootgu,card,research81,iters,useSeeded,cm46,cm47,cm48) {
+export function EVALBORGE(lvl,maxStage,hp,atk,regen,dr,evade,effect,critRate,critPower,aspd,revival,life,ua,impacts,omen,ll,pog,ultimaTalent,fow,ares,ylith,spartan,timeless,bfb,athena,baal,sensors,atlas,mino,helltouch,punches,weakspot,hermes,inhaler,gadget,iap,special,ultima,reviveCd,trample,scavengers,m0,r4,r7,r16,r19,i3,i4,i11,i13,i14,i23,i24,i27,i44,i60,i80,i84,i87,i88,i89,i91,creaGN1,creaGN2,creaGN3,innoGN3,attrGN2,attrGN3,attr,catchup99gu,lootgu,card,research81,iters, cm46,cm47,cm48) {
   
   var multi = (enemyNum) => Math.max(1, 1 +
 Math.max(0,(enemyNum - 149) * .006)+
@@ -31,32 +31,7 @@ var enemies = [];
 for(var i = 0;i<=1000;i++){
     enemies.push(simEnemy(i))
 }
-/*var ck;
-if (useSeeded) {
-  ck = (() => {
-    const s = new Uint32Array([123456789, 362436069, 521288629, 88675123]);
-    
-    return (chance) => {
-      if (!chance) return false;
-      
-      const result = (s[0] + s[3]) >>> 0;
-      
-      const t = s[1] << 9;
-      s[2] ^= s[0];
-      s[3] ^= s[1];
-      s[1] ^= s[2];
-      s[0] ^= s[3];
-      s[2] ^= t;
-      s[3] = ((s[3] << 11) | (s[3] >>> 21)) >>> 0;
-      
-      return chance > (result * 2.3283064365386963e-10);
-    };
-  })();
-} else {
-  ck = (chance) => {
-    return chance && chance > Math.random();
-  };
-}*/
+
 var ck = (chance) => {
   return chance && chance > Math.random()
 }

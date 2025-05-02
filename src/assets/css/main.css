@@ -19,3 +19,43 @@
 .diff-box-normal {
   @apply text-sm;
 }
+
+.tippy-box[data-theme~='huntersim'] {
+  background-color: #1f2937;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+  font-size: 0.75rem;
+  padding: 0.5rem;
+  max-width: 300px;
+  z-index: 9999;
+}
+
+.tippy-box[data-theme~='huntersim'] .tippy-content {
+  padding: 0.5rem 0.75rem;
+}
+
+/* Wichtig: Pfeil-Definitionen */
+.tippy-box[data-theme~='huntersim'] .tippy-arrow {
+  color: #1f2937; /* Muss mit dem Hintergrund übereinstimmen */
+  
+  z-index: 9999;
+}
+
+/* Positionen des Pfeils explizit definieren */
+.tippy-box[data-placement^='top'] > .tippy-arrow {
+  bottom: -8px;
+}
+
+.tippy-box[data-placement^='bottom'] > .tippy-arrow {
+  top: -8px;
+}
+
+.tippy-box[data-placement^='left'] > .tippy-arrow {
+  right: -8px;
+}
+
+.tippy-box[data-placement^='right'] > .tippy-arrow {
+  left: -8px;
+}

@@ -127,13 +127,24 @@
                   :key="`boost_desktop_${boost.key}`" 
                   class="border-t border-gray-700 hover:bg-gray-700/30"
                 >
-                  <td class="py-1.5 px-2 text-xs text-gray-200">
-                    <div>{{ boost.label }}</div>
-                    <div v-if="boost.max !== undefined" class="text-[10px] text-gray-400">Max: {{ boost.max }}</div>
-                  </td>
+                <td class="py-1.5 px-2 text-xs text-gray-200">
+                  <div class="flex items-center">
+                    <span>{{ boost.label }}</span>
+                    
+                    <!-- Info-Icon mit Tooltip anzeigen, wenn Tooltip oder Anforderungen vorhanden sind -->
+                    <InfoTooltip 
+                      v-if="hasTooltipContent(boost)"
+                      :content="getFullTooltipContent(boost)"
+                      placement="right"
+                      class="ml-1"
+                    />
+                  </div>
+                  <div v-if="boost.max !== undefined" class="text-[10px] text-gray-400">Max: {{ boost.max }}</div>
+                </td>
                   
                   <!-- Neue Spalte für Kosten -->
                   <td class="py-1.5 px-2 text-center">
+                    <!-- Hier den Tooltip für nicht verfügbare Boosts einfügen -->
                     <div v-if="calculateUpgradeCost(boost)" class="text-xs text-amber-400">
                       {{ calculateUpgradeCost(boost) }}
                     </div>
@@ -180,9 +191,12 @@
                     <template v-if="boost.type === 'boolean'">
                       <button 
                         class="px-2 py-0.5 text-[11px] rounded-sm"
-                        :class="currentBoosts[boost.key] ? 'bg-green-700/50 text-green-300' : 'bg-gray-700 text-gray-400'"
-                        @click="toggleCurrentBoolean(boost.key)"
-                        :tabindex="getTabIndex(boost, 'current')"  
+                        :class=" [
+                          currentBoosts[boost.key] ? 'bg-green-700/50 text-green-300' : 'bg-gray-700 text-gray-400',
+                          {'cursor-not-allowed opacity-50': !isBoostAvailable(boost, false)}
+                        ]"
+                        @click="isBoostAvailable(boost, false) && toggleCurrentBoolean(boost.key)"
+                        :tabindex="isBoostAvailable(boost, false) ? getTabIndex(boost, 'current') : -1"  
                       >
                         {{ currentBoosts[boost.key] ? 'ON' : 'OFF' }}
                       </button>
@@ -198,11 +212,13 @@
                           :showFastControls="true"
                           :step="boost.normalControl || 1"
                           :fastStep="boost.fastControl || 10"
-                          :valueClass="'text-gray-300'"
+                          :valueClass="isBoostAvailable(boost, false) ? 'text-gray-300' : 'text-gray-500'"
                           :compact="true"
                           :autoEdit="true" 
-                          :tabIndex="getTabIndex(boost, 'current')"  
-                          @update:value="(newVal) => updateBoostCurrent(boost, newVal)"
+                          :tabIndex="isBoostAvailable(boost, false) ? getTabIndex(boost, 'current') : -1"
+                          :disabled="!isBoostAvailable(boost, false)"  
+                          :buttonClass="isBoostAvailable(boost, false) ? '' : 'opacity-50 cursor-not-allowed'"
+                          @update:value="(newVal) => isBoostAvailable(boost, false) && updateBoostCurrent(boost, newVal)"
                         />
                       </div>
                     </template>
@@ -211,15 +227,16 @@
                     <!-- Boolean Target -->
                     <template v-if="boost.type === 'boolean'">
                       <button 
-                        @click="toggleTargetBoolean(boost.key)"
+                        @click="isBoostAvailable(boost, true) && toggleTargetBoolean(boost.key)"
                         class="px-2 py-0.5 text-[11px] rounded-sm"
                         :class="{
                           'bg-green-600 hover:bg-green-500 text-white': targetBoosts[boost.key],
                           'bg-gray-700 hover:bg-gray-600 text-white': !targetBoosts[boost.key],
-                          'opacity-75 cursor-default': currentBoosts[boost.key]
+                          'opacity-75 cursor-default': currentBoosts[boost.key],
+                          'opacity-50 cursor-not-allowed': !isBoostAvailable(boost, true)
                         }"
-                        :disabled="currentBoosts[boost.key]"
-                        :tabindex="getTabIndex(boost, 'target')" 
+                        :disabled="currentBoosts[boost.key] || !isBoostAvailable(boost, true)"
+                        :tabindex="isBoostAvailable(boost, true) ? getTabIndex(boost, 'target') : -1" 
                       >
                         {{ targetBoosts[boost.key] ? 'ON' : 'OFF' }}
                       </button>
@@ -235,19 +252,21 @@
                           :showFastControls="true"
                           :step="boost.normalControl || 1"
                           :fastStep="boost.fastControl || 10"
-                          :valueClass="'text-white'"
+                          :valueClass="isBoostAvailable(boost, true) ? 'text-white' : 'text-gray-500'"
                           :compact="true"
                           :autoEdit="true"  
-                          :tabIndex="getTabIndex(boost, 'target')"
+                          :tabIndex="isBoostAvailable(boost, true) ? getTabIndex(boost, 'target') : -1"
                           :validateOnFinalOnly="true"
+                          :disabled="!isBoostAvailable(boost, true)"
+                          :buttonClass="isBoostAvailable(boost, true) ? '' : 'opacity-50 cursor-not-allowed'"
                           class="tr-value-control"
                           :class="{ 
-                            'tr-improved-value': (targetBoosts[boost.key] || 0) > (currentBoosts[boost.key] || 0),
-                            'tr-min-value': (targetBoosts[boost.key] || 0) <= (currentBoosts[boost.key] || 0)
+                            'tr-improved-value': (targetBoosts[boost.key] || 0) > (currentBoosts[boost.key] || 0) && isBoostAvailable(boost, true),
+                            'tr-min-value': (targetBoosts[boost.key] || 0) <= (currentBoosts[boost.key] || 0) || !isBoostAvailable(boost, true)
                           }" 
-                          @update:raw-value="(newVal) => updateRawTargetValue(boost, newVal)"
-                          @finalize:value="() => finalizeTargetValue(boost)"
-                          @blur="() => finalizeTargetValue(boost)"
+                          @update:raw-value="(newVal) => isBoostAvailable(boost, true) && updateRawTargetValue(boost, newVal)"
+                          @finalize:value="() => isBoostAvailable(boost, true) && finalizeTargetValue(boost)"
+                          @blur="() => isBoostAvailable(boost, true) && finalizeTargetValue(boost)"
                         />
                       </div>
                     </template>
@@ -266,10 +285,19 @@
                 <div class="flex flex-col">
                   <!-- Boost-Name und Multiplier nebeneinander -->
                   <div class="mb-1.5 flex justify-between items-center">
-                    <div>
+                    <div class="flex items-center">
                       <div class="text-xs font-medium text-gray-200">{{ boost.label }}</div>
-                      <div v-if="boost.max !== undefined" class="text-[10px] text-gray-400">Max: {{ boost.max }}</div>
+                      
+                      <!-- Info-Icon mit Tooltip anzeigen, wenn Tooltip oder Anforderungen vorhanden sind -->
+                      <InfoTooltip 
+                        v-if="hasTooltipContent(boost)"
+                        :content="getFullTooltipContent(boost)"
+                        placement="right"
+                        class="ml-1"
+                      />
                     </div>
+                    
+                    <div v-if="boost.max !== undefined" class="text-[10px] text-gray-400">Max: {{ boost.max }}</div>
                     
                     <!-- Multiplier rechts anzeigen -->
                     <div class="text-xs text-right">
@@ -308,9 +336,12 @@
                       <template v-if="boost.type === 'boolean'">
                         <button 
                           class="px-2 py-0.5 text-[11px] rounded-sm"
-                          :class="currentBoosts[boost.key] ? 'bg-green-700/50 text-green-300' : 'bg-gray-700 text-gray-400'"
-                          @click="toggleCurrentBoolean(boost.key)"
-                          :tabindex="getTabIndex(boost, 'current')"  
+                          :class=" [
+                            currentBoosts[boost.key] ? 'bg-green-700/50 text-green-300' : 'bg-gray-700 text-gray-400',
+                            {'cursor-not-allowed opacity-50': !isBoostAvailable(boost, false)}
+                          ]"
+                          @click="isBoostAvailable(boost, false) && toggleCurrentBoolean(boost.key)"
+                          :tabindex="isBoostAvailable(boost, false) ? getTabIndex(boost, 'current') : -1"  
                         >
                           {{ currentBoosts[boost.key] ? 'ON' : 'OFF' }}
                         </button>
@@ -318,7 +349,7 @@
                       
                       <!-- Numeric Current -->
                       <template v-else>
-                        <div class="flex justify-end">
+                        <div class="flex justify-end w-32"> <!-- Feste Breite und rechtsbündige Ausrichtung -->
                           <TRValueControls
                             :value="currentBoosts[boost.key] || 0"
                             :minValue="0"
@@ -326,11 +357,13 @@
                             :showFastControls="true"
                             :step="boost.normalControl || 1"
                             :fastStep="boost.fastControl || 10"
-                            :valueClass="'text-gray-300'"
+                            :valueClass="isBoostAvailable(boost, false) ? 'text-gray-300' : 'text-gray-500'"
                             :compact="true"
                             :autoEdit="true" 
-                            :tabIndex="getTabIndex(boost, 'current')"  
-                            @update:value="(newVal) => updateBoostCurrent(boost, newVal)"
+                            :tabIndex="isBoostAvailable(boost, false) ? getTabIndex(boost, 'current') : -1"
+                            :disabled="!isBoostAvailable(boost, false)"  
+                            :buttonClass="isBoostAvailable(boost, false) ? '' : 'opacity-50 cursor-not-allowed'"
+                            @update:value="(newVal) => isBoostAvailable(boost, false) && updateBoostCurrent(boost, newVal)"
                           />
                         </div>
                       </template>
@@ -376,17 +409,21 @@
                             :showFastControls="true"
                             :step="boost.normalControl || 1"
                             :fastStep="boost.fastControl || 10"
-                            :valueClass="'text-white'"
+                            :valueClass="isBoostAvailable(boost, true) ? 'text-white' : 'text-gray-500'"
                             :compact="true"
                             :autoEdit="true"  
-                            :tabIndex="getTabIndex(boost, 'target')"
+                            :tabIndex="isBoostAvailable(boost, true) ? getTabIndex(boost, 'target') : -1"
                             :validateOnFinalOnly="true"
-                            :disableDecrement="(targetBoosts[boost.key] || 0) <= (currentBoosts[boost.key] || 0)"
+                            :disabled="!isBoostAvailable(boost, true)"
+                            :buttonClass="isBoostAvailable(boost, true) ? '' : 'opacity-50 cursor-not-allowed'"
                             class="tr-value-control"
-                            :class="{ 'tr-improved-value': (targetBoosts[boost.key] || 0) > (currentBoosts[boost.key] || 0) }" 
-                            @update:raw-value="(newVal) => updateRawTargetValue(boost, newVal)"
-                            @finalize:value="() => finalizeTargetValue(boost)"
-                            @blur="() => finalizeTargetValue(boost)"
+                            :class="{ 
+                              'tr-improved-value': (targetBoosts[boost.key] || 0) > (currentBoosts[boost.key] || 0) && isBoostAvailable(boost, true),
+                              'tr-min-value': (targetBoosts[boost.key] || 0) <= (currentBoosts[boost.key] || 0) || !isBoostAvailable(boost, true)
+                            }" 
+                            @update:raw-value="(newVal) => isBoostAvailable(boost, true) && updateRawTargetValue(boost, newVal)"
+                            @finalize:value="() => isBoostAvailable(boost, true) && finalizeTargetValue(boost)"
+                            @blur="() => isBoostAvailable(boost, true) && finalizeTargetValue(boost)"
                           />
                         </div>
                       </template>
@@ -554,8 +591,11 @@ import {
   IconCircleX,
   IconAlertCircle,
   IconArrowRight,
-  IconPlus
+  IconPlus,
+  IconLock
 } from '@tabler/icons-vue';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
+
 
 const props = defineProps({
   isVisible: {
@@ -1767,7 +1807,7 @@ function finalizeAllTimeOrbsInput() {
     return formatInscryptionCost(totalCost);
   }
   
-  // Für Gadgets
+  // FürGadgets
   else if (boost.category === 'gadget') {
     // Gadget-Typ ermitteln
     let gadgetType = boost.key;
@@ -1782,6 +1822,61 @@ function finalizeAllTimeOrbsInput() {
   }
   
   return '';
+}
+
+// Prüft, ob ein Boost verfügbar ist (alle Voraussetzungen erfüllt)
+function isBoostAvailable(boost, isTarget = false) {
+  // Wenn keine Abhängigkeiten definiert sind, ist der Boost immer verfügbar
+  if (!boost.minRequirement) return true;
+  
+  // Prüfen, ob der erforderliche Boost existiert und das Mindestlevel erreicht hat
+  const requiredBoostKey = boost.minRequirement.boost;
+  const requiredLevel = boost.minRequirement.level;
+  
+  // Bei Target-Prüfung müssen wir sowohl current als auch target Werte berücksichtigen
+  if (isTarget) {
+    // Wenn der Boost im Target-Plan das erforderliche Level erreicht, ist er verfügbar
+    const targetLevel = targetBoosts.value[requiredBoostKey] || 0;
+    return targetLevel >= requiredLevel;
+  } else {
+    // Für current nur den aktuellen Wert prüfen
+    const currentLevel = currentBoosts.value[requiredBoostKey] || 0;
+    return currentLevel >= requiredLevel;
+  }
+}
+
+// Gibt einen lesbaren Text für die Boost-Anforderung zurück
+function getBoostRequirementText(boost) {
+  if (!boost.minRequirement) return '';
+  
+  // Boost-Objekt für den erforderlichen Boost finden
+  const requiredBoost = allBoosts.find(b => b.key === boost.minRequirement.boost);
+  if (!requiredBoost) return 'Unknown requirement';
+  
+  // Text für das Mindestlevel erstellen
+  return `${requiredBoost.label} ${boost.minRequirement.level}`;
+}
+
+// Hilfsfunktionen für Tooltips
+function hasTooltipContent(boost) {
+  return (boost.tooltip && boost.tooltip !== '0') || boost.minRequirement;
+}
+
+function getFullTooltipContent(boost) {
+  let content = '';
+  
+  // Boost-Tooltip anzeigen, wenn vorhanden
+  if (boost.tooltip && boost.tooltip !== '0') {
+    content += boost.tooltip;
+  }
+  
+  // Anforderungen hinzufügen, falls vorhanden
+  if (boost.minRequirement) {
+    if (content) content += '<br><br>'; // Trennzeile, falls schon Text vorhanden
+    content += `<span style="color: #EAB308;">⚠️ Requires ${getBoostRequirementText(boost)}</span>`;
+  }
+  
+  return content;
 }
 </script>
 
@@ -1834,4 +1929,6 @@ function finalizeAllTimeOrbsInput() {
   height: 100%;
   background-color: rgba(26, 31, 43, 0.6); /* semitransparent overlay */
 }
+
+
 </style>

@@ -1,4 +1,4 @@
-export function EVALOZZY(lvl,maxStage,hp,atk,regen,dr,evade,effect,multistrike,multistrikePower,aspd,revival,trickster,ua,thousandNeedles,omen,ll,crippling,ultimaTalent,echoBullets,lotl,exo,scorp,dod,cat,timeless,wings,exterm,medusa,scarab,vectid,snek,cod,dwd,sisters,gadget,iap,special,ultima,reviveCd,scavengers,m0,r4,r7,r17,i31,i32,i33,i36,i37,i40,i81,i86,i92,innoGN2,innoGN3,attrGN3,attr,catchup99gu,lootgu,card,research81,iters,useSeeded,cm46,cm47,cm48) {
+export function EVALOZZY(lvl,maxStage,hp,atk,regen,dr,evade,effect,multistrike,multistrikePower,aspd,revival,trickster,ua,thousandNeedles,omen,ll,crippling,ultimaTalent,echoBullets,lotl,exo,scorp,dod,cat,timeless,wings,exterm,medusa,scarab,vectid,snek,cod,dwd,sisters,gadget,iap,special,ultima,reviveCd,scavengers,m0,r4,r7,r17,i31,i32,i33,i36,i37,i40,i81,i86,i92,innoGN2,innoGN3,attrGN3,attr,catchup99gu,lootgu,card,research81,iters, cm46,cm47,cm48) {
   var multi = (enemyNum) => Math.max(1, 1 +
 Math.max(0,(enemyNum - 149) * .006)+
 Math.max(0,(enemyNum - 199) * .006)+
@@ -32,32 +32,7 @@ for(var i = 0;i<=1000;i++){
     enemies.push(simEnemy(i))
 }
 
-/*var ck;
-if (useSeeded) {
-  ck = (() => {
-    const s = new Uint32Array([123456789, 362436069, 521288629, 88675123]);
-    
-    return (chance) => {
-      if (!chance) return false;
-      
-      const result = (s[0] + s[3]) >>> 0;
-      
-      const t = s[1] << 9;
-      s[2] ^= s[0];
-      s[3] ^= s[1];
-      s[1] ^= s[2];
-      s[0] ^= s[3];
-      s[2] ^= t;
-      s[3] = ((s[3] << 11) | (s[3] >>> 21)) >>> 0;
-      
-      return chance > (result * 2.3283064365386963e-10);
-    };
-  })();
-} else {
-  ck = (chance) => {
-    return chance && chance > Math.random();
-  };
-}*/
+
 var ck = (chance) => {
   return chance && chance > Math.random()
 }
