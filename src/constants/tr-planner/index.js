@@ -358,7 +358,7 @@ export const allBoosts = [
   {
     key: 'innogem',
     label: 'Innovation Gem Level',
-    category: 'research',
+    category: 'gem',
     type: 'number',
     orbcalc: true,
     permanent: true,
