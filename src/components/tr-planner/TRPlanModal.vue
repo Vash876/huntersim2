@@ -117,9 +117,16 @@
           </div>
 
           <!-- All-Time Orbs -->
-          <div class="bg-gray-750/60 rounded-md p-2 border border-transparent hover:border-gray-600">
+          <div class="bg-gray-750/60 rounded-md p-2 border border-transparent hover:border-gray-600 relative">
             <div class="flex flex-col">
-              <label class="text-xs font-medium text-gray-300 mb-1">All-Time Orbs</label>
+              <label class="text-xs font-medium text-gray-300 mb-1 flex items-center">
+                All-Time Orbs
+                <InfoTooltip 
+                  content="Enter your total orbs earned. You can use suffixes like k, m, b, t, etc."
+                  placement="top"
+                  class="ml-1"
+                />
+              </label>
               <input 
                 v-model="allTimeOrbsInput"
                 type="text"
@@ -1056,7 +1063,7 @@ function getFilteredBoostsByCategory(step) {
     const maxStatsJSON = localStorage.getItem('trplanner_userstats');
     const maxStats = maxStatsJSON ? JSON.parse(maxStatsJSON) : {};
     
-    // WICHTIG: Die im OrbCalc gemaxten Boosts identifizieren
+    // Die im OrbCalc gemaxten Boosts identifizieren
     const orbCalcMaxedBoosts = step.stats._orbCalcMaxedBoosts || {};
     
     console.log("DEBUG in getFilteredBoostsByCategory - orbCalcMaxedBoosts:", orbCalcMaxedBoosts);
@@ -1088,77 +1095,29 @@ function getFilteredBoostsByCategory(step) {
     
     for (const category of boostsByCategory) {
       const newCategory = { ...category };
-      const stepStats = step.stats;
       const filteredBoosts = [];
       
       for (const boost of category.boosts) {
-        // Wenn es ein Folge-TR ist und dieser Boost nicht in irgendeinem vorherigen TR ausgewählt wurde, ausfiltern
-        // Ausnahme: hoursInTR wird immer angezeigt
+        // HAUPTREGEL 1: Boost ausblenden, wenn er in _orbCalcMaxedBoosts als maxed markiert ist
+        // AUSNAHME: hoursInTR wird immer angezeigt
+        if (orbCalcMaxedBoosts[boost.key] && boost.key !== 'hoursInTR') {
+          continue; // Boost überspringen, wenn er maxed ist
+        }
+        
+        // HAUPTREGEL 2: In Folge-TRs nur ausgewählte Boosts anzeigen
         if (isFollowUpTR && !selectedBoostsForTR.includes(boost.key) && boost.key !== 'hoursInTR') {
-          continue;
+          continue; // Boost überspringen, wenn er nicht ausgewählt ist
         }
         
-        // WICHTIG: Spezielle Behandlung für Boolean-Boosts
-        if (boost.type === 'boolean') {
-          // Prüfe, ob der Boost in maxStats als true markiert ist
-          const maxValue = maxStats[boost.key];
-          
-          // KRITISCH: Wenn der Boost in maxStats=true ist UND NICHT in orbCalcMaxedBoosts markiert ist
-          if (maxValue === true && !orbCalcMaxedBoosts[boost.key]) {
-            console.log(`### Boolean Boost ${boost.key} ist in maxStats=true und NICHT in orbCalcMaxed markiert - AUSBLENDEN`);
-            continue; // Ausblenden
-          }
-          
-          // WICHTIG: Wenn der Boost in orbCalcMaxedBoosts markiert ist, IMMER anzeigen, unabhängig von maxStats
-          if (orbCalcMaxedBoosts[boost.key]) {
-            console.log(`### Boolean Boost ${boost.key} ist in orbCalcMaxed markiert - ANZEIGEN`);
-            filteredBoosts.push(boost);
-            continue;
-          }
-        }
-        
-        // KRITISCH: Numerische Boosts mit Maximum überprüfen
-        if (boost.type === 'number' && boost.max !== undefined) {
-          // Prüfe, ob der Boost in maxStats maximal ist
-          const maxValue = maxStats[boost.key];
-          
-          // Wenn der Boost in maxStats maximal ist UND NICHT in orbCalcMaxedBoosts markiert ist
-          if (maxValue !== undefined && maxValue >= boost.max && !orbCalcMaxedBoosts[boost.key]) {
-            console.log(`### Boost ${boost.key} ist maximal in maxStats und NICHT in orbCalcMaxed markiert - AUSBLENDEN`);
-            continue; // Ausblenden
-          }
-          
-          // WICHTIG: Wenn der Boost in orbCalcMaxedBoosts markiert ist, IMMER anzeigen, unabhängig von maxStats
-          if (orbCalcMaxedBoosts[boost.key]) {
-            console.log(`### Boost ${boost.key} ist in orbCalcMaxed markiert - ANZEIGEN`);
-            filteredBoosts.push(boost);
-            continue;
-          }
-        }
-        
-        // BOOLEAN BOOSTS: Nur ausfiltern, wenn es KEINE Folge-TR ist ODER der Boost nicht ausgewählt ist
-        if (boost.type === 'boolean' && stepStats[boost.key] && 
-            (!isFollowUpTR || !selectedBoostsForTR.includes(boost.key)) &&
-            !step.targetBools[boost.key]) {  // <-- Zusätzliche Bedingung
-          continue;
-        }
-        
-        // NUMERISCHE BOOSTS: Wenn der Boost ein max hat UND wir das Maximum erreicht haben, ausfiltern
-        // Ausnahme: In Folge-TRs zeigen wir ausgewählte Boosts immer an, auch wenn sie am Maximum sind
-        if (boost.type === 'number' && boost.max !== undefined && stepStats[boost.key] >= boost.max &&
-            (!isFollowUpTR || !selectedBoostsForTR.includes(boost.key))) {
-          continue;
-        }
-        
-        // Nach Suchbegriff filtern, falls vorhanden
+        // HAUPTREGEL 3: Nach Suchbegriff filtern, falls vorhanden
         if (searchQuery.value.trim()) {
           const query = searchQuery.value.toLowerCase();
           if (!(boost.label.toLowerCase().includes(query) || boost.key.toLowerCase().includes(query))) {
-            continue;
+            continue; // Boost überspringen, wenn er nicht dem Suchbegriff entspricht
           }
         }
         
-        // Wenn kein Filter zugeschlagen hat, behalte den Boost
+        // Boost in die gefilterte Liste aufnehmen
         filteredBoosts.push(boost);
       }
       
@@ -1499,19 +1458,42 @@ function getStepOrbGains(step) {
   const baseStats = { ...step.stats };           // Start in diesem TR
   const planStats = { ...step.stats };           // nach allen Targets
 
+  /* Wichtig: Maximierte Boosts einbeziehen */
+  const orbCalcMaxedBoosts = step.stats._orbCalcMaxedBoosts || {};
+  
+  /* Für alle maximierten Boosts die maximalen Werte setzen */
+  Object.keys(orbCalcMaxedBoosts).forEach(key => {
+    const boost = allBoosts.find(b => b.key === key);
+    if (boost) {
+      if (boost.type === 'boolean') {
+        planStats[key] = 1; // Boolean-Boosts auf aktiviert setzen
+      } else if (boost.type === 'number' && boost.max !== undefined) {
+        planStats[key] = boost.max; // Numerische Boosts auf Maximum setzen
+      }
+    }
+  });
+
   /* numerische Ziele einblenden */
-  Object.entries(step.targetLevels).forEach(([k, v]) => { planStats[k] = v; });
+  Object.entries(step.targetLevels).forEach(([k, v]) => { 
+    // Nur überschreiben, wenn der Boost nicht maximal ist
+    if (!orbCalcMaxedBoosts[k]) {
+      planStats[k] = v; 
+    }
+  });
 
   /* Boolean‑Ziele verarbeiten */
   Object.entries(step.targetBools).forEach(([k, active]) => {
-    const def = allBoosts.find(b => b.key === k);
+    // Nur überschreiben, wenn der Boost nicht maximal ist
+    if (!orbCalcMaxedBoosts[k]) {
+      const def = allBoosts.find(b => b.key === k);
 
-    if (def && !def.permanent) {
-      // nicht‑permanent → in BEIDEN Stat‑Sätzen fixieren
-      baseStats[k] = planStats[k] = active ? 1 : 0;
-    } else if (active) {
-      // permanent → nur Ziel‑Stats auf 1 setzen
-      planStats[k] = 1;
+      if (def && !def.permanent) {
+        // nicht‑permanent → in BEIDEN Stat‑Sätzen fixieren
+        baseStats[k] = planStats[k] = active ? 1 : 0;
+      } else if (active) {
+        // permanent → nur Ziel‑Stats auf 1 setzen
+        planStats[k] = 1;
+      }
     }
   });
 
@@ -1526,15 +1508,36 @@ function getStepFragGains(step) {
   // Plan Stats für diesen Schritt zusammenstellen
   const planStats = { ...step.stats };
   
+  /* Wichtig: Maximierte Boosts einbeziehen */
+  const orbCalcMaxedBoosts = step.stats._orbCalcMaxedBoosts || {};
+  
+  /* Für alle maximierten Boosts die maximalen Werte setzen */
+  Object.keys(orbCalcMaxedBoosts).forEach(key => {
+    const boost = allBoosts.find(b => b.key === key);
+    if (boost) {
+      if (boost.type === 'boolean') {
+        planStats[key] = 1; // Boolean-Boosts auf aktiviert setzen
+      } else if (boost.type === 'number' && boost.max !== undefined) {
+        planStats[key] = boost.max; // Numerische Boosts auf Maximum setzen
+      }
+    }
+  });
+  
   // Numerische Boosts aus targetLevels
   Object.keys(step.targetLevels).forEach(key => {
-    planStats[key] = step.targetLevels[key];
+    // Nur überschreiben, wenn der Boost nicht maximal ist
+    if (!orbCalcMaxedBoosts[key]) {
+      planStats[key] = step.targetLevels[key];
+    }
   });
   
   // Boolean Boosts aus targetBools
   Object.entries(step.targetBools).forEach(([key, isActive]) => {
-    if (isActive) {
-      planStats[key] = 1;
+    // Nur überschreiben, wenn der Boost nicht maximal ist
+    if (!orbCalcMaxedBoosts[key]) {
+      if (isActive) {
+        planStats[key] = 1;
+      }
     }
   });
   
@@ -2555,9 +2558,12 @@ function initializeWithCopyData(copyData) {
         }
       });
       
-      if (copyData._orbCalcMaxedBoosts) {
-        firstStep.stats._orbCalcMaxedBoosts = { ...copyData._orbCalcMaxedBoosts };
-        console.log("Übernommene _orbCalcMaxedBoosts:", firstStep.stats._orbCalcMaxedBoosts);
+      if (props.currentStats._orbCalcMaxedBoosts) {
+        // Vollständig von currentStats übernehmen
+        firstStep.stats._orbCalcMaxedBoosts = {};
+        Object.keys(props.currentStats._orbCalcMaxedBoosts).forEach(key => {
+          firstStep.stats._orbCalcMaxedBoosts[key] = true;
+        });
       }
     } else {
       if (Array.isArray(copyData.selectedForNextTR)) {
@@ -2887,12 +2893,20 @@ function createPlanWithTargetValues() {
 }
 
 function isBoostAvailable(boost, step) {
-  // Wenn keine Mindestanforderungen definiert sind, ist der Boost immer verfügbar
+  // Wenn keine Anforderungen definiert sind, ist der Boost immer verfügbar
   if (!boost.minRequirement) return true;
   
   // Prüfen, ob der erforderliche Boost existiert und das Mindestlevel erreicht hat
   const requiredBoostKey = boost.minRequirement.boost;
   const requiredLevel = boost.minRequirement.level;
+  
+  // WICHTIG: Prüfen, ob der erforderliche Boost als maxed markiert ist
+  const orbCalcMaxedBoosts = step.stats._orbCalcMaxedBoosts || {};
+  
+  // Wenn der erforderliche Boost als maxed markiert ist, behandeln wir ihn als verfügbar
+  if (orbCalcMaxedBoosts[requiredBoostKey]) {
+    return true;
+  }
   
   // Wert aus den aktuellen Zielen oder geerbten Stats verwenden
   let currentLevel;

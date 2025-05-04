@@ -163,6 +163,7 @@ import { calcCostDifference, formatCost } from '../../utils/statCostUtils';
 import { getRelicCost, calcRelicCostDifference, formatRelicCost } from '../../utils/relicCostUtils';
 import { getGadgetCost, calcGadgetCostDifference, formatGadgetCost } from '../../utils/gadgetCostUtils';
 import { getInscryptionCost, calcInscryptionCostDifference, formatInscryptionCost } from '../../utils/inscryptionCostUtils';
+import { getOrbCost, calcOrbCostDifference, formatOrbCost } from '../../utils/orbCostUtils';
 import ValueControls from './ValueControls.vue';
 
 const props = defineProps({
@@ -521,7 +522,13 @@ function showCostForParam(param) {
   if (param.key.startsWith('upgrades.inscryptions.')) {
   return localOverrides.value[param.key] !== null &&
          localOverrides.value[param.key] > param.globalValue;
-}
+  }
+
+  // Für Gems (Orb-Kosten) nur wenn Override höher als global
+  if (param.key.startsWith('upgrades.gems_nodes.')) {
+    return localOverrides.value[param.key] !== null &&
+           localOverrides.value[param.key] > param.globalValue;
+  }
   
   return false;
 }
@@ -567,6 +574,21 @@ function getParamCost(param) {
     const inscryptionId = param.key.split('.')[2]; // Extrahiert 'i80'
     
       return calcInscryptionCostDifference(inscryptionId, fromLevel, toLevel);
+  }
+
+  // Für Gems (Orb-Kosten)
+  if (param.key.startsWith('upgrades.gems_nodes.')) {
+    const nodeId = param.key.split('.')[2]; // z.B. "attraction_lootBorge"
+    console.log("Node ID:", nodeId);
+    
+    // Anpassung an die tatsächliche Store-Struktur
+    if (nodeId === 'attraction_lootBorge') {
+      return calcOrbCostDifference('lootBorge', fromLevel, toLevel);
+    } else if (nodeId === 'attraction_lootOzzy') {
+      return calcOrbCostDifference('lootOzzy', fromLevel, toLevel);
+    } else if (nodeId === 'attraction_catchUp') {
+      return calcOrbCostDifference('catchUp', fromLevel, toLevel);
+    }
   }
   
   // Für normale Stats

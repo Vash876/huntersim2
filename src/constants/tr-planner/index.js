@@ -356,18 +356,6 @@ export const allBoosts = [
 
   // Researches
   {
-    key: 'innogem',
-    label: 'Innovation Gem Level',
-    category: 'gem',
-    type: 'number',
-    orbcalc: true,
-    permanent: true,
-    tooltip: '0',
-    multiplier: 1,
-    max: 2
-  },
-
-  {
     key: 'research',
     label: 'Research Points',
     category: 'research',
@@ -484,6 +472,17 @@ export const allBoosts = [
   },
 
   // Gems
+  {
+    key: 'innogem',
+    label: 'Innovation Gem Level',
+    category: 'gem',
+    type: 'number',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: 1,
+    max: 2
+  },
   {
     key: 'attr3',
     label: 'Attraction Gem Level #3',

@@ -9,6 +9,11 @@
           <div class="flex items-center">
             <IconReportMoney :size="16" class="text-amber-400" />
             <span class="stat-title">Loot Score</span>
+            <InfoTooltip 
+              content="Overall Build Efficiency Rating that excludes pure loot bonuses (Ultima, etc). This allows for fair Build comparison, focusing only on the Build's core effectiveness."
+              placement="top"
+              class="ml-0.5"
+            />
           </div>
           <div 
             v-if="!props.isReferenceBuild && props.referenceResults?.lootPerMin"
@@ -98,6 +103,7 @@ import {
   getDiffIcon, getDiffText, getAbsoluteDiffText, getTimeDiffText,
   calculateRunsPerDay
 } from '../../utils/BuildComparisonUtils';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
 
 const props = defineProps({
   results: { type: Object, required: true },
@@ -134,7 +140,7 @@ const props = defineProps({
 .stat-card {
   background-color: rgba(31, 41, 55, 0.4);
   border-radius: 0.5rem;
-  padding: 0.55rem;
+  padding: 0.45rem;
   height: 100%;
   transition: transform 0.1s ease;
 }

@@ -35,7 +35,7 @@
     <div v-else-if="results" class="flex flex-col space-y-3" :class="{'text-sm': isLowResolution}">
       <!-- Stats Row -->
       <div class="w-full grid gap-1.5" :class="{'low-res': isLowResolution}"
-           style="grid-template-columns: 7% 9% 9.2% 1px 13.6% 13.6% 13.6% 13.6% 1px auto;">
+           style="grid-template-columns: 7.2% 9% 9.2% 1px 13.6% 13.6% 13.6% 13.6% 1px auto;">
         <!-- Loot Score -->
         <div class="stat-box">
           <!-- Header mit Icon und Label -->
@@ -43,8 +43,13 @@
             <div class="flex items-center">
               <IconReportMoney :size="isLowResolution ? 12 : 14" class="text-amber-400 mr-1" />
               <div class="text-gray-400" :class="isLowResolution ? 'text-2xs' : 'text-xs'">
-                {{ resultLabels.lootPerMin || 'Loot/Min' }}
+                Loot Score
               </div>
+              <InfoTooltip 
+                content="Overall Build Efficiency Rating that excludes pure loot bonuses (Ultima, etc). This allows for fair Build comparison, focusing only on the Build's core effectiveness."
+                placement="top"
+                class="ml-0.5"
+              />
             </div>
           </div>
           
@@ -611,6 +616,7 @@ import {
   getBossStatDiffClasses, getBossStatDiffText,
   calculatePerDay, calculateRunsPerDay
 } from '@/components/builds/utils/BuildComparisonUtils';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
 
 const props = defineProps({
   buildData: { 

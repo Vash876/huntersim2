@@ -205,18 +205,20 @@ async function loadBoostData() {
   }
 }
 
-// Initialisieren des maxed-State basierend auf aktuellen Werten
+// Initialisieren des maxed-State basierend auf den orbCalcMaxedBoosts und aktuellen Werten
 function initializeMaxedState() {
+  // _orbCalcMaxedBoosts aus props.currentStats extrahieren
+  const orbCalcMaxedBoosts = props.currentStats._orbCalcMaxedBoosts || {};
+  
   // Für jeden Boost überprüfen wir, ob er bereits maxed ist
   allBoosts.forEach(boost => {
     if (boost.key !== 'hoursInTR' && boost.key !== 'loopMods') {
       if (boost.type === 'boolean') {
-        // Boolean Boosts sind "maxed" wenn sie aktiviert sind
-        maxedBoosts[boost.key] = props.currentStats[boost.key] === true;
+        // Boolean Boosts sind "maxed" wenn sie in _orbCalcMaxedBoosts markiert sind
+        maxedBoosts[boost.key] = orbCalcMaxedBoosts[boost.key] === true;
       } else if (boost.type === 'number' && boost.max !== undefined) {
-        // Numerische Boosts mit max-Property sind "maxed" wenn sie das Maximum erreicht haben
-        const currentValue = props.currentStats[boost.key] || 0;
-        maxedBoosts[boost.key] = currentValue >= boost.max;
+        // Numerische Boosts sind "maxed" wenn sie in _orbCalcMaxedBoosts markiert sind
+        maxedBoosts[boost.key] = orbCalcMaxedBoosts[boost.key] === true;
       }
     }
   });
@@ -252,31 +254,30 @@ function saveAndClose() {
   const updatedStats = { ...props.currentStats };
   
   // _orbCalcMaxedBoosts-Objekt initialisieren oder aus bestehenden Stats übernehmen
-  updatedStats._orbCalcMaxedBoosts = updatedStats._orbCalcMaxedBoosts || {};
+  updatedStats._orbCalcMaxedBoosts = {};
   
-  // Für jeden Boost, der als maxed markiert ist, setzen wir den entsprechenden Wert
+  // Für jeden Boost, der als maxed markiert ist, setzen wir AUSSCHLIESSLICH den _orbCalcMaxedBoosts-Eintrag
   Object.keys(maxedBoosts).forEach(key => {
     const boost = allBoosts.find(b => b.key === key);
     
     if (!boost) return;
     
+    // Wenn der Boost als maxed markiert ist, setzen wir ihn in _orbCalcMaxedBoosts
     if (maxedBoosts[key]) {
-      // Wenn der Boost als maxed markiert ist
+      updatedStats._orbCalcMaxedBoosts[key] = true;
+      
+      // Zusätzlich setzen wir den eigentlichen Wert auf den Maximalwert
       if (boost.type === 'boolean') {
         updatedStats[key] = true;
-        updatedStats._orbCalcMaxedBoosts[key] = true; // In orbCalcMaxedBoosts markieren
       } else if (boost.type === 'number' && boost.max !== undefined) {
         updatedStats[key] = boost.max;
-        updatedStats._orbCalcMaxedBoosts[key] = true; // In orbCalcMaxedBoosts markieren
       }
     } else {
-      // Wenn der Boost nicht als maxed markiert ist
+      // Wenn der Boost nicht als maxed markiert ist, setzen wir nur den eigentlichen Wert zurück
       if (boost.type === 'boolean') {
         updatedStats[key] = false;
-        delete updatedStats._orbCalcMaxedBoosts[key]; // Aus orbCalcMaxedBoosts entfernen
       } else if (boost.type === 'number') {
         updatedStats[key] = 0; // Auf 0 zurücksetzen
-        delete updatedStats._orbCalcMaxedBoosts[key]; // Aus orbCalcMaxedBoosts entfernen
       }
     }
   });

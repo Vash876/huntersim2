@@ -89,12 +89,12 @@
                   : 'text-gray-400 hover:text-gray-200'
               ]"
             >
-              <img 
-                v-if="hasIcon('xp')" 
-                :src="icons.xp" 
-                :alt="XP"
-                class="w-5 h-5 mr-1 md:mr-1.5"
-              />
+            <img 
+              v-if="hasIcon('xp')" 
+              :src="icons.xp" 
+              :alt="'XP'"
+              class="w-5 h-5 mr-1 md:mr-1.5"
+            />
               <IconBrightness v-else size="16" class="text-blue-400 mr-1 md:mr-1.5" />
               <span class="hidden md:inline">XP Progress</span>
               <span class="md:hidden text-xs"></span>
@@ -106,11 +106,11 @@
         <div v-if="selectedCurrency === 'xp'" class="bg-gray-850 border border-gray-700 rounded-lg p-4 mb-4">
           <div class="text-lg text-white mb-4 flex items-center">
             <img 
-                v-if="hasIcon('xp')" 
-                :src="icons.xp" 
-                :alt="XP"
-                class="w-5 h-5 mr-1 md:mr-1.5"
-              />
+              v-if="hasIcon('xp')" 
+              :src="icons.xp" 
+              :alt="'XP'"
+              class="w-5 h-5 mr-1 md:mr-1.5"
+            />
             <IconBrightness v-else size="20" class="mr-2 text-blue-400" />
             <span>Level: {{ currentLevel }}</span>
           </div>
@@ -339,12 +339,46 @@
           </div>
         </div>
 
+        <!-- Fragment Input Panel - nur im Fragments-Tab anzeigen -->
+        <div v-if="selectedCurrency === 'frags'" class="bg-gray-850 border border-gray-700 p-4 rounded-lg mb-6 mt-4 w-1/2">
+          <div class="flex items-center justify-start">
+            <div class="flex items-center">
+              <img 
+                v-if="hasIcon('frags')" 
+                :src="icons.frags" 
+                :alt="currencyLabels['frags']" 
+                class="w-5 h-5 mr-2"
+              />
+              <IconPuzzle v-else size="18" class="mr-2 text-blue-400" />
+              <span class="font-medium text-white">Fragment Income: </span>
+            </div>
+            
+            <div class="ml-2 w-32">
+              <input 
+                v-model="fragmentsPerDay"
+                type="text"
+                pattern="[0-9]*"
+                inputmode="numeric"
+                class="px-3 py-1 w-full text-sm bg-gray-700 border border-gray-600 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none text-white text-center no-arrows"
+                placeholder="per day"
+              />
+            </div>
+            
+            <div class="ml-2 text-sm text-gray-300">
+              per day
+            </div>
+          </div>
+          
+          <div class="text-xs text-gray-400 mt-2">
+            Enter your daily Fragment income to see collection time estimates.
+          </div>
+        </div>
+
         <!-- Loot Collection Time Table - nur anzeigen, wenn nicht XP-Tab ausgewählt -->
         <div class="mt-6" v-if="selectedCurrency !== 'xp'">
           <div class="text-lg text-white mb-3 flex items-center">
             <IconClock size="20" class="mr-2 text-blue-400" />
             Loot Collection Time
-            <span class="ml-2 text-xs text-gray-400">(not applicable for Fragments)</span>
           </div>
           
           <!-- Container mit responsiver Breite -->
@@ -705,6 +739,9 @@ const hunterInfo = computed(() => getHunterById(props.hunterId));
 const hunterName = computed(() => hunterInfo.value.name);
 const hunterColor = computed(() => hunterInfo.value.color);
 
+// Fragments per day - für Fragment-spezifische Berechnungen
+const fragmentsPerDay = ref(Number(localStorage.getItem('fragments_per_day')) || 100); // Standardwert
+
 const hideResults = ref(false);
 
 const { 
@@ -770,6 +807,12 @@ async function loadHunterData() {
     resetModalState(); // Zustandsreset vor dem Laden
     isLoading.value = true;
     loadError.value = null;
+
+    // Fragment-Rate aus localStorage laden
+    const storedFragmentsPerDay = localStorage.getItem('fragments_per_day');
+    if (storedFragmentsPerDay) {
+      fragmentsPerDay.value = Number(storedFragmentsPerDay);
+    }
     
     // Hunter-Modul dynamisch laden
     const currentHunter = hunterInfo.value;
@@ -1313,6 +1356,20 @@ function getCollectionTimeInMinutes(scenarioIndex) {
   if (cost <= 0) return 0;
   
   const currencyType = selectedCurrency.value;
+  
+  // Spezialfall: Fragments
+  if (currencyType === 'frags') {
+    // Wenn keine Fragment-Rate pro Tag angegeben ist
+    if (!fragmentsPerDay.value || fragmentsPerDay.value <= 0) return Infinity;
+    
+    // Berechne die Anzahl der benötigten Tage
+    const daysNeeded = cost / fragmentsPerDay.value;
+    
+    // In Minuten umrechnen (1 Tag = 1440 Minuten)
+    return daysNeeded * 1440;
+  }
+  
+  // Standardbehandlung für andere Währungen
   const materialType = getCurrencyMaterial(currencyType);
   
   if (!materialType || !originalResults.value || !originalResults.value[materialType]) {
@@ -1324,7 +1381,7 @@ function getCollectionTimeInMinutes(scenarioIndex) {
   if (materialPerRun <= 0) return Infinity;
   
   // Run-Dauer aus avgTime nehmen
-  const avgRunTimeMinutes = originalResults.value.avgTime || 120; // Fallback auf 2h wenn nicht vorhanden
+  const avgRunTimeMinutes = originalResults.value.avgTime || 120;
   
   // Anzahl benötigter Runs
   const runsNeeded = cost / materialPerRun;
@@ -1402,6 +1459,9 @@ function applyScenario(scenarioIndex) {
     overrides: overrides,
     precomputedResults: selectedResult
   });
+
+  // Modal schließen
+  emit('close');
   
   // Ergebnisse von comparisonResults direkt leeren - damit wird die erste Bedingung false
   comparisonResults.value = [];
@@ -1441,6 +1501,12 @@ watch(() => isEvaluating.value, (newValue) => {
   // Dies bewirkt, dass !hideResults true wird und die Tabelle nach einem Vergleich angezeigt wird
   if (newValue) {
     hideResults.value = false;
+  }
+});
+
+watch(fragmentsPerDay, (newValue) => {
+  if (newValue) {
+    localStorage.setItem('fragments_per_day', newValue);
   }
 });
 
@@ -1570,5 +1636,29 @@ input[type=range]::-moz-range-thumb {
 }
 .accent-blue-500 {
   --color-accent: #3B82F6;
+}
+
+.no-arrows {
+  /* Chrome, Safari, Edge, Opera */
+  -webkit-appearance: none;
+  -moz-appearance: textfield; /* Firefox */
+  appearance: textfield;
+}
+
+/* Für Webkit-Browser (Chrome, Safari) */
+.no-arrows::-webkit-inner-spin-button, 
+.no-arrows::-webkit-outer-spin-button { 
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Für Firefox */
+.no-arrows::-moz-number-spin-box {
+  -moz-appearance: none;
+}
+
+/* Microsoft Edge spezifisch */
+.no-arrows::-ms-clear {
+  display: none;
 }
 </style>

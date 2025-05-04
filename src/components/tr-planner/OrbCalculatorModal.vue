@@ -62,7 +62,14 @@
           <!-- All-Time Orbs -->
           <div class="bg-gray-750/60 rounded-md p-2 border border-transparent hover:border-gray-600">
             <div class="flex flex-col">
-              <label class="text-xs font-medium text-gray-300 mb-1">All-Time Orbs</label>
+              <label class="text-xs font-medium text-gray-300 mb-1 flex items-center">
+                All-Time Orbs
+                <InfoTooltip 
+                  content="Enter your total orbs earned. You can use suffixes like k, m, b, t, etc."
+                  placement="top"
+                  class="ml-1"
+                />
+              </label>
               <input 
                 v-model="allTimeOrbsInput"
                 type="text"
@@ -1832,6 +1839,25 @@ function isBoostAvailable(boost, isTarget = false) {
   // Prüfen, ob der erforderliche Boost existiert und das Mindestlevel erreicht hat
   const requiredBoostKey = boost.minRequirement.boost;
   const requiredLevel = boost.minRequirement.level;
+  
+  // NEUER CODE: maxLevelStats prüfen, ob der Boost dort maxed ist
+  const maxStats = maxLevelStats.value || {};
+  const orbCalcMaxedBoosts = maxStats._orbCalcMaxedBoosts || {};
+  
+  // Wenn der erforderliche Boost in _orbCalcMaxedBoosts markiert ist, gilt er als verfügbar
+  if (orbCalcMaxedBoosts[requiredBoostKey] === true) {
+    return true;
+  }
+  
+  // Bei booleschen Werten: Wenn der Wert true in maxLevelStats ist
+  if (typeof maxStats[requiredBoostKey] === 'boolean' && maxStats[requiredBoostKey] === true) {
+    return true;
+  }
+  
+  // Bei numerischen Werten: Wenn der Wert >= requiredLevel ist
+  if (typeof maxStats[requiredBoostKey] === 'number' && maxStats[requiredBoostKey] >= requiredLevel) {
+    return true;
+  }
   
   // Bei Target-Prüfung müssen wir sowohl current als auch target Werte berücksichtigen
   if (isTarget) {

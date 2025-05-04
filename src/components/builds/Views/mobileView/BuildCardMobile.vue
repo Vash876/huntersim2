@@ -120,6 +120,11 @@
                   <div class="flex items-center">
                     <IconReportMoney :size="14" class="text-amber-400" />
                     <div class="text-xs text-gray-400 ml-1.5">{{ resultLabels.lootPerMin || 'Loot' }}</div>
+                    <InfoTooltip 
+                      content="Overall Build Efficiency Rating that excludes pure loot bonuses (Ultima, etc). This allows for fair Build comparison, focusing only on the Build's core effectiveness."
+                      placement="top"
+                      class="ml-1"
+                    />
                   </div>
                   <span 
                     v-if="!isReferenceBuild && referenceResults?.lootPerMin"
@@ -571,6 +576,7 @@ import {
 import BuildCodeModal from '../../BuildCodeModal.vue';
 import StatisticsModal from '@/components/common/StatisticsModal.vue';
 import UpgradeComparisonModal from '@/components/common/UpgradeComparisonModal.vue';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
 
 // Props
 const props = defineProps({

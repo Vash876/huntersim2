@@ -2,6 +2,39 @@
 const changelog = 
 [
   {
+    version: '2.3.4',
+    date: '2025-05-04',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'TR Planner:',
+        subItems: [
+          'Bug fix: Maxed boosts are now correctly hidden in the UI and properly accounted for in calculations',
+          'Fixed issue with boost dependencies not respecting maxed boosts from Maxed Boosts Modal'
+        ]
+      },
+      {
+        text: 'Upgrade Comparison Modal:',
+        subItems: [
+          'Added Fragment Income input field to calculate collection time for fragment-based upgrades',
+          'Modal now automatically closes after applying build changes'
+        ]
+      },
+      {
+        text: 'Build Statistics:',
+        subItems: [
+          'Added tooltip to Loot Score'
+        ]
+      },
+      {
+        text: 'Override Modal:',
+        subItems: [
+          'Added cost calculation for Gem Upgrades'
+        ]
+      }
+    ]
+  },
+  {
     version: '2.3.3',
     date: '2025-05-01',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
