@@ -1,6 +1,7 @@
 <!-- filepath: /c:/Users/igorn/projects/huntersim2/src/App.vue -->
 <script setup>
 import AppNavbar from './components/common/AppNavbar.vue';
+import AppNavbarMobile from './components/common/AppNavbarMobile.vue';
 import AppFooter from './components/common/AppFooter.vue';
 import { useRoute } from 'vue-router';
 
@@ -9,7 +10,7 @@ const route = useRoute();
 
 <template>
   <div class="flex flex-col min-h-screen bg-slate-900 text-white">
-    <AppNavbar />
+    <AppNavbar class="hidden md:block" />
     <main class="flex-1">
       <router-view v-slot="{ Component, route }">
         <transition name="page" mode="out-in">
@@ -18,6 +19,9 @@ const route = useRoute();
       </router-view>
     </main>
     <AppFooter />
+    <div class="block md:hidden">
+      <AppNavbarMobile />
+    </div>
   </div>
 </template>
 

@@ -8,6 +8,8 @@
           Octocube Games
         </a>
       </p>
+      <!-- Zusätzlicher Abstand unten für mobile Geräte -->
+      <div class="h-0 md:h-0 pb-[70px] md:pb-0"></div>
     </div>
   </footer>
 </template>

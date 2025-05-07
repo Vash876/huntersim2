@@ -14,7 +14,6 @@ import {
   IconCreditCard,
   IconClockFilled,
   IconCrane,
-  IconBuildingCottage,
 } from '@tabler/icons-vue';
 
 
@@ -80,5 +79,17 @@ export const NAVIGATION = {
       path: '/tools/tr-planner',
       icon: IconClockFilled
     },
+    {
+      id: 'gadgetcalculator',
+      name: 'Gadget Calculator',
+      path: '/tools/gadget-calculator',
+      icon: IconTool
+    },
+    {
+      id: 'ultimatecalculator',
+      name: 'Ultima Calculator',
+      path: '/tools/ultima-calculator',
+      icon: IconCrown
+    }
   ]
 };

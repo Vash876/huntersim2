@@ -103,9 +103,14 @@ const routes = [
     component: () => import('../views/tools/TRPlanner.vue'),
   },
   {
-    path: '/tools/farm-planner',
-    name: 'Farm Planner',
-    component: () => import('../views/tools/FarmPlanner.vue'),
+    path: '/tools/gadget-calculator',
+    name: 'Gadget Calculator',    
+    component: () => import('../views/tools/GadgetCalculator.vue'),
+  },
+  {
+    path: '/tools/ultima-calculator',
+    name: 'Ultima Calculator',
+    component: () => import('../views/tools/UltimaCalculator.vue'),
   },
 
 

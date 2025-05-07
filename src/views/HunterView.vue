@@ -89,17 +89,6 @@
               <span>Horizontal</span>
             </button>
           </div>
-        <!-- Gadget Cost Calculator Button (nur für Knox)-->
-        <button
-          v-if="route.params.hunterId === 'knox'"
-          @click="openGadgetCostModal"
-          class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-700 transition-colors"
-          title="Gadget Cost Calculator"
-        >
-          <IconCalculator size="16" class="text-blue-400" />
-          <span class="hidden sm:inline">Gadget Calculator</span>
-          <span class="sm:hidden">Gadgets</span>
-        </button>
         </div>
         
         <!-- Build Filter Switch -->

@@ -339,6 +339,76 @@
           </div>
         </div>
 
+        <!-- Loot Collection Slider - für alle Tabs außer XP anzeigen -->
+        <div v-if="selectedCurrency !== 'xp'" 
+            :class="[
+              'bg-gray-850 border border-gray-700 p-4 rounded-lg mb-6 mt-4',
+              getMaxScenarioCost() <= 0 ? 'opacity-50 pointer-events-none' : ''
+            ]">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center">
+              <img 
+                v-if="hasIcon(selectedCurrency)" 
+                :src="icons[selectedCurrency]" 
+                :alt="currencyLabels[selectedCurrency]" 
+                class="w-5 h-5 mr-2"
+              />
+              <component 
+                v-else
+                :is="getCurrencyIcon(selectedCurrency)" 
+                :size="18" 
+                :class="`text-${getCurrencyColor(selectedCurrency)} mr-2`"
+              />
+              <span class="font-medium text-white">Current {{ currencyLabels[selectedCurrency] }}:</span>
+            </div>
+            
+            <div class="text-blue-400 font-medium">
+              {{ formatCost(currentCurrencyAmount) }}
+            </div>
+          </div>
+          
+          <!-- Kombinierter Loot Fortschrittsbalken und Slider -->
+          <div class="relative h-5 mb-2">
+            <input 
+              type="range" 
+              v-model="currentCurrencyPercentage" 
+              min="0" 
+              max="100" 
+              step="0.5"
+              class="w-full h-5 absolute z-10 opacity-0 cursor-pointer"
+              @input="updateCurrentCurrencyAmount"
+            />
+            <div class="h-full bg-gray-700 rounded-full overflow-hidden absolute inset-0 pointer-events-none">
+              <div 
+                class="h-full transition-all ease-in-out duration-300"
+                :style="{
+                  width: `${currentCurrencyPercentage}%`,
+                  backgroundColor: `var(--color-${getCurrencyColor(selectedCurrency).split('-')[0]}-500, #3B82F6)`
+                }"
+              ></div>
+            </div>
+            <!-- Slider-Knopf für visuelles Feedback -->
+            <div 
+              class="absolute top-1/2 -translate-y-1/2 z-5 w-6 h-6 rounded-full border-2 border-white shadow pointer-events-none"
+              :style="{
+                left: `calc(${currentCurrencyPercentage}% - 0.5rem)`,
+                backgroundColor: `var(--color-${getCurrencyColor(selectedCurrency).split('-')[0]}-500, #3B82F6)`
+              }"
+            ></div>
+          </div>
+          
+          <!-- Anzeige der fehlenden Menge und des Prozentsatzes -->
+          <div class="flex justify-between text-xs mt-1">
+            <span class="text-gray-500">
+              {{ formatCost(getMaxScenarioCost() - currentCurrencyAmount) }} still needed
+            </span>
+            <span class="text-gray-400">{{ Number(currentCurrencyPercentage).toFixed(1) }}%</span>
+            <span class="text-gray-500">
+              {{ formatCollectionTime(getRemainingCollectionTime()) }} remaining
+            </span>
+          </div>
+        </div>
+
         <!-- Fragment Input Panel - nur im Fragments-Tab anzeigen -->
         <div v-if="selectedCurrency === 'frags'" class="bg-gray-850 border border-gray-700 p-4 rounded-lg mb-6 mt-4 w-1/2">
           <div class="flex items-center justify-start">
@@ -610,7 +680,7 @@
                       <img 
                         v-if="hasIcon('xp')" 
                         :src="icons.xp" 
-                        :alt="XP" 
+                        :alt="'XP'" 
                         class="w-6 h-6 mr-1.5"
                       />
                       <IconBrightness v-else size="14" class="mr-1.5 text-blue-400" />
@@ -741,6 +811,11 @@ const hunterColor = computed(() => hunterInfo.value.color);
 
 // Fragments per day - für Fragment-spezifische Berechnungen
 const fragmentsPerDay = ref(Number(localStorage.getItem('fragments_per_day')) || 100); // Standardwert
+
+// Neue reaktive Variablen für den Loot Collection Slider
+const currentCurrencyPercentage = ref(0);
+const currentCurrencyAmount = ref(0);
+const currencyMinMax = ref({ min: 0, max: 0 });
 
 const hideResults = ref(false);
 
@@ -1355,36 +1430,35 @@ function getCollectionTimeInMinutes(scenarioIndex) {
   const cost = scenarioCosts.value[scenarioIndex];
   if (cost <= 0) return 0;
   
+  // Verbleibende Kosten unter Berücksichtigung des bereits gesammelten Betrags
+  const remainingCost = Math.max(0, cost - currentCurrencyAmount.value);
+  if (remainingCost <= 0) return 0; // Alles bereits gesammelt
+  
   const currencyType = selectedCurrency.value;
   
   // Spezialfall: Fragments
   if (currencyType === 'frags') {
-    // Wenn keine Fragment-Rate pro Tag angegeben ist
     if (!fragmentsPerDay.value || fragmentsPerDay.value <= 0) return Infinity;
-    
-    // Berechne die Anzahl der benötigten Tage
-    const daysNeeded = cost / fragmentsPerDay.value;
-    
-    // In Minuten umrechnen (1 Tag = 1440 Minuten)
-    return daysNeeded * 1440;
+    const daysNeeded = remainingCost / fragmentsPerDay.value;
+    return daysNeeded * 1440; // In Minuten umrechnen
   }
   
   // Standardbehandlung für andere Währungen
   const materialType = getCurrencyMaterial(currencyType);
   
   if (!materialType || !originalResults.value || !originalResults.value[materialType]) {
-    return Infinity; // Kann nicht berechnet werden
+    return Infinity;
   }
   
   // Material pro Run
   const materialPerRun = originalResults.value[materialType];
   if (materialPerRun <= 0) return Infinity;
   
-  // Run-Dauer aus avgTime nehmen
+  // Run-Dauer
   const avgRunTimeMinutes = originalResults.value.avgTime || 120;
   
-  // Anzahl benötigter Runs
-  const runsNeeded = cost / materialPerRun;
+  // Benötigte Runs
+  const runsNeeded = remainingCost / materialPerRun;
   
   // Gesamtzeit in Minuten
   return runsNeeded * avgRunTimeMinutes;
@@ -1470,6 +1544,86 @@ function applyScenario(scenarioIndex) {
   hideResults.value = true;
 }
 
+// Berechnet die Min- und Max-Werte für den Slider basierend auf den Szenario-Kosten
+function updateCurrencyRange() {
+  const validCosts = scenarioCosts.value.filter(cost => cost > 0);
+  if (validCosts.length === 0) {
+    currencyMinMax.value = { min: 0, max: 0 };
+    currentCurrencyAmount.value = 0;
+    currentCurrencyPercentage.value = 0;
+    return;
+  }
+  
+  // Min ist 1% der niedrigsten Kosten, Max sind die höchsten Kosten
+  const minCost = Math.min(...validCosts);
+  const maxCost = Math.max(...validCosts);
+  
+  currencyMinMax.value = {
+    min: minCost * 0.005, // 1% vom niedrigsten Wert
+    max: maxCost
+  };
+  
+  // Setze den aktuellen Wert auf 10% des Maximalwerts als Standardwert
+  if (currentCurrencyAmount.value === 0 || currentCurrencyAmount.value > maxCost) {
+    currentCurrencyAmount.value = 0; // 10% als Standardwert
+    // Prozentsatz relativ zum Maximalwert berechnen
+    currentCurrencyPercentage.value = Math.round((currentCurrencyAmount.value / maxCost) * 100);
+  }
+}
+
+// Aktualisiert den Währungsbetrag basierend auf dem Prozentsatz
+function updateCurrentCurrencyAmount() {
+  const { min, max } = currencyMinMax.value;
+  currentCurrencyAmount.value = (max - min) * (Number(currentCurrencyPercentage.value) / 100) + min;
+}
+
+// Gibt die höchsten Kosten aus allen Szenarien zurück
+function getMaxScenarioCost() {
+  const validCosts = scenarioCosts.value.filter(cost => cost > 0);
+  return validCosts.length > 0 ? Math.max(...validCosts) : 0;
+}
+
+// Berechnet die verbleibende Zeit unter Berücksichtigung des bereits gesammelten Betrags
+function getRemainingCollectionTime() {
+  const currencyType = selectedCurrency.value;
+  const maxCost = getMaxScenarioCost();
+  
+  // Wenn keine Kosten oder alles bereits gesammelt
+  if (maxCost <= 0 || currentCurrencyAmount.value >= maxCost) {
+    return 0;
+  }
+  
+  // Verbleibende Kosten
+  const remainingCost = maxCost - currentCurrencyAmount.value;
+  
+  // Spezialfall: Fragments
+  if (currencyType === 'frags') {
+    if (!fragmentsPerDay.value || fragmentsPerDay.value <= 0) return Infinity;
+    const daysNeeded = remainingCost / fragmentsPerDay.value;
+    return daysNeeded * 1440; // In Minuten umrechnen
+  }
+  
+  // Standardbehandlung für andere Währungen
+  const materialType = getCurrencyMaterial(currencyType);
+  
+  if (!materialType || !originalResults.value || !originalResults.value[materialType]) {
+    return Infinity;
+  }
+  
+  // Material pro Run
+  const materialPerRun = originalResults.value[materialType];
+  if (materialPerRun <= 0) return Infinity;
+  
+  // Run-Dauer
+  const avgRunTimeMinutes = originalResults.value.avgTime || 120;
+  
+  // Benötigte Runs für die verbleibenden Kosten
+  const runsNeeded = remainingCost / materialPerRun;
+  
+  // Gesamtzeit in Minuten
+  return runsNeeded * avgRunTimeMinutes;
+}
+
 // Watch-Funktionen
 // Überwacht Änderungen an isVisible und lädt Daten, wenn das Modal geöffnet wird
 watch(() => props.isVisible, (newValue) => {
@@ -1508,6 +1662,16 @@ watch(fragmentsPerDay, (newValue) => {
   if (newValue) {
     localStorage.setItem('fragments_per_day', newValue);
   }
+});
+
+// Watch für die Szenario-Kosten, um den Slider-Bereich anzupassen
+watch(() => scenarioCosts.value, (newCosts) => {
+  updateCurrencyRange();
+}, { deep: true });
+
+// Watch für ausgewählte Währung, um den Slider bei Tabwechsel zu aktualisieren
+watch(() => selectedCurrency.value, () => {
+  updateCurrencyRange();
 });
 
 onMounted(() => {

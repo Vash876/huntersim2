@@ -2,6 +2,34 @@
 const changelog = 
 [
   {
+    version: '2.3.5',
+    date: '2025-05-07',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'Upgrade Comparison Modal:',
+        subItems: [
+          'Added interactive Loot Collection Slider that shows remaining collection time based on your current resource progress',
+          'Customize how much of a resource you\'ve already gathered to get more accurate time estimates'
+        ]
+      },
+      {
+        text: 'Tools Section:',
+        subItems: [
+          'Added Diamond Ultima Calculator',
+          'Relocated Gadget Calculator to Tools section and added Multiplier calculation for each gadget',
+        ]
+      },
+      {
+        text: 'Navigation Improvements:',
+        subItems: [
+          'Slightly changed navigation bar on desktop',
+          'Complete redesign on mobile with improved accessibility and modern interface'
+        ]
+      }
+    ]
+  },
+  {
     version: '2.3.4',
     date: '2025-05-04',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
@@ -9,7 +37,7 @@ const changelog =
       {
         text: 'TR Planner:',
         subItems: [
-          'Bug fix: Maxed boosts are now correctly hidden in the UI and properly accounted for in calculations',
+          'Bug fix: Maxed boosts are now correctly hidden in the UI',
           'Fixed issue with boost dependencies not respecting maxed boosts from Maxed Boosts Modal'
         ]
       },
