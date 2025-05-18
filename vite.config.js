@@ -7,6 +7,7 @@ import Icons from 'unplugin-icons/vite'
 import IconsResolver from 'unplugin-icons/resolver'
 import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 // unplugin-vue-components
 import Components from 'unplugin-vue-components/vite'
@@ -18,6 +19,11 @@ export default defineConfig({
     tailwindcss(),
     wasm(),
     topLevelAwait(),
+    nodePolyfills({
+      globals: {
+        global: true
+      }
+    }),
 
     Components({
       resolvers: [

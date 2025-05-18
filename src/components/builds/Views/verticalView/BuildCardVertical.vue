@@ -99,14 +99,6 @@
         @close="showCodeModal = false"
       />
       
-      <BuildUploadDialog 
-        :show="showUploadDialog"
-        :build-data="buildData"
-        :hunter-color="hunterColor"
-        @close="showUploadDialog = false"
-        @uploaded="handleBuildUploaded"
-      />
-      
       <!-- Statistics Modal -->
       <StatisticsModal 
         :show="showDistributionModal" 
@@ -141,7 +133,6 @@ import { useRoute } from 'vue-router';
 import { useHunterStore } from '../../../../store/hunterStore';
 import { BuildCodeHandler } from '../../../../utils/BuildCodeHandler';
 import { useBuildEvaluation } from '../../../../composables/useBuildEvaluation';
-import BuildUploadDialog from '@/components/database/BuildUploadDialog.vue';
 
 // Unterkomponenten importieren
 import BuildHeader from './BuildHeader.vue';

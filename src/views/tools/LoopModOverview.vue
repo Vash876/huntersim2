@@ -36,34 +36,38 @@
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <div class="flex justify-between items-center mb-2">
                 <span class="font-medium text-white text-sm">MP Value (e)</span>
-                <TRValueControls
-                  v-model:value="mpValue"
-                  :min-value="3000"
-                  :max-value="15000"
-                  :step="10"
-                  :fast-step="100"
-                  :validateOnFinalOnly="true"
-                  value-class="text-amber-400 font-medium"
-                  @update:raw-value="handleMpValueRawUpdate"
-                  @finalize:value="handleMpValueFinalize"
-                />
+                <ToolValueControls
+  :value="mpValue"
+  :minValue="3000"
+  :maxValue="15000"
+  :step="10"
+  :fastStep="100"
+  :validateOnFinalOnly="true"
+  @update:value="handleMpValueUpdate"
+  @update:raw-value="(val) => mpValueRaw = val"
+  @finalize:value="finalizeMpValue"
+  value-class="text-amber-400 font-medium"
+  :autoEdit="true"
+  class="ml-2"
+/>
               </div>
               
               <div class="mt-3 flex items-center justify-between">
                 <span class="text-sm text-gray-300">MP Range</span>
                 <div class="flex items-center">
-                  <TRValueControls
-                    v-if="mpRangeEnabled"
-                    v-model:value="mpRange"
-                    :min-value="50"
-                    :max-value="1000"
-                    :step="10"
-                    :fast-step="100"
-                    :validateOnFinalOnly="true"
-                    class="ml-2"
-                    @update:raw-value="handleMpRangeRawUpdate"
-                    @finalize:value="handleMpRangeFinalize"
-                  />
+                  <ToolValueControls
+  :value="mpRange"
+  :minValue="50"
+  :maxValue="1000"
+  :step="10"
+  :fastStep="100"
+  :validateOnFinalOnly="true"
+  @update:value="handleMpRangeUpdate"
+  @update:raw-value="(val) => mpRangeRaw = val" 
+  @finalize:value="finalizeMpRange"
+  class="ml-2"
+  :autoEdit="true"
+/>
                 </div>
               </div>
             </div>
@@ -303,7 +307,7 @@ import {
   hasEnoughUltimaCap,
   getAllLoopMods
 } from '@/constants/loopMods.js';
-import TRValueControls from '@/composables/TRValueControls.vue';
+import ToolValueControls from '@/composables/ToolValueControls.vue';
 
 // State
 const isLoading = ref(true);
@@ -329,41 +333,44 @@ function toggleI753() {
   saveFilters();
 }
 
-function handleMpValueRawUpdate(value) {
-  mpValueRaw.value = value;
-}
+//////////////
 
-function handleMpRangeRawUpdate(value) {
-  mpRangeRaw.value = value;
-}
-
-// Event-Handler für finalisierte Werte
-function handleMpValueFinalize() {
-  let numValue = Number(mpValueRaw.value);
-  
-  // Validieren und begrenzen
-  numValue = Math.max(3000, Math.min(15000, numValue));
-  
-  // Aktualisiere den tatsächlichen Wert
-  mpValue.value = numValue;
-  mpValueRaw.value = numValue;
-  
-  // Speichere in localStorage
+function handleMpValueUpdate(newVal) {
+  // Bei Pfeilklicks sofort aktualisieren
+  mpValue.value = newVal;
+  mpValueRaw.value = newVal; // Raw-Wert synchronisieren
   saveFilters();
 }
 
-function handleMpRangeFinalize() {
-  let numValue = Number(mpRangeRaw.value);
-  
-  // Validieren und begrenzen
-  numValue = Math.max(50, Math.min(1000, numValue));
-  
-  // Aktualisiere den tatsächlichen Wert
-  mpRange.value = numValue;
-  mpRangeRaw.value = numValue;
-  
-  // Speichere in localStorage
+function handleMpRangeUpdate(newVal) {
+  // Bei Pfeilklicks sofort aktualisieren
+  mpRange.value = newVal;
+  mpRangeRaw.value = newVal; // Raw-Wert synchronisieren
   saveFilters();
+}
+
+function finalizeMpValue() {
+  // Konvertiere den Rohwert zu einer Zahl und validiere
+  const numValue = Number(mpValueRaw.value);
+  
+  // Validiere nur wenn der Wert eine gültige Zahl ist
+  if (!isNaN(numValue)) {
+    mpValue.value = Math.max(3000, Math.min(15000, numValue));
+    mpValueRaw.value = mpValue.value;
+    saveFilters();
+  }
+}
+
+function finalizeMpRange() {
+  // Konvertiere den Rohwert zu einer Zahl und validiere
+  const numValue = Number(mpRangeRaw.value);
+  
+  // Validiere nur wenn der Wert eine gültige Zahl ist
+  if (!isNaN(numValue)) {
+    mpRange.value = Math.max(50, Math.min(1000, numValue));
+    mpRangeRaw.value = mpRange.value;
+    saveFilters();
+  }
 }
 
 // Computed
@@ -504,8 +511,14 @@ function loadFilters() {
   try {
     const savedFilters = JSON.parse(localStorage.getItem('loopModOverview_filters') || '{}');
     
-    if (savedFilters.mpValue !== undefined) mpValue.value = savedFilters.mpValue;
-    if (savedFilters.mpRange !== undefined) mpRange.value = savedFilters.mpRange;
+    // Stelle sicher, dass die geladenen Werte keine null-Werte sind
+    if (savedFilters.mpValue !== undefined && savedFilters.mpValue !== null) {
+      mpValue.value = Number(savedFilters.mpValue);
+    }
+    
+    if (savedFilters.mpRange !== undefined && savedFilters.mpRange !== null) {
+      mpRange.value = Number(savedFilters.mpRange);
+    }
     if (savedFilters.mpRangeEnabled !== undefined) mpRangeEnabled.value = savedFilters.mpRangeEnabled;
     if (savedFilters.showTemp3 !== undefined) showTemp3.value = savedFilters.showTemp3;
     if (savedFilters.showI753 !== undefined) showI753.value = savedFilters.showI753;

@@ -160,7 +160,7 @@
                 <!-- Current Level Controls -->
                 <div>
                   <div class="text-xs text-gray-400 mb-1 uppercase">Current</div>
-                  <TRValueControls
+                  <ToolValueControls
                     :value="currentLevels[gadget.id] || 0"
                     :maxValue="999"
                     :minValue="0"
@@ -177,15 +177,16 @@
                 <!-- Target Level Controls -->
                 <div>
                   <div class="text-xs text-gray-400 mb-1 uppercase">Target</div>
-                  <TRValueControls
+                  <ToolValueControls
                     :value="targetLevels[gadget.id] || 0"
                     :maxValue="999"
                     :minValue="0"  
                     :step="1"
                     :fastStep="10"
                     :showFastControls="true"
+                    :validateOnFinalOnly="true"
                     @update:value="(newVal) => updateTargetLevel(gadget.id, newVal)"
-                    @blur="finalizeTargetLevel(gadget.id)"
+                    @finalize:value="(newVal) => finalizeTargetLevel(gadget.id, newVal)"
                     :valueClass="hasLevelChanges(gadget.id) ? 'text-green-400' : 'text-white'"
                     :tabIndex="getTabIndexForTargetLevel(gadget.id)"
                     :autoEdit="true"
@@ -254,7 +255,7 @@ import {
 import { useHunterStore } from '@/store/hunterStore';
 import { calcGadgetCostDifference, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import { shouldEvaluate } from '@/services/evaluationCacheService';
-import TRValueControls from '@/composables/TRValueControls.vue';
+import ToolValueControls from '@/composables/ToolValueControls.vue';
 
 // Stores
 const hunterStore = useHunterStore();
@@ -558,10 +559,21 @@ function updateCurrentLevel(gadgetId, newValue) {
 }
 
 function updateTargetLevel(gadgetId, newValue) {
-  // Wenn der Wert über dem Current-Level liegt oder das Input-Feld fokussiert ist
-  // (Benutzer tippt gerade), erlaube jede Eingabe
-  if (newValue >= (currentLevels.value[gadgetId] || 0) || document.activeElement.classList.contains('value-display')) {
-    // Aktualisiere den Ziel-Level ohne Validierung
+  // Prüfe, ob wir uns im Bearbeitungsmodus befinden - Prüfen auf <input> Element
+  const activeElement = document.activeElement;
+  const isEditing = activeElement.tagName.toLowerCase() === 'input';
+
+  // Konvertiere newValue zu einer Zahl (falls es ein String ist)
+  newValue = Number(newValue);
+  
+  // Wenn die Eingabe NaN ist, behalten wir den vorherigen Wert bei
+  if (isNaN(newValue)) {
+    return;
+  }
+  
+  // Wenn wir im Bearbeitungsmodus sind ODER der Wert größer/gleich dem Current ist
+  if (isEditing || newValue >= (currentLevels.value[gadgetId] || 0)) {
+    // Aktualisiere den Ziel-Level ohne weitere Validierung
     targetLevels.value[gadgetId] = newValue;
   } else {
     // Benutzer hat auf Minus-Button geklickt, aber Wert wäre unter Current
@@ -573,12 +585,29 @@ function updateTargetLevel(gadgetId, newValue) {
   saveGadgetLevels();
 }
 
-function finalizeTargetLevel(gadgetId) {
-  // Stelle bei Fokus-Verlust oder Enter-Taste sicher, dass der Wert nicht unter Current ist
-  const current = currentLevels.value[gadgetId] || 0;
+function finalizeTargetLevel(gadgetId, newVal = null) {
+  // Wenn ein Wert übergeben wurde, verwende diesen statt des bestehenden
+  if (newVal !== null) {
+    newVal = Number(newVal);
+    if (!isNaN(newVal)) {
+      // Stelle sicher, dass der Wert nicht unter Current ist
+      const current = currentLevels.value[gadgetId] || 0;
+      targetLevels.value[gadgetId] = Math.max(current, newVal);
+      saveGadgetLevels();
+      return;
+    }
+  }
   
-  // Validiere den Wert nach der Bearbeitung
-  targetLevels.value[gadgetId] = Math.max(current, targetLevels.value[gadgetId] || 0);
+  // Fallback zum bestehenden Verhalten
+  const current = currentLevels.value[gadgetId] || 0;
+  const target = targetLevels.value[gadgetId] || 0;
+  
+  // Validiere den Wert nach der Bearbeitung - stelle sicher, dass er eine Zahl ist
+  if (isNaN(target)) {
+    targetLevels.value[gadgetId] = current;
+  } else {
+    targetLevels.value[gadgetId] = Math.max(current, target);
+  }
   
   // Speichere die Werte
   saveGadgetLevels();
