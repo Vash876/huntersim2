@@ -108,6 +108,11 @@ const routes = [
     component: () => import('../views/tools/GadgetCalculator.vue'),
   },
   {
+    path: '/tools/loopmod-overview',
+    name: 'Loop Mod Overview',
+    component: () => import('../views/tools/LoopModOverview.vue'),
+  },
+  {
     path: '/tools/ultima-calculator',
     name: 'Ultima Calculator',
     component: () => import('../views/tools/UltimaCalculator.vue'),

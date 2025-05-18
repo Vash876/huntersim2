@@ -188,7 +188,16 @@ async function initChart() {
             beginAtZero: true,
             grid: {
               color: 'rgba(255, 255, 255, 0.05)'
-            }
+            },
+            // Explizit einzelne Achse erzwingen
+            type: 'linear',
+            position: 'left',
+            // Weitere Achsen deaktivieren
+            display: true,
+            // Stacking deaktivieren
+            stacked: false,
+            // ID eindeutig machen
+            id: 'y-axis-1'
           },
           x: {
             grid: {

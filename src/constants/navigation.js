@@ -14,6 +14,7 @@ import {
   IconCreditCard,
   IconClockFilled,
   IconCrane,
+  IconBoxModel,
 } from '@tabler/icons-vue';
 
 
@@ -85,6 +86,12 @@ export const NAVIGATION = {
       path: '/tools/gadget-calculator',
       icon: IconTool
     },
+    {
+      id: 'loopmodoverview',
+      name: 'Loop Mod Overview',
+      path: '/tools/loopmod-overview',
+      icon: IconBoxModel
+    },   
     {
       id: 'ultimatecalculator',
       name: 'Ultima Calculator',

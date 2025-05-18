@@ -276,7 +276,7 @@ function toggleSection(section) {
 /* Navigation Buttons */
 .nav-button {
   width: 25%;
-  padding: 0.5rem 0.25rem;
+  padding: 0.35rem 0.25rem;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -291,9 +291,15 @@ function toggleSection(section) {
   transition: transform 0.2s;
 }
 
+.nav-button .mx-auto {
+  margin-bottom: -2px; /* Negativer Abstand zum Text */
+}
+
 .nav-button.active .nav-button-inner {
   transform: translateY(-2px);
 }
+
+
 
 /* Aktiv-Indikator statt Border */
 .active-indicator {
@@ -309,7 +315,7 @@ function toggleSection(section) {
 /* Submenüs über der Navbar mit höherem z-index als Backdrop */
 .mobile-submenu {
   position: fixed;
-  bottom: 70px; /* Höhe der Navbar + Platz zum Trennen */
+  bottom: 60px; /* Höhe der Navbar + Platz zum Trennen */
   left: 0.75rem;
   right: 0.75rem;
   background-color: rgba(15, 23, 42, 0.95);

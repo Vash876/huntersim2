@@ -11,7 +11,7 @@
         <div class="header p-3 flex justify-between items-center">
           <h3 class="text-lg font-semibold text-white flex items-center">
             <IconAnchor size="18" class="mr-2 text-blue-400" />
-            Tessarect Production
+            Tesserect Production
           </h3>
           
           <button 
@@ -41,13 +41,13 @@
                   {{ build.name }}
                 </option>
               </select>
-              <p class="text-gray-400 text-xs mt-1">Select a Knox build to calculate Tessarect production</p>
+              <p class="text-gray-400 text-xs mt-1">Select a Knox build to calculate Tesserect production</p>
             </div>
             
             <!-- Daily Tessarect Rate -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <div class="flex justify-between items-center mb-1">
-                <span class="font-medium text-white text-sm">Tessarects per Day</span>
+                <span class="font-medium text-white text-sm">Tesserects per Day</span>
               </div>
               
               <div class="flex items-center bg-gray-800/80 py-2 px-3 rounded-lg border border-gray-700">
@@ -74,7 +74,7 @@
         <div class="p-2 sm:p-4">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-              <div class="text-gray-400 text-xs mb-0.5">Total Tessarects Cost</div>
+              <div class="text-gray-400 text-xs mb-0.5">Total Tesserects Cost</div>
               <div class="text-amber-400 font-bold text-lg">{{ formatGadgetCost(totalCost) }}</div>
             </div>
             
