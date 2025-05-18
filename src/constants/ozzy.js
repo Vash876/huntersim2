@@ -84,7 +84,7 @@ export const HUNTER_UPGRADES = {
   loopmods: ["scavenger2"],
   shardmilestones: ["m0"],
   researches: ["res81"],
-  cms: ["cm46", "cm47", "cm48"],
+  cms: ["cm46", "cm47", "cm48", "cm51"],
   diamondspecials: ["hunterloot", "reviveboost"],
   diamondcards: ["iridian"],	
   iap: ["travpack"],
@@ -170,6 +170,8 @@ export const EVAL_PARAMS = [
   "upgrades.cms.cm46",              // Construction Milestone 46
   "upgrades.cms.cm47",              // Construction Milestone 47
   "upgrades.cms.cm48",              // Construction Milestone 48
+  "upgrades.cms.cm51",              // Construction Milestone 51
+  
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -248,6 +250,7 @@ export const OVERRIDES = {
     "upgrades.cms.cm46",
     "upgrades.cms.cm47",
     "upgrades.cms.cm48",
+    "upgrades.cms.cm51",
   ],
 
   // Loopmods

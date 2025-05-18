@@ -47,7 +47,7 @@
               </div>
               
               <div class="mt-3 flex items-center justify-between">
-                <span class="text-sm text-gray-300">MP Range (±)</span>
+                <span class="text-sm text-gray-300">MP Range</span>
                 <div class="flex items-center">
                   <TRValueControls
                     v-if="mpRangeEnabled"
@@ -74,7 +74,7 @@
                   @click="toggleTemp3"
                   class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
                   :class="{
-                    'bg-purple-600': showTemp3,
+                    'bg-red-600': showTemp3,
                     'bg-gray-600': !showTemp3
                   }"
                 >
@@ -94,7 +94,7 @@
                   @click="toggleI753"
                   class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
                   :class="{
-                    'bg-teal-600': showI753,
+                    'bg-amber-600': showI753,
                     'bg-gray-600': !showI753
                   }"
                 >
@@ -243,13 +243,13 @@
                     <div class="flex flex-wrap gap-1">
                       <span 
                         v-if="mod.requiresTemp3" 
-                        class="px-1.5 py-0.5 text-xs bg-purple-900/50 text-purple-300 border border-purple-700 rounded"
+                        class="px-1.5 py-0.5 text-xs bg-red-900/50 text-red-300 border border-red-700 rounded"
                       >
                         Temp3
                       </span>
                       <span 
                         v-if="mod.requiresI753" 
-                        class="px-1.5 py-0.5 text-xs bg-teal-900/50 text-teal-300 border border-teal-700 rounded"
+                        class="px-1.5 py-0.5 text-xs bg-amber-900/50 text-amber-300 border border-amber-700 rounded"
                       >
                         i75-3
                       </span>
@@ -342,11 +342,11 @@ const filteredLoopMods = computed(() => {
       if (mpRangeEnabled.value && mpRange.value) {
         const range = Number(mpRange.value);
         result = result.filter(mod => 
-          mod.cost >= mpVal - range && 
+          mod.cost >= mpVal && // Diese Zeile wurde von mpVal - range zu einfach mpVal geändert
           mod.cost <= mpVal + range
         );
       } else {
-        result = result.filter(mod => mod.cost <= mpVal);
+        result = result.filter(mod => mod.cost >= mpVal); // Diese Zeile wurde von <= zu >= geändert
       }
     }
   }

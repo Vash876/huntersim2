@@ -591,6 +591,13 @@ export const UPGRADES = {
       value: 1.07,
       multitext: "Hunter Loot Rewards",
     },
+    {
+      id: "cm51",
+      name: "CM #51",
+      type: "boolean",
+      value: 1.05,
+      multitext: "Hunter Loot Rewards",
+    },
   ],
 
   ///////////////IAP////////////////

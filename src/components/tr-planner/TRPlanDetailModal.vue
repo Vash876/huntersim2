@@ -141,7 +141,9 @@
               <tbody class="divide-y divide-gray-700">
                 <!-- Erster TR -->
                 <tr class="bg-gray-750/20 hover:bg-gray-700/40 transition">
-                  <td class="px-4 py-2.5 font-medium">1</td>
+                  <td class="px-4 py-2.5 font-medium relative">
+                    1
+                  </td>
                   <td class="px-4 py-2.5">
                     {{ plan.updatedStats?.trCount || currentTrCount }} → {{ (plan.updatedStats?.trCount || currentTrCount) + 1 }}
                   </td>
@@ -169,7 +171,12 @@
                     :key="index"
                     class="bg-gray-750/20 hover:bg-gray-700/40 transition"
                   >
-                    <td class="px-4 py-2.5 font-medium">{{ index + 2 }}</td>
+                  <td class="px-4 py-2.5 font-medium relative">
+                    {{ index + 2 }}
+                    <span class="absolute right-0 top-1/2 -translate-y-1/2 mr-1">
+                      <InfoTooltip :content="getBoostListHtml(index + 1)" placement="right" />
+                    </span>
+                  </td>
                     <td class="px-4 py-2.5">
                       {{ (plan.updatedStats?.trCount || currentTrCount) + index + 1 }} → {{ (plan.updatedStats?.trCount || currentTrCount) + index + 2 }}
                     </td>
@@ -346,6 +353,7 @@ import {
   IconClock,
   IconCircle
 } from '@tabler/icons-vue';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
 
 const props = defineProps({
   isVisible: {
@@ -1145,6 +1153,108 @@ function getChainStartDate(index) {
   }
   
   return currentDate;
+}
+
+// Verbesserte Funktion für den Tooltip, die nur die Boosts anzeigt, 
+// die auch in der Boosts Progression Sektion erscheinen
+function getBoostListHtml(trIndex) {
+  // Erster TR oder Chain-TR?
+  const currentBoosts = trIndex === 0 
+    ? plan.value?.boosts || [] 
+    : plan.value?.trChain?.[trIndex-1]?.boosts || [];
+
+  // Rekursive Funktion, um den aktuellsten Wert eines Boosts vor diesem TR zu finden
+  function findMostRecentValue(boostKey, currentTrIndex) {
+    // Wenn wir beim ersten TR sind, verwenden wir die Startwerte aus den Stats
+    if (currentTrIndex === 0) {
+      // Verwende den Wert aus updatedStats oder currentStats
+      if (plan.value?.updatedStats && plan.value.updatedStats[boostKey] !== undefined) {
+        return plan.value.updatedStats[boostKey];
+      }
+      if (props.currentStats && props.currentStats[boostKey] !== undefined) {
+        return props.currentStats[boostKey];
+      }
+      return 0;
+    }
+    
+    // Für TR 1 (index 0) suchen wir direkt in den Boosts
+    if (currentTrIndex === 1) {
+      const boost = plan.value?.boosts?.find(b => b.key === boostKey);
+      if (boost) {
+        return boost.targetLevel;
+      }
+    } else {
+      // Für TR 2+ suchen wir in der Chain
+      const boost = plan.value?.trChain?.[currentTrIndex-2]?.boosts?.find(b => b.key === boostKey);
+      if (boost) {
+        return boost.targetLevel;
+      }
+    }
+    
+    // Wenn der Boost im aktuellen TR nicht gefunden wurde, suche im vorherigen TR
+    return findMostRecentValue(boostKey, currentTrIndex - 1);
+  }
+
+  // Finde nur Boosts, die in diesem TR tatsächlich verbessert werden
+  const improvedBoosts = [];
+  
+  for (const boost of currentBoosts) {
+    // Filtere wie in der allImprovedBoosts computed property:
+    // 1. Nur numerische Boosts betrachten
+    if (boost.type !== 'number') continue;
+    
+    // 2. Kategorien filtern, die nicht angezeigt werden sollen
+    const boostInfo = allBoosts.find(b => b.key === boost.key);
+    if (!boostInfo || boostInfo.category === 'time') continue;
+    
+    // 3. Rekursiv nach dem letzten bekannten Wert suchen
+    const actualStart = findMostRecentValue(boost.key, trIndex);
+    
+    // 4. Nur Boosts einbeziehen, die tatsächlich verbessert wurden
+    if (boost.targetLevel > actualStart) {
+      improvedBoosts.push({
+        ...boost,
+        actualStart: actualStart
+      });
+    }
+  }
+  
+  // Wenn keine Boosts verbessert wurden
+  if (improvedBoosts.length === 0) {
+    return '<div class="p-2 text-gray-400 text-xs">No boosts improved</div>';
+  }
+  
+  let html = '<div class="p-2">';
+  html += '<div class="text-sm font-medium text-white mb-2">Improved Boosts</div>';
+  html += `<div class="grid grid-cols-1 gap-1">`;
+  
+  // Sortieren nach prozentualem Wachstum
+  improvedBoosts.sort((a, b) => {
+    const aImprovement = (a.targetLevel - a.actualStart) / Math.max(1, a.actualStart);
+    const bImprovement = (b.targetLevel - b.actualStart) / Math.max(1, b.actualStart);
+    return bImprovement - aImprovement;
+  });
+  
+  // Einträge für jeden verbesserten Boost generieren
+  improvedBoosts.forEach(boost => {
+    const improvement = boost.targetLevel - boost.actualStart;
+    
+    html += `
+      <div class="flex items-center justify-between text-xs py-1 border-b border-gray-700">
+        <span class="font-medium text-gray-200 pr-3">${boost.label}</span>
+        <div class="flex items-center">
+          <span class="text-gray-400">${boost.actualStart}</span>
+          <span class="mx-1 text-gray-500">→</span>
+          <span class="text-blue-300 font-medium">${boost.targetLevel}</span>
+          <span class="ml-1 text-green-400">(+${improvement})</span>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `</div>`;
+  html += '</div>';
+  return html;
 }
 
 // Chart neu rendern, wenn sich die Projektionsdaten ändern

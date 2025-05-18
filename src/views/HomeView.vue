@@ -2,6 +2,39 @@
 const changelog = 
 [
   {
+    version: '2.3.6',
+    date: '2025-05-18',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'Tools Section:',
+        subItems: [
+          'Added Loop Mod Overview: A comprehensive tool to browse and filter endgame Loop Mods (Credits to Farns)',
+          'Loop Mods can be filtered by MP value with adjustable range to give you a quick overview of the Loop Mods you are going to get',
+        ]
+      },
+      {
+        text: 'Hunter Simulator:',
+        subItems: [
+          'Added new batch of Construction Milestones (#51)',
+        ]
+      },
+      {
+        text: 'TR Planner:',
+        subItems: [
+          'Added new batch of Construction Milestones (#49-#51)',
+          'Added tooltips to TR Details showing improved boosts for each TR',
+        ]
+      },
+      {
+        text: 'UI Fix:',
+        subItems: [
+          'Fixed TR Planner buttons being partially hidden behind mobile navigation bar on smartphones',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.3.5',
     date: '2025-05-07',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
@@ -16,7 +49,7 @@ const changelog =
       {
         text: 'Tools Section:',
         subItems: [
-          'Added Diamond Ultima Calculator',
+          'Added Diamond Ultima Calculator (Credits to Lamaredia)',
           'Relocated Gadget Calculator to Tools section and added Multiplier calculation for each gadget',
         ]
       },

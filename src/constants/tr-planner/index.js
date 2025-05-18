@@ -192,6 +192,36 @@ export const allBoosts = [
     tooltip: '0',
     multiplier: 1.04,
   },
+  {
+    key: 'cm49',
+    label: 'CM #49',
+    category: 'cm',
+    type: 'boolean',
+    orbcalc: true,
+    permanent: false,
+    tooltip: '0',
+    multiplier: 1.08,
+  },
+  {
+    key: 'cm50',
+    label: 'CM #50',
+    category: 'cm',
+    type: 'boolean',
+    orbcalc: true,
+    permanent: false,
+    tooltip: '0',
+    multiplier: 1.05,
+  },
+  {
+    key: 'cm51',
+    label: 'CM #51',
+    category: 'cm',
+    type: 'boolean',
+    orbcalc: true,
+    permanent: false,
+    tooltip: '0',
+    multiplier: 1.02,
+  },
 
   // Boon E
   {

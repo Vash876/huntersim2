@@ -95,7 +95,7 @@ export const LOOP_MOD_TEMPLATES = {
   "UR_Mastery": {
     baseName: "Ultima: Rule of Mastery",
     buffs: ["Mission Retention", "Mission EXP", "Mastery Bonuses"],
-    tier: "B"
+    tier: "A"
   },
   "UR_Perseverance": {
     baseName: "Ultima: Rule of Perseverance",
@@ -223,7 +223,7 @@ export const LOOP_MODS = [
   // Accumulative Level Growth Alpha (kompakte Darstellung aller Level)
   ...Array.from({ length: 25 }, (_, i) => {
     const level = 88 + i;
-    const requiresI753 = level >= 110;
+    const requiresI753 = level >= 109;
     return {
       type: "ALG_Alpha",
       level,
