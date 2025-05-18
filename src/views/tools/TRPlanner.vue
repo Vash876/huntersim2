@@ -6,7 +6,11 @@
       <div class="bg-gradient-to-r from-purple-900 to-gray-800 p-4 sm:p-5 border-b border-gray-600">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 class="text-2xl font-bold mb-1">TR Planner</h1>
+            <!-- Bild und Überschrift in einer Zeile -->
+            <div class="flex items-center mb-1">
+              <img src="@/assets/general/orbs.png" class="w-6 h-6 mr-2" alt="Orbs" />
+              <h1 class="text-2xl font-bold">TR Planner</h1>
+            </div>
             <p class="text-sm text-gray-300">Plan and optimize your Traversal Resets</p>
           </div>
           

@@ -1,4 +1,6 @@
 import { ref, computed, watch } from 'vue';
+// Importiere das Fragments-Icon
+import fragmentsIcon from '@/assets/general/fragments.png';
 
 /**
  * Composable zum dynamischen Laden von Hunter-spezifischen Loot-Icons
@@ -8,7 +10,9 @@ export function useLootIcons(hunterId) {
     mat1: null,
     mat2: null,
     mat3: null,
-    xp: null
+    xp: null,
+    // Füge das Fragments-Icon als Standard hinzu
+    frags: fragmentsIcon
   });
   
   // Dynamisch Icons laden basierend auf dem Hunter
@@ -19,7 +23,11 @@ export function useLootIcons(hunterId) {
       
       // Icons aus dem Modul extrahieren, falls vorhanden
       if (hunterModule.LOOT_ICONS) {
-        lootIcons.value = hunterModule.LOOT_ICONS;
+        // Merge die geladenen Icons mit dem Standard-Fragment-Icon
+        lootIcons.value = {
+          ...lootIcons.value,
+          ...hunterModule.LOOT_ICONS
+        };
       }
     } catch (error) {
       console.warn(`Could not load loot icons for hunter ${id}:`, error);
@@ -43,11 +51,16 @@ export function useLootIcons(hunterId) {
     mat1: lootIcons.value.mat1 || null,
     mat2: lootIcons.value.mat2 || null,
     mat3: lootIcons.value.mat3 || null,
-    xp: lootIcons.value.xp || null
+    xp: lootIcons.value.xp || null,
+    frags: lootIcons.value.frags // Füge das Fragment-Icon hinzu
   }));
   
   // Prüfen, ob ein Icon verfügbar ist
-  const hasIcon = (type) => !!lootIcons.value[type];
+  const hasIcon = (type) => {
+    // Fragment-Icon ist immer vorhanden
+    if (type === 'frags') return true;
+    return !!lootIcons.value[type];
+  };
   
   return {
     icons: iconUrls,

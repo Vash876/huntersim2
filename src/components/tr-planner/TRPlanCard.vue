@@ -55,19 +55,25 @@
         <!-- Duration -->
         <div class="stat-box">
           <div class="text-xs text-gray-400">Duration</div>
-          <div class="text-base font-semibold text-purple-400">{{ formatDuration }}</div>
+          <div class="text-base font-semibold text-green-400">{{ formatDuration }}</div>
         </div>
         
         <!-- Orb Gains -->
         <div class="stat-box">
           <div class="text-xs text-gray-400">Orb Gains</div>
-          <div class="text-base font-semibold text-green-400">{{ formatNumber(totalOrbGains) }}</div>
+          <div class="text-base font-semibold text-purple-300/80 flex items-center">
+            <img src="@/assets/general/orbs.png" class="w-4 h-4 mr-1" alt="Orbs" />
+            {{ formatNumber(totalOrbGains) }}
+          </div>
         </div>
         
         <!-- Frag Gains -->
         <div class="stat-box">
           <div class="text-xs text-gray-400">Frag Gains</div>
-          <div class="text-base font-semibold text-orange-400">{{ formatNumber(totalFragGains) }}</div>
+          <div class="text-base font-semibold text-orange-400 flex items-center">
+            <img src="@/assets/general/fragments.png" class="w-4 h-4 mr-1" alt="Fragments" />
+            {{ formatNumber(totalFragGains) }}
+          </div>
         </div>
       </div>
     </div>

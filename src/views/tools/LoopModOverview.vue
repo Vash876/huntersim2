@@ -42,7 +42,10 @@
                   :max-value="15000"
                   :step="10"
                   :fast-step="100"
+                  :validateOnFinalOnly="true"
                   value-class="text-amber-400 font-medium"
+                  @update:raw-value="handleMpValueRawUpdate"
+                  @finalize:value="handleMpValueFinalize"
                 />
               </div>
               
@@ -56,7 +59,10 @@
                     :max-value="1000"
                     :step="10"
                     :fast-step="100"
+                    :validateOnFinalOnly="true"
                     class="ml-2"
+                    @update:raw-value="handleMpRangeRawUpdate"
+                    @finalize:value="handleMpRangeFinalize"
                   />
                 </div>
               </div>
@@ -227,7 +233,12 @@
                   </td>
                   <td class="px-4 py-3 text-white font-medium">{{ mod.name }}</td>
                   <td class="px-4 py-3 text-gray-300">{{ mod.level }}</td>
-                  <td class="px-4 py-3 text-amber-400 font-medium">{{ mod.cost }}</td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center">
+                      <img src="@/assets/general/mp.png" class="w-4 h-4 mr-1.5" alt="MP" />
+                      <span class="text-amber-400 font-medium">{{ mod.cost }}</span>
+                    </div>
+                  </td>
                   <td class="px-4 py-3">
                     <div class="flex flex-wrap gap-1">
                       <span 
@@ -304,13 +315,10 @@ const showI753 = ref(false);
 const selectedUltimaCapUpgrades = ref([]);
 const sortBy = ref('cost');
 const sortDirection = ref('asc');
+const mpValueRaw = ref(mpValue.value);
+const mpRangeRaw = ref(mpRange.value);
 
 // Toggles für die Filter
-function toggleMPRange() {
-  mpRangeEnabled.value = !mpRangeEnabled.value;
-  saveFilters();
-}
-
 function toggleTemp3() {
   showTemp3.value = !showTemp3.value;
   saveFilters();
@@ -318,6 +326,43 @@ function toggleTemp3() {
 
 function toggleI753() {
   showI753.value = !showI753.value;
+  saveFilters();
+}
+
+function handleMpValueRawUpdate(value) {
+  mpValueRaw.value = value;
+}
+
+function handleMpRangeRawUpdate(value) {
+  mpRangeRaw.value = value;
+}
+
+// Event-Handler für finalisierte Werte
+function handleMpValueFinalize() {
+  let numValue = Number(mpValueRaw.value);
+  
+  // Validieren und begrenzen
+  numValue = Math.max(3000, Math.min(15000, numValue));
+  
+  // Aktualisiere den tatsächlichen Wert
+  mpValue.value = numValue;
+  mpValueRaw.value = numValue;
+  
+  // Speichere in localStorage
+  saveFilters();
+}
+
+function handleMpRangeFinalize() {
+  let numValue = Number(mpRangeRaw.value);
+  
+  // Validieren und begrenzen
+  numValue = Math.max(50, Math.min(1000, numValue));
+  
+  // Aktualisiere den tatsächlichen Wert
+  mpRange.value = numValue;
+  mpRangeRaw.value = numValue;
+  
+  // Speichere in localStorage
   saveFilters();
 }
 

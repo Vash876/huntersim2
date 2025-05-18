@@ -66,7 +66,7 @@
               <div class="w-full sm:w-1/4 p-2">
                 <div class="flex items-center">
                   <div class="bg-green-900/30 p-2 rounded-lg mr-3">
-                    <IconCircle size="20" class="text-green-400" />
+                    <img src="@/assets/general/orbs.png" class="w-5 h-5" alt="Orbs" />
                   </div>
                   <div>
                     <div class="text-xs text-gray-400">All-Time Orbs</div>
@@ -243,25 +243,25 @@
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <!-- Fragments (für Relics) -->
                 <div v-if="upgradeCosts.fragments > 0" 
-                     class="bg-gray-800/60 rounded border border-gray-700 p-1.5 flex items-center">
-                  <div class="w-3 h-3 rounded-full bg-purple-400 mr-2"></div>
+                    class="bg-gray-800/60 rounded border border-gray-700 p-1.5 flex items-center">
+                  <img src="@/assets/general/fragments.png" class="w-5 h-5 mr-2" alt="Fragments" />
                   <div class="text-xs font-medium text-white mr-1">Fragments:</div>
                   <div class="text-xs text-purple-400 ml-auto">{{ formatRelicCost(upgradeCosts.fragments) }}</div>
                 </div>
                 
                 <!-- Hellish-Biomatter (für Inscryptions) -->
                 <div v-if="upgradeCosts.hellishBiomatter > 0" 
-                     class="bg-gray-800/60 rounded border border-gray-700 p-1.5 flex items-center">
-                  <div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                    class="bg-gray-800/60 rounded border border-gray-700 p-1.5 flex items-center">
+                  <img src="@/assets/borge/loot_mat3.png" class="w-5 h-5 mr-2" alt="Hellish Biomatter" />
                   <div class="text-xs font-medium text-white mr-1">Hellish-Biomatter:</div>
                   <div class="text-xs text-red-400 ml-auto">{{ formatInscryptionCost(upgradeCosts.hellishBiomatter) }}</div>
                 </div>
                 
                 <!-- Tessarects (für Gadgets) -->
                 <div v-if="upgradeCosts.tessarects > 0" 
-                     class="bg-gray-800/60 rounded border border-gray-700 p-1.5 flex items-center">
-                  <div class="w-3 h-3 rounded-full bg-blue-400 mr-2"></div>
-                  <div class="text-xs font-medium text-white mr-1">Tessarects:</div>
+                    class="bg-gray-800/60 rounded border border-gray-700 p-1.5 flex items-center">
+                  <img src="@/assets/knox/loot_mat3.png" class="w-5 h-5 mr-2" alt="Tesseracts" />
+                  <div class="text-xs font-medium text-white mr-1">Tesseracts:</div>
                   <div class="text-xs text-blue-400 ml-auto">{{ formatGadgetCost(upgradeCosts.tessarects) }}</div>
                 </div>
               </div>
