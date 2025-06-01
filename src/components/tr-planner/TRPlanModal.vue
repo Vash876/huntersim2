@@ -988,11 +988,10 @@ function getLastStepResults() {
   
   // Boolean-Werte übernehmen
   Object.entries(lastStep.targetBools || {}).forEach(([key, value]) => {
-    if (value) {
-      stats[key] = 1;
-    }
+    // ALLE Boolean-Werte übertragen (auch false)
+    stats[key] = value ? 1 : 0;
   });
-  
+
   return stats;
 }
 
@@ -1013,17 +1012,58 @@ function addTRStep() {
     // Der letzte Schritt, dessen Werte wir übernehmen möchten
     const lastStep = trSteps[trSteps.length - 1];
     
+    // ✅ KORREKTUR: Research-Daten vom vorherigen Schritt übernehmen
+    if (lastStep.selectedResearches && lastStep.selectedResearches.length > 0) {
+      newStep.selectedResearches = [...lastStep.selectedResearches];
+    }
+    
+    if (lastStep.selectedLevels && Object.keys(lastStep.selectedLevels).length > 0) {
+      newStep.selectedLevels = JSON.parse(JSON.stringify(lastStep.selectedLevels));
+    }
+    
+    console.log("🔬 addTRStep: Debug Boolean-Übertragung:", {
+      lastStepTargetBools: lastStep.targetBools,
+      lastStepStats: Object.fromEntries(
+        Object.entries(lastStep.stats).filter(([key]) => 
+          allBoosts.some(b => b.type === 'boolean' && b.key === key)
+        )
+      ),
+      newStepStats: Object.fromEntries(
+        Object.entries(newStep.stats).filter(([key]) => 
+          allBoosts.some(b => b.type === 'boolean' && b.key === key)
+        )
+      )
+    });
+    
     // Für jeden vorgemerkten Boost das aktuelle Level als Ziel setzen
     uniqueSelectedBoosts.forEach(boostKey => {
       const boost = allBoosts.find(b => b.key === boostKey);
       if (boost) {
         if (boost.type === 'boolean') {
-          // KORREKTUR: Nicht-permanente Boolean-Boosts sollen den Zustand vom vorherigen TR übernehmen
-          // wenn sie markiert wurden, anstatt standardmäßig deaktiviert zu sein
-          const wasActiveInPreviousStep = lastStep.targetBools[boostKey] || false;
-          newStep.targetBools[boostKey] = wasActiveInPreviousStep;
+          // ✅ WICHTIGE KORREKTUR: Hier ist das Problem!
+          // Der Boolean-Wert ist bereits korrekt in newStep.stats,
+          // aber wir überschreiben ihn mit einer falschen Logik
+          
+          console.log(`🔄 Boolean-Boost ${boostKey} vor Verarbeitung:`, {
+            newStepStatsValue: newStep.stats[boostKey],
+            lastStepTargetBools: lastStep.targetBools[boostKey],
+            lastStepStats: lastStep.stats[boostKey]
+          });
+          
+          // ✅ KEINE ÄNDERUNG NÖTIG - der Wert ist bereits korrekt in newStep.stats!
+          // Entferne diese Logik komplett, da sie den korrekten Wert überschreibt
+          
         } else {
-          newStep.targetLevels[boostKey] = newStep.stats[boostKey] || 0;
+          // ✅ WICHTIG: Für numerische Boosts das aktuelle Level als Startwert setzen
+          const currentValue = newStep.stats[boostKey] || 0;
+          newStep.targetLevels[boostKey] = currentValue;
+          
+          // ✅ SPEZIALFALL: Bei Research Points den Wert explizit setzen
+          if (boostKey === 'research') {
+            const researchValue = lastStep.targetLevels['research'] || lastStep.stats['research'] || 0;
+            newStep.targetLevels['research'] = researchValue;
+            newStep.stats['research'] = researchValue;
+          }
         }
       }
     });
