@@ -507,6 +507,13 @@
             <IconShare size="16" />
           </button>
           <button 
+            @click="handleReevaluate"
+            class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            title="Re-evaluate Build"
+          >
+            <IconRefresh size="16" />
+          </button>
+          <button 
             @click="emit('archive', buildData)"
             class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             :title="buildData.isArchived ? 'Restore Build' : 'Archive Build'"

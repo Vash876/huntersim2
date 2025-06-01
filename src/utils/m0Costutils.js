@@ -12,7 +12,7 @@ import Decimal from 'break_infinity.js';
 const M0_COST_LOOKUP = [
   "0", // Level 0
   "0", // Level 1
-  "7",
+  "7", // Level 2
   "12",
   "26",
   "65",
