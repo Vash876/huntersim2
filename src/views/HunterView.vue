@@ -161,6 +161,7 @@
             @delete="deleteBuild"
             @evaluated="handleBuildEvaluated"
             @overridesBuild="openOverrideModal"
+            @reevaluate="handleBuildReevaluate"
           />
         </div>
       </template>
@@ -208,7 +209,7 @@
             @delete="deleteBuild"
             @evaluated="handleBuildEvaluated"
             @overridesBuild="openOverrideModal"
-            @reevaluate="(buildId) => onBuildReevaluate(buildId)"
+            @reevaluate="handleBuildReevaluate"
           />
         </div>
       </template>
@@ -257,7 +258,7 @@
             @delete="deleteBuild"
             @evaluated="handleBuildEvaluated"
             @overridesBuild="openOverrideModal"
-            @reevaluate="(buildId) => onBuildReevaluate(buildId)"
+            @reevaluate="handleBuildReevaluate"
           />
         </div>
       </template>
@@ -997,6 +998,26 @@ function handleBuildEvaluated({ buildId, results, isReference }) {
     // Erhöhe den Zähler, damit alle anderen Builds aktualisiert werden
     referenceUpdateCounter.value++;
   }
+}
+
+function handleBuildReevaluate(buildId) {
+  // Finde den Build-Namen für die Toast-Message
+  const build = builds.value.find(b => b.id === buildId);
+  const buildName = build?.name || 'unnamed';
+  
+  // Aktualisiere den Evaluation-State
+  evaluationResults.value = {
+    ...evaluationResults.value,
+    [buildId]: {
+      ...evaluationResults.value[buildId],
+      isLoading: true,
+      hasError: false,
+      progressIteration: 0
+    }
+  };
+  
+  // Toast Message anzeigen
+  showToastMessage(`Build "${buildName}" re-evaluated`, 'success');
 }
 
 // Füge auch die Funktion zum Aktualisieren der Display-Einstellungen hinzu

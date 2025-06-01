@@ -2,7 +2,7 @@
 export const boostCategories = [
   {
     id: 'time',
-    label: 'Time Related',
+    label: 'Time and Loop Mods',
   },
   {
     id: 'milestone',
@@ -89,7 +89,7 @@ export const allBoosts = [
   },
   {
     key: 'loopMods',
-    label: 'Loop Mods',
+    label: 'Loop Mods Count',
     category: 'time',
     type: 'number',
     orbcalc: true,
@@ -98,7 +98,17 @@ export const allBoosts = [
     fastControl: 1000,
     multiplier: 1,
   },
-
+  {
+    key: 'lmConsistency',
+    label: 'Ultima LM: Rule of Consistency',
+    category: 'time',
+    type: 'number',
+    orbcalc: true,
+    tooltip: '0',
+    normalControl: 1,
+    fastControl: 10,
+    multiplier: (value) => Math.pow(1.02, value),
+  },
   // Milestones
   {
     key: 'ms0',
@@ -392,7 +402,7 @@ export const allBoosts = [
     type: 'number',
     orbcalc: true,
     permanent: false,
-    tooltip: 'Type in your RP without e, e.g. 1e3000 = 3000. It will automatically calculate the multiplier of the 4 Researches.',
+    tooltip: 'Enter your Research Points without the "e" notation (e.g. 1e3000 = 3000). The system automatically calculates the multiplier from all available OO Researches based on your points.<br /><b>Expert Mode</b>: Use the settings icon ⚙️ to open the Research Selection modal where you can manually customize which researches and levels to include in your calculation.',
     normalControl: 100,
     fastControl: 1000,
     minRequirement: {

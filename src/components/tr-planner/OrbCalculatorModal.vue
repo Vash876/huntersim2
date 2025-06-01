@@ -584,6 +584,8 @@ import { formatMultiplier, formatNumber, parseNumberWithSuffix, formatSuffixNota
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
+import { getM0Cost, formatM0Cost, calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
+import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe } from '@/utils/loopModCostUtils';
 import { 
   calculateOrbRequirement, 
   calculateOrbGainsCalc, 
@@ -1814,7 +1816,7 @@ function finalizeAllTimeOrbsInput() {
     return formatInscryptionCost(totalCost);
   }
   
-  // FürGadgets
+  // Für Gadgets
   else if (boost.category === 'gadget') {
     // Gadget-Typ ermitteln
     let gadgetType = boost.key;
@@ -1826,6 +1828,17 @@ function finalizeAllTimeOrbsInput() {
       totalCost += getGadgetCost(gadgetType, level);
     }
     return formatGadgetCost(totalCost);
+  }
+
+  // Für Milestone #0 - SPEZIELLE BEHANDLUNG mit Decimal
+  if (boost.key === 'ms0') {
+    return calculateM0CostRangeSafe(currentLevel, targetLevel);
+  }
+
+  // Für Loop Mods - NEUE BEHANDLUNG
+  if (boost.key === 'lmConsistency') {
+    // Verwende den dafür definierten Loop Mod Namen aus der Konstante
+    return calculateLoopModCostRangeSafe(LOOP_MODS.RULE_OF_CONSISTENCY, currentLevel, targetLevel);
   }
   
   return '';

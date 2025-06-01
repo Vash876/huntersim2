@@ -15,6 +15,7 @@ import {
   IconClockFilled,
   IconCrane,
   IconBoxModel,
+  IconHexagon,
 } from '@tabler/icons-vue';
 
 
@@ -80,11 +81,23 @@ export const NAVIGATION = {
       path: '/tools/tr-planner',
       icon: IconClockFilled
     },
+    // {
+    //   id: 'gemplanner',
+    //   name: 'Gem Planner',
+    //   path: '/tools/gem-planner',
+    //   icon: IconZodiacGemini
+    // },
     {
       id: 'gadgetcalculator',
       name: 'Gadget Calculator',
       path: '/tools/gadget-calculator',
       icon: IconTool
+    },
+    {
+      id: 'tsplanner',
+      name: 'Trait Sphere Planner',
+      path: '/tools/ts-planner',
+      icon: IconHexagon
     },
     {
       id: 'loopmodoverview',

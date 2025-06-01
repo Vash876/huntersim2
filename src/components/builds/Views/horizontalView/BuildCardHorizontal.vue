@@ -117,7 +117,7 @@ const enabledStats = computed(() => {
   return displaySettings.value?.enabledStats || ['lootPerMin', 'avgStage', 'avgTime', 'stageDistribution'];
 });
 
-// Build-Evaluierung mit dem Composable - jetzt mit formattedBuildStats
+// Build-Evaluierung mit dem Composable
 const {
   isLoading,
   hasError,
@@ -138,13 +138,9 @@ const {
   getCurrentResults
 } = useBuildEvaluation(props, emit);
 
-// Neue Funktion: Modal schließen und bei Bedarf neu evaluieren
+// Modal schließen
 function closeStatsModal() {
   showDistributionModal.value = false;
-  // Nach dem Schließen den Build neu evaluieren
-  if (props.autoEvaluate) {
-    evaluateBuild(true); // force evaluation
-  }
 }
 
 // Handler für Upgrade-Vergleich

@@ -219,6 +219,8 @@ import { formatNumber } from '@/composables/format';
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
+import { getM0Cost, formatM0Cost, calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
+import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe } from '@/utils/loopModCostUtils';
 import { IconX, IconCopy, IconArrowRight } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -315,22 +317,6 @@ const categoryGroups = computed(() => {
   return result;
 });
 
-// Returns a CSS class based on the value
-function getValueClass(boost, value) {
-  if (boost.type === 'boolean') {
-    return value ? 'text-green-400' : 'text-gray-400';
-  }
-  
-  // For numeric boosts
-  if (boost.max !== undefined) {
-    if (value >= boost.max) return 'text-yellow-400'; // Max reached
-    if (value > 0) return 'text-green-400'; // Partial
-    return 'text-gray-400'; // Nothing
-  }
-  
-  return value > 0 ? 'text-green-400' : 'text-gray-400';
-}
-
 // Copy content to clipboard
 async function copyToClipboard() {
   if (!printableContent.value) return;
@@ -375,65 +361,89 @@ async function copyToClipboard() {
 }
 
 // Berechnet die Kosten für einen Boost
+// Berechnet die Kosten für einen Boost
 function getBoostCost(boost, currentValue, targetValue) {
   if (targetValue <= currentValue) return null; // Keine Kosten wenn kein Upgrade
   if (boost.type === 'boolean') return null; // Boolean-Boosts haben keine direkten Kosten
   
   // Bestimme den Boost-Typ basierend auf der Kategorie
   const category = boost.category;
+  let totalCost = 0;
   
   try {
+    // Spezialfall für Milestone #0
+    if (boost.key === 'ms0') {
+      return {
+        value: "m0-special",
+        formattedValue: calculateM0CostRangeSafe(currentValue, targetValue),
+        type: 'orbs'
+      };
+    }
+    
+    // Spezialfall für Loop Mods
+    if (boost.key === 'lmConsistency') {
+      return {
+        value: "loopmod-special",
+        formattedValue: calculateLoopModCostRangeSafe(LOOP_MODS.RULE_OF_CONSISTENCY, targetValue-1, targetValue),
+        type: 'loopmod'
+      };
+    }
+
     switch(category) {
       case 'relic':
-        // Berechne Relic-Kosten
+        // Berechne Relic-Kosten für jedes Level einzeln
         if (boost.key.startsWith('r')) {
+          for (let level = currentValue + 1; level <= targetValue; level++) {
+            totalCost += getRelicCost(boost.key, level);
+          }
           return {
-            value: getRelicCost(boost.key, targetValue),
-            formattedValue: formatRelicCost(getRelicCost(boost.key, targetValue)),
+            value: totalCost,
+            formattedValue: formatRelicCost(totalCost),
             type: 'fragments'
           };
         }
         break;
         
       case 'inscryption':
-        // Berechne Inscryption-Kosten
+        // Berechne Inscryption-Kosten für jedes Level einzeln
         if (boost.key.startsWith('i')) {
+          for (let level = currentValue + 1; level <= targetValue; level++) {
+            totalCost += getInscryptionCost(boost.key, level);
+          }
           return {
-            value: getInscryptionCost(boost.key, targetValue),
-            formattedValue: formatInscryptionCost(getInscryptionCost(boost.key, targetValue)),
+            value: totalCost,
+            formattedValue: formatInscryptionCost(totalCost),
             type: 'hellishBiomatter'
           };
         }
         break;
         
       case 'gadget':
-        // Berechne Gadget-Kosten
+        // Berechne Gadget-Kosten für jedes Level einzeln
         if (boost.key.startsWith('g') || boost.key === 'oogadget' || boost.key === 'campfragdet') {
+          // Gadget-Typ ermitteln
+          let gadgetType = boost.key;
+          // Spezielle Mapping für bestimmte Gadgets
+          if (boost.key === 'oogadget') gadgetType = 'g4';
+          if (boost.key === 'campfragdet') gadgetType = 'g14';
+          
+          for (let level = currentValue + 1; level <= targetValue; level++) {
+            totalCost += getGadgetCost(gadgetType, level);
+          }
+          
           return {
-            value: getGadgetCost(boost.key, targetValue),
-            formattedValue: formatGadgetCost(getGadgetCost(boost.key, targetValue)),
+            value: totalCost,
+            formattedValue: formatGadgetCost(totalCost),
             type: 'tessarects'
           };
         }
         break;
-      
-      // Für andere Kategorien könnten weitere Fallunterscheidungen hinzugefügt werden
     }
   } catch (e) {
     console.error(`Fehler bei der Kostenberechnung für ${boost.key}:`, e);
   }
   
   return null;
-}
-
-// Funktion, um die CSS-Klasse für Boost-Kosten zu bestimmen
-function getCostClass(costType) {
-  switch(costType) {
-    case 'fragments': return 'text-purple-400';
-    case 'hellishBiomatter': return 'text-red-400';
-    case 'tessarects': return 'text-blue-400';
-    default: return 'text-amber-400';
-  }
 }
 
 // Debug-Panel State

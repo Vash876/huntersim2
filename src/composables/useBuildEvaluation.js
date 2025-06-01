@@ -83,52 +83,13 @@ export function useBuildEvaluation(props, emit) {
   
   // Behandle manuelle Reevaluierungen
   async function handleReevaluate() {
-    try {
-      // Cache für diesen Build zurücksetzen
-      if (currentCacheKey.value) {
-        await EvaluationCacheService.clearCache(props.hunterId, currentCacheKey.value);
-        await EvaluationCacheService.invalidateCacheKey(props.hunterId, currentCacheKey.value);
-      }
+    evaluateBuild(true);
       
-      isLoading.value = true;
-      hasError.value = false;
-      progressIteration.value = 0;
-      
-      // Kurze Verzögerung für visuelle Rückmeldung
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Build neu evaluieren und explizit cachen
-      const evalResult = await evaluateBuild(true);
-      
-      // Stelle sicher, dass das Ergebnis im Cache gespeichert wird
-      if (evalResult && currentCacheKey.value) {
-        const newCacheKey = await EvaluationCacheService.generateCacheKey({
-          hunterId: props.hunterId,
-          buildData: props.buildData,
-          hunterStore
-        });
-        
-        await EvaluationCacheService.cacheResult({
-          hunterId: props.hunterId,
-          buildData: props.buildData,
-          hunterStore,
-          result: evalResult,
-          cacheKey: newCacheKey
-        });
-        
-        currentCacheKey.value = newCacheKey;
-      }
-      
-      // Zeige eine Bestätigung an
-      showToastMessage(`Build "${props.buildData.name || 'unnamed'}" re-evaluated`);
-      
-      // Emittiere reevaluate-Event
-      emit('reevaluate', props.buildId);
-    } catch (error) {
-      console.error('Error during re-evaluation:', error);
-      hasError.value = true;
-      isLoading.value = false;
-    }
+    // Zeige eine Bestätigung an
+    showToastMessage(`Build "${props.buildData.name || 'unnamed'}" re-evaluated`);
+    
+    // Emittiere reevaluate-Event
+    emit('reevaluate', props.buildId);
   }
   
   // Hauptfunktion: Build evaluieren mit Cache-Unterstützung

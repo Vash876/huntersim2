@@ -15,15 +15,15 @@ Math.max(0,(enemyNum - 379) * .006)+
 Math.max(0,(enemyNum - 389) * .007))*Math.pow(1.01,Math.max(0,enemyNum-350))
 
           var simEnemy = (enemyNum) => ({
-  maxHp: (11+6 * enemyNum) * multi(enemyNum)*Math.pow(2.9,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 48 : 1)*(enemyNum === 300 ? .94 : 1),
+  maxHp: (11+6 * enemyNum) * multi(enemyNum)*Math.pow(2.9,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 48 : 1)*(enemyNum === 300 ? .97 : 1),
   hp: 1,
-  atk: (1.35+ .75 * enemyNum) * multi(enemyNum)*Math.pow(2.7,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 3 : 1)*(enemyNum === 300 ? .94 : 1),
+  atk: (1.35+ .75 * enemyNum) * multi(enemyNum)*Math.pow(2.7,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 3 : 1)*(enemyNum === 300 ? .97 : 1),
   critRate: Math.min(.25,(.0994 + .0006 * enemyNum + (enemyNum>0 && enemyNum%100 === 0 ? .1 : 0))),
   critDmg: Math.min(2.5,1.03 + .008 * enemyNum),
   dr: (1-(enemyNum>=200?(Math.max(0,Math.floor((enemyNum-1)/100)-2))*.02+.04:0)) - (enemyNum>0 && enemyNum%100 === 0 ? .05 : 0),
   evade: enemyNum>=100?.01+.01*(Math.max(0,(Math.floor((enemyNum-1)/100))-1)):0,
   effect: enemyNum>=300?.04+.01*(Math.max(0,(Math.floor((enemyNum-1)/100))-3)) + (enemyNum>0 && enemyNum%100 === 0 ? .04 : 0):0,
-  regen: Math.max(0,-.08 +.1* (enemyNum) * multi(enemyNum)*Math.pow(1.25,Math.floor(Math.max(0,enemyNum-1)/100)))*(enemyNum>0 && enemyNum%100 === 0 ? 6 : 1)*(enemyNum === 300 ? .94 : 1),
+  regen: Math.max(0,-.08 +.1* (enemyNum) * multi(enemyNum)*Math.pow(1.25,Math.floor(Math.max(0,enemyNum-1)/100)))*(enemyNum>0 && enemyNum%100 === 0 ? 6 : 1)*(enemyNum === 300 ? .97 : 1),
   atkSpd: (3.2 - .004 * enemyNum)*(enemyNum>0 && enemyNum%100 === 0 ? 2.45 : 1),
   maxDps: 999*(1.35+ .75 * enemyNum) * multi(enemyNum)*Math.pow(2.7,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 3 : 1)*Math.min(2.5,1.03 + .008 * enemyNum)/(3.2 - .004 * enemyNum)
 });

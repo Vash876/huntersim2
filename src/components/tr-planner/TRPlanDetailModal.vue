@@ -264,6 +264,22 @@
                   <div class="text-xs font-medium text-white mr-1">Tesseracts:</div>
                   <div class="text-xs text-blue-400 ml-auto">{{ formatGadgetCost(upgradeCosts.tessarects) }}</div>
                 </div>
+
+                <!-- MP (für Loop Mods) -->
+                <div v-if="hasLoopModInPlan" 
+                    class="bg-gray-800/60 rounded border border-gray-700 p-1.5 flex items-center">
+                  <img src="@/assets/general/mp.png" class="w-5 h-5 mr-2" alt="MP" />
+                  <div class="text-xs font-medium text-white mr-1">MP:</div>
+                  <div class="text-xs text-red-400 ml-auto">{{ getLoopModCostDisplay() }}</div>
+                </div>
+
+                <!-- Shards (für m0) -->
+                <div v-if="upgradeCosts.shards > 0" 
+                    class="bg-gray-800/60 rounded border border-gray-700 p-1.5 flex items-center">
+                  <img src="@/assets/general/shards.png" class="w-5 h-5 mr-2" alt="Shards" />
+                  <div class="text-xs font-medium text-white mr-1">Shards:</div>
+                  <div class="text-xs text-blue-400 ml-auto">{{ upgradeCosts.shardsFormatted }}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -337,6 +353,8 @@ import { computed, ref, onMounted, watch, nextTick } from 'vue';
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
+import { getM0Cost, formatM0Cost, calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
+import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe } from '@/utils/loopModCostUtils';
 import { Chart, registerables } from 'chart.js';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { allBoosts } from '@/constants/tr-planner';
@@ -631,7 +649,7 @@ const allImprovedBoosts = computed(() => {
       if (boost.type === 'number') {
         // Prüfen, ob der Boost nicht zur Zeit-Kategorie gehört
         const boostInfo = boostsByKey[boost.key];
-        if (boostInfo && boostInfo.category !== 'time') {
+        if (boostInfo) {
           boostedStats.set(boost.key, {
             key: boost.key,
             label: boost.label || boost.key,
@@ -655,7 +673,7 @@ const allImprovedBoosts = computed(() => {
           } else if (boost.type === 'number') {
             // Falls ein Boost nur in der Chain auftaucht, aber nicht im ersten TR
             const boostInfo = boostsByKey[boost.key];
-            if (boostInfo && boostInfo.category !== 'time') {
+            if (boostInfo) {
               // Hier ist die Änderung: Hole den Startwert aus initialValues oder setze 0
               const startValue = initialValues[boost.key] || 0;
               
@@ -805,47 +823,51 @@ const significantBoosts = computed(() => {
     .slice(0, 5); // Top 5 Boosts mit der größten Steigerung
 });
 
-// Timeline-Segmente für die visuelle Darstellung
-const timelineSegments = computed(() => {
-  if (!plan.value || !planStartDate.value || !planEndDate.value) return [];
+// Prüfen, ob ein Loop Mod im Plan vorkommt
+const hasLoopModInPlan = computed(() => {
+  if (!plan.value) return false;
   
-  const segments = [];
-  const totalDuration = totalHoursInTR.value;
-  
-  if (totalDuration <= 0) return segments;
-  
-  // Erstes Segment für den ersten TR
-  let currentStartPercent = 0;
-  const firstSegmentWidth = (firstTrHours.value / totalDuration) * 100;
-  
-  segments.push({
-    trNumber: plan.value.updatedStats?.trCount + 1 || currentTrCount.value + 1,
-    startPercent: currentStartPercent,
-    widthPercent: firstSegmentWidth,
-    color: 'bg-blue-900/50'
-  });
-  
-  currentStartPercent += firstSegmentWidth;
-  
-  // Segmente für alle TRs in der Kette
-  if (plan.value.trChain && Array.isArray(plan.value.trChain)) {
-    plan.value.trChain.forEach((chainStep, index) => {
-      const hours = getChainTrHours(chainStep);
-      const widthPercent = (hours / totalDuration) * 100;
-      
-      segments.push({
-        trNumber: (plan.value.updatedStats?.trCount || currentTrCount.value) + index + 2,
-        startPercent: currentStartPercent,
-        widthPercent: widthPercent,
-        color: index % 2 === 0 ? 'bg-purple-900/50' : 'bg-indigo-900/50'
-      });
-      
-      currentStartPercent += widthPercent;
-    });
+  // Im ersten TR suchen
+  if (plan.value.boosts && plan.value.boosts.some(b => b.key === 'lmConsistency')) {
+    return true;
   }
   
-  return segments;
+  // In der TR-Chain suchen
+  if (plan.value.trChain) {
+    for (const chainStep of plan.value.trChain) {
+      if (chainStep.boosts && chainStep.boosts.some(b => b.key === 'lmConsistency')) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
 });
+
+// Loop Mod Kosten anzeigen
+function getLoopModCostDisplay() {
+  // Höchstes Loop Mod Level im Plan finden
+  let highestLevel = 0;
+  
+  // Im ersten TR suchen
+  if (plan.value.boosts) {
+    const lmBoost = plan.value.boosts.find(b => b.key === 'lmConsistency');
+    if (lmBoost) highestLevel = Math.max(highestLevel, lmBoost.targetLevel);
+  }
+  
+  // In der TR-Chain suchen
+  if (plan.value.trChain) {
+    for (const chainStep of plan.value.trChain) {
+      if (chainStep.boosts) {
+        const lmBoost = chainStep.boosts.find(b => b.key === 'lmConsistency');
+        if (lmBoost) highestLevel = Math.max(highestLevel, lmBoost.targetLevel);
+      }
+    }
+  }
+  
+  // Kosten für das höchste Level anzeigen
+  return calculateLoopModCostRangeSafe(LOOP_MODS.RULE_OF_CONSISTENCY, 0, highestLevel);
+}
 
 // Ermittle den Basis-All-Time-Orbs-Wert vor dem ersten TR
 const baseAllTimeOrbs = computed(() => {
@@ -1087,17 +1109,35 @@ const upgradeCosts = computed(() => {
   
   // Kosten nach Ressourcentyp gruppieren
   const costs = {
-    fragments: 0,      // Für Relics
+    fragments: 0,        // Für Relics
     hellishBiomatter: 0, // Für Inscryptions
-    tessarects: 0      // Für Gadgets
+    tessarects: 0,       // Für Gadgets
+    mp: 0,               // Für Loop Mods
+    shards: 0            // Für M0
   };
   
   // Kosten für jeden verbesserten Boost berechnen
   allImprovedBoosts.value.forEach(boost => {
     // Nur wenn tatsächlich ein Upgrade stattfindet
     if (boost.endValue > boost.startValue) {
+      // Spezialfall: M0 (kostet Shards)
+      if (boost.key === 'ms0') {
+        const costString = calculateM0CostRangeSafe(boost.startValue, boost.endValue);
+        // Setze auf 1 damit v-if="upgradeCosts.shards > 0" funktioniert
+        costs.shards = 1;  
+        // Speichere den formatierten String für die Anzeige
+        costs.shardsFormatted = costString;
+      } 
+      // Spezialfall: Loop Mods (kosten MP)
+      else if (boost.key === 'lmConsistency') {
+        const costString = calculateLoopModCostRangeSafe(LOOP_MODS.RULE_OF_CONSISTENCY, boost.startValue, boost.endValue);
+        // Setze auf 1 damit v-if="upgradeCosts.mp > 0" funktioniert
+        costs.mp = 1;
+        // Speichere den formatierten String für die Anzeige
+        costs.mpFormatted = costString;
+      }
       // Relics (kosten Fragments)
-      if (boost.category === 'relic') {
+      else if (boost.category === 'relic') {
         const relicId = `r${boost.key.replace('r', '')}`;
         for (let level = boost.startValue + 1; level <= boost.endValue; level++) {
           costs.fragments += getRelicCost(relicId, level);
@@ -1125,7 +1165,8 @@ const upgradeCosts = computed(() => {
   });
   
   // Prüfen ob überhaupt Kosten angefallen sind
-  if (costs.fragments === 0 && costs.hellishBiomatter === 0 && costs.tessarects === 0) {
+  if (costs.fragments === 0 && costs.hellishBiomatter === 0 && costs.tessarects === 0 &&
+      costs.mp === 0 && costs.shards === 0) {
     return null;
   }
   
@@ -1205,7 +1246,7 @@ function getBoostListHtml(trIndex) {
     
     // 2. Kategorien filtern, die nicht angezeigt werden sollen
     const boostInfo = allBoosts.find(b => b.key === boost.key);
-    if (!boostInfo || boostInfo.category === 'time') continue;
+    if (!boostInfo) continue;
     
     // 3. Rekursiv nach dem letzten bekannten Wert suchen
     const actualStart = findMostRecentValue(boost.key, trIndex);

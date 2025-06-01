@@ -58,6 +58,17 @@
           </div>
         </div>
       </div>
+      
+      <!-- ✅ REFRESH BUTTON - SEPARATER RECHTER BEREICH -->
+      <div class="flex-shrink-0 ml-4">
+        <button 
+          @click="emit('reevaluate', buildData)"
+          class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+          title="Re-evaluate Build"
+        >
+          <IconRefresh size="20" />
+        </button>
+      </div>
     </div>
     
     <!-- Untere Zeile: Aktionsleiste -->

@@ -37,37 +37,37 @@
               <div class="flex justify-between items-center mb-2">
                 <span class="font-medium text-white text-sm">MP Value (e)</span>
                 <ToolValueControls
-  :value="mpValue"
-  :minValue="3000"
-  :maxValue="15000"
-  :step="10"
-  :fastStep="100"
-  :validateOnFinalOnly="true"
-  @update:value="handleMpValueUpdate"
-  @update:raw-value="(val) => mpValueRaw = val"
-  @finalize:value="finalizeMpValue"
-  value-class="text-amber-400 font-medium"
-  :autoEdit="true"
-  class="ml-2"
-/>
+                  :value="mpValue"
+                  :minValue="3000"
+                  :maxValue="15000"
+                  :step="10"
+                  :fastStep="100"
+                  :validateOnFinalOnly="true"
+                  @update:value="handleMpValueUpdate"
+                  @update:raw-value="(val) => mpValueRaw = val"
+                  @finalize:value="finalizeMpValue"
+                  value-class="text-amber-400 font-medium"
+                  :autoEdit="true"
+                  class="ml-2"
+                />
               </div>
               
               <div class="mt-3 flex items-center justify-between">
                 <span class="text-sm text-gray-300">MP Range</span>
                 <div class="flex items-center">
                   <ToolValueControls
-  :value="mpRange"
-  :minValue="50"
-  :maxValue="1000"
-  :step="10"
-  :fastStep="100"
-  :validateOnFinalOnly="true"
-  @update:value="handleMpRangeUpdate"
-  @update:raw-value="(val) => mpRangeRaw = val" 
-  @finalize:value="finalizeMpRange"
-  class="ml-2"
-  :autoEdit="true"
-/>
+                    :value="mpRange"
+                    :minValue="50"
+                    :maxValue="1000"
+                    :step="10"
+                    :fastStep="100"
+                    :validateOnFinalOnly="true"
+                    @update:value="handleMpRangeUpdate"
+                    @update:raw-value="(val) => mpRangeRaw = val" 
+                    @finalize:value="finalizeMpRange"
+                    class="ml-2"
+                    :autoEdit="true"
+                  />
                 </div>
               </div>
             </div>

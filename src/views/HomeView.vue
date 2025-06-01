@@ -2,6 +2,49 @@
 const changelog = 
 [
   {
+    version: '2.4.0',
+    date: '2025-06-01',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'NEW: Trait Sphere Planner:',
+        subItems: [
+          'Added comprehensive Trait Sphere planning tool for optimizing Antimatter Core usage (Credits to Solanaceae)',
+          'Pre-built community strategy presets included (Thx for the help Caylris)',
+        ]
+      },
+      {
+        text: 'TR Planner Enhancements:',
+        subItems: [
+          'Added Research Multi-Select functionality for better planning',
+          'Individual research levels can now be selected/deselected for precise optimization',
+          'Added new Ultima Loop Mod: Rule of Consistency',
+          'Added Cost Calculation for Loop Mods and Shards (Ultima Loop Mod: Rule of Consistency and m0)',
+        ]
+      },
+      {
+        text: 'Hunter Simulator Updates:',
+        subItems: [
+          'Applied Ozzy Boss 300 nerf adjustments to match current game balance',
+          'Added a Re-Evaluate button to Hunter Simulator for quick recalculations',
+        ]
+      },
+      {
+        text: 'Loop Mod Overview Improvements:',
+        subItems: [
+          'Added some missing Loop Mods to the database for complete coverage',
+          'Changed some tier classifications',
+        ]
+      },
+      {
+        text: 'UI Fixes:',
+        subItems: [
+          'Fixed additional hidden button issues for mobile users',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.3.6',
     date: '2025-05-18',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',

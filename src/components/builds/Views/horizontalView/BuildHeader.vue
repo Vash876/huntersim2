@@ -107,6 +107,13 @@
         <IconShare size="16" />
       </button>
       <button 
+        @click="emit('reevaluate', buildData)"
+        class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+        title="Re-evaluate Build"
+      >
+        <IconRefresh size="16" />
+      </button>
+      <button 
         @click="emit('archive', buildData)"
         class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
         :title="buildData.isArchived ? 'Restore Build' : 'Archive Build'"
@@ -129,7 +136,7 @@ import { ref, nextTick, computed } from 'vue';
 import { 
   IconEdit, IconEditCircle, IconCopy, IconShare, IconArchive, 
   IconArchiveOff, IconTrash, IconGripVertical, 
-  IconAdjustmentsHorizontal, IconChartBar, IconScale
+  IconAdjustmentsHorizontal, IconChartBar, IconScale, IconRefresh
 } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -150,7 +157,7 @@ const props = defineProps({
 const emit = defineEmits([
   'edit', 'clone', 'archive', 'delete', 
   'overridesBuild', 'showCode', 'showDistribution',
-  'nameChanged', 'upgradeComparison'
+  'nameChanged', 'upgradeComparison', 'reevaluate'
 ]);
 
 // Name editing state

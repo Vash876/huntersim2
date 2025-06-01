@@ -209,12 +209,12 @@ export const LOOP_MOD_TEMPLATES = {
   "SOW_AP": {
     baseName: "Spoils of War: Sirene-6 AP Module",
     buffs: ["AP"],
-    tier: "B"
+    tier: "A"
   },
   "SOW_Mats": {
     baseName: "Spoils of War: Sirene-6 Mats Module",
     buffs: ["Mats"],
-    tier: "B"
+    tier: "S"
   }
 };
 
@@ -424,6 +424,7 @@ export const LOOP_MODS = [
              level === 105 ? 4780 :
              level === 106 ? 4870 :
              level === 107 ? 4960 :
+             level === 108 ? 5050 :
              level === 109 ? 5140 :
              level === 110 ? 5230 :
              level === 111 ? 5360 :
