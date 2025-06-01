@@ -457,7 +457,7 @@
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1 text-[0.6rem]',
-                            isSelected(2) ? 'text-green-300 font-medium' : 'text-green-400'
+                            isSelected(2) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromPlayerLevelMultiplier) }}
                           </td>
@@ -479,7 +479,7 @@
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1 text-[0.6rem]',
-                            isSelected(8) ? 'text-green-300 font-medium' : 'text-green-400'
+                            isSelected(8) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromResearchMultiplier) }}
                           </td>
@@ -501,7 +501,7 @@
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1 text-[0.6rem]',
-                            isSelected(15) ? 'text-green-300 font-medium' : 'text-green-400'
+                            isSelected(15) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromShipEvolutionsMultiplier) }}
                           </td>
@@ -523,7 +523,7 @@
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1 text-[0.6rem]',
-                            isSelected(16) ? 'text-green-300 font-medium' : 'text-green-400'
+                            isSelected(16) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromAchievementsMultiplier) }}
                           </td>
@@ -535,7 +535,7 @@
                             'py-0.5 px-1',
                             isSelected(19) ? 'text-yellow-300 font-medium' : 'text-gray-400'
                           ]">
-                            TS#19 {{ isSelected(19) ? '✓' : '' }}
+                            TS#19 
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1',
@@ -545,7 +545,7 @@
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1 text-[0.6rem]',
-                            isSelected(19) ? 'text-green-300 font-medium' : 'text-green-400'
+                            isSelected(19) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromPlayerLevelTS19Multiplier) }}
                           </td>
