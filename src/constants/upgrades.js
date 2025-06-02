@@ -499,12 +499,15 @@ export const UPGRADES = {
       id: 'creation',
       name: 'Creation Gem',
       type: 'level',
-      maxLevel: 3,
-      color: "red",
+      maxLevel: 4,
+      color: "orange",
       nodes: [
         { id: 'gem1', name: 'Creation Gem Node #1', type: 'boolean' },
         { id: 'gem2', name: 'Creation Gem Node #2', type: 'boolean' },
-        { id: 'gem3', name: 'Creation Gem Node #3', type: 'boolean' }
+        { id: 'gem3', name: 'Creation Gem Node #3', type: 'boolean' },
+        { id: 'borgeGU', name: 'Borge Stat Bonus', type: 'level', maxLevel: 50, minGemLevel: 4 },
+        { id: 'ozzyGU', name: 'Ozzy Stat Bonus', type: 'level', maxLevel: 50, minGemLevel: 4 },
+        { id: 'knoxGU', name: 'Knox Stat Bonus', type: 'level', maxLevel: 50, minGemLevel: 4 }
       ]
     },
     {

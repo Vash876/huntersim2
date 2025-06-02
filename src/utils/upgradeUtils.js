@@ -118,12 +118,6 @@ export function useBooleanToggle(store, category) {
 /**
  * Formatiert den Wert eines Upgrades basierend auf dem Typ und Format
  */
-/**
- * Formatiert den Wert eines Upgrades basierend auf dem Typ und Format
- */
-/**
- * Formatiert den Wert eines Upgrades basierend auf dem Typ und Format
- */
 export function formatUpgradeValue(upgrade, level) {
   // Frühe Rückgabe für Level 0 oder nicht-numerische Level
   if (level === 0 || isNaN(level)) return '-';

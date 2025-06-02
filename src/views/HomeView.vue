@@ -2,6 +2,27 @@
 const changelog = 
 [
   {
+    version: '2.4.1',
+    date: '2025-06-02',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'Hunter Simulator Updates:',
+        subItems: [
+          'Added new Creation 4 Gem Upgrades (Borge GU, Ozzy GU, Knox GU)',
+          'Implemented cost calculation for the new Gem Upgrades',
+          'Further Ozzy Boss 300 nerf adjustments',
+        ]
+      },
+      {
+        text: 'TR Planner:',
+        subItems: [
+          'Rolled back Research Points feature to previous version due to stability issues',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.4.0',
     date: '2025-06-01',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',

@@ -171,7 +171,7 @@ export const EVAL_PARAMS = [
   "upgrades.cms.cm47",              // Construction Milestone 47
   "upgrades.cms.cm48",              // Construction Milestone 48
   "upgrades.cms.cm51",              // Construction Milestone 51
-  
+  "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -277,7 +277,8 @@ export const OVERRIDES = {
 
   gemUpgrades: [
     "upgrades.gems_nodes.attraction_catchUp", // Catchup Power
-    "upgrades.gems_nodes.attraction_lootOzzy", 
+    "upgrades.gems_nodes.attraction_lootOzzy", // Loot (Ozzy)
+    "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
   ],
 
   // Gem Levels
@@ -376,6 +377,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gadgets.zaptron",  // Gadget (KORRIGIERT: von "hatch" zu "zaptron")
   "upgrades.diamondcards.iridian", // Diamond Card (KORRIGIERT: von "gaiden" zu "iridian")
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
+  "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
 ];
 
 export const STATS_RESULT_LABELS = [

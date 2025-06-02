@@ -88,7 +88,6 @@ export const HUNTER_UPGRADES = {
   diamondcards: ["gaiden"],
   iap: ["travpack"],
   ultima: ["ulti"],
-  // Weitere Kategorien für Borge
 };
 
 export const EVAL_PARAMS = [
@@ -177,11 +176,12 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.attraction_lootBorge", // Loot (Borge)
   "upgrades.diamondcards.gaiden",         // Diamond Card (Gaiden)
   "upgrades.researches.res81",            // Research#81
-  "iterations",                    // Anzahl der Iterationen (aus hunterIterations)  
+  "iterations",                   // Anzahl der Iterationen (aus hunterIterations)  
   "upgrades.cms.cm46",            // Construction Milestone #46
   "upgrades.cms.cm47",            // Construction Milestone #47
   "upgrades.cms.cm48",            // Construction Milestone #48
   "upgrades.cms.cm51",            // Construction Milestone #51
+  "upgrades.gems_nodes.creation_borgeGU",  // Borge Gem Upgrade
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -299,6 +299,7 @@ export const OVERRIDES = {
   gemUpgrades: [
     "upgrades.gems_nodes.attraction_catchUp", // Catchup Power
     "upgrades.gems_nodes.attraction_lootBorge", // Loot (Borge)
+    "upgrades.gems_nodes.creation_borgeGU", // Borge Gem Upgrade
   ],
 
   // Gem Levels
@@ -409,6 +410,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gadgets.wrench",   // Gadget (The Wrench of Gore)
   "upgrades.diamondcards.gaiden", // Diamond Card (Gaiden)
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
+  "upgrades.gems_nodes.creation_borgeGU", // Borge Gem Upgrade
 ];
 
 export const STATS_RESULT_LABELS = [

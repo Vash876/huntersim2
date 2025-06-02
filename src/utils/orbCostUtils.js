@@ -43,6 +43,39 @@ function calculateCatchUp(level) {
 }
 
 /**
+ * Borge Stat Bonus Kosten berechnen (Creation Gem Node)
+ * @param {number} level - Das aktuelle Level
+ * @returns {number} - Die berechneten Kosten
+ */
+function calculateBorgeGU(level) {
+  const baseValue = 100e9; // 100b = 100 * 10^9
+  const value = baseValue * Math.pow(10, level);
+  return Math.floor(value);
+}
+
+/**
+ * Ozzy Stat Bonus Kosten berechnen (Creation Gem Node)
+ * @param {number} level - Das aktuelle Level
+ * @returns {number} - Die berechneten Kosten
+ */
+function calculateOzzyGU(level) {
+  const baseValue = 1e6; // 1m = 1 * 10^6
+  const value = baseValue * Math.pow(10, level);
+  return Math.floor(value);
+}
+
+/**
+ * Knox Stat Bonus Kosten berechnen (Creation Gem Node)
+ * @param {number} level - Das aktuelle Level
+ * @returns {number} - Die berechneten Kosten
+ */
+function calculateKnoxGU(level) {
+  const baseValue = 100e9; // 100b = 100 * 10^9
+  const value = baseValue * Math.pow(10, level);
+  return Math.floor(value);
+}
+
+/**
  * Berechnet die Kosten für einen bestimmten Orb-Upgrade-Typ basierend auf dem Level
  * @param {string} upgradeType - Typ des Upgrades (lootBorge, lootOzzy, catchUp)
  * @param {number} level - Das Level
@@ -52,12 +85,21 @@ function getOrbCost(upgradeType, level) {
   if (level <= 0) return 0;
   
   switch (upgradeType) {
+    // ✅ ALTE UPGRADES: Berechnen Kosten für das aktuelle Level (Level 1 kostet was für Level 1 steht)
     case 'lootBorge':
-      return calculateLootBorge(level);
+      return calculateLootBorge(level - 1);
     case 'lootOzzy':
-      return calculateLootOzzy(level);
+      return calculateLootOzzy(level - 1);
     case 'catchUp':
-      return calculateCatchUp(level);
+      return calculateCatchUp(level - 1);
+    
+    // ✅ NEUE GU UPGRADES: Berechnen Kosten für das vorherige Level (Level 1 kostet was für Level 0 steht)
+    case 'borgeGU':
+      return calculateBorgeGU(level - 1);
+    case 'ozzyGU':
+      return calculateOzzyGU(level - 1);
+    case 'knoxGU':
+      return calculateKnoxGU(level - 1);
     default:
       console.error(`Unknown orb upgrade type: ${upgradeType}`);
       return 0;
@@ -66,7 +108,7 @@ function getOrbCost(upgradeType, level) {
 
 /**
  * Berechnet den Kostenunterschied zwischen zwei Levels eines Orb-Upgrades
- * @param {string} upgradeType - Typ des Upgrades (lootBorge, lootOzzy, catchUp)
+ * @param {string} upgradeType - Typ des Upgrades
  * @param {number} fromLevel - Das Ausgangslevel
  * @param {number} toLevel - Das Ziellevel
  * @returns {number} - Der Kostenunterschied (0 wenn toLevel <= fromLevel)
@@ -75,8 +117,9 @@ function calcOrbCostDifference(upgradeType, fromLevel, toLevel) {
   if (toLevel <= fromLevel) return 0;
   
   let totalCost = 0;
+  // ✅ ZURÜCK ZUR URSPRÜNGLICHEN LOGIK: fromLevel bis toLevel-1
   for (let i = fromLevel; i <= toLevel - 1; i++) {
-    const cost = getOrbCost(upgradeType, i);
+    const cost = getOrbCost(upgradeType, i + 1); // +1 weil wir die Kosten für das nächste Level wollen
     totalCost += cost;
   }
   return totalCost;
@@ -115,6 +158,18 @@ export function getLootOzzyCost(lvl) {
 
 export function getCatchUpCost(lvl) {
   return getOrbCost('catchUp', lvl);
+}
+
+export function getBorgeGUCost(lvl) {
+  return getOrbCost('borgeGU', lvl);
+}
+
+export function getOzzyGUCost(lvl) {
+  return getOrbCost('ozzyGU', lvl);
+}
+
+export function getKnoxGUCost(lvl) {
+  return getOrbCost('knoxGU', lvl);
 }
 
 // Hauptexporte

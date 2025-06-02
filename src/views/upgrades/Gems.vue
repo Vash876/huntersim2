@@ -19,7 +19,7 @@
           :class="{
             'border-red-800/50': gem.color === 'red',
             'border-blue-800/50': gem.color === 'blue',
-            'border-purple-800/50': gem.color === 'purple',
+            'border-orange-800/50': gem.color === 'orange',
             'border-yellow-800/50': gem.color === 'yellow',
             'border-gray-800/50': !gem.color || gem.color === 'gray'
           }"
@@ -80,95 +80,95 @@
               </div>
             </div>
             
-            <!-- Nodes Section -->
-            <div v-if="gem.nodes && gem.nodes.length > 0" class="space-y-4 mt-6">
-              <h4 class="text-white text-sm font-medium mb-2 border-b border-gray-700/40 pb-1">
-                Gem Nodes
-              </h4>
-              
-              <!-- Boolean Nodes -->
-              <div 
-                v-for="node in gem.nodes.filter(n => n.type === 'boolean')"
-                :key="`${gem.id}-${node.id}`"
-                class="flex justify-between items-center bg-gray-900/60 rounded-md p-3"
-              >
-                <div>
-                  <div class="text-sm font-medium text-white">{{ node.name }}</div>
-                  <div class="text-xs text-gray-400 mt-0.5">{{ node.effect }}</div>
-                </div>
-                
-                <!-- Toggle Switch -->
-                <div class="flex items-center">
-                  <button
-                    @click="toggleGemNode(gem, node)"
-                    class="relative inline-flex items-center cursor-pointer"
-                    :disabled="getGemLevel(gem) <= 0"
-                    :class="{ 'opacity-30 cursor-not-allowed': getGemLevel(gem) <= 0 }"
-                  >
-                    <div
-                      class="w-11 h-6 rounded-full transition-colors duration-200"
-                      :class="getNodeValue(gem, node) ? `bg-${gem.color}-600` : 'bg-gray-700'"
-                    ></div>
-                    <div
-                      class="absolute inset-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ease-in-out"
-                      :class="getNodeValue(gem, node) ? 'translate-x-5' : ''"
-                    ></div>
-                  </button>
-                </div>
-              </div>
-              
-              <!-- Level Nodes -->
-              <div
-                v-for="node in gem.nodes.filter(n => n.type === 'level')"
-                :key="`${gem.id}-${node.id}`"
-                class="bg-gray-900/60 rounded-md p-3"
-              >
-                <div class="flex justify-between items-center mb-2">
-                  <div>
-                    <div class="text-sm font-medium text-white">{{ node.name }}</div>
-                    <div class="text-xs text-gray-400 mt-0.5">{{ node.effect }}</div>
-                  </div>
-                  
-                  <!-- Level Controls -->
-                  <div class="flex items-center">
-                    <button
-                      @click="decreaseNodeLevel(gem, node)"
-                      class="flex justify-center items-center p-1 bg-gray-800 rounded-l border-r border-gray-700"
-                      :disabled="getNodeValue(gem, node) <= 0 || getGemLevel(gem) <= 0"
-                      :class="{ 'opacity-30 cursor-not-allowed': getNodeValue(gem, node) <= 0 || getGemLevel(gem) <= 0 }"
-                    >
-                      <IconChevronLeft size="16" />
-                    </button>
-                    
-                    <div class="px-3 py-1 bg-gray-800 text-center text-sm min-w-[40px]">
-                      {{ getNodeValue(gem, node) }}
-                    </div>
-                    
-                    <button
-                      @click="increaseNodeLevel(gem, node)"
-                      class="flex justify-center items-center p-1 bg-gray-800 rounded-r border-l border-gray-700"
-                      :disabled="getNodeValue(gem, node) >= node.maxLevel || getGemLevel(gem) <= 0"
-                      :class="{ 'opacity-30 cursor-not-allowed': getNodeValue(gem, node) >= node.maxLevel || getGemLevel(gem) <= 0 }"
-                    >
-                      <IconChevronRight size="16" />
-                    </button>
-                  </div>
-                </div>
-                
-                <!-- Node Progress Bar -->
-                <div class="w-full bg-gray-800 rounded-full h-1.5 mt-2">
-                  <div
-                    class="h-1.5 rounded-full transition-all duration-300 ease-out"
-                    :class="`bg-${gem.color}-500`"
-                    :style="`width: ${(getNodeValue(gem, node) / node.maxLevel) * 100}%`"
-                  ></div>
-                </div>
-                <div class="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>0</span>
-                  <span>Max: {{ node.maxLevel }}</span>
-                </div>
-              </div>
-            </div>
+<!-- Nodes Section -->
+<div v-if="gem.nodes && gem.nodes.length > 0" class="space-y-4 mt-6">
+  <h4 class="text-white text-sm font-medium mb-2 border-b border-gray-700/40 pb-1">
+    Gem Nodes
+  </h4>
+  
+  <!-- Boolean Nodes -->
+  <div 
+    v-for="node in gem.nodes.filter(n => n.type === 'boolean' && (!n.minGemLevel || getGemLevel(gem) >= n.minGemLevel))"
+    :key="`${gem.id}-${node.id}`"
+    class="flex justify-between items-center bg-gray-900/60 rounded-md p-3"
+  >
+    <div>
+      <div class="text-sm font-medium text-white">{{ node.name }}</div>
+      <div class="text-xs text-gray-400 mt-0.5">{{ node.effect }}</div>
+    </div>
+    
+    <!-- Toggle Switch -->
+    <div class="flex items-center">
+      <button
+        @click="toggleGemNode(gem, node)"
+        class="relative inline-flex items-center cursor-pointer"
+        :disabled="getGemLevel(gem) < (node.minGemLevel || 1)"
+        :class="{ 'opacity-30 cursor-not-allowed': getGemLevel(gem) < (node.minGemLevel || 1) }"
+      >
+        <div
+          class="w-11 h-6 rounded-full transition-colors duration-200"
+          :class="getNodeValue(gem, node) ? `bg-${gem.color}-600` : 'bg-gray-700'"
+        ></div>
+        <div
+          class="absolute inset-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ease-in-out"
+          :class="getNodeValue(gem, node) ? 'translate-x-5' : ''"
+        ></div>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Level Nodes -->
+  <div
+    v-for="node in gem.nodes.filter(n => n.type === 'level' && (!n.minGemLevel || getGemLevel(gem) >= n.minGemLevel))"
+    :key="`${gem.id}-${node.id}`"
+    class="bg-gray-900/60 rounded-md p-3"
+  >
+    <div class="flex justify-between items-center mb-2">
+      <div>
+        <div class="text-sm font-medium text-white">{{ node.name }}</div>
+        <div class="text-xs text-gray-400 mt-0.5">{{ node.effect }}</div>
+      </div>
+      
+      <!-- Level Controls -->
+      <div class="flex items-center">
+        <button
+          @click="decreaseNodeLevel(gem, node)"
+          class="flex justify-center items-center p-1 bg-gray-800 rounded-l border-r border-gray-700"
+          :disabled="getNodeValue(gem, node) <= 0 || getGemLevel(gem) < (node.minGemLevel || 1)"
+          :class="{ 'opacity-30 cursor-not-allowed': getNodeValue(gem, node) <= 0 || getGemLevel(gem) < (node.minGemLevel || 1) }"
+        >
+          <IconChevronLeft size="16" />
+        </button>
+        
+        <div class="px-3 py-1 bg-gray-800 text-center text-sm min-w-[40px]">
+          {{ getNodeValue(gem, node) }}
+        </div>
+        
+        <button
+          @click="increaseNodeLevel(gem, node)"
+          class="flex justify-center items-center p-1 bg-gray-800 rounded-r border-l border-gray-700"
+          :disabled="getNodeValue(gem, node) >= node.maxLevel || getGemLevel(gem) < (node.minGemLevel || 1)"
+          :class="{ 'opacity-30 cursor-not-allowed': getNodeValue(gem, node) >= node.maxLevel || getGemLevel(gem) < (node.minGemLevel || 1) }"
+        >
+          <IconChevronRight size="16" />
+        </button>
+      </div>
+    </div>
+    
+    <!-- Node Progress Bar -->
+    <div class="w-full bg-gray-800 rounded-full h-1.5 mt-2">
+      <div
+        class="h-1.5 rounded-full transition-all duration-300 ease-out"
+        :class="`bg-${gem.color}-500`"
+        :style="`width: ${(getNodeValue(gem, node) / node.maxLevel) * 100}%`"
+      ></div>
+    </div>
+    <div class="flex justify-between text-xs text-gray-500 mt-1">
+      <span>0</span>
+      <span>Max: {{ node.maxLevel }}</span>
+    </div>
+  </div>
+</div>
           </div>
         </div>
       </div>
@@ -228,12 +228,27 @@ function increaseGemLevel(gem) {
 function decreaseGemLevel(gem) {
   const currentLevel = getGemLevel(gem);
   if (currentLevel > 0) {
-    hunterStore.updateUpgrade(category, gem.id, currentLevel - 1);
+    const newLevel = currentLevel - 1;
+    hunterStore.updateUpgrade(category, gem.id, newLevel);
+    
+    // ✅ NEUE LOGIK: Nodes auf 0 setzen, die das neue Gem-Level nicht mehr erfüllen
+    if (gem.nodes && gem.nodes.length > 0) {
+      gem.nodes.forEach(node => {
+        if (node.minGemLevel && newLevel < node.minGemLevel) {
+          const currentNodeValue = getNodeValue(gem, node);
+          if (currentNodeValue > 0) {
+            console.log(`Resetting node ${node.name} to 0 because gem level ${newLevel} < required ${node.minGemLevel}`);
+            hunterStore.updateUpgrade(`${category}_nodes`, `${gem.id}_${node.id}`, 0);
+          }
+        }
+      });
+    }
   }
 }
 
 function toggleGemNode(gem, node) {
-  if (getGemLevel(gem) <= 0) return; // Gem muss aktiviert sein
+  // ✅ VERBESSERTE PRÜFUNG: Sowohl Gem-Level als auch Min-Gem-Level prüfen
+  if (getGemLevel(gem) < (node.minGemLevel || 1)) return;
   
   const currentValue = getNodeValue(gem, node);
   const newValue = currentValue > 0 ? 0 : 1;
@@ -241,7 +256,8 @@ function toggleGemNode(gem, node) {
 }
 
 function increaseNodeLevel(gem, node) {
-  if (getGemLevel(gem) <= 0) return; // Gem muss aktiviert sein
+  // ✅ VERBESSERTE PRÜFUNG: Sowohl Gem-Level als auch Min-Gem-Level prüfen
+  if (getGemLevel(gem) < (node.minGemLevel || 1)) return;
 
   const currentLevel = getNodeValue(gem, node);
   if (currentLevel < node.maxLevel) {
@@ -250,7 +266,8 @@ function increaseNodeLevel(gem, node) {
 }
 
 function decreaseNodeLevel(gem, node) {
-  if (getGemLevel(gem) <= 0) return; // Gem muss aktiviert sein
+  // ✅ VERBESSERTE PRÜFUNG: Sowohl Gem-Level als auch Min-Gem-Level prüfen
+  if (getGemLevel(gem) < (node.minGemLevel || 1)) return;
   
   const currentLevel = getNodeValue(gem, node);
   if (currentLevel > 0) {

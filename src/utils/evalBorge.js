@@ -1,4 +1,4 @@
-export function EVALBORGE(lvl,maxStage,hp,atk,regen,dr,evade,effect,critRate,critPower,aspd,revival,life,ua,impacts,omen,ll,pog,ultimaTalent,fow,ares,ylith,spartan,timeless,bfb,athena,baal,sensors,atlas,mino,helltouch,punches,weakspot,hermes,inhaler,gadget,iap,special,ultima,reviveCd,trample,scavengers,m0,r4,r7,r16,r19,i3,i4,i11,i13,i14,i23,i24,i27,i44,i60,i80,i84,i87,i88,i89,i91,creaGN1,creaGN2,creaGN3,innoGN3,attrGN2,attrGN3,attr,catchup99gu,lootgu,card,research81,iters, cm46,cm47,cm48,cm51) {
+export function EVALBORGE(lvl,maxStage,hp,atk,regen,dr,evade,effect,critRate,critPower,aspd,revival,life,ua,impacts,omen,ll,pog,ultimaTalent,fow,ares,ylith,spartan,timeless,bfb,athena,baal,sensors,atlas,mino,helltouch,punches,weakspot,hermes,inhaler,gadget,iap,special,ultima,reviveCd,trample,scavengers,m0,r4,r7,r16,r19,i3,i4,i11,i13,i14,i23,i24,i27,i44,i60,i80,i84,i87,i88,i89,i91,creaGN1,creaGN2,creaGN3,innoGN3,attrGN2,attrGN3,attr,catchup99gu,lootgu,card,research81,iters, cm46,cm47,cm48,cm51,creastat) {
   
   var multi = (enemyNum) => Math.max(1, 1 +
 Math.max(0,(enemyNum - 149) * .006)+
@@ -39,10 +39,10 @@ var ck = (chance) => {
 
 var getBaseStats = ()=>{
     return {
-        maxHp: (43+Number(i3)*6+Number(i27)*24+(2.5+Math.floor(hp/5)*.01)*hp)*gadgetMulti*(1+.03*r4)*(Boolean(card)?1.03:1)*(Boolean(creaGN1)?1.2:1)*(Boolean(creaGN2)?1.02:1)*(Boolean(creaGN3)?1+(Math.max(0,(Number(lvl)-39)*.015)):1)*(1+Number(i60)*.03)*(1+.05*Number(i84)),
-        hp: 43+(3+Math.floor(hp/5)*.06)*hp*gadgetMulti,
-        atk: (3+Number(i13)+2*Number(impacts)+(.5+Math.floor(atk/10)*.01)*atk)*gadgetMulti*(1+.03*r16)*(Boolean(innoGN3)?1.03:1)*(Boolean(card)?1.03:1)*(Boolean(creaGN2)?1.02:1)*(Boolean(creaGN3)?1+(Math.max(0,(Number(lvl)-39)*.01)):1)*(1+Number(i60)*.03)*Math.pow(1.05,Number(i87)),
-        regen: (.02+.04*Number(ylith)+(.03+Math.floor(regen/30)*.01)*regen)*gadgetMulti*(Boolean(card)?1.03:1)*(Boolean(creaGN2)?1.02:1)*(Boolean(creaGN3)?1+(Math.max(0,(Number(lvl)-39)*.005)):1),
+        maxHp: (43+Number(i3)*6+Number(i27)*24+(2.5+Math.floor(hp/5)*.01)*hp)*gadgetMulti*(1+.03*r4)*(Boolean(card)?1.03:1)*(Boolean(creaGN1)?1.2:1)*(Boolean(creaGN2)?1.02:1)*(Boolean(creaGN3)?1+(Math.max(0,(Number(lvl)-39)*.015)):1)*(1+Number(i60)*.03)*(1+.05*Number(i84))*crea4GUMulti,
+        hp: 43+(3+Math.floor(hp/5)*.06)*hp*gadgetMulti*crea4GUMulti,
+        atk: (3+Number(i13)+2*Number(impacts)+(.5+Math.floor(atk/10)*.01)*atk)*gadgetMulti*(1+.03*r16)*(Boolean(innoGN3)?1.03:1)*(Boolean(card)?1.03:1)*(Boolean(creaGN2)?1.02:1)*(Boolean(creaGN3)?1+(Math.max(0,(Number(lvl)-39)*.01)):1)*(1+Number(i60)*.03)*Math.pow(1.05,Number(i87))*crea4GUMulti,
+        regen: (.02+.04*Number(ylith)+(.03+Math.floor(regen/30)*.01)*regen)*gadgetMulti*(Boolean(card)?1.03:1)*(Boolean(creaGN2)?1.02:1)*(Boolean(creaGN3)?1+(Math.max(0,(Number(lvl)-39)*.005)):1)*crea4GUMulti,
         dr: .0144*dr+(Boolean(creaGN2)?.02:0)+Number(i24)*.004+Number(i91)*.002,
         evade: .0034*evade+.01,
         effect: .005*effect+.04+(Boolean(innoGN3)?.03:0)+(Boolean(creaGN2)?.02:0)+Number(i11)*.02+Number(i89)*.002,
@@ -54,6 +54,7 @@ var getBaseStats = ()=>{
 }
 var gadgetMulti = Math.pow(1.001,Number(gadget)) * Math.pow(1.02,Math.floor(Number(gadget)/10))
 var gadgetLootMulti = Math.pow(1.005,Number(gadget)) * Math.pow(1.02,Math.floor(Number(gadget)/10))
+var crea4GUMulti = 1 + Number(creastat) * 0.01; 
 var getBaseStatsRecord = ()=>{
     return {
         basehp: Number(hp),

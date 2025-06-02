@@ -1,4 +1,4 @@
-export function EVALKNOX(lvl,maxStage,hp,atk,regen,dr,block,effect,charge,chargeGain,reload,proj,revival,calyp,ua,ghost,omen,ll,pog,finish,kraken,amp,dead,sear,pirate,timeless,torpedos,charger,armory,elixer,reflect,gadget,iters,iap,special,ultima,glac,quartz,tess,reviveCd,respec,bossLootRate,iterative,glacRate1,quartzRate1,tessRate1,xpRate1,hp1,atk1,regen1,dr1,block1,effect1,charge1,chargeGain1,reload1,proj1,gadget1,lvl1,time1,research81,cm46,cm47,cm48,cm51) {
+export function EVALKNOX(lvl,maxStage,hp,atk,regen,dr,block,effect,charge,chargeGain,reload,proj,revival,calyp,ua,ghost,omen,ll,pog,finish,kraken,amp,dead,sear,pirate,timeless,torpedos,charger,armory,elixer,reflect,gadget,iters,iap,special,ultima,glac,quartz,tess,reviveCd,respec,bossLootRate,iterative,glacRate1,quartzRate1,tessRate1,xpRate1,hp1,atk1,regen1,dr1,block1,effect1,charge1,chargeGain1,reload1,proj1,gadget1,lvl1,time1,research81,cm46,cm47,cm48,cm51,creastat) {
 
   if(iterative && !lvl1){
     return 'Waiting for previous build'
@@ -52,11 +52,11 @@ var ck = (chance) => {
 
 var getBaseStats = ()=>{
     return {
-        maxHp: 20+(2+Math.floor(hp/5)*.1)*hp*gadgetMulti,
-        hp: 20+(2+Math.floor(hp/5)*.1)*hp*gadgetMulti,
-        atk: 1.2+(.06+Math.floor(atk/10)*.01)*atk*gadgetMulti,
+        maxHp: 20+(2+Math.floor(hp/5)*.1)*hp*gadgetMulti*crea4GUMulti,
+        hp: 20+(2+Math.floor(hp/5)*.1)*hp*gadgetMulti*crea4GUMulti,
+        atk: 1.2+(.06+Math.floor(atk/10)*.01)*atk*gadgetMulti*crea4GUMulti,
         salvo: 3+proj*1,
-        regen: .05+(.03+Math.floor(regen/30)*.02)*regen*gadgetMulti,
+        regen: .05+(.03+Math.floor(regen/30)*.02)*regen*gadgetMulti*crea4GUMulti,
         dr: .0032*dr,
         block: .0055*block+.08,
         effect: .0036*effect+.05,
@@ -68,6 +68,7 @@ var getBaseStats = ()=>{
 }
 var gadgetMulti = Math.pow(1.001,Number(gadget)) * Math.pow(1.02,Math.floor(Number(gadget)/10))
 var gadgetLootMulti = Math.pow(1.005,Number(gadget)) * Math.pow(1.02,Math.floor(Number(gadget)/10))
+var crea4GUMulti = 1 + Number(creastat) * 0.01; 
 var getBaseStatsRecord = ()=>{
     return {
         basehp: Number(hp),

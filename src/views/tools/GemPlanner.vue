@@ -6,7 +6,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 class="text-2xl font-bold">Gem Planner</h1>
-            <p class="text-sm text-gray-300">Plan und optimiere deine Gem-Upgrades und Nodes</p>
+            <p class="text-sm text-gray-300">Plan and optimize your Gem Upgrades</p>
           </div>
           
           <div class="flex space-x-2">
@@ -14,14 +14,14 @@
               @click="showStatsModal = true"
               class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm"
             >
-              Stats einstellen
+              Stats
             </button>
             
             <button 
               @click="resetPlanner"
               class="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors shadow-sm"
             >
-              Zurücksetzen
+              Reset
             </button>
           </div>
         </div>
@@ -120,55 +120,6 @@
       </div>
     </div>
     
-    <!-- Zusammenfassungskarten -->
-    <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <!-- Gesamtkosten -->
-      <div class="bg-gray-850 rounded-lg p-4 border border-gray-700 shadow-md">
-        <h3 class="text-lg font-semibold mb-2">Gesamtkosten</h3>
-        <div class="grid grid-cols-1 gap-2">
-          <div class="flex justify-between items-center">
-            <span>Gems:</span>
-            <span class="text-amber-400">{{ formatNumber(calculateTotalGemCost()) }}</span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span>Nodes:</span>
-            <span class="text-amber-400">{{ formatNumber(calculateTotalNodeCost()) }}</span>
-          </div>
-          <div class="border-t border-gray-700 mt-1 pt-1 flex justify-between items-center">
-            <span class="font-medium">Gesamt:</span>
-            <span class="text-amber-400 font-semibold">{{ formatNumber(calculateTotalGemCost() + calculateTotalNodeCost()) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- RP Bonus -->
-      <div class="bg-gray-850 rounded-lg p-4 border border-gray-700 shadow-md">
-        <h3 class="text-lg font-semibold mb-2 text-orange-400">RP Bonus</h3>
-        <div class="flex flex-col h-full justify-between">
-          <div class="text-2xl font-bold text-orange-400">×{{ formatMultiplier(calculateTotalRPBonus()) }}</div>
-          <div class="text-xs text-gray-400 mt-2">Von Gem-Upgrades und Nodes</div>
-        </div>
-      </div>
-
-      <!-- MP Bonus -->
-      <div class="bg-gray-850 rounded-lg p-4 border border-gray-700 shadow-md">
-        <h3 class="text-lg font-semibold mb-2 text-red-400">MP Bonus</h3>
-        <div class="flex flex-col h-full justify-between">
-          <div class="text-2xl font-bold text-red-400">×{{ formatMultiplier(calculateTotalMPBonus()) }}</div>
-          <div class="text-xs text-gray-400 mt-2">Von Gem-Upgrades und Nodes</div>
-        </div>
-      </div>
-
-      <!-- Shard Bonus -->
-      <div class="bg-gray-850 rounded-lg p-4 border border-gray-700 shadow-md">
-        <h3 class="text-lg font-semibold mb-2 text-blue-400">Shard Bonus</h3>
-        <div class="flex flex-col h-full justify-between">
-          <div class="text-2xl font-bold text-blue-400">×{{ formatMultiplier(calculateTotalShardBonus()) }}</div>
-          <div class="text-xs text-gray-400 mt-2">Von Gem-Upgrades und Nodes</div>
-        </div>
-      </div>
-    </div>
-
     <!-- Gem-Detail Modal -->
     <div 
       v-if="selectedGem"

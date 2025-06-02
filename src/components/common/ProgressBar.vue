@@ -68,6 +68,7 @@ const colorClass = computed(() => {
     case 'green': return 'bg-green-500';
     case 'yellow': return 'bg-yellow-500';
     case 'purple': return 'bg-purple-500';
+    case 'orange': return 'bg-orange-500';
     case 'brown': return 'bg-yellow-700';
     default: return 'bg-blue-500';
   }
@@ -80,6 +81,7 @@ const borderColorClass = computed(() => {
     case 'green': return 'border border-green-500/30';
     case 'yellow': return 'border border-yellow-500/30';
     case 'purple': return 'border border-purple-500/30';
+    case 'orange': return 'border border-orange-500/30';
     case 'brown': return 'border border-yellow-700/30';
     default: return 'border border-blue-500/30';
   }

@@ -1,4 +1,4 @@
-export function EVALOZZY(lvl,maxStage,hp,atk,regen,dr,evade,effect,multistrike,multistrikePower,aspd,revival,trickster,ua,thousandNeedles,omen,ll,crippling,ultimaTalent,echoBullets,lotl,exo,scorp,dod,cat,timeless,wings,exterm,medusa,scarab,vectid,snek,cod,dwd,sisters,gadget,iap,special,ultima,reviveCd,scavengers,m0,r4,r7,r17,i31,i32,i33,i36,i37,i40,i81,i86,i92,innoGN2,innoGN3,attrGN3,attr,catchup99gu,lootgu,card,research81,iters,useSeeded,cm46,cm47,cm48,cm51) {
+export function EVALOZZY(lvl,maxStage,hp,atk,regen,dr,evade,effect,multistrike,multistrikePower,aspd,revival,trickster,ua,thousandNeedles,omen,ll,crippling,ultimaTalent,echoBullets,lotl,exo,scorp,dod,cat,timeless,wings,exterm,medusa,scarab,vectid,snek,cod,dwd,sisters,gadget,iap,special,ultima,reviveCd,scavengers,m0,r4,r7,r17,i31,i32,i33,i36,i37,i40,i81,i86,i92,innoGN2,innoGN3,attrGN3,attr,catchup99gu,lootgu,card,research81,iters,cm46,cm47,cm48,cm51,creastat) {
   var multi = (enemyNum) => Math.max(1, 1 +
 Math.max(0,(enemyNum - 149) * .006)+
 Math.max(0,(enemyNum - 199) * .006)+
@@ -23,7 +23,7 @@ Math.max(0,(enemyNum - 389) * .007))*Math.pow(1.01,Math.max(0,enemyNum-350))
   dr: (1-(enemyNum>=200?(Math.max(0,Math.floor((enemyNum-1)/100)-2))*.02+.04:0)) - (enemyNum>0 && enemyNum%100 === 0 ? .05 : 0),
   evade: enemyNum>=100?.01+.01*(Math.max(0,(Math.floor((enemyNum-1)/100))-1)):0,
   effect: enemyNum>=300?.04+.01*(Math.max(0,(Math.floor((enemyNum-1)/100))-3)) + (enemyNum>0 && enemyNum%100 === 0 ? .04 : 0):0,
-  regen: Math.max(0,-.08 +.1* (enemyNum) * multi(enemyNum)*Math.pow(1.25,Math.floor(Math.max(0,enemyNum-1)/100)))*(enemyNum>0 && enemyNum%100 === 0 ? 6 : 1)*(enemyNum === 300 ? .94 : 1),
+  regen: Math.max(0,-.08 +.1* (enemyNum) * multi(enemyNum)*Math.pow(1.25,Math.floor(Math.max(0,enemyNum-1)/100)))*(enemyNum>0 && enemyNum%100 === 0 ? 6 : 1)*(enemyNum === 300 ? .97 : 1),
   atkSpd: (3.2 - .004 * enemyNum)*(enemyNum>0 && enemyNum%100 === 0 ? 2.45 : 1),
   maxDps: 999*(1.35+ .75 * enemyNum) * multi(enemyNum)*Math.pow(2.7,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 3 : 1)*Math.min(2.5,1.03 + .008 * enemyNum)/(3.2 - .004 * enemyNum)
 });
@@ -32,42 +32,17 @@ for(var i = 0;i<=1000;i++){
     enemies.push(simEnemy(i))
 }
 
-/*var ck;
-if (useSeeded) {
-  ck = (() => {
-    const s = new Uint32Array([123456789, 362436069, 521288629, 88675123]);
-    
-    return (chance) => {
-      if (!chance) return false;
-      
-      const result = (s[0] + s[3]) >>> 0;
-      
-      const t = s[1] << 9;
-      s[2] ^= s[0];
-      s[3] ^= s[1];
-      s[1] ^= s[2];
-      s[0] ^= s[3];
-      s[2] ^= t;
-      s[3] = ((s[3] << 11) | (s[3] >>> 21)) >>> 0;
-      
-      return chance > (result * 2.3283064365386963e-10);
-    };
-  })();
-} else {
-  ck = (chance) => {
-    return chance && chance > Math.random();
-  };
-}*/
 var ck = (chance) => {
   return chance && chance > Math.random()
 }
 
+
 var getBaseStats = ()=>{
     return {
-        maxHp: (16+(2+Math.floor(hp/5)*.03)*hp)*gadgetMulti*(1+.03*r4)*(Boolean(card)?1.03:1),
-        hp: 16+(2+Math.floor(hp/5)*.03)*hp*gadgetMulti,
-        atk: (2+(.3+Math.floor(atk/10)*.01)*atk)*gadgetMulti*(1+.03*r17)*(Boolean(innoGN3)?1.03:1)*(Boolean(card)?1.03:1),
-        regen: (.1+(.05+Math.floor(regen/30)*.01)*regen)*gadgetMulti*(Boolean(innoGN2)?1.25:1)*(Boolean(card)?1.03:1),
+        maxHp: (16+(2+Math.floor(hp/5)*.03)*hp)*gadgetMulti*(1+.03*r4)*(Boolean(card)?1.03:1)*crea4GUMulti,
+        hp: 16+(2+Math.floor(hp/5)*.03)*hp*gadgetMulti*crea4GUMulti,
+        atk: (2+(.3+Math.floor(atk/10)*.01)*atk)*gadgetMulti*(1+.03*r17)*(Boolean(innoGN3)?1.03:1)*(Boolean(card)?1.03:1)*crea4GUMulti,
+        regen: (.1+(.05+Math.floor(regen/30)*.01)*regen)*gadgetMulti*(Boolean(innoGN2)?1.25:1)*(Boolean(card)?1.03:1)*crea4GUMulti,
         dr: .0035*dr+.0111*Number(i37)+.002*Number(i86),
         evade: .0062*evade+.05,
         effect: .0035*effect+.04+.006*Number(i31)+.002*Number(i92),
@@ -77,8 +52,12 @@ var getBaseStats = ()=>{
         baseStats: `${hp}/${atk}/${regen} ${dr}/${evade}/${effect} ${multistrike}/${multistrikePower}/${aspd}`
     }
 }
+
 var gadgetMulti = Math.pow(1.001,Number(gadget)) * Math.pow(1.02,Math.floor(Number(gadget)/10))
 var gadgetLootMulti = Math.pow(1.005,Number(gadget)) * Math.pow(1.02,Math.floor(Number(gadget)/10))
+var crea4GUMulti = 1 + Number(creastat) * 0.01; 
+
+
 var getBaseStatsRecord = ()=>{
     return {
         basehp: Number(hp),

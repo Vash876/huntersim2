@@ -369,19 +369,34 @@
                         
                         <!-- Numeric Type Controls -->
                         <div v-else class="flex items-center justify-end min-w-[80px]">
-                          <TRValueControls
-                            :value="getTargetLevel(step.id, boost.key)"
-                            :minValue="stepIndex === 0 ? 0 : (boost.permanent ? getPreviousStepLevel(stepIndex, boost.key) : 0)"  
-                            :maxValue="boost.max || 999999"
-                            :showFastControls="true"
-                            :step="boost.normalControl || 1"
-                            :fastStep="boost.fastControl || 10"
-                            :valueClass="'text-white'"
-                            :autoEdit="true"
-                            :disabled="!isBoostAvailable(boost, step)"
-                            :buttonClass="isBoostAvailable(boost, step) ? '' : 'opacity-50 cursor-not-allowed'"
-                            @update:value="(newVal) => isBoostAvailable(boost, step) && updateTargetLevel(step.id, boost.key, newVal)"
-                          />
+                          <div class="bg-gray-750/60 rounded-md p-2" 
+                              v-if="boost.key === 'research'">
+                              <ResearchMultiSelect
+                                :model-value="getTargetLevel(step.id, boost.key)"
+                                :selected-researches="step.selectedResearches || []"
+                                :selected-levels="step.selectedLevels || {}"
+                                @update:model-value="(newVal) => updateTargetLevel(step.id, boost.key, newVal)"
+                                @update:selected-researches="updateSelectedResearches(step, $event)"
+                                @update:selected-levels="updateSelectedLevels(step, $event)"
+                              />
+                          </div>
+
+                          <!-- Standardeingabefeld für alle anderen Boosts -->
+                          <div v-else>
+                            <TRValueControls
+                              :value="getTargetLevel(step.id, boost.key)"
+                              :minValue="stepIndex === 0 ? 0 : (boost.permanent ? getPreviousStepLevel(stepIndex, boost.key) : 0)"  
+                              :maxValue="boost.max || 999999"
+                              :showFastControls="true"
+                              :step="boost.normalControl || 1"
+                              :fastStep="boost.fastControl || 10"
+                              :valueClass="'text-white'"
+                              :autoEdit="true"
+                              :disabled="!isBoostAvailable(boost, step)"
+                              :buttonClass="isBoostAvailable(boost, step) ? '' : 'opacity-50 cursor-not-allowed'"
+                              @update:value="(newVal) => isBoostAvailable(boost, step) && updateTargetLevel(step.id, boost.key, newVal)"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -600,10 +615,13 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, nextTick, onBeforeUnmount } from 'vue';
 import { useNow } from '@vueuse/core';
-import { allBoosts, boostsByCategory, generalStats, alwaysUpdateKeys } from '@/constants/tr-planner';
+import { allBoosts, boostsByCategory, generalStats, alwaysUpdateKeys, researchData } from '@/constants/tr-planner';
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
+import { getM0Cost, formatM0Cost, calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
+import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe } from '@/utils/loopModCostUtils';
+import ResearchMultiSelect from './ResearchMultiSelect.vue';
 import TRUpdateModal from './TRUpdateModal.vue';
 import TRValueControls from '@/composables/TRValueControls.vue';
 import AlertDialog from '@/components/common/AlertDialog.vue';
@@ -642,7 +660,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['close', 'save', 'openUpdate', 'openNewPlan']);
+const emit = defineEmits(['close', 'save', 'openUpdate', 'openNewPlan', 'updateCurrentStats']);
 
 // Pinia Store als ref einrichten
 const trPlannerStore = useTRPlannerStore();
@@ -666,11 +684,13 @@ function captureOriginalState() {
     allTimeOrbs: allTimeOrbs.value,
     trStartDate: trStartDate.value,
     trStartTime: trStartTime.value,
-    // Tiefe Kopie der trSteps machen (nur relevante Daten)
+    // ✅ WICHTIGE KORREKTUR: Auch Research-Daten erfassen
     trSteps: trSteps.map(step => ({
       targetLevels: {...step.targetLevels},
       targetBools: {...step.targetBools},
-      selectedForNextTR: [...step.selectedForNextTR]
+      selectedForNextTR: [...step.selectedForNextTR],
+      selectedResearches: [...(step.selectedResearches || [])],
+      selectedLevels: {...(step.selectedLevels || {})}
     }))
   };
   
@@ -678,6 +698,7 @@ function captureOriginalState() {
   hasUnsavedChanges.value = false;
 }
 
+// Funktion zum Prüfen, ob sich etwas geändert hat
 // Funktion zum Prüfen, ob sich etwas geändert hat
 function checkForChanges() {
   if (!originalState.value || !props.isVisible) return;
@@ -704,8 +725,8 @@ function checkForChanges() {
     const originalStep = originalState.value.trSteps[i];
     
     // Prüfe targetLevels
-    const currentTargetLevelsKeys = Object.keys(currentStep.targetLevels);
-    const originalTargetLevelsKeys = Object.keys(originalStep.targetLevels);
+    const currentTargetLevelsKeys = Object.keys(currentStep.targetLevels || {});
+    const originalTargetLevelsKeys = Object.keys(originalStep.targetLevels || {});
     
     if (currentTargetLevelsKeys.length !== originalTargetLevelsKeys.length) {
       hasUnsavedChanges.value = true;
@@ -720,8 +741,8 @@ function checkForChanges() {
     }
     
     // Prüfe targetBools
-    const currentTargetBoolsKeys = Object.keys(currentStep.targetBools);
-    const originalTargetBoolsKeys = Object.keys(originalStep.targetBools);
+    const currentTargetBoolsKeys = Object.keys(currentStep.targetBools || {});
+    const originalTargetBoolsKeys = Object.keys(originalStep.targetBools || {});
     
     if (currentTargetBoolsKeys.length !== originalTargetBoolsKeys.length) {
       hasUnsavedChanges.value = true;
@@ -732,6 +753,51 @@ function checkForChanges() {
       if (currentStep.targetBools[key] !== originalStep.targetBools[key]) {
         hasUnsavedChanges.value = true;
         return;
+      }
+    }
+    
+    // ✅ NEUE PRÜFUNG: selectedResearches
+    const currentResearches = currentStep.selectedResearches || [];
+    const originalResearches = originalStep.selectedResearches || [];
+    
+    if (currentResearches.length !== originalResearches.length) {
+      hasUnsavedChanges.value = true;
+      return;
+    }
+    
+    for (let j = 0; j < currentResearches.length; j++) {
+      if (currentResearches[j] !== originalResearches[j]) {
+        hasUnsavedChanges.value = true;
+        return;
+      }
+    }
+    
+    // ✅ NEUE PRÜFUNG: selectedLevels
+    const currentLevels = currentStep.selectedLevels || {};
+    const originalLevels = originalStep.selectedLevels || {};
+    
+    const currentLevelKeys = Object.keys(currentLevels);
+    const originalLevelKeys = Object.keys(originalLevels);
+    
+    if (currentLevelKeys.length !== originalLevelKeys.length) {
+      hasUnsavedChanges.value = true;
+      return;
+    }
+    
+    for (const key of currentLevelKeys) {
+      const currentArray = currentLevels[key] || [];
+      const originalArray = originalLevels[key] || [];
+      
+      if (currentArray.length !== originalArray.length) {
+        hasUnsavedChanges.value = true;
+        return;
+      }
+      
+      for (let j = 0; j < currentArray.length; j++) {
+        if (currentArray[j] !== originalArray[j]) {
+          hasUnsavedChanges.value = true;
+          return;
+        }
       }
     }
     
@@ -862,9 +928,39 @@ function createNewTRStep() {
     id: `step_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
     targetLevels: {},
     targetBools: {},
-    selectedForNextTR: ['hoursInTR'], // hoursInTR ist immer vorausgewählt
-    stats: { ...getLastStepResults() }  // Übernimmt Stats vom letzten Schritt
+    selectedForNextTR: ['hoursInTR'],
+    selectedResearches: [], // ✅ Research IDs
+    selectedLevels: {},     // ✅ Research Level Details
+    stats: { ...getLastStepResults() }
   };
+}
+
+function updateSelectedLevels(step, newSelectedLevels) {
+  console.log("🔬 TRPlanModal: updateSelectedLevels called", {
+    stepId: step.id,
+    newSelectedLevels: newSelectedLevels,
+    oldSelectedLevels: step.selectedLevels,
+    stepObject: step
+  });
+  
+  // ✅ Stelle sicher, dass die Property existiert
+  if (!step.selectedLevels) {
+    step.selectedLevels = {};
+  }
+  
+  // ✅ Sichere Zuweisung mit Vue 3 Reactivity
+  step.selectedLevels = { ...newSelectedLevels };
+  
+  console.log("🔬 After assignment:", step.selectedLevels);
+  
+  // Trigger Neuberechnung
+  const stepIndex = trSteps.findIndex(s => s.id === step.id);
+  if (stepIndex !== -1) {
+    nextTick(() => {
+      updateFollowingStepsStats(stepIndex);
+      checkForChanges();
+    });
+  }
 }
 
 // Funktion zum Abrufen der Ergebnis-Stats des letzten Schritts
@@ -892,11 +988,10 @@ function getLastStepResults() {
   
   // Boolean-Werte übernehmen
   Object.entries(lastStep.targetBools || {}).forEach(([key, value]) => {
-    if (value) {
-      stats[key] = 1;
-    }
+    // ALLE Boolean-Werte übertragen (auch false)
+    stats[key] = value ? 1 : 0;
   });
-  
+
   return stats;
 }
 
@@ -917,17 +1012,58 @@ function addTRStep() {
     // Der letzte Schritt, dessen Werte wir übernehmen möchten
     const lastStep = trSteps[trSteps.length - 1];
     
+    // ✅ KORREKTUR: Research-Daten vom vorherigen Schritt übernehmen
+    if (lastStep.selectedResearches && lastStep.selectedResearches.length > 0) {
+      newStep.selectedResearches = [...lastStep.selectedResearches];
+    }
+    
+    if (lastStep.selectedLevels && Object.keys(lastStep.selectedLevels).length > 0) {
+      newStep.selectedLevels = JSON.parse(JSON.stringify(lastStep.selectedLevels));
+    }
+    
+    console.log("🔬 addTRStep: Debug Boolean-Übertragung:", {
+      lastStepTargetBools: lastStep.targetBools,
+      lastStepStats: Object.fromEntries(
+        Object.entries(lastStep.stats).filter(([key]) => 
+          allBoosts.some(b => b.type === 'boolean' && b.key === key)
+        )
+      ),
+      newStepStats: Object.fromEntries(
+        Object.entries(newStep.stats).filter(([key]) => 
+          allBoosts.some(b => b.type === 'boolean' && b.key === key)
+        )
+      )
+    });
+    
     // Für jeden vorgemerkten Boost das aktuelle Level als Ziel setzen
     uniqueSelectedBoosts.forEach(boostKey => {
       const boost = allBoosts.find(b => b.key === boostKey);
       if (boost) {
         if (boost.type === 'boolean') {
-          // KORREKTUR: Nicht-permanente Boolean-Boosts sollen den Zustand vom vorherigen TR übernehmen
-          // wenn sie markiert wurden, anstatt standardmäßig deaktiviert zu sein
-          const wasActiveInPreviousStep = lastStep.targetBools[boostKey] || false;
-          newStep.targetBools[boostKey] = wasActiveInPreviousStep;
+          // ✅ WICHTIGE KORREKTUR: Hier ist das Problem!
+          // Der Boolean-Wert ist bereits korrekt in newStep.stats,
+          // aber wir überschreiben ihn mit einer falschen Logik
+          
+          console.log(`🔄 Boolean-Boost ${boostKey} vor Verarbeitung:`, {
+            newStepStatsValue: newStep.stats[boostKey],
+            lastStepTargetBools: lastStep.targetBools[boostKey],
+            lastStepStats: lastStep.stats[boostKey]
+          });
+          
+          // ✅ KEINE ÄNDERUNG NÖTIG - der Wert ist bereits korrekt in newStep.stats!
+          // Entferne diese Logik komplett, da sie den korrekten Wert überschreibt
+          
         } else {
-          newStep.targetLevels[boostKey] = newStep.stats[boostKey] || 0;
+          // ✅ WICHTIG: Für numerische Boosts das aktuelle Level als Startwert setzen
+          const currentValue = newStep.stats[boostKey] || 0;
+          newStep.targetLevels[boostKey] = currentValue;
+          
+          // ✅ SPEZIALFALL: Bei Research Points den Wert explizit setzen
+          if (boostKey === 'research') {
+            const researchValue = lastStep.targetLevels['research'] || lastStep.stats['research'] || 0;
+            newStep.targetLevels['research'] = researchValue;
+            newStep.stats['research'] = researchValue;
+          }
         }
       }
     });
@@ -1452,7 +1588,7 @@ function getStepOrbRequirement(step, stepIndex) {
   }
 }
 
-// Orb Gains für einen Schritt berechnen
+// ✅ ERWEITERTE ORB GAINS BERECHNUNG
 function getStepOrbGains(step) {
   /* ---------------- Basis‑ und Ziel‑Stats bauen ---------------- */
   const baseStats = { ...step.stats };           // Start in diesem TR
@@ -1497,11 +1633,22 @@ function getStepOrbGains(step) {
     }
   });
 
-  /* ---------------- Orb‑Gains berechnen ------------------------ */
+  /* ✅ RESEARCH SPECIAL HANDLING */
   const orbCalcBoosts = allBoosts.filter(b => b.orbcalc);
-  return calculateOrbGains(baseStats, planStats, orbCalcBoosts);
-}
+  const modifiedBoosts = orbCalcBoosts.map(boost => {
+    if (boost.key === 'research') {
+      // Erstelle eine Kopie des Boosts mit modifizierter Multiplier-Funktion
+      return {
+        ...boost,
+        multiplier: (value, allValues) => getResearchMultiplierWithChanges(value, allValues, step)
+      };
+    }
+    return boost;
+  });
 
+  /* ---------------- Orb‑Gains mit modifizierten Boosts berechnen ------------------------ */
+  return calculateOrbGains(baseStats, planStats, modifiedBoosts);
+}
 
 // Fragment Gains für einen Schritt berechnen
 function getStepFragGains(step) {
@@ -1788,7 +1935,6 @@ function applyChainStepBoosts(newStep, chainStep) {
   });
 }
 
-// Funktion zum Laden eines existierenden Plans
 // ---------------------------------------------------------------------------
 //  initData – TR‑Plan laden oder neu initialisieren
 // ---------------------------------------------------------------------------
@@ -1821,8 +1967,10 @@ function initData() {
       allTimeOrbs.value    = plan.updatedStats?.allTimeOrbs ?? baseStats.allTimeOrbs;
       allTimeOrbsDisplay.value = formatSuffixNotation(allTimeOrbs.value);
 
+      // ✅ WICHTIGE KORREKTUR: updatedStats haben Vorrang vor baseStats
       const statsWithOrbCalcFlags = {
-        ...baseStats,
+        ...baseStats,                    // Fallback-Werte
+        ...(plan.updatedStats || {}),    // ✅ Plan-Stats haben Vorrang!
         trCount:     trCount.value,
         allTimeOrbs: allTimeOrbs.value
       };
@@ -1840,25 +1988,59 @@ function initData() {
         targetBools:       {},
         selectedForNextTR: Array.isArray(plan.selectedForNextTR)
                            ? [...plan.selectedForNextTR]
-                           : ['hoursInTR']
+                           : ['hoursInTR'],
+        // ✅ WICHTIGE KORREKTUR: Research-Daten beim Laden wiederherstellen
+        selectedResearches: plan.selectedResearches ? [...plan.selectedResearches] : [],
+        selectedLevels: plan.selectedLevels ? JSON.parse(JSON.stringify(plan.selectedLevels)) : {}          
       };
+
+      console.log("🔬 initData: Loaded research data:", {
+        planSelectedResearches: plan.selectedResearches,
+        planSelectedLevels: plan.selectedLevels,
+        firstStepSelectedResearches: firstStep.selectedResearches,
+        firstStepSelectedLevels: firstStep.selectedLevels
+      });
+
       if (!firstStep.selectedForNextTR.includes('hoursInTR'))
         firstStep.selectedForNextTR.push('hoursInTR');
 
-      // Boosts aus plan.boosts übernehmen
+      // Debug-Ausgabe für Research-Daten
+      console.log("✅ Research-Daten beim Laden wiederhergestellt:", {
+        selectedResearches: firstStep.selectedResearches,
+        selectedLevels: firstStep.selectedLevels
+      });
+
+      // ✅ KORREKTUR: Boosts aus plan.boosts übernehmen OHNE stats zu überschreiben
       plan.boosts.forEach(b => {
         if (b.type === 'number') {
           firstStep.targetLevels[b.key] = b.targetLevel;
-          firstStep.stats[b.key]        = b.targetLevel;
+          // ✅ Stats NICHT überschreiben - kommen aus updatedStats
         } else if (b.type === 'boolean') {
-          const boostDef = allBoosts.find(x => x.key === b.key);
           const state = Boolean(b.targetState);
-          firstStep.targetBools[b.key] = state;
-          firstStep.stats[b.key]       = state ? 1 : (boostDef?.permanent ? firstStep.stats[b.key] || 0 : 0);
+          const currentStateInStats = !!(statsWithOrbCalcFlags[b.key] || 0);
+          
+          // ✅ Nur targetBools setzen wenn anders als gespeicherter Zustand
+          if (state !== currentStateInStats) {
+            firstStep.targetBools[b.key] = state;
+          }
+          
+          console.log(`✅ Boolean-Boost ${b.key} geladen: targetState=${state}, statsValue=${statsWithOrbCalcFlags[b.key]}`);
         }
       });
+
+      console.log("✅ Erster Step nach dem Laden:", {
+        targetBools: firstStep.targetBools,
+        selectedResearches: firstStep.selectedResearches,
+        selectedLevels: firstStep.selectedLevels,
+        relevantStats: Object.fromEntries(
+          Object.entries(firstStep.stats).filter(([key, value]) => 
+            allBoosts.some(b => b.type === 'boolean' && b.key === key)
+          )
+        )
+      });
+
     } else {
-      // Neuer Plan
+      // Neuer Plan - unverändert
       const statsWithFlags = { ...baseStats };
 
       if (props.currentStats && props.currentStats._orbCalcMaxedBoosts) {
@@ -1871,7 +2053,9 @@ function initData() {
         stats: statsWithFlags,
         targetLevels: {},
         targetBools:  {},
-        selectedForNextTR: ['hoursInTR']
+        selectedForNextTR: ['hoursInTR'],
+        selectedResearches: [], 
+        selectedLevels: {}     
       };
     }
 
@@ -1881,7 +2065,14 @@ function initData() {
     if (props.editPlanId) {
       const plan = trPlannerStore.getTRPlanById(props.editPlanId);
       if (Array.isArray(plan.trChain) && plan.trChain.length) {
-        let acc = { ...firstStep.stats };
+        // ✅ WICHTIG: Akkumulierte Stats korrekt aufbauen
+        let acc = { ...firstStep.stats, ...firstStep.targetLevels };
+        
+        // Boolean-Zustände vom ersten Step in acc übernehmen
+        Object.entries(firstStep.targetBools).forEach(([key, isActive]) => {
+          acc[key] = isActive ? 1 : 0;
+        });
+        
         acc.trCount++;
         acc.allTimeOrbs += getStepOrbGains(firstStep);
 
@@ -1893,109 +2084,59 @@ function initData() {
             targetBools:       {},
             selectedForNextTR: Array.isArray(chain.selectedForNextTR)
                                ? [...chain.selectedForNextTR]
-                               : ['hoursInTR']
+                               : ['hoursInTR'],
+            // ✅ WICHTIGE KORREKTUR: Research-Daten für Chain-Steps wiederherstellen
+            selectedResearches: chain.selectedResearches ? [...chain.selectedResearches] : [],
+            selectedLevels: chain.selectedLevels ? JSON.parse(JSON.stringify(chain.selectedLevels)) : {}
           };
           if (!step.selectedForNextTR.includes('hoursInTR'))
             step.selectedForNextTR.push('hoursInTR');
 
-          // ---------------- numerische Boosts ----------------
+          // Debug-Ausgabe für Chain Research-Daten
+          console.log(`✅ Chain Step ${idx} Research-Daten:`, {
+            selectedResearches: step.selectedResearches,
+            selectedLevels: step.selectedLevels
+          });
+
+          // Numerische Boosts
           chain.boosts
             .filter(b => b.type === 'number')
             .forEach(b => {
               step.targetLevels[b.key] = b.targetLevel;
-              step.stats[b.key]        = b.targetLevel;
             });
 
-          // ---------------- Boolean‑Boosts (Fix!) ----------------
+          // ✅ Boolean‑Boosts korrekt laden
           chain.boosts
-            .filter(b => b.type === 'boolean')      // KEIN selectedForNextTR‑Filter mehr
+            .filter(b => b.type === 'boolean')
             .forEach(b => {
               const def   = allBoosts.find(x => x.key === b.key);
               const state = Boolean(b.targetState);
 
-              step.targetBools[b.key] = state;
-
-              // stats korrekt auf 0/1 setzen
-              if (def?.permanent) {
-                if (state) step.stats[b.key] = 1;
-              } else {
-                step.stats[b.key] = state ? 1 : 0;
+              // ✅ NUR targetBools setzen wenn es anders ist als der geerbte Zustand
+              const currentStateInStats = !!(step.stats[b.key] || 0);
+              
+              if (state !== currentStateInStats) {
+                step.targetBools[b.key] = state;
               }
 
-              // UI‑Merker ergänzen, falls noch nicht vorhanden
+              // ✅ UI‑Merker ergänzen, falls noch nicht vorhanden
               if (!step.selectedForNextTR.includes(b.key)) {
                 step.selectedForNextTR.push(b.key);
               }
-            });
 
-// ----- Boolean‑Reset: unmarkierte, nicht‑permanente Boosts sollen
-          //       denselben Wert haben wie im Haupt‑TR -------------------------
-          allBoosts
-            .filter(b => b.type === 'boolean' && !b.permanent)
-            .forEach(b => {
-              const key             = b.key;
-              const isMarked        = step.selectedForNextTR.includes(key);
-              const hasExplicitBool = Object.prototype.hasOwnProperty.call(step.targetBools, key);
-
-              if (!isMarked && !hasExplicitBool) {
-                // ⇒ graues Kästchen: Wert aus dem Haupt‑TR übernehmen
-                const prevBool = acc[key] || 0;    // Wert aus dem vorherigen Step
-                step.stats[key] = prevBool;        // nicht aus dem Haupt‑TR!
-              }
-            });
-
-// ----- Boolean‑Reset: unmarkierte, nicht‑permanente Boosts sollen
-          //       denselben Wert haben wie im Haupt‑TR -------------------------
-          allBoosts
-            .filter(b => b.type === 'boolean' && !b.permanent)
-            .forEach(b => {
-              const key             = b.key;
-              const isMarked        = step.selectedForNextTR.includes(key);
-              const hasExplicitBool = Object.prototype.hasOwnProperty.call(step.targetBools, key);
-
-              if (!isMarked && !hasExplicitBool) {
-                // ⇒ graues Kästchen: Wert aus dem Haupt‑TR übernehmen
-                const prevBool = acc[key] || 0;    // Wert aus dem vorherigen Step
-                step.stats[key] = prevBool;        // nicht aus dem Haupt‑TR!
-              }
-            });
-
-// ----- Boolean‑Reset: unmarkierte, nicht‑permanente Boosts sollen
-          //       denselben Wert haben wie im Haupt‑TR -------------------------
-          allBoosts
-            .filter(b => b.type === 'boolean' && !b.permanent)
-            .forEach(b => {
-              const key             = b.key;
-              const isMarked        = step.selectedForNextTR.includes(key);
-              const hasExplicitBool = Object.prototype.hasOwnProperty.call(step.targetBools, key);
-
-              if (!isMarked && !hasExplicitBool) {
-                // ⇒ graues Kästchen: Wert aus dem Haupt‑TR übernehmen
-                const prevBool = acc[key] || 0;    // Wert aus dem vorherigen Step
-                step.stats[key] = prevBool;        // nicht aus dem Haupt‑TR!
-              }
-            });
-
-          // ----- Boolean‑Reset: unmarkierte, nicht‑permanente Boosts sollen
-          //       denselben Wert haben wie im Haupt‑TR -------------------------
-          allBoosts
-            .filter(b => b.type === 'boolean' && !b.permanent)
-            .forEach(b => {
-              const key             = b.key;
-              const isMarked        = step.selectedForNextTR.includes(key);
-              const hasExplicitBool = Object.prototype.hasOwnProperty.call(step.targetBools, key);
-
-              if (!isMarked && !hasExplicitBool) {
-                // ⇒ graues Kästchen: Wert aus dem Haupt‑TR übernehmen
-                const prevBool = acc[key] || 0;    // Wert aus dem vorherigen Step
-                step.stats[key] = prevBool;        // nicht aus dem Haupt‑TR!
-              }
+              console.log(`✅ Chain Boolean-Boost ${b.key} geladen: targetState=${state}, statsValue=${step.stats[b.key]}, targetBools=${step.targetBools[b.key]}`);
             });
 
           trSteps.push(step);
 
-          // neue akkumulierte Stats
-          acc = { ...step.stats };
+          // ✅ Stats für nächsten Schritt korrekt berechnen
+          acc = { ...step.stats, ...step.targetLevels };
+          
+          // Boolean-Zustände korrekt in acc übernehmen
+          Object.entries(step.targetBools).forEach(([key, isActive]) => {
+            acc[key] = isActive ? 1 : 0;
+          });
+          
           acc.trCount++;
           acc.allTimeOrbs += getStepOrbGains(step);
         });
@@ -2005,12 +2146,42 @@ function initData() {
     // Suchfeld zurücksetzen
     searchQuery.value = '';
 
-    // Nachladen abhängiger Berechnungen
-    nextTick(() => updateFollowingStepsStats(0));
-
-    // NACH dem Laden den ursprünglichen Zustand erfassen
+    // ✅ WICHTIG: Stats neu berechnen NACH dem Laden
     nextTick(() => {
-      captureOriginalState();
+      updateFollowingStepsStats(0);
+      
+      // ✅ WICHTIG: Research-Daten nach Stats-Update wiederherstellen falls nötig
+      if (props.editPlanId && trSteps.length > 0) {
+        const plan = trPlannerStore.getTRPlanById(props.editPlanId);
+        if (plan.selectedResearches || plan.selectedLevels) {
+          trSteps[0].selectedResearches = plan.selectedResearches ? [...plan.selectedResearches] : [];
+          trSteps[0].selectedLevels = plan.selectedLevels ? JSON.parse(JSON.stringify(plan.selectedLevels)) : {};
+          
+          console.log("🔬 Restored research data after stats update:", {
+            selectedResearches: trSteps[0].selectedResearches,
+            selectedLevels: trSteps[0].selectedLevels
+          });
+          
+          // Auch für Chain-Steps wiederherstellen
+          for (let i = 1; i < trSteps.length && i - 1 < plan.trChain.length; i++) {
+            const chainData = plan.trChain[i - 1];
+            if (chainData.selectedResearches || chainData.selectedLevels) {
+              trSteps[i].selectedResearches = chainData.selectedResearches ? [...chainData.selectedResearches] : [];
+              trSteps[i].selectedLevels = chainData.selectedLevels ? JSON.parse(JSON.stringify(chainData.selectedLevels)) : {};
+              
+              console.log(`🔬 Restored chain research data for step ${i}:`, {
+                selectedResearches: trSteps[i].selectedResearches,
+                selectedLevels: trSteps[i].selectedLevels
+              });
+            }
+          }
+        }
+      }
+      
+      // NACH dem Neuladen den ursprünglichen Zustand erfassen
+      nextTick(() => {
+        captureOriginalState();
+      });
     });
   }
   catch (e) {
@@ -2026,18 +2197,39 @@ function createPlan() {
   // --- 1) Erster TR als Basis ---
   const firstStep = trSteps[0];
 
-  // --- 2) Aktualisierte Basis‑Stats für den Plan ---
+  // ✅ KORREKTUR: updatedStats sollen alle Boolean-Zustände aus dem ersten Step enthalten
   const updatedStats = {
     ...props.currentStats,
+    ...firstStep.stats,        // ✅ Alle Stats aus dem ersten Step übernehmen
+    ...firstStep.targetLevels, // ✅ Alle Target-Levels übernehmen
     trCount: trCount.value,
     allTimeOrbs: allTimeOrbs.value
   };
+  
+  // ✅ WICHTIGE KORREKTUR: ALLE Boolean-Zustände korrekt übertragen
+  allBoosts
+    .filter(b => b.type === 'boolean')
+    .forEach(boost => {
+      const key = boost.key;
+      
+      // Priorität: targetBools > stats
+      if (firstStep.targetBools[key] !== undefined) {
+        // Expliziter Zielzustand
+        updatedStats[key] = firstStep.targetBools[key] ? 1 : 0;
+      } else {
+        // Geerbter Zustand aus stats
+        updatedStats[key] = firstStep.stats[key] || 0;
+      }
+    });
 
   // --- 3) Boost‑Details aus dem ersten Schritt (Plan.boosts) ---
   if (firstStep.stats._orbCalcMaxedBoosts) {
     updatedStats._orbCalcMaxedBoosts = { ...firstStep.stats._orbCalcMaxedBoosts };
     console.log("_orbCalcMaxedBoosts in updatedStats übernommen:", updatedStats._orbCalcMaxedBoosts);
   }
+  
+  console.log("✅ Final updatedStats for plan:", updatedStats);
+  
   const boostDetails = [];
 
   // 3a) Numerische Boosts
@@ -2057,19 +2249,32 @@ function createPlan() {
     }
   });
 
-  // 3b) Boolean‑Boosts im ersten Schritt
-  Object.entries(firstStep.targetBools || {})
-    .forEach(([key, isActive]) => {
-      const boost = allBoosts.find(b => b.key === key);
-      if (!boost) return;
-      const currentState = !!props.currentStats[key];
-      boostDetails.push({
-        key,
-        type: 'boolean',
-        label: boost.label || key,
-        currentState,
-        targetState: isActive
-      });
+  // 3b) Boolean‑Boosts im ersten Schritt - KORRIGIERT
+  allBoosts
+    .filter(b => b.type === 'boolean')
+    .forEach(boost => {
+      const key = boost.key;
+      let targetState;
+      
+      // Ermittle den Zielzustand
+      if (firstStep.targetBools[key] !== undefined) {
+        targetState = firstStep.targetBools[key];
+      } else {
+        targetState = !!(firstStep.stats[key] || 0);
+      }
+      
+      const currentState = !!(props.currentStats[key] || 0);
+      
+      // Nur hinzufügen wenn sich der Zustand ändert
+      if (targetState !== currentState) {
+        boostDetails.push({
+          key,
+          type: 'boolean',
+          label: boost.label || key,
+          currentState,
+          targetState
+        });
+      }
     });
 
   // --- 4) Ergebnisse für den ersten TR ---
@@ -2172,7 +2377,10 @@ function createPlan() {
       results:         stepResults,
       selectedForNextTR: Array.isArray(step.selectedForNextTR)
         ? [...step.selectedForNextTR]
-        : ['hoursInTR']
+        : ['hoursInTR'],
+      // ✅ WICHTIGE KORREKTUR: Research-Daten für Chain-Steps speichern
+      selectedResearches: step.selectedResearches ? [...step.selectedResearches] : [],
+      selectedLevels: step.selectedLevels ? { ...step.selectedLevels } : {}
     });
 
     // f) Akkumulierte Orbs/Count updaten
@@ -2194,11 +2402,21 @@ function createPlan() {
     selectedForNextTR: Array.isArray(firstStep.selectedForNextTR)
                         ? [...firstStep.selectedForNextTR]
                         : ['hoursInTR'],
+    // ✅ WICHTIGE KORREKTUR: Research-Daten korrekt speichern
+    selectedResearches: firstStep.selectedResearches ? [...firstStep.selectedResearches] : [],  
+    selectedLevels: firstStep.selectedLevels ? { ...firstStep.selectedLevels } : {},         
     progress: {
       completed:   false,
       lastUpdated: new Date().toISOString()
     }
   };
+
+  console.log("🔬 createPlan: Saving research data:", {
+    firstStepSelectedResearches: firstStep.selectedResearches,
+    firstStepSelectedLevels: firstStep.selectedLevels,
+    planDataSelectedResearches: planData.selectedResearches,
+    planDataSelectedLevels: planData.selectedLevels
+  });
 
   // --- 7) Plan-ID generieren, aber NICHT speichern ---
   let planId;
@@ -2234,8 +2452,6 @@ function createPlan() {
   captureOriginalState();
   emit('close');
 }
-
-
 
 function cancelAndClose() {
   if (hasUnsavedChanges.value) {
@@ -2649,18 +2865,66 @@ function handleTRUpdate() {
   
   const selectedBoosts = [...firstStep.selectedForNextTR];
   
+  // ✅ KORREKTUR: Boolean-Zustände des ersten TRs für die Übertragung sammeln
+  const completedBooleanStates = {};
+  
+  // Zuerst alle Boolean-Zustände aus den Stats übernehmen
+  allBoosts
+    .filter(b => b.type === 'boolean')
+    .forEach(boost => {
+      const key = boost.key;
+      completedBooleanStates[key] = !!(firstStep.stats[key] || 0);
+    });
+  
+  // Dann explizite targetBools überschreiben (haben Vorrang)
+  Object.entries(firstStep.targetBools || {}).forEach(([key, value]) => {
+    completedBooleanStates[key] = value;
+  });
+  
+  console.log("🔄 Boolean states being transferred:", completedBooleanStates);
+  
+  // ✅ WICHTIG: TR Count und All-Time Orbs aktualisieren
   trCount.value += 1;
   trCountDisplay.value = trCount.value.toString();
   
   allTimeOrbs.value += orbGains;
   allTimeOrbsDisplay.value = formatSuffixNotation(allTimeOrbs.value);
   
+  // ✅ KORREKTUR: Stats für den neuen ersten TR mit Boolean-Zuständen aktualisieren
+  const newFirstTRStats = {
+    ...firstStep.stats,
+    ...firstStep.targetLevels,  // Alle numerischen Zielwerte übernehmen
+    trCount: trCount.value,     // ✅ WICHTIG: Aktualisierte Werte
+    allTimeOrbs: allTimeOrbs.value
+  };
+  
+  // ✅ Boolean-Zustände korrekt übertragen
+  Object.entries(completedBooleanStates).forEach(([key, isActive]) => {
+    newFirstTRStats[key] = isActive ? 1 : 0;
+  });
+  
+  console.log("🔄 New first TR stats:", newFirstTRStats);
+  
+  // ✅ WICHTIG: Die globalen currentStats mit den Boolean-Zuständen aktualisieren
+  // Das ist entscheidend für die Persistierung!
+  const updatedCurrentStats = {
+    ...props.currentStats,
+    ...newFirstTRStats
+  };
+  
+  // ✅ Props currentStats über emit aktualisieren (damit sie beim Speichern verfügbar sind)
+  emit('updateCurrentStats', updatedCurrentStats);
+  
+  // Ersten TR entfernen
   trSteps.shift();
   
+  // ✅ Stats aller verbleibenden TRs mit den aktualisierten Boolean-Zuständen aktualisieren
   for (let i = 0; i < trSteps.length; i++) {
     trSteps[i].stats.trCount = trCount.value + i;
     
     if (i === 0) {
+      // Der neue erste TR bekommt die aktualisierten Stats
+      Object.assign(trSteps[i].stats, newFirstTRStats);
       trSteps[i].stats.allTimeOrbs = allTimeOrbs.value;
       
       const uniqueSelectedBoosts = new Set([...trSteps[i].selectedForNextTR, ...selectedBoosts]);
@@ -2668,6 +2932,11 @@ function handleTRUpdate() {
     } else {
       trSteps[i].stats.allTimeOrbs = trSteps[i-1].stats.allTimeOrbs + getStepOrbGains(trSteps[i-1]);
     }
+  }
+  
+  // ✅ Alle nachfolgenden Stats neu berechnen
+  if (trSteps.length > 0) {
+    updateFollowingStepsStats(0);
   }
   
   closeTRUpdateModal();
@@ -2694,6 +2963,16 @@ function handleTRUpdate() {
                       currentLevel;
   
   if (targetLevel <= currentLevel) return '';
+
+  // Spezialfall für Milestone #0
+  if (boost.key === 'ms0') {
+    return calculateM0CostRangeSafe(currentLevel, targetLevel);
+  }
+  
+  // Spezialfall für Loop Mods
+  if (boost.key === 'lmConsistency') {
+    return calculateLoopModCostRangeSafe(LOOP_MODS.RULE_OF_CONSISTENCY, currentLevel, targetLevel);
+  }
   
   let totalCost = 0;
   
@@ -2769,129 +3048,6 @@ function resetForm() {
   showCreateOptions.value = false;
 }
 
-// Plan mit den aktuellen Werten erstellen
-function createPlanWithCurrentValues() {
-  console.log("========== DEBUG CREATE PLAN ==========");
-  console.log("1. Creating plan with current values in OrbCalculatorModal");
-  
-  const currentValues = { ...props.currentStats };
-  
-  Object.entries(currentBoosts.value).forEach(([key, value]) => {
-    if (value !== undefined) {
-      currentValues[key] = value;
-    }
-  });
-  
-  currentValues._orbCalcMaxedBoosts = {};
-  
-  allBoosts.forEach(boost => {
-    if (boost.max !== undefined && boost.type === 'number') {
-      const currentValue = currentBoosts.value[boost.key];
-      if (currentValue !== undefined && currentValue >= boost.max) {
-        const maxLevelValue = maxLevelStats.value[boost.key];
-        if (maxLevelValue === undefined || maxLevelValue < boost.max) {
-          currentValues._orbCalcMaxedBoosts[boost.key] = true;
-        }
-      }
-    }
-    else if (boost.type === 'boolean') {
-      const isActive = currentBoosts.value[boost.key];
-      if (isActive === true) {
-        const isMaxedActive = maxLevelStats.value[boost.key];
-        if (isMaxedActive !== true) {
-          currentValues._orbCalcMaxedBoosts[boost.key] = true;
-        }
-      }
-    }
-  });
-  
-  currentValues.trCount = trCount.value;
-  currentValues.allTimeOrbs = allTimeOrbs.value;
-  
-  const now = new Date();
-  currentValues.trStartDate = now.toISOString().split('T')[0];
-  currentValues.trStartTime = now.toTimeString().split(' ')[0].slice(0, 5);
-  
-  trPlannerStore.tempPlanData = JSON.parse(JSON.stringify(currentValues));
-  
-  console.log("Daten für neuen Plan vorbereitet:", trPlannerStore.tempPlanData);
-  
-  emit('close');
-  console.log("1.2. Emitted 'close' event");
-  
-  trPlannerStore.setCopyPlanData(JSON.parse(JSON.stringify(currentValues)));
-  
-  trPlannerStore.planModalShouldOpen = 'current';
-  
-  console.log("1.3. Set planModalShouldOpen flag in store:", trPlannerStore.planModalShouldOpen);
-}
-
-// Vollständige Funktion createPlanWithTargetValues
-function createPlanWithTargetValues() {
-  const hasTargetValues = Object.keys(targetBoosts.value).length > 0;
-  
-  if (!hasTargetValues) {
-    console.warn("No target values available");
-    return;
-  }
-  
-  const targetStats = { ...props.currentStats };
-  
-  Object.entries(currentBoosts.value).forEach(([key, value]) => {
-    if (value !== undefined) {
-      targetStats[key] = value;
-    }
-  });
-  
-  Object.entries(targetBoosts.value).forEach(([key, value]) => {
-    if (value !== undefined) {
-      targetStats[key] = value;
-    }
-  });
-  
-  targetStats._orbCalcMaxedBoosts = {};
-  
-  allBoosts.forEach(boost => {
-    if (boost.max !== undefined && boost.type === 'number') {
-      const targetValue = targetBoosts.value[boost.key];
-      if (targetValue !== undefined && targetValue >= boost.max) {
-        const maxLevelValue = maxLevelStats.value[boost.key];
-        if (maxLevelValue === undefined || maxLevelValue < boost.max) {
-          targetStats._orbCalcMaxedBoosts[boost.key] = true;
-        }
-      }
-    }
-    else if (boost.type === 'boolean') {
-      const isActive = targetBoosts.value[boost.key];
-      if (isActive === true) {
-        const isMaxedActive = maxLevelStats.value[boost.key];
-        if (isMaxedActive !== true) {
-          targetStats._orbCalcMaxedBoosts[boost.key] = true;
-        }
-      }
-    }
-  });
-  
-  targetStats.trCount = trCount.value;
-  targetStats.allTimeOrbs = allTimeOrbs.value;
-  
-  const now = new Date();
-  targetStats.trStartDate = now.toISOString().split('T')[0];
-  targetStats.trStartTime = now.toTimeString().split(' ')[0].slice(0, 5);
-  
-  trPlannerStore.tempPlanData = JSON.parse(JSON.stringify(targetStats));
-  
-  console.log("Daten für neuen Plan (Target) vorbereitet:", trPlannerStore.tempPlanData);
-  
-  emit('close');
-  
-  trPlannerStore.setCopyPlanData(JSON.parse(JSON.stringify(targetStats)));
-  
-  trPlannerStore.planModalShouldOpen = 'target';
-  
-  console.log("Target plan flag set in store:", trPlannerStore.planModalShouldOpen);
-}
-
 function isBoostAvailable(boost, step) {
   // Wenn keine Anforderungen definiert sind, ist der Boost immer verfügbar
   if (!boost.minRequirement) return true;
@@ -2954,6 +3110,84 @@ function getFullTooltipContent(boost, step) {
   }
   
   return content;
+}
+
+function updateSelectedResearches(step, selectedResearches) {
+  console.log("🔬 TRPlanModal: updateSelectedResearches called", {
+    stepId: step.id,
+    newSelectedResearches: selectedResearches,
+    oldSelectedResearches: step.selectedResearches,
+    stepObject: step
+  });
+  
+  // ✅ Stelle sicher, dass die Property existiert
+  if (!step.selectedResearches) {
+    step.selectedResearches = [];
+  }
+  
+  // ✅ Sichere Zuweisung mit Vue 3 Reactivity
+  step.selectedResearches = [...selectedResearches];
+  
+  console.log("🔬 After assignment:", step.selectedResearches);
+  
+  // Trigger Neuberechnung
+  const stepIndex = trSteps.findIndex(s => s.id === step.id);
+  if (stepIndex !== -1) {
+    nextTick(() => {
+      updateFollowingStepsStats(stepIndex);
+      checkForChanges();
+    });
+  }
+}
+
+// ✅ NEUE FUNKTION: Research Multiplier mit Changes
+function getResearchMultiplierWithChanges(value, allValues, step) {
+  // Prüfen ob Innovation Gem Level 2 ist
+  const innovationGemLevel = allValues.innogem || 0;
+  if (innovationGemLevel < 2) {
+    return 1; // Kein Multiplikator wenn Innovation Gem unter Level 2
+  }
+  
+  let overallMultiplier = 1;
+  
+  // ✅ WICHTIG: Verwende die spezifischen Level-Auswahlen aus dem Step
+  const selectedResearches = step.selectedResearches || [];
+  const selectedLevels = step.selectedLevels || {};
+  
+  console.log("🔬 Research Calculation with Level Details:", {
+    researchPoints: value,
+    selectedResearches,
+    selectedLevels,
+    innovationGem: innovationGemLevel
+  });
+
+  // Nur die manuell ausgewählten Researches berücksichtigen
+  for (const researchId of selectedResearches) {
+    if (researchData[researchId]) {
+      let researchMultiplier = 1;
+      const researchLevels = selectedLevels[researchId] || [];
+      const allLevelsForResearch = researchData[researchId];
+      
+      // ✅ NUR die ausgewählten Level berücksichtigen (nicht alle verfügbaren)
+      for (const levelIdx of researchLevels) {
+        const levelData = allLevelsForResearch[levelIdx];
+        
+        if (levelData && value >= levelData.price) {
+          // Level ist ausgewählt UND erschwinglich
+          researchMultiplier *= levelData.multiplier;
+          console.log(`Research ${researchId} Level ${levelIdx + 1}: ×${levelData.multiplier}`);
+        }
+      }
+      
+      console.log(`Research ${researchId} Total Multiplier: ×${researchMultiplier}`);
+      
+      // Multipliziere das Ergebnis der aktuellen Research mit dem Gesamtwert
+      overallMultiplier *= researchMultiplier;
+    }
+  }
+
+  console.log(`Total Research Multiplier: ×${overallMultiplier}`);
+  return overallMultiplier;
 }
 
 watch(

@@ -153,7 +153,7 @@ export const EVAL_PARAMS = [
   "upgrades.cms.cm47",              // Construction Milestone 47
   "upgrades.cms.cm48",              // Construction Milestone 48
   "upgrades.cms.cm51",              // Construction Milestone 51
-  
+  "upgrades.gems_nodes.creation_knoxGU", // Creation Node (Knox Gem Upgrade)
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -215,6 +215,10 @@ export const OVERRIDES = {
     "upgrades.cms.cm51",             // CM51
   ],
 
+  gemUpgrades: [
+    "upgrades.gems_nodes.creation_knoxGU", // Knox Gem Upgrade
+  ],
+
   diamondSpecials: [
     "upgrades.diamondspecials.reviveboost", // Revive Cooldown
   ],
@@ -274,6 +278,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
   "stage",          // Highest Stage Reached
   "upgrades.gadgets.anchor",  // Gadget (The Anchor of Ages)
+  "upgrades.gems_nodes.creation_knoxGU", // Knox Gem Upgrade
 ];
 
 export const STATS_RESULT_LABELS = [

@@ -588,9 +588,15 @@ function getParamCost(param) {
       return calcOrbCostDifference('lootOzzy', fromLevel, toLevel);
     } else if (nodeId === 'attraction_catchUp') {
       return calcOrbCostDifference('catchUp', fromLevel, toLevel);
+    } else if (nodeId === 'creation_borgeGU') {
+      return calcOrbCostDifference('borgeGU', fromLevel, toLevel);
+    } else if (nodeId === 'creation_ozzyGU') {
+      return calcOrbCostDifference('ozzyGU', fromLevel, toLevel);
+    } else if (nodeId === 'creation_knoxGU') {
+      return calcOrbCostDifference('knoxGU', fromLevel, toLevel);
     }
   }
-  
+
   // Für normale Stats
   const statKey = param.key; // Direkt den key des Parameters verwenden
   return calcCostDifference(statKey, fromLevel, toLevel, props.hunterType);
