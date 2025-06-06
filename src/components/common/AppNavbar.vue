@@ -30,10 +30,6 @@
             <component :is="hunter.icon" class="w-5 h-5 mr-1.5" />
             <span>{{ hunter.name }}</span>
           </router-link>
-        </div>
-        
-        <!-- Aktions-Gruppe -->
-        <div class="bg-gray-800/90 rounded-xl p-1 mr-2 flex items-center">
           <!-- Upgrades Button -->
           <div class="relative mx-0.5">
             <button 
@@ -78,7 +74,9 @@
               </div>
             </div>
           </div>
+        </div> 
 
+        <div class="bg-gray-800/90 rounded-xl p-1 mr-2 flex items-center">
           <!-- Tools Button -->
           <div class="relative mx-0.5">
             <button 

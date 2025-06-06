@@ -17,6 +17,14 @@
           <!-- Mobile: Die Buttons untereinander in einer Button-Gruppe mit Icons -->
           <div class="flex flex-col sm:hidden w-full gap-2">
             <button 
+              @click="openGemOverviewModal"
+              class="flex items-center justify-between px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors shadow-sm"
+            >
+              <span>Gem Overview</span>
+              <IconZodiacGemini size="16" />
+            </button>
+            
+            <button 
               @click="openStatsModal"
               class="flex items-center justify-between px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm"
             >
@@ -44,8 +52,16 @@
           <!-- Desktop: Die Buttons nebeneinander wie bisher -->
           <div class="hidden sm:flex">
             <button 
+              @click="openGemOverviewModal"
+              class="flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-l-md border-r border-purple-700 transition-colors shadow-sm"
+            >
+              <IconZodiacGemini size="16" class="mr-2" />
+              <span>Gem Overview</span>
+            </button>
+            
+            <button 
               @click="openStatsModal"
-              class="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-l-md border-r border-blue-700 transition-colors shadow-sm"
+              class="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white border-r border-blue-700 transition-colors shadow-sm"
             >
               <IconChartBar size="16" class="mr-2" />
               <span>Maxed Boosts</span>
@@ -187,6 +203,21 @@
       @close="showOrbCalculatorModal = false"
       @openNewPlan="handleOpenNewPlan"
     />
+
+    <!-- Gem Overview Modal -->
+    <GemOverviewModal
+      v-if="showGemOverviewModal"
+      :isVisible="showGemOverviewModal"
+      @close="showGemOverviewModal = false"
+    />
+    
+    <!-- Welcome Modal für erste Besucher -->
+    <GemWelcomeModal
+      v-if="showGemWelcomeModal"
+      :isVisible="showGemWelcomeModal"
+      @close="closeGemWelcomeModal"
+      @openGemOverview="openGemOverviewFromWelcome"
+    />
     
     <!-- Toast Notification -->
     <Transition name="toast">
@@ -222,6 +253,8 @@ import TRResultsSidePanel from '@/components/tr-planner/TRResultsSidePanel.vue';
 import TRPlanCard from '@/components/tr-planner/TRPlanCard.vue';
 import TRPlanDetailModal from '@/components/tr-planner/TRPlanDetailModal.vue';
 import OrbCalculatorModal from '@/components/tr-planner/OrbCalculatorModal.vue';
+import GemOverviewModal from '@/components/tr-planner/GemOverviewModal.vue';
+import GemWelcomeModal from '@/components/tr-planner/GemWelcomeModal.vue';
 import Draggable from 'vuedraggable';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { 
@@ -232,7 +265,8 @@ import {
   IconAlertCircle,
   IconInfoCircle,
   IconFile,
-  IconCalculator
+  IconCalculator,
+  IconZodiacGemini
 } from '@tabler/icons-vue';
 
 // Pinia Store einbinden
@@ -241,6 +275,8 @@ const trPlannerStore = useTRPlannerStore();
 // Modal state
 const showStatsModal = ref(false);
 const showTRPlanModal = ref(false);
+const showGemOverviewModal = ref(false);
+const showGemWelcomeModal = ref(false);
 const trPlanModalRef = ref(null);
 const selectedPlanId = ref(null);
 const editingPlanId = ref(null);
@@ -257,6 +293,10 @@ const forceUpdateCounter = ref(0);
 const currentStats = computed(() => {
   return trPlannerStore.userStats || {};
 });
+
+function openGemOverviewModal() {
+  showGemOverviewModal.value = true;
+}
 
 // Open stats modal
 function openStatsModal() {
@@ -507,6 +547,9 @@ onMounted(() => {
   
   // Initialisiere filteredPlans mit tiefer Kopie aus dem Store
   updatePlans();
+  
+  // Prüfe Welcome Modal
+  checkShowGemWelcome();
 });
 
 // Watch für Änderungen im Store - mit tiefer Überwachung
@@ -527,6 +570,60 @@ watch(() => trPlannerStore.planModalShouldOpen, (newValue) => {
     trPlannerStore.planModalShouldOpen = null;
   }
 });
+
+function closeGemWelcomeModal() {
+  showGemWelcomeModal.value = false;
+  
+  // Markiere als gesehen im localStorage
+  localStorage.setItem('trplanner_gem_welcome_seen', 'true');
+}
+
+function openGemOverviewFromWelcome() {
+  // Schließe Welcome Modal
+  closeGemWelcomeModal();
+  
+  // Öffne Gem Overview
+  setTimeout(() => {
+    openGemOverviewModal();
+  }, 200);
+}
+
+// Prüfe ob Welcome Modal gezeigt werden soll
+function checkShowGemWelcome() {
+  const hasSeenWelcome = localStorage.getItem('trplanner_gem_welcome_seen');
+  const hasGemData = localStorage.getItem('trplanner_userstats');
+  
+  // Zeige Welcome nur wenn:
+  // 1. Noch nie gesehen
+  // 2. Keine Gem-Daten vorhanden oder alle Gems auf 0
+  if (!hasSeenWelcome) {
+    let shouldShow = true;
+    
+    if (hasGemData) {
+      try {
+        const stats = JSON.parse(hasGemData);
+        const gemData = stats.gemData;
+        
+        if (gemData && gemData.levels) {
+          // Prüfe ob mindestens ein Gem > 0 ist
+          const hasActiveGems = Object.values(gemData.levels).some(level => level > 0);
+          if (hasActiveGems) {
+            shouldShow = false;
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing gem data:', error);
+      }
+    }
+    
+    if (shouldShow) {
+      // Kurze Verzögerung für bessere UX
+      setTimeout(() => {
+        showGemWelcomeModal.value = true;
+      }, 1000);
+    }
+  }
+}
 </script>
 
 <style scoped>

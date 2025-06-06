@@ -34,10 +34,14 @@
       
       <!-- Description Area -->
       <div class="p-3 bg-gray-750/60 border-b border-gray-700">
-        <p class="text-xs text-gray-300">
-          Mark boosts that you've already maxed out in the game. Maxed boosts will be hidden in other calculator views to reduce clutter.
-          <br><span class="text-yellow-300 mt-1 inline-block">Advice: For Void Badges, mark the ones you've completed minus 1.</span>
-        </p>
+        <div class="space-y-1">
+          <p class="text-xs text-gray-300">
+            Mark boosts that you've already maxed out in the game. Maxed boosts will be hidden in other calculator views to reduce clutter.
+          </p>
+          <p class="text-xs text-yellow-300">
+            Advice: For Void Badges, mark the ones you've completed minus 1.
+          </p>
+        </div>
       </div>
       
       <!-- Loading state -->
@@ -66,6 +70,9 @@
           <div class="flex items-center mb-1.5">
             <div class="w-1.5 h-5 bg-blue-500 rounded-r mr-2"></div>
             <h3 class="font-medium text-sm text-blue-200">{{ category.label }}</h3>
+            <span class="ml-2 text-xs text-gray-400">
+              ({{ category.boosts.length }})
+            </span>
           </div>
           
           <!-- Grid Layout - 1 Spalte auf Mobil, 2 Spalten auf Desktop -->
@@ -79,7 +86,9 @@
               <div class="flex justify-between items-center p-2">
                 <!-- Linke Seite: Boost-Info -->
                 <div class="flex-1 mr-2">
-                  <div class="text-xs font-medium text-gray-200">{{ boost.label }}</div>
+                  <div class="text-xs font-medium text-gray-200">
+                    {{ boost.label }}
+                  </div>
                   <div class="text-[11px] text-gray-300 mt-0.5">
                     Max: <span :class="boost.type === 'boolean' ? 'text-green-400' : 'text-blue-400'">
                       {{ boost.type === 'boolean' ? 'ON' : boost.max || '-' }}
@@ -91,7 +100,7 @@
                 <div>
                   <div 
                     @click="toggleMaxedState(boost.key)"
-                    class="inline-block w-10 h-5 rounded-full p-0.5 cursor-pointer transition-colors"
+                    class="inline-block w-10 h-5 rounded-full p-0.5 transition-colors cursor-pointer"
                     :class="maxedBoosts[boost.key] ? 'bg-green-600' : 'bg-gray-600'"
                   >
                     <div 
@@ -103,11 +112,6 @@
               </div>
             </div>
           </div>
-        </div>
-        
-        <!-- Empty state -->
-        <div v-if="filteredBoostsByCategory.length === 0" class="py-4 text-center text-gray-400 text-sm">
-          No boosts available
         </div>
       </div>
 
@@ -121,6 +125,7 @@
             <button 
               @click="markAllAsMaxed" 
               class="px-2 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs"
+              :disabled="totalBoostsCount === 0"
             >
               Mark All
             </button>
@@ -140,6 +145,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { allBoosts, boostsByCategory } from '@/constants/tr-planner';
+import { useTRPlannerStore } from '@/store/orbStore';
 import { 
   IconX, 
   IconAlertCircle,
@@ -158,34 +164,71 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save']);
 
+const trPlannerStore = useTRPlannerStore();
+
 // State
 const isLoading = ref(true);
 const error = ref(null);
 const maxedBoosts = reactive({});
 
-// Gefilterte Boosts - Alle Boosts mit max Level oder vom Typ Boolean
+// Gem-Levels aus dem Store laden
+const gemLevels = computed(() => {
+  return trPlannerStore.userStats.gemData?.levels || {
+    exodus: 0,
+    temporal: 0,
+    innovation: 0,
+    attraction: 0,
+    power: 0,
+    creation: 0,
+    evolution: 0
+  };
+});
+
+// Hilfsfunktion um zu prüfen ob ein Boost freigeschaltet ist
+function isBoostUnlocked(boost) {
+  // Wenn kein unlock definiert ist, ist der Boost immer freigeschaltet
+  if (!boost.unlock) {
+    return true;
+  }
+  
+  const requiredGem = boost.unlock;
+  const requiredLevel = boost.unlock_level || 1;
+  const currentLevel = gemLevels.value[requiredGem] || 0;
+  
+  return currentLevel >= requiredLevel;
+}
+
+// Gefilterte Boosts - Nur freigeschaltete Boosts anzeigen
 const filteredBoostsByCategory = computed(() => {
   return boostsByCategory
     .map(category => {
       // Filter: Nur Boosts mit max Level oder Boolean-Typ anzeigen
-      const filteredBoosts = category.boosts.filter(boost => 
+      const allBoostsInCategory = category.boosts.filter(boost => 
         // Ausschließen: hoursInTR und loopMods
         boost.key !== 'hoursInTR' && boost.key !== 'loopMods' &&
         // Einschließen: Alle Boolean-Boosts oder numerische Boosts mit max Level
-        (boost.type === 'boolean' || (boost.type === 'number' && boost.max !== undefined))
+        (boost.type === 'boolean' || (boost.type === 'number' && boost.max !== undefined)) &&
+        // Nur freigeschaltete Boosts anzeigen
+        isBoostUnlocked(boost)
       );
       
       return {
         ...category,
-        boosts: filteredBoosts
+        boosts: allBoostsInCategory
       };
     })
     .filter(category => category.boosts.length > 0); // Nur Kategorien mit Boosts
 });
 
-// Anzahl der maxed Boosts
+// Statistiken für die UI
 const maxedBoostsCount = computed(() => {
   return Object.values(maxedBoosts).filter(value => value).length;
+});
+
+const totalBoostsCount = computed(() => {
+  return filteredBoostsByCategory.value.reduce((total, category) => 
+    total + category.boosts.length, 0
+  );
 });
 
 // Boosts laden
@@ -230,7 +273,7 @@ function toggleMaxedState(boostKey) {
   maxedBoosts[boostKey] = !maxedBoosts[boostKey];
 }
 
-// Mark all boosts as maxed
+// Mark all visible boosts as maxed
 function markAllAsMaxed() {
   // Für alle angezeigten Boosts den maxed-Status auf true setzen
   filteredBoostsByCategory.value.forEach(category => {
@@ -292,6 +335,12 @@ function saveAndClose() {
   emit('save', updatedStats);
   emit('close');
 }
+
+// Watch für Gem-Level-Änderungen um UI zu aktualisieren
+watch(() => gemLevels.value, () => {
+  // Bei Gem-Level-Änderungen die UI neu berechnen
+  // Dies triggert automatisch die computed properties neu
+}, { deep: true });
 
 // Initialisiere das Modal beim Öffnen
 watch(() => props.isVisible, (newValue) => {

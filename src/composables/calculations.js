@@ -187,6 +187,81 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
     return 0;
   }
   
+  // Store-Integration: Gem-Daten direkt laden
+  function getGemDataFromStore() {
+    try {
+      // Prüfe ob wir im Browser-Kontext sind und der Store verfügbar ist
+      if (typeof window !== 'undefined' && window.__PINIA__) {
+        // Versuche über globales Pinia-Instance auf den Store zuzugreifen
+        const stores = window.__PINIA__.state.value;
+        const trPlannerStoreData = stores.trPlannerStore || stores.orbStore;
+        
+        if (trPlannerStoreData && trPlannerStoreData.userStats && trPlannerStoreData.userStats.gemData) {
+          const gemData = trPlannerStoreData.userStats.gemData;
+          
+          return {
+            levels: gemData.levels || {
+              exodus: 0,
+              temporal: 0,
+              innovation: 0,
+              attraction: 0,
+              power: 0,
+              creation: 0,
+              evolution: 0
+            },
+            activeNodes: gemData.activeNodes || {
+              temporal: [],
+              innovation: [],
+              attraction: [],
+              power: [],
+              creation: [],
+              evolution: []
+            }
+          };
+        }
+      }
+      
+      // Fallback: Versuche über localStorage
+      const localStorageData = localStorage.getItem('trplanner_userstats');
+      if (localStorageData) {
+        const parsedData = JSON.parse(localStorageData);
+        const gemData = parsedData.gemData;
+        
+        if (gemData) {
+          return {
+            levels: gemData.levels || {
+              exodus: 0,
+              temporal: 0,
+              innovation: 0,
+              attraction: 0,
+              power: 0,
+              creation: 0,
+              evolution: 0
+            },
+            activeNodes: gemData.activeNodes || {
+              temporal: [],
+              innovation: [],
+              attraction: [],
+              power: [],
+              creation: [],
+              evolution: []
+            }
+          };
+        }
+      }
+      
+      // Wenn nichts gefunden wird, Standard-Werte zurückgeben
+      throw new Error('No gem data found');
+      
+    } catch (error) {
+      console.warn('Could not load gem data from store in calculations:', error);
+      return {
+        levels: { exodus: 0, temporal: 0, innovation: 0, attraction: 0, power: 0, creation: 0, evolution: 0 },
+        activeNodes: { temporal: [], innovation: [], attraction: [], power: [], creation: [], evolution: [] }
+      };
+    }
+  }
+  
   // Hilfsfunktion, um den Fragment-Multiplikator für einen bestimmten Boost zu berechnen
   function getFragMultiplier(boostKey, value, values) {
     if (!value) return 1;
@@ -208,16 +283,35 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
     return 1;
   }
   
+  // Gem-Daten aus Store laden
+  const gemData = getGemDataFromStore();
+  const attractionLevel = gemData.levels.attraction || 0;
+  const attractionNodes = gemData.activeNodes.attraction || [];
+  const powerLevel = gemData.levels.power || 0;
+  const powerNodes = gemData.activeNodes.power || [];
+  
   // Hole die relevanten Werte aus planStats
-  const attr3 = planStats.attr3 || 0;
-  const m0 = getFragMultiplier("ms0", planStats.ms0, {...planStats, attr3});
-  const attr1 = getFragMultiplier("attr1", planStats.attr1, planStats);
-  const campfragdet = getFragMultiplier("campfragdet", planStats.campfragdet, planStats);
-  const pow2 = getFragMultiplier("pow2", planStats.pow2, planStats);
-  const research89 = getFragMultiplier("research89", planStats.research89, planStats);
-  const ouroinstalls = getFragMultiplier("ouroinstalls", planStats.ouroinstalls, planStats);
   const campaigns = planStats.campaigns || 0;
   const r6 = planStats.r6 || 0;
+  
+  // Fragment-Multiplikatoren berechnen
+  let m0 = getFragMultiplier("ms0", planStats.ms0, planStats);
+  let attr1 = 1; // Attraction GN #1 direkt aus Store
+  let campfragdet = getFragMultiplier("campfragdet", planStats.campfragdet, planStats);
+  let pow2 = 1; // Power GN #2 direkt aus Store
+  let research89 = getFragMultiplier("research89", planStats.research89, planStats);
+  let ouroinstalls = getFragMultiplier("ouroinstalls", planStats.ouroinstalls, planStats);
+  
+  // Store-basierte Gem-Node-Checks
+  // Attraction GN #1 (Node Index 0) - erfordert Attraction Level 1+
+  if (attractionLevel >= 1 && attractionNodes.includes(0)) {
+    attr1 = 1.5; // Attraction GN #1 Fragment-Multiplier
+  }
+  
+  // Power GN #2 (Node Index 1) - erfordert Power Level 1+
+  if (powerLevel >= 1 && powerNodes.includes(1)) {
+    pow2 = 2; // Power GN #2 Fragment-Multiplier
+  }
   
   // R6 spezifische Berechnungen
   const r6Add = 2.75 * r6;
@@ -225,7 +319,7 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
   
   let totalFrags = 0;
   
-  // Kampagnen-Schleife, wie in deiner Original-Funktion
+  // Kampagnen-Schleife
   for (let i = 0; i < campaigns; i++) {
     let baseFrags = (2.5 + r6Add) * (m0 * attr1 * campfragdet * pow2 * research89 * ouroinstalls * r6Multi);
     

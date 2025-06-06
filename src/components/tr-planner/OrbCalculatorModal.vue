@@ -634,6 +634,19 @@ const isPlanValid = ref(false);
 
 const trPlannerStore = useTRPlannerStore();
 
+// Gem-Levels aus dem Store laden
+const gemLevels = computed(() => {
+  return trPlannerStore.userStats.gemData?.levels || {
+    exodus: 0,
+    temporal: 0,
+    innovation: 0,
+    attraction: 0,
+    power: 0,
+    creation: 0,
+    evolution: 0
+  };
+});
+
 // Die hoursInTR Werte über computed properties zugänglich machen
 const hoursInTR = computed({
   get() {
@@ -849,44 +862,38 @@ const maxLevelStats = computed(() => {
 });
 
 const filteredBoostCategories = computed(() => {
-  // Debug-Ausgabe der maxLevelStats
-  console.log("maxLevelStats aus localStorage:", maxLevelStats.value);
-  
   return boostsByCategory
     .map(category => {
-      // Copy the category
       const newCategory = { ...category };
       
-      // Filter boosts with multiplier
+      // Filter boosts with multiplier UND nur freigeschaltete Boosts
       newCategory.boosts = category.boosts.filter(boost => {
         // Only include boosts with a multiplier (not just fragmulti)
         if (boost.multiplier === undefined) {
           return false;
         }
         
+        // Nur freigeschaltete Boosts anzeigen
+        if (!isBoostUnlocked(boost)) {
+          return false;
+        }
+        
         // Die Stats im localStorage (trplanner_userstats)
         const maxStats = maxLevelStats.value || {};
         
-        // WICHTIG: Prüfe, ob der Boost direkt von der OrbCalculator-Komponente stammt
-        // Das erkennen wir daran, dass der Wert NICHT aus props.currentStats kommt
+        // Prüfe, ob der Boost im StatsInputModal maximiert wurde
         const isMaxedInStatsInput = (() => {
           // Für numerische Boosts mit maximum
           if (boost.type === 'number' && boost.max !== undefined) {
             const globalLevel = maxStats[boost.key];
-            
-            // HIER war der Fehler: Vergleiche nur mit den Werten aus localStorage
-            // Überprüfe auch explizit, ob der Boost im localStorage vorhanden ist
             if (globalLevel !== undefined && globalLevel >= boost.max) {
-              console.log(`Boost ${boost.key} hat Maximum erreicht: ${globalLevel}/${boost.max}`);
               return true;
             }
           }
           
           // Für Boolean-Boosts
           if (boost.type === 'boolean') {
-            // HIER war auch ein Fehler: Vergleiche nur mit den Werten aus localStorage
             if (maxStats[boost.key] === true) {
-              console.log(`Boolean Boost ${boost.key} ist bereits true in maxLevelStats`);
               return true;
             }
           }
@@ -1442,6 +1449,20 @@ function handleFocusChange(event) {
   }
 }
 
+// Hilfsfunktion um zu prüfen ob ein Boost freigeschaltet ist
+function isBoostUnlocked(boost) {
+  // Wenn kein unlock definiert ist, ist der Boost immer freigeschaltet
+  if (!boost.unlock) {
+    return true;
+  }
+  
+  const requiredGem = boost.unlock;
+  const requiredLevel = boost.unlock_level || 1;
+  const currentLevel = gemLevels.value[requiredGem] || 0;
+  
+  return currentLevel >= requiredLevel;
+}
+
 // Entferne den Event-Listener, wenn die Komponente zerstört wird
 function cleanupAutoScrollListeners() {
   document.removeEventListener('focusin', handleFocusChange);
@@ -1917,6 +1938,11 @@ function getFullTooltipContent(boost) {
   
   return content;
 }
+
+// Watch für Gem-Level-Änderungen um UI zu aktualisieren
+watch(() => gemLevels.value, () => {
+  // Bei Gem-Level-Änderungen die UI neu berechnen
+}, { deep: true });
 </script>
 
 <style scoped>

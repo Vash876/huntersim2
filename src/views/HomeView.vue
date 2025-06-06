@@ -2,6 +2,28 @@
 const changelog = 
 [
   {
+    version: '2.4.2',
+    date: '2025-06-06',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'TR Planner Enhancements:',
+        subItems: [
+          'Added Gem Overview with progression-friendly interface to prevent new players from being overwhelmed by the complexity of the late game or spoiled by seeing boosts they don\'t have access to yet',
+          'Important: Please configure your gem levels immediately in the Gem Overview to ensure accurate calculations - incorrect gem settings may lead to wrong results!'
+        ]
+      },
+      {
+        text: 'Loop Mod Overview:',
+        subItems: [
+          'Now directly connected to Farns\' Google Sheet for real-time Loop Mod data',
+          'Loop Mod database automatically updates when the source sheet is modified',
+          'Special thanks to Farns for maintaining the comprehensive Loop Mod database!'
+        ]
+      }
+    ]
+  },
+  {
     version: '2.4.1',
     date: '2025-06-02',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',

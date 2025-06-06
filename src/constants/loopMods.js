@@ -428,7 +428,8 @@ export const LOOP_MODS = [
              level === 109 ? 5140 :
              level === 110 ? 5230 :
              level === 111 ? 5360 :
-             level === 112 ? 5490 : 0,
+             level === 112 ? 5490 :
+             level === 113 ? 5620 : 0,
       requiresUltimaCap: requiresUltimaCap || undefined
     };
   }).filter(item => item.cost > 0), // Filtere Einträge mit fehlenden Kosten

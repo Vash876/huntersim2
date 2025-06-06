@@ -123,6 +123,11 @@ const routes = [
     component: () => import('../views/tools/LoopModOverview.vue'),
   },
   {
+    path: '/tools/attrgn3-calculator',
+    name: 'Attr. GN#3 Calculator',
+    component: () => import('../views/tools/AttrGN3Calculator.vue'),
+  },
+  {
     path: '/tools/ultima-calculator',
     name: 'Ultima Calculator',
     component: () => import('../views/tools/UltimaCalculator.vue'),

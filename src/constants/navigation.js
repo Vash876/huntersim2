@@ -16,6 +16,7 @@ import {
   IconCrane,
   IconBoxModel,
   IconHexagon,
+  IconAbacus,
 } from '@tabler/icons-vue';
 
 
@@ -105,6 +106,12 @@ export const NAVIGATION = {
       path: '/tools/loopmod-overview',
       icon: IconBoxModel
     },   
+    // {
+    //   id: 'attrgn3calculator',
+    //   name: 'Attr. GN#3 Calculator',
+    //   path: '/tools/attrgn3-calculator',
+    //   icon: IconAbacus
+    // },
     {
       id: 'ultimatecalculator',
       name: 'Ultima Calculator',

@@ -1,3 +1,173 @@
+import { useTRPlannerStore } from '@/store/orbStore';
+
+// Helper-Funktion um Gem-Daten aus dem Store zu laden
+export function getGemDataFromStore() {
+  try {
+    // 1. Versuche Store-Daten zu laden
+    const trPlannerStore = useTRPlannerStore();
+    const gemData = trPlannerStore.userStats.gemData;
+    
+    if (gemData && gemData.levels) {
+      return {
+        levels: gemData.levels,
+        activeNodes: gemData.activeNodes || {
+          temporal: [],
+          innovation: [],
+          attraction: [],
+          power: [],
+          creation: [],
+          evolution: []
+        }
+      };
+    }
+    
+    // 2. FALLBACK: Versuche Legacy-Daten aus einem aktiven Plan zu migrieren
+    const legacyGemData = migrateLegacyGemDataFromPlans();
+    if (legacyGemData) {
+      console.log('Migrierte Legacy-Gem-Daten:', legacyGemData);
+      
+      // Speichere migrierte Daten im Store
+      trPlannerStore.updateUserStats({ gemData: legacyGemData });
+      return legacyGemData;
+    }
+    
+    // 3. DEFAULT: Fallback-Werte
+    return getDefaultGemData();
+    
+  } catch (error) {
+    console.warn('Could not load gem data from store:', error);
+    return getDefaultGemData();
+  }
+}
+
+function migrateLegacyGemDataFromPlans() {
+  try {
+    // Lade TR-Pläne aus localStorage
+    const plansData = localStorage.getItem('trplanner_plans');
+    if (!plansData) return null;
+    
+    const plans = JSON.parse(plansData);
+    if (!Array.isArray(plans) || plans.length === 0) return null;
+    
+    // Finde den neuesten Plan mit Legacy-Gem-Daten
+    const latestPlan = plans
+      .filter(plan => plan.updatedStats || plan.boosts)
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))[0];
+    
+    if (!latestPlan) return null;
+    
+    // Extrahiere Gem-Informationen aus dem Plan
+    const extractedGemData = {
+      levels: {
+        exodus: 0,
+        temporal: 0,
+        innovation: 0,
+        attraction: 0,
+        power: 0,
+        creation: 0,
+        evolution: 0
+      },
+      activeNodes: {
+        temporal: [],
+        innovation: [],
+        attraction: [],
+        power: [],
+        creation: [],
+        evolution: []
+      }
+    };
+    
+    // Aus updatedStats extrahieren
+    if (latestPlan.updatedStats) {
+      const stats = latestPlan.updatedStats;
+      
+      // Innovation Gem
+      if (stats.innogem !== undefined) {
+        extractedGemData.levels.innovation = Math.max(0, stats.innogem);
+      }
+      
+      // Attraction Gem Level aus attr3-Boolean ableiten
+      if (stats.attr3 === true) {
+        extractedGemData.levels.attraction = Math.max(3, extractedGemData.levels.attraction);
+      }
+      
+      // Attraction Node #1 aus attr1-Boolean ableiten
+      if (stats.attr1 === true && extractedGemData.levels.attraction >= 1) {
+        extractedGemData.activeNodes.attraction.push(0); // Node #1 = Index 0
+      }
+      
+      // Power Node #2 aus pow2-Boolean ableiten
+      if (stats.pow2 === true) {
+        extractedGemData.levels.power = Math.max(1, extractedGemData.levels.power);
+        extractedGemData.activeNodes.power.push(1); // Node #2 = Index 1
+      }
+    }
+    
+    // Aus boosts extrahieren (falls verfügbar)
+    if (latestPlan.boosts) {
+      latestPlan.boosts.forEach(boost => {
+        switch (boost.key) {
+          case 'innogem':
+            if (boost.targetLevel !== undefined) {
+              extractedGemData.levels.innovation = Math.max(0, boost.targetLevel);
+            }
+            break;
+          case 'attr3':
+            if (boost.targetState === true) {
+              extractedGemData.levels.attraction = Math.max(3, extractedGemData.levels.attraction);
+            }
+            break;
+          case 'attr1':
+            if (boost.targetState === true && extractedGemData.levels.attraction >= 1) {
+              if (!extractedGemData.activeNodes.attraction.includes(0)) {
+                extractedGemData.activeNodes.attraction.push(0);
+              }
+            }
+            break;
+          case 'pow2':
+            if (boost.targetState === true) {
+              extractedGemData.levels.power = Math.max(1, extractedGemData.levels.power);
+              if (!extractedGemData.activeNodes.power.includes(1)) {
+                extractedGemData.activeNodes.power.push(1);
+              }
+            }
+            break;
+        }
+      });
+    }
+    
+    // Nur zurückgeben wenn mindestens ein Gem > 0 ist
+    const hasGemData = Object.values(extractedGemData.levels).some(level => level > 0);
+    return hasGemData ? extractedGemData : null;
+    
+  } catch (error) {
+    console.error('Error migrating legacy gem data:', error);
+    return null;
+  }
+}
+
+function getDefaultGemData() {
+  return {
+    levels: {
+      exodus: 0,
+      temporal: 0,
+      innovation: 0,
+      attraction: 0,
+      power: 0,
+      creation: 0,
+      evolution: 0
+    },
+    activeNodes: {
+      temporal: [],
+      innovation: [],
+      attraction: [],
+      power: [],
+      creation: [],
+      evolution: []
+    }
+  };
+}
+
 // Boost-Kategorien und ihre zugehörigen Boosts
 export const boostCategories = [
   {
@@ -33,6 +203,10 @@ export const boostCategories = [
     label: 'Researches',
   },
   {
+    id: 'trinkets',
+    label: 'Trinkets',
+  },
+  {
     id: 'cm',
     label: 'Construction Milestones',
   },
@@ -43,10 +217,6 @@ export const boostCategories = [
   {
     id: 'premium',
     label: 'Premium',
-  },
-  {
-    id: 'gem',
-    label: 'Gems',
   },
 ];
 
@@ -102,6 +272,8 @@ export const allBoosts = [
     key: 'lmConsistency',
     label: 'Ultima LM: Rule of Consistency',
     category: 'time',
+    unlock: 'temporal',
+    unlock_level: 3,
     type: 'number',
     orbcalc: true,
     tooltip: '0',
@@ -120,7 +292,12 @@ export const allBoosts = [
     tooltip: 'For Campaign Fragments Multiplier Attraction Gem Level #3 required.',
     multiplier: (value) => Math.pow(1.1, value),
     fragmulti: (value, allValues) => {
-      if (allValues.attr3) {
+      // Store-Integration: Attraction Gem Level und Node direkt aus Store laden
+      const gemData = getGemDataFromStore();
+      const attractionLevel = gemData.levels.attraction || 0;
+      
+      // Prüfe ob Attraction Level 3
+      if (attractionLevel >= 3) {
         return Math.pow(1.011, value);
       }
       
@@ -196,6 +373,8 @@ export const allBoosts = [
     key: 'cm47',
     label: 'CM #47',
     category: 'cm',
+    unlock: 'power',
+    unlock_level: 2,
     type: 'boolean',
     orbcalc: true,
     permanent: false,
@@ -206,6 +385,8 @@ export const allBoosts = [
     key: 'cm49',
     label: 'CM #49',
     category: 'cm',
+    unlock: 'power',
+    unlock_level: 2,
     type: 'boolean',
     orbcalc: true,
     permanent: false,
@@ -216,6 +397,8 @@ export const allBoosts = [
     key: 'cm50',
     label: 'CM #50',
     category: 'cm',
+    unlock: 'power',
+    unlock_level: 2,
     type: 'boolean',
     orbcalc: true,
     permanent: false,
@@ -226,6 +409,8 @@ export const allBoosts = [
     key: 'cm51',
     label: 'CM #51',
     category: 'cm',
+    unlock: 'power',
+    unlock_level: 2,
     type: 'boolean',
     orbcalc: true,
     permanent: false,
@@ -238,6 +423,8 @@ export const allBoosts = [
     key: 'boonELevel',
     label: 'Boon E Level',
     category: 'boonE',
+    unlock: 'temporal',
+    unlock_level: 2,
     type: 'number',
     orbcalc: true,
     permanent: true,
@@ -249,6 +436,8 @@ export const allBoosts = [
     key: 'campaigns',
     label: 'Campaigns',
     category: 'boonE',
+    unlock: 'temporal',
+    unlock_level: 2,
     type: 'number',
     orbcalc: true,
     tooltip: 'Total number of Campaign Missions completed.',
@@ -256,23 +445,15 @@ export const allBoosts = [
       boost: 'boonELevel', 
       level: 1          
     },
-    // Orb-Multiplikator mit Boon E Level Abhängigkeit
     multiplier: (value, allValues) => {
+      // Bestehende Orb-Multiplier-Logik...
       const boonLevel = allValues.boonELevel || 0;
-      
-      // Level 0: Neutral
       if (boonLevel === 0) return 1;
       
-      // Basis-Multiplikator
       const baseMultiplier = Math.pow(1.006, value);
-      
-      // Level 1: Normaler Multiplikator
       if (boonLevel === 1) return baseMultiplier;
-      
-      // Level 2+: Potenziert mit dem Boon-Level
       return Math.pow(baseMultiplier, boonLevel);
     },
-    // Fragment-Multiplikator mit Boon E Level Abhängigkeit
     fragmulti: (value, allValues) => {
       const boonLevel = allValues.boonELevel || 0;
       
@@ -295,6 +476,8 @@ export const allBoosts = [
     key: 'boonHLevel',
     label: 'Boon H Level',
     category: 'boonH',
+    unlock: 'temporal',
+    unlock_level: 3,
     type: 'number',
     orbcalc: true,
     permanent: true,
@@ -306,6 +489,8 @@ export const allBoosts = [
     key: 'shipinstalls',
     label: 'Ship Installs',
     category: 'boonH',
+    unlock: 'temporal',
+    unlock_level: 3,
     type: 'number',
     orbcalc: true,
     tooltip: 'Total number of ship installs across all ships.',
@@ -336,6 +521,8 @@ export const allBoosts = [
     key: 'ouroinstalls',
     label: 'Ouro Installs',
     category: 'boonH',
+    unlock: 'temporal',
+    unlock_level: 3,
     type: 'number',
     orbcalc: false,
     permanent: true,
@@ -367,6 +554,8 @@ export const allBoosts = [
     key: 'oogadget',
     label: 'Serpents Connection Band',
     category: 'gadget',
+    unlock: 'exodus',
+    unlock_level: 4,
     type: 'number',
     orbcalc: true,
     permanent: true,
@@ -382,6 +571,8 @@ export const allBoosts = [
     key: 'campfragdet',
     label: 'Galactic Fragment Magnet',
     category: 'gadget',
+    unlock: 'exodus',
+    unlock_level: 4,
     type: 'number',
     orbcalc: false,
     permanent: true,
@@ -399,44 +590,40 @@ export const allBoosts = [
     key: 'research',
     label: 'Research Points',
     category: 'research',
+    unlock: 'innovation',
+    unlock_level: 2,
     type: 'number',
     orbcalc: true,
     permanent: false,
-    tooltip: 'Enter your Research Points without the "e" notation (e.g. 1e3000 = 3000). The system automatically calculates the multiplier from all available OO Researches based on your points.<br /><b>Expert Mode</b>: Use the settings icon ⚙️ to open the Research Selection modal where you can manually customize which researches and levels to include in your calculation.',
+    tooltip: 'Enter your Research Points...',
     normalControl: 100,
     fastControl: 1000,
-    minRequirement: {
-      boost: 'innogem', 
-      level: 2          
-    },
     multiplier: (value, allValues) => {
-      // Prüfen ob Innovation Gem Level 2 ist
-      const innovationGemLevel = allValues.innogem || 0;
+      // Store-Integration: Innovation Gem Level direkt aus Store laden
+      const gemData = getGemDataFromStore();
+      const innovationGemLevel = gemData.levels.innovation || 0;
+      
       if (innovationGemLevel < 2) {
         return 1; // Kein Multiplikator wenn Innovation Gem unter Level 2
       }
       
       let overallMultiplier = 1;
-    
-      // Für jede Research (85, 87, 88, 90)
+      
+      // Rest der Research-Logik bleibt gleich...
       for (const research in researchData) {
         let researchMultiplier = 1;
         
-        // Iteriere über die Level (aufsteigend sortiert)
         for (const levelData of researchData[research]) {
           if (value >= levelData.price) {
-            // Level ist erschwinglich – multiplikatorisch berücksichtigen
             researchMultiplier *= levelData.multiplier;
           } else {
-            // Sobald ein Level nicht mehr erschwinglich ist, brechen wir ab
             break;
           }
         }
         
-        // Multipliziere das Ergebnis der aktuellen Research mit dem Gesamtwert
         overallMultiplier *= researchMultiplier;
       }
-    
+      
       return overallMultiplier;
     },
     max: 4465
@@ -446,27 +633,69 @@ export const allBoosts = [
     key: 'research89',
     label: 'Research #89',
     category: 'research',
+    unlock: 'innovation',
+    unlock_level: 2,
     type: 'number',
     orbcalc: false,
     permanent: true,
     tooltip: '0',
-    fragmulti: (value) => {
-      // Array mit Multiplikatoren für Level 1 bis 6
+    fragmulti: (value, allValues) => {
+      // Bestehende Research #89 Logik
       const multipliers = [1.1, 1.1, 1.14, 1.14, 1.18, 1.18];
-      
-      // Starte mit 1 als neutralem Multiplikator
       let result = 1;
       
-      // Multipliziere alle Multiplikatoren der Levels, die erreicht wurden.
-      // Dabei gehen wir von Index 0 bis levelCount - 1
       for (let i = 0; i < value && i < multipliers.length; i++) {
         result *= multipliers[i];
+      }
+      
+      // Store-Integration: Power Node #2 Check
+      const gemData = getGemDataFromStore();
+      const powerLevel = gemData.levels.power || 0;
+      const powerNodes = gemData.activeNodes.power || [];
+      
+      // Zusätzlicher Power GN #2 Multiplier
+      if (powerLevel >= 1 && powerNodes.includes(1)) { // Node #2 = Index 1
+        result *= 2; // Power GN #2 Bonus
       }
       
       return result;
     },
     max: 6
   },
+
+  // Trinkets
+  {
+    key: 'trinket_oo_tier',
+    label: 'The Ouro Recursive Index Tier',
+    category: 'trinkets',
+    unlock: 'creation',
+    unlock_level: 4,
+    type: 'number',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: 1,
+  },  
+  {
+    key: 'trinket_oo_level',
+    label: 'The Ouro Recursive Index Level',
+    category: 'trinkets',
+    unlock: 'creation',
+    unlock_level: 4,
+    type: 'number',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: (value, allValues) => {
+      const tierLevel = allValues.trinket_oo_tier || 0;
+      const baseFactor = 0.011;
+      const tierBonus = tierLevel * 0.001;
+      const totalFactor = baseFactor + tierBonus;
+      
+      return 1 + totalFactor * value;
+    },
+    max: 80
+  }, 
 
   // Premium
   {
@@ -511,53 +740,13 @@ export const allBoosts = [
     multiplier: 1.05,
   },
 
-  // Gems
-  {
-    key: 'innogem',
-    label: 'Innovation Gem Level',
-    category: 'gem',
-    type: 'number',
-    orbcalc: true,
-    permanent: true,
-    tooltip: '0',
-    multiplier: 1,
-    max: 2
-  },
-  {
-    key: 'attr3',
-    label: 'Attraction Gem Level #3',
-    category: 'gem',
-    type: 'boolean',
-    orbcalc: false,
-    permanent: true,
-    tooltip: '0',
-  },
-  {
-    key: 'attr1',
-    label: 'Attraction GN #1',
-    category: 'gem',
-    type: 'boolean',
-    orbcalc: false,
-    permanent: true,
-    tooltip: '0',
-    fragmulti: 1.5,
-  },
-  {
-    key: 'pow2',
-    label: 'Power GN #2',
-    category: 'gem',
-    type: 'boolean',
-    orbcalc: false,
-    permanent: true,
-    tooltip: '0',
-    fragmulti: 2,
-  },
-
   // Void Badges
   {
     key: 'vb1',
     label: 'Void Badge #1',
     category: 'badge',
+    unlock: 'exodus',
+    unlock_level: 3,
     type: 'boolean',
     orbcalc: true,
     permanent: false,
@@ -568,6 +757,8 @@ export const allBoosts = [
     key: 'vb2',
     label: 'Void Badge #2',
     category: 'badge',
+    unlock: 'exodus',
+    unlock_level: 3,
     type: 'boolean',
     orbcalc: true,
     permanent: false,
@@ -578,6 +769,8 @@ export const allBoosts = [
     key: 'vb3',
     label: 'Void Badge #3',
     category: 'badge',
+    unlock: 'exodus',
+    unlock_level: 3,
     type: 'boolean',
     orbcalc: true,
     permanent: false,
@@ -588,6 +781,8 @@ export const allBoosts = [
     key: 'vb4',
     label: 'Void Badge #4',
     category: 'badge',
+    unlock: 'exodus',
+    unlock_level: 3,
     type: 'boolean',
     orbcalc: true,
     permanent: false,
@@ -598,6 +793,8 @@ export const allBoosts = [
     key: 'vb5',
     label: 'Void Badge #5',
     category: 'badge',
+    unlock: 'exodus',
+    unlock_level: 3,
     type: 'boolean',
     orbcalc: true,
     permanent: false,
@@ -641,6 +838,9 @@ export const researchData = {
     { level: 6, price: 4465, multiplier: 1.21 }
   ]
 };
+
+
+
 
 // Helper function to get boosts by category
 export const boostsByCategory = boostCategories.map(category => ({

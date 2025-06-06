@@ -658,6 +658,19 @@ const pendingSaveData = ref(null);
 // Neue Referenz-Variable für den ursprünglichen Zustand
 const originalState = ref(null);
 
+// Gem-Levels aus dem Store laden
+const gemLevels = computed(() => {
+  return trPlannerStore.userStats.gemData?.levels || {
+    exodus: 0,
+    temporal: 0,
+    innovation: 0,
+    attraction: 0,
+    power: 0,
+    creation: 0,
+    evolution: 0
+  };
+});
+
 // Funktion zum Erfassen des ursprünglichen Zustands
 function captureOriginalState() {
   originalState.value = {
@@ -1102,6 +1115,11 @@ function getFilteredBoostsByCategory(step) {
         // AUSNAHME: hoursInTR wird immer angezeigt
         if (orbCalcMaxedBoosts[boost.key] && boost.key !== 'hoursInTR') {
           continue; // Boost überspringen, wenn er maxed ist
+        }
+        
+        // NEUE REGEL: Nur freigeschaltete Boosts anzeigen
+        if (!isBoostUnlocked(boost)) {
+          continue; // Boost überspringen, wenn er nicht freigeschaltet ist
         }
         
         // HAUPTREGEL 2: In Folge-TRs nur ausgewählte Boosts anzeigen
@@ -2491,6 +2509,12 @@ watch(() => props.isVisible, (newValue) => {
   }
 });
 
+// Watch für Gem-Level-Änderungen um UI zu aktualisieren
+watch(() => gemLevels.value, () => {
+  // Bei Gem-Level-Änderungen die UI neu berechnen
+  // Dies triggert automatisch die computed properties neu
+}, { deep: true });
+
 // Im Setup-Code
 onMounted(() => {
   // Wenn kopierte Plandaten vorhanden sind, diese laden
@@ -2725,6 +2749,20 @@ function handleTRUpdate() {
   }
   
   return '';
+}
+
+// Hilfsfunktion um zu prüfen ob ein Boost freigeschaltet ist
+function isBoostUnlocked(boost) {
+  // Wenn kein unlock definiert ist, ist der Boost immer freigeschaltet
+  if (!boost.unlock) {
+    return true;
+  }
+  
+  const requiredGem = boost.unlock;
+  const requiredLevel = boost.unlock_level || 1;
+  const currentLevel = gemLevels.value[requiredGem] || 0;
+  
+  return currentLevel >= requiredLevel;
 }
 
 function showAlert(message, title = 'TR Planner', type = 'info') {

@@ -9,7 +9,7 @@
       <!-- Info Banner -->
       <div class="bg-blue-900/30 border border-blue-800 rounded-lg p-3 mb-4 text-center">
         <p class="text-blue-200 text-sm">
-          This tool only shows endgame loop mods starting from around e3000 MP, which are the most relevant for late-game progression.
+          This tool displays all notable and powerful Loop Mods that are beneficial for progression and worth pursuing.
         </p>
       </div>
       
@@ -38,7 +38,7 @@
                 <span class="font-medium text-white text-sm">MP Value (e)</span>
                 <ToolValueControls
                   :value="mpValue"
-                  :minValue="3000"
+                  :minValue="0"
                   :maxValue="15000"
                   :step="10"
                   :fastStep="100"
@@ -58,7 +58,7 @@
                   <ToolValueControls
                     :value="mpRange"
                     :minValue="50"
-                    :maxValue="1000"
+                    :maxValue="10000"
                     :step="10"
                     :fastStep="100"
                     :validateOnFinalOnly="true"
@@ -99,23 +99,39 @@
               </div>
               
               <div class="flex items-center justify-between mb-2">
-                <label for="i753Toggle" class="text-sm text-gray-300">Insryption #75-3 Available</label>
-                <button 
-                  @click="toggleI753"
-                  class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
-                  :class="{
-                    'bg-amber-600': showI753,
-                    'bg-gray-600': !showI753
-                  }"
-                >
-                  <span 
-                    class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                    :class="{
-                      'translate-x-5': showI753,
-                      'translate-x-1': !showI753
-                    }"
-                  ></span>
-                </button>
+                <label class="text-sm text-gray-300">Inscryption #61 Level</label>
+                <ToolValueControls
+                  :value="i61Level"
+                  :minValue="0"
+                  :maxValue="5"
+                  :step="1"
+                  :showFastControls="false"
+                  :validateOnFinalOnly="true"
+                  @update:value="handleI61LevelUpdate"
+                  @update:raw-value="(val) => i61LevelRaw = val"
+                  @finalize:value="finalizeI61Level"
+                  value-class="text-purple-400 font-medium"
+                  :autoEdit="true"
+                  class="ml-2"
+                />
+              </div>
+              
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-sm text-gray-300">Inscryption #75 Level</label>
+                <ToolValueControls
+                  :value="i75Level"
+                  :minValue="0"
+                  :maxValue="10"
+                  :step="1"
+                  :showFastControls="false"
+                  :validateOnFinalOnly="true"
+                  @update:value="handleI75LevelUpdate"
+                  @update:raw-value="(val) => i75LevelRaw = val"
+                  @finalize:value="finalizeI75Level"
+                  value-class="text-amber-400 font-medium"
+                  :autoEdit="true"
+                  class="ml-2"
+                />
               </div>
               
               <div class="flex items-center gap-2">
@@ -172,7 +188,19 @@
           <!-- Loading state -->
           <div v-if="isLoading" class="p-4 flex flex-col items-center justify-center">
             <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-l-2 border-blue-500 mb-2"></div>
-            <p class="text-gray-400 text-sm">Loading loop mod data...</p>
+            <p class="text-gray-400 text-sm">Loading loop mod data from Google Sheets...</p>
+          </div>
+
+          <!-- Error state -->
+          <div v-else-if="error" class="p-4 flex flex-col items-center justify-center">
+            <IconSearch size="32" class="text-red-600 mb-2" />
+            <p class="text-red-400 mb-2">{{ error }}</p>
+            <button 
+              @click="loadLoopModData" 
+              class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 text-sm rounded-lg transition-colors"
+            >
+              Retry
+            </button>
           </div>
 
           <!-- No results state -->
@@ -263,10 +291,16 @@
                         Temp3
                       </span>
                       <span 
-                        v-if="mod.requiresI753" 
+                        v-if="mod.requiresI61Level > 0" 
+                        class="px-1.5 py-0.5 text-xs bg-purple-900/50 text-purple-300 border border-purple-700 rounded"
+                      >
+                        i61-{{ mod.requiresI61Level }}
+                      </span>
+                      <span 
+                        v-if="mod.requiresI75Level > 0" 
                         class="px-1.5 py-0.5 text-xs bg-amber-900/50 text-amber-300 border border-amber-700 rounded"
                       >
-                        i75-3
+                        i75-{{ mod.requiresI75Level }}
                       </span>
                       <span 
                         v-if="mod.requiresUltimaCap > 0" 
@@ -298,38 +332,45 @@ import {
   IconSortAscending,
   IconSortDescending
 } from '@tabler/icons-vue';
-import { 
-  LOOP_MOD_TEMPLATES,
-  LOOP_MODS,
-  ULTIMA_CAP_UPGRADES,
-  TIER_DEFINITIONS,
-  getLoopModDetails,
-  hasEnoughUltimaCap,
-  getAllLoopMods
-} from '@/constants/loopMods.js';
+import { ULTIMA_CAP_UPGRADES } from '@/constants/loopMods.js';
+import { useLoopModData } from '@/composables/useLoopModData.js';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 
 // State
 const isLoading = ref(true);
-const mpValue = ref(3000);
-const mpRange = ref(100);
+const loopModsData = ref([]);
+const tierData = ref({});
+const error = ref(null);
+
+// Filter States - i75 anpassen
+const mpValue = ref(0);
+const mpRange = ref(50);
 const mpRangeEnabled = ref(true);
 const showTemp3 = ref(false);
-const showI753 = ref(false);
+const i75Level = ref(0); // Neu: Level statt Boolean
+const i61Level = ref(0); // Neu: Level statt Boolean
 const selectedUltimaCapUpgrades = ref([]);
 const sortBy = ref('cost');
 const sortDirection = ref('asc');
 const mpValueRaw = ref(mpValue.value);
 const mpRangeRaw = ref(mpRange.value);
+const i75LevelRaw = ref(i75Level.value); // Neu
+const i61LevelRaw = ref(i61Level.value); // Neu
+
+// Google Sheets Integration
+const { fetchLoopModData } = useLoopModData();
+
+// Computed - alle Loop Mods mit Tier-Informationen
+const allLoopMods = computed(() => {
+  return loopModsData.value.map(mod => ({
+    ...mod,
+    tier: tierData.value[mod.name] || 'B' // Fallback zu Tier B
+  }));
+});
 
 // Toggles für die Filter
 function toggleTemp3() {
   showTemp3.value = !showTemp3.value;
-  saveFilters();
-}
-
-function toggleI753() {
-  showI753.value = !showI753.value;
   saveFilters();
 }
 
@@ -355,7 +396,7 @@ function finalizeMpValue() {
   
   // Validiere nur wenn der Wert eine gültige Zahl ist
   if (!isNaN(numValue)) {
-    mpValue.value = Math.max(3000, Math.min(15000, numValue));
+    mpValue.value = Math.max(0, Math.min(99999, numValue));
     mpValueRaw.value = mpValue.value;
     saveFilters();
   }
@@ -367,8 +408,42 @@ function finalizeMpRange() {
   
   // Validiere nur wenn der Wert eine gültige Zahl ist
   if (!isNaN(numValue)) {
-    mpRange.value = Math.max(50, Math.min(1000, numValue));
+    mpRange.value = Math.max(50, Math.min(10000, numValue));
     mpRangeRaw.value = mpRange.value;
+    saveFilters();
+  }
+}
+
+// Neue i75-Funktionen
+function handleI75LevelUpdate(newVal) {
+  i75Level.value = newVal;
+  i75LevelRaw.value = newVal;
+  saveFilters();
+}
+
+function finalizeI75Level() {
+  const numValue = Number(i75LevelRaw.value);
+  
+  if (!isNaN(numValue)) {
+    i75Level.value = Math.max(0, Math.min(10, numValue));
+    i75LevelRaw.value = i75Level.value;
+    saveFilters();
+  }
+}
+
+// Neue i61-Funktionen
+function handleI61LevelUpdate(newVal) {
+  i61Level.value = newVal;
+  i61LevelRaw.value = newVal;
+  saveFilters();
+}
+
+function finalizeI61Level() {
+  const numValue = Number(i61LevelRaw.value);
+  
+  if (!isNaN(numValue)) {
+    i61Level.value = Math.max(0, Math.min(5, numValue));
+    i61LevelRaw.value = i61Level.value;
     saveFilters();
   }
 }
@@ -380,39 +455,43 @@ const totalUltimaCap = computed(() => {
     .reduce((sum, upgrade) => sum + upgrade.bonus, 0);
 });
 
-const allLoopMods = computed(() => {
-  return getAllLoopMods();
-});
-
 const filteredLoopMods = computed(() => {
   let result = allLoopMods.value;
   
-  // Filter by MP value if provided
+  // MP Value Filter bleibt gleich...
   if (mpValue.value) {
     const mpVal = Number(mpValue.value);
     if (!isNaN(mpVal)) {
       if (mpRangeEnabled.value && mpRange.value) {
         const range = Number(mpRange.value);
         result = result.filter(mod => 
-          mod.cost >= mpVal && // Diese Zeile wurde von mpVal - range zu einfach mpVal geändert
+          mod.cost >= mpVal && 
           mod.cost <= mpVal + range
         );
       } else {
-        result = result.filter(mod => mod.cost >= mpVal); // Diese Zeile wurde von <= zu >= geändert
+        result = result.filter(mod => mod.cost >= mpVal);
       }
     }
   }
   
-  // Filter by requirements
+  // Temp3 Filter bleibt gleich...
   if (!showTemp3.value) {
     result = result.filter(mod => !mod.requiresTemp3);
   }
   
-  if (!showI753.value) {
-    result = result.filter(mod => !mod.requiresI753);
-  }
+  // i75 Filter anpassen
+  result = result.filter(mod => {
+    if (!mod.requiresI75Level) return true;
+    return mod.requiresI75Level <= i75Level.value;
+  });
   
-  // Filter by Ultima Cap
+  // i61 Filter anpassen
+  result = result.filter(mod => {
+    if (!mod.requiresI61Level) return true;
+    return mod.requiresI61Level <= i61Level.value;
+  });
+  
+  // Ultima Cap Filter bleibt gleich...
   result = result.filter(mod => {
     if (!mod.requiresUltimaCap) return true;
     return mod.requiresUltimaCap <= totalUltimaCap.value;
@@ -482,11 +561,12 @@ function updateSort(field) {
 }
 
 function resetFilters() {
-  mpValue.value = 3000;
-  mpRange.value = 100;
+  mpValue.value = 0;
+  mpRange.value = 50;
   mpRangeEnabled.value = true;
   showTemp3.value = false;
-  showI753.value = false;
+  i75Level.value = 0; // Angepasst
+  i61Level.value = 0; // Angepasst
   selectedUltimaCapUpgrades.value = [];
   sortBy.value = 'cost';
   sortDirection.value = 'asc';
@@ -521,7 +601,8 @@ function loadFilters() {
     }
     if (savedFilters.mpRangeEnabled !== undefined) mpRangeEnabled.value = savedFilters.mpRangeEnabled;
     if (savedFilters.showTemp3 !== undefined) showTemp3.value = savedFilters.showTemp3;
-    if (savedFilters.showI753 !== undefined) showI753.value = savedFilters.showI753;
+    if (savedFilters.i75Level !== undefined) i75Level.value = Number(savedFilters.i75Level); // Angepasst
+    if (savedFilters.i61Level !== undefined) i61Level.value = Number(savedFilters.i61Level); // Angepasst
     if (savedFilters.selectedUltimaCapUpgrades !== undefined) {
       selectedUltimaCapUpgrades.value = savedFilters.selectedUltimaCapUpgrades;
     }
@@ -540,7 +621,8 @@ function saveFilters() {
       mpRange: mpRange.value,
       mpRangeEnabled: mpRangeEnabled.value,
       showTemp3: showTemp3.value,
-      showI753: showI753.value,
+      i75Level: i75Level.value, // Angepasst
+      i61Level: i61Level.value, // Angepasst
       selectedUltimaCapUpgrades: selectedUltimaCapUpgrades.value,
       sortBy: sortBy.value,
       sortDirection: sortDirection.value
@@ -550,15 +632,35 @@ function saveFilters() {
   }
 }
 
+// Data Loading
+async function loadLoopModData() {
+  try {
+    isLoading.value = true;
+    error.value = null;
+    
+    const data = await fetchLoopModData();
+    loopModsData.value = data.loopMods;
+    tierData.value = data.tiers;
+    
+    console.log(`Loaded ${data.loopMods.length} loop mods and ${Object.keys(data.tiers).length} tier definitions`);
+    
+  } catch (err) {
+    console.error('Failed to load loop mod data:', err);
+    error.value = 'Failed to load loop mod data. Please try again.';
+  } finally {
+    isLoading.value = false;
+  }
+}
+
 // Watch für Wertänderungen
 watch([mpValue, mpRange], () => {
   saveFilters();
 });
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   loadFilters();
-  isLoading.value = false;
+  await loadLoopModData();
 });
 </script>
 
