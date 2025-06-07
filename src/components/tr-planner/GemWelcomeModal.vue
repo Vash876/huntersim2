@@ -35,6 +35,20 @@
           </div>
         </div>
 
+        <!-- Maxed Boosts Reset Info - nur anzeigen wenn tatsächlich resettet wurde -->
+        <div 
+          v-if="hasResetMaxedBoosts" 
+          class="mb-4 p-3 bg-orange-900/30 rounded-lg border border-orange-800/50"
+        >
+          <div class="flex items-start">
+            <IconRefresh size="20" class="text-orange-400 mr-2 flex-shrink-0 mt-0.5" />
+            <div class="text-orange-200 text-sm">
+              <p class="font-medium mb-1">Maxed Boosts Reset</p>
+              <p>All previously marked "maxed boosts" have been automatically cleared to ensure they align with your gem levels. You'll need to reconfigure them after setting up your gems.</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Buttons -->
         <div class="flex justify-between items-right gap-3">
           <span></span>
@@ -54,15 +68,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { 
   IconZodiacGemini, 
   IconX, 
   IconAlertTriangle, 
   IconCircleCheck, 
   IconInfoCircle,
-  IconSparkles
+  IconSparkles,
+  IconRefresh
 } from '@tabler/icons-vue';
+import { useTRPlannerStore } from '@/store/orbStore'; // Korrekter Import
 
 const props = defineProps({
   isVisible: {
@@ -74,31 +90,105 @@ const props = defineProps({
 const emit = defineEmits(['close', 'openGemOverview']);
 
 const dontShowAgain = ref(false);
+const hasResetMaxedBoosts = ref(false);
+
+// Store initialisieren
+const trPlannerStore = useTRPlannerStore();
+
+// Reset alle maxed boosts wenn das Modal erscheint
+function resetAllMaxedBoosts() {
+  try {
+    console.log('=== DEBUG: Starting maxed boosts reset ===');
+    
+    const currentStats = JSON.parse(localStorage.getItem('trplanner_userstats') || '{}');
+    console.log('Current stats before reset:', currentStats);
+    
+    const hasMaxedBoosts = currentStats._orbCalcMaxedBoosts && 
+                          Object.keys(currentStats._orbCalcMaxedBoosts).length > 0;
+    
+    console.log('Has maxed boosts:', hasMaxedBoosts);
+    console.log('Maxed boosts object:', currentStats._orbCalcMaxedBoosts);
+    
+    if (hasMaxedBoosts) {
+      const resetCount = Object.keys(currentStats._orbCalcMaxedBoosts).length;
+      console.log(`Resetting ${resetCount} maxed boosts`);
+      
+      // Alle maxed boosts entfernen
+      currentStats._orbCalcMaxedBoosts = {};
+      
+      // WICHTIG: Auch die eigentlichen Boost-Werte zurücksetzen
+      Object.keys(currentStats).forEach(key => {
+        if (key !== '_orbCalcMaxedBoosts' && key !== 'gemData' && key !== 'allTimeOrbs') {
+          const oldValue = currentStats[key];
+          if (typeof currentStats[key] === 'boolean') {
+            currentStats[key] = false;
+          } else if (typeof currentStats[key] === 'number' && key !== 'allTimeOrbs') {
+            currentStats[key] = 0;
+          }
+          if (oldValue !== currentStats[key]) {
+            console.log(`Reset ${key}: ${oldValue} -> ${currentStats[key]}`);
+          }
+        }
+      });
+      
+      // Speichere in localStorage
+      localStorage.setItem('trplanner_userstats', JSON.stringify(currentStats));
+      console.log('Stats after reset in localStorage:', JSON.parse(localStorage.getItem('trplanner_userstats')));
+      
+      // WICHTIG: Auch den Store updaten
+      try {
+        trPlannerStore.updateUserStats(currentStats);
+        console.log('Updated TR Planner Store with reset data');
+        console.log('Store userStats after update:', trPlannerStore.userStats);
+      } catch (storeError) {
+        console.error('Error updating TR Planner Store:', storeError);
+      }
+      
+      // Setze Flag dass tatsächlich resettet wurde
+      hasResetMaxedBoosts.value = true;
+      
+      console.log(`Welcome Modal: Reset ${resetCount} maxed boosts for gem reconfiguration`);
+    } else {
+      console.log('No maxed boosts found to reset');
+      hasResetMaxedBoosts.value = false;
+    }
+    
+    console.log('=== DEBUG: Finished maxed boosts reset ===');
+    
+  } catch (error) {
+    console.error('Error resetting maxed boosts in welcome modal:', error);
+    hasResetMaxedBoosts.value = false;
+  }
+}
 
 function handleClose() {
-  if (dontShowAgain.value) {
-    localStorage.setItem('trplanner_gem_welcome_seen', 'true');
-    localStorage.setItem('trplanner_gem_welcome_disabled', 'true');
-  }
+  localStorage.setItem('trplanner_gem_welcome_seen', 'true');
   emit('close');
 }
 
 function handleSkip() {
-  if (dontShowAgain.value) {
-    localStorage.setItem('trplanner_gem_welcome_seen', 'true');
-    localStorage.setItem('trplanner_gem_welcome_disabled', 'true');
-  }
+  localStorage.setItem('trplanner_gem_welcome_seen', 'true');
   emit('close');
 }
 
 function handleOpenGemOverview() {
-  // Immer als gesehen markieren wenn User zu Gems geht
   localStorage.setItem('trplanner_gem_welcome_seen', 'true');
-  if (dontShowAgain.value) {
-    localStorage.setItem('trplanner_gem_welcome_disabled', 'true');
-  }
   emit('openGemOverview');
 }
+
+// Reset maxed boosts wenn Modal sichtbar wird
+onMounted(() => {
+  if (props.isVisible) {
+    resetAllMaxedBoosts();
+  }
+});
+
+// Watch für isVisible changes
+watch(() => props.isVisible, (newValue) => {
+  if (newValue) {
+    resetAllMaxedBoosts();
+  }
+});
 </script>
 
 <style scoped>

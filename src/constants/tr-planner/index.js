@@ -840,8 +840,6 @@ export const researchData = {
 };
 
 
-
-
 // Helper function to get boosts by category
 export const boostsByCategory = boostCategories.map(category => ({
   ...category,

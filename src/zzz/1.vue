@@ -600,7 +600,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, nextTick, onBeforeUnmount } from 'vue';
 import { useNow } from '@vueuse/core';
-import { allBoosts, boostsByCategory, generalStats, alwaysUpdateKeys, getGemDataFromStore } from '@/constants/tr-planner';
+import { allBoosts, boostsByCategory, generalStats, alwaysUpdateKeys } from '@/constants/tr-planner';
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
@@ -1090,9 +1090,6 @@ function getFilteredBoostsByCategory(step) {
       }
     }
     
-    // Aktuelle Gem-Daten aus dem Store laden
-    const gemData = getGemDataFromStore();
-    
     // Filterung der Kategorien
     const filteredCategories = [];
     
@@ -1105,17 +1102,6 @@ function getFilteredBoostsByCategory(step) {
         // AUSNAHME: hoursInTR wird immer angezeigt
         if (orbCalcMaxedBoosts[boost.key] && boost.key !== 'hoursInTR') {
           continue; // Boost überspringen, wenn er maxed ist
-        }
-        
-        // NEUE REGEL: Gem-basierte Verfügbarkeitsprüfung
-        if (boost.unlock && boost.unlock_level) {
-          const requiredGemLevel = boost.unlock_level || 0;
-          const currentGemLevel = gemData.levels[boost.unlock] || 0;
-          
-          // Boost überspringen, wenn Gem-Level nicht ausreichend ist
-          if (currentGemLevel < requiredGemLevel) {
-            continue;
-          }
         }
         
         // HAUPTREGEL 2: In Folge-TRs nur ausgewählte Boosts anzeigen
