@@ -663,13 +663,41 @@ onMounted(async () => {
   background-color: rgba(42, 46, 53, 0.8);
 }
 
+/* Verbesserte Gadget-Styles - schlicht aber elegant */
 .custom-gadget-item {
-  background-color: rgba(31, 35, 42, 0.8);
+  background: linear-gradient(to bottom, rgba(35, 39, 47, 0.9), rgba(28, 32, 38, 0.95));
+  border-left: 3px solid transparent;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+}
+
+.custom-gadget-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  border-left-color: rgba(59, 130, 246, 0.5);
 }
 
 .custom-gadget-item.active-gadget {
-  background-color: rgba(30, 58, 138, 0.2);
-  border-color: rgb(37, 99, 235);
+  background: linear-gradient(to bottom, rgba(30, 41, 59, 0.9), rgba(30, 41, 55, 0.95));
+  border-left-color: rgb(37, 99, 235);
+  box-shadow: 0 3px 6px rgba(37, 99, 235, 0.15);
+}
+
+/* Verbesserte Multiplikatoren-Box */
+.custom-gadget-item .bg-gray-900\/70 {
+  background: linear-gradient(to bottom, rgba(23, 29, 35, 0.9), rgba(20, 25, 30, 0.95));
+  border-radius: 0.375rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Bessere Hervorhebung für Werte */
+.custom-gadget-item .text-green-400 {
+  color: rgb(74, 222, 128);
+  text-shadow: 0 0 3px rgba(74, 222, 128, 0.15);
+}
+
+.custom-gadget-item .text-amber-400 {
+  color: rgb(251, 191, 36);
+  text-shadow: 0 0 3px rgba(251, 191, 36, 0.15);
 }
 
 @media (max-width: 640px) {

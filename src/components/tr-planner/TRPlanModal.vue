@@ -1,4 +1,4 @@
-<template>
+<template>  
   <div 
     v-if="isVisible" 
     class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-2 sm:p-4 pb-[110px] pt-[50px] sm:py-0"
@@ -22,6 +22,22 @@
             >
               <IconX size="16" />
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legacy-Plan Warning Banner - direkt nach dem Header einfügen -->
+      <div 
+        v-if="isLegacyPlan && hasLegacyGemChanges" 
+        class="p-3 mb-4 bg-red-900/30 border border-red-500 rounded-md animate-fade-in"
+      >
+        <div class="flex items-start">
+          <div>
+            <p class="text-red-300 text-sm font-medium">Legacy Gem Boosts Detected</p>
+            <p class="text-red-200/80 text-xs mt-1">
+              This plan contains modified gem boosts in later TRs(Innovation Gem Level, Attraction Gem Level #3, Attraction GN #1, Power GN #2) that are no longer supported. 
+              These changes will not work correctly. Please create a new plan (do not copy this plan).
+            </p>
           </div>
         </div>
       </div>
@@ -1958,6 +1974,12 @@ function initData() {
 
     trSteps.push(firstStep);
 
+    if (props.editPlanId && isLegacyPlan.value) {
+      nextTick(() => {
+        captureLegacyGemValues();
+      });
+    }
+
     // ───────────────────────── Chain‑Schritte ─────────────────────────
     if (props.editPlanId) {
       const plan = trPlannerStore.getTRPlanById(props.editPlanId);
@@ -2870,138 +2892,10 @@ watch(
 // Neue State-Variable für die Create-Optionen
 const showCreateOptions = ref(false);
 
-// Toggle-Funktion für die Create-Optionen
-function toggleCreateOptions() {
-  showCreateOptions.value = !showCreateOptions.value;
-}
-
 // Reset-Funktion für das Formular
 function resetForm() {
   initData();
   showCreateOptions.value = false;
-}
-
-// Plan mit den aktuellen Werten erstellen
-function createPlanWithCurrentValues() {
-  console.log("========== DEBUG CREATE PLAN ==========");
-  console.log("1. Creating plan with current values in OrbCalculatorModal");
-  
-  const currentValues = { ...props.currentStats };
-  
-  Object.entries(currentBoosts.value).forEach(([key, value]) => {
-    if (value !== undefined) {
-      currentValues[key] = value;
-    }
-  });
-  
-  currentValues._orbCalcMaxedBoosts = {};
-  
-  allBoosts.forEach(boost => {
-    if (boost.max !== undefined && boost.type === 'number') {
-      const currentValue = currentBoosts.value[boost.key];
-      if (currentValue !== undefined && currentValue >= boost.max) {
-        const maxLevelValue = maxLevelStats.value[boost.key];
-        if (maxLevelValue === undefined || maxLevelValue < boost.max) {
-          currentValues._orbCalcMaxedBoosts[boost.key] = true;
-        }
-      }
-    }
-    else if (boost.type === 'boolean') {
-      const isActive = currentBoosts.value[boost.key];
-      if (isActive === true) {
-        const isMaxedActive = maxLevelStats.value[boost.key];
-        if (isMaxedActive !== true) {
-          currentValues._orbCalcMaxedBoosts[boost.key] = true;
-        }
-      }
-    }
-  });
-  
-  currentValues.trCount = trCount.value;
-  currentValues.allTimeOrbs = allTimeOrbs.value;
-  
-  const now = new Date();
-  currentValues.trStartDate = now.toISOString().split('T')[0];
-  currentValues.trStartTime = now.toTimeString().split(' ')[0].slice(0, 5);
-  
-  trPlannerStore.tempPlanData = JSON.parse(JSON.stringify(currentValues));
-  
-  console.log("Daten für neuen Plan vorbereitet:", trPlannerStore.tempPlanData);
-  
-  emit('close');
-  console.log("1.2. Emitted 'close' event");
-  
-  trPlannerStore.setCopyPlanData(JSON.parse(JSON.stringify(currentValues)));
-  
-  trPlannerStore.planModalShouldOpen = 'current';
-  
-  console.log("1.3. Set planModalShouldOpen flag in store:", trPlannerStore.planModalShouldOpen);
-}
-
-// Vollständige Funktion createPlanWithTargetValues
-function createPlanWithTargetValues() {
-  const hasTargetValues = Object.keys(targetBoosts.value).length > 0;
-  
-  if (!hasTargetValues) {
-    console.warn("No target values available");
-    return;
-  }
-  
-  const targetStats = { ...props.currentStats };
-  
-  Object.entries(currentBoosts.value).forEach(([key, value]) => {
-    if (value !== undefined) {
-      targetStats[key] = value;
-    }
-  });
-  
-  Object.entries(targetBoosts.value).forEach(([key, value]) => {
-    if (value !== undefined) {
-      targetStats[key] = value;
-    }
-  });
-  
-  targetStats._orbCalcMaxedBoosts = {};
-  
-  allBoosts.forEach(boost => {
-    if (boost.max !== undefined && boost.type === 'number') {
-      const targetValue = targetBoosts.value[boost.key];
-      if (targetValue !== undefined && targetValue >= boost.max) {
-        const maxLevelValue = maxLevelStats.value[boost.key];
-        if (maxLevelValue === undefined || maxLevelValue < boost.max) {
-          targetStats._orbCalcMaxedBoosts[boost.key] = true;
-        }
-      }
-    }
-    else if (boost.type === 'boolean') {
-      const isActive = targetBoosts.value[boost.key];
-      if (isActive === true) {
-        const isMaxedActive = maxLevelStats.value[boost.key];
-        if (isMaxedActive !== true) {
-          targetStats._orbCalcMaxedBoosts[boost.key] = true;
-        }
-      }
-    }
-  });
-  
-  targetStats.trCount = trCount.value;
-  targetStats.allTimeOrbs = allTimeOrbs.value;
-  
-  const now = new Date();
-  targetStats.trStartDate = now.toISOString().split('T')[0];
-  targetStats.trStartTime = now.toTimeString().split(' ')[0].slice(0, 5);
-  
-  trPlannerStore.tempPlanData = JSON.parse(JSON.stringify(targetStats));
-  
-  console.log("Daten für neuen Plan (Target) vorbereitet:", trPlannerStore.tempPlanData);
-  
-  emit('close');
-  
-  trPlannerStore.setCopyPlanData(JSON.parse(JSON.stringify(targetStats)));
-  
-  trPlannerStore.planModalShouldOpen = 'target';
-  
-  console.log("Target plan flag set in store:", trPlannerStore.planModalShouldOpen);
 }
 
 function isBoostAvailable(boost, step) {
@@ -3093,6 +2987,141 @@ function getFullTooltipContent(boost, step) {
   
   return content;
 }
+
+// Speichert die ursprünglichen Legacy-Gem-Werte
+const originalLegacyGemValues = ref({
+  innogem: 0,
+  attr1: false,
+  attr3: false,
+  pow2: false
+});
+
+// Erfasse die ursprünglichen Legacy-Gem-Werte DIREKT aus dem ersten TR-Schritt
+function captureLegacyGemValues() {
+  if (!props.editPlanId || trSteps.length === 0) return;
+  
+  const plan = trPlannerStore.getTRPlanById(props.editPlanId);
+  if (!plan) return;
+  
+  // Initialisiere mit 0/false, um undefined zu vermeiden
+  originalLegacyGemValues.value = {
+    innogem: 0,
+    attr1: false,
+    attr3: false,
+    pow2: false
+  };
+  
+  // Extrahiere Werte direkt aus dem trSteps[0]-Objekt, NICHT aus dem Plan
+  const firstStep = trSteps[0];
+  if (firstStep) {
+    // Innovation Gem - nummerischer Wert
+    originalLegacyGemValues.value.innogem = 
+      firstStep.stats.innogem || 0; // Basis-Wert bevor irgendeine Änderung erfolgt
+    
+    // Boolean Gem Boosts - true/false Werte
+    originalLegacyGemValues.value.attr1 = 
+      Boolean(firstStep.stats.attr1); // Basis-Werte bevor irgendeine Änderung erfolgt
+    originalLegacyGemValues.value.attr3 = 
+      Boolean(firstStep.stats.attr3);
+    originalLegacyGemValues.value.pow2 = 
+      Boolean(firstStep.stats.pow2);
+  }
+  
+  console.log("Erfasste Legacy-Gem-Werte aus firstStep:", originalLegacyGemValues.value);
+}
+
+// Prüft, ob Legacy-Gem-Boosts geändert wurden
+const hasLegacyGemChanges = computed(() => {
+  if (!isLegacyPlan.value) return false;
+  if (trSteps.length === 0) return false;
+  
+  // Durchlaufe ALLE TR-Schritte, nicht nur den ersten
+  for (let stepIndex = 0; stepIndex < trSteps.length; stepIndex++) {
+    const step = trSteps[stepIndex];
+    let hasChangesInThisStep = false;
+    
+    console.log(`Prüfe Legacy-Gem-Änderungen in TR-Schritt ${stepIndex + 1}:`);
+    
+    // Prüfe innogem (numerisch)
+    if (Object.prototype.hasOwnProperty.call(step.targetLevels, 'innogem')) {
+      const currentInnogem = step.targetLevels.innogem || 0;
+      const origInnogem = originalLegacyGemValues.value.innogem || 0;
+      
+      console.log(`- innogem in Schritt ${stepIndex + 1}: Original=${origInnogem}, Aktuell=${currentInnogem}`);
+      if (currentInnogem !== origInnogem) {
+        console.log(`  ✓ innogem wurde in Schritt ${stepIndex + 1} geändert`);
+        hasChangesInThisStep = true;
+      }
+    }
+    
+    // Prüfe Boolean-Gem-Boosts
+    const keys = ['attr1', 'attr3', 'pow2'];
+    for (const key of keys) {
+      // Nur wenn der key in targetBools definiert ist (explizite Änderung)
+      if (Object.prototype.hasOwnProperty.call(step.targetBools, key)) {
+        const currentValue = Boolean(step.targetBools[key]);
+        const origValue = Boolean(originalLegacyGemValues.value[key]);
+        
+        console.log(`- ${key} in Schritt ${stepIndex + 1}: Original=${origValue}, Aktuell=${currentValue}`);
+        if (currentValue !== origValue) {
+          console.log(`  ✓ ${key} wurde in Schritt ${stepIndex + 1} geändert`);
+          hasChangesInThisStep = true;
+        }
+      }
+    }
+    
+    // Wenn Änderungen in diesem Schritt gefunden wurden, sofort true zurückgeben
+    if (hasChangesInThisStep) {
+      return true;
+    }
+  }
+  
+  // Keine Änderungen in irgendeinem Schritt gefunden
+  return false;
+});
+
+// Prüft, ob es sich um einen Legacy-Plan handelt (enthält alte Gem-Boost-Keys)
+const isLegacyPlan = computed(() => {
+  if (!props.editPlanId) return false;
+  const plan = trPlannerStore.getTRPlanById(props.editPlanId);
+  if (!plan) return false;
+  
+  // Prüfen, ob alte Gem-Boost-Keys in den Boosts vorhanden sind
+  const hasLegacyGemBoosts = plan.boosts?.some(b => 
+    ['innogem', 'attr1', 'attr3', 'pow2'].includes(b.key)
+  );
+  
+  return hasLegacyGemBoosts;
+});
+
+// Erfasse Legacy-Gem-Werte beim Initialisieren
+onMounted(() => {
+  if (props.isVisible && props.editPlanId) {
+    nextTick(() => {
+      captureLegacyGemValues();
+    });
+  }
+});
+
+// Rufe captureLegacyGemValues NACH der vollständigen Initialisierung auf
+watch(() => props.isVisible, (isVisible) => {
+  if (isVisible && props.editPlanId) {
+    // Verzögerung hinzufügen, um sicherzustellen, dass initData() komplett ausgeführt wurde
+    nextTick(() => {
+      // Stelle sicher, dass trSteps bereits geladen ist
+      if (trSteps.length > 0) {
+        captureLegacyGemValues();
+        console.log("Legacy-Gem-Werte nach Initialisierung erfasst");
+      } else {
+        // Wenn trSteps noch nicht bereit ist, warte zusätzlich
+        setTimeout(() => {
+          captureLegacyGemValues();
+          console.log("Legacy-Gem-Werte mit Verzögerung erfasst");
+        }, 200);
+      }
+    });
+  }
+});
 
 watch(
   [
