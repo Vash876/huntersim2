@@ -3,7 +3,7 @@ const changelog =
 [
   {
     version: '2.4.2',
-    date: '2025-06-06',
+    date: '2025-06-08',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
     changes: [
       {
@@ -20,7 +20,13 @@ const changelog =
           'Loop Mod database automatically updates when the source sheet is modified',
           'Special thanks to Farns for maintaining the comprehensive Loop Mod database!'
         ]
-      }
+      },
+      {
+        text: 'Tools Section:',
+        subItems: [
+          'Added Attraction GN#3 Calculator'
+        ]
+      },
     ]
   },
   {

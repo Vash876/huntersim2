@@ -5,43 +5,54 @@
   >
     <div class="absolute top-0 left-0 right-0 h-1 bg-blue-600" :style="{ width: `${progressPercentage}%` }"></div>
     
-      <!-- Header mit Plan-Name und Erstellungsdatum -->
-      <div class="p-4 border-b border-gray-700">
-        <div class="flex justify-between items-start">
-          <div class="flex items-center">
-            <div class="grip-handle mr-2 text-gray-500 hover:text-gray-400 cursor-grab active:cursor-grabbing flex-shrink-0">
-              <IconGripVertical size="20" />
-            </div>
-            <h3 class="text-lg font-bold text-white pr-2">{{ truncatedPlanName }}</h3>
-          </div>
-          <div class="flex items-center space-x-2">
-            <button 
-              @click.stop="$emit('edit')" 
-              class="action-button-compact"
-            >
-              <IconEdit size="16" />
-            </button>
-            <button 
-              @click.stop="$emit('copy')" 
-              class="action-button-compact"
-            >
-              <IconCopy size="16" />
-            </button>
-            <button 
-              @click.stop="$emit('delete')" 
-              class="action-button-compact"
-            >
-              <IconTrash size="16" />
-            </button>
-          </div>
+    <!-- Header mit Plan-Name und Erstellungsdatum -->
+    <div class="p-4 !pb-2 border-b border-gray-700">
+      <!-- Name mit Griffleiste -->
+      <div class="flex items-start">
+        <div class="grip-handle mr-2 text-gray-500 hover:text-gray-400 cursor-grab active:cursor-grabbing flex-shrink-0 mt-1">
+          <IconGripVertical size="20" />
         </div>
-        <div class="flex items-center text-xs text-gray-400 mt-1 ml-7"> 
-          <IconCalendarEvent size="12" class="mr-1" />
-          <span>{{ formatPlanStartDate }}</span>
-          <span class="mx-1">-</span>
-          <span>{{ formatPlanEndDate }}</span>
+        <div class="w-full">
+          <h3 class="text-lg font-bold text-white pr-2">{{ truncatedPlanName }}</h3>
+          
+          <!-- Datum in zweiter Zeile -->
+          <div class="flex items-center text-xs text-gray-400 mt-1"> 
+            <IconCalendarEvent size="12" class="mr-1" />
+            <span>{{ formatPlanStartDate }}</span>
+            <span class="mx-1">-</span>
+            <span>{{ formatPlanEndDate }}</span>
+          </div>
         </div>
       </div>
+      
+      <!-- Trennstrich über die gesamte Breite -->
+      <div class="h-px bg-gray-500/50 my-2 -mx-4"></div>
+      
+      <!-- Action-Buttons in dritter Zeile, linksbündig -->
+      <div class="flex items-center space-x-3 mt-2 justify-start">
+        <button 
+          @click.stop="$emit('edit')" 
+          class="icon-button"
+          title="Edit plan"
+        >
+          <IconEdit size="16" />
+        </button>
+        <button 
+          @click.stop="$emit('copy')" 
+          class="icon-button"
+          title="Copy plan"
+        >
+          <IconCopy size="16" />
+        </button>
+        <button 
+          @click.stop="$emit('delete')" 
+          class="icon-button text-red-500/70 hover:text-red-400"
+          title="Delete plan"
+        >
+          <IconTrash size="16" />
+        </button>
+      </div>
+    </div>
     
     <!-- Plan Stats -->
     <div class="px-4 py-3">
@@ -414,7 +425,7 @@ const formatPlanStartDate = computed(() => {
 const truncatedPlanName = computed(() => {
   if (!props.plan.name) return '';
   
-  const maxLength = 17;
+  const maxLength = 30;
   if (props.plan.name.length <= maxLength) {
     return props.plan.name;
   }
@@ -434,25 +445,27 @@ const truncatedPlanName = computed(() => {
 
 .stat-box {
   padding: 0.375rem;
-  background-color: rgba(26, 32, 44, 0.4);
-  border-radius: 0.25rem;
+  background-color: rgba(31, 48, 83, 0.4);
+  border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
-.action-button-compact {
+.icon-button {
   display: flex;
   align-items: center;
-  padding: 0.25rem 0.5rem;
+  justify-content: center;
+  height: 28px;
+  width: 28px;
   border-radius: 0.25rem;
   background-color: rgba(55, 65, 81, 0.3);
   color: rgba(209, 213, 219, 1);
   transition: all 0.2s ease;
-  white-space: nowrap;
 }
 
-.action-button-compact:hover {
+.icon-button:hover {
   background-color: rgba(75, 85, 99, 0.5);
+  color: rgba(255, 255, 255, 0.9);
 }
 </style>

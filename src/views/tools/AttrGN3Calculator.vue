@@ -39,8 +39,8 @@
                   <ToolValueControls
                     :value="tickSpeed"
                     @update:value="tickSpeed = $event"
-                    :minValue="0"
-                    :maxValue="100"
+                    :minValue="1"
+                    :maxValue="8"
                     :step="0.01"
                     :fastStep="0.1"
                     value-class="text-cyan-400 font-medium"
@@ -61,7 +61,7 @@
                     :value="ticksPerTick"
                     @update:value="ticksPerTick = $event"
                     :minValue="1"
-                    :maxValue="999999"
+                    :maxValue="8"
                     :step="1"
                     :fastStep="10"
                     value-class="text-yellow-400 font-medium"
@@ -69,33 +69,27 @@
                     class="ml-2"
                   />
                 </div>
-                
-                <!-- Efficiency Badge Toggle -->
+
+                <!-- Research Points -->
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
-                      <IconBadge size="16" class="text-green-400" />
+                      <img src="@/assets/general/rp.png" alt="RP" class="w-4 h-4" />
                     </div>
-                    <span class="text-sm text-gray-300">Efficiency Badge</span>
+                    <span class="text-sm text-gray-300">Research Points</span>
+                    <span class ="ml-1 text-xs text-gray-500">(max: 5900)</span>
                   </div>
-                  <div class="flex items-center">
-                    <button 
-                      @click="toggleEfficiencyBadge" 
-                      class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
-                      :class="{
-                        'bg-green-600': efficiencyBadge,
-                        'bg-gray-600': !efficiencyBadge
-                      }"
-                    >
-                      <span 
-                        class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
-                        :class="{
-                          'translate-x-6': efficiencyBadge,
-                          'translate-x-1': !efficiencyBadge
-                        }"
-                      ></span>
-                    </button>
-                  </div>
+                  <ToolValueControls
+                    :value="researchPoints"
+                    @update:value="researchPoints = $event"
+                    :minValue="0"
+                    :maxValue="5900"
+                    :step="1"
+                    :fastStep="100"
+                    value-class="text-orange-400 font-medium"
+                    :autoEdit="true"
+                    class="ml-2"
+                  />
                 </div>
               </div>
               
@@ -128,43 +122,51 @@
                     </button>
                   </div>
                 </div>
-                
-                <!-- Relic #14 -->
+
+                <!-- Efficiency Badge Toggle -->
                 <div class="flex items-center justify-between mb-3">
                   <div class="flex items-center">
                     <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
-                      <IconShield size="16" class="text-orange-400" />
+                      <IconBadge size="16" class="text-green-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">Efficiency Badge</span>
+                  </div>
+                  <div class="flex items-center">
+                    <button 
+                      @click="toggleEfficiencyBadge" 
+                      class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                      :class="{
+                        'bg-green-600': efficiencyBadge,
+                        'bg-gray-600': !efficiencyBadge
+                      }"
+                    >
+                      <span 
+                        class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                        :class="{
+                          'translate-x-6': efficiencyBadge,
+                          'translate-x-1': !efficiencyBadge
+                        }"
+                      ></span>
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Relic #14 -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconShield size="16" class="text-blue-400" />
                     </div>
                     <span class="text-sm text-gray-300">Relic #14</span>
+                    <span class="ml-1 text-xs text-gray-500">(max: 8)</span>
                   </div>
                   <ToolValueControls
                     :value="relic14"
                     @update:value="relic14 = $event"
                     :minValue="0"
-                    :maxValue="100"
+                    :maxValue="8"
                     :step="1"
                     :fastStep="5"
-                    value-class="text-orange-400 font-medium"
-                    :autoEdit="true"
-                    class="ml-2"
-                  />
-                </div>
-                
-                <!-- Research Points -->
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
-                      <img src="@/assets/general/rp.png" alt="RP" class="w-4 h-4" />
-                    </div>
-                    <span class="text-sm text-gray-300">Research Points</span>
-                  </div>
-                  <ToolValueControls
-                    :value="researchPoints"
-                    @update:value="researchPoints = $event"
-                    :minValue="0"
-                    :maxValue="999999"
-                    :step="1"
-                    :fastStep="100"
                     value-class="text-blue-400 font-medium"
                     :autoEdit="true"
                     class="ml-2"
@@ -175,7 +177,7 @@
           </div>
         </div>
         
-        <!-- Results Section - Placeholder for future calculations -->
+        <!-- Results Section mit Berechnungen -->
         <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
           <div class="header p-2">
             <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
@@ -185,20 +187,66 @@
           </div>
           
           <div class="p-2 sm:p-3">
-            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50 text-center">
-              <div class="text-gray-400 text-sm">
-                <IconInfoCircle size="16" class="inline mr-1" />
-                Calculation logic will be implemented later
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              
+              <!-- Multi per Day -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+                <div class="text-center">
+                  <div class="text-sm font-semibold text-gray-300 mb-1">Multi per Day</div>
+                  <div class="text-2xl font-bold text-yellow-400">
+                    {{ formatMulti(multiPerDay) }}
+                  </div>
+                </div>
               </div>
               
-              <!-- Debug Info -->
-              <div class="mt-4 text-xs text-gray-500 space-y-1">
-                <div>Tick Speed: <span class="text-cyan-300">{{ tickSpeed }}</span></div>
-                <div>Ticks per Tick: <span class="text-yellow-300">{{ ticksPerTick }}</span></div>
-                <div>Efficiency Badge: <span :class="efficiencyBadge ? 'text-green-300' : 'text-red-300'">{{ efficiencyBadge ? 'Active' : 'Inactive' }}</span></div>
-                <div>TS#5: <span :class="ts5 ? 'text-purple-300' : 'text-red-300'">{{ ts5 ? 'Active' : 'Inactive' }}</span></div>
-                <div>Relic #14: <span class="text-orange-300">{{ relic14 }}</span></div>
-                <div>Research Points: <span class="text-blue-300">{{ researchPoints }}</span></div>
+              <!-- Days to 1e333 -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+                <div class="text-center">
+                  <div class="text-sm font-semibold text-gray-300 mb-1">Days to 1e333</div>
+                  <div class="text-2xl font-bold text-blue-400">
+                    {{ daysTo1e333 === Infinity ? '∞' : formatNumber(daysTo1e333) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Details -->
+            <div class="mt-3 bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <h4 class="text-sm font-semibold text-gray-200 mb-2 flex items-center">
+                <IconInfoCircle size="14" class="mr-1.5 text-blue-400" />
+                Calculation Details
+              </h4>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-300">
+                <div class="flex justify-between">
+                  <span>Ticks per Day:</span> 
+                  <span class="text-cyan-300">{{ formatNumber(ticksPerDay) }}</span>
+                </div>
+                
+                <div class="flex justify-between">
+                  <span>Ticks per Operation:</span> 
+                  <span class="text-cyan-300">{{ ticksPerOperation }}</span>
+                </div>
+                
+                <div class="flex justify-between">
+                  <span>Operations per Operation:</span> 
+                  <span class="text-green-300">{{ operationsPerOperation }}</span>
+                </div>
+                
+                <div class="flex justify-between">
+                  <span>Retained Operations:</span> 
+                  <span class="text-green-300">{{ retainedOperations }}%</span>
+                </div>
+                
+                <div class="flex justify-between">
+                  <span>Operations per Day:</span> 
+                  <span class="text-orange-300">{{ formatNumber(operationsPerDay) }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                  <span>Retained per Day:</span> 
+                  <span class="text-orange-300">{{ formatNumber(retainedPerDay) }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -209,7 +257,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import { 
   IconSettings, 
   IconRefresh,
@@ -240,6 +288,87 @@ function toggleEfficiencyBadge() {
 function toggleTS5() {
   ts5.value = !ts5.value;
   saveSettings();
+}
+
+// Berechnungen
+const ticksPerDay = computed(() => (86400 / tickSpeed.value) * ticksPerTick.value);
+const ticksPerOperation = computed(() => 29 - relic14.value);
+const operationsPerOperation = computed(() => {
+  let value = 1;
+  if (efficiencyBadge.value) value *= 3;
+  if (ts5.value) value *= 2;
+  return value;
+});
+
+const operationsPerDay = computed(() => {
+  if (ticksPerOperation.value <= 0) return Infinity; // Verhindert Division durch 0
+  return (ticksPerDay.value / ticksPerOperation.value) * operationsPerOperation.value;
+});
+
+const affordableResearch = computed(() => {
+  // Alle Forschungen zusammenfassen
+  let allResearch = [...researchData];
+  
+  // Sortiere nach Bonus/Kosten-Effizienz (effizienteste zuerst)
+  allResearch.sort((a, b) => {
+    const efficiencyA = a.bonus / parseFloat(a.cost);
+    const efficiencyB = b.bonus / parseFloat(b.cost);
+    return efficiencyB - efficiencyA;
+  });
+  
+  // Filtere nur die Forschungen, deren individuelle Kosten wir uns leisten können
+  return allResearch.filter(research => {
+    const cost = parseFloat(research.cost);
+    return cost <= researchPoints.value;
+  });
+});
+
+const retainedOperations = computed(() => {
+  // Summe aller Boni der leistbaren Forschungen
+  return affordableResearch.value.reduce((sum, research) => sum + research.bonus, 0);
+});
+
+const retainedPerDay = computed(() => operationsPerDay.value * (retainedOperations.value / 100));
+
+const multiPerDay = computed(() => {
+  const attributionRate = 0.001; // 0.10%
+  return Math.pow(1 + attributionRate, retainedPerDay.value);
+});
+
+const daysTo1e333 = computed(() => {
+  if (multiPerDay.value <= 1) return Infinity;
+  return Math.log(1e111) / Math.log(multiPerDay.value) * 3;
+});
+
+// Formatierungsfunktionen
+function formatNumber(num) {
+  if (num === Infinity) return '∞';
+  if (num >= 1e15) {
+    return num.toExponential(2).replace('+', '');
+  }
+  if (num >= 1e6) {
+    return (num / 1e6).toFixed(2) + 'M';
+  }
+  if (num >= 1e3) {
+    return (num / 1e3).toFixed(2) + 'K';
+  }
+  return num.toFixed(2);
+}
+
+function formatMulti(num) {
+  if (num === Infinity) return '∞';
+  
+  if (num >= 1000) {
+    // Wissenschaftliche Notation in der Form a.bc × 10^n
+    const exponent = Math.floor(Math.log10(num));
+    const mantisse = num / Math.pow(10, exponent);
+    
+    // Format: a.bc × 10^n -> a.bce+n
+    return mantisse.toFixed(2) + 'e' + exponent;
+  }
+  
+  // Werte unter 1000 werden mit zwei Dezimalstellen
+  return num.toFixed(2);
 }
 
 function resetSettings() {
@@ -282,10 +411,33 @@ function loadSettings() {
   }
 }
 
+const researchData = [
+  { id: "research44", level: 2, bonus: 0.2, cost: "115" },
+  { id: "research44", level: 4, bonus: 0.3, cost: "165" },
+  { id: "research44", level: 6, bonus: 0.5, cost: "219" },
+  { id: "research51", level: 2, bonus: 0.4, cost: "302" },
+  { id: "research51", level: 4, bonus: 0.6, cost: "405" },
+  { id: "research51", level: 6, bonus: 1, cost: "507" },
+  { id: "research61", level: 2, bonus: 2, cost: "363" },
+  { id: "research61", level: 4, bonus: 4, cost: "495" },
+  { id: "research61", level: 6, bonus: 6, cost: "627" },
+  { id: "research71", level: 2, bonus: 3, cost: "822" },
+  { id: "research71", level: 4, bonus: 5, cost: "1165" },
+  { id: "research71", level: 6, bonus: 7, cost: "1509" },
+  { id: "research91", level: 1, bonus: 0.2, cost: "4500" },
+  { id: "research91", level: 3, bonus: 0.6, cost: "5200" },
+  { id: "research91", level: 5, bonus: 1, cost: "5900" },
+];
+
 // Watch for changes and save (excluding toggles, they save themselves)
 watch([tickSpeed, ticksPerTick, relic14, researchPoints], () => {
   saveSettings();
 });
+
+watch(tickSpeed, (newVal) => {
+  // Korrigiert die Präzision, sobald sich der Wert ändert
+  tickSpeed.value = parseFloat(newVal.toFixed(2));
+}, { flush: 'post' });
 
 // Load settings on mount
 onMounted(() => {
