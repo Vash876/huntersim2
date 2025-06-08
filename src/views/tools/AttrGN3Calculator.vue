@@ -192,7 +192,7 @@
               <!-- Multi per Day -->
               <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
                 <div class="text-center">
-                  <div class="text-sm font-semibold text-gray-300 mb-1">Multi per Day</div>
+                  <div class="text-sm font-semibold text-gray-300 mb-1">Multiplier per Day</div>
                   <div class="text-2xl font-bold text-yellow-400">
                     {{ formatMulti(multiPerDay) }}
                   </div>

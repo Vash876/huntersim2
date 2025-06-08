@@ -10,13 +10,8 @@ const changelog =
         text: 'TR Planner Enhancements:',
         subItems: [
           'Added Gem Overview with progression-friendly interface to prevent new players from being overwhelmed by the complexity of the late game or spoiled by seeing boosts they don\'t have access to yet',
-          'Important: Please configure your gem levels immediately in the Gem Overview to ensure accurate calculations - incorrect gem settings may lead to wrong results!'
-        ]
-      },
-      {
-        text: 'Hunter Simulator:',
-        subItems: [
-          'Added a "Hide Maxed" toggle in Inscryptions section to filter out maxed upgrades'
+          '<b class="text-red-500">Important:</b> Please configure your gem levels immediately in the Gem Overview to ensure accurate calculations - incorrect gem settings may lead to wrong results!',
+          '<b class="text-red-500">Important:</b> Maxed Boosts is resetted - please set it to your current maxed boosts again to get accurate results',
         ]
       },
       {
@@ -25,6 +20,19 @@ const changelog =
           'Now directly connected to Farns\' Google Sheet for real-time Loop Mod data',
           'Loop Mod database automatically updates when the source sheet is modified',
           'Special thanks to Farns for maintaining the comprehensive Loop Mod database!'
+        ]
+      },
+      {
+        text: 'Gadget Calculator:',
+        subItems: [
+          'Slightly changed style for better usability',
+          'Added Summary feature for sharing gadget upgrade plans'
+        ]
+      },
+      {
+        text: 'Hunter Simulator:',
+        subItems: [
+          'Added a "Hide Maxed" toggle in Inscryptions section to filter out maxed upgrades'
         ]
       },
       {

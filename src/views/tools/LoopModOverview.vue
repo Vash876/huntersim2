@@ -188,7 +188,7 @@
           <!-- Loading state -->
           <div v-if="isLoading" class="p-4 flex flex-col items-center justify-center">
             <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-l-2 border-blue-500 mb-2"></div>
-            <p class="text-gray-400 text-sm">Loading loop mod data from Google Sheets...</p>
+            <p class="text-gray-400 text-sm">Loading Loop Mod data from Google Sheets...</p>
           </div>
 
           <!-- Error state -->

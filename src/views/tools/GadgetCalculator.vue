@@ -14,13 +14,15 @@
             Tesseract Production
           </h3>
           
-          <button 
-            @click="resetAllLevels" 
-            class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
-          >
-            <IconRefresh size="14" class="mr-1" />
-            Reset
-          </button>
+          <div class="flex items-center gap-2">            
+            <button 
+              @click="resetAllLevels" 
+              class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
+            >
+              <IconRefresh size="14" class="mr-1" />
+              Reset
+            </button>
+          </div>
         </div>
         
         <div class="p-2 sm:p-4">
@@ -111,6 +113,14 @@
             <IconSettings size="20" class="mr-2 text-cyan-400" />
             Gadget Upgrades
           </h3>
+          <!-- Summary Button  -->
+          <button 
+            @click="showSummaryModal = true"
+            class="bg-purple-700 hover:bg-purple-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
+          >
+            <IconShare size="12" class="mr-1" />
+            Summary
+          </button>
         </div>
         
         <div class="p-2 sm:p-6">
@@ -229,6 +239,15 @@
         </div>
       </div>
     </div>
+    <GadgetSummaryModal
+      :is-visible="showSummaryModal"
+      :current-levels="currentLevels"
+      :target-levels="targetLevels"
+      :total-cost="totalCost"
+      :days-to-save="daysToSave"
+      :build-name="selectedBuild?.name || ''"
+      @close="showSummaryModal = false"
+    />
   </div>
 </template>
 
@@ -255,6 +274,7 @@ import {
 import { useHunterStore } from '@/store/hunterStore';
 import { calcGadgetCostDifference, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import { shouldEvaluate } from '@/services/evaluationCacheService';
+import GadgetSummaryModal from '@/components/gadget-calculator/GadgetSummaryModal.vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 
 // Stores
@@ -269,6 +289,8 @@ const tessarectsPerDay = ref(0);
 const selectedBuildId = ref('');
 const cachedResults = ref({});
 const showMultipliers = ref(true);
+
+const showSummaryModal = ref(false);
 
 // Computed properties
 const knoxBuilds = computed(() => {

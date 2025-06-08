@@ -327,7 +327,6 @@ function getGemPositionStyle(angle = 0, distance = 0) {
   return {
     top: `${position.y}px`,
     left: `${position.x}px`,
-    transform: 'translate(-50%, -50%)'
   };
 }
 
@@ -733,6 +732,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* Grundlegende Animationen und Farben */
 .animate-fade-in {
   animation: fadeIn 0.2s ease-in-out;
 }
@@ -760,7 +760,6 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .gem-diagram-scroll-container {
-    /* Mobile: Scrollbares Container */
     max-height: 70vh;
     overflow: auto;
     border: 1px solid rgba(75, 85, 99, 0.3);
@@ -769,7 +768,7 @@ onUnmounted(() => {
   }
 }
 
-/* Gem-Diagramm - Responsiv */
+/* Gem-Diagramm Container */
 .gem-diagram-container {
   position: relative;
   margin: 0 auto;
@@ -816,7 +815,9 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-/* Desktop Gem Größen */
+/* ====================== */
+/* DESKTOP GEM STILE     */
+/* ====================== */
 @media (min-width: 769px) {
   .gem {
     position: absolute;
@@ -849,10 +850,6 @@ onUnmounted(() => {
     transition: all 0.2s ease;
   }
 
-  .gem:hover .gem-icon {
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
-  }
-
   .gem-name {
     position: absolute;
     top: -25px;
@@ -864,10 +861,6 @@ onUnmounted(() => {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     white-space: nowrap;
     transition: all 0.2s ease;
-  }
-
-  .gem:hover .gem-name {
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
   }
 
   .node {
@@ -895,7 +888,9 @@ onUnmounted(() => {
   }
 }
 
-/* Mobile Gem Größen - Halbe Größe */
+/* ====================== */
+/* MOBILE GEM STILE      */
+/* ====================== */
 @media (max-width: 768px) {
   .gem {
     position: absolute;
@@ -928,10 +923,6 @@ onUnmounted(() => {
     transition: all 0.2s ease;
   }
 
-  .gem:hover .gem-icon {
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
-  }
-
   .gem-name {
     position: absolute;
     top: -12px;
@@ -943,10 +934,6 @@ onUnmounted(() => {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     white-space: nowrap;
     transition: all 0.2s ease;
-  }
-
-  .gem:hover .gem-name {
-    text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
   }
 
   .node {
@@ -974,53 +961,7 @@ onUnmounted(() => {
   }
 }
 
-.exodus-gem {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10;
-  transition: transform 0.2s ease;
-}
-
-.exodus-gem:hover {
-  transform: translate(-50%, -50%) scale(1.1);
-  z-index: 15;
-}
-
-.exodus-gem:hover .gem-icon {
-  box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
-}
-
-.exodus-gem:hover .exodus-name {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(168, 85, 247, 0.8));
-}
-
-.exodus-name {
-  background: linear-gradient(135deg, #3b82f6 0%, #a855f7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
-  font-weight: 700;
-  text-shadow: none;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-  transition: all 0.2s ease;
-}
-
-/* Fallback für Browser die background-clip: text nicht unterstützen */
-@supports not (-webkit-background-clip: text) {
-  .exodus-name {
-    color: #a855f7; /* Fallback auf lila */
-    background: none;
-  }
-}
-
-.exodus-gem .gem-icon {
-  background: radial-gradient(circle, rgba(147,51,234,1) 0%, rgba(126,34,206,1) 100%);
-  border-color: rgba(192,132,252,0.8);
-  transition: all 0.2s ease;
-}
-
+/* Aktive Zustände und Hover für alle Gems */
 .active-gem {
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
@@ -1033,38 +974,159 @@ onUnmounted(() => {
   transform: scale(1.15);
 }
 
-/* Gem-spezifische Stile */
+/* ====================== */
+/* EXODUS GEM STIL       */
+/* ====================== */
+.exodus-gem {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  transition: transform 0.2s ease;
+}
+
+.gem-hover:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  z-index: 15;
+  
+}
+
+.exodus-gem .gem-icon {
+  background: radial-gradient(circle, rgba(147,51,234,1) 0%, rgba(126,34,206,1) 100%);
+  border-color: rgba(192,132,252,0.8);
+}
+
+.exodus-name {
+  background: linear-gradient(135deg, #3b82f6 0%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  font-weight: 700;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+/* Fallback für Browser die background-clip: text nicht unterstützen */
+@supports not (-webkit-background-clip: text) {
+  .exodus-name {
+    color: #a855f7; /* Fallback auf lila */
+    background: none;
+  }
+}
+
+/* ====================== */
+/* GEM HOVER EFFEKTE     */
+/* ====================== */
+/* Gemeinsame Hover-Effekte für alle Gem-Namen */
+.gem {
+  position: absolute;
+  /* ... andere Eigenschaften ... */
+  transform: translate(-50%, -50%);
+}
+
+/* Einheitlicher Hover-Effekt für alle Gems */
+.gem:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  z-index: 15;
+}
+
+/* Exodus-spezifischer Hover-Effekt */
+.exodus-gem:hover .gem-icon {
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+}
+
+.exodus-gem:hover .exodus-name {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(168, 85, 247, 0.8));
+}
+
+/* Temporal (Rot) */
 .gem-temporal .gem-icon {
   background: radial-gradient(circle, rgba(239,68,68,1) 0%, rgba(185,28,28,1) 100%);
   border-color: rgba(252,165,165,0.8);
 }
 
+.gem-temporal:hover .gem-icon {
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+}
+
+.gem-temporal:hover .gem-name {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(239, 68, 68, 0.8));
+}
+
+/* Innovation (Lime) */
 .gem-innovation .gem-icon {
   background: radial-gradient(circle, rgb(115, 187, 0) 0%, rgb(0, 85, 7) 100%);
   border-color: rgba(190,242,100,0.8);
 }
 
+.gem-innovation:hover .gem-icon {
+  box-shadow: 0 0 30px rgba(132, 204, 22, 0.6);
+}
+
+.gem-innovation:hover .gem-name {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(132, 204, 22, 0.8));
+}
+
+/* Attraction (Cyan) */
 .gem-attraction .gem-icon {
   background: radial-gradient(circle, rgba(34,211,238,1) 0%, rgba(14,116,144,1) 100%);
   border-color: rgba(125,211,252,0.8);
 }
 
+.gem-attraction:hover .gem-icon {
+  box-shadow: 0 0 30px rgba(34, 211, 238, 0.6);
+}
+
+.gem-attraction:hover .gem-name {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(34, 211, 238, 0.8));
+}
+
+/* Power (Purple) */
 .gem-power .gem-icon {
   background: radial-gradient(circle, rgb(174, 106, 238) 0%, rgba(126,34,206,1) 100%);
   border-color: rgba(192,132,252,0.8);
 }
 
+.gem-power:hover .gem-icon {
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+}
+
+.gem-power:hover .gem-name {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(168, 85, 247, 0.8));
+}
+
+/* Creation (Orange) */
 .gem-creation .gem-icon {
   background: radial-gradient(circle, rgba(251,146,60,1) 0%, rgba(194,65,12,1) 100%);
   border-color: rgba(253,186,116,0.8);
 }
 
+.gem-creation:hover .gem-icon {
+  box-shadow: 0 0 30px rgba(249, 115, 22, 0.6);
+}
+
+.gem-creation:hover .gem-name {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(249, 115, 22, 0.8));
+}
+
+/* Evolution (Green) */
 .gem-evolution .gem-icon {
   background: radial-gradient(circle, rgba(34,197,94,1) 0%, rgba(22,101,52,1) 100%);
   border-color: rgba(134,239,172,0.8);
 }
 
-/* Custom Dropdown Styles - Kein Browser-Standard mehr */
+.gem-evolution:hover .gem-icon {
+  box-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
+}
+
+.gem-evolution:hover .gem-name {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(34, 197, 94, 0.8));
+}
+
+/* ====================== */
+/* CUSTOM DROPDOWN STILE */
+/* ====================== */
 .custom-dropdown {
   position: relative;
   display: inline-block;
@@ -1086,7 +1148,6 @@ onUnmounted(() => {
   user-select: none;
 }
 
-/* Mobile kleinere Schrift */
 @media (max-width: 768px) {
   .dropdown-trigger {
     font-size: 11px;
@@ -1237,7 +1298,9 @@ onUnmounted(() => {
   background-color: rgb(107, 33, 168);
 }
 
-/* Color-specific node states - Vollständige Liste */
+/* ====================== */
+/* NODE FARBEN           */
+/* ====================== */
 .bg-red-800 { 
   background-color: rgba(153,27,27,1) !important; 
 }
@@ -1295,7 +1358,9 @@ onUnmounted(() => {
   border-color: rgba(75,85,99,1) !important; 
 }
 
-/* Glow-Effekte für Connection Lines */
+/* ====================== */
+/* GLOW EFFEKTE          */
+/* ====================== */
 .gem-connection-lines line.glow-red {
   filter: drop-shadow(0 0 8px rgba(239, 68, 68, 1)) drop-shadow(0 0 15px rgba(239, 68, 68, 0.5));
 }
@@ -1324,7 +1389,7 @@ onUnmounted(() => {
   filter: drop-shadow(0 0 8px rgba(244, 114, 182, 1)) drop-shadow(0 0 15px rgba(244, 114, 182, 0.5));
 }
 
-/* Entferne alle Standard Select Styles */
+/* Standard Select ausblenden */
 select {
   display: none !important;
 }
