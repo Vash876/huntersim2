@@ -14,6 +14,12 @@ const changelog =
         ]
       },
       {
+        text: 'Hunter Simulator:',
+        subItems: [
+          'Added a "Hide Maxed" toggle in Inscryptions section to filter out maxed upgrades'
+        ]
+      },
+      {
         text: 'Loop Mod Overview:',
         subItems: [
           'Now directly connected to Farns\' Google Sheet for real-time Loop Mod data',

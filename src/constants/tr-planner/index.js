@@ -648,16 +648,6 @@ export const allBoosts = [
         result *= multipliers[i];
       }
       
-      // Store-Integration: Power Node #2 Check
-      const gemData = getGemDataFromStore();
-      const powerLevel = gemData.levels.power || 0;
-      const powerNodes = gemData.activeNodes.power || [];
-      
-      // Zusätzlicher Power GN #2 Multiplier
-      if (powerLevel >= 1 && powerNodes.includes(1)) { // Node #2 = Index 1
-        result *= 2; // Power GN #2 Bonus
-      }
-      
       return result;
     },
     max: 6

@@ -1,35 +1,51 @@
-<!-- filepath: /c:/Users/igorn/projects/huntersim2/src/views/upgrades/InscryptionsView.vue -->
 <template>
   <div class="p-4 sm:p-6 max-w-[1440px] mx-auto">
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
       <!-- Überschrift -->
       <h2 class="text-3xl font-bold mb-8 text-center text-white">Inscryptions</h2>
 
-      <!-- Hunter-Filter -->
-      <div class="flex justify-center mb-8 space-x-4">
-        <button
-          v-for="hunter in hunters"
-          :key="hunter.id"
-          @click="selectedHunter = hunter.id"
-          class="px-4 py-2 rounded-md transition-colors"
-          :class="{
-            'bg-red-600 text-white': selectedHunter === hunter.id && hunter.color === 'red',
-            'bg-green-600 text-white': selectedHunter === hunter.id && hunter.color === 'green',
-            'bg-blue-600 text-white': selectedHunter === hunter.id && hunter.color === 'blue',
-            'bg-red-600/30 text-white hover:bg-red-600/50': selectedHunter !== hunter.id && hunter.color === 'red',
-            'bg-green-600/30 text-white hover:bg-green-600/50': selectedHunter !== hunter.id && hunter.color === 'green',
-            'bg-blue-600/30 text-white hover:bg-blue-600/50': selectedHunter !== hunter.id && hunter.color === 'blue',
-            'bg-gray-700/50 text-gray-300 hover:bg-gray-700': selectedHunter !== hunter.id && !hunter.color
-          }"
-        >
-          {{ hunter.name }}
-        </button>
+      <!-- Filter-Leiste mit Hunter-Filter und Hide Maxed Toggle -->
+      <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <!-- Leerer Platzhalter links für Balance -->
+        <div class="w-1/4 hidden md:block"></div>
+        
+        <!-- Hunter-Filter in der Mitte -->
+        <div class="flex justify-center space-x-4 flex-wrap gap-2 md:w-2/4">
+          <button
+            v-for="hunter in hunters"
+            :key="hunter.id"
+            @click="selectedHunter = hunter.id"
+            class="px-4 py-2 rounded-md transition-colors"
+            :class="{
+              'bg-red-600 text-white': selectedHunter === hunter.id && hunter.color === 'red',
+              'bg-green-600 text-white': selectedHunter === hunter.id && hunter.color === 'green',
+              'bg-blue-600 text-white': selectedHunter === hunter.id && hunter.color === 'blue',
+              'bg-red-600/30 text-white hover:bg-red-600/50': selectedHunter !== hunter.id && hunter.color === 'red',
+              'bg-green-600/30 text-white hover:bg-green-600/50': selectedHunter !== hunter.id && hunter.color === 'green',
+              'bg-blue-600/30 text-white hover:bg-blue-600/50': selectedHunter !== hunter.id && hunter.color === 'blue',
+              'bg-gray-700/50 text-gray-300 hover:bg-gray-700': selectedHunter !== hunter.id && !hunter.color
+            }"
+          >
+            {{ hunter.name }}
+          </button>
+        </div>
+        
+        <!-- Toggle für "Hide Maxed" rechts -->
+        <div class="flex justify-end items-center md:w-1/4">
+          <div class="flex items-center px-4 py-2 bg-gray-800/70 rounded-md">
+            <span class="text-gray-300 mr-3 text-sm">Hide Maxed</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" v-model="hideMaxed" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+        </div>
       </div>
 
       <!-- Grid mit Upgrades -->
       <UpgradeGrid :loading="loading" :columns="4">
         <UpgradeCard
-          v-for="inscryption in filteredInscryptions"
+          v-for="inscryption in finalFilteredInscryptions" 
           :key="inscryption.id"
           :item="inscryption"
           :color="inscryption.color"
@@ -90,7 +106,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useHunterStore } from '@/store/hunterStore';
 import { getAllUpgradesWithHunterInfo } from '@/utils/upgradeUtils';
 import { HUNTERS } from '@/constants/hunters';
@@ -110,6 +126,8 @@ const category = 'inscryptions'; // Die Kategorie dieser View
 const selectedHunter = ref('borge');
 const hunters = HUNTERS;
 
+const hideMaxed = ref(false);
+
 // Gefilterte Inscryptions basierend auf ausgewähltem Hunter
 const filteredInscryptions = computed(() => {
   return inscryptions.value.filter(
@@ -117,19 +135,6 @@ const filteredInscryptions = computed(() => {
                   inscryption.hunter?.includes(selectedHunter.value) ||
                   inscryption.hunter === 'all'
   );
-});
-
-// Beim Mounten die Inscryptions laden
-onMounted(async () => {
-  loading.value = true;
-  try {
-    // Alle Inscryptions mit Hunter-Informationen laden (asynchron)
-    inscryptions.value = await getAllUpgradesWithHunterInfo(category);
-  } catch (error) {
-    console.error(`Fehler beim Laden der ${category}:`, error);
-  } finally {
-    loading.value = false;
-  }
 });
 
 // Getter für Upgrade-Level
@@ -192,6 +197,61 @@ function updateUpgradeLevel(item, newLevel) {
       return level;
   }
 }
+
+// Speichern und Laden des Filter-Status
+function saveFilterSettings() {
+  try {
+    localStorage.setItem('inscryptions_hideMaxed', JSON.stringify(hideMaxed.value));
+  } catch (error) {
+    console.error('Fehler beim Speichern der Filter-Einstellungen:', error);
+  }
+}
+
+// Beim Mounten die Inscryptions laden und Filter-Einstellungen
+onMounted(async () => {
+  loading.value = true;
+  try {
+    // Lade Filter-Einstellungen
+    try {
+      const savedHideMaxed = JSON.parse(localStorage.getItem('inscryptions_hideMaxed'));
+      if (savedHideMaxed !== null) {
+        hideMaxed.value = savedHideMaxed;
+      }
+    } catch (e) {
+      console.error('Fehler beim Laden der Filter-Einstellungen:', e);
+    }
+    
+    // Alle Inscryptions mit Hunter-Informationen laden (asynchron)
+    inscryptions.value = await getAllUpgradesWithHunterInfo(category);
+  } catch (error) {
+    console.error(`Fehler beim Laden der ${category}:`, error);
+  } finally {
+    loading.value = false;
+  }
+});
+
+// Watcher für hideMaxed um Einstellungen zu speichern
+watch(hideMaxed, () => {
+  saveFilterSettings();
+});
+
+// Erweiterte gefilterte Inscryptions mit Hide-Maxed-Filter
+const finalFilteredInscryptions = computed(() => {
+  // Zuerst nach Hunter filtern
+  const hunterFiltered = filteredInscryptions.value;
+  
+  // Dann eventuell gemaxte Inscryptions ausblenden
+  if (!hideMaxed.value) {
+    return hunterFiltered;
+  }
+  
+  // Filtere gemaxte Upgrades heraus
+  return hunterFiltered.filter(inscryption => {
+    const currentLevel = getUpgradeLevel({ id: inscryption.id });
+    const maxLevel = inscryption.maxLevel ?? Infinity;
+    return currentLevel < maxLevel;
+  });
+});
 
 // useButtonControls initialisieren
 const {
