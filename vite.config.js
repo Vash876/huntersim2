@@ -46,11 +46,17 @@ export default defineConfig({
     ] 
   },
   build: {
-    minify: 'false',
+    minify: 'terser',  
     terserOptions: {
       compress: {
-        drop_console: true,
-        pure_funcs: ['console.log', 'console.debug', 'console.info']
+        drop_console: true,  
+        drop_debugger: true,
+        pure_funcs: [
+          'console.log', 
+          'console.debug', 
+          'console.info',
+          'console.warn'  
+        ]
       },
       format: {
         comments: false
@@ -62,7 +68,7 @@ export default defineConfig({
       }
     },
     target: 'esnext',
-    sourcemap: true,
+    sourcemap: false,
   },
   resolve: {
     alias: {
