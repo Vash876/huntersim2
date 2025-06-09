@@ -9,7 +9,7 @@ const changelog =
       {
         text: '<b>MAJOR: WebAssembly Integration</b>',
         subItems: [
-          '<b class="text-green-500">100-200% faster evaluations:</b> All Hunter evaluations now use WebAssembly (WASM) instead of JavaScript for significantly improved performance',
+          '<b class="text-green-500">2-3x faster evaluations:</b> All Hunter evaluations now use WebAssembly (WASM) instead of JavaScript for significantly improved performance',
           'Maintained 100% accuracy - all calculations produce identical results to the previous JavaScript implementation',
         ]
       },
