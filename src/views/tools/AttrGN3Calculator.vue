@@ -105,8 +105,8 @@
                     @update:value="currentTicksInLR = $event"
                     :minValue="0"
                     :maxValue="999999999"
-                    :step="1"
-                    :fastStep="1000"
+                    :step="1000"
+                    :fastStep="10000"
                     value-class="text-emerald-400 font-medium"
                     :autoEdit="true"
                     class="ml-2"
@@ -373,7 +373,13 @@ const daysLeftTo1e333 = computed(() => {
   if (remainingLog <= 0) return 0; // Bereits erreicht
   if (dailyLog <= 0) return Infinity;
   
-  return remainingLog / dailyLog;
+  const totalDaysNeeded = remainingLog / dailyLog;
+  
+  // Subtrahiere die bereits vergangenen Tage im aktuellen LR
+  const remainingDays = totalDaysNeeded - daysInLR.value;
+  
+  // Stelle sicher, dass das Ergebnis nicht negativ wird
+  return Math.max(0, remainingDays);
 });
 
 // Toggle functions
