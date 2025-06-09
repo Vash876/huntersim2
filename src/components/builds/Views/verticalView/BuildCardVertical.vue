@@ -22,11 +22,10 @@
     />
     
     <div class="p-4 pb-3">
-      <!-- Loading-Zustand mit Timer -->
+      <!-- Loading-Zustand -->
       <div v-if="isLoading" class="flex flex-col items-center justify-center py-12 space-y-4">
-        <!-- Spinner mit Timer -->
+        <!-- Spinner -->
         <div class="relative">
-          <!-- Äußerer Spinner -->
           <div 
             class="w-12 h-12 border-4 border-gray-600 rounded-full animate-spin"
             :class="{
@@ -37,30 +36,11 @@
               'border-t-emerald-500': !['red', 'blue', 'green', 'purple'].includes(hunterColor)
             }"
           ></div>
-          
-          <!-- Timer im Zentrum -->
-          <div class="absolute inset-0 flex items-center justify-center">
-            <span 
-              class="text-xs font-mono font-semibold"
-              :class="{
-                'text-red-400': hunterColor === 'red',
-                'text-blue-400': hunterColor === 'blue',
-                'text-green-400': hunterColor === 'green', 
-                'text-purple-400': hunterColor === 'purple',
-                'text-emerald-400': !['red', 'blue', 'green', 'purple'].includes(hunterColor)
-              }"
-            >
-              {{ formattedElapsedTime }}
-            </span>
-          </div>
         </div>
         
-        <!-- Loading Text mit Performance-Info -->
+        <!-- Loading Text -->
         <div class="text-center space-y-1">
           <p class="text-gray-300 font-medium">Evaluating build...</p>
-          <p class="text-xs text-gray-400">
-            {{ totalIterations.toLocaleString() }} iterations
-          </p>
         </div>
       </div>
 
@@ -149,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, inject } from 'vue';
 import { IconAlertCircle, IconUser } from '@tabler/icons-vue';
 import { useRoute } from 'vue-router';
 import { useHunterStore } from '../../../../store/hunterStore';
@@ -187,25 +167,6 @@ const showDistributionModal = ref(false);
 const showUploadDialog = ref(false);
 const showUpgradeComparisonModal = ref(false);
 
-// Timer-State
-const evaluationStartTime = ref(0);
-const elapsedTime = ref(0);
-const timerInterval = ref(null);
-
-// Timer-Computed
-const formattedElapsedTime = computed(() => {
-  const seconds = Math.floor(elapsedTime.value / 1000);
-  const milliseconds = Math.floor((elapsedTime.value % 1000) / 100);
-  
-  if (seconds >= 10) {
-    return `${seconds}s`;
-  } else if (seconds >= 1) {
-    return `${seconds}.${milliseconds}s`;
-  } else {
-    return `0.${Math.floor(elapsedTime.value / 100)}s`;
-  }
-});
-
 // Build-Evaluierung mit dem Composable
 const {
   isLoading,
@@ -219,61 +180,14 @@ const {
   referenceResults,
   hunterInfo,
   hunterColor,
-  formattedBuildStats,
-  evaluateBuild: originalEvaluateBuild,
-  handleReevaluate: originalHandleReevaluate,
+  formattedBuildStats, // Neu: Importiert aus dem Composable!
+  evaluateBuild,
+  handleReevaluate,
   loadHunterLabels,
   setupWatches,
   getCurrentResults,
   showToastMessage
 } = useBuildEvaluation(props, emit);
-
-// Timer-Funktionen
-function startTimer() {
-  console.log('🕐 Starting timer...');
-  evaluationStartTime.value = Date.now();
-  elapsedTime.value = 0;
-  
-  // Timer alle 100ms aktualisieren
-  timerInterval.value = setInterval(() => {
-    elapsedTime.value = Date.now() - evaluationStartTime.value;
-  }, 100);
-}
-
-function stopTimer() {
-  if (timerInterval.value) {
-    clearInterval(timerInterval.value);
-    timerInterval.value = null;
-    
-    // Finale Zeit für Performance-Logs
-    const finalTime = Date.now() - evaluationStartTime.value;
-    console.log(`🎯 Build evaluation completed in ${finalTime}ms`);
-  }
-}
-
-// Watch für Loading-Status - KORRIGIERT
-watch(isLoading, (newIsLoading, oldIsLoading) => {
-  console.log(`Loading state changed: ${oldIsLoading} -> ${newIsLoading}`);
-  
-  if (!oldIsLoading && newIsLoading) {
-    // Loading startet - Timer starten
-    console.log('🚀 Starting evaluation timer');
-    startTimer();
-  } else if (oldIsLoading && !newIsLoading) {
-    // Loading ist beendet - Timer stoppen
-    console.log('✅ Stopping evaluation timer');
-    stopTimer();
-  }
-});
-
-// Handler-Funktionen bleiben unverändert
-async function evaluateBuild() {
-  await originalEvaluateBuild();
-}
-
-async function handleReevaluate() {
-  await originalHandleReevaluate();
-}
 
 // Funktion zum Importieren eines Builds aus einem Code
 function importBuild(build) {
@@ -352,6 +266,9 @@ function handleApplyUpgradeOverrides(payload) {
   }
 }
 
+// Watches einrichten - verwendet das Composable
+setupWatches();
+
 // Lebenszyklusmethoden
 onMounted(async () => {
   // URL-Parameter prüfen für importierte Builds
@@ -389,16 +306,8 @@ onMounted(async () => {
   window.addEventListener('statsModalClosed', handleStatsModalClosed);
 });
 
-watch(isLoading, (newIsLoading, oldIsLoading) => {
-  if (oldIsLoading && !newIsLoading) {
-    // Loading ist beendet
-    stopTimer();
-  }
-});
-
 onUnmounted(() => {
   window.removeEventListener('statsModalClosed', handleStatsModalClosed);
-  stopTimer();
 });
 </script>
 
