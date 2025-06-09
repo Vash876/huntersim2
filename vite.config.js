@@ -43,7 +43,7 @@ export default defineConfig({
     plugins: [] // Keine speziellen Plugins für Worker
   },
   build: {
-    minify: 'terser',
+    minify: false,
     terserOptions: {
       compress: {
         drop_console: true,
@@ -59,7 +59,7 @@ export default defineConfig({
       }
     },
     target: 'esnext',
-    sourcemap: false,
+    sourcemap: true,
   },
   resolve: {
     alias: {
