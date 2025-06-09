@@ -40,7 +40,10 @@ export default defineConfig({
   ],
   worker: {
     format: 'es', // Verwende ES-Module in Workern
-    plugins: [] // Keine speziellen Plugins für Worker
+    plugins: [
+      wasm(),           
+      topLevelAwait()  
+    ] 
   },
   build: {
     minify: false,
