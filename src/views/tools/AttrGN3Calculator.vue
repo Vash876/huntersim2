@@ -193,12 +193,40 @@
                     class="ml-2"
                   />
                 </div>
+
+                <div class="flex items-center justify-between mt-3">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconStar size="16" class="text-pink-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">Current AttrGN#3 Multiplier</span>
+                    <InfoTooltip 
+                      class="ml-1"
+                      content="<b>Supported formats:</b><br/>
+                      • Scientific notation: <code>1e100</code>, <code>5.5e50</code><br/>
+                      • Suffixes: <code>1k</code>, <code>2.5m</code>, <code>100b</code>, <code>5t</code><br/>
+                      • Available suffixes: k, m, b, t, qa, qu, sx, sp, oc, n, d<br/>"
+                      placement="top"
+                    />
+                  </div>
+                  
+                  <div class="flex items-center">
+                    <input
+                      v-model="attrMultiplierInput"
+                      @input="handleAttrMultiplierInput"
+                      @blur="formatAttrMultiplierDisplay"
+                      type="text"
+                      class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-pink-400 font-medium text-sm w-20 text-right"
+                      placeholder="1e100"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- Results Section - ERWEITERT -->
+        <!-- Results Section -->
         <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
           <div class="header p-2">
             <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
@@ -209,7 +237,7 @@
           
           <div class="p-2 sm:p-3">
             <!-- ERWEITERT: 3 Spalten statt 2 -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
               
               <!-- Multi per Day -->
               <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
@@ -227,6 +255,16 @@
                   <div class="text-sm font-semibold text-gray-300 mb-1">Days to 1e333</div>
                   <div class="text-2xl font-bold text-blue-400">
                     {{ daysTo1e333 === Infinity ? '∞' : formatNumber(daysTo1e333) }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Days left to 1e333 -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+                <div class="text-center">
+                  <div class="text-sm font-semibold text-gray-300 mb-1">Days left to 1e333</div>
+                  <div class="text-2xl font-bold text-orange-400">
+                    {{ daysLeftTo1e333 === Infinity ? '∞' : formatNumber(daysLeftTo1e333) }}
                   </div>
                 </div>
               </div>
@@ -305,9 +343,11 @@ import {
   IconCircle,
   IconInfoCircle,
   IconShield,
-  IconTarget  // NEU für Current Ticks
+  IconTarget,
+  IconStar
 } from '@tabler/icons-vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
+import InfoTooltip from '@/composables/InfoTooltip.vue';  
 
 // Input values - ERWEITERT
 const tickSpeed = ref(1.5);
@@ -316,7 +356,25 @@ const efficiencyBadge = ref(false);
 const ts5 = ref(false);
 const relic14 = ref(0);
 const researchPoints = ref(0);
-const currentTicksInLR = ref(0);  // NEU
+const currentTicksInLR = ref(0);  
+const currentAttrMultiplier = ref(1);
+const attrMultiplierInput = ref('1');
+
+const daysLeftTo1e333 = computed(() => {
+  if (multiPerDay.value <= 1 || currentAttrMultiplier.value <= 0) return Infinity;
+  
+  // Logarithmische Berechnung
+  const targetLog = 333; // log10(1e333) = 333
+  const currentLog = Math.log10(currentAttrMultiplier.value);
+  const dailyLog = Math.log10(multiPerDay.value);
+  
+  const remainingLog = targetLog - currentLog;
+  
+  if (remainingLog <= 0) return 0; // Bereits erreicht
+  if (dailyLog <= 0) return Infinity;
+  
+  return remainingLog / dailyLog;
+});
 
 // Toggle functions
 function toggleEfficiencyBadge() {
@@ -379,7 +437,7 @@ const daysTo1e333 = computed(() => {
   return Math.log(1e111) / Math.log(multiPerDay.value) * 3;
 });
 
-// NEU: Current LR Berechnungen
+// Current LR Berechnungen
 const currentOperations = computed(() => {
   if (ticksPerOperation.value <= 0) return 0;
   return (currentTicksInLR.value / ticksPerOperation.value) * operationsPerOperation.value;
@@ -410,35 +468,16 @@ const daysInLR = computed(() => {
   return daysInLRValue;
 });
 
-// NEU: Formatierungsfunktion für Tage
+// Formatierungsfunktion für Tage
 function formatDaysInLR(days) {
-  if (days === 0) return '0d';
+  if (days === 0) return '0d 0h 0m';
   
-  if (days < 1) {
-    // Weniger als 1 Tag - zeige Stunden und Minuten
-    const hours = Math.floor(days * 24);
-    const minutes = Math.floor((days * 24 * 60) % 60);
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    } else {
-      return `${minutes}m`;
-    }
-  } else if (days < 7) {
-    // 1-7 Tage - zeige Tage mit einer Dezimalstelle
-    return `${days.toFixed(1)}d`;
-  } else if (days < 30) {
-    // 1-4 Wochen - zeige Tage als ganze Zahl
-    return `${Math.floor(days)}d`;
-  } else if (days < 365) {
-    // Monate - zeige Monate mit einer Dezimalstelle
-    const months = days / 30.44; // Durchschnittliche Tage pro Monat
-    return `${months.toFixed(1)}mo`;
-  } else {
-    // Jahre - zeige Jahre mit einer Dezimalstelle
-    const years = days / 365.25; // Berücksichtigt Schaltjahre
-    return `${years.toFixed(1)}y`;
-  }
+  const totalMinutes = Math.floor(days * 24 * 60);
+  const wholeDays = Math.floor(totalMinutes / (24 * 60));
+  const wholeHours = Math.floor((totalMinutes % (24 * 60)) / 60);
+  const remainingMinutes = totalMinutes % 60;
+  
+  return `${wholeDays}d ${wholeHours}h ${remainingMinutes}m`;
 }
 
 // Formatierungsfunktionen
@@ -472,6 +511,54 @@ function formatMulti(num) {
   return num.toFixed(2);
 }
 
+function parseSuffixValue(input) {
+  if (typeof input === 'number') return input;
+  
+  const str = input.toString().toLowerCase().trim();
+  
+  // Direkte wissenschaftliche Notation (5e15, 1.5e10, etc.)
+  if (str.includes('e')) {
+    const parsed = parseFloat(str);
+    return isNaN(parsed) ? 1 : parsed;
+  }
+  
+  // Suffix-Mapping
+  const suffixMap = {
+    'k': 1e3,
+    'm': 1e6,
+    'b': 1e9,
+    't': 1e12,
+    'qa': 1e15,
+    'qu': 1e18,
+    'sx': 1e21,
+    'sp': 1e24,
+    'oc': 1e27,
+    'n': 1e30,
+    'd': 1e33
+  };
+  
+  // Extrahiere Zahl und Suffix
+  const match = str.match(/^([0-9]*\.?[0-9]+)([a-z]+)?$/);
+  
+  if (!match) return 1; // Fallback bei ungültiger Eingabe
+  
+  const number = parseFloat(match[1]);
+  const suffix = match[2] || '';
+  
+  if (isNaN(number)) return 1;
+  
+  // Multipliziere mit Suffix-Wert
+  const multiplier = suffixMap[suffix] || 1;
+  return number * multiplier;
+}
+
+// ToolValueControls anpassen - Custom Handler für currentAttrMultiplier
+const handleAttrMultiplierChange = (value) => {
+  // Parse Suffix-Werte
+  const parsedValue = parseSuffixValue(value);
+  currentAttrMultiplier.value = parsedValue;
+};
+
 function resetSettings() {
   tickSpeed.value = 0;
   ticksPerTick.value = 1;
@@ -479,7 +566,8 @@ function resetSettings() {
   ts5.value = false;
   relic14.value = 0;
   researchPoints.value = 0;
-  currentTicksInLR.value = 0;  // NEU
+  currentTicksInLR.value = 0; 
+  currentAttrMultiplier.value = 1;
   saveSettings();
 }
 
@@ -492,7 +580,8 @@ function saveSettings() {
       ts5: ts5.value,
       relic14: relic14.value,
       researchPoints: researchPoints.value,
-      currentTicksInLR: currentTicksInLR.value  // NEU
+      currentTicksInLR: currentTicksInLR.value,
+      currentAttrMultiplier: currentAttrMultiplier.value
     }));
   } catch (error) {
     console.error('Error saving settings:', error);
@@ -509,9 +598,26 @@ function loadSettings() {
     if (savedSettings.ts5 !== undefined) ts5.value = savedSettings.ts5;
     if (savedSettings.relic14 !== undefined) relic14.value = savedSettings.relic14;
     if (savedSettings.researchPoints !== undefined) researchPoints.value = savedSettings.researchPoints;
-    if (savedSettings.currentTicksInLR !== undefined) currentTicksInLR.value = savedSettings.currentTicksInLR;  // NEU
+    if (savedSettings.currentTicksInLR !== undefined) currentTicksInLR.value = savedSettings.currentTicksInLR;
+    if (savedSettings.currentAttrMultiplier !== undefined) currentAttrMultiplier.value = savedSettings.currentAttrMultiplier;  // NEU
   } catch (error) {
     console.error('Error loading saved settings:', error);
+  }
+}
+
+// Handler für Custom Input
+function handleAttrMultiplierInput(event) {
+  const value = event.target.value;
+  const parsedValue = parseSuffixValue(value);
+  currentAttrMultiplier.value = parsedValue;
+}
+
+function formatAttrMultiplierDisplay() {
+  // Zeige formatierte Version im Input
+  if (currentAttrMultiplier.value >= 1000) {
+    attrMultiplierInput.value = formatMulti(currentAttrMultiplier.value);
+  } else {
+    attrMultiplierInput.value = currentAttrMultiplier.value.toString();
   }
 }
 
@@ -533,8 +639,18 @@ const researchData = [
   { id: "research91", level: 5, bonus: 1, cost: "5900" },
 ];
 
+
+// Watch für Sync zwischen Input und Value
+watch(currentAttrMultiplier, (newValue) => {
+  if (newValue >= 1000) {
+    attrMultiplierInput.value = formatMulti(newValue);
+  } else {
+    attrMultiplierInput.value = newValue.toString();
+  }
+});
+
 // Watch for changes and save (excluding toggles, they save themselves)
-watch([tickSpeed, ticksPerTick, relic14, researchPoints, currentTicksInLR], () => {
+watch([tickSpeed, ticksPerTick, relic14, researchPoints, currentTicksInLR, currentAttrMultiplier], () => {
   saveSettings();
 });
 
