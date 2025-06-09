@@ -410,7 +410,7 @@
         </div>
 
         <!-- Fragment Input Panel - nur im Fragments-Tab anzeigen -->
-        <div v-if="selectedCurrency === 'frags'" class="bg-gray-850 border border-gray-700 p-4 rounded-lg mb-6 mt-4 w-1/2">
+        <div v-if="selectedCurrency === 'frags'" class="bg-gray-850 border border-gray-700 p-4 rounded-lg mb-6 mt-4 w-full sm:w-1/2">
           <div class="flex items-center justify-start">
             <div class="flex items-center">
               <img 

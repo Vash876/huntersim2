@@ -2,18 +2,26 @@
 <template>
   <div class="p-3">
     <!-- Loading-Zustand -->
-    <div v-if="isLoading" class="flex items-center gap-2">
-      <div class="w-full max-w-xs flex-grow">
-        <div class="h-2 bg-gray-700 rounded-full overflow-hidden">
-          <div 
-            class="h-full transition-all duration-100"
-            :class="`bg-${hunterColor}-500`"
-            :style="`width: ${progressPercent}%;`">
-          </div>
-        </div>
+    <div v-if="isLoading" class="flex items-center justify-center py-6 space-x-3">
+      <!-- Spinner -->
+      <div class="relative">
+        <div 
+          class="w-8 h-8 border-3 border-gray-600 rounded-full animate-spin"
+          :class="{
+            'border-t-red-500': hunterColor === 'red',
+            'border-t-blue-500': hunterColor === 'blue', 
+            'border-t-green-500': hunterColor === 'green',
+            'border-t-purple-500': hunterColor === 'purple',
+            'border-t-orange-500': hunterColor === 'orange',
+            'border-t-yellow-500': hunterColor === 'yellow',
+            'border-t-emerald-500': !['red', 'blue', 'green', 'purple'].includes(hunterColor)
+          }"
+        ></div>
       </div>
-      <div class="text-xs text-gray-400">
-        {{ progressIteration }} / {{ totalIterations }}
+      
+      <!-- Loading Text -->
+      <div class="text-sm text-gray-400">
+        Evaluating build...
       </div>
     </div>
     

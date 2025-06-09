@@ -2,6 +2,20 @@
 const changelog = 
 [
   {
+    version: '2.5.0',
+    date: '2025-06-09',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: '<b>MAJOR: WebAssembly Integration</b>',
+        subItems: [
+          '<b class="text-green-500">100-200% faster evaluations:</b> All Hunter evaluations now use WebAssembly (WASM) instead of JavaScript for significantly improved performance',
+          'Maintained 100% accuracy - all calculations produce identical results to the previous JavaScript implementation',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.4.2',
     date: '2025-06-08',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',

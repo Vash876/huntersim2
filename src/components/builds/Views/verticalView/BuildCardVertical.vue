@@ -23,25 +23,27 @@
     
     <div class="p-4 pb-3">
       <!-- Loading-Zustand -->
-      <div v-if="isLoading" class="flex flex-col items-center justify-center py-8 space-y-3">
-        <div class="w-full max-w-xs">
-          <div class="text-sm text-gray-300 flex justify-between mb-1">
-            <span>Evaluating build...</span>
-            <span>{{ progressPercent }}%</span>
-          </div>
-          <div class="h-2 bg-gray-700 rounded-full overflow-hidden">
-            <div 
-              class="h-full transition-all duration-100"
-              :class="`bg-${hunterColor}-500`"
-              :style="`width: ${progressPercent}%;`">
-            </div>
-          </div>
+      <div v-if="isLoading" class="flex flex-col items-center justify-center py-12 space-y-4">
+        <!-- Spinner -->
+        <div class="relative">
+          <div 
+            class="w-12 h-12 border-4 border-gray-600 rounded-full animate-spin"
+            :class="{
+              'border-t-red-500': hunterColor === 'red',
+              'border-t-blue-500': hunterColor === 'blue', 
+              'border-t-green-500': hunterColor === 'green',
+              'border-t-purple-500': hunterColor === 'purple',
+              'border-t-emerald-500': !['red', 'blue', 'green', 'purple'].includes(hunterColor)
+            }"
+          ></div>
         </div>
-        <div class="text-xs text-gray-400">
-          Iteration {{ progressIteration }} of {{ totalIterations }}
+        
+        <!-- Loading Text -->
+        <div class="text-center space-y-1">
+          <p class="text-gray-300 font-medium">Evaluating build...</p>
         </div>
       </div>
-      
+
       <!-- Fehler-Zustand -->
       <div v-else-if="hasError" class="text-center py-12">
         <IconAlertCircle size="40" class="mx-auto mb-2 text-red-400" />
@@ -73,7 +75,7 @@
         
         <!-- Boss-Statistiken -->
         <BuildBossStats 
-          v-if="results.bossHpPercent !== '--' || results.bossKillRate !== '--'"
+          v-if="results.bossHpPercent !== 0 || results.bossKillRate !== 0"
           :results="results"
           :reference-results="referenceResults"
           :is-reference-build="isReferenceBuild"

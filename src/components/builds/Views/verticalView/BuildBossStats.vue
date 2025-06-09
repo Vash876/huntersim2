@@ -4,14 +4,14 @@
     
     <div class="boss-stats-grid mt-3">
       <!-- Boss HP -->
-      <div v-if="results.bossHpPercent !== '--'" class="boss-stat-card">
+      <div v-if="results.bossHpPercent !== 0" class="boss-stat-card">
         <div class="boss-stat-header">
           <div class="flex items-center">
             <IconHeartFilled :size="16" class="text-red-400 mr-1.5" />
             <span class="boss-stat-title">{{ resultLabels.bossHpPercent }}</span>
           </div>
           <div 
-            v-if="!isReferenceBuild && referenceResults?.bossHpPercent !== '--' && results.bossHpPercent !== '--'"
+            v-if="!isReferenceBuild && referenceResults?.bossHpPercent !== 0 && results.bossHpPercent !== 0"
             class="flex items-center"
           >
             <div :class="getBossStatDiffClasses((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent), true, true)" class="whitespace-nowrap inline-flex items-center text-xs">
@@ -28,7 +28,7 @@
       </div>
       
       <!-- Boss Kill Rate -->
-      <div v-if="results.bossKillRate !== '--'" class="boss-stat-card">
+      <div v-if="results.bossKillRate !== 0" class="boss-stat-card">
         <div class="boss-stat-header">
           <div class="flex items-center">
             <IconSword :size="16" class="text-emerald-400 mr-1.5" />

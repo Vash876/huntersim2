@@ -1,10 +1,10 @@
 import * as Comlink from 'comlink';
 import { HUNTERS } from '../constants/hunters';
 
-// Direkte Imports der Eval-Funktionen hinzufügen
-import { EVALBORGE } from '../utils/evalBorge.js';
-import { EVALOZZY } from '../utils/evalOzzy.js';
-import { EVALKNOX } from '../utils/evalKnox.js';
+// Direkte Imports der Eval-Funktionen
+import { EVALBORGE_WASM } from './wasmBorge.js';  // WASM für Borge
+import { EVALOZZY_WASM } from './wasmOzzy.js';    // WASM für Ozzy
+import { EVALKNOX_WASM } from './wasmKnox.js';    // WASM für Knox
 
 // Import der EVAL_PARAMS für jeden Hunter
 import { EVAL_PARAMS as BORGE_PARAMS } from '../constants/borge.js';
@@ -13,9 +13,9 @@ import { EVAL_PARAMS as KNOX_PARAMS } from '../constants/knox.js';
 
 // Worker-Zustand
 let evalFunctions = {
-  borge: EVALBORGE,
-  ozzy: EVALOZZY,
-  knox: EVALKNOX
+  borge: EVALBORGE_WASM,  // WASM für Borge
+  ozzy: EVALOZZY_WASM,    // WASM für Ozzy
+  knox: EVALKNOX_WASM     // WASM für Knox
 };
 
 // EVAL_PARAMS aus den importierten Konstanten
@@ -30,7 +30,7 @@ console.log("Anzahl der Parameter für Borge:", BORGE_PARAMS.length);
 console.log("Anzahl der Parameter für Ozzy:", OZZY_PARAMS.length);
 console.log("Anzahl der Parameter für Knox:", KNOX_PARAMS.length);
 
-let isInitialized = true; // Setze auf true, da wir keine async Initialisierung mehr brauchen
+let isInitialized = true;
 let initializationPromise = null;
 
 /**
@@ -180,45 +180,21 @@ function parseEvalResults(evalResults, hunterId) {
     bossKillRate: result[6]
   };
   
-  // Hunter-spezifische Werte
-  if (hunterId === 'knox') {
-    Object.assign(baseResult, {
-      mat1: result[7],         // Glac
-      mat2: result[8],         // Quartz
-      mat3: result[9],         // Tess
-      xp: result[10],          // XP
-      extraGlac: result[11],   // Überschüssiges Glac
-      extraQuartz: result[12], // Überschüssiger Quartz
-      extraTess: result[13],   // Überschüssiges Tess
-      extraXp: result[14],     // Überschüssiges XP
-      expectedLvl: result[15], // Erwartetes Level
-      basisStats: result[16],       // Basis-Stats
-      stats: result[17],   // Soul-Buffed Stats
-    });
-    
-    // Bei Knox können wir noch mehr Parameter haben
-    if (result.length > 18) {
-      baseResult.timeFromPrev = result[18];
-    }
-    if (result.length > 19) {
-      baseResult.totalDays = result[19];
-    }
-  } else {
-    Object.assign(baseResult, {
-      mat1: result[7],  // Mat1
-      mat2: result[8],  // Mat2
-      mat3: result[9],  // Mat3
-      xp: result[10],   // XP
-      stats: result[11] // Stats
-    });
-  }
+  // Alle Hunter haben jetzt die gleiche Struktur (13 Elemente)
+  Object.assign(baseResult, {
+    mat1: result[7],  // Mat1 (Borge/Ozzy) oder Glac (Knox)
+    mat2: result[8],  // Mat2 (Borge/Ozzy) oder Quartz (Knox)
+    mat3: result[9],  // Mat3 (Borge/Ozzy) oder Tess (Knox)
+    xp: result[10],   // XP
+    stats: result[11] // Stats
+  });
   
-  // Stage-Verteilung extrahieren - Jetzt aus dem letzten Element
+  // Stage-Verteilung extrahieren - Jetzt aus dem letzten Element (Index 12)
   let stageDistribution = [];
   
   try {
     // Der letzte Eintrag im Array enthält die Stage-Progress-Daten als JSON-String
-    const progressString = result[result.length - 1];
+    const progressString = result[12];
     
     if (typeof progressString === 'string' && progressString.startsWith('{')) {
       const progressObj = JSON.parse(progressString);
@@ -298,20 +274,14 @@ async function evaluate(hunterId, buildData, storeData) {
   try {
     console.log(`\nWorker: Evaluiere ${hunterId} mit ${params.length} Parametern`);
     
-    // Debug-Ausgabe für wichtige Parameter
-    const lvlIndex = paramConfig.indexOf('lvl');
-    const hpIndex = paramConfig.indexOf('hp');
-    const atkIndex = paramConfig.indexOf('atk');
-    
-    console.log(`Level: ${lvlIndex >= 0 ? params[lvlIndex] : 'nicht gefunden'}`);
-    console.log(`HP: ${hpIndex >= 0 ? params[hpIndex] : 'nicht gefunden'}`);
-    console.log(`ATK: ${atkIndex >= 0 ? params[atkIndex] : 'nicht gefunden'}`);
-    
     // Speichere die aktuelle Zeit für Performance-Messung
     const startTime = performance.now();
     
-    // Führe die Evaluierung aus
-    const evalResults = evalFn(...params);
+    let evalResults;
+    
+    // ALLE HUNTER VERWENDEN JETZT WASM!
+    console.log(`Worker: WASM-Funktion wird aufgerufen für ${hunterId}...`);
+    evalResults = await evalFn(...params);
     
     // Berechne die Ausführungszeit
     const endTime = performance.now();

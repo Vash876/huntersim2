@@ -80,18 +80,26 @@
       <!-- Inhalt: Statistiken und Ressourcen -->
       <div class="p-3 pb-0">
         <!-- Loading-Zustand -->
-        <div v-if="isLoading" class="flex items-center gap-2 mb-3">
-          <div class="w-full flex-grow">
-            <div class="h-2 bg-gray-700 rounded-full overflow-hidden">
-              <div 
-                class="h-full transition-all duration-100"
-                :class="`bg-${hunterColor}-500`"
-                :style="`width: ${progressPercent}%;`">
-              </div>
-            </div>
+        <div v-if="isLoading" class="flex items-center justify-center py-6 space-x-3">
+          <!-- Spinner -->
+          <div class="relative">
+            <div 
+              class="w-8 h-8 border-3 border-gray-600 rounded-full animate-spin"
+              :class="{
+                'border-t-red-500': hunterColor === 'red',
+                'border-t-blue-500': hunterColor === 'blue', 
+                'border-t-green-500': hunterColor === 'green',
+                'border-t-purple-500': hunterColor === 'purple',
+                'border-t-orange-500': hunterColor === 'orange',
+                'border-t-yellow-500': hunterColor === 'yellow',
+                'border-t-emerald-500': !['red', 'blue', 'green', 'purple', 'orange', 'yellow'].includes(hunterColor)
+              }"
+            ></div>
           </div>
-          <div class="text-xs text-gray-400 whitespace-nowrap">
-            {{ progressIteration }} / {{ totalIterations }}
+          
+          <!-- Loading Text -->
+          <div class="text-sm text-gray-400">
+            Evaluating build...
           </div>
         </div>
         
@@ -410,9 +418,9 @@
           </div>
           
           <!-- Mobile Layout: Boss-Stats in einer Reihe -->
-          <div class="flex gap-2" v-if="results.bossKillRate !== '--' || results.bossHpPercent !== '--'">
+          <div class="flex gap-2" v-if="results.bossKillRate !== 0 || results.bossHpPercent !== 0">
             <!-- Boss HP mit Icon -->
-            <div class="stat-box flex-1" v-if="results.bossHpPercent !== '--'">
+            <div class="stat-box flex-1" v-if="results.bossHpPercent !== 0">
               <div class="flex flex-col">
                 <div class="flex justify-between items-center mb-1">
                   <div class="flex items-center">
@@ -422,7 +430,7 @@
                     </div>
                   </div>
                   <span 
-                    v-if="!isReferenceBuild && referenceResults?.bossHpPercent && referenceResults.bossHpPercent !== '--'"
+                    v-if="!isReferenceBuild && referenceResults?.bossHpPercent && referenceResults.bossHpPercent !== 0"
                     :class="getBossStatDiffClasses((100 - results.bossHpPercent), (100 - referenceResults.bossHpPercent), true, true)"
                     class="text-xs flex items-center"
                   >
@@ -435,7 +443,7 @@
             </div>
 
             <!-- Boss Kill Rate mit Icon -->
-            <div class="stat-box flex-1" v-if="results.bossKillRate !== '--'">
+            <div class="stat-box flex-1" v-if="results.bossKillRate !== 0">
               <div class="flex flex-col">
                 <div class="flex justify-between items-center mb-1">
                   <div class="flex items-center">
@@ -445,7 +453,7 @@
                     </div>
                   </div>
                   <span 
-                    v-if="!isReferenceBuild && referenceResults?.bossKillRate && referenceResults.bossKillRate !== '--'"
+                    v-if="!isReferenceBuild && referenceResults?.bossKillRate && referenceResults.bossKillRate !== 0"
                     :class="getBossStatDiffClasses(results.bossKillRate, referenceResults.bossKillRate, true, true)"
                     class="text-xs flex items-center"
                   >

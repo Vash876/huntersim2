@@ -118,8 +118,15 @@
             @click="showSummaryModal = true"
             class="bg-purple-700 hover:bg-purple-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
           >
-            <IconShare size="12" class="mr-1" />
-            Summary
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" id="Generate-Summary--Streamline-Outlined-Expansion" height="16" width="16">
+              <desc>
+                Generate Summary Streamline Icon: https://streamlinehq.com
+              </desc>
+              <g id="generate-summary">
+                <path id="Union" fill="#FFFFFF" fill-rule="evenodd" d="M5 11V4H3v7c0 3.866 3.13401 7 7 7h7.293L16 19.293l1.4142 1.4142 3.7071 -3.7071 -3.7071 -3.7071L16 14.7072 17.2928 16H10c-2.76142 0 -5 -2.2386 -5 -5Zm3 -5h13V4H8v2Zm7 5H8V9h7v2Z" clip-rule="evenodd" stroke-width="1"></path>
+              </g>
+            </svg>
+            <span class="ml-1">Summary</span>
           </button>
         </div>
         
@@ -263,7 +270,8 @@ import {
   IconChartDots, 
   IconInfoCircle, 
   IconRefresh,
-  IconChartBar
+  IconChartBar,
+  IconShare
 } from '@tabler/icons-vue';
 import { 
   GADGETS, 

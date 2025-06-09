@@ -9,9 +9,9 @@
             <!-- Bild und Überschrift in einer Zeile -->
             <div class="flex items-center mb-1">
               <img src="@/assets/general/orbs.png" class="w-6 h-6 mr-2" alt="Orbs" />
-              <h1 class="text-2xl font-bold">TR Planner</h1>
+              <h1 class="text-2xl font-bold text-shadow-lg/40">TR Planner</h1>
             </div>
-            <p class="text-sm text-gray-300">Plan and optimize your Traversal Resets</p>
+            <p class="text-sm text-gray-300 text-shadow-lg/30">Plan and optimize your Traversal Resets</p>
           </div>
           
           <!-- Mobile: Die Buttons untereinander in einer Button-Gruppe mit Icons -->

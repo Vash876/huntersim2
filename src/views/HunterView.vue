@@ -19,8 +19,8 @@
             
             <!-- Titel und Beschreibung -->
             <div>
-              <h1 class="text-2xl font-bold mb-1">{{ currentHunter.name }} Simulator</h1>
-              <p class="text-sm text-gray-300">Compare builds and optimize your performance</p>
+              <h1 class="text-2xl font-bold mb-1 text-shadow-lg/40">{{ currentHunter.name }} Simulator</h1>
+              <p class="text-sm text-gray-300 text-shadow-lg/30">Compare builds and optimize your performance</p>
             </div>
           </div>
           
