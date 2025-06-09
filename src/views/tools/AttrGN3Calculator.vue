@@ -213,8 +213,8 @@
                   <div class="flex items-center">
                     <input
                       v-model="attrMultiplierInput"
-                      @input="handleAttrMultiplierInput"
-                      @blur="formatAttrMultiplierDisplay"
+                      @keydown.enter="handleAttrMultiplierSubmit"
+                      @blur="handleAttrMultiplierSubmit"
                       type="text"
                       class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-pink-400 font-medium text-sm w-20 text-right"
                       placeholder="1e100"
@@ -558,13 +558,6 @@ function parseSuffixValue(input) {
   return number * multiplier;
 }
 
-// ToolValueControls anpassen - Custom Handler für currentAttrMultiplier
-const handleAttrMultiplierChange = (value) => {
-  // Parse Suffix-Werte
-  const parsedValue = parseSuffixValue(value);
-  currentAttrMultiplier.value = parsedValue;
-};
-
 function resetSettings() {
   tickSpeed.value = 0;
   ticksPerTick.value = 1;
@@ -612,10 +605,11 @@ function loadSettings() {
 }
 
 // Handler für Custom Input
-function handleAttrMultiplierInput(event) {
-  const value = event.target.value;
-  const parsedValue = parseSuffixValue(value);
+function handleAttrMultiplierSubmit() {
+  // Parse und update nur bei Enter oder Blur
+  const parsedValue = parseSuffixValue(attrMultiplierInput.value);
   currentAttrMultiplier.value = parsedValue;
+  formatAttrMultiplierDisplay();
 }
 
 function formatAttrMultiplierDisplay() {
@@ -648,10 +642,14 @@ const researchData = [
 
 // Watch für Sync zwischen Input und Value
 watch(currentAttrMultiplier, (newValue) => {
-  if (newValue >= 1000) {
-    attrMultiplierInput.value = formatMulti(newValue);
-  } else {
-    attrMultiplierInput.value = newValue.toString();
+  // Nur formatieren wenn das Input-Feld nicht den Fokus hat
+  // Verhindert Interferenz während der Eingabe
+  if (document.activeElement !== document.querySelector('input[placeholder="1e100"]')) {
+    if (newValue >= 1000) {
+      attrMultiplierInput.value = formatMulti(newValue);
+    } else {
+      attrMultiplierInput.value = newValue.toString();
+    }
   }
 });
 
