@@ -396,12 +396,15 @@ const currentMultiplier = computed(() => {
 });
 
 const daysInLR = computed(() => {
-  if (currentTicksInLR.value === 0 || ticksPerTick.value === 0) return 0;
+  if (currentTicksInLR.value === 0 || tickSpeed.value === 0 || ticksPerTick.value === 0) return 0;
   
-  // Ticks in Sekunden umrechnen: currentTicks / ticksPerTick = Sekunden
-  const secondsInLR = currentTicksInLR.value / ticksPerTick.value;
+  // Anzahl der echten "Tick-Events" = currentTicksInLR / ticksPerTick
+  const actualTickEvents = currentTicksInLR.value / ticksPerTick.value;
   
-  // Sekunden in Tage umrechnen: Sekunden / 86400
+  // Jedes Tick-Event dauert tickSpeed Sekunden
+  const secondsInLR = actualTickEvents * tickSpeed.value;
+  
+  // Sekunden in Tage umrechnen
   const daysInLRValue = secondsInLR / 86400;
   
   return daysInLRValue;
