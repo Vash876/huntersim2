@@ -13,6 +13,14 @@ const changelog =
           'Maintained 100% accuracy - all calculations produce identical results to the previous JavaScript implementation',
         ]
       },
+      {
+        text: 'Attraction GN#3 Calculator Enhancements:',
+        subItems: [
+          'Added "Current Ticks in LR" input field to track progress in current Loop Reset',
+          'Added "Pending Multiplier" calculation showing accumulated multiplier ready for next LR',
+          'Added "Days in LR" display showing how long current Loop Reset has been running',
+        ]
+      }
     ]
   },
   {

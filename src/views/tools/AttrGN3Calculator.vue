@@ -91,6 +91,27 @@
                     class="ml-2"
                   />
                 </div>
+
+                <!-- Current Ticks in LR -->
+                <div class="flex items-center justify-between mt-3">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconTarget size="16" class="text-emerald-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">Current Ticks in LR</span>
+                  </div>
+                  <ToolValueControls
+                    :value="currentTicksInLR"
+                    @update:value="currentTicksInLR = $event"
+                    :minValue="0"
+                    :maxValue="999999999"
+                    :step="1"
+                    :fastStep="1000"
+                    value-class="text-emerald-400 font-medium"
+                    :autoEdit="true"
+                    class="ml-2"
+                  />
+                </div>
               </div>
               
               <!-- Right Column -->
@@ -177,7 +198,7 @@
           </div>
         </div>
         
-        <!-- Results Section mit Berechnungen -->
+        <!-- Results Section - ERWEITERT -->
         <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
           <div class="header p-2">
             <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
@@ -187,7 +208,8 @@
           </div>
           
           <div class="p-2 sm:p-3">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <!-- ERWEITERT: 3 Spalten statt 2 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
               
               <!-- Multi per Day -->
               <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
@@ -208,9 +230,19 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Current Multiplier -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+                <div class="text-center">
+                  <div class="text-sm font-semibold text-gray-300 mb-1">Pending Multiplier</div>
+                  <div class="text-2xl font-bold text-emerald-400">
+                    {{ formatMulti(currentMultiplier) }}
+                  </div>
+                </div>
+              </div>
             </div>
             
-            <!-- Details -->
+            <!-- Details - ERWEITERT -->
             <div class="mt-3 bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <h4 class="text-sm font-semibold text-gray-200 mb-2 flex items-center">
                 <IconInfoCircle size="14" class="mr-1.5 text-blue-400" />
@@ -247,6 +279,11 @@
                   <span>Retained per Day:</span> 
                   <span class="text-orange-300">{{ formatNumber(retainedPerDay) }}</span>
                 </div>
+                
+                <div class="flex justify-between">
+                  <span>Days in LR:</span> 
+                  <span class="text-emerald-300">{{ formatDaysInLR(daysInLR) }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -267,17 +304,19 @@ import {
   IconBadge,
   IconCircle,
   IconInfoCircle,
-  IconShield
+  IconShield,
+  IconTarget  // NEU für Current Ticks
 } from '@tabler/icons-vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 
-// Input values
+// Input values - ERWEITERT
 const tickSpeed = ref(1.5);
 const ticksPerTick = ref(1);
 const efficiencyBadge = ref(false);
 const ts5 = ref(false);
 const relic14 = ref(0);
 const researchPoints = ref(0);
+const currentTicksInLR = ref(0);  // NEU
 
 // Toggle functions
 function toggleEfficiencyBadge() {
@@ -340,6 +379,65 @@ const daysTo1e333 = computed(() => {
   return Math.log(1e111) / Math.log(multiPerDay.value) * 3;
 });
 
+// NEU: Current LR Berechnungen
+const currentOperations = computed(() => {
+  if (ticksPerOperation.value <= 0) return 0;
+  return (currentTicksInLR.value / ticksPerOperation.value) * operationsPerOperation.value;
+});
+
+const currentRetained = computed(() => {
+  return currentOperations.value * (retainedOperations.value / 100);
+});
+
+const currentMultiplier = computed(() => {
+  if (currentRetained.value <= 0) return 1;
+  const attributionRate = 0.001; // 0.10%
+  return Math.pow(1 + attributionRate, currentRetained.value);
+});
+
+const daysInLR = computed(() => {
+  if (currentTicksInLR.value === 0 || ticksPerTick.value === 0) return 0;
+  
+  // Ticks in Sekunden umrechnen: currentTicks / ticksPerTick = Sekunden
+  const secondsInLR = currentTicksInLR.value / ticksPerTick.value;
+  
+  // Sekunden in Tage umrechnen: Sekunden / 86400
+  const daysInLRValue = secondsInLR / 86400;
+  
+  return daysInLRValue;
+});
+
+// NEU: Formatierungsfunktion für Tage
+function formatDaysInLR(days) {
+  if (days === 0) return '0d';
+  
+  if (days < 1) {
+    // Weniger als 1 Tag - zeige Stunden und Minuten
+    const hours = Math.floor(days * 24);
+    const minutes = Math.floor((days * 24 * 60) % 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else {
+      return `${minutes}m`;
+    }
+  } else if (days < 7) {
+    // 1-7 Tage - zeige Tage mit einer Dezimalstelle
+    return `${days.toFixed(1)}d`;
+  } else if (days < 30) {
+    // 1-4 Wochen - zeige Tage als ganze Zahl
+    return `${Math.floor(days)}d`;
+  } else if (days < 365) {
+    // Monate - zeige Monate mit einer Dezimalstelle
+    const months = days / 30.44; // Durchschnittliche Tage pro Monat
+    return `${months.toFixed(1)}mo`;
+  } else {
+    // Jahre - zeige Jahre mit einer Dezimalstelle
+    const years = days / 365.25; // Berücksichtigt Schaltjahre
+    return `${years.toFixed(1)}y`;
+  }
+}
+
 // Formatierungsfunktionen
 function formatNumber(num) {
   if (num === Infinity) return '∞';
@@ -378,6 +476,7 @@ function resetSettings() {
   ts5.value = false;
   relic14.value = 0;
   researchPoints.value = 0;
+  currentTicksInLR.value = 0;  // NEU
   saveSettings();
 }
 
@@ -389,7 +488,8 @@ function saveSettings() {
       efficiencyBadge: efficiencyBadge.value,
       ts5: ts5.value,
       relic14: relic14.value,
-      researchPoints: researchPoints.value
+      researchPoints: researchPoints.value,
+      currentTicksInLR: currentTicksInLR.value  // NEU
     }));
   } catch (error) {
     console.error('Error saving settings:', error);
@@ -406,6 +506,7 @@ function loadSettings() {
     if (savedSettings.ts5 !== undefined) ts5.value = savedSettings.ts5;
     if (savedSettings.relic14 !== undefined) relic14.value = savedSettings.relic14;
     if (savedSettings.researchPoints !== undefined) researchPoints.value = savedSettings.researchPoints;
+    if (savedSettings.currentTicksInLR !== undefined) currentTicksInLR.value = savedSettings.currentTicksInLR;  // NEU
   } catch (error) {
     console.error('Error loading saved settings:', error);
   }
@@ -430,7 +531,7 @@ const researchData = [
 ];
 
 // Watch for changes and save (excluding toggles, they save themselves)
-watch([tickSpeed, ticksPerTick, relic14, researchPoints], () => {
+watch([tickSpeed, ticksPerTick, relic14, researchPoints, currentTicksInLR], () => {
   saveSettings();
 });
 
