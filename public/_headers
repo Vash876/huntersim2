@@ -1,0 +1,9 @@
+# public/_headers
+/*.wasm
+  Content-Type: application/wasm
+
+/assembly/*.wasm
+  Content-Type: application/wasm
+
+/src/workers/*.wasm  
+  Content-Type: application/wasm
