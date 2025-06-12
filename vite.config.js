@@ -46,7 +46,7 @@ export default defineConfig({
     ] 
   },
   build: {
-    minify: 'terser',  
+    minify: '',  
     terserOptions: {
       compress: {
         drop_console: true,  
@@ -68,7 +68,7 @@ export default defineConfig({
       }
     },
     target: 'esnext',
-    sourcemap: false,
+    sourcemap: true,
   },
   resolve: {
     alias: {
