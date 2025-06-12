@@ -209,6 +209,8 @@ class Ozzy {
   
   // Progress Tracking
   progress: Map<i32, i32> = new Map<i32, i32>();
+  deathsByStageAndRevive: Map<i32, i32> = new Map<i32, i32>(); 
+  maxRevives: i32 = 0; 
   
   constructor() {
     this.lvl = 0;
@@ -288,6 +290,8 @@ class Ozzy {
     
     // Progress Map initialisieren
     this.progress = new Map<i32, i32>();
+    this.deathsByStageAndRevive = new Map<i32, i32>(); 
+    this.maxRevives = 0;
   }
 }
 
@@ -506,6 +510,10 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
   ozzy.time += 40 - Math.min(reviveCd, 30);
   ozzy.maxStage = Math.max(ozzy.maxStage, Math.floor(ozzy.maxEnem / 10)) as i32;
   ozzy.remainingBullets = 0;
+
+  if (ozzy.maxRevives === 0) {
+    ozzy.maxRevives = ozzy.revival + ozzy.sisters; 
+  }
   
   currentOzzyEnemy = OZZY_ENEMIES[0];
   currentOzzyEnemy.hp = currentOzzyEnemy.maxHp;
@@ -517,7 +525,7 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
   nextMultistrike = 99999999;
   nextHarden = 99999999;
   
-  // Haupt-Kampfschleife (EXAKT wie JS)
+  // Haupt-Kampfschleife 
   while (ozzy.hp > 0) {
     currentOzzyTime = minAll(nextOzzyAtk, nextEchoBullet, nextMultistrike, nextOzzyEnemAtk, nextOzzyRegen, nextHarden);
     
@@ -537,9 +545,21 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
       ozzyAtk(false, 1);
     }
     
-    // Revive Logic (EXAKT wie JS)
+    // Revive Logic 
     if (ozzy.revives && ozzy.hp <= 0) {
       ozzy.hp = 0.8 * ozzy.currentMaxHp;
+      
+      // NEU: Death Tracking
+      let reviveNumber = ozzy.maxRevives - ozzy.revives + 1;
+      let currentStage = Math.floor(currentOzzyEnem / 10) as i32;
+      let numericKey = currentStage * 1000 + reviveNumber; // Stage 351, Revive 2 → 351002
+      
+      if (ozzy.deathsByStageAndRevive.has(numericKey)) {
+        ozzy.deathsByStageAndRevive.set(numericKey, ozzy.deathsByStageAndRevive.get(numericKey) + 1);
+      } else {
+        ozzy.deathsByStageAndRevive.set(numericKey, 1);
+      }
+      
       ozzy.revives--;
       ozzy.currentAtk = ozzy.atk * (1 + 0.02 * ozzy.dwd * (ozzy.revival + ozzy.sisters - ozzy.revives));
       ozzy.currentDr = ozzy.dr + 0.016 * ozzy.dwd * (ozzy.revival + ozzy.sisters - ozzy.revives);
@@ -548,7 +568,7 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
     }
   }
   
-  // Boss Stats Update (EXAKT wie JS)
+  // Boss Stats Update 
   for (let i = 0; i < 10; i++) {
     if (currentOzzyEnem < (i + 1) * 1000) {
       ozzy.bossStats[i].hp += OZZY_ENEMIES[(i + 1) * 100].maxHp;
@@ -559,7 +579,7 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
     }
   }
   
-  // Material Calculations (EXAKT WIE JS)
+  // Material Calculations 
   const mat1 = new StaticArray<f64>(7);
   mat1[0] = 1; mat1[1] = 1.2; mat1[2] = 1.4; mat1[3] = 1.6; mat1[4] = 1.8; mat1[5] = 2.5; mat1[6] = 3.2;
   
@@ -871,4 +891,44 @@ export function getOzzyProgressCountAt(index: i32): i32 {
   let keys = lastOzzy.progress.keys();
   let stage = keys[index];
   return lastOzzy.progress.get(stage);
+}
+
+// Death Tracking Export-Funktionen
+export function getOzzyDeathsByStageAndReviveSize(): i32 {
+  return lastOzzy.deathsByStageAndRevive.size;
+}
+
+export function getOzzyDeathKeyAt(index: i32): i32 {
+  if (index >= lastOzzy.deathsByStageAndRevive.size) return -1;
+  let keys = lastOzzy.deathsByStageAndRevive.keys();
+  return keys[index]; // Gib numericKey zurück
+}
+
+export function getOzzyDeathCountAt(index: i32): i32 {
+  if (index >= lastOzzy.deathsByStageAndRevive.size) return 0;
+  let keys = lastOzzy.deathsByStageAndRevive.keys();
+  let key = keys[index];
+  return lastOzzy.deathsByStageAndRevive.get(key);
+}
+
+export function getOzzyDeathsByStageAndReviveString(): string {
+  if (lastOzzy.deathsByStageAndRevive.size === 0) return "{}";
+  
+  let result = "{";
+  let keys = lastOzzy.deathsByStageAndRevive.keys();
+  
+  for (let i = 0; i < keys.length; i++) {
+    if (i > 0) result += ",";
+    let numericKey = keys[i];
+    let count = lastOzzy.deathsByStageAndRevive.get(numericKey);
+    
+    // Konvertiere numericKey zurück zu "stage_revive" Format für JSON
+    let stage = Math.floor(numericKey / 1000) as i32;
+    let revive = numericKey % 1000;
+    
+    result += `"${stage}_${revive}":${count}`;
+  }
+  
+  result += "}";
+  return result;
 }

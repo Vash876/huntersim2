@@ -177,29 +177,23 @@ function parseEvalResults(evalResults, hunterId) {
     minStage: result[3],
     maxStage: result[4],
     bossHpPercent: result[5],
-    bossKillRate: result[6]
+    bossKillRate: result[6],
+    mat1: result[7],
+    mat2: result[8],
+    mat3: result[9],
+    xp: result[10],
+    stats: result[11]
   };
   
-  // Alle Hunter haben jetzt die gleiche Struktur (13 Elemente)
-  Object.assign(baseResult, {
-    mat1: result[7],  // Mat1 (Borge/Ozzy) oder Glac (Knox)
-    mat2: result[8],  // Mat2 (Borge/Ozzy) oder Quartz (Knox)
-    mat3: result[9],  // Mat3 (Borge/Ozzy) oder Tess (Knox)
-    xp: result[10],   // XP
-    stats: result[11] // Stats
-  });
-  
-  // Stage-Verteilung extrahieren - Jetzt aus dem letzten Element (Index 12)
+  // Stage-Verteilung extrahieren (bestehend)
   let stageDistribution = [];
   
   try {
-    // Der letzte Eintrag im Array enthält die Stage-Progress-Daten als JSON-String
     const progressString = result[12];
     
     if (typeof progressString === 'string' && progressString.startsWith('{')) {
       const progressObj = JSON.parse(progressString);
       
-      // Konvertieren des Progress-Objekts in ein Array für die Anzeige
       stageDistribution = Object.entries(progressObj).map(([stage, count]) => ({
         stage: parseInt(stage),
         count: count,
@@ -207,13 +201,57 @@ function parseEvalResults(evalResults, hunterId) {
       })).sort((a, b) => a.stage - b.stage);
       
       baseResult.stageDistribution = stageDistribution;
-    } else if (Array.isArray(progressString)) {
-      // Falls es bereits ein Array ist
-      baseResult.stageDistribution = progressString;
     }
   } catch (error) {
     console.error('Fehler beim Parsen der Stage-Verteilung:', error);
     baseResult.stageDistribution = [];
+  }
+  
+  // NEU: Death Tracking extrahieren
+  let deathDistribution = [];
+  
+  try {
+    // Death Tracking ist jetzt im Index 13
+    const deathData = result[13];
+    
+    console.log('EVAL WORKER: Death data type:', typeof deathData);
+    console.log('EVAL WORKER: Death data:', deathData);
+    
+    // Prüfe ob es bereits ein Array ist (neue WASM Version)
+    if (Array.isArray(deathData)) {
+      deathDistribution = deathData.map(item => ({
+        stage: item.stage, // ✅ Als String behalten: "351_1"
+        count: item.count,
+        percentage: item.count / (baseResult.iterations || 1000) * 100
+      }));
+      
+      console.log('EVAL WORKER: Processed death distribution (array):', deathDistribution);
+    }
+    // Falls es noch ein JSON String ist (alte Version)
+    else if (typeof deathData === 'string' && deathData.startsWith('{')) {
+      const deathObj = JSON.parse(deathData);
+      
+      deathDistribution = Object.entries(deathObj).map(([stage, count]) => ({
+        stage: stage, // ✅ Als String behalten: "351_1"
+        count: count,
+        percentage: count / (baseResult.iterations || 1000) * 100
+      }));
+      
+      console.log('EVAL WORKER: Processed death distribution (string):', deathDistribution);
+    }
+    
+    // Sortierung für "stage_revive" Format anpassen
+    deathDistribution.sort((a, b) => {
+      const [stageA, reviveA] = a.stage.split('_').map(Number);
+      const [stageB, reviveB] = b.stage.split('_').map(Number);
+      return stageA - stageB || reviveA - reviveB;
+    });
+    
+    baseResult.deathDistribution = deathDistribution;
+    
+  } catch (error) {
+    console.error('Fehler beim Parsen der Death-Verteilung:', error);
+    baseResult.deathDistribution = [];
   }
   
   return baseResult;

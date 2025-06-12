@@ -207,6 +207,8 @@ class Knox {
   
   // Progress Tracking
   progress: Map<i32, i32> = new Map<i32, i32>();
+  deathsByStageAndRevive: Map<i32, i32> = new Map<i32, i32>(); 
+  maxRevives: i32 = 0; 
   
   constructor() {
     this.lvl = 0;
@@ -290,6 +292,8 @@ class Knox {
     
     // Progress Map initialisieren
     this.progress = new Map<i32, i32>();
+    this.deathsByStageAndRevive = new Map<i32, i32>();
+    this.maxRevives = 0; 
   }
 }
 
@@ -369,6 +373,18 @@ function knoxEnemyAttack(): void {
   
   if (currentKnox.revives && currentKnox.hp <= 0) {
     currentKnox.hp = 0.8 * currentKnox.currentMaxHp;
+    
+    // Death Tracking
+    let reviveNumber = currentKnox.maxRevives - currentKnox.revives + 1;
+    let currentStage = Math.floor(currentKnoxEnem / 10) as i32;
+    let numericKey = currentStage * 1000 + reviveNumber; // Stage 351, Revive 2 → 351002
+    
+    if (currentKnox.deathsByStageAndRevive.has(numericKey)) {
+      currentKnox.deathsByStageAndRevive.set(numericKey, currentKnox.deathsByStageAndRevive.get(numericKey) + 1);
+    } else {
+      currentKnox.deathsByStageAndRevive.set(numericKey, 1);
+    }
+    
     currentKnox.revives--;
   }
 }
@@ -550,6 +566,11 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
   nextKnoxTorpedo = 99999999;
   nextKnoxEnemAtk = currentKnoxEnemy.atkSpd;
   nextKnoxRegen = 1;
+
+  // MaxRevives für Tracking setzen (nur einmal pro Iteration)
+  if (knox.maxRevives === 0) {
+    knox.maxRevives = knox.revival; 
+  }
   
   // Haupt-Kampfschleife (EXAKT wie JS)
   while (knox.hp > 0) {
@@ -898,4 +919,44 @@ export function getKnoxProgressCountAt(index: i32): i32 {
   let keys = lastKnox.progress.keys();
   let stage = keys[index];
   return lastKnox.progress.get(stage);
+}
+
+// Death Tracking Export-Funktionen
+export function getKnoxDeathsByStageAndReviveSize(): i32 {
+  return lastKnox.deathsByStageAndRevive.size;
+}
+
+export function getKnoxDeathKeyAt(index: i32): i32 {
+  if (index >= lastKnox.deathsByStageAndRevive.size) return -1;
+  let keys = lastKnox.deathsByStageAndRevive.keys();
+  return keys[index]; // Gib numericKey zurück
+}
+
+export function getKnoxDeathCountAt(index: i32): i32 {
+  if (index >= lastKnox.deathsByStageAndRevive.size) return 0;
+  let keys = lastKnox.deathsByStageAndRevive.keys();
+  let key = keys[index];
+  return lastKnox.deathsByStageAndRevive.get(key);
+}
+
+export function getKnoxDeathsByStageAndReviveString(): string {
+  if (lastKnox.deathsByStageAndRevive.size === 0) return "{}";
+  
+  let result = "{";
+  let keys = lastKnox.deathsByStageAndRevive.keys();
+  
+  for (let i = 0; i < keys.length; i++) {
+    if (i > 0) result += ",";
+    let numericKey = keys[i];
+    let count = lastKnox.deathsByStageAndRevive.get(numericKey);
+    
+    // Konvertiere numericKey zurück zu "stage_revive" Format für JSON
+    let stage = Math.floor(numericKey / 1000) as i32;
+    let revive = numericKey % 1000;
+    
+    result += `"${stage}_${revive}":${count}`;
+  }
+  
+  result += "}";
+  return result;
 }

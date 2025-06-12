@@ -49,6 +49,7 @@
       :show="showDistributionModal" 
       :build-name="buildData.name"
       :distribution="results?.stageDistribution"
+      :death-distribution="results?.deathDistribution"
       :avg-stage="results?.avgStage"
       :max-stage="results?.maxStage"
       :min-stage="results?.minStage"

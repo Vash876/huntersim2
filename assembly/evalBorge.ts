@@ -178,6 +178,8 @@ class Borge {
   
   // Progress Tracking
   progress: Map<i32, i32> = new Map<i32, i32>();
+  deathsByStageAndRevive: Map<i32, i32> = new Map<i32, i32>(); 
+  maxRevives: i32 = 0;
   
   constructor() {
     this.lvl = 0;
@@ -246,6 +248,8 @@ class Borge {
     
     // Progress Map initialisieren
     this.progress = new Map<i32, i32>();
+    this.deathsByStageAndRevive = new Map<i32, i32>();
+    this.maxRevives = 0;
   }
 }
 
@@ -331,7 +335,21 @@ function enemyAttack(isBonus: boolean = false): void {
   
   if (currentBorge.revives && currentBorge.hp <= 0) {
     currentBorge.hp = 0.8 * currentBorge.currentMaxHp;
+    
+    let reviveNumber = currentBorge.maxRevives - currentBorge.revives + 1;
+    let currentStage = Math.floor(currentEnem / 10) as i32;
+    
+    // TESTE ERST: Einfache Konkatenation ohne toString()
+    let numericKey = currentStage * 1000 + reviveNumber; // Stage 351, Revive 2 → 351002
+    
+    if (currentBorge.deathsByStageAndRevive.has(numericKey)) {
+      currentBorge.deathsByStageAndRevive.set(numericKey, currentBorge.deathsByStageAndRevive.get(numericKey) + 1);
+    } else {
+      currentBorge.deathsByStageAndRevive.set(numericKey, 1);
+    }
+    
     currentBorge.revives--;
+
     currentBorge.time += 3;
     if (furyEnabled) {
       nextFury -= 3;
@@ -522,6 +540,11 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
   nextRegen = 1;
   nextBossBonusAtk = 999999999;
   nextFury = 999999999;
+
+  // MaxRevives für Tracking setzen (nur einmal pro Iteration)
+  if (currentBorge.maxRevives === 0) {
+    currentBorge.maxRevives = borge.revival;
+  }
   
   // Haupt-Kampfschleife
   while (borge.hp > 0) {
@@ -716,7 +739,7 @@ export function EVALBORGE_WASM(
   for (let i = 0; i < iters; i++) {
     sim(borge, maxStage, attr, catchup99gu, reviveCd, trample > 0, special, iap > 0, ultima, scavengers, m0, r7, r19, attrGN2 > 0, attrGN3 > 0, lootgu, i14, i80, i44, research81, cm46, cm47, cm48, cm51, gadgetLootMulti, card > 0, i60);
   }
-  
+
   // lastBorge für Export-Funktionen setzen
   lastBorge = borge;
   
@@ -891,4 +914,680 @@ export function getProgressCountAt(index: i32): i32 {
   let keys = lastBorge.progress.keys();
   let stage = keys[index];
   return lastBorge.progress.get(stage);
+}
+
+// Death Tracking Export-Funktionen
+export function getDeathsByStageAndReviveSize(): i32 {
+  return lastBorge.deathsByStageAndRevive.size;
+}
+
+export function getDeathKeyAt(index: i32): i32 {
+  if (index >= lastBorge.deathsByStageAndRevive.size) return -1;
+  let keys = lastBorge.deathsByStageAndRevive.keys();
+  return keys[index]; // Gib numericKey zurück
+}
+
+export function getDeathCountAt(index: i32): i32 {
+  if (index >= lastBorge.deathsByStageAndRevive.size) return 0;
+  let keys = lastBorge.deathsByStageAndRevive.keys();
+  let key = keys[index];
+  return lastBorge.deathsByStageAndRevive.get(key);
+}
+
+export function getDeathsByStageAndReviveString(): string {
+  if (lastBorge.deathsByStageAndRevive.size === 0) return "{}";
+  
+  let result = "{";
+  let keys = lastBorge.deathsByStageAndRevive.keys();
+  
+  for (let i = 0; i < keys.length; i++) {
+    if (i > 0) result += ",";
+    let numericKey = keys[i];
+    let count = lastBorge.deathsByStageAndRevive.get(numericKey);
+    
+    // Konvertiere numericKey zurück zu "stage_revive" Format für JSON
+    let stage = Math.floor(numericKey / 1000) as i32;
+    let revive = numericKey % 1000;
+    
+    result += `"${stage}_${revive}":${count}`;
+  }
+  
+  result += "}";
+  return result;
+}
+
+
+// =============================================================================
+// LIVE SIMULATION SECTION - KOMPLETT GETRENNT VOM HAUPTTEIL
+// =============================================================================
+
+// Live Simulation State
+class LiveSimulationState {
+  // Character State
+  borge: Borge;
+  
+  // Current Enemy
+  currentEnem: i32;
+  currentEnemy: Enemy;
+  
+  // Timing
+  currentTime: f64;
+  nextAtk: f64;
+  nextAthena: f64;
+  nextEnemAtk: f64;
+  nextRegen: f64;
+  nextBossBonusAtk: f64;
+  nextFury: f64;
+  
+  // Combat State
+  furyEnabled: boolean;
+  trampleDamage: f64;
+  fowRemaining: f64;
+  
+  // Simulation Parameters (gespeichert für Berechnungen)
+  attr: i32;
+  catchup99gu: i32;
+  trample: boolean;
+  maxStage: i32;
+  
+  // Last Event Info
+  lastEventType: string;
+  lastEventDamage: f64;
+  lastEventHealing: f64;
+  lastEventStage: i32;
+  
+  // Meta
+  isFinished: boolean;
+  
+  constructor() {
+    this.borge = new Borge();
+    this.currentEnem = 0;
+    this.currentEnemy = new Enemy(0);
+    this.currentTime = 0;
+    this.nextAtk = 0;
+    this.nextAthena = 0;
+    this.nextEnemAtk = 0;
+    this.nextRegen = 0;
+    this.nextBossBonusAtk = 0;
+    this.nextFury = 0;
+    this.furyEnabled = false;
+    this.trampleDamage = 0;
+    this.fowRemaining = 0;
+    this.attr = 0;
+    this.catchup99gu = 0;
+    this.trample = false;
+    this.maxStage = 0;
+    this.lastEventType = "";
+    this.lastEventDamage = 0;
+    this.lastEventHealing = 0;
+    this.lastEventStage = 0;
+    this.isFinished = false;
+  }
+}
+
+// Globaler Live State
+let liveState: LiveSimulationState = new LiveSimulationState();
+
+// Live Simulation: Initialisierung
+// Live Simulation: Initialisierung - EXAKT GLEICHE PARAMETER WIE EVALBORGE_WASM
+export function initLiveSimulation(
+  lvl: i32, maxStage: i32, hp: i32, atk: i32, regen: i32, 
+  dr: i32, evade: i32, effect: i32, critRate: i32, critPower: i32,
+  aspd: i32, revival: i32, life: i32, ua: i32, impacts: i32,
+  omen: i32, ll: i32, pog: i32, ultimaTalent: i32, fow: i32,
+  ares: i32, ylith: i32, spartan: i32, timeless: i32, bfb: i32,
+  athena: i32, baal: i32, sensors: i32, atlas: i32, mino: i32,
+  helltouch: i32, punches: i32, weakspot: i32, hermes: i32,
+  inhaler: i32, gadget: i32, iap: i32, special: f64, ultima: f64,
+  reviveCd: i32, trample: i32, scavengers: i32,
+  m0: i32, r4: i32, r7: i32, r16: i32, r19: i32,
+  i3: i32, i4: i32, i11: i32, i13: i32, i14: i32,
+  i23: i32, i24: i32, i27: i32, i44: i32, i60: i32,
+  i80: i32, i84: i32, i87: i32, i88: i32, i89: i32, i91: i32,
+  creaGN1: i32, creaGN2: i32, creaGN3: i32, innoGN3: i32,
+  attrGN2: i32, attrGN3: i32, attr: i32, catchup99gu: i32,
+  lootgu: i32, card: i32, research81: i32, iters: i32,
+  cm46: i32, cm47: i32, cm48: i32, cm51: i32, creastat: i32
+): void {
+  
+  // Enemies initialisieren (falls noch nicht geschehen)
+  initEnemies();
+  
+  // Neue Live State erstellen
+  liveState = new LiveSimulationState();
+  
+  // ✅ AB HIER: EXAKT IDENTISCH MIT EVALBORGE_WASM
+  
+  // Gadget/Creature Multipliers (EXAKT WIE EVALBORGE_WASM)
+  const gadgetMulti = Math.pow(1.001, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
+  const gadgetLootMulti = Math.pow(1.005, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
+  const crea4GUMulti = 1.0 + (creastat as f64) * 0.01;
+  
+  // Borge konfigurieren (EXAKT WIE EVALBORGE_WASM)
+  const borge = liveState.borge;
+  
+  borge.lvl = lvl;
+  borge.maxStage = maxStage;
+  
+  // Base Stats (EXAKT WIE EVALBORGE_WASM - 1:1 KOPIERT)
+  borge.maxHp = (43 + i3 * 6 + i27 * 24 + (2.5 + Math.floor(hp / 5) * 0.01) * hp) * gadgetMulti * (1 + 0.03 * r4) * (card ? 1.03 : 1) * (creaGN1 ? 1.2 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.015) : 1) * (1 + i60 * 0.03) * (1 + 0.05 * i84) * crea4GUMulti;
+  
+  borge.atk = (3 + i13 + 2 * impacts + (0.5 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r16) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.01) : 1) * (1 + i60 * 0.03) * Math.pow(1.05, i87 as f64) * crea4GUMulti;
+  
+  borge.regen = (0.02 + 0.04 * ylith + (0.03 + Math.floor(regen / 30) * 0.01) * regen) * gadgetMulti * (card ? 1.03 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.005) : 1) * crea4GUMulti;
+  
+  borge.dr = 0.0144 * (dr as f64) + (creaGN2 ? 0.02 : 0) + i24 * 0.004 + i91 * 0.002;
+  borge.evade = 0.0034 * (evade as f64) + 0.01;
+  borge.effect = 0.005 * (effect as f64) + 0.04 + (innoGN3 ? 0.03 : 0) + (creaGN2 ? 0.02 : 0) + i11 * 0.02 + i89 * 0.002;
+  borge.critRate = 0.05 + 0.0018 * (critRate as f64) + (creaGN2 ? 0.02 : 0) + i4 * 0.0065 + i88 * 0.004;
+  borge.critPower = 0.01 * (critPower as f64) + 1.3;
+  borge.reload = 5 - 0.03 * (aspd as f64) - i23 * 0.04;
+  
+  // Talente setzen (EXAKT WIE EVALBORGE_WASM)
+  borge.revival = revival;
+  borge.life = life;
+  borge.ua = ua;
+  borge.impacts = impacts;
+  borge.omen = omen;
+  borge.ll = ll;
+  borge.pog = pog;
+  borge.fow = fow;
+  borge.ultimaTalent = ultimaTalent;
+  borge.ares = ares;
+  borge.ylith = ylith;
+  borge.spartan = spartan;
+  borge.timeless = timeless;
+  borge.bfb = bfb;
+  borge.athena = athena;
+  borge.baal = baal;
+  borge.sensors = sensors;
+  borge.atlas = atlas;
+  borge.mino = mino;
+  borge.helltouch = helltouch;
+  borge.punches = punches;
+  borge.weakspot = weakspot;
+  borge.hermes = hermes;
+  borge.inhaler = inhaler;
+  
+  // PrepBorge (EXAKT WIE EVALBORGE_WASM - 1:1 KOPIERT)
+  borge.maxHp *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.01 * borge.ares);
+  borge.regen *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.009 * borge.ylith);
+  borge.atk *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.002 * borge.ares) * (1 + 0.01 * borge.mino);
+  borge.dr += 0.015 * borge.spartan;
+  borge.critRate += 0.044 * borge.punches + 0.004 * borge.hermes;
+  borge.critPower += 0.08 * borge.punches + 0.01 * borge.hermes;
+  borge.effect += 0.012 * borge.sensors + 0.004 * borge.hermes;
+  borge.evade += 0.016 * borge.sensors;
+  borge.lifesteal = 0.0111 * borge.baal;
+  
+  // Live State Parameter speichern
+  liveState.attr = attr;
+  liveState.catchup99gu = catchup99gu;
+  liveState.trample = trample > 0;
+  liveState.maxStage = maxStage;
+  
+  // ✅ INITIAL COMBAT STATE: EXAKT WIE sim() FUNKTION in EVALBORGE_WASM
+  liveState.currentEnem = 0;
+  liveState.currentTime = 0;
+  
+  // Current Stats setzen (EXAKT WIE sim() Funktion)
+  borge.evadeStacks = 0;
+  borge.hp = borge.maxHp;
+  borge.currentMaxHp = borge.maxHp;
+  borge.currentAtk = borge.atk * (attr > 0 ? Math.pow(Math.pow(1.08, catchup99gu as f64), 1 + attr * 0.1 - 0.1) : 1);
+  borge.currentRegen = borge.regen;
+  borge.currentDr = borge.dr;
+  borge.currentEffect = borge.effect;
+  borge.currentCritRate = borge.critRate;
+  borge.revives = borge.revival;
+  borge.time += 40 - Math.min(reviveCd, 30);
+  borge.remainingBullets = 0;
+  
+  // Combat State (EXAKT WIE sim() Funktion)
+  liveState.furyEnabled = false;
+  liveState.trampleDamage = 0;
+  liveState.fowRemaining = 0;
+  liveState.currentEnemy = ENEMIES[0];
+  liveState.currentEnemy.hp = liveState.currentEnemy.maxHp;
+  
+  // Timing (EXAKT WIE sim() Funktion)
+  liveState.nextAtk = borge.reload;
+  liveState.nextAthena = borge.athena > 0 ? borge.reload * 6 : 999999999;
+  liveState.nextEnemAtk = liveState.currentEnemy.atkSpd;
+  liveState.nextRegen = 1;
+  liveState.nextBossBonusAtk = 999999999;
+  liveState.nextFury = 999999999;
+  
+  // Event Reset
+  liveState.lastEventType = "init";
+  liveState.lastEventDamage = 0;
+  liveState.lastEventHealing = 0;
+  liveState.lastEventStage = 0;
+  liveState.isFinished = false;
+}
+
+// Live Simulation: Single Step
+export function liveSimulationStep(): boolean {
+  if (liveState.isFinished || liveState.borge.hp <= 0) {
+    liveState.isFinished = true;
+    return false; // Simulation beendet
+  }
+  
+  // Nächstes Event bestimmen (EXAKT WIE HAUPTSIMULATION)
+  liveState.currentTime = minAll(
+    liveState.nextAtk, 
+    liveState.nextEnemAtk, 
+    liveState.nextRegen, 
+    liveState.nextAthena, 
+    liveState.nextBossBonusAtk, 
+    liveState.nextFury
+  );
+  
+  // Event verarbeiten (EXAKT WIE HAUPTSIMULATION)
+  if (liveState.currentTime === liveState.nextRegen) {
+    liveRegenEvent();
+  } else if (liveState.currentTime === liveState.nextEnemAtk) {
+    liveEnemyAttackEvent();
+  } else if (liveState.currentTime === liveState.nextAtk) {
+    liveAttackEvent();
+  } else if (liveState.currentTime === liveState.nextAthena) {
+    liveAthenaEvent();
+  } else if (liveState.currentTime === liveState.nextBossBonusAtk) {
+    liveBonusAttackEvent();
+  } else if (liveState.currentTime === liveState.nextFury) {
+    liveFuryEvent();
+  }
+  
+  return true; // Simulation läuft weiter
+}
+
+// Live Events (EXAKT WIE HAUPTSIMULATION, aber mit Event-Tracking)
+function liveRegenEvent(): void {
+  const oldHp = liveState.borge.hp;
+  const oldEnemyHp = liveState.currentEnemy.hp;
+  
+  // EXAKT WIE regen() Funktion
+  liveState.borge.hp = Math.min(liveState.borge.currentMaxHp, liveState.borge.hp + liveState.borge.currentRegen + liveState.borge.inhaler * 0.0008 * (liveState.borge.currentMaxHp - liveState.borge.hp));
+  liveState.currentEnemy.hp = Math.min(liveState.currentEnemy.maxHp, liveState.currentEnemy.hp + liveState.currentEnemy.regen * (1 - liveState.borge.omen * 0.08 / (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0 ? 2 : 1)));
+  liveState.nextRegen = liveState.currentTime + 1;
+  
+  // Event Info setzen
+  liveState.lastEventType = "regen";
+  liveState.lastEventHealing = liveState.borge.hp - oldHp;
+  liveState.lastEventDamage = 0;
+  
+  if (liveState.currentEnemy.hp <= 0) { 
+    liveKillEnemyEvent();
+  }
+}
+
+function liveEnemyAttackEvent(): void {
+  // EXAKT WIE enemyAttack() Funktion
+  let dmg = liveState.currentEnemy.atk * (1 - liveState.borge.currentDr) * (1 - 0.01 * liveState.borge.mino);
+  
+  if (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0) {
+    liveState.currentEnemy.enrage++;
+    let speedMod = liveState.furyEnabled ? 3 : 1;
+    liveState.nextEnemAtk = liveState.currentTime + Math.max(0.5, liveState.currentEnemy.atkSpd / speedMod - liveState.currentEnemy.enrage * (liveState.currentEnemy.atkSpd / speedMod / 200));
+  } else {
+    liveState.nextEnemAtk = liveState.currentTime + liveState.currentEnemy.atkSpd;
+  }
+  
+  if (ck(liveState.borge.evade)) {
+    dmg = 0;
+  } else if (ck(liveState.currentEnemy.critRate)) {
+    dmg *= liveState.currentEnemy.critDmg * (1 - 0.11 * liveState.borge.weakspot);
+  }
+  
+  liveState.borge.hp -= dmg;
+  liveState.currentEnemy.hp -= 0.08 * liveState.borge.helltouch * dmg * (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0 ? 0.1 : 1);
+  
+  // Event Info setzen
+  liveState.lastEventType = "enemyAttack";
+  liveState.lastEventDamage = dmg;
+  liveState.lastEventHealing = 0;
+  
+  if (liveState.currentEnemy.hp <= 0) {
+    liveKillEnemyEvent();
+  }
+  
+  if (ck(liveState.currentEnemy.effect)) {
+    liveState.borge.currentDr = Math.max(0, liveState.borge.currentDr - 0.02);
+  }
+  
+  // Revive Logic (EXAKT WIE HAUPTSIMULATION)
+  if (liveState.borge.revives && liveState.borge.hp <= 0) {
+    liveState.borge.hp = 0.8 * liveState.borge.currentMaxHp;
+    liveState.borge.revives--;
+    liveState.borge.time += 3;
+    
+    if (liveState.furyEnabled) {
+      liveState.nextFury -= 3;
+    }
+    
+    liveState.borge.currentDr = liveState.borge.dr + (liveState.currentEnem % 1000 === 0 ? 0.007 * liveState.borge.atlas : 0);
+    
+    // Event Info überschreiben
+    liveState.lastEventType = "revive";
+    liveState.lastEventDamage = 0;
+    liveState.lastEventHealing = 0.8 * liveState.borge.currentMaxHp;
+  }
+}
+
+function liveAttackEvent(): void {
+  liveAttackLogic(false);
+}
+
+function liveAthenaEvent(): void {
+  liveAttackLogic(true);
+}
+
+function liveAttackLogic(isAthena: boolean): void {
+  // EXAKT WIE atk() Funktion
+  let evaded = liveState.currentEnemy.evade > 0 && ck(liveState.currentEnemy.evade);
+  let dmg = evaded ? 0 : (liveState.borge.currentAtk * (1 + 0.1 * liveState.borge.bfb * (1 - liveState.borge.hp / liveState.borge.currentMaxHp)) * (isAthena ? liveState.borge.critPower * 1.5 : (ck(liveState.borge.currentCritRate) ? liveState.borge.critPower : 1)));
+  
+  liveState.currentEnemy.hp -= dmg * liveState.currentEnemy.dr;
+  
+  if (dmg > liveState.currentEnemy.maxHp * 2 && liveState.trample) {
+    liveState.trampleDamage = dmg - liveState.currentEnemy.maxHp;
+  }
+  
+  // Event Info setzen
+  liveState.lastEventType = isAthena ? "athena" : "attack";
+  liveState.lastEventDamage = dmg * liveState.currentEnemy.dr;
+  liveState.lastEventHealing = 0;
+  
+  if (liveState.currentEnemy.hp <= 0) { 
+    liveKillEnemyEvent();
+  }
+  
+  // Lifesteal
+  const oldHp = liveState.borge.hp;
+  liveState.borge.hp = Math.min(liveState.borge.currentMaxHp, liveState.borge.hp + liveState.borge.lifesteal * dmg);
+  
+  if (liveState.borge.life && ck(liveState.borge.currentEffect)) {
+    liveState.borge.hp = Math.min(liveState.borge.currentMaxHp, liveState.borge.hp + 0.06 * liveState.borge.life * dmg);
+  }
+  
+  liveState.lastEventHealing = liveState.borge.hp - oldHp;
+  
+  // Stun Logic
+  if (!evaded) {
+    if (liveState.borge.impacts && ck(liveState.borge.currentEffect)) {
+      liveState.nextEnemAtk += liveState.borge.impacts * 0.1 / (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0 ? 2 : 1) - Math.max(0, liveState.currentEnemy.stunEnd - liveState.currentTime);
+      liveState.nextBossBonusAtk += liveState.borge.impacts * 0.1 / (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0 ? 2 : 1) - Math.max(0, liveState.currentEnemy.stunEnd - liveState.currentTime);
+      liveState.currentEnemy.stunEnd = liveState.currentTime + liveState.borge.impacts * 0.1 / (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0 ? 2 : 1);
+    }
+    if (liveState.borge.fow && ck(liveState.borge.currentEffect)) {
+      liveState.fowRemaining = liveState.borge.fow * 0.1;
+    }
+  }
+  
+  // Reload Logic
+  let divisor: f64 = 1;
+  
+  if (liveState.currentEnem < 1000 && liveState.attr > 0) {
+    divisor = Math.pow(Math.pow(1.08, liveState.catchup99gu as f64), 1 + liveState.attr * 0.1 - 0.1);
+  }
+  if (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0) {
+    divisor = 1 / (1 - 0.04 * liveState.borge.atlas);
+  }
+  
+  if (isAthena) {
+    liveState.nextAthena = liveState.currentTime + liveState.borge.reload * 6 / divisor;
+  } else {
+    liveState.nextAtk = liveState.currentTime + liveState.borge.reload / divisor;
+  }
+  
+  // FOW Logic
+  if (liveState.fowRemaining) {
+    let nextReloadTime = Math.min(liveState.nextAthena - liveState.currentTime, liveState.nextAtk - liveState.currentTime);
+    if (nextReloadTime / 2 >= liveState.fowRemaining) {
+      liveState.nextAthena -= liveState.fowRemaining;
+      liveState.nextAtk -= liveState.fowRemaining;
+      liveState.fowRemaining = 0;
+    } else {
+      liveState.nextAthena -= nextReloadTime / 2;
+      liveState.nextAtk -= nextReloadTime / 2;
+      liveState.fowRemaining = liveState.fowRemaining - nextReloadTime / 2;
+    }
+  }
+}
+
+function liveBonusAttackEvent(): void {
+  // EXAKT WIE enemyAttack(true)
+  let dmg = liveState.currentEnemy.atk * (1 - liveState.borge.currentDr) * (1 - 0.01 * liveState.borge.mino);
+  
+  liveState.currentEnemy.enrage++;
+  let speedMod = liveState.furyEnabled ? 3 : 1;
+  liveState.nextBossBonusAtk = liveState.currentTime + Math.max(0.5, liveState.currentEnemy.atkSpd * 1.8 / speedMod - liveState.currentEnemy.enrage * (liveState.currentEnemy.atkSpd * 1.8 / speedMod / 200));
+  liveState.nextEnemAtk = liveState.nextEnemAtk - (Math.max(0.5, liveState.currentEnemy.atkSpd / speedMod - (liveState.currentEnemy.enrage - 1) * (liveState.currentEnemy.atkSpd / speedMod / 200)) - Math.max(0.5, liveState.currentEnemy.atkSpd / speedMod - liveState.currentEnemy.enrage * (liveState.currentEnemy.atkSpd / speedMod / 200)));
+  
+  if (ck(liveState.borge.evade)) {
+    dmg = 0;
+  } else if (ck(liveState.currentEnemy.critRate)) {
+    dmg *= liveState.currentEnemy.critDmg * (1 - 0.11 * liveState.borge.weakspot);
+  }
+  
+  liveState.borge.hp -= dmg;
+  liveState.currentEnemy.hp -= 0.08 * liveState.borge.helltouch * dmg * 0.1;
+  
+  // Event Info setzen
+  liveState.lastEventType = "bonusAttack";
+  liveState.lastEventDamage = dmg;
+  liveState.lastEventHealing = 0;
+  
+  if (liveState.currentEnemy.hp <= 0) {
+    liveKillEnemyEvent();
+  }
+  
+  if (ck(liveState.currentEnemy.effect)) {
+    liveState.borge.currentDr = Math.max(0, liveState.borge.currentDr - 0.02);
+  }
+  
+  // Revive Logic (wie bei normalem Enemy Attack)
+  if (liveState.borge.revives && liveState.borge.hp <= 0) {
+    liveState.borge.hp = 0.8 * liveState.borge.currentMaxHp;
+    liveState.borge.revives--;
+    liveState.borge.time += 3;
+    
+    if (liveState.furyEnabled) {
+      liveState.nextFury -= 3;
+    }
+    
+    liveState.borge.currentDr = liveState.borge.dr + (liveState.currentEnem % 1000 === 0 ? 0.007 * liveState.borge.atlas : 0);
+    
+    liveState.lastEventType = "revive";
+    liveState.lastEventDamage = 0;
+    liveState.lastEventHealing = 0.8 * liveState.borge.currentMaxHp;
+  }
+}
+
+function liveFuryEvent(): void {
+  // EXAKT WIE fury() Funktion
+  liveState.furyEnabled = !liveState.furyEnabled;
+  let stunRemaining = Math.max(0, liveState.currentEnemy.stunEnd - liveState.currentTime);
+  
+  if (liveState.furyEnabled) {
+    liveState.nextFury = liveState.currentTime + 5;
+    liveState.nextEnemAtk = liveState.currentTime + ((liveState.nextEnemAtk - stunRemaining) - liveState.currentTime) / 3 + stunRemaining;
+    liveState.nextBossBonusAtk = liveState.currentTime + ((liveState.nextBossBonusAtk - stunRemaining) - liveState.currentTime) / 3 + stunRemaining;
+  } else {
+    liveState.nextFury = liveState.currentTime + 60;
+    liveState.nextEnemAtk = liveState.currentTime + ((liveState.nextEnemAtk - stunRemaining) - liveState.currentTime) * 3 + stunRemaining;
+    liveState.nextBossBonusAtk = liveState.currentTime + ((liveState.nextBossBonusAtk - stunRemaining) - liveState.currentTime) * 3 + stunRemaining;
+  }
+  
+  // Event Info setzen
+  liveState.lastEventType = liveState.furyEnabled ? "furyStart" : "furyEnd";
+  liveState.lastEventDamage = 0;
+  liveState.lastEventHealing = 0;
+}
+
+function liveKillEnemyEvent(): void {
+  // EXAKT WIE killEnemy() Funktion
+  const oldStage = Math.floor(liveState.currentEnem / 10) as i32;
+  
+  if (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0) {
+    liveState.borge.currentDr -= 0.007 * liveState.borge.atlas;
+    liveState.borge.currentEffect -= 0.014 * liveState.borge.atlas;
+    liveState.borge.currentCritRate -= 0.025 * liveState.borge.atlas;
+    liveState.furyEnabled = false;
+    liveState.nextFury = 99999999;
+    liveState.currentEnem += 10;
+    
+    // Event Info für Boss Kill
+    liveState.lastEventType = "bossKill";
+    liveState.lastEventStage = oldStage as i32;
+  } else {
+    liveState.currentEnem++;
+  }
+  
+  // Enemy Update
+  if (liveState.currentEnem % 10 === 0) {
+    let enemyIndex = Math.min(1000, Math.floor(liveState.currentEnem / 10)) as i32;
+    liveState.currentEnemy = ENEMIES[enemyIndex];
+  }
+  
+  // Trample Logic
+  while (liveState.trampleDamage >= liveState.currentEnemy.maxHp && liveState.currentEnem % 10 !== 0) {
+    liveState.currentEnemy.hp = 0;
+    liveState.trampleDamage -= liveState.currentEnemy.maxHp;
+    liveState.currentEnem++;
+    
+    if (liveState.currentEnem % 10 === 0) {
+      let enemyIndex = Math.min(1000, Math.floor(liveState.currentEnem / 10)) as i32;
+      liveState.currentEnemy = ENEMIES[enemyIndex];
+    }
+  }
+  
+  if (liveState.currentEnem === 1000) {
+    liveState.borge.currentAtk = liveState.borge.atk;
+  }
+  
+  liveState.trampleDamage = 0;
+  liveState.currentEnemy.hp = liveState.currentEnemy.maxHp * (1 - 0.04 * liveState.borge.pog * (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0 ? 0.5 : 1));
+  liveState.currentEnemy.enrage = 0;
+  liveState.currentEnemy.stunEnd = 0;
+  
+  // UA Healing
+  if (liveState.borge.hp < liveState.borge.currentMaxHp && liveState.borge.ua && ck(liveState.borge.currentEffect)) {
+    const oldHp = liveState.borge.hp;
+    liveState.borge.hp = Math.min(liveState.borge.currentMaxHp, liveState.borge.hp + liveState.borge.currentMaxHp * liveState.borge.ua * 0.02);
+    liveState.lastEventHealing += liveState.borge.hp - oldHp;
+  }
+  
+  liveState.nextEnemAtk = liveState.currentTime + liveState.currentEnemy.atkSpd;
+  
+  // Boss Setup
+  if (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0) {
+    liveState.borge.currentDr += 0.007 * liveState.borge.atlas;
+    liveState.borge.currentEffect += 0.014 * liveState.borge.atlas;
+    liveState.borge.currentCritRate += 0.025 * liveState.borge.atlas;
+    
+    if (liveState.currentEnem === 1000) {
+      liveState.borge.currentAtk = liveState.borge.atk;
+    }
+    if (liveState.currentEnem >= 2000) {
+      liveState.nextBossBonusAtk = liveState.currentTime + liveState.currentEnemy.atkSpd * 1.8;
+    }
+    if (liveState.currentEnem >= 3000) {
+      liveState.nextFury = liveState.currentTime + 60;
+    }
+  } else {
+    liveState.nextBossBonusAtk = 99999999;
+  }
+  
+  // Stage Complete Event
+  const newStage = Math.floor(liveState.currentEnem / 10);
+  if (newStage > oldStage && liveState.lastEventType !== "bossKill") {
+    liveState.lastEventType = "stageComplete";
+    liveState.lastEventStage = newStage as i32;
+  }
+}
+
+// Export-Funktionen für Live State
+export function getLiveBorgeHp(): f64 {
+  return liveState.borge.hp;
+}
+
+export function getLiveBorgeMaxHp(): f64 {
+  return liveState.borge.currentMaxHp;
+}
+
+export function getLiveBorgeAtk(): f64 {
+  return liveState.borge.currentAtk;
+}
+
+export function getLiveBorgeRevives(): i32 {
+  return liveState.borge.revives;
+}
+
+export function getLiveCurrentTime(): f64 {
+  return liveState.currentTime;
+}
+
+export function getLiveCurrentEnem(): i32 {
+  return liveState.currentEnem;
+}
+
+export function getLiveCurrentStage(): i32 {
+  return Math.floor(liveState.currentEnem / 10) as i32;
+}
+
+export function getLiveEnemyHp(): f64 {
+  return liveState.currentEnemy.hp;
+}
+
+export function getLiveEnemyMaxHp(): f64 {
+  return liveState.currentEnemy.maxHp;
+}
+
+export function getLiveIsBoss(): boolean {
+  return liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0;
+}
+
+export function getLiveNextAtk(): f64 {
+  return liveState.nextAtk;
+}
+
+export function getLiveNextEnemAtk(): f64 {
+  return liveState.nextEnemAtk;
+}
+
+export function getLiveNextRegen(): f64 {
+  return liveState.nextRegen;
+}
+
+export function getLiveNextAthena(): f64 {
+  return liveState.nextAthena;
+}
+
+export function getLiveNextFury(): f64 {
+  return liveState.nextFury;
+}
+
+export function getLiveFuryEnabled(): boolean {
+  return liveState.furyEnabled;
+}
+
+export function getLiveLastEventType(): string {
+  return liveState.lastEventType;
+}
+
+export function getLiveLastEventDamage(): f64 {
+  return liveState.lastEventDamage;
+}
+
+export function getLiveLastEventHealing(): f64 {
+  return liveState.lastEventHealing;
+}
+
+export function getLiveLastEventStage(): i32 {
+  return liveState.lastEventStage;
+}
+
+export function getLiveIsFinished(): boolean {
+  return liveState.isFinished;
 }

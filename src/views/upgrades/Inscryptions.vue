@@ -20,9 +20,11 @@
               'bg-red-600 text-white': selectedHunter === hunter.id && hunter.color === 'red',
               'bg-green-600 text-white': selectedHunter === hunter.id && hunter.color === 'green',
               'bg-blue-600 text-white': selectedHunter === hunter.id && hunter.color === 'blue',
+              'bg-purple-600 text-white': selectedHunter === hunter.id && hunter.color === 'purple',
               'bg-red-600/30 text-white hover:bg-red-600/50': selectedHunter !== hunter.id && hunter.color === 'red',
               'bg-green-600/30 text-white hover:bg-green-600/50': selectedHunter !== hunter.id && hunter.color === 'green',
               'bg-blue-600/30 text-white hover:bg-blue-600/50': selectedHunter !== hunter.id && hunter.color === 'blue',
+              'bg-purple-600/30 text-white hover:bg-purple-600/50': selectedHunter !== hunter.id && hunter.color === 'purple',
               'bg-gray-700/50 text-gray-300 hover:bg-gray-700': selectedHunter !== hunter.id && !hunter.color
             }"
           >
@@ -32,12 +34,26 @@
         
         <!-- Toggle für "Hide Maxed" rechts -->
         <div class="flex justify-end items-center md:w-1/4">
-          <div class="flex items-center px-4 py-2 bg-gray-800/70 rounded-md">
-            <span class="text-gray-300 mr-3 text-sm">Hide Maxed</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="hideMaxed" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
+          <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 p-3">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-300 text-sm font-medium mr-4">Hide Maxed:</span>
+              <button 
+                @click="hideMaxed = !hideMaxed" 
+                class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                :class="{
+                  'bg-green-600': hideMaxed,
+                  'bg-gray-600': !hideMaxed
+                }"
+              >
+                <span 
+                  class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                  :class="{
+                    'translate-x-6': hideMaxed,
+                    'translate-x-1': !hideMaxed
+                  }"
+                ></span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -75,7 +91,6 @@
                   'text-green-300': inscryption.color === 'green',
                   'text-blue-300': inscryption.color === 'blue',
                   'text-purple-300': inscryption.color === 'purple',
-                  'text-yellow-300': inscryption.color === 'yellow',
                   'text-gray-300': !inscryption.color || inscryption.color === 'gray'
                 }"
               >

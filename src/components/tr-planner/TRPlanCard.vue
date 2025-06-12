@@ -29,7 +29,7 @@
       <div class="h-px bg-gray-500/50 my-2 -mx-4"></div>
       
       <!-- Action-Buttons in dritter Zeile, linksbündig -->
-      <div class="flex items-center space-x-3 mt-2 justify-start">
+      <div class="flex items-center space-x-3 mt-2 justify-start relative">
         <button 
           @click.stop="$emit('edit')" 
           class="icon-button"
@@ -44,13 +44,43 @@
         >
           <IconCopy size="16" />
         </button>
-        <button 
-          @click.stop="$emit('delete')" 
-          class="icon-button text-red-500/70 hover:text-red-400"
-          title="Delete plan"
-        >
-          <IconTrash size="16" />
-        </button>
+        
+        <!-- Delete Button mit Dropdown-Bestätigung -->
+        <div class="relative" ref="deleteButtonContainer">
+          <button 
+            @click.stop="toggleDeleteConfirmation"
+            class="icon-button text-red-500/70 hover:text-red-400"
+            :class="{ 'bg-red-900/30': showDeleteConfirmation }"
+            title="Delete plan"
+          >
+            <IconTrash size="16" />
+          </button>
+          
+          <!-- Delete Confirmation Dropdown -->
+          <div 
+            v-if="showDeleteConfirmation"
+            class="absolute top-full left-0 mt-1 z-50 bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-[180px]"
+            @click.stop
+          >
+            <div class="text-sm text-white mb-2 font-medium">
+              Delete "{{ truncatedPlanName }}"?
+            </div>
+            <div class="flex space-x-2">
+              <button 
+                @click="confirmDelete"
+                class="flex-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors font-medium"
+              >
+                Delete
+              </button>
+              <button 
+                @click="cancelDelete"
+                class="flex-1 px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-white text-sm rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -103,7 +133,7 @@
 </template>
 
 <script setup>
-import { computed, watch, ref } from 'vue';
+import { computed, watch, ref, onMounted, onUnmounted } from 'vue';
 import { 
   IconCalendarEvent, 
   IconEdit, 
@@ -124,6 +154,8 @@ const props = defineProps({
     default: () => ({})
   }
 });
+
+const emit = defineEmits(['click', 'edit', 'copy', 'delete']);
 
 // Debug-Update für die Plan-Änderungen
 watch(() => props.plan, (newPlan) => {
@@ -432,6 +464,40 @@ const truncatedPlanName = computed(() => {
   
   return props.plan.name.substring(0, maxLength) + '...';
 });
+
+// Delete Confirmation State
+const showDeleteConfirmation = ref(false);
+const deleteButtonContainer = ref(null);
+
+// Delete Confirmation Methods
+function toggleDeleteConfirmation() {
+  showDeleteConfirmation.value = !showDeleteConfirmation.value;
+}
+
+function confirmDelete() {
+  showDeleteConfirmation.value = false;
+  emit('delete');
+}
+
+function cancelDelete() {
+  showDeleteConfirmation.value = false;
+}
+
+// Click outside handler
+function handleClickOutside(event) {
+  if (deleteButtonContainer.value && !deleteButtonContainer.value.contains(event.target)) {
+    showDeleteConfirmation.value = false;
+  }
+}
+
+// Lifecycle für Click Outside
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <style scoped>
@@ -467,5 +533,21 @@ const truncatedPlanName = computed(() => {
 .icon-button:hover {
   background-color: rgba(75, 85, 99, 0.5);
   color: rgba(255, 255, 255, 0.9);
+}
+
+/* Delete Confirmation Dropdown Animation */
+.absolute.top-full {
+  animation: slideDown 0.15s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

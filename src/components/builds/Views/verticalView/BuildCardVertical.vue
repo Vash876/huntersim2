@@ -19,6 +19,7 @@
       @show-distribution="showDistributionModal = true" 
       @showUploadDialog="showUploadDialog = true" 
       @upgradeComparison="handleUpgradeComparison"
+      @liveSimulation="showLiveSimulationModal = true"
     />
     
     <div class="p-4 pb-3">
@@ -106,6 +107,7 @@
         :show="showDistributionModal" 
         :build-name="buildData.name"
         :distribution="results?.stageDistribution"
+        :death-distribution="results?.deathDistribution"
         :avg-stage="results?.avgStage"
         :max-stage="results?.maxStage"
         :min-stage="results?.minStage"
@@ -124,12 +126,21 @@
         @close="showUpgradeComparisonModal = false"
         @applyOverrides="handleApplyUpgradeOverrides"
       />
+
+      <!-- Live Simulation Modal -->
+      <LiveSimulationModal
+        v-if="showLiveSimulationModal"
+        :show="showLiveSimulationModal"
+        :hunter-id="hunterId"
+        :build-data="buildData"
+        @close="showLiveSimulationModal = false"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, inject } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { IconAlertCircle, IconUser } from '@tabler/icons-vue';
 import { useRoute } from 'vue-router';
 import { useHunterStore } from '../../../../store/hunterStore';
@@ -144,6 +155,7 @@ import BuildBossStats from './BuildBossStats.vue';
 import BuildCodeModal from '../../BuildCodeModal.vue';
 import StatisticsModal from '@/components/common/StatisticsModal.vue'; 
 import UpgradeComparisonModal from '@/components/common/UpgradeComparisonModal.vue';
+import LiveSimulationModal from '@/components/common/LiveSimulationModal.vue';
 
 // Props
 const props = defineProps({
@@ -156,7 +168,8 @@ const props = defineProps({
 
 const emit = defineEmits([
   'edit', 'clone', 'archive', 'delete', 'nameChanged',
-  'overrides', 'share', 'overridesBuild', 'evaluated', 'reevaluate', 'showUploadDialog', 'upgradeComparison'
+  'overrides', 'share', 'overridesBuild', 'evaluated', 'reevaluate', 
+  'showUploadDialog', 'upgradeComparison', 'liveSimulation'
 ]);
 
 // State und Refs
@@ -166,6 +179,7 @@ const showCodeModal = ref(false);
 const showDistributionModal = ref(false);
 const showUploadDialog = ref(false);
 const showUpgradeComparisonModal = ref(false);
+const showLiveSimulationModal = ref(false);
 
 // Build-Evaluierung mit dem Composable
 const {

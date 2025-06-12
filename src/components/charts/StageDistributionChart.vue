@@ -3,7 +3,23 @@
     <!-- Chart Container -->
     <div class="bg-gray-700/30 border border-gray-600 p-4 rounded-md">
       <div class="relative h-[250px]" ref="chartContainer">
-        <canvas ref="chartRef"></canvas>
+        <!-- Canvas - immer rendern, aber unsichtbar bis bereit -->
+        <canvas 
+          ref="chartRef"
+          :key="canvasKey"
+          :style="{ opacity: isChartReady ? 1 : 0, transition: 'opacity 0.2s ease-in-out' }"
+        ></canvas>
+        
+        <!-- Loading overlay - nur sichtbar wenn nicht bereit -->
+        <div 
+          v-if="!isChartReady"
+          class="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-700/30"
+        >
+          <div class="text-center">
+            <div class="animate-spin w-8 h-8 border-2 border-gray-600 border-t-gray-400 rounded-full mx-auto mb-2"></div>
+            <div class="text-sm">Loading chart...</div>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -56,8 +72,7 @@ const props = defineProps({
     type: String,
     default: 'gray'
   },
-  // Füge die fehlende show-Property hinzu, die im Watch verwendet wird
-  show: {
+  isVisible: {
     type: Boolean,
     default: true
   }
@@ -66,8 +81,11 @@ const props = defineProps({
 const chartRef = ref(null);
 const chartContainer = ref(null);
 const chart = ref(null);
+const canvasKey = ref(0);
+const isChartReady = ref(false);
+const isInitializing = ref(false); // NEU: Verhindere überlappende Initialisierung
 
-// Berechne minStage falls nicht bereitgestellt
+// Computed properties bleiben gleich
 const computedMinStage = computed(() => {
   if (props.minStage !== null) return props.minStage;
   if (!props.distribution || !props.distribution.length) return null;
@@ -77,14 +95,11 @@ const computedMinStage = computed(() => {
   }, Infinity);
 });
 
-// Bereite Chartdaten vor
 const chartData = computed(() => {
-  if (!props.distribution || !props.distribution.length) return { stages: [], frequencies: [] };
+  if (!props.distribution || !props.distribution.length) return { stages: [], frequencies: [], totalCount: 0 };
   
   const stages = [];
   const frequencies = [];
-  
-  // Berechne die Gesamtzahl der Durchläufe für genaue Prozentsätze
   const totalCount = props.distribution.reduce((sum, item) => sum + item.count, 0);
   
   props.distribution.forEach(item => {
@@ -92,49 +107,90 @@ const chartData = computed(() => {
     frequencies.push(item.count);
   });
   
-  return { 
-    stages, 
-    frequencies,
-    totalCount
-  };
+  return { stages, frequencies, totalCount };
 });
 
-// Formatierungsfunktion für Stufen
 function formatStage(stage) {
   if (stage === undefined || stage === null) return 'N/A';
   if (stage === Infinity) return 'N/A';
   return stage % 1 === 0 ? stage.toString() : stage.toFixed(1);
 }
 
-// Verbesserte Chart-Initialisierung mit nearest-tooltip
+// VERBESSERTE Chart-Zerstörung mit Chart.js Registry-Cleanup
+function destroyChart() {
+  if (chart.value) {
+    try {
+      console.log('Destroying chart with ID:', chart.value.id);
+      chart.value.destroy();
+      
+      // WICHTIG: Chart aus Chart.js Registry entfernen
+      if (chartRef.value) {
+        // Lösche Canvas-Element aus Chart.js Registry
+        Chart.getChart(chartRef.value)?.destroy();
+      }
+      
+    } catch (e) {
+      console.warn('Chart destroy error (ignored):', e);
+    }
+    chart.value = null;
+  }
+  isChartReady.value = false;
+}
+
+// ROBUSTE Chart-Initialisierung
 async function initChart() {
-  // Zuerst altes Chart zerstören
-  destroyChart();
+  // Verhindere überlappende Initialisierung
+  if (isInitializing.value) {
+    console.log('Chart init skipped: already initializing');
+    return;
+  }
   
-  // Warten auf DOM-Update
-  await nextTick();
+  isInitializing.value = true;
   
   try {
-    // Überprüfe Bedingungen für die Erstellung
-    if (!chartRef.value || !chartContainer.value) {
-      console.log('Chart initialization skipped: container or canvas ref is null');
+    // Chart als "nicht bereit" markieren
+    isChartReady.value = false;
+    
+    // VOLLSTÄNDIGE Zerstörung
+    destroyChart();
+    
+    // Zusätzliche Canvas-Reinigung
+    if (chartRef.value) {
+      // Prüfe ob Chart.js noch eine Referenz auf dieses Canvas hat
+      const existingChart = Chart.getChart(chartRef.value);
+      if (existingChart) {
+        console.log('Found existing chart, destroying it first');
+        existingChart.destroy();
+      }
+    }
+    
+    // Warte auf vollständige Zerstörung
+    await nextTick();
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    if (!chartRef.value || !props.isVisible || !chartData.value.stages.length) {
+      console.log('Chart init aborted: requirements not met');
       return;
     }
     
-    if (!props.distribution || props.distribution.length === 0) {
-      console.warn('No valid data for the chart.');
-      return;
-    }
-    
+    // Context mit zusätzlicher Validierung
     const ctx = chartRef.value.getContext('2d');
     if (!ctx) {
-      console.error('Could not get 2d context from canvas');
+      console.log('Chart init aborted: no context');
       return;
+    }
+    
+    // Nochmal prüfen ob Canvas frei ist
+    const stillExistingChart = Chart.getChart(chartRef.value);
+    if (stillExistingChart) {
+      console.warn('Canvas still occupied, forcing destroy');
+      stillExistingChart.destroy();
+      await new Promise(resolve => setTimeout(resolve, 50));
     }
     
     const colorRGB = getColorRGB(props.color);
     
-    // Chart erstellen mit nearest-tooltip Optionen
+    // Chart erstellen
     chart.value = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -151,34 +207,41 @@ async function initChart() {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: {
-          duration: 150 // Kurze aber sichtbare Animation
-        },
-        // Nearest-Modus für Interaktionen aktivieren
+        animation: false,
+        
+        onHover: null,
         interaction: {
           mode: 'nearest',
           axis: 'x',
           intersect: false
         },
+        
         plugins: {
-          legend: {
-            display: false
-          },
+          legend: { display: false },
           tooltip: {
             enabled: true,
             backgroundColor: 'rgba(17, 24, 39, 0.9)',
-            // Positionieren Sie den Tooltip oben statt standardmäßig
             position: 'nearest',
-            // Tooltip anzeigen, auch wenn nicht direkt auf einem Punkt
             intersect: false,
+            filter: function(tooltipItem) {
+              return tooltipItem.chart && tooltipItem.chart.canvas;
+            },
             callbacks: {
               label: function(context) {
-                const count = context.raw;
-                const percentage = ((count / chartData.value.totalCount) * 100).toFixed(1);
-                return `Count: ${count} (${percentage}%)`;
+                try {
+                  const count = context.raw;
+                  const percentage = ((count / chartData.value.totalCount) * 100).toFixed(1);
+                  return `Count: ${count} (${percentage}%)`;
+                } catch (e) {
+                  return 'Data not available';
+                }
               },
               title: function(context) {
-                return `Stage ${context[0].label}`;
+                try {
+                  return `Stage ${context[0].label}`;
+                } catch (e) {
+                  return 'Stage';
+                }
               }
             }
           }
@@ -186,97 +249,125 @@ async function initChart() {
         scales: {
           y: {
             beginAtZero: true,
-            grid: {
-              color: 'rgba(255, 255, 255, 0.05)'
-            },
-            // Explizit einzelne Achse erzwingen
-            type: 'linear',
-            position: 'left',
-            // Weitere Achsen deaktivieren
-            display: true,
-            // Stacking deaktivieren
-            stacked: false,
-            // ID eindeutig machen
-            id: 'y-axis-1'
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: { 
+              color: 'rgba(255, 255, 255, 0.7)',
+              callback: function(value) {
+                try {
+                  return value;
+                } catch (e) {
+                  return '';
+                }
+              }
+            }
           },
           x: {
-            grid: {
-              display: false
-            },
+            grid: { display: false },
             ticks: {
+              color: 'rgba(255, 255, 255, 0.7)',
               callback: function(value, index) {
-                const labels = this.chart.data.labels;
-                const step = Math.ceil(labels.length / 15);
-                return index % step === 0 ? labels[index] : '';
+                try {
+                  const labels = this.chart.data.labels;
+                  const step = Math.ceil(labels.length / 15);
+                  return index % step === 0 ? labels[index] : '';
+                } catch (e) {
+                  return '';
+                }
               }
             }
           }
-        },
-        // Hover-Funktionalität für besseres Feedback
-        hover: {
-          mode: 'nearest',
-          axis: 'x',
-          intersect: false
         }
-      }
+      },
+      
+      plugins: [{
+        id: 'errorHandler',
+        beforeRender: function(chart) {
+          try {
+            if (!chart.canvas || !chart.canvas.getContext) {
+              console.warn('Canvas not available, skipping render');
+              return false;
+            }
+            return true;
+          } catch (e) {
+            console.warn('Chart render prevented due to error:', e);
+            return false;
+          }
+        }
+      }]
     });
+    
+    console.log('Chart initialized successfully with ID:', chart.value.id);
+    
+    // Chart als bereit markieren - SMOOTH FADE-IN
+    setTimeout(() => {
+      isChartReady.value = true;
+    }, 50);
+    
   } catch (error) {
-    console.error('Error creating chart:', error);
+    console.error('Chart initialization failed:', error);
+    
+    // Bei Fehlern: Canvas komplett neu erstellen
+    isChartReady.value = false;
+    destroyChart();
+    canvasKey.value++;
+    
+    setTimeout(() => {
+      if (props.isVisible) {
+        initChart();
+      }
+    }, 500);
+    
+  } finally {
+    isInitializing.value = false;
   }
 }
 
-// Verbesserte Chart-Zerstörung
-function destroyChart() {
-  if (chart.value) {
-    try {
-      chart.value.destroy();
-    } catch (e) {
-      console.warn('Error destroying chart:', e);
-    }
-    chart.value = null;
+// STARK DEBOUNCED Watchers
+const debouncedInit = debounce(() => {
+  if (props.isVisible && !isInitializing.value) {
+    initChart();
   }
-}
+}, 300); // Längere Debounce
 
-// Einfacher Resize-Handler
-const handleResize = debounce(() => {
-  if (chart.value && chartRef.value && chartContainer.value) {
-    try {
-      chart.value.resize();
-    } catch (e) {
-      // Bei Fehler Chart neu initialisieren
-      initChart();
-    }
+// Visibility Watcher
+watch(() => props.isVisible, (visible) => {
+  if (visible && chartData.value.stages.length > 0) {
+    setTimeout(() => {
+      if (props.isVisible && !isInitializing.value) {
+        initChart();
+      }
+    }, 150);
+  } else {
+    destroyChart();
   }
-}, 150);
+}, { immediate: true });
 
-// Beobachte Änderungen an den Daten und Optionen
+// Daten-Watcher - SEHR defensiv
 watch([
-  () => props.distribution, 
-  () => props.color,
-  () => props.sampleSize
+  () => props.distribution,
+  () => props.color
 ], () => {
-  initChart();
+  if (props.isVisible) {
+    debouncedInit();
+  }
 }, { deep: true });
 
-// DOM-Observer und Event-Listener einrichten
 onMounted(() => {
-  window.addEventListener('resize', handleResize);
-  
-  // Chart direkt initialisieren
-  nextTick(() => {
-    initChart();
-  });
+  if (props.isVisible && chartData.value.stages.length > 0) {
+    setTimeout(() => {
+      if (props.isVisible && !isInitializing.value) {
+        initChart();
+      }
+    }, 200);
+  }
 });
 
-// Aufräumen
 onUnmounted(() => {
   destroyChart();
-  window.removeEventListener('resize', handleResize);
 });
 </script>
 
 <style scoped>
-/* Optional: Zusätzliche Stile für das Chart */
 .chart-container {
   position: relative;
   height: 250px;

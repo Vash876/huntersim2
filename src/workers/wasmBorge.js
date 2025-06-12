@@ -54,7 +54,8 @@ async function EVALBORGE_WASM(...params) {
       mat3: wasm.exports.getLastMat3(),
       xp: wasm.exports.getLastXp(),
       stats: "",
-      progress: "{}"
+      progress: "{}",
+      deathTracking: "{}" // Death Tracking
     };
     
     // Stats: Numerische Fallback-Exports verwenden
@@ -107,28 +108,64 @@ async function EVALBORGE_WASM(...params) {
     } catch (e) {
       console.error('WASM: Fehler bei numerischer Progress:', e);
     }
-    
-    // Finales Ergebnis-Array zusammenstellen
+
+    // Death Tracking sammeln
+    try {
+      if (wasm.exports.getDeathsByStageAndReviveSize) {
+        const deathsSize = wasm.exports.getDeathsByStageAndReviveSize();
+        console.log(`WASM: Deaths By Stage And Revive Size = ${deathsSize}`);
+        
+        if (deathsSize > 0 && wasm.exports.getDeathKeyAt && wasm.exports.getDeathCountAt) {
+          let deathsArray = []; // ARRAY statt Object!
+          
+          for (let i = 0; i < deathsSize; i++) {
+            const numericKey = wasm.exports.getDeathKeyAt(i);
+            const count = wasm.exports.getDeathCountAt(i);
+            
+            if (numericKey >= 0) {
+              const stage = Math.floor(numericKey / 1000);
+              const revive = numericKey % 1000;
+              const key = `${stage}_${revive}`;
+              
+              // Direkt als Array-Element
+              deathsArray.push({
+                stage: key,
+                count: count
+              });
+            }
+          }
+          
+          // WICHTIG: Als Array, nicht als JSON String!
+          debugResults.deathTracking = deathsArray;
+          console.log('WASM: Death Tracking Array:', deathsArray);
+        } else {
+          debugResults.deathTracking = [];
+        }
+      } else {
+        debugResults.deathTracking = [];
+      }
+    } catch (e) {
+      debugResults.deathTracking = [];
+    }
+
+    // ERSETZE im result Array:
     const result = [[
-      debugResults.lootPerMin,    // 0: Loot per minute
-      debugResults.avgStage,      // 1: Avg Stage  
-      debugResults.avgTime,       // 2: Avg Time
-      debugResults.minStage,      // 3: Min Stage
-      debugResults.maxStage,      // 4: Max Stage
-      debugResults.bossHpPercent, // 5: Boss HP %
-      debugResults.bossKillRate,  // 6: Boss Kill Rate
-      debugResults.mat1,          // 7: Mat1
-      debugResults.mat2,          // 8: Mat2
-      debugResults.mat3,          // 9: Mat3
-      debugResults.xp,            // 10: XP
-      debugResults.stats,         // 11: Stats
-      debugResults.progress       // 12: Progress
+      debugResults.lootPerMin,           // 0
+      debugResults.avgStage,             // 1  
+      debugResults.avgTime,              // 2
+      debugResults.minStage,             // 3
+      debugResults.maxStage,             // 4
+      debugResults.bossHpPercent,        // 5
+      debugResults.bossKillRate,         // 6
+      debugResults.mat1,                 // 7
+      debugResults.mat2,                 // 8
+      debugResults.mat3,                 // 9
+      debugResults.xp,                   // 10
+      debugResults.stats,                // 11
+      debugResults.progress,             // 12
+      debugResults.deathTracking         // 13: Detaillierte Death Info
     ]];
     
-    console.log('WASM: Finales Ergebnis-Array:', result[0]);
-    console.log('WASM: Array-Länge:', result[0].length);
-    
-    console.log('WASM: Borge Evaluierung abgeschlossen');
     return result;
   } catch (error) {
     console.error('WASM: Fehler bei Borge Evaluierung:', error);

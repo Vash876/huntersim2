@@ -52,9 +52,28 @@
                 :min-stage="minStage"
                 :sample-size="sampleSize"   
                 :color="color"
+                :is-visible="activeTab === 'distribution'"
               />
               <div v-else class="flex items-center justify-center h-[300px] text-gray-400">
                 No data available. Please evaluate the build again.
+              </div>
+            </div>
+
+            <!-- Revive Distribution Tab -->
+            <div v-if="activeTab === 'revive'">
+              <ReviveDistributionChart 
+                v-if="deathDistribution && deathDistribution.length > 0"
+                :death-distribution="deathDistribution"
+                :sample-size="sampleSize"   
+                :color="color"
+                :is-visible="activeTab === 'revive'"
+              />
+              <div v-else class="flex items-center justify-center h-[300px] text-gray-400">
+                <div class="text-center">
+                  <IconHeart size="48" class="mx-auto mb-4 text-gray-500" />
+                  <p class="text-lg font-medium mb-2">No Death Data</p>
+                  <p class="text-sm">This build had no deaths during evaluation, or death tracking is not available.</p>
+                </div>
               </div>
             </div>
             
@@ -92,12 +111,14 @@
 
 <script setup>
 import { ref } from 'vue';
-import { IconChartBar, IconX, IconGraph, IconRuler } from '@tabler/icons-vue';
+import { IconChartBar, IconX, IconGraph, IconRuler, IconHeart } from '@tabler/icons-vue';
 import StageDistributionChart from '@/components/charts/StageDistributionChart.vue';
+import ReviveDistributionChart from '@/components/charts/ReviveDistributionChart.vue';
 
 // Verfügbare Tabs
 const tabs = [
   { id: 'distribution', label: 'Stage Distribution', icon: IconGraph },
+  { id: 'revive', label: 'Revive Distribution', icon: IconHeart },
   { id: 'stats', label: 'Build Stats', icon: IconRuler }
 ];
 
@@ -137,6 +158,10 @@ const props = defineProps({
   sampleSize: {
     type: Number,
     default: 0
+  },
+  deathDistribution: {
+    type: Array,
+    default: () => []
   },
   // Build stats props
   buildStats: {

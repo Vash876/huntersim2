@@ -112,6 +112,14 @@
           <IconChartBar size="16" />
         </button>
 
+        <!-- <button 
+          @click.stop="handleLiveSimulation"
+          class="action-button-compact"
+          title="Live Simulation"
+        >
+          <IconPlayerPlay size="16" />
+        </button> -->
+
         <button 
           @click="emit('share')"
           class="action-button-compact"
@@ -144,7 +152,7 @@ import {
   IconEdit, IconEditCircle, IconCopy, IconArchive, IconArchiveOff,
   IconTrash, IconGripVertical, IconDotsVertical, IconAdjustments,
   IconShare, IconRefresh, IconChartBar, IconX, IconCloudUpload,
-  IconAdjustmentsHorizontal, IconScale
+  IconAdjustmentsHorizontal, IconScale, IconPlayerPlay
 } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -154,7 +162,11 @@ const props = defineProps({
   results: { type: Object, default: () => ({}) }
 });
 
-const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'reevaluate', 'showDistribution', 'showUploadDialog', 'upgradeComparison']);
+const emit = defineEmits([
+  'edit', 'clone', 'archive', 'delete', 'nameChanged', 
+  'overrides', 'share', 'reevaluate', 'showDistribution', 
+  'showUploadDialog', 'upgradeComparison', 'liveSimulation'
+]);
 
 const isEditingName = ref(false);
 const editableName = ref('');
@@ -207,6 +219,19 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
 });
+
+// ✅ Handler für Live Simulation mit Validation
+function handleLiveSimulation() {
+  console.log('Live Simulation Button clicked');
+  console.log('Build Data:', props.buildData);
+  
+  if (!props.buildData) {
+    console.error('No build data available for live simulation');
+    return;
+  }
+  
+  emit('liveSimulation');
+}
 </script>
 
 <style scoped>

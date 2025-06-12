@@ -149,94 +149,106 @@
             </button>
           </div>
           
-          <!-- Gadget List (Two per row) -->
+          <!-- Gadget List -->
           <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div
               v-for="gadget in GADGETS"
               :key="gadget.id"
-              class="custom-gadget-item rounded-lg p-4 transition-colors border border-transparent hover:border-gray-600"
+              class="custom-gadget-item rounded-lg p-4 transition-colors border border-transparent hover:border-gray-600 relative overflow-hidden"
               :class="{ 'active-gadget': hasLevelChanges(gadget.id) }"
             >
-              <!-- Gadget Header -->
-              <div class="flex flex-wrap justify-between items-center mb-2">
-                <span class="text-base text-white font-medium flex-grow">
-                  <span class="hidden sm:inline">
-                    {{ gadget.label.length > 40 ? gadget.label.substring(0, 40) + '...' : gadget.label }}
+              <!-- Hintergrundbild -->
+              <div 
+                v-if="getGadgetImageNumber(gadget.id) <= 15"
+                class="absolute inset-0 gadget-background"
+                :style="{
+                  backgroundImage: `url('/src/assets/gadgets/${getGadgetImageNumber(gadget.id)}.png')`
+                }"
+              ></div>
+              
+              <!-- Content Overlay -->
+              <div class="relative z-10 gadget-content">
+                <!-- Gadget Header -->
+                <div class="flex flex-wrap justify-between items-center mb-2">
+                  <span class="text-base text-white font-medium flex-grow gadget-title">
+                    <span class="hidden sm:inline">
+                      {{ gadget.label.length > 40 ? gadget.label.substring(0, 40) + '...' : gadget.label }}
+                    </span>
+                    <span class="inline sm:hidden">
+                      {{ gadget.label.length > 28 ? gadget.label.substring(0, 25) + '...' : gadget.label }}
+                    </span>
                   </span>
-                  <span class="inline sm:hidden">
-                    {{ gadget.label.length > 28 ? gadget.label.substring(0, 28) + '...' : gadget.label }}
-                  </span>
-                </span>
-                <div v-if="getGadgetCost(gadget.id) > 0" class="text-amber-400 text-sm font-medium">
-                  {{ formatGadgetCost(getGadgetCost(gadget.id)) }}
+                  <div v-if="getGadgetCost(gadget.id) > 0" class="text-amber-400 text-sm font-bold gadget-cost">
+                    {{ formatGadgetCost(getGadgetCost(gadget.id)) }}
+                  </div>
                 </div>
-              </div>
 
-              <!-- Level Controls -->
-              <div class="grid grid-cols-2 gap-3 mb-3">
-                <!-- Current Level Controls -->
-                <div>
-                  <div class="text-xs text-gray-400 mb-1 uppercase">Current</div>
-                  <ToolValueControls
-                    :value="currentLevels[gadget.id] || 0"
-                    :maxValue="999"
-                    :minValue="0"
-                    :step="1"
-                    :fastStep="10"
-                    :showFastControls="true"
-                    @update:value="(newVal) => updateCurrentLevel(gadget.id, newVal)"
-                    :tabIndex="getTabIndexForCurrentLevel(gadget.id)"
-                    :autoEdit="true"
-                    class="mx-auto"
-                  />
+                <!-- Level Controls -->
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                  <!-- Current Level Controls -->
+                  <div class="gadget-controls">
+                    <div class="text-xs text-gray-200 mb-1 uppercase font-semibold">Current</div>
+                    <ToolValueControls
+                      :value="currentLevels[gadget.id] || 0"
+                      :maxValue="999"
+                      :minValue="0"
+                      :step="1"
+                      :fastStep="10"
+                      :showFastControls="true"
+                      @update:value="(newVal) => updateCurrentLevel(gadget.id, newVal)"
+                      :tabIndex="getTabIndexForCurrentLevel(gadget.id)"
+                      :autoEdit="true"
+                      class="mx-auto gadget-control-enhanced"
+                    />
+                  </div>
+                  
+                  <!-- Target Level Controls -->
+                  <div class="gadget-controls">
+                    <div class="text-xs text-gray-200 mb-1 uppercase font-semibold">Target</div>
+                    <ToolValueControls
+                      :value="targetLevels[gadget.id] || 0"
+                      :maxValue="999"
+                      :minValue="0"  
+                      :step="1"
+                      :fastStep="10"
+                      :showFastControls="true"
+                      :validateOnFinalOnly="true"
+                      @update:value="(newVal) => updateTargetLevel(gadget.id, newVal)"
+                      @finalize:value="(newVal) => finalizeTargetLevel(gadget.id, newVal)"
+                      :valueClass="hasLevelChanges(gadget.id) ? 'text-green-400' : 'text-white'"
+                      :tabIndex="getTabIndexForTargetLevel(gadget.id)"
+                      :autoEdit="true"
+                      :disableDecrement="targetLevels[gadget.id] <= (currentLevels[gadget.id] || 0)"
+                      class="mx-auto gadget-control-enhanced"
+                    />
+                  </div>
                 </div>
                 
-                <!-- Target Level Controls -->
-                <div>
-                  <div class="text-xs text-gray-400 mb-1 uppercase">Target</div>
-                  <ToolValueControls
-                    :value="targetLevels[gadget.id] || 0"
-                    :maxValue="999"
-                    :minValue="0"  
-                    :step="1"
-                    :fastStep="10"
-                    :showFastControls="true"
-                    :validateOnFinalOnly="true"
-                    @update:value="(newVal) => updateTargetLevel(gadget.id, newVal)"
-                    @finalize:value="(newVal) => finalizeTargetLevel(gadget.id, newVal)"
-                    :valueClass="hasLevelChanges(gadget.id) ? 'text-green-400' : 'text-white'"
-                    :tabIndex="getTabIndexForTargetLevel(gadget.id)"
-                    :autoEdit="true"
-                    :disableDecrement="targetLevels[gadget.id] <= (currentLevels[gadget.id] || 0)"
-                    class="mx-auto"
-                  />
-                </div>
-              </div>
-              
-              <!-- Multiplier Information -->
-              <div v-if="showMultipliers" class="bg-gray-900/70 rounded-lg p-3 border border-gray-700/50">                
-                <div class="space-y-1.5">
-                  <div v-for="(boost, index) in gadget.boost" :key="`${gadget.id}-boost-${index}`">
-                    <!-- Current Multiplier -->
-                    <div class="flex justify-between">
-                      <span class="text-sm text-gray-300">{{ boost.description }}:</span>
-                      <span class="text-sm font-medium text-white">
-                        {{ formatMultiplier(calculateMultiplier(gadget, currentLevels[gadget.id] || 0, boost.type), false, gadget.id) }}
-                      </span>
-                    </div>
+                <!-- Multiplier Information -->
+                <div v-if="showMultipliers" class="gadget-multipliers rounded-lg p-3 border border-gray-700/50">                
+                  <div class="space-y-1.5">
+                    <div v-for="(boost, index) in gadget.boost" :key="`${gadget.id}-boost-${index}`">
+                      <!-- Current Multiplier -->
+                      <div class="flex justify-between">
+                        <span class="text-sm text-gray-200 font-medium">{{ boost.description }}:</span>
+                        <span class="text-sm font-bold text-white">
+                          {{ formatMultiplier(calculateMultiplier(gadget, currentLevels[gadget.id] || 0, boost.type), false, gadget.id) }}
+                        </span>
+                      </div>
 
-                    <!-- Target Multiplier (if different from current) -->
-                    <div v-if="hasLevelChanges(gadget.id)" class="flex justify-between mt-0.5">
-                      <span class="text-xs text-gray-500">Target:</span>
-                      <span class="text-xs font-medium text-green-400">
-                        {{ formatMultiplier(calculateMultiplier(gadget, targetLevels[gadget.id] || 0, boost.type), false, gadget.id) }}
-                        <span class="text-gray-500 ml-1">({{ 
-                          calculateMultiplierDifference(
-                            calculateMultiplier(gadget, currentLevels[gadget.id] || 0, boost.type),
-                            calculateMultiplier(gadget, targetLevels[gadget.id] || 0, boost.type)
-                          ) 
-                        }})</span>
-                      </span>
+                      <!-- Target Multiplier (if different from current) -->
+                      <div v-if="hasLevelChanges(gadget.id)" class="flex justify-between mt-0.5">
+                        <span class="text-xs text-gray-300 font-medium">Target:</span>
+                        <span class="text-xs font-bold text-green-400">
+                          {{ formatMultiplier(calculateMultiplier(gadget, targetLevels[gadget.id] || 0, boost.type), false, gadget.id) }}
+                          <span class="text-gray-400 ml-1">({{ 
+                            calculateMultiplierDifference(
+                              calculateMultiplier(gadget, currentLevels[gadget.id] || 0, boost.type),
+                              calculateMultiplier(gadget, targetLevels[gadget.id] || 0, boost.type)
+                            ) 
+                          }})</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -643,6 +655,12 @@ function finalizeTargetLevel(gadgetId, newVal = null) {
   saveGadgetLevels();
 }
 
+// Hilfsfunktion um die Bildnummer zu ermitteln
+function getGadgetImageNumber(gadgetId) {
+  const gadgetIndex = GADGETS.findIndex(g => g.id === gadgetId);
+  return gadgetIndex + 1; // 1-basiert für die Dateinamen
+}
+
 function resetAllLevels() {
   // Reset target levels to match current levels
   GADGETS.forEach(gadget => {
@@ -670,35 +688,18 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Bestehende Styles bleiben gleich */
 .header {
   background: linear-gradient(to right, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.95));
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.bg-gray-750 {
-  background-color: rgba(42, 46, 53, 0.8);
-}
-
-/* Verbesserte Gadget-Styles - schlicht aber elegant */
+/* Erweiterte Gadget-Styles mit Hintergrundbildern */
 .custom-gadget-item {
   background: linear-gradient(to bottom, rgba(35, 39, 47, 0.9), rgba(28, 32, 38, 0.95));
   border-left: 3px solid transparent;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease-in-out;
+  position: relative;
 }
 
 .custom-gadget-item:hover {
@@ -712,42 +713,133 @@ onMounted(async () => {
   box-shadow: 0 3px 6px rgba(37, 99, 235, 0.15);
 }
 
-/* Verbesserte Multiplikatoren-Box */
-.custom-gadget-item .bg-gray-900\/70 {
-  background: linear-gradient(to bottom, rgba(23, 29, 35, 0.9), rgba(20, 25, 30, 0.95));
-  border-radius: 0.375rem;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+/* Hintergrundbild-Styles - BESSER SICHTBAR */
+.gadget-background {
+  background-size: 80px 80px;
+  background-repeat: no-repeat;
+  background-position: top 8px right 8px;
+  z-index: 1;
+  transition: none;
+  /* Schärfere Bilddarstellung */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  /* VERBESSERTE SICHTBARKEIT */
+  opacity: 1;
 }
 
-/* Bessere Hervorhebung für Werte */
-.custom-gadget-item .text-green-400 {
-  color: rgb(74, 222, 128);
-  text-shadow: 0 0 3px rgba(74, 222, 128, 0.15);
+/* Content Overlay - WENIGER ÜBERDECKUNG */
+.gadget-content {
+  position: relative;
+  z-index: 10;
+  /* NEUE GRADIENT - MEHR TRANSPARENZ RECHTS OBE */
+  background: linear-gradient(
+    to right, 
+    rgba(35, 39, 47, 0.85) 0%, 
+    rgba(35, 39, 47, 0.6) 60%, 
+    rgba(35, 39, 47, 0.1) 85%,
+    transparent 100%
+  );
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  /* ZUSÄTZLICHER GRADIENT VON OBEN */
+  background-image: 
+    linear-gradient(
+      to right, 
+      rgba(35, 39, 47, 0.85) 0%, 
+      rgba(35, 39, 47, 0.6) 60%, 
+      rgba(35, 39, 47, 0.1) 85%,
+      transparent 100%
+    ),
+    radial-gradient(
+      circle at top right, 
+      transparent 60px, 
+      rgba(35, 39, 47, 0.8) 80px
+    );
 }
 
-.custom-gadget-item .text-amber-400 {
-  color: rgb(251, 191, 36);
-  text-shadow: 0 0 3px rgba(251, 191, 36, 0.15);
+.custom-gadget-item.active-gadget .gadget-content {
+  /* AKTIVE GADGETS - NOCH WENIGER ÜBERDECKUNG */
+  background: linear-gradient(
+    to right, 
+    rgba(30, 41, 59, 0.8) 0%, 
+    rgba(30, 41, 59, 0.5) 60%, 
+    rgba(30, 41, 59, 0.1) 85%,
+    transparent 100%
+  );
+  background-image: 
+    linear-gradient(
+      to right, 
+      rgba(30, 41, 59, 0.8) 0%, 
+      rgba(30, 41, 59, 0.5) 60%, 
+      rgba(30, 41, 59, 0.1) 85%,
+      transparent 100%
+    ),
+    radial-gradient(
+      circle at top right, 
+      transparent 60px, 
+      rgba(30, 41, 59, 0.7) 80px
+    );
 }
 
+/* Enhanced Multipliers */
+.gadget-multipliers {
+  background: linear-gradient(
+    to bottom, 
+    rgba(23, 29, 35, 0.90), 
+    rgba(20, 25, 30, 0.90)
+  ) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile Optimierung */
 @media (max-width: 640px) {
-  .custom-gadget-item {
-    padding: 0.75rem;
+  .gadget-background {
+    background-size: 60px 60px; /* Kleinere Bilder auf Mobile */
+    background-position: top 6px right 6px;
+    opacity: 1; /* Noch sichtbarer auf Mobile */
   }
   
-  /* Kompaktere Controls auf mobilen Geräten */
-  :deep(.value-controls) {
-    height: 2rem;
+  .gadget-content {
+    /* Mobile: Weniger Overlay */
+    background: linear-gradient(
+      to right, 
+      rgba(35, 39, 47, 0.8) 0%, 
+      rgba(35, 39, 47, 0.4) 50%, 
+      transparent 80%
+    );
+    background-image: 
+      linear-gradient(
+        to right, 
+        rgba(35, 39, 47, 0.8) 0%, 
+        rgba(35, 39, 47, 0.4) 50%, 
+        transparent 80%
+      ),
+      radial-gradient(
+        circle at top right, 
+        transparent 45px, 
+        rgba(35, 39, 47, 0.7) 60px
+      );
   }
   
-  :deep(.value-controls .value-display) {
-    font-size: 0.875rem;
-    padding: 0.25rem 0.5rem;
-  }
-  
-  :deep(.value-controls .control-button) {
-    width: 1.75rem;
-    height: 1.75rem;
+  .custom-gadget-item.active-gadget .gadget-content {
+    background: linear-gradient(
+      to right, 
+      rgba(30, 41, 59, 0.75) 0%, 
+      rgba(30, 41, 59, 0.4) 50%, 
+      transparent 80%
+    );
+    background-image: 
+      linear-gradient(
+        to right, 
+        rgba(30, 41, 59, 0.75) 0%, 
+        rgba(30, 41, 59, 0.4) 50%, 
+        transparent 80%
+      ),
+      radial-gradient(
+        circle at top right, 
+        transparent 45px, 
+        rgba(30, 41, 59, 0.6) 60px
+      );
   }
 }
 </style>

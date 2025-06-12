@@ -27,7 +27,35 @@ import {
   getLastBorgeReload,
   getProgressSize,
   getProgressStageAt,
-  getProgressCountAt
+  getProgressCountAt,
+  getDeathsByStageAndReviveSize,
+  getDeathKeyAt,
+  getDeathCountAt,
+  getDeathsByStageAndReviveString,
+  // NEU: Live Simulation Exports
+  initLiveSimulation,
+  liveSimulationStep,
+  getLiveBorgeHp,
+  getLiveBorgeMaxHp,
+  getLiveBorgeAtk,
+  getLiveBorgeRevives,
+  getLiveCurrentTime,
+  getLiveCurrentEnem,
+  getLiveCurrentStage,
+  getLiveEnemyHp,
+  getLiveEnemyMaxHp,
+  getLiveIsBoss,
+  getLiveNextAtk,
+  getLiveNextEnemAtk,
+  getLiveNextRegen,
+  getLiveNextAthena,
+  getLiveNextFury,
+  getLiveFuryEnabled,
+  getLiveLastEventType,
+  getLiveLastEventDamage,
+  getLiveLastEventHealing,
+  getLiveLastEventStage,
+  getLiveIsFinished
 } from './evalBorge';
 
 // Ozzy Imports
@@ -54,7 +82,11 @@ import {
   getLastOzzyReload,
   getOzzyProgressSize,
   getOzzyProgressStageAt,
-  getOzzyProgressCountAt
+  getOzzyProgressCountAt,
+  getOzzyDeathsByStageAndReviveSize,
+  getOzzyDeathKeyAt,
+  getOzzyDeathCountAt,
+  getOzzyDeathsByStageAndReviveString,
 } from './evalOzzy';
 
 // Knox Imports
@@ -82,7 +114,11 @@ import {
   getLastKnoxSc,
   getKnoxProgressSize,
   getKnoxProgressStageAt,
-  getKnoxProgressCountAt
+  getKnoxProgressCountAt,
+  getKnoxDeathsByStageAndReviveSize,
+  getKnoxDeathKeyAt, 
+  getKnoxDeathCountAt, 
+  getKnoxDeathsByStageAndReviveString
 } from './evalKnox';
 
 export function multiWasm(enemyNum: i32): f64 {
@@ -138,7 +174,35 @@ export {
   getLastBorgeReload,
   getProgressSize,
   getProgressStageAt,
-  getProgressCountAt
+  getProgressCountAt,
+  getDeathsByStageAndReviveSize,
+  getDeathKeyAt,
+  getDeathCountAt,
+  getDeathsByStageAndReviveString,
+  // NEU: Live Simulation Exports
+  initLiveSimulation,
+  liveSimulationStep,
+  getLiveBorgeHp,
+  getLiveBorgeMaxHp,
+  getLiveBorgeAtk,
+  getLiveBorgeRevives,
+  getLiveCurrentTime,
+  getLiveCurrentEnem,
+  getLiveCurrentStage,
+  getLiveEnemyHp,
+  getLiveEnemyMaxHp,
+  getLiveIsBoss,
+  getLiveNextAtk,
+  getLiveNextEnemAtk,
+  getLiveNextRegen,
+  getLiveNextAthena,
+  getLiveNextFury,
+  getLiveFuryEnabled,
+  getLiveLastEventType,
+  getLiveLastEventDamage,
+  getLiveLastEventHealing,
+  getLiveLastEventStage,
+  getLiveIsFinished
 };
 
 // Re-Export aller OZZY-Funktionen
@@ -165,7 +229,11 @@ export {
   getLastOzzyReload,
   getOzzyProgressSize,
   getOzzyProgressStageAt,
-  getOzzyProgressCountAt
+  getOzzyProgressCountAt,
+  getOzzyDeathsByStageAndReviveSize,
+  getOzzyDeathKeyAt,
+  getOzzyDeathCountAt,
+  getOzzyDeathsByStageAndReviveString,
 };
 
 // Re-Export aller KNOX-Funktionen
@@ -193,7 +261,11 @@ export {
   getLastKnoxSc,
   getKnoxProgressSize,
   getKnoxProgressStageAt,
-  getKnoxProgressCountAt
+  getKnoxProgressCountAt,
+  getKnoxDeathsByStageAndReviveSize,
+  getKnoxDeathKeyAt, 
+  getKnoxDeathCountAt, 
+  getKnoxDeathsByStageAndReviveString
 };
 
 // Hunter-Type Enum

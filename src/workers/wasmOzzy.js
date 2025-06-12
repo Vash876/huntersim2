@@ -54,7 +54,8 @@ async function EVALOZZY_WASM(...params) {
       mat3: wasm.exports.getLastOzzyMat3(),
       xp: wasm.exports.getLastOzzyXp(),
       stats: "",
-      progress: "{}"
+      progress: "{}",
+      deathTracking: "{}" // NEU: Death Tracking
     };
     
     // Stats: Numerische Fallback-Exports verwenden
@@ -107,6 +108,46 @@ async function EVALOZZY_WASM(...params) {
     } catch (e) {
       console.error('WASM Ozzy: Fehler bei numerischer Progress:', e);
     }
+
+    // NEU: Death Tracking sammeln
+    try {
+      if (wasm.exports.getOzzyDeathsByStageAndReviveSize) {
+        const deathsSize = wasm.exports.getOzzyDeathsByStageAndReviveSize();
+        console.log(`WASM Ozzy: Deaths By Stage And Revive Size = ${deathsSize}`);
+        
+        if (deathsSize > 0 && wasm.exports.getOzzyDeathKeyAt && wasm.exports.getOzzyDeathCountAt) {
+          let deathsArray = []; // ARRAY statt Object!
+          
+          for (let i = 0; i < deathsSize; i++) {
+            const numericKey = wasm.exports.getOzzyDeathKeyAt(i);
+            const count = wasm.exports.getOzzyDeathCountAt(i);
+            
+            if (numericKey >= 0) {
+              const stage = Math.floor(numericKey / 1000);
+              const revive = numericKey % 1000;
+              const key = `${stage}_${revive}`;
+              
+              // Direkt als Array-Element
+              deathsArray.push({
+                stage: key,
+                count: count
+              });
+            }
+          }
+          
+          // WICHTIG: Als Array, nicht als JSON String!
+          debugResults.deathTracking = deathsArray;
+          console.log('WASM Ozzy: Death Tracking Array:', deathsArray);
+        } else {
+          debugResults.deathTracking = [];
+        }
+      } else {
+        debugResults.deathTracking = [];
+      }
+    } catch (e) {
+      console.error('WASM Ozzy: Fehler bei Death Tracking:', e);
+      debugResults.deathTracking = [];
+    }
     
     // Finales Ergebnis-Array zusammenstellen
     const result = [[
@@ -122,7 +163,8 @@ async function EVALOZZY_WASM(...params) {
       debugResults.mat3,          // 9: Mat3
       debugResults.xp,            // 10: XP
       debugResults.stats,         // 11: Stats
-      debugResults.progress       // 12: Progress
+      debugResults.progress,      // 12: Progress
+      debugResults.deathTracking  // 13: Detaillierte Death Info
     ]];
     
     console.log('WASM Ozzy: Finales Ergebnis-Array:', result[0]);

@@ -2,6 +2,32 @@
 const changelog = 
 [
   {
+    version: '2.5.1',
+    date: '2025-06-12',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added comprehensive death distribution analysis in the Build Statistics modal',
+          'Fixed chart display bug where charts would sometimes not render properly',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added delete confirmation dialog for TR plans to prevent accidental deletions',
+        ]
+      },
+      {
+        text: 'Gadget Calculator',
+        subItems: [
+          'Added original gadget assets for improved visual experience',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.5.0',
     date: '2025-06-09',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',

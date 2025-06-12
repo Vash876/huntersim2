@@ -95,19 +95,18 @@
                 type="range" 
                 v-model.number="multiplierValue" 
                 min="1" 
-                max="10" 
+                max="3.4476" 
                 step="0.0001"
                 class="w-full appearance-none bg-gray-700 h-5 rounded-full outline-none cursor-pointer"
                 @change="updateUltimaValue"
               >
-              <div class="flex justify-between text-xs text-gray-400 mt-1">
-                <span>1.0×</span>
-                <span>2.5×</span>
-                <span>4.0×</span>
-                <span>5.5×</span>
-                <span>7.0×</span>
-                <span>8.5×</span>
-                <span>10.0×</span>
+              <div class="relative mt-1 h-4">
+                <span class="absolute left-0 text-xs text-gray-400">1.0×</span>
+                <span class="absolute left-[21%] transform -translate-x-1/2 text-xs text-gray-400">1.5×</span>
+                <span class="absolute left-[41%] transform -translate-x-1/2 text-xs text-gray-400">2×</span>
+                <span class="absolute left-[61.5%] transform -translate-x-1/2 text-xs text-gray-400">2.5×</span>
+                <span class="absolute left-[81.6%] transform -translate-x-1/2 text-xs text-gray-400">3.0×</span>
+                <span class="absolute right-0 text-xs text-gray-400">3.4476×</span>
               </div>
             </div>
           </div>

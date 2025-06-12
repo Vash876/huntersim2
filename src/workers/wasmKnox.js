@@ -54,7 +54,8 @@ async function EVALKNOX_WASM(...params) {
       mat3: wasm.exports.getLastKnoxMat3(),        
       xp: wasm.exports.getLastKnoxXp(),           
       stats: "",
-      progress: "{}"
+      progress: "{}",
+      deathTracking: "{}" // NEU: Death Tracking
     };
     
     // Stats: Numerische Fallback-Exports verwenden
@@ -108,8 +109,48 @@ async function EVALKNOX_WASM(...params) {
     } catch (e) {
       console.error('WASM Knox: Fehler bei numerischer Progress:', e);
     }
+
+    // NEU: Death Tracking sammeln
+    try {
+      if (wasm.exports.getKnoxDeathsByStageAndReviveSize) {
+        const deathsSize = wasm.exports.getKnoxDeathsByStageAndReviveSize();
+        console.log(`WASM Knox: Deaths By Stage And Revive Size = ${deathsSize}`);
+        
+        if (deathsSize > 0 && wasm.exports.getKnoxDeathKeyAt && wasm.exports.getKnoxDeathCountAt) {
+          let deathsArray = []; // ARRAY statt Object!
+          
+          for (let i = 0; i < deathsSize; i++) {
+            const numericKey = wasm.exports.getKnoxDeathKeyAt(i);
+            const count = wasm.exports.getKnoxDeathCountAt(i);
+            
+            if (numericKey >= 0) {
+              const stage = Math.floor(numericKey / 1000);
+              const revive = numericKey % 1000;
+              const key = `${stage}_${revive}`;
+              
+              // Direkt als Array-Element
+              deathsArray.push({
+                stage: key,
+                count: count
+              });
+            }
+          }
+          
+          // WICHTIG: Als Array, nicht als JSON String!
+          debugResults.deathTracking = deathsArray;
+          console.log('WASM Knox: Death Tracking Array:', deathsArray);
+        } else {
+          debugResults.deathTracking = [];
+        }
+      } else {
+        debugResults.deathTracking = [];
+      }
+    } catch (e) {
+      console.error('WASM Knox: Fehler bei Death Tracking:', e);
+      debugResults.deathTracking = [];
+    }
     
-    // Finales Ergebnis-Array zusammenstellen (gleiche Struktur wie Borge/Ozzy)
+    // Finales Ergebnis-Array zusammenstellen
     const result = [[
       debugResults.lootPerMin,    // 0: Loot per minute
       debugResults.avgStage,      // 1: Avg Stage  
@@ -123,7 +164,8 @@ async function EVALKNOX_WASM(...params) {
       debugResults.mat3,          // 9: Tess
       debugResults.xp,            // 10: XP
       debugResults.stats,         // 11: Stats
-      debugResults.progress       // 12: Progress
+      debugResults.progress,      // 12: Progress
+      debugResults.deathTracking  // 13: NEU - Detaillierte Death Info
     ]];
     
     console.log('WASM Knox: Finales Ergebnis-Array:', result[0]);

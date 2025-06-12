@@ -199,7 +199,7 @@
                     <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
                       <IconStar size="16" class="text-pink-400" />
                     </div>
-                    <span class="text-sm text-gray-300">Current AttrGN#3 Multiplier</span>
+                    <span class="text-sm text-gray-300">Current AttrGN#3 Multi</span>
                     <InfoTooltip 
                       class="ml-1"
                       content="<b>Supported formats:</b><br/>
