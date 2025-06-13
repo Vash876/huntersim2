@@ -13,7 +13,7 @@ async function initWasm() {
     console.log('WASM: Versuche mit AssemblyScript Loader...');
     
     // AssemblyScript Loader verwenden
-    wasmModule = await instantiate(fetch('/build/release.wasm'), {
+    wasmModule = await instantiate(fetch('/wasm/release.wasm'), {
       // Imports falls benötigt
       env: {
         abort: (message, fileName, lineNumber, columnNumber) => {
