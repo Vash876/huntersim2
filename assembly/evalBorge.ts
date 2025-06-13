@@ -133,7 +133,7 @@ class Borge {
   remainingBullets: i32;
   time: f64;
   
-  // Talente
+  // Talente und
   revival: i32;
   life: i32;
   ua: i32;
@@ -742,6 +742,7 @@ export function EVALBORGE_WASM(
 
   // lastBorge für Export-Funktionen setzen
   lastBorge = borge;
+
   
   // Ergebnis zurückgeben (Loot per minute)
   return borge.ls * 60;
