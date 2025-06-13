@@ -133,7 +133,7 @@ class Borge {
   remainingBullets: i32;
   time: f64;
   
-  // Talente und
+  // Talente undt
   revival: i32;
   life: i32;
   ua: i32;

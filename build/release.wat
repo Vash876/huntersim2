@@ -325,6 +325,7 @@
  (export "HunterType.BORGE" (global $assembly/index/HunterType.BORGE))
  (export "HunterType.OZZY" (global $assembly/index/HunterType.OZZY))
  (export "HunterType.KNOX" (global $assembly/index/HunterType.KNOX))
+ (export "getWasmBuildTimestamp" (func $assembly/index/getWasmBuildTimestamp))
  (export "EVALBORGE_WASM" (func $assembly/evalBorge/EVALBORGE_WASM))
  (export "testEnemyCreation" (func $assembly/evalBorge/testEnemyCreation))
  (export "getLastAvgStage" (func $assembly/evalBorge/getLastAvgStage))
@@ -3149,6 +3150,9 @@
    end
   end
   local.get $1
+ )
+ (func $assembly/index/getWasmBuildTimestamp (result i32)
+  i32.const 20250613
  )
  (func $~lib/util/number/utoa32_dec_lut (param $0 i32) (param $1 i32) (param $2 i32)
   (local $3 i32)

@@ -32,7 +32,7 @@ import {
   getDeathKeyAt,
   getDeathCountAt,
   getDeathsByStageAndReviveString,
-  // NEU: Live Simulation Exports
+  // Live Simulation Exports 
   initLiveSimulation,
   liveSimulationStep,
   getLiveBorgeHp,
@@ -273,4 +273,8 @@ export enum HunterType {
   BORGE = 0,
   OZZY = 1,
   KNOX = 2
+}
+
+export function getWasmBuildTimestamp(): i32 {
+  return 20250613; // Ändere das Datum bei jedem Build
 }

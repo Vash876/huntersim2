@@ -21,6 +21,11 @@ export declare enum HunterType {
   KNOX,
 }
 /**
+ * assembly/index/getWasmBuildTimestamp
+ * @returns `i32`
+ */
+export declare function getWasmBuildTimestamp(): number;
+/**
  * assembly/evalBorge/EVALBORGE_WASM
  * @param lvl `i32`
  * @param maxStage `i32`

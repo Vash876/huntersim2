@@ -83,6 +83,7 @@ export const {
   multiWasm,
   testMultiFunction,
   HunterType,
+  getWasmBuildTimestamp,
   EVALBORGE_WASM,
   testEnemyCreation,
   getLastAvgStage,
