@@ -20,6 +20,7 @@ app.provide('evaluationCache', evaluationCache)
 app.use(router)
 app.mount('#app')
 
+
 if (import.meta.env.PROD) {
   // Speichere Original-Methoden
   const originalConsole = { ...console };
@@ -32,4 +33,11 @@ if (import.meta.env.PROD) {
   // Behalte wichtige Meldungen
   console.warn = originalConsole.warn;
   console.error = originalConsole.error;
+}
+
+// Analytics nur in Produktion laden
+if (import.meta.env.PROD) {
+  import('@vercel/analytics').then(({ inject }) => {
+    inject();
+  });
 }
