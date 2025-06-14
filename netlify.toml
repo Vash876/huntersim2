@@ -10,7 +10,7 @@
     Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
-  for = "/build/*.wasm"  
+  for = "/*.wasm"  
   [headers.values]
     Content-Type = "application/wasm"
     Cache-Control = "public, max-age=0, must-revalidate" 
