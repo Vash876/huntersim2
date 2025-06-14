@@ -2,6 +2,20 @@
 const changelog = 
 [
   {
+    version: '2.5.2',
+    date: '2025-06-14',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added Boss Kill Rate by Revive Count analysis showing how many revives are optimal for boss encounters (Ozzy)',
+          'Revive distribution analysis works now',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.5.1',
     date: '2025-06-12',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
@@ -9,7 +23,7 @@ const changelog =
       {
         text: 'Hunter Simulator',
         subItems: [
-          'Added comprehensive death distribution analysis in the Build Statistics modal',
+          'Added comprehensive Revive distribution analysis in the Build Statistics modal',
           'Fixed chart display bug where charts would sometimes not render properly',
         ]
       },

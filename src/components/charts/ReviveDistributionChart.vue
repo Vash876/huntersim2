@@ -22,6 +22,183 @@
         </div>
       </div>
     </div>
+
+    <!-- NEU: Debug-Tabelle -->
+    <div class="bg-gray-700/30 border border-gray-600 p-4 rounded-md">
+      <h3 class="text-white font-semibold mb-4">🔍 Debug: Revive-Verluste nach Stage</h3>
+      
+      <div v-if="debugTableData.length > 0" class="overflow-x-auto">
+        <table class="w-full text-sm text-white border-collapse">
+          <thead>
+            <tr class="bg-gray-600">
+              <th class="border border-gray-500 px-3 py-2 text-left">Stage</th>
+              <th class="border border-gray-500 px-3 py-2 text-center">Revive #</th>
+              <th class="border border-gray-500 px-3 py-2 text-right">Anzahl</th>
+              <th class="border border-gray-500 px-3 py-2 text-center">Verbleibende</th>
+              <th class="border border-gray-500 px-3 py-2 text-right">% von Stage</th>
+              <th class="border border-gray-500 px-3 py-2 text-right">% von Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in debugTableData" :key="`${row.stage}_${row.revive}`" 
+                :class="getRowClass(row)">
+              <td class="border border-gray-500 px-3 py-2 font-medium">{{ row.stage }}</td>
+              <td class="border border-gray-500 px-3 py-2 text-center font-medium" 
+                  :style="{ color: getReviveColor(row.revive) }">
+                {{ row.revive }}
+              </td>
+              <td class="border border-gray-500 px-3 py-2 text-right font-mono">
+                {{ row.count.toLocaleString() }}
+              </td>
+              <td class="border border-gray-500 px-3 py-2 text-center font-medium"
+                  :style="{ color: getRemainingColor(row.remaining) }">
+                {{ row.remaining }}
+              </td>
+              <td class="border border-gray-500 px-3 py-2 text-right font-mono">
+                {{ row.stagePercent }}%
+              </td>
+              <td class="border border-gray-500 px-3 py-2 text-right font-mono">
+                {{ row.totalPercent }}%
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="bg-gray-600 font-bold">
+              <td class="border border-gray-500 px-3 py-2" colspan="2">TOTAL</td>
+              <td class="border border-gray-500 px-3 py-2 text-right">
+                {{ totalDeaths.toLocaleString() }}
+              </td>
+              <td class="border border-gray-500 px-3 py-2" colspan="3"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      
+      <div v-else class="text-gray-400 text-center py-8">
+        Keine Revive-Daten verfügbar
+      </div>
+
+      <!-- Summary Statistics -->
+      <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div v-for="revive in availableRevives" :key="revive" 
+             class="bg-gray-600/50 p-3 rounded border">
+          <div class="text-xs text-gray-300">{{ getReviveLabel(revive) }}</div>
+          <div class="text-lg font-bold" :style="{ color: getReviveColor(revive) }">
+            {{ getReviveTotal(revive).toLocaleString() }}
+          </div>
+          <div class="text-xs text-gray-400">
+            {{ getRevivePercentage(revive) }}% vom Total
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEU: Boss-Entry-Analysis Tabelle -->
+    <div class="bg-gray-700/30 border border-gray-600 p-4 rounded-md">
+      <h3 class="text-white font-semibold mb-4">⚔️ Boss Entry Analysis - Stage 300</h3>
+      
+      <div v-if="bossEntryData" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Tabelle -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-white border-collapse">
+            <thead>
+              <tr class="bg-gray-600">
+                <th class="border border-gray-500 px-4 py-3 text-center">Verbleibende Revives</th>
+                <th class="border border-gray-500 px-4 py-3 text-right">Boss Entries</th>
+                <th class="border border-gray-500 px-4 py-3 text-right">% von Total</th>
+                <th class="border border-gray-500 px-4 py-3 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="entry in bossEntryData.entries" :key="entry.revives"
+                  :class="getBossEntryRowClass(entry.revives)">
+                <td class="border border-gray-500 px-4 py-3 text-center font-bold text-lg"
+                    :style="{ color: getRemainingColor(entry.revives) }">
+                  {{ entry.revives }}
+                </td>
+                <td class="border border-gray-500 px-4 py-3 text-right font-mono text-lg">
+                  {{ entry.count.toLocaleString() }}
+                </td>
+                <td class="border border-gray-500 px-4 py-3 text-right font-mono">
+                  {{ entry.percentage }}%
+                </td>
+                <td class="border border-gray-500 px-4 py-3 text-center">
+                  <span :class="getStatusBadgeClass(entry.revives)">
+                    {{ getStatusText(entry.revives) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="bg-gray-600 font-bold">
+                <td class="border border-gray-500 px-4 py-3">TOTAL</td>
+                <td class="border border-gray-500 px-4 py-3 text-right">
+                  {{ bossEntryData.total.toLocaleString() }}
+                </td>
+                <td class="border border-gray-500 px-4 py-3 text-right">100.0%</td>
+                <td class="border border-gray-500 px-4 py-3"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Statistiken -->
+        <div class="space-y-4">
+          <div class="bg-gray-600/50 p-4 rounded border">
+            <h4 class="text-white font-medium mb-3">📊 Zusammenfassung</h4>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-300">Total Simulationen:</span>
+                <span class="text-white font-mono">{{ totalSimulations.toLocaleString() }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-300">Boss erreicht:</span>
+                <span class="text-white font-mono">{{ bossEntryData.total.toLocaleString() }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-300">Boss erreicht (%):</span>
+                <span class="text-white font-mono">{{ bossReachPercentage }}%</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-300">Nie Boss erreicht:</span>
+                <span class="text-white font-mono">{{ neverReachedBoss.toLocaleString() }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-600/50 p-4 rounded border">
+            <h4 class="text-white font-medium mb-3">🎯 Beste Performance</h4>
+            <div v-if="bestEntry" class="text-center">
+              <div class="text-3xl font-bold mb-2" :style="{ color: getRemainingColor(bestEntry.revives) }">
+                {{ bestEntry.revives }} Revives
+              </div>
+              <div class="text-white">
+                {{ bestEntry.count.toLocaleString() }} mal erreicht
+              </div>
+              <div class="text-gray-300 text-sm">
+                ({{ bestEntry.percentage }}% der Boss-Encounters)
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-600/50 p-4 rounded border">
+            <h4 class="text-white font-medium mb-3">⚠️ Risiko-Assessment</h4>
+            <div class="space-y-2 text-sm">
+              <div v-if="criticalEntries > 0" class="text-red-400">
+                <strong>{{ criticalEntries.toLocaleString() }}</strong> kritische Entries (≤1 Revive)
+              </div>
+              <div v-if="safeEntries > 0" class="text-green-400">
+                <strong>{{ safeEntries.toLocaleString() }}</strong> sichere Entries (≥2 Revives)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div v-else class="text-gray-400 text-center py-8">
+        Keine Boss-Entry-Daten verfügbar
+      </div>
+    </div>
   </div>
 </template>
 
@@ -453,6 +630,188 @@ onMounted(() => {
 onUnmounted(() => {
   destroyChart();
 });
+
+// NEU: Debug-Tabellen-Daten
+const debugTableData = computed(() => {
+  if (!props.deathDistribution || !props.deathDistribution.length) {
+    return [];
+  }
+  
+  const tableData = [];
+  const stageGroups = processedData.value.stageGroups;
+  
+  // Für jede Stage, sammle alle Revive-Daten
+  Object.keys(stageGroups).forEach(stage => {
+    const stageNum = parseInt(stage);
+    const reviveData = stageGroups[stage];
+    
+    // Berechne Stage-Total
+    const stageTotal = Object.values(reviveData).reduce((sum, count) => sum + count, 0);
+    
+    // Für jeden Revive-Typ in dieser Stage
+    Object.keys(reviveData).forEach(revive => {
+      const reviveNum = parseInt(revive);
+      const count = reviveData[revive];
+      const remaining = 3 - reviveNum; // 3 ist maxRevives
+      
+      if (count > 0) {
+        tableData.push({
+          stage: stageNum,
+          revive: reviveNum,
+          count: count,
+          remaining: remaining,
+          stagePercent: ((count / stageTotal) * 100).toFixed(1),
+          totalPercent: ((count / totalDeaths.value) * 100).toFixed(1)
+        });
+      }
+    });
+  });
+  
+  // Sortiere nach Stage (absteigend), dann nach Revive (aufsteigend)
+  return tableData.sort((a, b) => {
+    if (a.stage !== b.stage) return b.stage - a.stage;
+    return a.revive - b.revive;
+  });
+});
+
+// Hilfsfunktionen für die Tabelle
+function getRowClass(row) {
+  const baseClass = 'hover:bg-gray-600/30 transition-colors';
+  
+  if (row.stage >= 300) return `${baseClass} bg-red-900/20`; // Boss-Stages
+  if (row.revive >= 3) return `${baseClass} bg-red-800/20`; // Kritische Revives
+  if (row.revive >= 2) return `${baseClass} bg-yellow-800/20`; // Warnung
+  
+  return baseClass;
+}
+
+function getRemainingColor(remaining) {
+  if (remaining === 0) return '#ef4444'; // Rot - keine Revives
+  if (remaining === 1) return '#f59e0b'; // Orange - 1 Revive
+  if (remaining === 2) return '#eab308'; // Gelb - 2 Revives
+  return '#22c55e'; // Grün - 3 Revives
+}
+
+// Neue Computed Properties für Boss Entry Analysis
+const totalSimulations = computed(() => {
+  // Annahme: 4000 Simulationen (oder aus Props)
+  return 4000; // Du kannst das als Prop übergeben
+});
+
+const bossEntryData = computed(() => {
+  if (!props.deathDistribution || !props.deathDistribution.length) {
+    return null;
+  }
+
+  // Sammle KUMULATIV wieviele Revives VOR Stage 300 verloren gingen
+  let revive1LossesBeforeBoss = 0; // Erster Revive verloren
+  let revive2LossesBeforeBoss = 0; // Zweiter Revive verloren  
+  let revive3LossesBeforeBoss = 0; // Dritter Revive verloren
+
+  props.deathDistribution.forEach(death => {
+    if (death.stage && death.stage.includes('_')) {
+      const [stage, revive] = death.stage.split('_');
+      const stageNum = parseInt(stage);
+      const reviveNum = parseInt(revive);
+      
+      // Nur Verluste VOR dem Boss zählen
+      if (stageNum < 300) {
+        if (reviveNum === 1) revive1LossesBeforeBoss += death.count;
+        if (reviveNum === 2) revive2LossesBeforeBoss += death.count;
+        if (reviveNum === 3) revive3LossesBeforeBoss += death.count;
+      }
+    }
+  });
+
+  // Berechne Boss Entries basierend auf SEQUENTIELLEN Revive-Verlusten:
+  
+  // Mit 3 Revives: Keine Revives verloren
+  const revive3Entries = totalSimulations.value - revive1LossesBeforeBoss;
+  
+  // Mit 2 Revives: Ersten Revive verloren, aber NICHT den zweiten
+  const revive2Entries = revive1LossesBeforeBoss - revive2LossesBeforeBoss;
+  
+  // Mit 1 Revive: Ersten UND zweiten Revive verloren, aber NICHT den dritten
+  const revive1Entries = revive2LossesBeforeBoss - revive3LossesBeforeBoss;
+  
+  // Mit 0 Revives: Alle drei Revives verloren
+  const revive0Entries = revive3LossesBeforeBoss;
+
+  const allEntries = [
+    { revives: 3, count: revive3Entries },
+    { revives: 2, count: revive2Entries },
+    { revives: 1, count: revive1Entries },
+    { revives: 0, count: revive0Entries }
+  ].filter(entry => entry.count > 0);
+
+  const totalBossEntries = allEntries.reduce((sum, entry) => sum + entry.count, 0);
+
+  // Füge Prozentsätze hinzu
+  allEntries.forEach(entry => {
+    entry.percentage = totalBossEntries > 0 ? ((entry.count / totalBossEntries) * 100).toFixed(1) : '0.0';
+  });
+
+  return {
+    entries: allEntries,
+    total: totalBossEntries
+  };
+});
+
+const neverReachedBoss = computed(() => {
+  return totalSimulations.value - (bossEntryData.value?.total || 0);
+});
+
+const bossReachPercentage = computed(() => {
+  if (!bossEntryData.value) return '0.0';
+  return ((bossEntryData.value.total / totalSimulations.value) * 100).toFixed(1);
+});
+
+const bestEntry = computed(() => {
+  if (!bossEntryData.value?.entries.length) return null;
+  return bossEntryData.value.entries.reduce((best, current) => 
+    current.count > best.count ? current : best
+  );
+});
+
+const criticalEntries = computed(() => {
+  if (!bossEntryData.value?.entries) return 0;
+  return bossEntryData.value.entries
+    .filter(entry => entry.revives <= 1)
+    .reduce((sum, entry) => sum + entry.count, 0);
+});
+
+const safeEntries = computed(() => {
+  if (!bossEntryData.value?.entries) return 0;
+  return bossEntryData.value.entries
+    .filter(entry => entry.revives >= 2)
+    .reduce((sum, entry) => sum + entry.count, 0);
+});
+
+// Hilfsfunktionen
+function getBossEntryRowClass(revives) {
+  const baseClass = 'hover:bg-gray-600/30 transition-colors';
+  
+  if (revives === 0) return `${baseClass} bg-red-900/30`;
+  if (revives === 1) return `${baseClass} bg-orange-900/30`;
+  if (revives === 2) return `${baseClass} bg-yellow-900/30`;
+  return `${baseClass} bg-green-900/30`;
+}
+
+function getStatusText(revives) {
+  if (revives === 0) return 'Kritisch';
+  if (revives === 1) return 'Riskant';
+  if (revives === 2) return 'Gut';
+  return 'Optimal';
+}
+
+function getStatusBadgeClass(revives) {
+  const baseClass = 'px-2 py-1 rounded text-xs font-medium';
+  
+  if (revives === 0) return `${baseClass} bg-red-500/20 text-red-300 border border-red-500/30`;
+  if (revives === 1) return `${baseClass} bg-orange-500/20 text-orange-300 border border-orange-500/30`;
+  if (revives === 2) return `${baseClass} bg-yellow-500/20 text-yellow-300 border border-yellow-500/30`;
+  return `${baseClass} bg-green-500/20 text-green-300 border border-green-500/30`;
+}
 </script>
 
 <style scoped>
@@ -460,5 +819,29 @@ onUnmounted(() => {
   position: relative;
   height: 250px;
   width: 100%;
+}
+
+/* NEU: Tabellen-Styles */
+.debug-table {
+  font-family: 'Courier New', monospace;
+}
+
+.debug-table th {
+  background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+}
+
+.debug-table tbody tr:nth-child(even) {
+  background: rgba(75, 85, 99, 0.1);
+}
+
+@media (max-width: 768px) {
+  .debug-table {
+    font-size: 0.75rem;
+  }
+  
+  .debug-table th,
+  .debug-table td {
+    padding: 0.25rem 0.5rem;
+  }
 }
 </style>

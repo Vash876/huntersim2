@@ -312,6 +312,18 @@ let nextHarden: f64 = 0;
 let currentOzzyAttr: i32 = 0;
 let currentOzzyCatchup99gu: i32 = 0;
 let currentOzzyMaxStage: i32 = 0;
+let bossKillsByRevive = new StaticArray<i32>(11); // Revive 0-10
+let bossAttemptsByRevive = new StaticArray<i32>(11); // Revive 0-10
+let lastTrackedBossStage: i32 = -1; 
+let entryRevivesForRun: i32 = -1; // ← NEU: Global definieren
+
+// Boss-Tracking initialisieren
+function initBossTracking(): void {
+  for (let i = 0; i < 11; i++) {
+    bossKillsByRevive[i] = 0;
+    bossAttemptsByRevive[i] = 0;
+  }
+}
 
 // Array-Hilfsfunktionen für JS-äquivalente Operationen
 function ozzyArraySum(arr: StaticArray<f64>): f64 {
@@ -395,15 +407,16 @@ function ozzyEnemyAttack(): void {
   currentOzzy.hp -= dmg * (1 - currentOzzy.currentDr) * (1 - 0.01 * currentOzzy.scarab);
 }
 
-// Kill Enemy function (EXAKT wie JS)
+// Kill Enemy function
 function ozzyKillEnemy(): void {
   hardenEnd = 0;
+
   if (currentOzzyEnem > 0 && currentOzzyEnem % 1000 === 0) {
     currentOzzyEnem += 10;
   } else {
     currentOzzyEnem++;
   }
-  
+
   if (currentOzzyEnem === 1000) {
     currentOzzy.currentAtk /= (Math.pow(Math.pow(1.08, currentOzzyCatchup99gu as f64), 1 + currentOzzyAttr * 0.1 - 0.1));
   }
@@ -486,6 +499,9 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
                  attrGN3: boolean, lootgu: i32, i32_: i32, i81: i32, research81: i32, 
                  cm46: i32, cm47: i32, cm48: i32, cm51: i32, gadgetLootMulti: f64, 
                  card: boolean, i33: i32): void {
+  entryRevivesForRun = -1;
+  lastTrackedBossStage = -1;
+
   // Globale Variablen setzen
   currentOzzy = ozzy;
   currentOzzyEnem = 0;
@@ -527,6 +543,18 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
   
   // Haupt-Kampfschleife 
   while (ozzy.hp > 0) {
+    // Boss-Encounter-Tracking beim ersten Boss-Frame (UNABHÄNGIG von Revive-Logic)
+    if (currentOzzyEnem > 0 && currentOzzyEnem % 1000 === 0) {
+      let currentBossStage = Math.floor(currentOzzyEnem / 10) as i32;
+      
+      // Nur tracken wenn es ein NEUER Boss ist
+      if (currentBossStage != lastTrackedBossStage) {
+        entryRevivesForRun = ozzy.revives;  // Merke verbleibende Revives
+        bossAttemptsByRevive[ozzy.revives]++;
+        lastTrackedBossStage = currentBossStage; // Verhindert mehrfaches Tracking
+      }
+    }
+
     currentOzzyTime = minAll(nextOzzyAtk, nextEchoBullet, nextMultistrike, nextOzzyEnemAtk, nextOzzyRegen, nextHarden);
     
     if (currentOzzyTime === nextOzzyRegen) {
@@ -565,6 +593,18 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
       ozzy.currentDr = ozzy.dr + 0.016 * ozzy.dwd * (ozzy.revival + ozzy.sisters - ozzy.revives);
       ozzy.currentMultistrike += 0.023 * ozzy.cod;
       ozzy.currentMultistrikePower += 0.02 * ozzy.cod;
+    } 
+  }
+
+  // Boss-Kill-Tracking NACH der while-Schleife (wie vorher):
+  if (entryRevivesForRun >= 0) {
+    // Prüfe ob Boss getötet wurde
+    let lastBossStage = (Math.floor(currentOzzyEnem / 10) / 100) as i32 * 100;
+    let bossEnemy = lastBossStage * 10;
+    let bossKilled = currentOzzyEnem > bossEnemy;
+    
+    if (bossKilled) {
+      bossKillsByRevive[entryRevivesForRun]++;
     }
   }
   
@@ -668,6 +708,7 @@ export function EVALOZZY_WASM(
   
   // Enemies initialisieren
   initOzzyEnemies();
+  initBossTracking();
   
   // Gadget/Creature Multipliers (EXAKT WIE JS)
   const gadgetMulti = Math.pow(1.001, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
@@ -931,4 +972,58 @@ export function getOzzyDeathsByStageAndReviveString(): string {
   
   result += "}";
   return result;
+}
+
+// Am Ende der Datei:
+export function getOzzyBossKillsByReviveSize(): i32 {
+  let count = 0;
+  for (let i = 0; i < 11; i++) {
+    if (bossAttemptsByRevive[i] > 0) {
+      count++;
+    }
+  }
+  return count;
+}
+
+export function getOzzyBossRemainingReviveAt(index: i32): i32 {
+  let count = 0;
+  for (let remaining = 0; remaining < 11; remaining++) {
+    if (bossAttemptsByRevive[remaining] > 0) {
+      if (count === index) {
+        return remaining;    // ← liefert jetzt korrekt 3, 2, 1
+      }
+      count++;
+    }
+  }
+  return -1;
+}
+
+export function getOzzyBossAttemptCountAt(index: i32): i32 {
+  let count = 0;
+  for (let remaining = 0; remaining < 11; remaining++) {
+    if (bossAttemptsByRevive[remaining] > 0) {
+      if (count === index) {
+        return bossAttemptsByRevive[remaining];
+      }
+      count++;
+    }
+  }
+  return 0;
+}
+
+export function getOzzyBossKillCountAt(index: i32): i32 {
+  let count = 0;
+  for (let remaining = 0; remaining < 11; remaining++) {
+    if (bossAttemptsByRevive[remaining] > 0) {
+      if (count === index) {
+        return bossKillsByRevive[remaining];
+      }
+      count++;
+    }
+  }
+  return 0;
+}
+
+export function getLastOzzyMaxRevives(): i32 {
+  return lastOzzy.maxRevives;
 }

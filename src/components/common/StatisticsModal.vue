@@ -76,6 +76,24 @@
                 </div>
               </div>
             </div>
+
+            <!-- Boss Analysis Tab -->
+            <div v-if="activeTab === 'boss'">
+              <BossKillByReviveChart 
+                v-if="bossKillsByRevive && bossKillsByRevive.length > 0"
+                :boss-kills-by-revive="bossKillsByRevive"
+                :sample-size="sampleSize"   
+                :color="color"
+                :is-visible="activeTab === 'boss'"
+              />
+              <div v-else class="flex items-center justify-center h-[300px] text-gray-400">
+                <div class="text-center">
+                  <IconTrophy size="48" class="mx-auto mb-4 text-gray-500" />
+                  <p class="text-lg font-medium mb-2">No Boss Kill Data</p>
+                  <p class="text-sm">Boss analysis requires boss kill tracking data.</p>
+                </div>
+              </div>
+            </div>
             
             <!-- Build Stats Tab -->
             <div v-if="activeTab === 'stats'">
@@ -110,17 +128,28 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { IconChartBar, IconX, IconGraph, IconRuler, IconHeart } from '@tabler/icons-vue';
+import { ref, computed } from 'vue';
+import { IconChartBar, IconX, IconGraph, IconRuler, IconHeart, IconTrophy } from '@tabler/icons-vue';
 import StageDistributionChart from '@/components/charts/StageDistributionChart.vue';
 import ReviveDistributionChart from '@/components/charts/ReviveDistributionChart.vue';
+import BossKillByReviveChart from '@/components/charts/BossKillByReviveChart.vue';
 
 // Verfügbare Tabs
-const tabs = [
-  { id: 'distribution', label: 'Stage Distribution', icon: IconGraph },
-  { id: 'revive', label: 'Revive Distribution', icon: IconHeart },
-  { id: 'stats', label: 'Build Stats', icon: IconRuler }
-];
+const tabs = computed(() => {
+  const baseTabs = [
+    { id: 'distribution', label: 'Stage Distribution', icon: IconGraph },
+    { id: 'revive', label: 'Revive Distribution', icon: IconHeart }
+  ];
+  
+  // Boss Analysis nur wenn echte Boss-Kill-Daten vorhanden
+  if (props.bossKillsByRevive && props.bossKillsByRevive.length > 0) {
+    baseTabs.push({ id: 'boss', label: 'Boss Analysis', icon: IconTrophy });
+  }
+  
+  baseTabs.push({ id: 'stats', label: 'Build Stats', icon: IconRuler });
+  
+  return baseTabs;
+});
 
 // Aktiver Tab
 const activeTab = ref('distribution');
@@ -163,7 +192,10 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  // Build stats props
+  bossKillsByRevive: {
+    type: Array,
+    default: () => []
+  },
   buildStats: {
     type: Array,
     default: () => []

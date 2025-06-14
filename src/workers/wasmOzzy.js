@@ -112,7 +112,7 @@ async function EVALOZZY_WASM(...params) {
       console.error('WASM Ozzy: Fehler bei numerischer Progress:', e);
     }
 
-    // NEU: Death Tracking sammeln
+    // Death Tracking sammeln
     try {
       if (wasm.exports.getOzzyDeathsByStageAndReviveSize) {
         const deathsSize = wasm.exports.getOzzyDeathsByStageAndReviveSize();
@@ -151,6 +151,47 @@ async function EVALOZZY_WASM(...params) {
       console.error('WASM Ozzy: Fehler bei Death Tracking:', e);
       debugResults.deathTracking = [];
     }
+
+    try {
+      if (wasm.exports.getOzzyBossKillsByReviveSize) {
+        const bossKillSize = wasm.exports.getOzzyBossKillsByReviveSize();
+        
+        console.log('WASM Ozzy: Boss Kill Size =', bossKillSize);
+        
+        if (bossKillSize > 0) {
+          let bossKillsByRevive = [];
+          
+          for (let i = 0; i < bossKillSize; i++) {
+            const revive = wasm.exports.getOzzyBossRemainingReviveAt(i);
+            const kills = wasm.exports.getOzzyBossKillCountAt(i);
+            const attempts = wasm.exports.getOzzyBossAttemptCountAt(i);
+            
+            console.log(`WASM Ozzy: Index ${i} - Revive: ${revive}, Kills: ${kills}, Attempts: ${attempts}`);
+            
+            if (revive >= 0 && attempts > 0) {
+              bossKillsByRevive.push({
+                revive: revive,
+                kills: kills,
+                attempts: attempts,
+                killRate: ((kills / attempts) * 100).toFixed(1)
+              });
+            }
+          }
+          
+          debugResults.bossKillsByRevive = bossKillsByRevive;
+          console.log('WASM Ozzy: Final Boss Kills by Revive:', bossKillsByRevive);
+        } else {
+          console.log('WASM Ozzy: No boss kill data (size = 0)');
+          debugResults.bossKillsByRevive = [];
+        }
+      } else {
+        console.log('WASM Ozzy: getOzzyBossKillsByReviveSize not available');
+        debugResults.bossKillsByRevive = [];
+      }
+    } catch (e) {
+      console.error('WASM Ozzy: Fehler bei Boss Kill by Revive Tracking:', e);
+      debugResults.bossKillsByRevive = [];
+    }
     
     // Finales Ergebnis-Array zusammenstellen
     const result = [[
@@ -167,7 +208,8 @@ async function EVALOZZY_WASM(...params) {
       debugResults.xp,            // 10: XP
       debugResults.stats,         // 11: Stats
       debugResults.progress,      // 12: Progress
-      debugResults.deathTracking  // 13: Detaillierte Death Info
+      debugResults.deathTracking,  // 13: Detaillierte Death Info
+      debugResults.bossKillsByRevive // 14: Boss Kills by Revive
     ]];
     
     console.log('WASM Ozzy: Finales Ergebnis-Array:', result[0]);

@@ -207,7 +207,7 @@ function parseEvalResults(evalResults, hunterId) {
     baseResult.stageDistribution = [];
   }
   
-  // NEU: Death Tracking extrahieren
+  // Death Tracking extrahieren
   let deathDistribution = [];
   
   try {
@@ -252,6 +252,29 @@ function parseEvalResults(evalResults, hunterId) {
   } catch (error) {
     console.error('Fehler beim Parsen der Death-Verteilung:', error);
     baseResult.deathDistribution = [];
+  }
+
+  // Boss Kill by Revive Tracking extrahieren
+  let bossKillsByRevive = [];
+  
+  try {
+    // Boss Kill by Revive ist im Index 14
+    const bossKillData = result[14];
+    
+    console.log('EVAL WORKER: Boss Kill data type:', typeof bossKillData);
+    console.log('EVAL WORKER: Boss Kill data:', bossKillData);
+    
+    // Prüfe ob es bereits ein Array ist
+    if (Array.isArray(bossKillData)) {
+      bossKillsByRevive = bossKillData;
+      console.log('EVAL WORKER: Processed boss kill by revive (array):', bossKillsByRevive);
+    }
+    
+    baseResult.bossKillsByRevive = bossKillsByRevive;
+    
+  } catch (error) {
+    console.error('Fehler beim Parsen der Boss Kill by Revive Daten:', error);
+    baseResult.bossKillsByRevive = [];
   }
   
   return baseResult;

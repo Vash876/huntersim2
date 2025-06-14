@@ -661,6 +661,29 @@ export declare function getOzzyDeathCountAt(index: number): number;
  */
 export declare function getOzzyDeathsByStageAndReviveString(): string;
 /**
+ * assembly/evalOzzy/getOzzyBossKillsByReviveSize
+ * @returns `i32`
+ */
+export declare function getOzzyBossKillsByReviveSize(): number;
+/**
+ * assembly/evalOzzy/getOzzyBossRemainingReviveAt
+ * @param index `i32`
+ * @returns `i32`
+ */
+export declare function getOzzyBossRemainingReviveAt(index: number): number;
+/**
+ * assembly/evalOzzy/getOzzyBossKillCountAt
+ * @param index `i32`
+ * @returns `i32`
+ */
+export declare function getOzzyBossKillCountAt(index: number): number;
+/**
+ * assembly/evalOzzy/getOzzyBossAttemptCountAt
+ * @param index `i32`
+ * @returns `i32`
+ */
+export declare function getOzzyBossAttemptCountAt(index: number): number;
+/**
  * assembly/evalKnox/EVALKNOX_WASM
  * @param lvl `i32`
  * @param maxStage `i32`

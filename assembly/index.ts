@@ -87,6 +87,10 @@ import {
   getOzzyDeathKeyAt,
   getOzzyDeathCountAt,
   getOzzyDeathsByStageAndReviveString,
+  getOzzyBossKillsByReviveSize,
+  getOzzyBossRemainingReviveAt,
+  getOzzyBossKillCountAt,
+  getOzzyBossAttemptCountAt
 } from './evalOzzy';
 
 // Knox Imports
@@ -234,6 +238,10 @@ export {
   getOzzyDeathKeyAt,
   getOzzyDeathCountAt,
   getOzzyDeathsByStageAndReviveString,
+  getOzzyBossKillsByReviveSize,
+  getOzzyBossRemainingReviveAt,
+  getOzzyBossKillCountAt,
+  getOzzyBossAttemptCountAt
 };
 
 // Re-Export aller KNOX-Funktionen

@@ -162,7 +162,7 @@
                 v-if="getGadgetImageNumber(gadget.id) <= 15"
                 class="absolute inset-0 gadget-background"
                 :style="{
-                  backgroundImage: `url('/src/assets/gadgets/${getGadgetImageNumber(gadget.id)}.png')`
+                  backgroundImage: `url('@/assets/gadgets/${getGadgetImageNumber(gadget.id)}.png')`
                 }"
               ></div>
               
