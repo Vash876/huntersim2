@@ -38,6 +38,11 @@ export default defineConfig({
       autoInstall: true,
     }),
   ],
+
+  define: {
+    __BUILD_TIME__: JSON.stringify(Date.now())
+  },
+
   worker: {
     format: 'es', // Verwende ES-Module in Workern
     plugins: [
