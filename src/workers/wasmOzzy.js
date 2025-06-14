@@ -13,7 +13,7 @@ async function initWasm() {
     console.log('WASM Ozzy: Versuche mit AssemblyScript Loader...');
     
     // AssemblyScript Loader verwenden
-    const wasmUrl = `/build/release.wasm?v=${__BUILD_TIME__}`;
+    const wasmUrl = `/wasm/release.wasm?v=${__BUILD_TIME__}`;
     console.log(`Loading WASM: ${wasmUrl}`);
     
     wasmModule = await instantiate(fetch(wasmUrl), {
