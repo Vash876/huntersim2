@@ -3,7 +3,7 @@ const changelog =
 [
   {
     version: '2.5.2',
-    date: '2025-06-14',
+    date: '2025-06-15',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
     changes: [
       {
@@ -12,6 +12,12 @@ const changelog =
           'Added Boss Kill Rate by Revive Count analysis showing how many revives are optimal for boss encounters (Ozzy)',
           'Added comprehensive Revive distribution analysis in the Build Statistics modal',
           '<b class="text-amber-500">Important:</b> Please re-evaluate your existing builds to access the new features. The best way to do this is to clear the cache in the Settings.'
+        ]
+      },
+      {
+        text: 'Gadget Calculator',
+        subItems: [
+          'Added original gadget assets for improved visual experience',
         ]
       }
     ]
@@ -31,12 +37,6 @@ const changelog =
         text: 'TR Planner',
         subItems: [
           'Added delete confirmation dialog for TR plans to prevent accidental deletions',
-        ]
-      },
-      {
-        text: 'Gadget Calculator',
-        subItems: [
-          'Added original gadget assets for improved visual experience',
         ]
       }
     ]
