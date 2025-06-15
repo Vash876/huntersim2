@@ -109,6 +109,8 @@
         :distribution="results?.stageDistribution"
         :death-distribution="results?.deathDistribution"
         :boss-kills-by-revive="results?.bossKillsByRevive"
+        :hunter-id="hunterId"         
+        :build-id="buildId"
         :avg-stage="results?.avgStage"
         :max-stage="results?.maxStage"
         :min-stage="results?.minStage"

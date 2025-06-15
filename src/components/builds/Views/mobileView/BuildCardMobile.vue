@@ -546,8 +546,11 @@
     <StatisticsModal 
       :show="showDistributionModal" 
       :build-name="buildData.name"
+      :hunter-id="hunterId"       
+      :build-id="buildData.id"
       :distribution="results?.stageDistribution"
       :death-distribution="results?.deathDistribution"
+      :boss-kills-by-revive="results?.bossKillsByRevive"
       :avg-stage="results?.avgStage"
       :max-stage="results?.maxStage"
       :min-stage="results?.minStage"

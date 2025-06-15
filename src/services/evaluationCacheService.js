@@ -208,6 +208,12 @@ export function simplifyResultForStorage(result) {
       
       simplifiedResult.stageDistribution = reduced;
     }
+
+    if (!simplifiedResult.sampleSize && result.bossKillsByRevive?.length > 0) {
+      // Berechne Sample Size aus den Boss Kill Rate Daten
+      const totalAttempts = result.bossKillsByRevive.reduce((sum, item) => sum + item.attempts, 0);
+      simplifiedResult.sampleSize = totalAttempts;
+    }
     
     return simplifiedResult;
   } catch (error) {
@@ -337,12 +343,28 @@ export async function cacheResult({ hunterId, buildData, hunterStore, result, ca
     // Cache-Key generieren, wenn nicht vorhanden
     const key = cacheKey || await generateCacheKey({ hunterId, buildData, hunterStore });
     
+    // NEU: Sample Size sicherstellen BEVOR wir cachen
+    if (!result.sampleSize) {
+      const sampleSize = hunterStore.hunterIterations?.[hunterId] || 1000;
+      result.sampleSize = sampleSize;
+      console.log(`[Cache] Added missing sampleSize to result: ${sampleSize}`);
+    }
+    
     // In Memory-Cache speichern
     memoryCache[key] = result;
     
     // Im Store-Cache speichern
     if (hunterStore.cacheEvaluationResult) {
       hunterStore.cacheEvaluationResult(hunterId, key, result);
+    }
+    
+    // Boss Kill Rate Caching
+    if (result.bossKillsByRevive?.length > 0 && buildData?.id) {
+      const sampleSize = result.sampleSize; // Verwende die sampleSize aus result
+      
+      console.log(`[Cache] Boss Kill Rate - Using sampleSize: ${sampleSize} for ${hunterId}_${buildData.id}`);
+      
+      hunterStore.cacheBossKillsByRevive(hunterId, buildData.id, result.bossKillsByRevive, sampleSize);
     }
     
     // Im localStorage speichern

@@ -83,6 +83,8 @@
                 v-if="bossKillsByRevive && bossKillsByRevive.length > 0"
                 :boss-kills-by-revive="bossKillsByRevive"
                 :sample-size="sampleSize"   
+                :hunter-id="hunterId"         
+                :build-id="buildId"            
                 :color="color"
                 :is-visible="activeTab === 'boss'"
               />
@@ -166,6 +168,14 @@ const props = defineProps({
   title: {
     type: String,
     default: ''
+  },
+  hunterId: {
+    type: String,
+    required: true
+  },
+  buildId: {
+    type: String,
+    required: true
   },
   // Distribution props
   distribution: {

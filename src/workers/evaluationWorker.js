@@ -160,7 +160,7 @@ function extractParamValue(storeData, hunterId, buildData, param) {
 /**
  * Parst die Evaluierungsergebnisse und extrahiert die relevanten Daten
  */
-function parseEvalResults(evalResults, hunterId) {
+function parseEvalResults(evalResults, hunterId, buildData, sampleSize) {
   if (!evalResults || !evalResults.length || !evalResults[0]) {
     console.error(`Keine gültigen Evaluierungsergebnisse für ${hunterId}:`, evalResults);
     return {};
@@ -211,7 +211,7 @@ function parseEvalResults(evalResults, hunterId) {
   let deathDistribution = [];
   
   try {
-    // Death Tracking ist jetzt im Index 13
+    // Death Tracking 
     const deathData = result[13];
     
     console.log('EVAL WORKER: Death data type:', typeof deathData);
@@ -258,19 +258,26 @@ function parseEvalResults(evalResults, hunterId) {
   let bossKillsByRevive = [];
   
   try {
-    // Boss Kill by Revive ist im Index 14
     const bossKillData = result[14];
     
-    console.log('EVAL WORKER: Boss Kill data type:', typeof bossKillData);
-    console.log('EVAL WORKER: Boss Kill data:', bossKillData);
-    
-    // Prüfe ob es bereits ein Array ist
     if (Array.isArray(bossKillData)) {
       bossKillsByRevive = bossKillData;
-      console.log('EVAL WORKER: Processed boss kill by revive (array):', bossKillsByRevive);
+      
+      baseResult.bossKillsByRevive = bossKillsByRevive;
+      
+      // ✅ JETZT funktioniert der postMessage Code:
+      if (buildData?.id && bossKillsByRevive.length > 0) {
+        self.postMessage({
+          type: 'CACHE_BOSS_KILLS',
+          data: {
+            hunterId: hunterId,
+            buildId: buildData.id,
+            bossKillData: bossKillsByRevive,
+            sampleSize: sampleSize || 1000
+          }
+        });
+      }
     }
-    
-    baseResult.bossKillsByRevive = bossKillsByRevive;
     
   } catch (error) {
     console.error('Fehler beim Parsen der Boss Kill by Revive Daten:', error);
@@ -362,7 +369,7 @@ async function evaluate(hunterId, buildData, storeData) {
     }
     
     // Parsen und Rückgabe der Ergebnisse
-    const parsedResults = parseEvalResults(evalResults, hunterId);
+    const parsedResults = parseEvalResults(evalResults, hunterId, buildData, storeData.hunterIterations?.[hunterId] || 1000);
     
     // Debug-Ausgabe der geparsten Ergebnisse
     console.log("\n===== GEPARSTE EVALUIERUNGSERGEBNISSE =====");

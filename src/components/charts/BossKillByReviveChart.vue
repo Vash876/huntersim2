@@ -70,6 +70,9 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { IconTrophy, IconBulb } from '@tabler/icons-vue';
 import Chart from 'chart.js/auto';
 import debounce from 'lodash/debounce';
+import { useHunterStore } from '@/store/hunterStore';
+
+const hunterStore = useHunterStore();
 
 const props = defineProps({
   bossKillsByRevive: {
@@ -79,6 +82,14 @@ const props = defineProps({
   sampleSize: {
     type: Number,
     default: 1000
+  },
+  hunterId: {
+    type: String,
+    required: true
+  },
+  buildId: {
+    type: String,
+    required: true
   },
   color: {
     type: String,
@@ -140,24 +151,63 @@ const colorMaps = {
   }
 };
 
+// NEU: Effective Data aus Store + Props
+const effectiveBossData = computed(() => {
+  // 1. Priorität: Store-Cache (hat korrekte sampleSize nach Fix)
+  const cached = hunterStore.getCachedBossKillsByRevive(props.hunterId, props.buildId);
+  if (cached?.data?.length > 0) {
+    console.log('Using cached Boss Kill Rate data from store with sampleSize:', cached.sampleSize);
+    return cached;
+  }
+  
+  // 2. Priorität: Props-Daten (frische Evaluation)
+  if (props.bossKillsByRevive?.length > 0) {
+    console.log('Using fresh Boss Kill Rate data from props with sampleSize:', props.sampleSize);
+    return {
+      data: props.bossKillsByRevive,
+      sampleSize: props.sampleSize
+    };
+  }
+  
+  // 3. Fallback: Keine Daten
+  console.log('No Boss Kill Rate data available');
+  return { data: [], sampleSize: 1000 };
+});
+
 // KORRIGIERTE Boss-Attempt-Daten - ziehe vorherige Bosse ab
 const correctedBossData = computed(() => {
-  if (!props.bossKillsByRevive?.length) return [];
+  const bossData = effectiveBossData.value;
+  console.log('=== Boss Kill Rate Debug ===');
+  console.log('Raw bossData:', bossData);
+  console.log('Sample size:', bossData.sampleSize);
   
-  return props.bossKillsByRevive.map(item => {
+  if (!bossData.data?.length) return [];
+  
+  return bossData.data.map(item => {
     let correctedAttempts = item.attempts;
     
+    console.log(`Processing Revive ${item.revive}:`);
+    console.log(`  Original attempts: ${item.attempts}`);
+    console.log(`  finalStage: ${item.finalStage}`);
+    console.log(`  Sample size: ${bossData.sampleSize}`);
+    
     // Boss-Korrektur basierend auf finalStage
-    if (item.finalStage && correctedAttempts > props.sampleSize) {
-      // Berechne welcher Boss erreicht wurde
-      const lastBossStage = Math.floor(item.finalStage / 100) * 100; // 302.3 → 300
-      const bossNumber = lastBossStage / 100; // 300 / 100 = 3 (Boss 100, 200, 300)
+    if (item.finalStage && correctedAttempts > bossData.sampleSize) {
+      const lastBossStage = Math.floor(item.finalStage / 100) * 100;
+      const bossNumber = lastBossStage / 100;
       
-      // Nur korrigieren wenn mehr als 1 Boss durchlaufen wurde
+      console.log(`  Boss correction needed: lastBossStage=${lastBossStage}, bossNumber=${bossNumber}`);
+      
       if (bossNumber > 1) {
-        const extraBosse = bossNumber - 1; // 3 - 1 = 2 (Boss 100 + 200 abziehen)
-        correctedAttempts = correctedAttempts - (extraBosse * props.sampleSize);
+        const extraBosse = bossNumber - 1;
+        const subtractAmount = extraBosse * bossData.sampleSize;
+        correctedAttempts = correctedAttempts - subtractAmount;
+        
+        console.log(`  Subtracting: ${extraBosse} * ${bossData.sampleSize} = ${subtractAmount}`);
+        console.log(`  Result: ${item.attempts} - ${subtractAmount} = ${correctedAttempts}`);
       }
+    } else {
+      console.log(`  No correction needed`);
     }
     
     return {
@@ -281,10 +331,12 @@ const chartOptions = computed(() => ({
           try {
             const revive = availableRevives.value[context.dataIndex];
             const attempts = getBossAttempts(revive);
+            const effectiveSampleSize = effectiveBossData.value.sampleSize; 
+            
             return [
               `Boss Kill Rate: ${context.parsed.y.toFixed(1)}%`,
               `Total Attempts: ${attempts}`,
-              `Sample Size: ${props.sampleSize}`
+              `Sample Size: ${effectiveSampleSize}`
             ];
           } catch (e) {
             return 'Data not available';
@@ -485,6 +537,11 @@ onMounted(() => {
 
 onUnmounted(() => {
   destroyChart();
+});
+
+// Cleanup beim Component Mount
+onMounted(() => {
+  hunterStore.cleanupOldBossKillsData();
 });
 </script>
 

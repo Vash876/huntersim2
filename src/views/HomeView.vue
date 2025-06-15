@@ -10,7 +10,8 @@ const changelog =
         text: 'Hunter Simulator',
         subItems: [
           'Added Boss Kill Rate by Revive Count analysis showing how many revives are optimal for boss encounters (Ozzy)',
-          'Revive distribution analysis works now',
+          'Added comprehensive Revive distribution analysis in the Build Statistics modal',
+          '<b class="text-amber-500">Important:</b> Please re-evaluate your existing builds to access the new features. The best way to do this is to clear the cache in the Settings.'
         ]
       }
     ]
@@ -23,7 +24,6 @@ const changelog =
       {
         text: 'Hunter Simulator',
         subItems: [
-          'Added comprehensive Revive distribution analysis in the Build Statistics modal',
           'Fixed chart display bug where charts would sometimes not render properly',
         ]
       },

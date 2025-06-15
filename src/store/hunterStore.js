@@ -31,6 +31,9 @@ export const useHunterStore = defineStore('hunter', () => {
   // Seed-Einstellungen pro Hunter
   const hunterSeedSettings = ref({});
 
+  // Boss Kill by Revive Cache 
+  const bossKillsByReviveCache = ref({});
+
   /**
    * Generiert die initiale Upgrades-Struktur basierend auf den UPGRADES-Konstanten
    * @param {Object} upgradesConfig - Die UPGRADES-Konstante
@@ -385,6 +388,8 @@ export const useHunterStore = defineStore('hunter', () => {
       
       console.log(`Cache entries related to build ${buildId} removed: ${cachesToRemove.length}`);
     }
+
+    clearCachedBossKillsByRevive(hunterId, buildId);
   }
 
   /**
@@ -817,6 +822,83 @@ function loadHunterSeedSettings() {
   console.log("Current seed settings:", hunterSeedSettings.value);
 }
 
+/**
+ * Speichert Boss Kill by Revive Daten für einen Build
+ * @param {string} hunterId - Die ID des Hunters
+ * @param {string} buildId - Die ID des Builds
+ * @param {Array} bossKillData - Die Boss Kill Daten
+ * @param {number} sampleSize - Die Sample Size
+ */
+function cacheBossKillsByRevive(hunterId, buildId, bossKillData, sampleSize) {
+  if (!hunterId || !buildId || !bossKillData) return;
+  
+  const cacheKey = `${hunterId}_${buildId}`;
+  
+  bossKillsByReviveCache.value[cacheKey] = {
+    data: bossKillData,
+    sampleSize: sampleSize,
+    timestamp: Date.now()
+  };
+  
+  console.log(`Boss Kill Rate data cached for ${cacheKey}:`, bossKillData);
+}
+
+/**
+ * Holt Boss Kill by Revive Daten für einen Build
+ * @param {string} hunterId - Die ID des Hunters
+ * @param {string} buildId - Die ID des Builds
+ * @returns {Object|null} - Die gecachten Daten oder null
+ */
+function getCachedBossKillsByRevive(hunterId, buildId) {
+  if (!hunterId || !buildId) return null;
+  
+  const cacheKey = `${hunterId}_${buildId}`;
+  const cached = bossKillsByReviveCache.value[cacheKey];
+  
+  if (cached) {
+    console.log(`Boss Kill Rate data loaded from cache for ${cacheKey}`);
+    return cached;
+  }
+  
+  return null;
+}
+
+/**
+ * Löscht Boss Kill by Revive Daten für einen Build
+ * @param {string} hunterId - Die ID des Hunters
+ * @param {string} buildId - Die ID des Builds
+ */
+function clearCachedBossKillsByRevive(hunterId, buildId) {
+  if (!hunterId || !buildId) return;
+  
+  const cacheKey = `${hunterId}_${buildId}`;
+  delete bossKillsByReviveCache.value[cacheKey];
+  
+  console.log(`Boss Kill Rate data cleared for ${cacheKey}`);
+}
+
+/**
+ * Bereinigt alte Boss Kill by Revive Daten (älter als 1 Woche)
+ */
+function cleanupOldBossKillsData() {
+  const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+  const keysToRemove = [];
+  
+  Object.entries(bossKillsByReviveCache.value).forEach(([key, data]) => {
+    if (data.timestamp && data.timestamp < oneWeekAgo) {
+      keysToRemove.push(key);
+    }
+  });
+  
+  keysToRemove.forEach(key => {
+    delete bossKillsByReviveCache.value[key];
+  });
+  
+  if (keysToRemove.length > 0) {
+    console.log(`Cleaned up ${keysToRemove.length} old Boss Kill Rate entries`);
+  }
+}
+
 // Erweitere initHunterConfig, um sicherzustellen, dass eine Seed-Einstellung existiert
 async function initHunterConfig(hunterId) {
   // Bestehende Initialisierungen...
@@ -880,7 +962,8 @@ function getDisplaySettings(hunterId) {
     buildOrders,
     evaluationCache,
     displaySettings,
-    hunterSeedSettings, // Die State-Variable
+    hunterSeedSettings, 
+    bossKillsByReviveCache,
     
     // Hunter Stats Funktionen
     initHunterStats,
@@ -927,10 +1010,16 @@ function getDisplaySettings(hunterId) {
     saveDisplaySettings,
     getDisplaySettings,
     
-    // Seed-Einstellungen - Hier fehlten die Funktionen
+    // Seed-Einstellungen 
     getHunterSeedSetting,
     saveHunterSeedSetting,
-    loadHunterSeedSettings
+    loadHunterSeedSettings,
+
+    // Boss Kill by Revive Cache Funktionen
+    cacheBossKillsByRevive,
+    getCachedBossKillsByRevive,
+    clearCachedBossKillsByRevive,
+    cleanupOldBossKillsData
   };
 }, {
   persist: {
@@ -944,7 +1033,8 @@ function getDisplaySettings(hunterId) {
       'buildOrders', 
       'evaluationCache', 
       'displaySettings',
-      'hunterSeedSettings'  // Neue Variable zur Persistenz hinzufügen
+      'hunterSeedSettings',
+      'bossKillsByReviveCache'
     ]
   }
 });
