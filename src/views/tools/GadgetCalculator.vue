@@ -157,14 +157,14 @@
               class="custom-gadget-item rounded-lg p-4 transition-colors border border-transparent hover:border-gray-600 relative overflow-hidden"
               :class="{ 'active-gadget': hasLevelChanges(gadget.id) }"
             >
-              <!-- Hintergrundbild -->
-              <div 
-                v-if="getGadgetImageNumber(gadget.id) <= 15"
-                class="absolute inset-0 gadget-background"
-                :style="{
-                  backgroundImage: `url('@/assets/gadgets/${getGadgetImageNumber(gadget.id)}.png')`
-                }"
-              ></div>
+              <!-- Hintergrundbild - GEFIXT mit dynamischem Import -->
+              <img 
+                v-if="getGadgetImageUrl(gadget.id)"
+                :src="getGadgetImageUrl(gadget.id)"
+                :alt="`Gadget ${getGadgetImageNumber(gadget.id)}`"
+                class="absolute top-2 right-2 w-20 h-20 object-contain opacity-90 pointer-events-none z-0"
+                style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;"
+              />
               
               <!-- Content Overlay -->
               <div class="relative z-10 gadget-content">
@@ -311,6 +311,9 @@ const cachedResults = ref({});
 const showMultipliers = ref(true);
 
 const showSummaryModal = ref(false);
+
+// NEUE REACTIVE VAR für Gadget Images
+const gadgetImages = ref({});
 
 // Computed properties
 const knoxBuilds = computed(() => {
@@ -461,13 +464,50 @@ async function loadCachedResults() {
   }
 }
 
+async function loadGadgetImages() {
+  try {
+    // Lade alle Gadget-Bilder (1-15) dynamisch
+    const imagePromises = [];
+    for (let i = 1; i <= 15; i++) {
+      imagePromises.push(
+        import(`@/assets/gadgets/${i}.png`)
+          .then(module => ({ id: i, url: module.default }))
+          .catch(error => {
+            console.warn(`Could not load gadget image ${i}:`, error);
+            return { id: i, url: null };
+          })
+      );
+    }
+    
+    const results = await Promise.all(imagePromises);
+    
+    // Speichere die URLs in gadgetImages
+    results.forEach(result => {
+      gadgetImages.value[result.id] = result.url;
+    });
+    
+    console.log('Loaded gadget images:', gadgetImages.value);
+  } catch (error) {
+    console.error('Error loading gadget images:', error);
+  }
+}
+
+// NEUE FUNKTION - Hole Gadget Image URL
+function getGadgetImageUrl(gadgetId) {
+  const imageNumber = getGadgetImageNumber(gadgetId);
+  return gadgetImages.value[imageNumber] || null;
+}
+
+// Methods
 async function loadGadgetData() {
   try {
     isLoading.value = true;
     loadError.value = null;
     
+    // Gadget Images zuerst laden
+    await loadGadgetImages();
+    
     // Korrigiere den Aufruf von hasHunterData zu einer vorhandenen Methode im hunterStore
-    // Überprüfe stattdessen, ob hunterBuilds für Knox bereits initialisiert ist
     if (!hunterStore.hunterBuilds || !hunterStore.hunterBuilds.knox || hunterStore.hunterBuilds.knox.length === 0) {
       await hunterStore.initHunterConfig('knox');
     }

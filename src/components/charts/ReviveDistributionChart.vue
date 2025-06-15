@@ -1,5 +1,12 @@
 <template>
-  <div class="flex flex-col gap-4">
+  <div v-if="isVisible" class="chart-container">
+    <!-- Chart Description -->
+    <div class="mb-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700 rounded-lg border border-purple-200 dark:border-gray-600">
+      <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+        <IconBulb class="inline w-4 h-4 mr-2 text-amber-500" />
+        This chart shows when and where you lose your revives across different stages.
+      </p>
+    </div>
     <!-- Chart Container -->
     <div class="bg-gray-700/30 border border-gray-600 p-4 rounded-md">
       <div class="relative h-[250px]" ref="chartContainer">
@@ -22,189 +29,13 @@
         </div>
       </div>
     </div>
-
-    <!-- NEU: Debug-Tabelle -->
-    <div class="bg-gray-700/30 border border-gray-600 p-4 rounded-md">
-      <h3 class="text-white font-semibold mb-4">🔍 Debug: Revive-Verluste nach Stage</h3>
-      
-      <div v-if="debugTableData.length > 0" class="overflow-x-auto">
-        <table class="w-full text-sm text-white border-collapse">
-          <thead>
-            <tr class="bg-gray-600">
-              <th class="border border-gray-500 px-3 py-2 text-left">Stage</th>
-              <th class="border border-gray-500 px-3 py-2 text-center">Revive #</th>
-              <th class="border border-gray-500 px-3 py-2 text-right">Anzahl</th>
-              <th class="border border-gray-500 px-3 py-2 text-center">Verbleibende</th>
-              <th class="border border-gray-500 px-3 py-2 text-right">% von Stage</th>
-              <th class="border border-gray-500 px-3 py-2 text-right">% von Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in debugTableData" :key="`${row.stage}_${row.revive}`" 
-                :class="getRowClass(row)">
-              <td class="border border-gray-500 px-3 py-2 font-medium">{{ row.stage }}</td>
-              <td class="border border-gray-500 px-3 py-2 text-center font-medium" 
-                  :style="{ color: getReviveColor(row.revive) }">
-                {{ row.revive }}
-              </td>
-              <td class="border border-gray-500 px-3 py-2 text-right font-mono">
-                {{ row.count.toLocaleString() }}
-              </td>
-              <td class="border border-gray-500 px-3 py-2 text-center font-medium"
-                  :style="{ color: getRemainingColor(row.remaining) }">
-                {{ row.remaining }}
-              </td>
-              <td class="border border-gray-500 px-3 py-2 text-right font-mono">
-                {{ row.stagePercent }}%
-              </td>
-              <td class="border border-gray-500 px-3 py-2 text-right font-mono">
-                {{ row.totalPercent }}%
-              </td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr class="bg-gray-600 font-bold">
-              <td class="border border-gray-500 px-3 py-2" colspan="2">TOTAL</td>
-              <td class="border border-gray-500 px-3 py-2 text-right">
-                {{ totalDeaths.toLocaleString() }}
-              </td>
-              <td class="border border-gray-500 px-3 py-2" colspan="3"></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-      
-      <div v-else class="text-gray-400 text-center py-8">
-        Keine Revive-Daten verfügbar
-      </div>
-
-      <!-- Summary Statistics -->
-      <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div v-for="revive in availableRevives" :key="revive" 
-             class="bg-gray-600/50 p-3 rounded border">
-          <div class="text-xs text-gray-300">{{ getReviveLabel(revive) }}</div>
-          <div class="text-lg font-bold" :style="{ color: getReviveColor(revive) }">
-            {{ getReviveTotal(revive).toLocaleString() }}
-          </div>
-          <div class="text-xs text-gray-400">
-            {{ getRevivePercentage(revive) }}% vom Total
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- NEU: Boss-Entry-Analysis Tabelle -->
-    <div class="bg-gray-700/30 border border-gray-600 p-4 rounded-md">
-      <h3 class="text-white font-semibold mb-4">⚔️ Boss Entry Analysis - Stage 300</h3>
-      
-      <div v-if="bossEntryData" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Tabelle -->
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm text-white border-collapse">
-            <thead>
-              <tr class="bg-gray-600">
-                <th class="border border-gray-500 px-4 py-3 text-center">Verbleibende Revives</th>
-                <th class="border border-gray-500 px-4 py-3 text-right">Boss Entries</th>
-                <th class="border border-gray-500 px-4 py-3 text-right">% von Total</th>
-                <th class="border border-gray-500 px-4 py-3 text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="entry in bossEntryData.entries" :key="entry.revives"
-                  :class="getBossEntryRowClass(entry.revives)">
-                <td class="border border-gray-500 px-4 py-3 text-center font-bold text-lg"
-                    :style="{ color: getRemainingColor(entry.revives) }">
-                  {{ entry.revives }}
-                </td>
-                <td class="border border-gray-500 px-4 py-3 text-right font-mono text-lg">
-                  {{ entry.count.toLocaleString() }}
-                </td>
-                <td class="border border-gray-500 px-4 py-3 text-right font-mono">
-                  {{ entry.percentage }}%
-                </td>
-                <td class="border border-gray-500 px-4 py-3 text-center">
-                  <span :class="getStatusBadgeClass(entry.revives)">
-                    {{ getStatusText(entry.revives) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr class="bg-gray-600 font-bold">
-                <td class="border border-gray-500 px-4 py-3">TOTAL</td>
-                <td class="border border-gray-500 px-4 py-3 text-right">
-                  {{ bossEntryData.total.toLocaleString() }}
-                </td>
-                <td class="border border-gray-500 px-4 py-3 text-right">100.0%</td>
-                <td class="border border-gray-500 px-4 py-3"></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <!-- Statistiken -->
-        <div class="space-y-4">
-          <div class="bg-gray-600/50 p-4 rounded border">
-            <h4 class="text-white font-medium mb-3">📊 Zusammenfassung</h4>
-            <div class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <span class="text-gray-300">Total Simulationen:</span>
-                <span class="text-white font-mono">{{ totalSimulations.toLocaleString() }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-300">Boss erreicht:</span>
-                <span class="text-white font-mono">{{ bossEntryData.total.toLocaleString() }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-300">Boss erreicht (%):</span>
-                <span class="text-white font-mono">{{ bossReachPercentage }}%</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-300">Nie Boss erreicht:</span>
-                <span class="text-white font-mono">{{ neverReachedBoss.toLocaleString() }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-gray-600/50 p-4 rounded border">
-            <h4 class="text-white font-medium mb-3">🎯 Beste Performance</h4>
-            <div v-if="bestEntry" class="text-center">
-              <div class="text-3xl font-bold mb-2" :style="{ color: getRemainingColor(bestEntry.revives) }">
-                {{ bestEntry.revives }} Revives
-              </div>
-              <div class="text-white">
-                {{ bestEntry.count.toLocaleString() }} mal erreicht
-              </div>
-              <div class="text-gray-300 text-sm">
-                ({{ bestEntry.percentage }}% der Boss-Encounters)
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-gray-600/50 p-4 rounded border">
-            <h4 class="text-white font-medium mb-3">⚠️ Risiko-Assessment</h4>
-            <div class="space-y-2 text-sm">
-              <div v-if="criticalEntries > 0" class="text-red-400">
-                <strong>{{ criticalEntries.toLocaleString() }}</strong> kritische Entries (≤1 Revive)
-              </div>
-              <div v-if="safeEntries > 0" class="text-green-400">
-                <strong>{{ safeEntries.toLocaleString() }}</strong> sichere Entries (≥2 Revives)
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div v-else class="text-gray-400 text-center py-8">
-        Keine Boss-Entry-Daten verfügbar
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { getColorRGB } from '../builds/utils/BuildComparisonUtils';
+import { IconBulb } from '@tabler/icons-vue';
 import Chart from 'chart.js/auto';
 import debounce from 'lodash/debounce';
 

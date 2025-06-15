@@ -17,6 +17,7 @@ import {
   IconBoxModel,
   IconHexagon,
   IconAbacus,
+  IconMeeple
 } from '@tabler/icons-vue';
 
 

@@ -1,5 +1,13 @@
 <template>
   <div class="flex flex-col gap-4">
+    <!-- Chart Description -->
+    <div class="mb-4 p-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-lg border border-amber-200 dark:border-gray-600">
+      <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+        <IconBulb class="inline w-4 h-4 mr-2 text-amber-500" />
+        This chart shows your boss kill success rate based on remaining lives when encountering <span class="font-semibold text-amber-600 dark:text-amber-400">Boss Stage {{ maxBossStage }}</span>.
+      </p>
+    </div>
+
     <!-- Boss Kill Rate by Revive Analysis -->
     <div class="bg-gray-700/30 border border-gray-600 p-4 rounded-md">
       <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
@@ -89,6 +97,25 @@ const canvasKey = ref(0);
 const isChartReady = ref(false);
 const isInitializing = ref(false);
 
+const maxBossStage = computed(() => {
+  if (!props.bossKillsByRevive?.length) return null;
+  
+  // Finde die höchste finalStage aus den Daten
+  let maxStage = 0;
+  props.bossKillsByRevive.forEach(item => {
+    if (item.finalStage && item.finalStage > maxStage) {
+      maxStage = item.finalStage;
+    }
+  });
+  
+  if (maxStage > 0) {
+    // Konvertiere Stage zu Boss (302.3 → Boss 300)
+    return Math.floor(maxStage / 100) * 100;
+  }
+  
+  return null;
+});
+
 // Color-Maps für verschiedene Hunter
 const colorMaps = {
   blue: {
@@ -120,14 +147,17 @@ const correctedBossData = computed(() => {
   return props.bossKillsByRevive.map(item => {
     let correctedAttempts = item.attempts;
     
-    // Boss-Attempt-Korrektur: Ziehe Extra-Bosse ab
-    if (correctedAttempts > props.sampleSize) {
-      // Berechne wie viele Extra-Bosse erreicht wurden
-      const extraAttempts = correctedAttempts - props.sampleSize;
-      const extraBosse = Math.round(extraAttempts / props.sampleSize);
+    // Boss-Korrektur basierend auf finalStage
+    if (item.finalStage && correctedAttempts > props.sampleSize) {
+      // Berechne welcher Boss erreicht wurde
+      const lastBossStage = Math.floor(item.finalStage / 100) * 100; // 302.3 → 300
+      const bossNumber = lastBossStage / 100; // 300 / 100 = 3 (Boss 100, 200, 300)
       
-      // Ziehe die Extra-Bosse ab
-      correctedAttempts = correctedAttempts - (extraBosse * props.sampleSize);
+      // Nur korrigieren wenn mehr als 1 Boss durchlaufen wurde
+      if (bossNumber > 1) {
+        const extraBosse = bossNumber - 1; // 3 - 1 = 2 (Boss 100 + 200 abziehen)
+        correctedAttempts = correctedAttempts - (extraBosse * props.sampleSize);
+      }
     }
     
     return {

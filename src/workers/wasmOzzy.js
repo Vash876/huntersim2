@@ -165,7 +165,8 @@ async function EVALOZZY_WASM(...params) {
             const revive = wasm.exports.getOzzyBossRemainingReviveAt(i);
             const kills = wasm.exports.getOzzyBossKillCountAt(i);
             const attempts = wasm.exports.getOzzyBossAttemptCountAt(i);
-            
+            const finalStage = wasm.exports.getLastOzzyMaxStage ? wasm.exports.getLastOzzyMaxStage(i) : 0;
+
             console.log(`WASM Ozzy: Index ${i} - Revive: ${revive}, Kills: ${kills}, Attempts: ${attempts}`);
             
             if (revive >= 0 && attempts > 0) {
@@ -173,7 +174,8 @@ async function EVALOZZY_WASM(...params) {
                 revive: revive,
                 kills: kills,
                 attempts: attempts,
-                killRate: ((kills / attempts) * 100).toFixed(1)
+                killRate: ((kills / attempts) * 100).toFixed(1),
+                finalStage: finalStage
               });
             }
           }
