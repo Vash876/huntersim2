@@ -71,7 +71,12 @@
               class="grid grid-cols-12 p-2 border-b border-gray-600/30 hover:bg-gray-600/20"
               :class="{'bg-gray-600/10': gadget.hasChanges}"
             >
-              <div class="col-span-6 px-2 text-white font-medium">{{ gadget.label }}</div>
+              <div 
+                class="col-span-6 px-2 text-white font-medium"
+                :title="gadget.label"  
+              >
+                {{ gadget.truncatedLabel }}  
+              </div>
               <div class="col-span-2 px-2 text-center text-gray-300">{{ gadget.current }}</div>
               <div class="col-span-2 px-2 text-center" 
                 :class="gadget.hasChanges ? 'text-green-400 font-medium' : 'text-gray-300'"
@@ -141,6 +146,21 @@ const emit = defineEmits(['close']);
 const copySuccess = ref('');
 const copyFail = ref('');
 
+// Funktion zum Kürzen der Gadget-Namen
+function truncateGadgetName(name, maxLength) {
+  if (name.length <= maxLength) return name;
+  return name.substring(0, maxLength - 3) + '...';
+}
+
+// Computed für responsive max length
+const maxNameLength = computed(() => {
+  // Einfache Bildschirmbreiten-Erkennung
+  if (typeof window !== 'undefined') {
+    return window.innerWidth < 640 ? 30 : 45; // sm breakpoint = 640px
+  }
+  return 30; // Fallback für SSR
+});
+
 // Sortiert und transformiert die Gadget-Daten für die Anzeige
 const sortedGadgetData = computed(() => {
   return GADGETS.map(gadget => {
@@ -152,20 +172,12 @@ const sortedGadgetData = computed(() => {
     return {
       id: gadget.id,
       label: gadget.label,
+      truncatedLabel: truncateGadgetName(gadget.label, maxNameLength.value), // NEU!
       current,
       target,
       hasChanges,
       cost
     };
-  }).sort((a, b) => {
-    // Aktive Änderungen zuerst
-    if (a.hasChanges && !b.hasChanges) return -1;
-    if (!a.hasChanges && b.hasChanges) return 1;
-    // Dann nach Kosten (absteigend)
-    if (a.cost > b.cost) return -1;
-    if (a.cost < b.cost) return 1;
-    // Dann alphabetisch nach Namen
-    return a.label.localeCompare(b.label);
   });
 });
 
