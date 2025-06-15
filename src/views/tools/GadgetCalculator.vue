@@ -178,7 +178,10 @@
                       {{ gadget.label.length > 28 ? gadget.label.substring(0, 25) + '...' : gadget.label }}
                     </span>
                   </span>
-                  <div v-if="getGadgetCost(gadget.id) > 0" class="text-amber-400 text-sm font-bold gadget-cost">
+                  <div 
+                    v-if="getGadgetCost(gadget.id) > 0" 
+                    class="text-amber-400 text-sm font-bold gadget-cost bg-gray-900/80 px-2 py-1 rounded-md"
+                  >
                     {{ formatGadgetCost(getGadgetCost(gadget.id)) }}
                   </div>
                 </div>
