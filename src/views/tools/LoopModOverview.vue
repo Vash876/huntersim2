@@ -164,13 +164,175 @@
         </div>
       </div>
       
+      <!-- NEU: Requirements Updated Button -->
+      <div class="mb-4">
+        <button
+          @click="toggleRequirementsPanel"
+          class="w-full bg-blue-900/50 hover:bg-blue-800/50 border border-blue-700 text-blue-300 py-3 px-4 rounded-lg transition-colors flex items-center justify-center font-medium"
+        >
+          <IconRefresh size="18" class="mr-2" />
+          Requirements Updated?
+          <IconChevronDown 
+            v-if="!showRequirementsPanel" 
+            size="18" 
+            class="ml-2 transition-transform" 
+          />
+          <IconChevronUp 
+            v-else 
+            size="18" 
+            class="ml-2 transition-transform" 
+          />
+        </button>
+      </div>
+      
+      <!-- NEU: Requirements Panel -->
+      <div 
+        v-if="showRequirementsPanel"
+        class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4 transition-all duration-300"
+      >
+        <div class="p-4">
+          <div class="mb-4">
+            <h3 class="text-lg font-semibold text-white mb-2">Update Your Requirements</h3>
+            <p class="text-sm text-gray-400">Enter your new requirement levels to see which new Loop Mods you can instantly afford.</p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Current MP Value Display -->
+            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-medium text-white text-sm">Available MP Value</span>
+                <ToolValueControls
+                  :value="newMpValue"
+                  :minValue="0"
+                  :maxValue="15000"
+                  :step="10"
+                  :fastStep="100"
+                  :validateOnFinalOnly="true"
+                  @update:value="handleNewMpValueUpdate"
+                  @update:raw-value="(val) => newMpValueRaw = val"
+                  @finalize:value="finalizeNewMpValue"
+                  value-class="text-amber-400 font-medium"
+                  :autoEdit="true"
+                  class="ml-2"
+                />
+              </div>
+              <p class="text-xs text-gray-400">Only mods within this budget will be shown</p>
+            </div>
+            
+            <!-- New Requirements -->
+            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="flex justify-between items-center mb-3">
+                <span class="font-medium text-white text-sm">New Requirements</span>
+              </div>
+              
+              <!-- Temp3 -->
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-sm text-gray-300">Temp3 Available</label>
+                <button 
+                  @click="updateNewTemp3"
+                  :disabled="newTemp3"
+                  class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
+                  :class="{
+                    'bg-red-600': newTemp3,
+                    'bg-gray-600': !newTemp3,
+                    'opacity-50 cursor-not-allowed': newTemp3
+                  }"
+                >
+                  <span 
+                    class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                    :class="{
+                      'translate-x-5': newTemp3,
+                      'translate-x-1': !newTemp3
+                    }"
+                  ></span>
+                </button>
+              </div>
+              
+              <!-- i61 Level -->
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-sm text-gray-300">i61 Level</label>
+                <ToolValueControls
+                  :value="newI61Level"
+                  :minValue="i61Level"
+                  :maxValue="5"
+                  :step="1"
+                  :showFastControls="false"
+                  :validateOnFinalOnly="true"
+                  @update:value="handleNewI61LevelUpdate"
+                  @update:raw-value="(val) => newI61LevelRaw = val"
+                  @finalize:value="finalizeNewI61Level"
+                  value-class="text-purple-400 font-medium"
+                  :autoEdit="true"
+                  :disableDecrement="newI61Level <= i61Level"
+                  class="ml-2"
+                />
+              </div>
+              
+              <!-- i75 Level -->
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-sm text-gray-300">i75 Level</label>
+                <ToolValueControls
+                  :value="newI75Level"
+                  :minValue="i75Level"
+                  :maxValue="10"
+                  :step="1"
+                  :showFastControls="false"
+                  :validateOnFinalOnly="true"
+                  @update:value="handleNewI75LevelUpdate"
+                  @update:raw-value="(val) => newI75LevelRaw = val"
+                  @finalize:value="finalizeNewI75Level"
+                  value-class="text-amber-400 font-medium"
+                  :autoEdit="true"
+                  :disableDecrement="newI75Level <= i75Level"
+                  class="ml-2"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <!-- Ultima Cap Upgrades -->
+          <div class="mt-4 bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-medium text-white text-sm">New Ultima Cap Upgrades</span>
+            </div>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+              <div 
+                v-for="upgrade in ULTIMA_CAP_UPGRADES" 
+                :key="`new-${upgrade.id}`"
+                @click="toggleNewUltimaCapUpgrade(upgrade.id)"
+                class="px-2 py-1.5 rounded border text-center text-sm cursor-pointer transition-colors"
+                :class="newSelectedUltimaCapUpgrades.includes(upgrade.id) ? 
+                  'bg-blue-900/50 border-blue-500 text-blue-300' : 
+                  selectedUltimaCapUpgrades.includes(upgrade.id) ?
+                  'bg-gray-700/50 border-gray-600 text-gray-400 cursor-default' :
+                  'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700'"
+              >
+                {{ upgrade.name }} (+{{ upgrade.bonus }})
+              </div>
+            </div>
+          </div>
+          
+          <!-- Results -->
+          <div v-if="newlyAvailableMods.length > 0" class="mt-4 bg-green-900/30 border border-green-700 rounded-lg p-3">
+            <h4 class="text-green-300 font-medium mb-2">{{ newlyAvailableMods.length }} New Affordable Loop Mods Found!</h4>
+            <p class="text-green-200 text-sm">These mods are now highlighted in green below.</p>
+          </div>
+          
+          <div v-else-if="showRequirementsPanel" class="mt-4 bg-yellow-900/30 border border-yellow-700 rounded-lg p-3">
+            <h4 class="text-yellow-300 font-medium mb-2">No New Loop Mods Available</h4>
+            <p class="text-yellow-200 text-sm">No new affordable Loop Mods found with these requirements.</p>
+          </div>
+        </div>
+      </div>
+      
       <!-- Loop Mods Table -->
       <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
         <div class="header p-3 flex justify-between items-center">
           <h3 class="text-lg font-semibold text-white flex items-center">
             <IconList size="18" class="mr-2 text-green-400" />
             Loop Mods
-            <span class="ml-2 text-sm font-normal text-gray-400">({{ filteredLoopMods.length }} results)</span>
+            <span class="ml-2 text-sm font-normal text-gray-400">({{ enhancedFilteredLoopMods.length }} results)</span>
           </h3>
           
           <div class="flex items-center gap-2">
@@ -204,7 +366,7 @@
           </div>
 
           <!-- No results state -->
-          <div v-else-if="filteredLoopMods.length === 0" class="p-4 flex flex-col items-center justify-center">
+          <div v-else-if="enhancedFilteredLoopMods.length === 0" class="p-4 flex flex-col items-center justify-center">
             <IconSearch size="32" class="text-gray-600 mb-2" />
             <p class="text-gray-400">No loop mods match your filters</p>
             <button 
@@ -256,15 +418,24 @@
                 <tr 
                   v-for="mod in sortedLoopMods" 
                   :key="`${mod.name}-${mod.level}`"
-                  class="border-b border-gray-700 hover:bg-gray-750"
+                  class="border-b border-gray-700 hover:bg-gray-750 transition-colors"
+                  :class="{
+                    'bg-green-900/20 border-green-700': mod.isNewlyAvailable
+                  }"
                 >
                   <td class="px-4 py-3">
                     <div class="inline-block px-2 py-0.5 rounded font-medium" :class="getTierClass(mod.tier)">
                       {{ mod.tier }}
                     </div>
                   </td>
-                  <td class="px-4 py-3 text-white font-medium">{{ mod.name }}</td>
-                  <td class="px-4 py-3 text-gray-300">{{ mod.level }}</td>
+                  <td class="px-4 py-3 font-medium relative">
+                    <span :class="mod.isNewlyAvailable ? 'text-green-300' : 'text-white'">
+                      {{ mod.name }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3" :class="mod.isNewlyAvailable ? 'text-green-300' : 'text-gray-300'">
+                    {{ mod.level }}
+                  </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center">
                       <img src="@/assets/general/mp.png" class="w-4 h-4 mr-1.5" alt="MP" />
@@ -357,6 +528,18 @@ const mpRangeRaw = ref(mpRange.value);
 const i75LevelRaw = ref(i75Level.value); // Neu
 const i61LevelRaw = ref(i61Level.value); // Neu
 
+// NEU: Requirements Panel State
+const showRequirementsPanel = ref(false);
+const newTemp3 = ref(false);
+const newI61Level = ref(0);
+const newI75Level = ref(0);
+const newSelectedUltimaCapUpgrades = ref([]);
+const newlyAvailableMods = ref([]);
+const newMpValue = ref(0);
+const newMpValueRaw = ref(0);
+const newI61LevelRaw = ref(0);
+const newI75LevelRaw = ref(0);
+
 // Google Sheets Integration
 const { fetchLoopModData } = useLoopModData();
 
@@ -448,6 +631,169 @@ function finalizeI61Level() {
   }
 }
 
+// NEU: Requirements Panel Funktionen
+function toggleRequirementsPanel() {
+  showRequirementsPanel.value = !showRequirementsPanel.value;
+  
+  if (showRequirementsPanel.value) {
+    // Panel öffnen - aktuelle Werte als Minimum setzen
+    initializeNewRequirements();
+  } else {
+    // Panel schließen - neue Mods zurücksetzen
+    newlyAvailableMods.value = [];
+  }
+}
+
+function initializeNewRequirements() {
+  newTemp3.value = showTemp3.value;
+  newI61Level.value = i61Level.value;
+  newI75Level.value = i75Level.value;
+  newSelectedUltimaCapUpgrades.value = [...selectedUltimaCapUpgrades.value];
+  newMpValue.value = mpValue.value;
+  newMpValueRaw.value = mpValue.value;
+  newI61LevelRaw.value = i61Level.value;
+  newI75LevelRaw.value = i75Level.value;
+
+  checkNewlyAvailableMods();
+}
+
+function checkNewlyAvailableMods() {
+  if (!showRequirementsPanel.value) return;
+
+  // Berechne neue total Ultima Cap
+  const newTotalUltimaCap = ULTIMA_CAP_UPGRADES
+    .filter(upgrade => newSelectedUltimaCapUpgrades.value.includes(upgrade.id))
+    .reduce((sum, upgrade) => sum + upgrade.bonus, 0);
+  
+  console.log('=== DEBUG: checkNewlyAvailableMods ===');
+  console.log('Old requirements:', {
+    temp3: showTemp3.value,
+    i61: i61Level.value,
+    i75: i75Level.value,
+    ultimaCap: totalUltimaCap.value
+  });
+  
+  console.log('New requirements:', {
+    temp3: newTemp3.value,
+    i61: newI61Level.value,
+    i75: newI75Level.value,
+    ultimaCap: newTotalUltimaCap
+  });
+  
+  console.log('MP Value:', newMpValue.value);
+  console.log('Total allLoopMods:', allLoopMods.value.length);
+  
+  // Finde Mods die mit alten Requirements NICHT verfügbar waren
+  const oldAvailableMods = allLoopMods.value.filter(mod => {
+    if (mod.requiresTemp3 && !showTemp3.value) return false;
+    if (mod.requiresI61Level && mod.requiresI61Level > i61Level.value) return false;
+    if (mod.requiresI75Level && mod.requiresI75Level > i75Level.value) return false;
+    if (mod.requiresUltimaCap && mod.requiresUltimaCap > totalUltimaCap.value) return false;
+    return true;
+  });
+  
+  console.log('Old available mods:', oldAvailableMods.length);
+  
+  // Finde Mods die mit neuen Requirements verfügbar sind UND unter MP Value
+  const newAvailableMods = allLoopMods.value.filter(mod => {
+    if (mod.requiresTemp3 && !newTemp3.value) return false;
+    if (mod.requiresI61Level && mod.requiresI61Level > newI61Level.value) return false;
+    if (mod.requiresI75Level && mod.requiresI75Level > newI75Level.value) return false;
+    if (mod.requiresUltimaCap && mod.requiresUltimaCap > newTotalUltimaCap) return false;
+    if (mod.cost > newMpValue.value) return false;
+    return true;
+  });
+  
+  console.log('New available mods:', newAvailableMods.length);
+  
+  const oldAvailableModKeys = oldAvailableMods.map(mod => `${mod.name}-${mod.level}`);
+  
+  // Finde die NEUEN Mods (die vorher nicht verfügbar waren)
+  newlyAvailableMods.value = newAvailableMods.filter(mod => 
+    !oldAvailableModKeys.includes(`${mod.name}-${mod.level}`)
+  );
+  
+  console.log('Newly available mods:', newlyAvailableMods.value.length);
+  console.log('First 5 newly available:', newlyAvailableMods.value.slice(0, 5));
+  console.log('=== END DEBUG ===');
+}
+
+function updateNewTemp3() {
+  if (!newTemp3.value) {
+    newTemp3.value = true; // Kann nur aktiviert werden
+    checkNewlyAvailableMods(); 
+  }
+}
+
+function toggleNewUltimaCapUpgrade(id) {
+  // Kann nur hinzugefügt werden, nicht entfernt (wenn bereits in selectedUltimaCapUpgrades)
+  if (selectedUltimaCapUpgrades.value.includes(id)) {
+    return; // Bereits ausgewählt, kann nicht entfernt werden
+  }
+  
+  if (newSelectedUltimaCapUpgrades.value.includes(id)) {
+    newSelectedUltimaCapUpgrades.value = newSelectedUltimaCapUpgrades.value.filter(i => i !== id);
+  } else {
+    newSelectedUltimaCapUpgrades.value.push(id);
+  }
+  checkNewlyAvailableMods();
+}
+
+// NEU: MP Value für neuen Bereich
+function handleNewMpValueUpdate(newVal) {
+  newMpValue.value = newVal;
+  newMpValueRaw.value = newVal;
+  checkNewlyAvailableMods();
+}
+
+function finalizeNewMpValue() {
+  const numValue = Number(newMpValueRaw.value);
+  
+  if (!isNaN(numValue)) {
+    newMpValue.value = Math.max(0, Math.min(99999, numValue));
+    newMpValueRaw.value = newMpValue.value;
+    checkNewlyAvailableMods();
+  }
+}
+
+// NEU: i61 Level für neuen Bereich
+function handleNewI61LevelUpdate(newVal) {
+  if (newVal >= i61Level.value) {
+    newI61Level.value = newVal;
+    newI61LevelRaw.value = newVal;
+    checkNewlyAvailableMods();
+  }
+}
+
+function finalizeNewI61Level() {
+  const numValue = Number(newI61LevelRaw.value);
+  
+  if (!isNaN(numValue)) {
+    newI61Level.value = Math.max(i61Level.value, Math.min(5, numValue));
+    newI61LevelRaw.value = newI61Level.value;
+    checkNewlyAvailableMods();
+  }
+}
+
+// NEU: i75 Level für neuen Bereich
+function handleNewI75LevelUpdate(newVal) {
+  if (newVal >= i75Level.value) {
+    newI75Level.value = newVal;
+    newI75LevelRaw.value = newVal;
+    checkNewlyAvailableMods();
+  }
+}
+
+function finalizeNewI75Level() {
+  const numValue = Number(newI75LevelRaw.value);
+  
+  if (!isNaN(numValue)) {
+    newI75Level.value = Math.max(i75Level.value, Math.min(10, numValue));
+    newI75LevelRaw.value = newI75Level.value;
+    checkNewlyAvailableMods();
+  }
+}
+
 // Computed
 const totalUltimaCap = computed(() => {
   return ULTIMA_CAP_UPGRADES
@@ -500,8 +846,45 @@ const filteredLoopMods = computed(() => {
   return result;
 });
 
+// NEU: Enhanced filtered mods mit Highlighting
+const enhancedFilteredLoopMods = computed(() => {
+  let baseMods;
+  
+  if (showRequirementsPanel.value && newlyAvailableMods.value.length > 0) {
+    // Wenn Requirements Panel offen ist: Zeige alle neuen Mods + normale gefilterte Mods
+    const filteredModIds = new Set(filteredLoopMods.value.map(mod => `${mod.name}-${mod.level}`));
+    const newModIds = new Set(newlyAvailableMods.value.map(mod => `${mod.name}-${mod.level}`));
+    
+    // Kombiniere: alle gefilterten Mods + alle neuen Mods (ohne Duplikate)
+    const combinedMods = new Map();
+    
+    // Füge gefilterte Mods hinzu
+    filteredLoopMods.value.forEach(mod => {
+      combinedMods.set(`${mod.name}-${mod.level}`, mod);
+    });
+    
+    // Füge neue Mods hinzu (überschreibt gefilterte wenn gleich)
+    newlyAvailableMods.value.forEach(mod => {
+      combinedMods.set(`${mod.name}-${mod.level}`, mod);
+    });
+    
+    baseMods = Array.from(combinedMods.values());
+  } else {
+    // Normal: nur gefilterte Mods
+    baseMods = filteredLoopMods.value;
+  }
+  
+  // Füge isNewlyAvailable Flag hinzu
+  return baseMods.map(mod => ({
+    ...mod,
+    isNewlyAvailable: newlyAvailableMods.value.some(newMod => 
+      newMod.name === mod.name && newMod.level === mod.level
+    )
+  }));
+});
+
 const sortedLoopMods = computed(() => {
-  let mods = [...filteredLoopMods.value];
+  let mods = [...enhancedFilteredLoopMods.value];
   
   // Define sorting functions
   const sortFunctions = {

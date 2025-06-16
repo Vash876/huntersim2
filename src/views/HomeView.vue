@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.5.3',
+    date: '2025-06-16',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'Loop Mod Overview',
+        subItems: [
+          'Added "Requirements Updated?" feature to quickly identify newly affordable Loop Mods after progression',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.5.2',
     date: '2025-06-15',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
