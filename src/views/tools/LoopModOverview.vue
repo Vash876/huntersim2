@@ -186,142 +186,144 @@
       </div>
       
       <!-- NEU: Requirements Panel -->
-      <div 
-        v-if="showRequirementsPanel"
-        class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4 transition-all duration-300"
-      >
-        <div class="p-4">
-          <div class="mb-4">
-            <h3 class="text-lg font-semibold text-white mb-2">Update Your Requirements</h3>
-            <p class="text-sm text-gray-400">Enter your new requirement levels to see which new Loop Mods you can instantly afford.</p>
-          </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Current MP Value Display -->
-            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-              <div class="flex items-center justify-between mb-2">
-                <span class="font-medium text-white text-sm">Available MP Value</span>
-                <ToolValueControls
-                  :value="newMpValue"
-                  :minValue="0"
-                  :maxValue="15000"
-                  :step="10"
-                  :fastStep="100"
-                  :validateOnFinalOnly="true"
-                  @update:value="handleNewMpValueUpdate"
-                  @update:raw-value="(val) => newMpValueRaw = val"
-                  @finalize:value="finalizeNewMpValue"
-                  value-class="text-amber-400 font-medium"
-                  :autoEdit="true"
-                  class="ml-2"
-                />
-              </div>
-              <p class="text-xs text-gray-400">Only mods within this budget will be shown</p>
+      <div v-auto-animate="autoAnimateOptions" class="mb-4">
+        <div 
+          v-if="showRequirementsPanel"
+          class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4 transition-all duration-300"
+        >
+          <div class="p-4">
+            <div class="mb-4">
+              <h3 class="text-lg font-semibold text-white mb-2">Update Your Requirements</h3>
+              <p class="text-sm text-gray-400">Enter your new requirement levels to see which new Loop Mods you can instantly afford.</p>
             </div>
             
-            <!-- New Requirements -->
-            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-              <div class="flex justify-between items-center mb-3">
-                <span class="font-medium text-white text-sm">New Requirements</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Current MP Value Display -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-medium text-white text-sm">Available MP Value</span>
+                  <ToolValueControls
+                    :value="newMpValue"
+                    :minValue="0"
+                    :maxValue="15000"
+                    :step="10"
+                    :fastStep="100"
+                    :validateOnFinalOnly="true"
+                    @update:value="handleNewMpValueUpdate"
+                    @update:raw-value="(val) => newMpValueRaw = val"
+                    @finalize:value="finalizeNewMpValue"
+                    value-class="text-amber-400 font-medium"
+                    :autoEdit="true"
+                    class="ml-2"
+                  />
+                </div>
+                <p class="text-xs text-gray-400">Only mods within this budget will be shown</p>
               </div>
               
-              <!-- Temp3 -->
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-sm text-gray-300">Temp3 Available</label>
-                <button 
-                  @click="toggleNewTemp3"
-                  :disabled="showTemp3 && newTemp3"
-                  class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
-                  :class="{
-                    'bg-red-600': newTemp3,
-                    'bg-gray-600': !newTemp3,
-                    'opacity-50 cursor-not-allowed': showTemp3 && newTemp3
-                  }"
-                >
-                  <span 
-                    class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+              <!-- New Requirements -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+                <div class="flex justify-between items-center mb-3">
+                  <span class="font-medium text-white text-sm">New Requirements</span>
+                </div>
+                
+                <!-- Temp3 -->
+                <div class="flex items-center justify-between mb-2">
+                  <label class="text-sm text-gray-300">Temp3 Available</label>
+                  <button 
+                    @click="toggleNewTemp3"
+                    :disabled="showTemp3 && newTemp3"
+                    class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
                     :class="{
-                      'translate-x-5': newTemp3,
-                      'translate-x-1': !newTemp3
+                      'bg-red-600': newTemp3,
+                      'bg-gray-600': !newTemp3,
+                      'opacity-50 cursor-not-allowed': showTemp3 && newTemp3
                     }"
-                  ></span>
-                </button>
+                  >
+                    <span 
+                      class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                      :class="{
+                        'translate-x-5': newTemp3,
+                        'translate-x-1': !newTemp3
+                      }"
+                    ></span>
+                  </button>
+                </div>
+                
+                <!-- i61 Level -->
+                <div class="flex items-center justify-between mb-2">
+                  <label class="text-sm text-gray-300">i61 Level</label>
+                  <ToolValueControls
+                    :value="newI61Level"
+                    :minValue="i61Level"
+                    :maxValue="5"
+                    :step="1"
+                    :showFastControls="false"
+                    :validateOnFinalOnly="true"
+                    @update:value="handleNewI61LevelUpdate"
+                    @update:raw-value="(val) => newI61LevelRaw = val"
+                    @finalize:value="finalizeNewI61Level"
+                    value-class="text-purple-400 font-medium"
+                    :autoEdit="true"
+                    :disableDecrement="newI61Level <= i61Level"
+                    class="ml-2"
+                  />
+                </div>
+                
+                <!-- i75 Level -->
+                <div class="flex items-center justify-between mb-2">
+                  <label class="text-sm text-gray-300">i75 Level</label>
+                  <ToolValueControls
+                    :value="newI75Level"
+                    :minValue="i75Level"
+                    :maxValue="10"
+                    :step="1"
+                    :showFastControls="false"
+                    :validateOnFinalOnly="true"
+                    @update:value="handleNewI75LevelUpdate"
+                    @update:raw-value="(val) => newI75LevelRaw = val"
+                    @finalize:value="finalizeNewI75Level"
+                    value-class="text-amber-400 font-medium"
+                    :autoEdit="true"
+                    :disableDecrement="newI75Level <= i75Level"
+                    class="ml-2"
+                  />
+                </div>
               </div>
-              
-              <!-- i61 Level -->
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-sm text-gray-300">i61 Level</label>
-                <ToolValueControls
-                  :value="newI61Level"
-                  :minValue="i61Level"
-                  :maxValue="5"
-                  :step="1"
-                  :showFastControls="false"
-                  :validateOnFinalOnly="true"
-                  @update:value="handleNewI61LevelUpdate"
-                  @update:raw-value="(val) => newI61LevelRaw = val"
-                  @finalize:value="finalizeNewI61Level"
-                  value-class="text-purple-400 font-medium"
-                  :autoEdit="true"
-                  :disableDecrement="newI61Level <= i61Level"
-                  class="ml-2"
-                />
-              </div>
-              
-              <!-- i75 Level -->
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-sm text-gray-300">i75 Level</label>
-                <ToolValueControls
-                  :value="newI75Level"
-                  :minValue="i75Level"
-                  :maxValue="10"
-                  :step="1"
-                  :showFastControls="false"
-                  :validateOnFinalOnly="true"
-                  @update:value="handleNewI75LevelUpdate"
-                  @update:raw-value="(val) => newI75LevelRaw = val"
-                  @finalize:value="finalizeNewI75Level"
-                  value-class="text-amber-400 font-medium"
-                  :autoEdit="true"
-                  :disableDecrement="newI75Level <= i75Level"
-                  class="ml-2"
-                />
-              </div>
-            </div>
-          </div>
-          
-          <!-- Ultima Cap Upgrades -->
-          <div class="mt-4 bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-            <div class="flex justify-between items-center mb-2">
-              <span class="font-medium text-white text-sm">New Ultima Cap Upgrades</span>
             </div>
             
-            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
-              <div 
-                v-for="upgrade in ULTIMA_CAP_UPGRADES" 
-                :key="`new-${upgrade.id}`"
-                @click="toggleNewUltimaCapUpgrade(upgrade.id)"
-                class="px-2 py-1.5 rounded border text-center text-sm cursor-pointer transition-colors"
-                :class="newSelectedUltimaCapUpgrades.includes(upgrade.id) ? 
-                  'bg-blue-900/50 border-blue-500 text-blue-300' : 
-                  selectedUltimaCapUpgrades.includes(upgrade.id) ?
-                  'bg-gray-700/50 border-gray-600 text-gray-400 cursor-default' :
-                  'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700'"
-              >
-                {{ upgrade.name }} (+{{ upgrade.bonus }})
+            <!-- Ultima Cap Upgrades -->
+            <div class="mt-4 bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-medium text-white text-sm">New Ultima Cap Upgrades</span>
+              </div>
+              
+              <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+                <div 
+                  v-for="upgrade in ULTIMA_CAP_UPGRADES" 
+                  :key="`new-${upgrade.id}`"
+                  @click="toggleNewUltimaCapUpgrade(upgrade.id)"
+                  class="px-2 py-1.5 rounded border text-center text-sm cursor-pointer transition-colors"
+                  :class="newSelectedUltimaCapUpgrades.includes(upgrade.id) ? 
+                    'bg-blue-900/50 border-blue-500 text-blue-300' : 
+                    selectedUltimaCapUpgrades.includes(upgrade.id) ?
+                    'bg-gray-700/50 border-gray-600 text-gray-400 cursor-default' :
+                    'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700'"
+                >
+                  {{ upgrade.name }} (+{{ upgrade.bonus }})
+                </div>
               </div>
             </div>
-          </div>
-          
-          <!-- Results -->
-          <div v-if="newlyAvailableMods.length > 0" class="mt-4 bg-green-900/30 border border-green-700 rounded-lg p-3">
-            <h4 class="text-green-300 font-medium mb-2">{{ newlyAvailableMods.length }} New Affordable Loop Mods Found!</h4>
-            <p class="text-green-200 text-sm">These mods are now highlighted in green below.</p>
-          </div>
-          
-          <div v-else-if="showRequirementsPanel" class="mt-4 bg-yellow-900/30 border border-yellow-700 rounded-lg p-3">
-            <h4 class="text-yellow-300 font-medium mb-2">No New Loop Mods Available</h4>
-            <p class="text-yellow-200 text-sm">No new affordable Loop Mods found with these requirements.</p>
+            
+            <!-- Results -->
+            <div v-if="newlyAvailableMods.length > 0" class="mt-4 bg-green-900/30 border border-green-700 rounded-lg p-3">
+              <h4 class="text-green-300 font-medium mb-2">{{ newlyAvailableMods.length }} New Affordable Loop Mods Found!</h4>
+              <p class="text-green-200 text-sm">These mods are now highlighted in green below.</p>
+            </div>
+            
+            <div v-else-if="showRequirementsPanel" class="mt-4 bg-yellow-900/30 border border-yellow-700 rounded-lg p-3">
+              <h4 class="text-yellow-300 font-medium mb-2">No New Loop Mods Available</h4>
+              <p class="text-yellow-200 text-sm">No new affordable Loop Mods found with these requirements.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -506,6 +508,7 @@ import {
 import { ULTIMA_CAP_UPGRADES } from '@/constants/loopMods.js';
 import { useLoopModData } from '@/composables/useLoopModData.js';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
+import { vAutoAnimate } from '@formkit/auto-animate/vue';
 
 // State
 const isLoading = ref(true);
@@ -542,6 +545,11 @@ const newI75LevelRaw = ref(0);
 
 // Google Sheets Integration
 const { fetchLoopModData } = useLoopModData();
+
+const autoAnimateOptions = {
+  duration: 200,
+  easing: 'cubic-bezier(0.8, 0, 0.2, 1)'  // Material Design easing
+};
 
 // Computed - alle Loop Mods mit Tier-Informationen
 const allLoopMods = computed(() => {
