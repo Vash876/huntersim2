@@ -217,7 +217,7 @@
                     class="ml-2"
                   />
                 </div>
-                <p class="text-xs text-gray-400">Only mods within this budget will be shown</p>
+                <p class="text-xs text-gray-400">Only Loop Mods within this budget will be shown</p>
               </div>
               
               <!-- New Requirements -->
