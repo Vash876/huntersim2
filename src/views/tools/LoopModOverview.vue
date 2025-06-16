@@ -229,13 +229,13 @@
               <div class="flex items-center justify-between mb-2">
                 <label class="text-sm text-gray-300">Temp3 Available</label>
                 <button 
-                  @click="updateNewTemp3"
-                  :disabled="newTemp3"
+                  @click="toggleNewTemp3"
+                  :disabled="showTemp3 && newTemp3"
                   class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
                   :class="{
                     'bg-red-600': newTemp3,
                     'bg-gray-600': !newTemp3,
-                    'opacity-50 cursor-not-allowed': newTemp3
+                    'opacity-50 cursor-not-allowed': showTemp3 && newTemp3
                   }"
                 >
                   <span 
@@ -718,10 +718,16 @@ function checkNewlyAvailableMods() {
   console.log('=== END DEBUG ===');
 }
 
-function updateNewTemp3() {
+function toggleNewTemp3() {
+  // Kann immer aktiviert werden
   if (!newTemp3.value) {
-    newTemp3.value = true; // Kann nur aktiviert werden
-    checkNewlyAvailableMods(); 
+    newTemp3.value = true;
+    checkNewlyAvailableMods();
+  } 
+  // Kann nur deaktiviert werden wenn Filter & Settings NICHT aktiviert ist
+  else if (!showTemp3.value) {
+    newTemp3.value = false;
+    checkNewlyAvailableMods();
   }
 }
 
