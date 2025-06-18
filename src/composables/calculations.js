@@ -106,9 +106,45 @@ export function calculateOrbGains(currentStats, planStats, boosts = []) {
   boosts.forEach((boost) => {
     if (!boost.orbcalc) return; // Nur Boosts berücksichtigen, die für Orb-Berechnung relevant sind
     
+    // Prüfen, ob der Boost aufgrund von Gem-Anforderungen verfügbar ist
+    const isAvailable = isBoostAvailable(boost, planStats);
+    if (!isAvailable) {
+      // Wenn der Boost nicht verfügbar ist, überspringen wir ihn ohne Multiplikation mit 0
+      return;
+    }
+    
     const value = planStats[boost.key];
-    const multiplier = calculateMultiplier(boost, value, planStats);
-    result *= multiplier;
+    let multiplier = 1; // Neutraler Wert als Standardfall
+    
+    try {
+      if (boost.type === 'boolean') {
+        // Boolean Boosts
+        if (value) {
+          if (typeof boost.multiplier === 'number') {
+            multiplier = boost.multiplier;
+          } else if (typeof boost.multiplier === 'function') {
+            multiplier = boost.multiplier(1, planStats);
+          }
+        }
+      } else if (value > 0) {
+        // Numerische Boosts
+        if (typeof boost.multiplier === 'number') {
+          multiplier = boost.multiplier;
+        } else if (typeof boost.multiplier === 'function') {
+          multiplier = boost.multiplier(value, planStats);
+        }
+      }
+      
+      // Sicherheitscheck gegen ungültige Werte
+      if (isNaN(multiplier) || !isFinite(multiplier)) {
+        console.warn(`Ungültiger Multiplikator für ${boost.key}:`, multiplier);
+      } else {
+        result *= multiplier;
+      }
+    } catch (e) {
+      console.error(`Fehler bei Berechnung des Multiplikators für ${boost.key}:`, e);
+      // Bei einem Fehler: neutralen Wert (1) verwenden
+    }
   });
 
   // Catch-Up Multiplier anwenden
@@ -118,7 +154,49 @@ export function calculateOrbGains(currentStats, planStats, boosts = []) {
 }
 
 /**
- * Berechnet die Orb-Gewinne basierend auf den Plan-Stats
+ * Prüft, ob ein Boost basierend auf Gem-Anforderungen verfügbar ist
+ * @param {Object} boost - Der zu prüfende Boost
+ * @param {Object} stats - Die aktuellen Stats mit Gem-Daten
+ * @returns {boolean} - Ist der Boost verfügbar
+ */
+function isBoostAvailable(boost, stats) {
+  // Wenn keine Gem-Anforderungen definiert sind, ist der Boost immer verfügbar
+  if (!boost.unlock || !boost.unlock_level) {
+    return true;
+  }
+  
+  // Versuche die Gem-Daten zu laden
+  let gemLevels = {};
+  
+  try {
+    // Direkt aus den Stats, wenn gemData vorhanden
+    if (stats.gemData && stats.gemData.levels) {
+      gemLevels = stats.gemData.levels;
+    }
+    // Falls keine gemData in stats, versuche aus localStorage zu laden
+    else {
+      const userStatsJSON = localStorage.getItem('trplanner_userstats');
+      if (userStatsJSON) {
+        const userStats = JSON.parse(userStatsJSON);
+        if (userStats.gemData && userStats.gemData.levels) {
+          gemLevels = userStats.gemData.levels;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Fehler beim Laden der Gem-Daten:', e);
+  }
+  
+  // Prüfe, ob das erforderliche Gem-Level erreicht ist
+  const requiredGem = boost.unlock;
+  const requiredLevel = boost.unlock_level || 0;
+  const currentLevel = gemLevels[requiredGem] || 0;
+  
+  return currentLevel >= requiredLevel;
+}
+
+/**
+ * Berechnet die Orb-Gewinne basierend auf den Plan-Stats (alternative Implementierung)
  * @param {Object} currentStats - Die aktuellen Stats
  * @param {Object} planStats - Die geplanten Stats
  * @returns {number} Orb-Gewinne
@@ -137,9 +215,14 @@ export function calculateOrbGainsCalc(currentStats, planStats, boosts = []) {
   for (const boost of boosts) {
     if (!boost.orbcalc) continue; // Nur relevante Boosts berücksichtigen
     
+    // Prüfen, ob der Boost verfügbar ist
+    if (!isBoostAvailable(boost, planStats)) {
+      continue; // Boost überspringen, wenn er nicht verfügbar ist
+    }
+    
     const value = planStats[boost.key];
     try {
-      let multiplier = 1;
+      let multiplier = 1; // Neutraler Standardwert
       
       if (boost.type === 'boolean') {
         if (value && typeof boost.multiplier === 'number') {

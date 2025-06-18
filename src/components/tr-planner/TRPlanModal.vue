@@ -1871,6 +1871,8 @@ function mapLegacyGemBoosts() {
       legacyGemData.activeNodes.power.push(1); // Node #2 = Index 1
       console.log('Mapped pow2 → Power Level 1 + Node #2');
     }
+
+    //
     
     // Speichere die gemappten Gem-Daten
     if (Object.values(legacyGemData.levels).some(level => level > 0)) {
