@@ -34,10 +34,3 @@ if (import.meta.env.PROD) {
   console.warn = originalConsole.warn;
   console.error = originalConsole.error;
 }
-
-// Analytics nur in Produktion laden
-if (import.meta.env.PROD) {
-  import('@vercel/analytics').then(({ inject }) => {
-    inject();
-  });
-}

@@ -407,19 +407,25 @@ function calcCostDifference(statKey, fromLevel, toLevel, hunterType) {
  */
 function formatCost(value) {
   if (typeof value !== 'number' || isNaN(value) || value === 0) {
-    return '0'
+    return '0';
   }
-  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d']
-  let tier = Math.floor(Math.log10(value) / 3)
-  if (tier === 0) {
-    return value.toFixed(2)
+  
+  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d'];
+  let tier = Math.floor(Math.log10(value) / 3);
+  
+  // NEU: Handle kleine Werte (tier < 0)
+  if (tier < 0 || value < 1000) {
+    return value.toFixed(2);
   }
+  
   if (tier >= suffixes.length) {
-    return value.toExponential(2)
+    return value.toExponential(2);
   }
-  const suffix = suffixes[tier]
-  const scaledValue = value / Math.pow(10, tier * 3)
-  return `${scaledValue.toFixed(2)}${suffix}`
+  
+  const suffix = suffixes[tier];
+  const scaledValue = value / Math.pow(10, tier * 3);
+  
+  return `${scaledValue.toFixed(2)}${suffix}`;
 }
 
 export { calcCost, calcCostDifference, formatCost };
