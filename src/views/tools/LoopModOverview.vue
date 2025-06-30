@@ -35,7 +35,33 @@
             <!-- MP Value Filter -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <div class="flex justify-between items-center mb-2">
-                <span class="font-medium text-white text-sm">MP Value (e)</span>
+                <div class="flex items-center gap-2">
+                  <span class="font-medium text-gray-300 text-sm">All Time Highest MP (e)</span>
+                  <InfoTooltip 
+                    content="This value filters out permanent Loop Mods (Boons) and Ouroboros Crew that you have already purchased. Enter the highest MP you've ever reached to hide Loop Mods you already own."
+                    placement="top"
+                  />
+                </div>
+                <ToolValueControls
+                  :value="allTimeHighestMP"
+                  :minValue="0"
+                  :maxValue="99999"
+                  :step="10"
+                  :fastStep="100"
+                  :validateOnFinalOnly="true"
+                  @update:value="handleAllTimeHighestMPUpdate"
+                  @update:raw-value="(val) => allTimeHighestMPRaw = val"
+                  @finalize:value="finalizeAllTimeHighestMP"
+                  value-class="text-red-400 font-medium"
+                  :autoEdit="true"
+                  class="ml-2"
+                />
+              </div>
+              
+              <!-- All Time Highest MP Field -->
+              <div class="mt-3 flex items-center justify-between">
+                <span class="text-sm text-gray-300">Current MP Value (e)</span>
+                <div class="flex items-center">
                 <ToolValueControls
                   :value="mpValue"
                   :minValue="0"
@@ -49,7 +75,8 @@
                   value-class="text-amber-400 font-medium"
                   :autoEdit="true"
                   class="ml-2"
-                />
+                />                  
+                </div>
               </div>
               
               <div class="mt-3 flex items-center justify-between">
@@ -164,7 +191,7 @@
         </div>
       </div>
       
-      <!-- NEU: Requirements Updated Button -->
+      <!-- Requirements Updated Button -->
       <div class="mb-4">
         <button
           @click="toggleRequirementsPanel"
@@ -185,7 +212,7 @@
         </button>
       </div>
       
-      <!-- NEU: Requirements Panel -->
+      <!-- Requirements Panel -->
       <div v-auto-animate="autoAnimateOptions" class="mb-4">
         <div 
           v-if="showRequirementsPanel"
@@ -509,6 +536,7 @@ import { ULTIMA_CAP_UPGRADES } from '@/constants/loopMods.js';
 import { useLoopModData } from '@/composables/useLoopModData.js';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import { vAutoAnimate } from '@formkit/auto-animate/vue';
+import InfoTooltip from '@/composables/InfoTooltip.vue'; 
 
 // State
 const isLoading = ref(true);
@@ -521,15 +549,17 @@ const mpValue = ref(0);
 const mpRange = ref(50);
 const mpRangeEnabled = ref(true);
 const showTemp3 = ref(false);
-const i75Level = ref(0); // Neu: Level statt Boolean
-const i61Level = ref(0); // Neu: Level statt Boolean
+const i75Level = ref(0); // Level statt Boolean
+const i61Level = ref(0); // Level statt Boolean
 const selectedUltimaCapUpgrades = ref([]);
 const sortBy = ref('cost');
 const sortDirection = ref('asc');
 const mpValueRaw = ref(mpValue.value);
 const mpRangeRaw = ref(mpRange.value);
-const i75LevelRaw = ref(i75Level.value); // Neu
-const i61LevelRaw = ref(i61Level.value); // Neu
+const i75LevelRaw = ref(i75Level.value); 
+const i61LevelRaw = ref(i61Level.value);
+const allTimeHighestMP = ref(0);
+const allTimeHighestMPRaw = ref(0);
 
 // NEU: Requirements Panel State
 const showRequirementsPanel = ref(false);
@@ -553,10 +583,14 @@ const autoAnimateOptions = {
 
 // Computed - alle Loop Mods mit Tier-Informationen
 const allLoopMods = computed(() => {
-  return loopModsData.value.map(mod => ({
-    ...mod,
-    tier: tierData.value[mod.name] || 'B' // Fallback zu Tier B
-  }));
+  return loopModsData.value.map(mod => {
+    const tierInfo = tierData.value[mod.name] || { tier: 'B', permanent: false };
+    return {
+      ...mod,
+      tier: tierInfo.tier,
+      permanent: tierInfo.permanent  
+    };
+  });
 });
 
 // Toggles für die Filter
@@ -817,8 +851,19 @@ const totalUltimaCap = computed(() => {
 
 const filteredLoopMods = computed(() => {
   let result = allLoopMods.value;
+
+  // Highest MP Filter
+  if (allTimeHighestMP.value > 0) {
+    result = result.filter(mod => {
+      // Wenn es ein permanenter Mod ist UND die Kosten <= All Time Highest MP
+      if (mod.permanent && mod.cost <= allTimeHighestMP.value) {
+        return false; // Ausfiltern - bereits besessen
+      }
+      return true; // Behalten
+    });
+  }
   
-  // MP Value Filter bleibt gleich...
+  // MP Value Filter
   if (mpValue.value) {
     const mpVal = Number(mpValue.value);
     if (!isNaN(mpVal)) {
@@ -935,6 +980,22 @@ const sortedLoopMods = computed(() => {
   return mods;
 });
 
+function handleAllTimeHighestMPUpdate(newVal) {
+  allTimeHighestMP.value = newVal;
+  allTimeHighestMPRaw.value = newVal;
+  saveFilters();
+}
+
+function finalizeAllTimeHighestMP() {
+  const numValue = Number(allTimeHighestMPRaw.value);
+  
+  if (!isNaN(numValue)) {
+    allTimeHighestMP.value = Math.max(0, Math.min(99999, numValue));
+    allTimeHighestMPRaw.value = allTimeHighestMP.value;
+    saveFilters();
+  }
+}
+
 // Methods
 function toggleUltimaCapUpgrade(id) {
   if (selectedUltimaCapUpgrades.value.includes(id)) {
@@ -960,6 +1021,7 @@ function updateSort(field) {
 function resetFilters() {
   mpValue.value = 0;
   mpRange.value = 50;
+  allTimeHighestMP.value = 0;
   mpRangeEnabled.value = true;
   showTemp3.value = false;
   i75Level.value = 0; // Angepasst
@@ -992,6 +1054,11 @@ function loadFilters() {
     if (savedFilters.mpValue !== undefined && savedFilters.mpValue !== null) {
       mpValue.value = Number(savedFilters.mpValue);
     }
+
+    if (savedFilters.allTimeHighestMP !== undefined && savedFilters.allTimeHighestMP !== null) {
+      allTimeHighestMP.value = Number(savedFilters.allTimeHighestMP);
+      allTimeHighestMPRaw.value = allTimeHighestMP.value;
+    }
     
     if (savedFilters.mpRange !== undefined && savedFilters.mpRange !== null) {
       mpRange.value = Number(savedFilters.mpRange);
@@ -1016,6 +1083,7 @@ function saveFilters() {
     localStorage.setItem('loopModOverview_filters', JSON.stringify({
       mpValue: mpValue.value,
       mpRange: mpRange.value,
+      allTimeHighestMP: allTimeHighestMP.value,
       mpRangeEnabled: mpRangeEnabled.value,
       showTemp3: showTemp3.value,
       i75Level: i75Level.value, // Angepasst

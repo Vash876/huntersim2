@@ -221,6 +221,11 @@ export declare function getLastBorgeCritPower(): number;
  */
 export declare function getLastBorgeReload(): number;
 /**
+ * assembly/evalBorge/getLiveBorgeShieldBreakStacks
+ * @returns `i32`
+ */
+export declare function getLiveBorgeShieldBreakStacks(): number;
+/**
  * assembly/evalBorge/getProgressSize
  * @returns `i32`
  */
@@ -369,6 +374,41 @@ export declare function getLiveBorgeAtk(): number;
  */
 export declare function getLiveBorgeRevives(): number;
 /**
+ * assembly/evalBorge/getLiveBorgeRegen
+ * @returns `f64`
+ */
+export declare function getLiveBorgeRegen(): number;
+/**
+ * assembly/evalBorge/getLiveBorgeDr
+ * @returns `f64`
+ */
+export declare function getLiveBorgeDr(): number;
+/**
+ * assembly/evalBorge/getLiveBorgeEvade
+ * @returns `f64`
+ */
+export declare function getLiveBorgeEvade(): number;
+/**
+ * assembly/evalBorge/getLiveBorgeEffect
+ * @returns `f64`
+ */
+export declare function getLiveBorgeEffect(): number;
+/**
+ * assembly/evalBorge/getLiveBorgeCritRate
+ * @returns `f64`
+ */
+export declare function getLiveBorgeCritRate(): number;
+/**
+ * assembly/evalBorge/getLiveBorgeCritPower
+ * @returns `f64`
+ */
+export declare function getLiveBorgeCritPower(): number;
+/**
+ * assembly/evalBorge/getLiveBorgeReload
+ * @returns `f64`
+ */
+export declare function getLiveBorgeReload(): number;
+/**
  * assembly/evalBorge/getLiveCurrentTime
  * @returns `f64`
  */
@@ -430,9 +470,14 @@ export declare function getLiveNextFury(): number;
 export declare function getLiveFuryEnabled(): boolean;
 /**
  * assembly/evalBorge/getLiveLastEventType
+ * @returns `i32`
+ */
+export declare function getLiveLastEventType(): number;
+/**
+ * assembly/evalBorge/getLiveLastEventTypeString
  * @returns `~lib/string/String`
  */
-export declare function getLiveLastEventType(): string;
+export declare function getLiveLastEventTypeString(): string;
 /**
  * assembly/evalBorge/getLiveLastEventDamage
  * @returns `f64`
@@ -453,6 +498,66 @@ export declare function getLiveLastEventStage(): number;
  * @returns `bool`
  */
 export declare function getLiveIsFinished(): boolean;
+/**
+ * assembly/evalBorge/getLiveEnemyAtk
+ * @returns `f64`
+ */
+export declare function getLiveEnemyAtk(): number;
+/**
+ * assembly/evalBorge/getLiveEnemyRegen
+ * @returns `f64`
+ */
+export declare function getLiveEnemyRegen(): number;
+/**
+ * assembly/evalBorge/getLiveEnemyDr
+ * @returns `f64`
+ */
+export declare function getLiveEnemyDr(): number;
+/**
+ * assembly/evalBorge/getLiveEnemyEvade
+ * @returns `f64`
+ */
+export declare function getLiveEnemyEvade(): number;
+/**
+ * assembly/evalBorge/getLiveEnemyEffect
+ * @returns `f64`
+ */
+export declare function getLiveEnemyEffect(): number;
+/**
+ * assembly/evalBorge/getLiveEnemyCritRate
+ * @returns `f64`
+ */
+export declare function getLiveEnemyCritRate(): number;
+/**
+ * assembly/evalBorge/getLiveEnemyCritDmg
+ * @returns `f64`
+ */
+export declare function getLiveEnemyCritDmg(): number;
+/**
+ * assembly/evalBorge/getLiveEnemyAtkSpd
+ * @returns `f64`
+ */
+export declare function getLiveEnemyAtkSpd(): number;
+/**
+ * assembly/evalBorge/getLiveEnemyEnrage
+ * @returns `i32`
+ */
+export declare function getLiveEnemyEnrage(): number;
+/**
+ * assembly/evalBorge/getLiveNextBossBonusAtk
+ * @returns `f64`
+ */
+export declare function getLiveNextBossBonusAtk(): number;
+/**
+ * assembly/evalBorge/getLiveNextFuryToggle
+ * @returns `f64`
+ */
+export declare function getLiveNextFuryToggle(): number;
+/**
+ * assembly/evalBorge/getLiveEnemyEnrageSpeedReduction
+ * @returns `f64`
+ */
+export declare function getLiveEnemyEnrageSpeedReduction(): number;
 /**
  * assembly/evalOzzy/EVALOZZY_WASM
  * @param lvl `i32`

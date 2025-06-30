@@ -48,9 +48,9 @@ async function instantiate(module, imports = {}) {
       // assembly/evalBorge/getLiveFuryEnabled() => bool
       return exports.getLiveFuryEnabled() != 0;
     },
-    getLiveLastEventType() {
-      // assembly/evalBorge/getLiveLastEventType() => ~lib/string/String
-      return __liftString(exports.getLiveLastEventType() >>> 0);
+    getLiveLastEventTypeString() {
+      // assembly/evalBorge/getLiveLastEventTypeString() => ~lib/string/String
+      return __liftString(exports.getLiveLastEventTypeString() >>> 0);
     },
     getLiveIsFinished() {
       // assembly/evalBorge/getLiveIsFinished() => bool
@@ -107,6 +107,7 @@ export const {
   getLastBorgeCritRate,
   getLastBorgeCritPower,
   getLastBorgeReload,
+  getLiveBorgeShieldBreakStacks,
   getProgressSize,
   getProgressStageAt,
   getProgressCountAt,
@@ -120,6 +121,13 @@ export const {
   getLiveBorgeMaxHp,
   getLiveBorgeAtk,
   getLiveBorgeRevives,
+  getLiveBorgeRegen,
+  getLiveBorgeDr,
+  getLiveBorgeEvade,
+  getLiveBorgeEffect,
+  getLiveBorgeCritRate,
+  getLiveBorgeCritPower,
+  getLiveBorgeReload,
   getLiveCurrentTime,
   getLiveCurrentEnem,
   getLiveCurrentStage,
@@ -133,10 +141,23 @@ export const {
   getLiveNextFury,
   getLiveFuryEnabled,
   getLiveLastEventType,
+  getLiveLastEventTypeString,
   getLiveLastEventDamage,
   getLiveLastEventHealing,
   getLiveLastEventStage,
   getLiveIsFinished,
+  getLiveEnemyAtk,
+  getLiveEnemyRegen,
+  getLiveEnemyDr,
+  getLiveEnemyEvade,
+  getLiveEnemyEffect,
+  getLiveEnemyCritRate,
+  getLiveEnemyCritDmg,
+  getLiveEnemyAtkSpd,
+  getLiveEnemyEnrage,
+  getLiveNextBossBonusAtk,
+  getLiveNextFuryToggle,
+  getLiveEnemyEnrageSpeedReduction,
   EVALOZZY_WASM,
   getLastOzzyAvgStage,
   getLastOzzyAvgTime,

@@ -271,7 +271,10 @@ const importWithUpgrades = () => {
   }
   
   // Use the complete validated build
-  const buildToImport = { ...validatedBuild.value };
+  const buildToImport = { 
+    ...validatedBuild.value,
+    isImported: true 
+  };
   
   // Make sure we have the essential properties
   if (!buildToImport.overrides) buildToImport.overrides = {};
@@ -343,17 +346,5 @@ watch(() => props.prefilledCode, (newVal) => {
     opacity: 1;
     transform: scale(1);
   }
-}
-
-/* Safe Tailwind classes for dynamic colors */
-.border-red-500, .bg-red-900\/20, .text-red-400, .bg-red-500\/20, .bg-red-400, .bg-red-600, .hover\:bg-red-700,
-.border-green-500, .bg-green-900\/20, .text-green-400, .bg-green-500\/20, .bg-green-400, .bg-green-600, .hover\:bg-green-700,
-.border-blue-500, .bg-blue-900\/20, .text-blue-400, .bg-blue-500\/20, .bg-blue-400, .bg-blue-600, .hover\:bg-blue-700,
-.bg-red-800, .hover\:bg-red-900, .border-red-600,
-.bg-green-800, .hover\:bg-green-900, .border-green-600,
-.bg-blue-800, .hover\:bg-blue-900, .border-blue-600,
-/* Zusätzliche Klassen für Ozzy */
-.bg-green-900, .bg-green-900\/20, .bg-green-500 {
-  /* These classes are empty, but are recognized by Tailwind to include in the build */
 }
 </style>

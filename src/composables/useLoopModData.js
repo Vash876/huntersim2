@@ -70,7 +70,7 @@ export function useLoopModData() {
     const lines = csvText.split('\n').filter(line => line.trim());
     if (lines.length === 0) return {};
     
-    // Erste Zeile ignorieren (Header)
+    // Erste Zeile ignorieren (Header: LoopModName,Tier,LoopModNameCheck,Permanent)
     const dataLines = lines.slice(1);
     
     const tiers = {};
@@ -78,9 +78,13 @@ export function useLoopModData() {
     for (const line of dataLines) {
       const columns = parseCsvLine(line);
       
-      if (columns.length >= 2) {
-        const [loopModName, tier] = columns;
-        tiers[loopModName.trim()] = tier.trim();
+      // 4 Spalten parsen (Name, Tier, NameCheck, Permanent)
+      if (columns.length >= 4) {
+        const [loopModName, tier, , permanent] = columns;
+        tiers[loopModName.trim()] = {
+          tier: tier.trim(),
+          permanent: permanent.trim() === '1'  // NEU: Permanent Flag
+        };
       }
     }
     
@@ -112,7 +116,7 @@ export function useLoopModData() {
   function parseRequirements(requirements) {
     const result = {
       requiresTemp3: false,
-      requiresI61Level: 0, // NEU: i61 Level
+      requiresI61Level: 0,
       requiresI75Level: 0,
       requiresUltimaCap: 0
     };
@@ -121,7 +125,7 @@ export function useLoopModData() {
     
     const req = requirements.toLowerCase();
     
-    // Temp3 Check bleibt gleich
+    // Temp3 Check
     if (req.includes('temp3')) {
       result.requiresTemp3 = true;
     }
@@ -138,7 +142,7 @@ export function useLoopModData() {
       result.requiresI75Level = parseInt(i75Match[1]) || 0;
     }
     
-    // Ultima Cap Check bleibt gleich
+    // Ultima Cap Check
     const ultimaCapMatch = req.match(/ultima cap \+(\d+)/);
     if (ultimaCapMatch) {
       result.requiresUltimaCap = parseInt(ultimaCapMatch[1]) || 0;

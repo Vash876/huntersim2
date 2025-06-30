@@ -301,6 +301,11 @@ export const useHunterStore = defineStore('hunter', () => {
     if (!build.id) {
       build.id = Date.now().toString();
     }
+
+    // Stelle sicher, dass isImported Flag existiert
+    if (build.isImported === undefined) {
+      build.isImported = false; // Default: false für normale Builds
+    }
     
     // Füge den Build hinzu
     hunterBuilds.value[hunterId].push(build);

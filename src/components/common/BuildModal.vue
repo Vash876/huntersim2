@@ -420,6 +420,7 @@
     :buildName="buildData.name || 'Neuer Build'"
     :buildId="buildData.id"
     :currentOverrides="buildData.overrides || {}"
+    :isImportedBuild="isImportedBuild"
     @close="showOverrideModal = false"
     @overridesUpdated="updateOverrides"
   />
@@ -468,6 +469,10 @@ const attributes = ref([]);
 const attributeDependencies = ref({});
 const attributeMinValues = ref({});
 
+const isImportedBuild = computed(() => {
+  return props.buildToEdit?.isImported === true;
+});
+
 const showOverrideModal = ref(false);
 
 // Build-Daten
@@ -486,6 +491,11 @@ const buildData = ref({
 const showSaveError = ref(false);
 const saveError = ref('');
 const invalidAttributes = ref([]);
+
+watch(() => buildData.value, (newValue) => {
+  // Mache buildData global verfügbar für dynamische max-Berechnungen
+  window.currentBuildData = newValue;
+}, { deep: true });
 
 // Prüft, ob ein einzelnes Attribut gültig ist (Voraussetzungen erfüllt)
 function isAttributeValid(attributeKey) {

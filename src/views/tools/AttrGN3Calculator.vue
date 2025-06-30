@@ -214,9 +214,11 @@
                     <input
                       v-model="attrMultiplierInput"
                       @keydown.enter="handleAttrMultiplierSubmit"
-                      @blur="handleAttrMultiplierSubmit"
+                      @blur="handleInputBlur"
+                      @focus="selectAllInput"
+                      @click="selectAllInput"
                       type="text"
-                      class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-pink-400 font-medium text-sm w-20 text-right"
+                      class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-pink-400 font-medium text-sm w-23 text-right"
                       placeholder="1e100"
                     />
                   </div>
@@ -333,6 +335,7 @@
 
 <script setup>
 import { computed, ref, watch, onMounted } from 'vue';
+import Decimal from 'break_infinity.js';
 import { 
   IconSettings, 
   IconRefresh,
@@ -357,30 +360,9 @@ const ts5 = ref(false);
 const relic14 = ref(0);
 const researchPoints = ref(0);
 const currentTicksInLR = ref(0);  
-const currentAttrMultiplier = ref(1);
+const currentAttrMultiplier = ref(new Decimal(1));
 const attrMultiplierInput = ref('1');
-
-const daysLeftTo1e333 = computed(() => {
-  if (multiPerDay.value <= 1 || currentAttrMultiplier.value <= 0) return Infinity;
-  
-  // Logarithmische Berechnung
-  const targetLog = 333; // log10(1e333) = 333
-  const currentLog = Math.log10(currentAttrMultiplier.value);
-  const dailyLog = Math.log10(multiPerDay.value);
-  
-  const remainingLog = targetLog - currentLog;
-  
-  if (remainingLog <= 0) return 0; // Bereits erreicht
-  if (dailyLog <= 0) return Infinity;
-  
-  const totalDaysNeeded = remainingLog / dailyLog;
-  
-  // Subtrahiere die bereits vergangenen Tage im aktuellen LR
-  const remainingDays = totalDaysNeeded - daysInLR.value;
-  
-  // Stelle sicher, dass das Ergebnis nicht negativ wird
-  return Math.max(0, remainingDays);
-});
+const inputWasFocused = ref(false);
 
 // Toggle functions
 function toggleEfficiencyBadge() {
@@ -454,9 +436,24 @@ const currentRetained = computed(() => {
 });
 
 const currentMultiplier = computed(() => {
-  if (currentRetained.value <= 0) return 1;
+  if (currentRetained.value <= 0) return new Decimal(1);
+  
   const attributionRate = 0.001; // 0.10%
-  return Math.pow(1 + attributionRate, currentRetained.value);
+  const base = new Decimal(1 + attributionRate);
+  const calculatedMultiplier = base.pow(currentRetained.value);
+  
+  // Berechne das Endergebnis (Current * Pending)
+  const finalResult = currentAttrMultiplier.value.mul(calculatedMultiplier);
+  const maxValue = new Decimal('1e333');
+  
+  // Wenn das Endergebnis über 1e333 liegt, begrenze das Pending Multiplier
+  if (finalResult.gt(maxValue)) {
+    // Berechne das maximale Pending Multiplier: 1e333 / currentAttrMultiplier
+    const maxPendingMultiplier = maxValue.div(currentAttrMultiplier.value);
+    return maxPendingMultiplier.gte(1) ? maxPendingMultiplier : new Decimal(1);
+  }
+  
+  return calculatedMultiplier;
 });
 
 const daysInLR = computed(() => {
@@ -472,6 +469,37 @@ const daysInLR = computed(() => {
   const daysInLRValue = secondsInLR / 86400;
   
   return daysInLRValue;
+});
+
+const daysLeftTo1e333 = computed(() => {
+  if (multiPerDay.value <= 1 || currentAttrMultiplier.value.lte(0)) return Infinity;
+  
+  try {
+    // Target und current als Decimal
+    const target = new Decimal('1e333');
+    const current = currentAttrMultiplier.value;
+    const dailyMulti = new Decimal(multiPerDay.value);
+    
+    if (current.gte(target)) return 0; // Bereits erreicht
+    if (dailyMulti.lte(1)) return Infinity;
+    
+    // Direkte logarithmische Berechnung ohne .ln()
+    // log(target/current) / log(dailyMulti)
+    const ratio = target.dividedBy(current);
+    const logRatio = Math.log(ratio.toNumber());
+    const logDaily = Math.log(dailyMulti.toNumber());
+    
+    const totalDaysNeeded = logRatio / logDaily;
+    
+    // Subtrahiere die bereits vergangenen Tage im aktuellen LR
+    const remainingDays = totalDaysNeeded - daysInLR.value;
+    
+    return Math.max(0, remainingDays);
+    
+  } catch (error) {
+    console.error('Calculation error:', error);
+    return Infinity;
+  }
 });
 
 // Formatierungsfunktion für Tage
@@ -504,58 +532,98 @@ function formatNumber(num) {
 function formatMulti(num) {
   if (num === Infinity) return '∞';
   
+  // Wenn es ein Decimal ist
+  if (num instanceof Decimal) {
+    if (num.gte(1000)) {
+      return num.toExponential(2);
+    }
+    return num.toFixed(2);
+  }
+  
+  // Normale Number-Behandlung
   if (num >= 1000) {
-    // Wissenschaftliche Notation in der Form a.bc × 10^n
     const exponent = Math.floor(Math.log10(num));
     const mantisse = num / Math.pow(10, exponent);
-    
-    // Format: a.bc × 10^n -> a.bce+n
     return mantisse.toFixed(2) + 'e' + exponent;
   }
   
-  // Werte unter 1000 werden mit zwei Dezimalstellen
   return num.toFixed(2);
 }
 
 function parseSuffixValue(input) {
-  if (typeof input === 'number') return input;
+  if (input instanceof Decimal) return input;
   
   const str = input.toString().toLowerCase().trim();
   
-  // Direkte wissenschaftliche Notation (5e15, 1.5e10, etc.)
-  if (str.includes('e')) {
-    const parsed = parseFloat(str);
-    return isNaN(parsed) ? 1 : parsed;
+  try {
+    // Direkte wissenschaftliche Notation (1e500, 1.5e1000, etc.)
+    if (str.includes('e')) {
+      const parsed = new Decimal(str);
+      // Begrenze auf maximal 1e333
+      if (parsed.gt('1e333')) {
+        return new Decimal('1e333');
+      }
+      return parsed;
+    }
+    
+    // Suffix-Mapping mit Decimal
+    const suffixMap = {
+      'k': new Decimal('1e3'),
+      'm': new Decimal('1e6'),
+      'b': new Decimal('1e9'),
+      't': new Decimal('1e12'),
+      'qa': new Decimal('1e15'),
+      'qu': new Decimal('1e18'),
+      'sx': new Decimal('1e21'),
+      'sp': new Decimal('1e24'),
+      'oc': new Decimal('1e27'),
+      'n': new Decimal('1e30'),
+      'd': new Decimal('1e33')
+    };
+    
+    // Extrahiere Zahl und Suffix
+    const match = str.match(/^([0-9]*\.?[0-9]+)([a-z]+)?$/);
+    
+    if (!match) return new Decimal(1); // Fallback
+    
+    const numberStr = match[1];
+    const suffix = match[2] || '';
+    
+    // Prüfe ob die Zahl gültig ist BEVOR wir Decimal erstellen
+    if (!numberStr || isNaN(parseFloat(numberStr))) return new Decimal(1);
+    
+    const number = new Decimal(numberStr);
+    
+    // Multipliziere mit Suffix-Wert
+    const multiplier = suffixMap[suffix] || new Decimal(1);
+    const result = number.mul(multiplier);
+    
+    // Begrenze auf maximal 1e333
+    if (result.gt('1e333')) {
+      return new Decimal('1e333');
+    }
+    
+    return result;
+    
+  } catch (error) {
+    console.error('Parse error:', error);
+    return new Decimal(1);
   }
-  
-  // Suffix-Mapping
-  const suffixMap = {
-    'k': 1e3,
-    'm': 1e6,
-    'b': 1e9,
-    't': 1e12,
-    'qa': 1e15,
-    'qu': 1e18,
-    'sx': 1e21,
-    'sp': 1e24,
-    'oc': 1e27,
-    'n': 1e30,
-    'd': 1e33
-  };
-  
-  // Extrahiere Zahl und Suffix
-  const match = str.match(/^([0-9]*\.?[0-9]+)([a-z]+)?$/);
-  
-  if (!match) return 1; // Fallback bei ungültiger Eingabe
-  
-  const number = parseFloat(match[1]);
-  const suffix = match[2] || '';
-  
-  if (isNaN(number)) return 1;
-  
-  // Multipliziere mit Suffix-Wert
-  const multiplier = suffixMap[suffix] || 1;
-  return number * multiplier;
+}
+
+function selectAllInput(event) {
+  // Nur beim ersten Klick/Focus alles auswählen
+  if (!inputWasFocused.value) {
+    setTimeout(() => {
+      event.target.select();
+    }, 10);
+    inputWasFocused.value = true;
+  }
+}
+
+function handleInputBlur(event) {
+  inputWasFocused.value = false;
+  handleAttrMultiplierSubmit();
 }
 
 function resetSettings() {
@@ -566,7 +634,8 @@ function resetSettings() {
   relic14.value = 0;
   researchPoints.value = 0;
   currentTicksInLR.value = 0; 
-  currentAttrMultiplier.value = 1;
+  currentAttrMultiplier.value = new Decimal(1);
+  attrMultiplierInput.value = '1';
   saveSettings();
 }
 
@@ -580,7 +649,7 @@ function saveSettings() {
       relic14: relic14.value,
       researchPoints: researchPoints.value,
       currentTicksInLR: currentTicksInLR.value,
-      currentAttrMultiplier: currentAttrMultiplier.value
+      currentAttrMultiplier: currentAttrMultiplier.value.toString() // Decimal als String speichern
     }));
   } catch (error) {
     console.error('Error saving settings:', error);
@@ -598,7 +667,10 @@ function loadSettings() {
     if (savedSettings.relic14 !== undefined) relic14.value = savedSettings.relic14;
     if (savedSettings.researchPoints !== undefined) researchPoints.value = savedSettings.researchPoints;
     if (savedSettings.currentTicksInLR !== undefined) currentTicksInLR.value = savedSettings.currentTicksInLR;
-    if (savedSettings.currentAttrMultiplier !== undefined) currentAttrMultiplier.value = savedSettings.currentAttrMultiplier;  // NEU
+    if (savedSettings.currentAttrMultiplier !== undefined) {
+      // Decimal aus String wiederherstellen
+      currentAttrMultiplier.value = new Decimal(savedSettings.currentAttrMultiplier);
+    }
   } catch (error) {
     console.error('Error loading saved settings:', error);
   }
@@ -606,18 +678,53 @@ function loadSettings() {
 
 // Handler für Custom Input
 function handleAttrMultiplierSubmit() {
-  // Parse und update nur bei Enter oder Blur
   const parsedValue = parseSuffixValue(attrMultiplierInput.value);
   currentAttrMultiplier.value = parsedValue;
+  
+  // Wenn der Wert begrenzt wurde, zeige eine Warnung
+  if (parsedValue.eq('1e333')) {
+    const originalInput = attrMultiplierInput.value;
+    const originalParsed = new Decimal(originalInput.includes('e') ? originalInput : '0');
+    
+    if (originalParsed.gt('1e333')) {
+      console.log('Input was capped at maximum value of 1e333');
+      // Optional: Visual feedback
+      setTimeout(() => {
+        // Kurzer visueller Effekt (optional)
+        const inputElement = document.querySelector('input[placeholder="1e100"]');
+        if (inputElement) {
+          inputElement.style.borderColor = '#f59e0b';
+          setTimeout(() => {
+            inputElement.style.borderColor = '';
+          }, 1000);
+        }
+      }, 100);
+    }
+  }
+  
   formatAttrMultiplierDisplay();
+  saveSettings();
 }
 
 function formatAttrMultiplierDisplay() {
-  // Zeige formatierte Version im Input
-  if (currentAttrMultiplier.value >= 1000) {
-    attrMultiplierInput.value = formatMulti(currentAttrMultiplier.value);
-  } else {
-    attrMultiplierInput.value = currentAttrMultiplier.value.toString();
+  try {
+    // Zeige formatierte Version im Input
+    if (currentAttrMultiplier.value.gte(1000)) {
+      // Für sehr große Zahlen: wissenschaftliche Notation
+      if (currentAttrMultiplier.value.gte('1e15')) {
+        attrMultiplierInput.value = currentAttrMultiplier.value.toExponential(2);
+      } else {
+        // Normale Formatierung für kleinere große Zahlen
+        const exponent = Math.floor(currentAttrMultiplier.value.log10());
+        const mantisse = currentAttrMultiplier.value.div(new Decimal(10).pow(exponent));
+        attrMultiplierInput.value = mantisse.toFixed(2) + 'e' + exponent;
+      }
+    } else {
+      attrMultiplierInput.value = currentAttrMultiplier.value.toString();
+    }
+  } catch (error) {
+    console.error('Format error:', error);
+    attrMultiplierInput.value = '1';
   }
 }
 
@@ -639,13 +746,11 @@ const researchData = [
   { id: "research91", level: 5, bonus: 1, cost: "5900" },
 ];
 
-
 // Watch für Sync zwischen Input und Value
 watch(currentAttrMultiplier, (newValue) => {
   // Nur formatieren wenn das Input-Feld nicht den Fokus hat
-  // Verhindert Interferenz während der Eingabe
   if (document.activeElement !== document.querySelector('input[placeholder="1e100"]')) {
-    if (newValue >= 1000) {
+    if (newValue.gte(1000)) {
       attrMultiplierInput.value = formatMulti(newValue);
     } else {
       attrMultiplierInput.value = newValue.toString();
@@ -654,7 +759,7 @@ watch(currentAttrMultiplier, (newValue) => {
 });
 
 // Watch for changes and save (excluding toggles, they save themselves)
-watch([tickSpeed, ticksPerTick, relic14, researchPoints, currentTicksInLR, currentAttrMultiplier], () => {
+watch([tickSpeed, ticksPerTick, relic14, researchPoints, currentTicksInLR], () => {
   saveSettings();
 });
 

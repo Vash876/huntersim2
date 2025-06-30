@@ -2,6 +2,32 @@
 const changelog = 
 [
   {
+    version: '2.5.4',
+    date: '2025-06-20',
+    baseVersion: 'Kylenator\'s Sheet v1.2.5',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added "Hide Maxed" toggle in Override Modal to filter out upgrades that are already at maximum level',
+          'Added Descriptions for Inscryptions in Override Modal',
+        ]
+      },
+    {
+      text: 'Attraction GN#3 Calculator',
+      subItems: [
+        'AttrGN#3 Multi input supports larger numbers beyond 1e308',
+      ]
+    },
+    {
+      text: 'Loop Mod Overview',
+      subItems: [
+        'Added "All Time Highest MP" filter to hide permanent Loop Mods (Boons) and Ouroboros Crew you already own',
+      ]
+    }
+    ]
+  },
+  {
     version: '2.5.3',
     date: '2025-06-16',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',

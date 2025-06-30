@@ -208,7 +208,7 @@ export const UPGRADES = {
       type: "level", 
       add: 6, 
       maxLevel: 8, 
-      description: "Borge Max HP", 
+      description: "Max HP", 
       format: "value", // Nur der Wert
       color: "red" 
     },
@@ -219,7 +219,7 @@ export const UPGRADES = {
       type: "level", 
       add: 0.65, 
       maxLevel: 6, 
-      description: "Borge Crit Chance", 
+      description: "Crit Chance", 
       format: "percent", // Wert mit %-Zeichen
       color: "red" 
     },
@@ -230,7 +230,7 @@ export const UPGRADES = {
       type: "level", 
       add: 2, 
       maxLevel: 3, 
-      description: "Borge Effect Chance", 
+      description: "Effect Chance", 
       format: "percent", // Wert mit %-Zeichen
       color: "red" 
     },
@@ -241,7 +241,7 @@ export const UPGRADES = {
       type: "level", 
       add: 1, 
       maxLevel: 8, 
-      description: "Borge ATK Power", 
+      description: "ATK Power", 
       format: "value",
       color: "red" 
     },
@@ -252,7 +252,7 @@ export const UPGRADES = {
       type: "level", 
       multiplier: 1.1, 
       maxLevel: 5, 
-      description: "Borge Loot Reward", 
+      description: "Loot Reward", 
       format: "multiplier", // x-Wert
       color: "red" 
     },
@@ -263,7 +263,7 @@ export const UPGRADES = {
       type: "level", 
       add: 0.04, 
       maxLevel: 5, 
-      description: "Borge ATK Speed", 
+      description: "ATK Speed", 
       format: "seconds", // Wert mit s
       color: "red" 
     },
@@ -274,7 +274,7 @@ export const UPGRADES = {
       type: "level", 
       add: 0.4, 
       maxLevel: 8, 
-      description: "Borge DMG Reduction", 
+      description: "DMG Reduction", 
       format: "percent",
       color: "red" 
     },
@@ -285,7 +285,7 @@ export const UPGRADES = {
       type: "level", 
       add: 24, 
       maxLevel: 10, 
-      description: "Borge Max HP", 
+      description: "Max HP", 
       format: "value",
       color: "red" 
     },
@@ -296,7 +296,7 @@ export const UPGRADES = {
       type: "level", 
       add: 0.6, 
       maxLevel: 10, 
-      description: "Ozzy Effect Chance", 
+      description: "Effect Chance", 
       format: "percent",
       color: "green" 
     },
@@ -307,7 +307,7 @@ export const UPGRADES = {
       type: "level", 
       multiplier: 1.5, 
       maxLevel: 8, 
-      description: "Ozzy Loot Reward", 
+      description: "Loot Reward", 
       format: "multiplier",
       color: "green" 
     },
@@ -318,7 +318,7 @@ export const UPGRADES = {
       type: "level", 
       multiplier: 1.75, 
       maxLevel: 6, 
-      description: "Ozzy XP Reward", 
+      description: "XP Reward", 
       format: "multiplier",
       color: "green" 
     },
@@ -329,7 +329,7 @@ export const UPGRADES = {
       type: "level", 
       add: 0.03, 
       maxLevel: 5, 
-      description: "Ozzy ATK Speed", 
+      description: "ATK Speed", 
       format: "seconds",
       color: "green" 
     },
@@ -340,7 +340,7 @@ export const UPGRADES = {
       type: "level", 
       add: 1.11, 
       maxLevel: 7, 
-      description: "Ozzy DMG Reduction", 
+      description: "DMG Reduction", 
       format: "percent",
       color: "green" 
     },
@@ -351,7 +351,7 @@ export const UPGRADES = {
       type: "level", 
       add: 0.5, 
       maxLevel: 10, 
-      description: "Ozzy Multistrike Chance", 
+      description: "Multistrike Chance", 
       format: "percent",
       color: "green" 
     },
@@ -362,7 +362,7 @@ export const UPGRADES = {
       type: "level", 
       multiplier: 1.08, 
       maxLevel: 10, 
-      description: "Borge Loot Reward", 
+      description: "Loot Reward", 
       format: "multiplier",
       color: "red" 
     },
@@ -373,13 +373,13 @@ export const UPGRADES = {
       type: "level", 
       special: true,
       maxLevel: 10, 
-      description: "Borge Multi-Power", 
+      description: "Multi-Power", 
       format: "specialMultiplier",
       baseBonus: 0.03, 
       bonusNames: [
-        "Borge ATK Power",
-        "Borge Max HP",
-        "Borge Loot Reward"
+        "ATK Power",
+        "Max HP",
+        "Loot Reward"
       ],
       color: "red" 
     },
@@ -390,7 +390,7 @@ export const UPGRADES = {
       type: "level", 
       multiplier: 1.1, 
       maxLevel: 10, 
-      description: "Borge Loot Rewards", 
+      description: "Loot Rewards", 
       format: "multiplier",
       color: "red" 
     },
@@ -401,7 +401,7 @@ export const UPGRADES = {
       type: "level", 
       multiplier: 1.1, 
       maxLevel: 10, 
-      description: "Ozzy Loot Rewards", 
+      description: "Loot Rewards", 
       format: "multiplier",
       color: "green" 
     },
@@ -412,7 +412,7 @@ export const UPGRADES = {
       type: "level", 
       add: 5, 
       maxLevel: 10, 
-      description: "Borge Max HP", 
+      description: "Max HP", 
       format: "percent",
       color: "red" 
     },
@@ -423,7 +423,7 @@ export const UPGRADES = {
       type: "level", 
       add: 0.2, 
       maxLevel: 7, 
-      description: "Ozzy DMG Reduction", 
+      description: "DMG Reduction", 
       format: "percent",
       color: "green" 
     },
@@ -434,7 +434,7 @@ export const UPGRADES = {
       type: "level", 
       multiplier: 1.05, 
       maxLevel: 10, 
-      description: "Borge ATK Power", 
+      description: "ATK Power", 
       format: "multiplier",
       color: "red" 
     },
@@ -445,7 +445,7 @@ export const UPGRADES = {
       type: "level", 
       add: 0.4, 
       maxLevel: 7, 
-      description: "Borge Crit Chance", 
+      description: "Crit Chance", 
       format: "percent",
       color: "red" 
     },
@@ -456,7 +456,7 @@ export const UPGRADES = {
       type: "level", 
       add: 0.2, 
       maxLevel: 7, 
-      description: "Borge Effect Chance", 
+      description: "Effect Chance", 
       format: "percent",
       color: "red" 
     },
@@ -467,7 +467,7 @@ export const UPGRADES = {
       type: "level", 
       add: 0.2, 
       maxLevel: 7, 
-      description: "Borge DMG Reduction", 
+      description: "DMG Reduction", 
       format: "percent",
       color: "red" 
     },
@@ -478,7 +478,7 @@ export const UPGRADES = {
       type: "level", 
       add: 0.2, 
       maxLevel: 7, 
-      description: "Ozzy Effect Chance", 
+      description: "Effect Chance", 
       format: "percent",
       color: "green" 
     }

@@ -294,7 +294,7 @@ export const traitSpheres = [
     id: 23, 
     col: 0, 
     row: 5, 
-    price: 5, 
+    price: 0, 
     description: "Trait Sphere #23",
     effect: "locked"
   },

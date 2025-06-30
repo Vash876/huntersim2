@@ -1,4 +1,3 @@
-<!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\common\OverrideModal.vue -->
 <template>
   <div 
     v-if="isVisible" 
@@ -9,14 +8,38 @@
       class="bg-gray-800 rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto animate-fade-in border border-gray-700"
       @click.stop
     >
-      <!-- Header mit Reset-Button -->
+      <!-- Header mit Reset-Button und Hide Maxed Toggle -->
       <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-2.5 border-b border-gray-600 sticky top-0 z-10">
-        <div class="flex justify-between items-center">
+        <!-- Erste Zeile: Titel und Action Buttons -->
+        <div class="flex justify-between items-center mb-2 sm:mb-0">
           <h2 class="text-base sm:text-lg font-bold text-white truncate mr-2">
             <span :class="`text-${hunterColor}-400`">{{ buildName }}</span>
             <span class=""> - Overrides</span>
           </h2>
           <div class="flex items-center gap-2">
+            <!-- Hide Maxed Toggle - nur auf Desktop in der ersten Zeile -->
+            <div class="hidden sm:block bg-gray-800/50 rounded-lg border border-gray-700/50 p-2">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-300 text-xs font-medium mr-3">Hide Maxed:</span>
+                <button 
+                  @click="toggleHideMaxed" 
+                  class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
+                  :class="{
+                    'bg-green-600': localHideMaxed,
+                    'bg-gray-600': !localHideMaxed
+                  }"
+                >
+                  <span 
+                    class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                    :class="{
+                      'translate-x-5': localHideMaxed,
+                      'translate-x-1': !localHideMaxed
+                    }"
+                  ></span>
+                </button>
+              </div>
+            </div>
+            
             <button 
               @click="resetAllOverrides" 
               class="px-2 py-1 sm:px-3 bg-gray-600 hover:bg-gray-500 text-xs sm:text-sm text-white rounded-md"
@@ -31,7 +54,33 @@
             </button>
           </div>
         </div>
+        
+        <!-- Zweite Zeile: Hide Maxed Toggle - nur auf Mobile -->
+        <div class="block sm:hidden">
+          <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 p-2">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-300 text-xs font-medium">Hide Maxed:</span>
+              <button 
+                @click="toggleHideMaxed" 
+                class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
+                :class="{
+                  'bg-green-600': localHideMaxed,
+                  'bg-gray-600': !localHideMaxed
+                }"
+              >
+                <span 
+                  class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                  :class="{
+                    'translate-x-5': localHideMaxed,
+                    'translate-x-1': !localHideMaxed
+                  }"
+                ></span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+      
       <!-- Loading state -->
       <div v-if="isLoading" class="p-6 flex flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-l-2 border-blue-500 mb-2"></div>
@@ -50,9 +99,9 @@
         </button>
       </div>
 
-      <!-- Override Categories - Neues Design -->
+      <!-- Override Categories mit Hide Maxed Filter -->
       <div v-else class="p-3">
-        <div v-for="(category, index) in visibleCategories" :key="index" class="mb-3">
+        <div v-for="(category, index) in filteredCategories" :key="index" class="mb-3">
           <!-- Category Header -->
           <div class="flex items-center mb-1.5">
             <div class="w-1.5 h-5 bg-blue-500 rounded-r mr-2"></div>
@@ -66,14 +115,23 @@
               :key="param.key" 
               class="bg-gray-750/60 rounded-md p-1.5 bg-gray-700/60 transition-colors border border-transparent hover:border-gray-600"
             >
-              <!-- Parameter Name -->
+              <!-- Parameter Name mit Description -->
               <div class="flex justify-between items-center mb-1">
-                <span class="text-xs font-medium text-gray-300">{{ truncateName(param.name) }}</span>
+                <div class="flex-1 mr-2">
+                  <span class="text-xs font-medium text-gray-300">{{ truncateName(param.name) }}</span>
+                  <!-- NEU: Description für Inscryptions -->
+                  <span 
+                    v-if="param.description" 
+                    class="text-[10px] text-gray-500 ml-1"
+                  >
+                    {{ param.description }}
+                  </span>
+                </div>
                 
                 <!-- Max Value Badge -->
                 <span 
                   v-if="param.maxValue !== null && param.maxValue !== Infinity && param.type !== 'boolean'" 
-                  class="text-[10px] bg-gray-700 text-gray-400 px-1 py-0.5 rounded"
+                  class="text-[10px] bg-gray-700 text-gray-400 px-1 py-0.5 rounded flex-shrink-0"
                 >
                   max: {{ param.maxValue }}
                 </span>
@@ -143,8 +201,8 @@
         </div>
 
         <!-- Empty state -->
-        <div v-if="visibleCategories.length === 0" class="py-4 text-center text-gray-400 text-sm">
-          No parameters available
+        <div v-if="filteredCategories.length === 0" class="py-4 text-center text-gray-400 text-sm">
+          {{ localHideMaxed ? 'All parameters are maxed - disable "Hide Maxed" to see them' : 'No parameters available' }}
         </div>
       </div>
     </div>
@@ -173,6 +231,7 @@ const props = defineProps({
   buildName: { type: String, default: 'Build' },
   buildId: { type: String, default: null },
   currentOverrides: { type: Object, default: () => ({}) },
+  isImportedBuild: { type: Boolean, default: false }, // NEU: Flag für importierte Builds
 });
 
 const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'overridesBuild', 'close', 'overridesUpdated']);
@@ -186,6 +245,99 @@ const loadError = ref(null);
 const localOverrides = ref({});
 const parameterData = ref([]);
 const totalCost = ref(null);
+
+// NEU: Hide Maxed Toggle State
+const localHideMaxed = ref(false);
+
+// NEU: LocalStorage Key für Hide Maxed Einstellung
+const HIDE_MAXED_KEY = 'overrideModal_hideMaxed';
+
+// NEU: Toggle-Funktion für Hide Maxed
+function toggleHideMaxed() {
+  localHideMaxed.value = !localHideMaxed.value;
+  saveHideMaxedSetting();
+}
+
+// NEU: Speichern der Hide Maxed Einstellung
+function saveHideMaxedSetting() {
+  try {
+    localStorage.setItem(HIDE_MAXED_KEY, JSON.stringify(localHideMaxed.value));
+    console.log(`Hide Maxed setting saved: ${localHideMaxed.value}`);
+  } catch (error) {
+    console.error('Fehler beim Speichern der Hide Maxed Einstellung:', error);
+  }
+}
+
+// NEU: Laden der Hide Maxed Einstellung
+function loadHideMaxedSetting() {
+  try {
+    const saved = localStorage.getItem(HIDE_MAXED_KEY);
+    if (saved !== null) {
+      localHideMaxed.value = JSON.parse(saved);
+      console.log(`Hide Maxed setting loaded: ${localHideMaxed.value}`);
+    }
+  } catch (error) {
+    console.error('Fehler beim Laden der Hide Maxed Einstellung:', error);
+    localHideMaxed.value = false; // Fallback
+  }
+}
+
+// NEU: Prüft ob ein Parameter "maxed" ist
+function isParameterMaxed(param) {
+  // Prüfe zuerst, ob ein Override existiert
+  const overrideValue = localOverrides.value[param.key];
+  
+  // Wenn ein Override existiert, prüfe ob er unter dem globalen/max Wert liegt
+  if (overrideValue !== null && overrideValue !== undefined) {
+    // Boolean Parameter: Wenn Override auf OFF (0/false) gesetzt ist, zeige es an
+    if (param.type === 'boolean') {
+      if (overrideValue === 0 || overrideValue === false) {
+        return false; // Zeige an, weil Override ist unter "maxed" (ON)
+      }
+    }
+    
+    // Numeric Parameter: Wenn Override unter global oder max Wert liegt, zeige es an
+    if (param.maxValue !== null && param.maxValue !== Infinity) {
+      if (overrideValue < param.globalValue || overrideValue < param.maxValue) {
+        return false; // Zeige an, weil Override ist unter max
+      }
+    }
+    
+    // Wenn Override unter global Wert liegt, zeige es an
+    if (overrideValue < param.globalValue) {
+      return false; // Zeige an, weil Override ist niedriger als global
+    }
+  }
+  
+  // Jetzt prüfe den globalen "maxed" Status nur wenn KEIN relevanter Override existiert
+  
+  // Boolean Parameter: Wenn global ON (true/1), dann ist es maxed
+  if (param.type === 'boolean') {
+    return param.globalValue === true || param.globalValue === 1;
+  }
+  
+  // Numeric Parameter: Wenn global value >= max value, dann ist es maxed
+  if (param.maxValue !== null && param.maxValue !== Infinity) {
+    return param.globalValue >= param.maxValue;
+  }
+  
+  // Wenn kein Max-Wert definiert ist, kann es nicht maxed sein
+  return false;
+}
+
+// NEU: Gefilterte Kategorien mit Hide Maxed Logic
+const filteredCategories = computed(() => {
+  if (!localHideMaxed.value) {
+    // Wenn Hide Maxed deaktiviert ist, zeige alle
+    return visibleCategories.value;
+  }
+  
+  // Filtere Parameter in jeder Kategorie
+  return visibleCategories.value.map(category => ({
+    ...category,
+    params: category.params.filter(param => !isParameterMaxed(param))
+  })).filter(category => category.params.length > 0); // Entferne leere Kategorien
+});
 
 // Helper function to truncate names
 function truncateName(name) {
@@ -283,6 +435,21 @@ async function loadOverrideData() {
                   paramName = upgrade.name;
                   maxValue = upgrade.maxLevel || null;
                   type = upgrade.type || "numeric";
+                  
+                  // NEU: Description für Inscryptions hinzufügen
+                  if (upgradeType === 'inscryptions' && upgrade.description) {
+                    // Description wird als separate Eigenschaft gespeichert
+                    processedCategory.params.push({
+                      key: paramKey,
+                      name: paramName || paramKey,
+                      description: upgrade.description, // NEU: Description hinzufügen
+                      globalValue,
+                      maxValue,
+                      type,
+                      category: paramCategory
+                    });
+                    continue; // Skip the normal push at the end
+                  }
                 }
               }
             }
@@ -707,6 +874,16 @@ function handleClose() {
 // Watch for changes
 watch(() => props.isVisible, (newValue) => {
   if (newValue) {
+    // NEU: Beim Öffnen des Modals prüfen, ob es ein importierter Build ist
+    if (props.isImportedBuild) {
+      // Bei importierten Builds: Hide Maxed automatisch deaktivieren
+      localHideMaxed.value = false;
+      console.log('Imported build detected - Hide Maxed disabled');
+    } else {
+      // Bei normalen Builds: Einstellung aus LocalStorage laden
+      loadHideMaxedSetting();
+    }
+    
     loadOverrideData();
   }
 });
@@ -724,8 +901,24 @@ watch(() => props.hunterType, () => {
   }
 });
 
+// NEU: Watch für isImportedBuild Änderungen
+watch(() => props.isImportedBuild, (newValue) => {
+  if (newValue && props.isVisible) {
+    // Wenn der Build als importiert markiert wird und das Modal offen ist
+    localHideMaxed.value = false;
+    console.log('Build marked as imported - Hide Maxed disabled');
+  }
+});
+
 onMounted(() => {
   if (props.isVisible) {
+    // NEU: Beim Mount prüfen, ob es ein importierter Build ist
+    if (props.isImportedBuild) {
+      localHideMaxed.value = false;
+    } else {
+      loadHideMaxedSetting();
+    }
+    
     loadOverrideData();
   }
 });

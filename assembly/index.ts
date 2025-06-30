@@ -25,6 +25,7 @@ import {
   getLastBorgeCritRate,
   getLastBorgeCritPower,
   getLastBorgeReload,
+  getLiveBorgeShieldBreakStacks,
   getProgressSize,
   getProgressStageAt,
   getProgressCountAt,
@@ -39,6 +40,15 @@ import {
   getLiveBorgeMaxHp,
   getLiveBorgeAtk,
   getLiveBorgeRevives,
+
+  getLiveBorgeRegen,
+  getLiveBorgeDr,
+  getLiveBorgeEvade,
+  getLiveBorgeEffect,
+  getLiveBorgeCritRate,
+  getLiveBorgeCritPower,
+  getLiveBorgeReload,
+
   getLiveCurrentTime,
   getLiveCurrentEnem,
   getLiveCurrentStage,
@@ -52,10 +62,25 @@ import {
   getLiveNextFury,
   getLiveFuryEnabled,
   getLiveLastEventType,
+  getLiveLastEventTypeString,
   getLiveLastEventDamage,
   getLiveLastEventHealing,
   getLiveLastEventStage,
-  getLiveIsFinished
+  getLiveIsFinished,
+
+  getLiveEnemyAtk,
+  getLiveEnemyRegen,
+  getLiveEnemyDr,
+  getLiveEnemyEvade,
+  getLiveEnemyEffect,
+  getLiveEnemyCritRate,
+  getLiveEnemyCritDmg,
+  getLiveEnemyAtkSpd,
+
+  getLiveEnemyEnrage,
+  getLiveNextBossBonusAtk,
+  getLiveNextFuryToggle,
+  getLiveEnemyEnrageSpeedReduction,
 } from './evalBorge';
 
 // Ozzy Imports
@@ -176,6 +201,7 @@ export {
   getLastBorgeCritRate,
   getLastBorgeCritPower,
   getLastBorgeReload,
+  getLiveBorgeShieldBreakStacks,
   getProgressSize,
   getProgressStageAt,
   getProgressCountAt,
@@ -190,6 +216,13 @@ export {
   getLiveBorgeMaxHp,
   getLiveBorgeAtk,
   getLiveBorgeRevives,
+  getLiveBorgeRegen,
+  getLiveBorgeDr,
+  getLiveBorgeEvade,
+  getLiveBorgeEffect,
+  getLiveBorgeCritRate,
+  getLiveBorgeCritPower,
+  getLiveBorgeReload,
   getLiveCurrentTime,
   getLiveCurrentEnem,
   getLiveCurrentStage,
@@ -203,10 +236,25 @@ export {
   getLiveNextFury,
   getLiveFuryEnabled,
   getLiveLastEventType,
+  getLiveLastEventTypeString,
   getLiveLastEventDamage,
   getLiveLastEventHealing,
   getLiveLastEventStage,
-  getLiveIsFinished
+  getLiveIsFinished,
+
+  getLiveEnemyAtk,
+  getLiveEnemyRegen,
+  getLiveEnemyDr,
+  getLiveEnemyEvade,
+  getLiveEnemyEffect,
+  getLiveEnemyCritRate,
+  getLiveEnemyCritDmg,
+  getLiveEnemyAtkSpd,
+
+  getLiveEnemyEnrage,
+  getLiveNextBossBonusAtk,
+  getLiveNextFuryToggle,
+  getLiveEnemyEnrageSpeedReduction,
 };
 
 // Re-Export aller OZZY-Funktionen
