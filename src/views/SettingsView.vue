@@ -392,28 +392,28 @@ async function createBackup() {
       delete hunterStoreState.evaluationCache;
     }
     
-    // 2. TR-Planner Daten
-    const trPlannerData = JSON.parse(JSON.stringify(trPlannerStore.$state));
+    // ENTFERNT: TR-Planner Daten - wegen Kompatibilitätsproblemen
+    // const trPlannerData = JSON.parse(JSON.stringify(trPlannerStore.$state));
     
     // 3. Gadget Calculator Daten aus localStorage
     const gadgetCurrentLevels = localStorage.getItem('gadgetCalculator_currentLevels');
     const gadgetTargetLevels = localStorage.getItem('gadgetCalculator_targetLevels');
     const gadgetReferenceBuildId = localStorage.getItem('gadgetCalculator_referenceBuildId');
     
-    // 4. Weitere relevante localStorage-Einträge sammeln
-    const trPlanOrderIds = localStorage.getItem('trPlanOrderIds');
+    // 4. Weitere relevante localStorage-Einträge sammeln (ohne TR-Planner)
+    // ENTFERNT: const trPlanOrderIds = localStorage.getItem('trPlanOrderIds');
     const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
     
-    // Backup-Datenpaket erstellen
+    // Backup-Datenpaket erstellen (ohne TR-Planner)
     const backupData = {
       data: {
         hunterStore: hunterStoreState,
-        trPlannerStore: trPlannerData,
+        // ENTFERNT: trPlannerStore: trPlannerData,
         localStorage: {
           gadgetCalculator_currentLevels: gadgetCurrentLevels ? JSON.parse(gadgetCurrentLevels) : {},
           gadgetCalculator_targetLevels: gadgetTargetLevels ? JSON.parse(gadgetTargetLevels) : {},
           gadgetCalculator_referenceBuildId: gadgetReferenceBuildId,
-          trPlanOrderIds: trPlanOrderIds ? JSON.parse(trPlanOrderIds) : [],
+          // ENTFERNT: trPlanOrderIds: trPlanOrderIds ? JSON.parse(trPlanOrderIds) : [],
           huntersim_high_iterations_mode: highIterationsMode
         }
       },
@@ -428,7 +428,8 @@ async function createBackup() {
     // Base64-Encoding für den Backup-Code
     backupCode.value = btoa(jsonData);
     
-    showToast('Backup created successfully! Includes Hunter Simulator, TR-Planner, and Gadget Calculator data.', 'success');
+    // GEÄNDERT: Toast-Message ohne TR-Planner
+    showToast('Backup created successfully! Includes Hunter Simulator and Gadget Calculator data. TR-Planner data excluded due to compatibility issues.', 'success');
     isCreatingBackup.value = false;
   } catch (error) {
     console.error('Error creating backup:', error);

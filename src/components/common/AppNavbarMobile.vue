@@ -234,6 +234,20 @@
         </button>
       </div>
     </div>
+    <div 
+      v-if="!activeSection" 
+      class="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 px-3 text-center"
+    >
+      <div class="flex items-center justify-center">
+        <IconInfoCircle size="16" class="mr-2 flex-shrink-0" />
+        <span class="text-xs font-medium">
+          🎉 <strong>CIFI Tools</strong> moved! 
+          <router-link to="/home" class="underline text-yellow-200 font-semibold ml-1">
+            Backup guide →
+          </router-link>
+        </span>
+      </div>
+    </div>
   </nav>
 </template>
 
