@@ -2,8 +2,29 @@
 const changelog = 
 [
   {
+    version: '2.6.0',
+    date: '2025-07-01',
+    changes: [
+      {
+        text: '🎉 Major Rebrand: Hunter Simulator → CIFI Tools',
+        subItems: [
+          'Renamed application to <span class="text-purple-400 font-medium">CIFI Tools</span>',
+          'Moved to new domain: <a href="https://cifi-tools.com" target="_blank" class="text-blue-400 hover:text-blue-300 transition-colors">https://cifi-tools.com</a>',
+        ]
+      },
+      {
+        text: '⚠️ Important: Data Migration Required',
+        subItems: [
+          '<b class="text-yellow-400">Please create a backup in Settings</b> on the old domain and import it on the new domain to transfer your builds and Tools data',
+          '<b class="text-red-400">Issue:</b> TR Planner data is not included in backups due to compatibility issues with the previous version without Gem Overview',
+          'TR Planner plans will need to be manually recreated - sorry for the inconvenience',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.5.4',
-    date: '2025-06-20',
+    date: '2025-06-30',
     baseVersion: 'Kylenator\'s Sheet v1.2.5',
     changes: [
       {
@@ -561,7 +582,7 @@ const changelog =
           <h2 class="text-2xl font-bold text-white">Version {{ release.version }}</h2>
           <span class="text-gray-400">{{ release.date }}</span>
         </div>
-        <p class="text-gray-400 mb-4">Based on {{ release.baseVersion }}</p>
+        <p v-if="release.baseVersion" class="text-gray-400 mb-4">Based on {{ release.baseVersion }}</p>
         <ChangelogItem :items="release.changes" />
       </div>
     </div>

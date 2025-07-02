@@ -76,7 +76,7 @@
                     <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
                       <img src="@/assets/general/rp.png" alt="RP" class="w-4 h-4" />
                     </div>
-                    <span class="text-sm text-gray-300">Research Points</span>
+                    <span class="text-sm text-gray-300">Research Points (e)</span>
                     <span class ="ml-1 text-xs text-gray-500">(max: 5900)</span>
                   </div>
                   <ToolValueControls

@@ -112,13 +112,13 @@
           <IconChartBar size="16" />
         </button>
 
-        <!-- <button 
+        <button 
           @click.stop="handleLiveSimulation"
           class="action-button-compact"
           title="Live Simulation"
         >
           <IconPlayerPlay size="16" />
-        </button> -->
+        </button>
 
         <button 
           @click="emit('share')"

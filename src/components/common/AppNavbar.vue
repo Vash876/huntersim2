@@ -11,8 +11,8 @@
           <IconTargetArrow size="24" class="text-white" />
         </div>
         <div class="flex flex-col">
-          <span class="text-xl font-bold tracking-wide text-white text-shadow-lg/100">Hunter Simulator</span>
-          <span class="text-xs text-gray-400">by Kylenator and Vash</span>
+          <span class="text-xl font-bold tracking-wide text-white text-shadow-lg/100">CIFI Tools</span>
+          <span class="text-xs text-gray-400">Hunter Simulator & Game Tools</span>
         </div>
       </router-link>
       
