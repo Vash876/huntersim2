@@ -2,6 +2,26 @@
 const changelog = 
 [
   {
+    version: '2.6.1',
+    date: '2025-07-04',
+    changes: [
+      {
+        text: 'NEW: Research Overview Tool',
+        subItems: [
+          'Added comprehensive Research Overview tool for browsing and filtering Researches (#21+)',
+          'Visual distinction between Standard (temporary) and Dark (permanent) Research types',
+          'Credits to Farns for providing the data and maintaining the Google Sheet',
+        ]
+      },
+      {
+        text: 'Gadget Calculator Enhancements',
+        subItems: [
+          'Added individual save time display for each gadget showing how long it takes to afford each upgrade',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.6.0',
     date: '2025-07-01',
     changes: [

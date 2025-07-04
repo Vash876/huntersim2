@@ -118,6 +118,11 @@ const routes = [
     component: () => import('../views/tools/LoopModOverview.vue'),
   },
   {
+    path: '/tools/research-overview',
+    name: 'Research Overview',
+    component: () => import('../views/tools/ResearchOverview.vue'),
+  },
+  {
     path: '/tools/attrgn3-calculator',
     name: 'Attr. GN#3 Calculator',
     component: () => import('../views/tools/AttrGN3Calculator.vue'),

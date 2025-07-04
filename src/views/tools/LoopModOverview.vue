@@ -228,7 +228,7 @@
               <!-- Current MP Value Display -->
               <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="font-medium text-white text-sm">Available MP Value</span>
+                  <span class="font-medium text-white text-sm">Available MP Value (e)</span>
                   <ToolValueControls
                     :value="newMpValue"
                     :minValue="0"
@@ -515,6 +515,11 @@
             </table>
           </div>
         </div>
+      </div>
+      <div class="text-center text-xs text-gray-400 mt-2">
+        <span class="text-gray-500">Credits to</span>
+        <span class="text-gray-300 font-medium mx-1">Farns</span>
+        <span class="text-gray-500">for maintaining the data</span>
       </div>
     </div>
   </div>

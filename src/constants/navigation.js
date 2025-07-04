@@ -102,6 +102,12 @@ export const NAVIGATION = {
       icon: IconBoxModel
     },   
     {
+      id: 'researchoverview',
+      name: 'Research Overview',
+      path: '/tools/research-overview',
+      icon: IconMicroscope
+    },  
+    {
       id: 'attrgn3calculator',
       name: 'Attr. GN#3 Calculator',
       path: '/tools/attrgn3-calculator',

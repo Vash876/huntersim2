@@ -172,17 +172,21 @@
                 <div class="flex flex-wrap justify-between items-center mb-2">
                   <span class="text-base text-white font-medium flex-grow gadget-title">
                     <span class="hidden sm:inline">
-                      {{ gadget.label.length > 40 ? gadget.label.substring(0, 40) + '...' : gadget.label }}
+                      {{ gadget.label.length > 40 ? gadget.label.substring(0, 31) + '...' : gadget.label }}
                     </span>
                     <span class="inline sm:hidden">
                       {{ gadget.label.length > 28 ? gadget.label.substring(0, 25) + '...' : gadget.label }}
                     </span>
                   </span>
-                  <div 
-                    v-if="getGadgetCost(gadget.id) > 0" 
-                    class="text-amber-400 text-sm font-bold gadget-cost bg-gray-900/80 px-2 py-1 rounded-md"
-                  >
-                    {{ formatGadgetCost(getGadgetCost(gadget.id)) }}
+                  <div v-if="getGadgetCost(gadget.id) > 0" class="flex flex-col items-end">
+                    <!-- Cost Badge -->
+                    <div class="text-amber-400 text-sm font-bold gadget-cost bg-gray-900/80 px-2 py-1 rounded-md">
+                      {{ formatGadgetCost(getGadgetCost(gadget.id)) }}
+                    </div>
+                    <!-- NEU: Time Badge -->
+                    <div class="text-xs mt-1 px-2 py-0.5 rounded-md bg-blue-900/60 text-blue-200 font-bold">
+                      {{ formatIndividualSaveTime(gadget.id) }}
+                    </div>
                   </div>
                 </div>
 
@@ -696,6 +700,49 @@ function finalizeTargetLevel(gadgetId, newVal = null) {
   
   // Speichere die Werte
   saveGadgetLevels();
+}
+
+// Individuelle Sparzeit für ein Gadget
+function formatIndividualSaveTime(gadgetId) {
+  const cost = getGadgetCost(gadgetId);
+  if (cost <= 0 || tessarectsPerDay.value <= 0) return 'N/A';
+  
+  const days = cost / tessarectsPerDay.value;
+  
+  // Wenn es mehr als 10 Jahre dauert...
+  if (days > 36500) { // 100 Jahre = 36500 Tage
+    return '☠️';
+  }
+  
+  // Wenn es mehr als 1 Jahr dauert, in Jahren und Monaten anzeigen
+  if (days > 365) {
+    const years = Math.floor(days / 365);
+    const remainingDays = days % 365;
+    const months = Math.floor(remainingDays / 30);
+    
+    if (months === 0) {
+      return `${years}y`;
+    } else {
+      return `${years}y, ${months}mo`;
+    }
+  }
+  
+  // Wenn es mehr als 60 Tage dauert, nur in Tagen anzeigen
+  if (days > 60) {
+    return `${Math.floor(days)}d`;
+  }
+  
+  // Normaler Fall: Tage und Stunden
+  const fullDays = Math.floor(days);
+  const hours = Math.round((days - fullDays) * 24);
+  
+  if (fullDays === 0) {
+    return `${hours}h`;
+  } else if (hours === 0) {
+    return `${fullDays}d`;
+  } else {
+    return `${fullDays}d, ${hours}h`;
+  }
 }
 
 // Hilfsfunktion um die Bildnummer zu ermitteln

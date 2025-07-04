@@ -1,16 +1,5 @@
 <template>
   <header class="bg-gradient-to-r from-gray-900 to-gray-800 text-white shadow-lg relative z-50">
-  <div class="hidden md:block bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2 px-4 text-center relative">
-    <div class="max-w-7xl mx-auto flex items-center justify-center">
-      <IconInfoCircle size="20" class="mr-2 flex-shrink-0" />
-      <span class="text-sm font-medium">
-        🎉 <strong>CIFI Tools</strong> has moved to a new domain! 
-        <router-link to="/home" class="underline hover:no-underline text-yellow-200 font-semibold ml-1">
-          Check changelog for backup instructions →
-        </router-link>
-      </span>
-    </div>
-  </div>
     <!-- Dekorativer Farbverlauf an der Oberseite -->
     <div class="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
     
@@ -174,7 +163,6 @@ import {
   IconSettings,
   IconCoffee,
   IconTools,
-  IconInfoCircle
 } from '@tabler/icons-vue';
 
 const navigation = NAVIGATION;
