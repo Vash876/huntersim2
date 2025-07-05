@@ -3,7 +3,7 @@
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
       <!-- Überschrift -->
       <h2 class="text-2xl font-bold mb-4 text-center text-white">
-        <span>Gadget Calculator</span>
+        <span>Gadget Planner</span>
       </h2>
       
       <!-- Tessarect Rate Settings -->

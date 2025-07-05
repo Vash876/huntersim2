@@ -99,23 +99,44 @@
       <div class="submenu-header">
         <h3>Game Tools</h3>
       </div>
-      <div class="grid grid-cols-2 gap-3 px-3 py-4">
-        <router-link 
-          v-for="tool in navigation.tools"
-          :key="tool.id"
-          :to="tool.path"
-          class="submenu-item"
-          @click="activeSection = null"
+      
+      <!-- Tools Kategorien als moderne Tabs -->
+      <div class="tab-navigation">
+        <button 
+          v-for="(category, index) in navigation.toolCategories"
+          :key="index"
+          class="tab-button"
+          :class="{ 'active': selectedToolCategory === index }"
+          @click="selectedToolCategory = index"
         >
-          <div class="modern-card tool-card">
-            <div class="card-content">
-              <component :is="tool.icon" class="w-7 h-7 text-purple-400" />
-              <div class="label text-purple-200">
-                {{ tool.name }}
-              </div>
+          {{ category.name }}
+        </button>
+      </div>
+      
+      <!-- Tools für die ausgewählte Kategorie -->
+      <div class="tab-content px-3 py-4">
+        <div class="tab-content px-3 py-4">
+          <div v-for="(category, categoryIndex) in navigation.toolCategories" :key="categoryIndex">
+            <div v-if="selectedToolCategory === categoryIndex" class="grid grid-cols-2 gap-3">
+              <router-link 
+                v-for="tool in category.tools" 
+                :key="tool.id"
+                :to="tool.path"
+                class="submenu-item"
+                @click="activeSection = null"
+              >
+                <div class="modern-card" :class="getToolCardClass(category.color, tool)">
+                  <div class="card-content">
+                    <component :is="tool.icon" class="w-7 h-7" :class="getToolIconClass(category.color, tool)" />
+                    <div class="label" :class="getToolLabelClass(category.color, tool)">
+                      {{ tool.name }}
+                    </div>
+                  </div>
+                </div>
+              </router-link>
             </div>
           </div>
-        </router-link>
+        </div>
       </div>
     </div>
     
@@ -256,6 +277,7 @@ const activeSection = ref(null);
 
 // Ausgewählte Kategorie für Upgrades
 const selectedUpgradeCategory = ref(0);
+const selectedToolCategory = ref(0);
 
 // Toggle für die Dropdown-Sektionen
 function toggleSection(section) {
@@ -267,6 +289,46 @@ function toggleSection(section) {
     if (section === 'upgrades') {
       selectedUpgradeCategory.value = 0;
     }
+  }
+}
+
+// Helper-Funktionen für Tool-Farben
+function getToolCardClass(categoryColor, tool) {
+  // Individuelle Tool-Farbe hat Priorität über Kategorie-Farbe
+  const color = tool.color || categoryColor;
+  switch(color) {
+    case 'blue': return 'tool-card-blue';
+    case 'green': return 'tool-card-green';
+    case 'purple': return 'tool-card-purple';
+    case 'red': return 'tool-card-red';
+    case 'orange': return 'tool-card-orange';
+    default: return 'tool-card';
+  }
+}
+
+function getToolIconClass(categoryColor, tool) {
+  // Individuelle Tool-Farbe hat Priorität über Kategorie-Farbe
+  const color = tool.color || categoryColor;
+  switch(color) {
+    case 'blue': return 'text-blue-400';
+    case 'green': return 'text-green-400';
+    case 'purple': return 'text-purple-400';
+    case 'red': return 'text-red-400';
+    case 'orange': return 'text-orange-400';
+    default: return 'text-purple-400';
+  }
+}
+
+function getToolLabelClass(categoryColor, tool) {
+  // Individuelle Tool-Farbe hat Priorität über Kategorie-Farbe
+  const color = tool.color || categoryColor;
+  switch(color) {
+    case 'blue': return 'text-blue-200';
+    case 'green': return 'text-green-200';
+    case 'purple': return 'text-purple-200';
+    case 'red': return 'text-red-200';
+    case 'orange': return 'text-orange-200';
+    default: return 'text-purple-200';
   }
 }
 </script>
@@ -397,6 +459,15 @@ function toggleSection(section) {
 
 .upgrade-card { border-top: 3px solid rgba(99, 102, 241, 0.7); }
 .tool-card { border-top: 3px solid rgba(168, 85, 247, 0.7); }
+.tool-card-blue { border-top: 3px solid rgba(59, 130, 246, 0.7); }
+.tool-card-green { border-top: 3px solid rgba(34, 197, 94, 0.7); }
+.tool-card-red { border-top: 3px solid rgba(239, 68, 68, 0.7); }
+.tool-card-orange { border-top: 3px solid rgba(249, 115, 22, 0.7); }
+.tool-card-purple { border-top: 3px solid rgba(168, 85, 247, 0.7); }
+
+.settings-card { border-top: 3px solid rgba(20, 184, 166, 0.7); }
+.changelog-card { border-top: 3px solid rgba(59, 130, 246, 0.7); }
+.support-card { border-top: 3px solid rgba(245, 158, 11, 0.7); }
 .settings-card { border-top: 3px solid rgba(20, 184, 166, 0.7); }
 .changelog-card { border-top: 3px solid rgba(59, 130, 246, 0.7); }
 .support-card { border-top: 3px solid rgba(245, 158, 11, 0.7); }

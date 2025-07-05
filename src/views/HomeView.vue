@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.6.2',
+    date: '2025-07-05',
+    changes: [
+      {
+        text: 'Navigation Improvements',
+        subItems: [
+          'Reorganized Tools section into categorized sections for better navigation',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.6.1',
     date: '2025-07-04',
     changes: [

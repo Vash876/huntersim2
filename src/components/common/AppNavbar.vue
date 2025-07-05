@@ -95,23 +95,69 @@
             
             <!-- Tools Dropdown Menu -->
             <div 
-              class="absolute top-full right-0 mt-2 bg-gray-800 rounded-xl shadow-xl transform transition-all duration-200 origin-top-right z-50 border border-gray-700 w-64" 
+              class="absolute top-full right-0 mt-2 bg-gray-800 rounded-xl shadow-xl transform transition-all duration-200 origin-top-right z-50 border border-gray-700 w-[500px] overflow-hidden" 
               :class="activeCategory === 'Tools' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'"
-            >              
-              <div class="py-2">
-                <router-link 
-                  v-for="tool in navigation.tools" 
-                  :key="tool.id"
-                  :to="tool.path" 
-                  class="flex items-center px-4 py-2.5 transition-colors duration-200"
-                  :class="[$route.path === tool.path ? 'bg-blue-900/30 text-blue-200' : 'hover:bg-gray-700/50 text-gray-300 hover:text-white']"
-                  @click="activeCategory = null"
-                >
-                  <div class="p-1.5 rounded bg-gray-750 mr-3 flex items-center justify-center">
-                    <component :is="tool.icon" class="w-5 h-5 text-blue-400" />
+            >                
+              <div class="p-4">
+                <div class="grid grid-cols-2 gap-6">
+                  <!-- Links: Planning & Calculators -->
+                  <div class="space-y-4">
+                    <div v-for="category in navigation.toolCategories.slice(0, 2)" :key="category.name">
+                      <h3 class="text-sm font-bold text-gray-300 mb-2 px-2 flex items-center">
+                        <span 
+                          class="h-4 w-1 rounded-r mr-2"
+                          :class="{
+                            'bg-blue-500': category.color === 'blue',
+                            'bg-green-500': category.color === 'green',
+                            'bg-purple-500': category.color === 'purple'
+                          }"
+                        ></span>
+                        {{ category.name }}
+                      </h3>
+                      <div class="space-y-1">
+                        <router-link 
+                          v-for="tool in category.tools" 
+                          :key="tool.id"
+                          :to="tool.path" 
+                          class="flex items-center px-3 py-1.5 rounded-lg transition-colors duration-200"
+                          :class="[$route.path === tool.path ? 'bg-blue-900/30 text-blue-200' : 'hover:bg-gray-700/50 text-gray-300 hover:text-white']"
+                          @click="activeCategory = null"
+                        >
+                          <component :is="tool.icon" class="w-4 h-4 mr-2 text-gray-400" />
+                          <span class="text-sm">{{ tool.name }}</span>
+                        </router-link>
+                      </div>
+                    </div>
                   </div>
-                  <span class="font-medium">{{ tool.name }}</span>
-                </router-link>
+                  
+                  <!-- Rechts: Data Overview -->
+                  <div v-for="category in navigation.toolCategories.slice(2)" :key="category.name">
+                    <h3 class="text-sm font-bold text-gray-300 mb-2 px-2 flex items-center">
+                      <span 
+                        class="h-4 w-1 rounded-r mr-2"
+                        :class="{
+                          'bg-blue-500': category.color === 'blue',
+                          'bg-green-500': category.color === 'green',
+                          'bg-purple-500': category.color === 'purple'
+                        }"
+                      ></span>
+                      {{ category.name }}
+                    </h3>
+                    <div class="space-y-1">
+                      <router-link 
+                        v-for="tool in category.tools" 
+                        :key="tool.id"
+                        :to="tool.path" 
+                        class="flex items-center px-3 py-1.5 rounded-lg transition-colors duration-200"
+                        :class="[$route.path === tool.path ? 'bg-blue-900/30 text-blue-200' : 'hover:bg-gray-700/50 text-gray-300 hover:text-white']"
+                        @click="activeCategory = null"
+                      >
+                        <component :is="tool.icon" class="w-4 h-4 mr-2 text-gray-400" />
+                        <span class="text-sm">{{ tool.name }}</span>
+                      </router-link>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
