@@ -223,6 +223,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue';
 import { gemTypes, gemNodes, getAllGemData } from '@/constants/tr-planner/gems.js';
 import { useTRPlannerStore } from '@/store/orbStore';
+import { saveGemDataToLocalStorage, notifyGemDataChanged } from '@/utils/gemDataUtils.js';
 import { IconX, IconCircleCheck } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -695,15 +696,16 @@ function saveToStore() {
       activeNodes: { ...activeNodes }
     };
     
-    trPlannerStore.updateUserStats({ gemData });
+    // Verwende die Utility-Funktion mit Event-Benachrichtigung
+    const success = saveGemDataToLocalStorage(gemData);
     
-    // Auch in localStorage speichern für Backup
-    const currentStats = JSON.parse(localStorage.getItem('trplanner_userstats') || '{}');
-    currentStats.gemData = gemData;
-    localStorage.setItem('trplanner_userstats', JSON.stringify(currentStats));
+    if (success) {
+      // Aktualisiere auch den Store für Konsistenz
+      trPlannerStore.updateUserStats({ gemData });
+    }
     
   } catch (error) {
-    console.error('Error saving gem data to store:', error);
+    console.error('Error saving gem data:', error);
   }
 }
 

@@ -579,6 +579,7 @@ import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue';
 import BoostOverviewModal from './BoostOverviewModal.vue';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { allBoosts, boostsByCategory } from '@/constants/tr-planner';
+import { getGemDataFromLocalStorage } from '@/utils/gemDataUtils.js';
 import TRValueControls from '@/composables/TRValueControls.vue';
 import { formatMultiplier, formatNumber, parseNumberWithSuffix, formatSuffixNotation } from '@/composables/format';
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
@@ -593,6 +594,7 @@ import {
   calculateCupMultiplier,  
   calculateMultiplier      
 } from '@/composables/calculations';
+import { getGemDataFromStore } from '@/constants/tr-planner/index.js';
 import { 
   IconX,
   IconSearch,
@@ -636,7 +638,9 @@ const trPlannerStore = useTRPlannerStore();
 
 // Gem-Levels aus dem Store laden
 const gemLevels = computed(() => {
-  return trPlannerStore.userStats.gemData?.levels || {
+  // Immer die neuesten Gem-Daten direkt aus localStorage laden
+  const gemData = getGemDataFromLocalStorage();
+  return gemData.levels || {
     exodus: 0,
     temporal: 0,
     innovation: 0,
@@ -644,6 +648,19 @@ const gemLevels = computed(() => {
     power: 0,
     creation: 0,
     evolution: 0
+  };
+});
+
+// GEÄNDERT: Reactive computed für aktive Nodes
+const activeNodes = computed(() => {
+  const gemData = getGemDataFromLocalStorage();
+  return gemData.activeNodes || {
+    temporal: [],
+    innovation: [],
+    attraction: [],
+    power: [],
+    creation: [],
+    evolution: []
   };
 });
 
@@ -685,98 +702,94 @@ const orbRequirement = computed(() => {
 });
 
 const effectiveStats = computed(() => {
-  // Kombiniere maxLevelStats mit currentBoosts
   const stats = { ...maxLevelStats.value };
   
-  // Alle Werte aus currentBoosts übernehmen, auch wenn sie in maxLevelStats existieren
+  // Gem-Daten hinzufügen
+  const gemData = getGemDataFromLocalStorage();
+  stats.gemData = gemData;
+  
+  // KORRIGIERT: Boolean-Merge-Logik für maxed boosts
   Object.entries(currentBoosts.value).forEach(([key, value]) => {
-    // Für numerische Boosts den höheren Wert verwenden
-    if (typeof value === 'number') {
-      stats[key] = Math.max(stats[key] || 0, value);
-    } 
-    // Für Boolean-Werte OR-Verknüpfung verwenden
-    else if (typeof value === 'boolean') {
-      stats[key] = stats[key] || value;
-    }
-    // Andere Werte direkt übernehmen
-    else {
-      stats[key] = value;
+    if (value !== undefined && value !== null) {
+      // Für Boolean-Werte: Spezielle Merge-Logik
+      if (typeof value === 'boolean') {
+        // Wenn maxLevelStats true ist und currentBoosts false ist,
+        // dann ist der Boost in StatsInputModal maxed aber im OrbCalc deaktiviert
+        const isMaxedInStatsInput = maxLevelStats.value[key] === true;
+        const isCurrentlyDisabled = value === false;
+        
+        if (isMaxedInStatsInput && isCurrentlyDisabled) {
+          // Verwende maxLevelStats (true), ignoriere currentBoosts (false)
+          stats[key] = true;
+          console.log(`Boolean Boost ${key}: maxed in StatsInput, ignoriere currentBoosts false`);
+        } else {
+          // Normal: verwende currentBoosts
+          stats[key] = value;
+        }
+      }
+      // Für numerische Werte: Maximum nehmen
+      else if (typeof value === 'number') {
+        stats[key] = Math.max(stats[key] || 0, value);
+      } 
+      // Für andere Werte: Direkt setzen
+      else {
+        stats[key] = value;
+      }
     }
   });
   
-  // WICHTIG: Stelle sicher, dass maximierte Boosts korrekt berücksichtigt werden
+  // WICHTIG: Für alle Boosts, die NICHT in currentBoosts definiert sind,
+  // verwende die Werte aus maxLevelStats
   allBoosts.forEach(boost => {
-    // Wenn der Boost maximiert ist und einen Multiplikator hat
-    if (boost.orbcalc && boost.max !== undefined && boost.type === 'number') {
-      const maxLevel = maxLevelStats.value[boost.key];
-      // Wenn der Boost im maxLevelStats maximal ist, diesen Wert erzwingen
-      if (maxLevel !== undefined && maxLevel >= boost.max) {
-        console.log(`Boost ${boost.key} ist maximal (${maxLevel}), wird in effectiveStats gesetzt`);
-        stats[boost.key] = maxLevel;
+    // Nur wenn der Boost nicht explizit in currentBoosts gesetzt ist
+    if (currentBoosts.value[boost.key] === undefined) {
+      // UND wenn der Boost einen Wert in maxLevelStats hat
+      if (maxLevelStats.value[boost.key] !== undefined) {
+        stats[boost.key] = maxLevelStats.value[boost.key];
+        console.log(`Boost ${boost.key} aus maxLevelStats übernommen: ${stats[boost.key]}`);
       }
     }
-    // Boolean-Boosts auch berücksichtigen
-    else if (boost.orbcalc && boost.type === 'boolean') {
-      if (maxLevelStats.value[boost.key] === true) {
-        console.log(`Boolean Boost ${boost.key} ist true in maxLevelStats, wird in effectiveStats gesetzt`);
-        stats[boost.key] = true;
-      }
-    }
+  });
+  
+  console.log("Effektive Stats (Current) - vb1-5 nach Boolean-Merge:", {
+    vb1: stats.vb1,
+    vb2: stats.vb2,
+    vb3: stats.vb3,
+    vb4: stats.vb4,
+    vb5: stats.vb5
   });
   
   return stats;
 });
 
 const effectiveTargetStats = computed(() => {
-  // Statt nur effectiveStats, starte mit allen Maximierungen direkt aus maxLevelStats
   const stats = { ...maxLevelStats.value };
   
-  // Füge currentBoosts hinzu
+  // WICHTIG: Immer frische Gem-Daten hinzufügen
+  const gemData = getGemDataFromLocalStorage();
+  stats.gemData = gemData; // Für calculations.js verfügbar machen
+  
+  // Rest der Logik...
   Object.entries(currentBoosts.value).forEach(([key, value]) => {
-    // Für numerische Boosts den höheren Wert verwenden
-    if (typeof value === 'number') {
-      stats[key] = Math.max(stats[key] || 0, value);
-    } 
-    // Für Boolean-Werte OR-Verknüpfung verwenden
-    else if (typeof value === 'boolean') {
-      stats[key] = stats[key] || value;
-    }
-    // Andere Werte direkt übernehmen
-    else {
-      stats[key] = value;
+    if (value !== undefined && value !== null) {
+      if (typeof value === 'number') {
+        stats[key] = Math.max(stats[key] || 0, value);
+      } else {
+        stats[key] = value;
+      }
     }
   });
   
-  // Nun die targetBoosts-Werte hinzufügen, die immer Vorrang haben
   Object.entries(targetBoosts.value).forEach(([key, value]) => {
-    if (value !== undefined) {
-      stats[key] = value;
-    }
-  });
-  
-  // Stelle noch einmal sicher, dass maximale Boosts nicht unterschritten werden
-  allBoosts.forEach(boost => {
-    // Wenn der Boost maximiert ist und einen Multiplikator hat
-    if (boost.orbcalc && boost.max !== undefined && boost.type === 'number') {
-      const maxLevel = maxLevelStats.value[boost.key];
-      const currentLevel = stats[boost.key] || 0;
-      
-      // Wenn der Boost im maxLevelStats maximal ist, diesen Wert erzwingen
-      if (maxLevel !== undefined && maxLevel >= boost.max && currentLevel < boost.max) {
-        console.log(`Boost ${boost.key} ist maximal (${maxLevel}), wird in effectiveTargetStats gesetzt`);
-        stats[boost.key] = maxLevel;
-      }
-    }
-    // Boolean-Boosts auch berücksichtigen
-    else if (boost.orbcalc && boost.type === 'boolean') {
-      if (maxLevelStats.value[boost.key] === true) {
-        console.log(`Boolean Boost ${boost.key} ist true in maxLevelStats, wird in effectiveTargetStats gesetzt`);
-        stats[boost.key] = true;
+    if (value !== undefined && value !== null) {
+      if (typeof value === 'number') {
+        stats[key] = Math.max(stats[key] || 0, value);
+      } else {
+        stats[key] = value;
       }
     }
   });
   
-  console.log("Effektive Target Stats:", stats);
   return stats;
 });
 
@@ -785,20 +798,23 @@ const currentOrbGains = computed(() => {
     // Verwende effectiveStats, das bereits die maximierten Boosts enthält
     const planStats = { ...effectiveStats.value };
     
-    // Alle Boosts mit Multiplikatoren und orbcalc=true verwenden
-    const allOrbCalcBoosts = allBoosts.filter(b => b.orbcalc);
+    // KORRIGIERT: Nur Boosts mit orbcalc=true UND multiplier verwenden
+    const orbCalcBoosts = allBoosts.filter(b => b.orbcalc && b.multiplier !== undefined);
+    
+    console.log("Current calculation - using boosts:", orbCalcBoosts.map(b => b.key));
+    console.log("Current calculation - planStats:", planStats);
     
     // Orb-Multiplikator berechnen
     const result = calculateOrbGainsCalc(
       effectiveStats.value,
       planStats,
-      allOrbCalcBoosts  // WICHTIG: Alle Boosts verwenden, nicht nur die gefilterten
+      orbCalcBoosts
     );
     
-    console.log("Current orb gains:", result);
+    console.log("Current orb gains result:", result);
     return isNaN(result) ? 0 : result;
   } catch (e) {
-    console.error("Error calculating orb gains:", e);
+    console.error("Error calculating current orb gains:", e);
     return 0;
   }
 });
@@ -808,17 +824,20 @@ const targetOrbGains = computed(() => {
     // Verwende effectiveTargetStats, das bereits alle maximierten Boosts enthält
     const targetPlan = { ...effectiveTargetStats.value };
     
-    // Alle Boosts mit Multiplikatoren und orbcalc=true verwenden
-    const allOrbCalcBoosts = allBoosts.filter(b => b.orbcalc);
+    // KORRIGIERT: Nur Boosts mit orbcalc=true UND multiplier verwenden
+    const orbCalcBoosts = allBoosts.filter(b => b.orbcalc && b.multiplier !== undefined);
+    
+    console.log("Target calculation - using boosts:", orbCalcBoosts.map(b => b.key));
+    console.log("Target calculation - targetPlan:", targetPlan);
     
     // Berechne die Orb-Gewinne mit den Ziel-Boosts
     const result = calculateOrbGainsCalc(
       effectiveStats.value,
       targetPlan,
-      allOrbCalcBoosts  // WICHTIG: Alle Boosts verwenden, nicht nur die gefilterten
+      orbCalcBoosts
     );
     
-    console.log("Target orb gains:", result);
+    console.log("Target orb gains result:", result);
     return isNaN(result) ? 0 : result;
   } catch (e) {
     console.error("Error calculating targetOrbGains:", e);
@@ -862,28 +881,35 @@ const maxLevelStats = computed(() => {
 });
 
 const filteredBoostCategories = computed(() => {
+  // WICHTIG: Explizite Abhängigkeit zu gemLevels.value
+  const currentGemLevels = gemLevels.value;
+  
   return boostsByCategory
     .map(category => {
       const newCategory = { ...category };
       
-      // Filter boosts with multiplier UND nur freigeschaltete Boosts
       newCategory.boosts = category.boosts.filter(boost => {
-        // Only include boosts with a multiplier (not just fragmulti)
+        // Nur Boosts mit Multiplikator anzeigen
         if (boost.multiplier === undefined) {
           return false;
         }
         
-        // Nur freigeschaltete Boosts anzeigen
-        if (!isBoostUnlocked(boost)) {
-          return false;
+        // WICHTIG: Gem-Abhängigkeiten prüfen mit aktuellen Gem-Levels
+        if (boost.unlock) {
+          const requiredGem = boost.unlock;
+          const requiredLevel = boost.unlock_level || 1;
+          const currentGemLevel = currentGemLevels[requiredGem] || 0;
+          
+          if (currentGemLevel < requiredLevel) {
+            console.log(`Boost ${boost.key} ausgeblendet: ${requiredGem} Level ${currentGemLevel} < ${requiredLevel}`);
+            return false;
+          }
         }
         
-        // Die Stats im localStorage (trplanner_userstats)
+        // Rest der bestehenden Filter-Logik...
         const maxStats = maxLevelStats.value || {};
         
-        // Prüfe, ob der Boost im StatsInputModal maximiert wurde
         const isMaxedInStatsInput = (() => {
-          // Für numerische Boosts mit maximum
           if (boost.type === 'number' && boost.max !== undefined) {
             const globalLevel = maxStats[boost.key];
             if (globalLevel !== undefined && globalLevel >= boost.max) {
@@ -891,7 +917,6 @@ const filteredBoostCategories = computed(() => {
             }
           }
           
-          // Für Boolean-Boosts
           if (boost.type === 'boolean') {
             if (maxStats[boost.key] === true) {
               return true;
@@ -901,12 +926,11 @@ const filteredBoostCategories = computed(() => {
           return false;
         })();
         
-        // Wenn der Boost im StatsInputModal maximiert wurde, ausblenden
         if (isMaxedInStatsInput) {
           return false;
         }
         
-        // Filter by search query if present
+        // Search filter
         if (searchQuery.value.trim()) {
           const query = searchQuery.value.toLowerCase();
           return boost.label.toLowerCase().includes(query) || 
@@ -918,7 +942,7 @@ const filteredBoostCategories = computed(() => {
       
       return newCategory;
     })
-    .filter(category => category.boosts.length > 0); // Remove empty categories
+    .filter(category => category.boosts.length > 0);
 });
 
 // Methods
@@ -1134,179 +1158,45 @@ function safeCalculateMultiplier(boost, value, stats) {
   }
 }
 
-function compareCalculations(planStats, boosts) {
-  console.group("🧪 Vergleich calculateOrbGains vs calculateOrbGainsCalc");
+function debugVoidBadgeStatus() {
+  console.group("🔍 Debug Void Badge Status");
   
-  // Erstelle Deep Copies, um Seiteneffekte zu vermeiden
-  const planStatsCopy = JSON.parse(JSON.stringify(planStats));
-  const boostsCopy = JSON.parse(JSON.stringify(boosts.map(b => ({
-    key: b.key,
-    type: b.type,
-    multiplier: b.multiplier,
-    orbcalc: b.orbcalc
-  }))));
+  const voidBadges = ['vb1', 'vb2', 'vb3', 'vb4', 'vb5'];
+  const maxStats = maxLevelStats.value || {};
   
-  console.log("Input planStats:", planStatsCopy);
-  console.log("Input boosts:", boostsCopy.map(b => b.key));
+  console.log("maxLevelStats geladen:", maxStats);
   
-  // Sammle Zwischenergebnisse aus calculateOrbGains
-  const originalResults = [];
-  const originalCalculate = (stats, boosts) => {
-    let result = 1;
-    const catchUpMultiplier = calculateCupMultiplier(stats.hoursInTR || 0);
-    originalResults.push({ step: "Catch-Up", multiplier: catchUpMultiplier, result });
+  voidBadges.forEach(vbKey => {
+    console.log(`\n📊 ${vbKey}:`);
+    console.log(`  - maxLevelStats[${vbKey}]: ${maxStats[vbKey]}`);
+    console.log(`  - currentBoosts[${vbKey}]: ${currentBoosts.value[vbKey]}`);
+    console.log(`  - effectiveStats[${vbKey}]: ${effectiveStats.value[vbKey]}`);
     
-    for (const boost of boosts) {
-      if (!boost.orbcalc) continue;
-      const value = stats[boost.key];
-      try {
-        let multiplier = 1;
-        if (boost.type === 'boolean') {
-          if (value && typeof boost.multiplier === 'number') {
-            multiplier = boost.multiplier;
-          } else if (value && typeof boost.multiplier === 'function') {
-            multiplier = boost.multiplier(1, stats);
-          }
-        } else if (value > 0) {
-          if (typeof boost.multiplier === 'number') {
-            multiplier = Math.pow(boost.multiplier, value);
-          } else if (typeof boost.multiplier === 'function') {
-            multiplier = boost.multiplier(value, stats);
-          }
-        }
-        result *= multiplier;
-        originalResults.push({ 
-          key: boost.key, 
-          value, 
-          multiplier, 
-          type: boost.type,
-          isFunction: typeof boost.multiplier === 'function',
-          result 
-        });
-      } catch (e) {
-        console.error(`Error in originalCalculate for ${boost.key}:`, e);
-      }
+    // Prüfe ob der Boost in der orbcalc Berechnung verwendet wird
+    const boost = allBoosts.find(b => b.key === vbKey);
+    if (boost) {
+      console.log(`  - orbcalc: ${boost.orbcalc}`);
+      console.log(`  - multiplier: ${boost.multiplier}`);
+      console.log(`  - type: ${boost.type}`);
     }
-    
-    result *= catchUpMultiplier;
-    originalResults.push({ step: "Final with Catch-Up", multiplier: catchUpMultiplier, result });
-    
-    return result;
-  };
-  
-  // Sammle Zwischenergebnisse aus calculateOrbGainsCalc
-  const calcResults = [];
-  const calcCalculate = (stats, boosts) => {
-    let result = 1;
-    const catchUpMultiplier = calculateCupMultiplier(stats.hoursInTR || 0);
-    calcResults.push({ step: "Catch-Up", multiplier: catchUpMultiplier, result });
-    
-    for (const boost of boosts) {
-      if (!boost.orbcalc) continue;
-      const value = stats[boost.key];
-      try {
-        let multiplier = 1;
-        try {
-          multiplier = calculateMultiplier(boost, value, stats);
-          if (isNaN(multiplier) || !isFinite(multiplier)) {
-            console.warn(`Ungültiger Multiplikator für ${boost.key}:`, multiplier);
-            multiplier = 1;
-          }
-        } catch (e) {
-          console.error(`Fehler bei Berechnung des Multiplikators für ${boost.key}:`, e);
-        }
-        
-        result *= multiplier;
-        calcResults.push({ 
-          key: boost.key, 
-          value, 
-          multiplier, 
-          type: boost.type,
-          isFunction: typeof boost.multiplier === 'function',
-          result 
-        });
-      } catch (e) {
-        console.error(`Error in calcCalculate for ${boost.key}:`, e);
-      }
-    }
-    
-    result *= catchUpMultiplier;
-    calcResults.push({ step: "Final with Catch-Up", multiplier: catchUpMultiplier, result });
-    
-    return isNaN(result) ? 0 : result;
-  };
-  
-  // Führe beide Berechnungen aus
-  console.time("Original calculation");
-  const originalResult = originalCalculate(planStatsCopy, boostsCopy);
-  console.timeEnd("Original calculation");
-  
-  console.time("Calc calculation");
-  const calcResult = calcCalculate(planStatsCopy, boostsCopy);
-  console.timeEnd("Calc calculation");
-  
-  // Vergleiche die Ergebnisse
-  console.log(`🔄 Original: ${originalResult}, Calc: ${calcResult}`);
-  console.log(`🔍 Differenz: ${calcResult - originalResult}`);
-  
-  // Finde Unterschiede in den Multiplikatoren
-  console.group("🔎 Multiplikator-Unterschiede:");
-  for (let i = 0; i < Math.max(originalResults.length, calcResults.length); i++) {
-    if (i < originalResults.length && i < calcResults.length) {
-      const orig = originalResults[i];
-      const calc = calcResults[i];
-      
-      if (orig.key !== calc.key || orig.multiplier !== calc.multiplier) {
-        console.log(`⚠️ Unterschied bei Schritt ${i}:`);
-        console.log(`  Original: ${orig.key || orig.step}, Multiplier: ${orig.multiplier}`);
-        console.log(`  Calc: ${calc.key || calc.step}, Multiplier: ${calc.multiplier}`);
-        console.log(`  Differenz: ${calc.multiplier - orig.multiplier}`);
-        
-        // Prüfe, ob NaN oder Infinity
-        if (isNaN(orig.multiplier)) console.log(`  ❌ Original ist NaN!`);
-        if (isNaN(calc.multiplier)) console.log(`  ❌ Calc ist NaN!`);
-        if (!isFinite(orig.multiplier)) console.log(`  ⚠️ Original ist unendlich!`);
-        if (!isFinite(calc.multiplier)) console.log(`  ⚠️ Calc ist unendlich!`);
-      }
-    } else {
-      console.log(`⚠️ Unterschiedliche Längen der Ergebnisarrays!`);
-      if (i < originalResults.length) {
-        console.log(`  Original extra: ${originalResults[i].key || originalResults[i].step}`);
-      } else {
-        console.log(`  Calc extra: ${calcResults[i].key || calcResults[i].step}`);
-      }
-    }
-  }
-  console.groupEnd();
-  
-  console.log("📊 Vollständige Ergebnisse:");
-  console.log("Original:", originalResults);
-  console.log("Calc:", calcResults);
+  });
   
   console.groupEnd();
-  
-  return { originalResult, calcResult };
 }
 
+// In recalculateAll() hinzufügen:
 function recalculateAll() {
-  // Force reactivity by creating a new reference
   currentBoosts.value = { ...currentBoosts.value };
   targetBoosts.value = { ...targetBoosts.value };
   
-  // Debug-Ausgabe
+  // Debug Void Badge Status
+  debugVoidBadgeStatus();
+  
   console.log("Recalculating with:", {
     currentBoosts: { ...currentBoosts.value },
     targetBoosts: { ...targetBoosts.value },
     hoursInTR: currentBoosts.value.hoursInTR
   });
-  
-  // Vergleiche die Berechnungsmethoden
-  console.log("CURRENT CALCULATION COMPARISON:");
-  compareCalculations(currentBoosts.value, multiplierBoosts.value.filter(b => b.orbcalc));
-  
-  console.log("TARGET CALCULATION COMPARISON:");
-  const targetPlan = { ...currentBoosts.value, ...targetBoosts.value };
-  compareCalculations(targetPlan, multiplierBoosts.value.filter(b => b.orbcalc));
 }
 
 function resetToCurrentStats() {
@@ -1468,6 +1358,34 @@ function cleanupAutoScrollListeners() {
   document.removeEventListener('focusin', handleFocusChange);
 }
 
+function handleGemDataChanged() {
+  console.log("🔄 Gem-Daten geändert - aktualisiere OrbCalculator");
+  
+  // Debug: Zeige neue Gem-Daten
+  const newGemData = getGemDataFromLocalStorage();
+  console.log("Neue Gem-Daten:", newGemData);
+  
+  // Force recalculation
+  nextTick(() => {
+    recalculateAll();
+    
+    // Debug: Zeige neue Berechnungen
+    console.log("Nach Gem-Update - Current Orb Gains:", currentOrbGains.value);
+    console.log("Nach Gem-Update - Target Orb Gains:", targetOrbGains.value);
+  });
+}
+
+watch(() => getGemDataFromLocalStorage(), (newGemData, oldGemData) => {
+  if (JSON.stringify(newGemData) !== JSON.stringify(oldGemData)) {
+    console.log("Gem-Daten geändert, Orb-Berechnungen aktualisieren");
+    
+    // Force trigger für reactive updates
+    nextTick(() => {
+      recalculateAll();
+    });
+  }
+}, { deep: true });
+
 // Diese Funktion zur onMounted-Funktion hinzufügen
 onMounted(() => {
   // Bestehender Code...
@@ -1476,11 +1394,14 @@ onMounted(() => {
   
   // Auto-Scroll beim Tabben einrichten
   setupAutoScrollOnTabbing();
+
+  window.addEventListener('gemDataChanged', handleGemDataChanged);
 });
 
 // Cleanup beim Unmount der Komponente
 onBeforeUnmount(() => {
   cleanupAutoScrollListeners();
+  window.removeEventListener('gemDataChanged', handleGemDataChanged);
 });
 
 // Watch für Änderungen und lokales Speichern
@@ -1868,41 +1789,56 @@ function finalizeAllTimeOrbsInput() {
 // Prüft, ob ein Boost verfügbar ist (alle Voraussetzungen erfüllt)
 function isBoostAvailable(boost, isTarget = false) {
   // Wenn keine Abhängigkeiten definiert sind, ist der Boost immer verfügbar
-  if (!boost.minRequirement) return true;
+  if (!boost.minRequirement && !boost.unlock) return true;
   
-  // Prüfen, ob der erforderliche Boost existiert und das Mindestlevel erreicht hat
-  const requiredBoostKey = boost.minRequirement.boost;
-  const requiredLevel = boost.minRequirement.level;
-  
-  // NEUER CODE: maxLevelStats prüfen, ob der Boost dort maxed ist
-  const maxStats = maxLevelStats.value || {};
-  const orbCalcMaxedBoosts = maxStats._orbCalcMaxedBoosts || {};
-  
-  // Wenn der erforderliche Boost in _orbCalcMaxedBoosts markiert ist, gilt er als verfügbar
-  if (orbCalcMaxedBoosts[requiredBoostKey] === true) {
-    return true;
+  // NEUE LOGIK: Prüfe Gem-Abhängigkeiten ZUERST
+  if (boost.unlock) {
+    const requiredGem = boost.unlock;
+    const requiredLevel = boost.unlock_level || 1;
+    const currentGemLevel = gemLevels.value[requiredGem] || 0;
+    
+    // Wenn Gem-Level nicht ausreicht, ist Boost nicht verfügbar
+    if (currentGemLevel < requiredLevel) {
+      console.log(`Boost ${boost.key} nicht verfügbar: ${requiredGem} Level ${currentGemLevel} < ${requiredLevel}`);
+      return false;
+    }
   }
   
-  // Bei booleschen Werten: Wenn der Wert true in maxLevelStats ist
-  if (typeof maxStats[requiredBoostKey] === 'boolean' && maxStats[requiredBoostKey] === true) {
-    return true;
+  // BESTEHENDE LOGIK: Prüfe Boost-Abhängigkeiten
+  if (boost.minRequirement) {
+    const requiredBoostKey = boost.minRequirement.boost;
+    const requiredLevel = boost.minRequirement.level;
+    
+    // maxLevelStats prüfen
+    const maxStats = maxLevelStats.value || {};
+    const orbCalcMaxedBoosts = maxStats._orbCalcMaxedBoosts || {};
+    
+    // Wenn der erforderliche Boost in _orbCalcMaxedBoosts markiert ist
+    if (orbCalcMaxedBoosts[requiredBoostKey] === true) {
+      return true;
+    }
+    
+    // Bei booleschen Werten
+    if (typeof maxStats[requiredBoostKey] === 'boolean' && maxStats[requiredBoostKey] === true) {
+      return true;
+    }
+    
+    // Bei numerischen Werten
+    if (typeof maxStats[requiredBoostKey] === 'number' && maxStats[requiredBoostKey] >= requiredLevel) {
+      return true;
+    }
+    
+    // Bei Target-Prüfung auch current/target Werte berücksichtigen
+    if (isTarget) {
+      const targetLevel = targetBoosts.value[requiredBoostKey] || 0;
+      return targetLevel >= requiredLevel;
+    } else {
+      const currentLevel = currentBoosts.value[requiredBoostKey] || 0;
+      return currentLevel >= requiredLevel;
+    }
   }
   
-  // Bei numerischen Werten: Wenn der Wert >= requiredLevel ist
-  if (typeof maxStats[requiredBoostKey] === 'number' && maxStats[requiredBoostKey] >= requiredLevel) {
-    return true;
-  }
-  
-  // Bei Target-Prüfung müssen wir sowohl current als auch target Werte berücksichtigen
-  if (isTarget) {
-    // Wenn der Boost im Target-Plan das erforderliche Level erreicht, ist er verfügbar
-    const targetLevel = targetBoosts.value[requiredBoostKey] || 0;
-    return targetLevel >= requiredLevel;
-  } else {
-    // Für current nur den aktuellen Wert prüfen
-    const currentLevel = currentBoosts.value[requiredBoostKey] || 0;
-    return currentLevel >= requiredLevel;
-  }
+  return true;
 }
 
 // Gibt einen lesbaren Text für die Boost-Anforderung zurück
@@ -1939,9 +1875,32 @@ function getFullTooltipContent(boost) {
   return content;
 }
 
-// Watch für Gem-Level-Änderungen um UI zu aktualisieren
-watch(() => gemLevels.value, () => {
-  // Bei Gem-Level-Änderungen die UI neu berechnen
+// Watch für Gem-Level-Änderungen im Store
+watch(() => trPlannerStore.userStats.gemData, (newGemData, oldGemData) => {
+  if (newGemData !== oldGemData) {
+    console.log("Gem-Daten im Store geändert, aktualisiere OrbCalculator");
+    
+    // Force recalculation by triggering reactivity
+    recalculateAll();
+    
+    // Optional: Zeige Benachrichtigung
+    console.log("Neue Gem-Levels:", newGemData?.levels);
+  }
+}, { deep: true });
+
+// Watch für Gem-Level-Änderungen (für Debug)
+watch(() => gemLevels.value, (newLevels, oldLevels) => {
+  if (oldLevels && newLevels !== oldLevels) {
+    console.log("Gem-Levels geändert:", {
+      old: oldLevels,
+      new: newLevels
+    });
+    
+    // Automatisch neu berechnen
+    nextTick(() => {
+      recalculateAll();
+    });
+  }
 }, { deep: true });
 </script>
 

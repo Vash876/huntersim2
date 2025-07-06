@@ -153,6 +153,33 @@ export function calculateOrbGains(currentStats, planStats, boosts = []) {
   return result;
 }
 
+function forceRefreshGemData() {
+  try {
+    // Direkt aus localStorage ohne Caching
+    const userStatsJSON = localStorage.getItem('trplanner_userstats');
+    if (userStatsJSON) {
+      const userStats = JSON.parse(userStatsJSON);
+      if (userStats.gemData && userStats.gemData.levels) {
+        return userStats.gemData.levels;
+      }
+    }
+    
+    // Fallback: Alle Gems auf Level 0
+    return {
+      exodus: 0,
+      temporal: 0,
+      innovation: 0,
+      attraction: 0,
+      power: 0,
+      creation: 0,
+      evolution: 0
+    };
+  } catch (e) {
+    console.warn('Error force-refreshing gem data:', e);
+    return {};
+  }
+}
+
 /**
  * Prüft, ob ein Boost basierend auf Gem-Anforderungen verfügbar ist
  * @param {Object} boost - Der zu prüfende Boost
@@ -165,34 +192,22 @@ function isBoostAvailable(boost, stats) {
     return true;
   }
   
-  // Versuche die Gem-Daten zu laden
-  let gemLevels = {};
-  
-  try {
-    // Direkt aus den Stats, wenn gemData vorhanden
-    if (stats.gemData && stats.gemData.levels) {
-      gemLevels = stats.gemData.levels;
-    }
-    // Falls keine gemData in stats, versuche aus localStorage zu laden
-    else {
-      const userStatsJSON = localStorage.getItem('trplanner_userstats');
-      if (userStatsJSON) {
-        const userStats = JSON.parse(userStatsJSON);
-        if (userStats.gemData && userStats.gemData.levels) {
-          gemLevels = userStats.gemData.levels;
-        }
-      }
-    }
-  } catch (e) {
-    console.warn('Fehler beim Laden der Gem-Daten:', e);
-  }
+  // WICHTIG: Immer frische Gem-Daten laden, kein Caching!
+  const gemLevels = forceRefreshGemData();
   
   // Prüfe, ob das erforderliche Gem-Level erreicht ist
   const requiredGem = boost.unlock;
   const requiredLevel = boost.unlock_level || 0;
   const currentLevel = gemLevels[requiredGem] || 0;
   
-  return currentLevel >= requiredLevel;
+  const isAvailable = currentLevel >= requiredLevel;
+  
+  // Debug nur für problematische Boosts
+  if (['oogadget', 'vb1', 'vb2', 'vb3', 'vb4', 'vb5'].includes(boost.key)) {
+    console.log(`🔍 isBoostAvailable ${boost.key}: ${requiredGem} Level ${currentLevel} >= ${requiredLevel} = ${isAvailable}`);
+  }
+  
+  return isAvailable;
 }
 
 /**
@@ -211,26 +226,79 @@ export function calculateOrbGainsCalc(currentStats, planStats, boosts = []) {
   const hoursInTR = planStats.hoursInTR || 0;
   const catchUpMultiplier = calculateCupMultiplier(hoursInTR);
 
+  console.log("=== DETAILED ORB GAINS CALCULATION DEBUG ===");
+  console.log(`🎯 Base Orb Rate: ${baseOrbRate}`);
+  console.log(`⏰ Hours in TR: ${hoursInTR}`);
+  console.log(`📈 Catch-Up Multiplier: ${catchUpMultiplier.toFixed(6)}`);
+  console.log("PlanStats:", planStats);
+  console.log("Verfügbare Boosts:", boosts.map(b => b.key));
+  
+  // NEUE DEBUG: Gem-Status anzeigen
+  const gemData = forceRefreshGemData();
+  console.log("🔮 Aktuelle Gem-Levels:", gemData);
+
+  // Array für aktive Boosts sammeln
+  const activeBoosts = [];
+  const skippedBoosts = [];
+
   // Durch alle relevanten Boosts iterieren und Multiplikatoren anwenden
   for (const boost of boosts) {
-    if (!boost.orbcalc) continue; // Nur relevante Boosts berücksichtigen
+    if (!boost.orbcalc) {
+      skippedBoosts.push({
+        name: boost.label,
+        key: boost.key,
+        reason: 'Not orbcalc relevant'
+      });
+      continue;
+    }
     
     // Prüfen, ob der Boost verfügbar ist
     if (!isBoostAvailable(boost, planStats)) {
-      continue; // Boost überspringen, wenn er nicht verfügbar ist
+      skippedBoosts.push({
+        name: boost.label,
+        key: boost.key,
+        reason: 'Gem requirement not met'
+      });
+      continue;
     }
     
     const value = planStats[boost.key];
+    
+    // KORRIGIERT: Boolean-Boosts richtig behandeln
+    if (boost.type === 'boolean') {
+      // Für Boolean-Boosts: Prüfe explizit auf true
+      if (value !== true) {
+        skippedBoosts.push({
+          name: boost.label,
+          key: boost.key,
+          reason: `Boolean not active (value: ${value})`
+        });
+        continue;
+      }
+    } else {
+      // Für numerische Boosts: Prüfe auf > 0
+      if (!value || value <= 0) {
+        skippedBoosts.push({
+          name: boost.label,
+          key: boost.key,
+          reason: `No value (${value})`
+        });
+        continue;
+      }
+    }
+    
     try {
       let multiplier = 1; // Neutraler Standardwert
       
       if (boost.type === 'boolean') {
-        if (value && typeof boost.multiplier === 'number') {
+        // Boolean-Boost: value ist bereits true (siehe oben)
+        if (typeof boost.multiplier === 'number') {
           multiplier = boost.multiplier;
-        } else if (value && typeof boost.multiplier === 'function') {
+        } else if (typeof boost.multiplier === 'function') {
           multiplier = boost.multiplier(1, planStats);
         }
       } else if (value > 0) {
+        // Numerischer Boost
         if (typeof boost.multiplier === 'number') {
           multiplier = Math.pow(boost.multiplier, value);
         } else if (typeof boost.multiplier === 'function') {
@@ -241,19 +309,82 @@ export function calculateOrbGainsCalc(currentStats, planStats, boosts = []) {
       // Schutz vor NaN und Infinity
       if (isNaN(multiplier) || !isFinite(multiplier)) {
         console.warn(`Ungültiger Multiplikator für ${boost.key}:`, multiplier);
+        skippedBoosts.push({
+          name: boost.label,
+          key: boost.key,
+          reason: `Invalid multiplier: ${multiplier}`
+        });
       } else {
+        const oldResult = result;
         result *= multiplier;
+        
+        // Sammle aktive Boosts für detaillierte Ausgabe
+        activeBoosts.push({
+          name: boost.label,
+          key: boost.key,
+          type: boost.type,
+          value: value,
+          multiplier: multiplier,
+          resultBefore: oldResult,
+          resultAfter: result,
+          contribution: ((result / oldResult - 1) * 100).toFixed(2) + '%'
+        });
       }
     } catch (e) {
       console.error(`Fehler bei Berechnung des Multiplikators für ${boost.key}:`, e);
+      skippedBoosts.push({
+        name: boost.label,
+        key: boost.key,
+        reason: `Calculation error: ${e.message}`
+      });
     }
   }
 
   // Catch-Up Multiplier anwenden
+  const beforeCatchUp = result;
   result *= catchUpMultiplier;
 
-  // WICHTIG: NICHT noch einmal mit hoursInTR multiplizieren,
-  // da der hoursInTR-Boost selbst bereits die Stunden berücksichtigt!
+  // ========== DETAILLIERTE DEBUG-AUSGABE ==========
+  console.log("\n🚀 === ACTIVE BOOSTS BREAKDOWN ===");
+  if (activeBoosts.length > 0) {
+    activeBoosts.forEach((boost, index) => {
+      console.log(`${index + 1}. 📊 ${boost.name} (${boost.key})`);
+      console.log(`   Type: ${boost.type}`);
+      console.log(`   Value: ${boost.value}`);
+      console.log(`   Multiplier: ×${boost.multiplier.toFixed(6)}`);
+      console.log(`   Result: ${boost.resultBefore.toFixed(6)} → ${boost.resultAfter.toFixed(6)}`);
+      console.log(`   Contribution: +${boost.contribution}`);
+      console.log('');
+    });
+    
+    console.log(`📈 Total Boosts Multiplier: ×${(beforeCatchUp / baseOrbRate).toFixed(6)}`);
+  } else {
+    console.log("❌ No active boosts found!");
+  }
+
+  console.log("\n⏰ === CATCH-UP MULTIPLIER ===");
+  console.log(`Hours in TR: ${hoursInTR}`);
+  console.log(`Catch-Up Multiplier: ×${catchUpMultiplier.toFixed(6)}`);
+  console.log(`Before Catch-Up: ${beforeCatchUp.toFixed(6)}`);
+  console.log(`After Catch-Up: ${result.toFixed(6)}`);
+
+  if (skippedBoosts.length > 0) {
+    console.log("\n❌ === SKIPPED BOOSTS ===");
+    skippedBoosts.forEach((boost, index) => {
+      console.log(`${index + 1}. ⚠️ ${boost.name} (${boost.key})`);
+      console.log(`   Reason: ${boost.reason}`);
+    });
+  }
+
+  console.log("\n🎯 === FINAL CALCULATION SUMMARY ===");
+  console.log(`Base Rate: ${baseOrbRate}`);
+  console.log(`Active Boosts: ${activeBoosts.length}`);
+  console.log(`Skipped Boosts: ${skippedBoosts.length}`);
+  console.log(`Total Boost Multiplier: ×${(beforeCatchUp / baseOrbRate).toFixed(6)}`);
+  console.log(`Catch-Up Multiplier: ×${catchUpMultiplier.toFixed(6)}`);
+  console.log(`FINAL RESULT: ${result.toFixed(6)}`);
+  console.log("=== END DETAILED DEBUG ===\n");
+
   return isNaN(result) ? 0 : result;
 }
 

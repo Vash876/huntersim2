@@ -1,171 +1,24 @@
 import { useTRPlannerStore } from '@/store/orbStore';
+import { getGemDataFromLocalStorage, getDefaultGemData } from '@/utils/gemDataUtils.js';
 
 // Helper-Funktion um Gem-Daten aus dem Store zu laden
 export function getGemDataFromStore() {
   try {
-    // 1. Versuche Store-Daten zu laden
-    const trPlannerStore = useTRPlannerStore();
-    const gemData = trPlannerStore.userStats.gemData;
+    // Lade Daten direkt aus localStorage
+    const gemData = getGemDataFromLocalStorage();
     
+    // Wenn gültige Daten vorhanden sind, verwende sie
     if (gemData && gemData.levels) {
-      return {
-        levels: gemData.levels,
-        activeNodes: gemData.activeNodes || {
-          temporal: [],
-          innovation: [],
-          attraction: [],
-          power: [],
-          creation: [],
-          evolution: []
-        }
-      };
+      return gemData;
     }
     
-    // 2. FALLBACK: Versuche Legacy-Daten aus einem aktiven Plan zu migrieren
-    const legacyGemData = migrateLegacyGemDataFromPlans();
-    if (legacyGemData) {
-      console.log('Migrierte Legacy-Gem-Daten:', legacyGemData);
-      
-      // Speichere migrierte Daten im Store
-      trPlannerStore.updateUserStats({ gemData: legacyGemData });
-      return legacyGemData;
-    }
-    
-    // 3. DEFAULT: Fallback-Werte
+    // DEFAULT: Fallback-Werte
     return getDefaultGemData();
     
   } catch (error) {
-    console.warn('Could not load gem data from store:', error);
+    console.warn('Could not load gem data:', error);
     return getDefaultGemData();
   }
-}
-
-function migrateLegacyGemDataFromPlans() {
-  try {
-    // Lade TR-Pläne aus localStorage
-    const plansData = localStorage.getItem('trplanner_plans');
-    if (!plansData) return null;
-    
-    const plans = JSON.parse(plansData);
-    if (!Array.isArray(plans) || plans.length === 0) return null;
-    
-    // Finde den neuesten Plan mit Legacy-Gem-Daten
-    const latestPlan = plans
-      .filter(plan => plan.updatedStats || plan.boosts)
-      .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))[0];
-    
-    if (!latestPlan) return null;
-    
-    // Extrahiere Gem-Informationen aus dem Plan
-    const extractedGemData = {
-      levels: {
-        exodus: 0,
-        temporal: 0,
-        innovation: 0,
-        attraction: 0,
-        power: 0,
-        creation: 0,
-        evolution: 0
-      },
-      activeNodes: {
-        temporal: [],
-        innovation: [],
-        attraction: [],
-        power: [],
-        creation: [],
-        evolution: []
-      }
-    };
-    
-    // Aus updatedStats extrahieren
-    if (latestPlan.updatedStats) {
-      const stats = latestPlan.updatedStats;
-      
-      // Innovation Gem
-      if (stats.innogem !== undefined) {
-        extractedGemData.levels.innovation = Math.max(0, stats.innogem);
-      }
-      
-      // Attraction Gem Level aus attr3-Boolean ableiten
-      if (stats.attr3 === true) {
-        extractedGemData.levels.attraction = Math.max(3, extractedGemData.levels.attraction);
-      }
-      
-      // Attraction Node #1 aus attr1-Boolean ableiten
-      if (stats.attr1 === true && extractedGemData.levels.attraction >= 1) {
-        extractedGemData.activeNodes.attraction.push(0); // Node #1 = Index 0
-      }
-      
-      // Power Node #2 aus pow2-Boolean ableiten
-      if (stats.pow2 === true) {
-        extractedGemData.levels.power = Math.max(1, extractedGemData.levels.power);
-        extractedGemData.activeNodes.power.push(1); // Node #2 = Index 1
-      }
-    }
-    
-    // Aus boosts extrahieren (falls verfügbar)
-    if (latestPlan.boosts) {
-      latestPlan.boosts.forEach(boost => {
-        switch (boost.key) {
-          case 'innogem':
-            if (boost.targetLevel !== undefined) {
-              extractedGemData.levels.innovation = Math.max(0, boost.targetLevel);
-            }
-            break;
-          case 'attr3':
-            if (boost.targetState === true) {
-              extractedGemData.levels.attraction = Math.max(3, extractedGemData.levels.attraction);
-            }
-            break;
-          case 'attr1':
-            if (boost.targetState === true && extractedGemData.levels.attraction >= 1) {
-              if (!extractedGemData.activeNodes.attraction.includes(0)) {
-                extractedGemData.activeNodes.attraction.push(0);
-              }
-            }
-            break;
-          case 'pow2':
-            if (boost.targetState === true) {
-              extractedGemData.levels.power = Math.max(1, extractedGemData.levels.power);
-              if (!extractedGemData.activeNodes.power.includes(1)) {
-                extractedGemData.activeNodes.power.push(1);
-              }
-            }
-            break;
-        }
-      });
-    }
-    
-    // Nur zurückgeben wenn mindestens ein Gem > 0 ist
-    const hasGemData = Object.values(extractedGemData.levels).some(level => level > 0);
-    return hasGemData ? extractedGemData : null;
-    
-  } catch (error) {
-    console.error('Error migrating legacy gem data:', error);
-    return null;
-  }
-}
-
-function getDefaultGemData() {
-  return {
-    levels: {
-      exodus: 0,
-      temporal: 0,
-      innovation: 0,
-      attraction: 0,
-      power: 0,
-      creation: 0,
-      evolution: 0
-    },
-    activeNodes: {
-      temporal: [],
-      innovation: [],
-      attraction: [],
-      power: [],
-      creation: [],
-      evolution: []
-    }
-  };
 }
 
 // Boost-Kategorien und ihre zugehörigen Boosts
@@ -293,7 +146,7 @@ export const allBoosts = [
     multiplier: (value) => Math.pow(1.1, value),
     fragmulti: (value, allValues) => {
       // Store-Integration: Attraction Gem Level und Node direkt aus Store laden
-      const gemData = getGemDataFromStore();
+      const gemData = getGemDataFromLocalStorage();
       const attractionLevel = gemData.levels.attraction || 0;
       
       // Prüfe ob Attraction Level 3
@@ -600,7 +453,7 @@ export const allBoosts = [
     fastControl: 1000,
     multiplier: (value, allValues) => {
       // Store-Integration: Innovation Gem Level direkt aus Store laden
-      const gemData = getGemDataFromStore();
+      const gemData = getGemDataFromLocalStorage();
       const innovationGemLevel = gemData.levels.innovation || 0;
       
       if (innovationGemLevel < 2) {
@@ -678,7 +531,7 @@ export const allBoosts = [
     tooltip: '0',
     multiplier: (value, allValues) => {
       const tierLevel = allValues.trinket_oo_tier || 0;
-      const baseFactor = 0.011;
+      const baseFactor = 0.01;
       const tierBonus = tierLevel * 0.001;
       const totalFactor = baseFactor + tierBonus;
       
