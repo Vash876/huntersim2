@@ -108,6 +108,11 @@ const routes = [
     component: () => import('../views/tools/GadgetCalculator.vue'),
   },
   {
+    path: '/tools/mech-planner',
+    name: 'Mech Planner',
+    component: () => import('../views/tools/MechPlanner.vue'),
+  },
+  {
     path: '/tools/ts-planner',
     name: 'Trait Sphere Planner',
     component: () => import('../views/tools/TSPlanner.vue'),

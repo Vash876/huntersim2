@@ -2,6 +2,32 @@
 const changelog = 
 [
   {
+    version: '2.6.3',
+    date: '2025-07-07',
+    changes: [
+      {
+        text: 'NEW: Mech Planner Tool',
+        subItems: [
+          'Added comprehensive Mech Planner for optimizing Mech Units and calculating output statistics',
+          'Features include upgrade management for Mechs Owned, Time Upgrades, and Multi Upgrades',
+          'Integrated with backup/restore system',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Fixed Orb Calculator not calculating correctly when Gem Overview got updated',
+        ]
+      },
+      {
+        text: 'Trait Sphere Planner',
+        subItems: [
+          'Added Boon of Ouroboros: Juncture (+1 Antimatter Core when active)',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.6.2',
     date: '2025-07-05',
     changes: [

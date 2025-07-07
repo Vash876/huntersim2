@@ -43,7 +43,7 @@
       <IconChevronLeft size="14" />
     </button>
     
-    <!-- Current Value - Editable Input -->
+    <!-- Current Value - mit zusätzlicher Info -->
     <div 
       class="min-w-[45px] text-center bg-gray-800 py-[1px] h-6 border-y border-gray-600 flex items-center justify-center"
       :class="{ 'text-gray-400': disabled }"
@@ -65,19 +65,22 @@
           :disabled="disabled"
           @input="validateInput"
         />
-        <span 
+        <div 
           v-else 
-          :class="valueClass"
           :tabindex="tabIndex"
           @click="startEditing"
           @keydown.enter="startEditing"
           @keydown.space="startEditing"
           @focus="onSpanFocus"
-          class="cursor-pointer select-none w-full text-center px-2 hover:bg-gray-700"
+          class="cursor-pointer select-none w-full text-center px-2 hover:bg-gray-700 flex flex-col items-center justify-center"
           :title="disabled ? '' : 'Click to edit'"
         >
-          {{ value }}
-        </span>
+          <!-- Zeige nur Zeit oder nur Level, je nach showOnlyAdditionalInfo -->
+          <span v-if="!showOnlyAdditionalInfo" :class="valueClass">{{ value }}</span>
+          <span v-if="additionalInfo" :class="additionalInfoClass || 'text-gray-400 text-xs'">
+            {{ additionalInfo }}
+          </span>
+        </div>
       </slot>
     </div>
     
@@ -186,6 +189,18 @@ const props = defineProps({
   buttonClass: {
     type: String,
     default: ''
+  },
+  additionalInfo: {
+    type: String,
+    default: ''
+  },
+  additionalInfoClass: {
+    type: String,
+    default: 'text-gray-400 text-xs'
+  },
+  showOnlyAdditionalInfo: {
+    type: Boolean,
+    default: false
   }
 });
 

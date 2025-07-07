@@ -400,7 +400,10 @@ async function createBackup() {
     const gadgetTargetLevels = localStorage.getItem('gadgetCalculator_targetLevels');
     const gadgetReferenceBuildId = localStorage.getItem('gadgetCalculator_referenceBuildId');
     
-    // 4. Weitere relevante localStorage-Einträge sammeln
+    // 4. Mech Planner Daten aus localStorage
+    const mechPlannerSettings = localStorage.getItem('mechPlanner_settings');
+    
+    // 5. Weitere relevante localStorage-Einträge sammeln
     const trPlanOrderIds = localStorage.getItem('trPlanOrderIds');
     const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
     
@@ -413,6 +416,7 @@ async function createBackup() {
           gadgetCalculator_currentLevels: gadgetCurrentLevels ? JSON.parse(gadgetCurrentLevels) : {},
           gadgetCalculator_targetLevels: gadgetTargetLevels ? JSON.parse(gadgetTargetLevels) : {},
           gadgetCalculator_referenceBuildId: gadgetReferenceBuildId,
+          mechPlanner_settings: mechPlannerSettings ? JSON.parse(mechPlannerSettings) : {},
           trPlanOrderIds: trPlanOrderIds ? JSON.parse(trPlanOrderIds) : [],
           huntersim_high_iterations_mode: highIterationsMode
         }
@@ -428,7 +432,7 @@ async function createBackup() {
     // Base64-Encoding für den Backup-Code
     backupCode.value = btoa(jsonData);
     
-    showToast('Backup created successfully! Includes Hunter Simulator, TR-Planner, and Gadget Calculator data.', 'success');
+    showToast('Backup created successfully! Includes Hunter Simulator, TR-Planner, Gadget Calculator, and Mech Planner data.', 'success');
     isCreatingBackup.value = false;
   } catch (error) {
     console.error('Error creating backup:', error);
@@ -527,6 +531,12 @@ async function restoreFromBackup() {
           if (localStorageData.gadgetCalculator_referenceBuildId) {
             localStorage.setItem('gadgetCalculator_referenceBuildId', 
               localStorageData.gadgetCalculator_referenceBuildId);
+          }
+          
+          // Mech Planner Daten wiederherstellen
+          if (localStorageData.mechPlanner_settings) {
+            localStorage.setItem('mechPlanner_settings', 
+              JSON.stringify(localStorageData.mechPlanner_settings));
           }
           
           // TR-Planner Reihenfolge wiederherstellen
@@ -657,6 +667,9 @@ function resetAllData() {
     localStorage.removeItem('gadgetCalculator_currentLevels');
     localStorage.removeItem('gadgetCalculator_targetLevels');
     localStorage.removeItem('gadgetCalculator_referenceBuildId');
+    
+    // Mech Planner
+    localStorage.removeItem('mechPlanner_settings');
     
     // TR Planner
     localStorage.removeItem('trPlanOrderIds');

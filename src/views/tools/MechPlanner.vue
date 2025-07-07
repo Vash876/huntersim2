@@ -1,0 +1,1538 @@
+<template>
+  <div>
+    <div class="p-0 sm:p-6 max-w-[1440px] mx-auto">
+      <div class="bg-gray-900/95 rounded-xl p-3 sm:p-5">
+        <!-- Header -->
+        <h2 class="text-xl sm:text-2xl font-bold mb-3 text-center text-white">
+          <span>Mech Planner</span>
+        </h2>
+        
+        <!-- Global Settings (unchanged) -->
+        <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-3">
+          <div class="header p-2 flex justify-between items-center">
+            <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
+              <IconSettings size="16" class="mr-1.5 text-blue-400" />
+              Global Settings
+            </h3>
+            
+            <button 
+              @click="resetSettings" 
+              class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
+            >
+              <IconRefresh size="12" class="mr-1" />
+              Reset All
+            </button>
+          </div>
+          
+          <div class="p-2 sm:p-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <!-- Left Column -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+                <!-- Creation Gem Level -->
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconDiamond size="16" class="text-purple-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">Creation Gem Level</span>
+                    <span class="ml-1 text-xs text-gray-500">(max: 4)</span>
+                  </div>
+                  <ToolValueControls
+                    :value="creationGemLevel"
+                    @update:value="creationGemLevel = $event"
+                    :minValue="0"
+                    :maxValue="4"
+                    :step="1"
+                    :fastStep="1"
+                    value-class="text-purple-400 font-medium"
+                    :autoEdit="true"
+                    class="ml-2"
+                  />
+                </div>
+
+                <!-- Creation Gem Node #2 -->
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconAssembly size="16" class="text-green-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">Creation Gem Node #2</span>
+                  </div>
+                  <div class="flex items-center">
+                    <!-- Toggle Switch -->
+                    <div 
+                      @click="creationGemNode2 = !creationGemNode2" 
+                      class="relative inline-flex h-6 w-11 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                      :class="{
+                        'bg-green-600': creationGemNode2,
+                        'bg-gray-600': !creationGemNode2
+                      }"
+                      role="switch"
+                      :aria-checked="creationGemNode2"
+                    >
+                      <span 
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
+                        :class="{
+                          'translate-x-5': creationGemNode2,
+                          'translate-x-0': !creationGemNode2
+                        }"
+                      ></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Creation Mech Bonus Cap -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconTarget size="16" class="text-cyan-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">Creation Mech Bonus Cap</span>
+                    <span class="ml-1 text-xs text-gray-500">(max: 999)</span>
+                  </div>
+                  <ToolValueControls
+                    :value="creationMechBonusCap"
+                    @update:value="creationMechBonusCap = $event"
+                    :minValue="0"
+                    :maxValue="999"
+                    :step="1"
+                    :fastStep="10"
+                    value-class="text-cyan-400 font-medium"
+                    :autoEdit="true"
+                    class="ml-2"
+                  />
+                </div>
+              </div>
+              
+              <!-- Right Column -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+                <!-- The C.O.O.R.S (Relic #8) -->
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconStar size="16" class="text-orange-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">The C.O.O.R.S</span>
+                    <span class="ml-1 text-xs text-gray-500">(Relic #8, max: 100)</span>
+                  </div>
+                  <ToolValueControls
+                    :value="coorsRelic"
+                    @update:value="coorsRelic = $event"
+                    :minValue="0"
+                    :maxValue="100"
+                    :step="1"
+                    :fastStep="10"
+                    value-class="text-orange-400 font-medium"
+                    :autoEdit="true"
+                    class="ml-2"
+                  />
+                </div>
+
+                <!-- The Tulsandstof Mech Creator Kit (Relic #15) -->
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconCpu size="16" class="text-green-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">Tulsandstof Kit</span>
+                    <span class="ml-1 text-xs text-gray-500">(Relic #15)</span>
+                  </div>
+                  <ToolValueControls
+                    :value="tulsandstofKit"
+                    @update:value="tulsandstofKit = $event"
+                    :minValue="0"
+                    :maxValue="8"
+                    :step="1"
+                    :fastStep="1"
+                    value-class="text-green-400 font-medium"
+                    :autoEdit="true"
+                    class="ml-2"
+                  />
+                </div>
+
+                <!-- Mech Engineer Tool-Pants -->
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconTool size="16" class="text-yellow-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">Mech Engineer Tool-Pants</span>
+                    <span class="ml-1 text-xs text-gray-500">(Gadget)</span>
+                  </div>
+                  <ToolValueControls
+                    :value="mechEngineerToolPants"
+                    @update:value="mechEngineerToolPants = $event"
+                    :minValue="0"
+                    :maxValue="999999"
+                    :step="1"
+                    :fastStep="10"
+                    value-class="text-yellow-400 font-medium"
+                    :autoEdit="true"
+                    class="ml-2"
+                  />
+                </div>
+
+                <!-- The Transmission Amplifier - nur wenn Creation Gem Level >= 4 -->
+                <div v-if="creationGemLevel >= 4" class="space-y-3">
+                  <!-- Transmission Amplifier Tier -->
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                        <IconBook size="16" class="text-indigo-400" />
+                      </div>
+                      <span class="text-sm text-gray-300">Transmission Amplifier Tier</span>
+                      <span class="ml-1 text-xs text-gray-500">(Trinket)</span>
+                    </div>
+                    <ToolValueControls
+                      :value="transmissionAmplifierTier"
+                      @update:value="transmissionAmplifierTier = $event"
+                      :minValue="0"
+                      :maxValue="999999"
+                      :step="1"
+                      :fastStep="10"
+                      value-class="text-indigo-400 font-medium"
+                      :autoEdit="true"
+                      class="ml-2"
+                    />
+                  </div>
+
+                  <!-- Transmission Amplifier Level -->
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                        <IconBook size="16" class="text-pink-400" />
+                      </div>
+                      <span class="text-sm text-gray-300">Transmission Amplifier Level</span>
+                      <span class="ml-1 text-xs text-gray-500">(Trinket)</span>
+                    </div>
+                    <ToolValueControls
+                      :value="transmissionAmplifierLevel"
+                      @update:value="transmissionAmplifierLevel = $event"
+                      :minValue="0"
+                      :maxValue="999999"
+                      :step="1"
+                      :fastStep="10"
+                      value-class="text-pink-400 font-medium"
+                      :autoEdit="true"
+                      class="ml-2"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Mech Units Grid -->
+        <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
+          <div class="header p-2">
+            <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
+              <IconRobot size="25" class="mr-1.5 text-orange-400" />
+              Mech Units
+              <span class="ml-2 text-sm text-gray-400">
+                ({{ visibleMechs.length }}/{{ mechs.length }} unlocked)
+              </span>
+            </h3>
+          </div>
+          
+          <div class="p-2 sm:p-3">
+            <!-- Grid: 2 Spalten für Desktop, 1 für Mobile -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div 
+                v-for="(mech, index) in visibleMechs" 
+                :key="mech.key" 
+                :data-mech-key="mech.key"
+                class="bg-gray-900/60 rounded-lg border border-gray-700/50 overflow-hidden"
+              >
+<!-- Mech Header -->
+<div class="p-3 border-b border-gray-600 bg-gradient-to-r from-gray-800 to-gray-700">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center">
+      <!-- Mech Asset Image -->
+      <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-3 bg-gray-700/50 p-1">
+        <img 
+          :src="getMechImagePath(index + 1)" 
+          :alt="mech.name"
+          class="w-full h-full object-contain rounded-lg"
+          @error="handleImageError"
+        />
+      </div>
+      <div>
+        <h4 class="text-white font-semibold text-sm">{{ mech.name }}</h4>
+        <div class="text-xs text-gray-400">
+          Output: <span :class="getMechOutputClass(mech.color)">{{ mech.output }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Header Right Side: Nur für Nicht-Token Units -->
+    <div v-if="mech.key !== 'token_mk1'" class="flex items-center space-x-3">
+      <!-- Labels -->
+      <div class="text-right hidden sm:block">
+        <div class="text-xs text-gray-400 pt-1">Max Output Cap</div>
+        <div class="text-xs text-gray-400 pt-3">Current Multi</div>
+      </div>
+      
+      <!-- Werte -->
+      <div class="text-right">
+        <div class="text-lg font-bold text-red-400">
+          {{ formatDecimalNumber(getMaxCapacity(mech.key)) }}
+        </div>
+        <div class="text-lg font-bold text-yellow-400">
+          ×{{ formatMultiplier(getCurrentMultiplier(mech.key)) }}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Token Unit spezifisches Header -->
+    <div v-else class="flex items-center space-x-3">
+      <!-- Current Output per Cycle -->
+      <div class="flex items-center space-x-2">
+        <span class="text-xs text-gray-400 hidden sm:block">Current Output per Cycle</span>
+        <span class="text-lg font-bold text-yellow-400">
+          {{ formatDecimalNumber(getTokensPerCycle(mech.key)) }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mech Content -->
+<div class="p-3">
+  <!-- Upgrade Controls Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+    <!-- Mechs Owned -->
+    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+      <div class="flex items-center mb-2">
+        <IconUsers size="16" class="text-blue-400 mr-2" />
+        <span class="text-sm font-medium text-gray-300">Mechs Owned</span>
+      </div>
+      <div class="flex items-center justify-between mb-2">
+        <ToolValueControls
+          :value="mechSettings[mech.key]?.owned || 0"
+          @update:value="updateMechSetting(mech.key, 'owned', $event)"
+          :minValue="1"
+          :maxValue="999999"
+          :step="1"
+          :fastStep="10"
+          value-class="text-blue-400 font-medium"
+          :autoEdit="true"
+        />
+      </div>
+      <div class="text-xs text-gray-400">
+        Next Cost: <span class="text-blue-300">{{ formatDecimalNumber(getNextMechCost(mech.key)) }}</span>
+      </div>
+    </div>
+
+    <!-- Time Upgrades -->
+    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+      <div class="flex items-center mb-2">
+        <IconClock size="16" class="text-yellow-400 mr-2" />
+        <span class="text-sm font-medium text-gray-300">Time Upgrades</span>
+      </div>
+      <div class="flex items-center justify-between mb-2">
+        <ToolValueControls
+          :value="mechSettings[mech.key]?.timeUpgrades || 0"
+          @update:value="updateMechSetting(mech.key, 'timeUpgrades', $event)"
+          :minValue="0"
+          :maxValue="getEffectiveTimeMaxLevels(mech.key)"
+          :step="1"
+          :fastStep="10"
+          value-class="text-yellow-400 font-medium"
+          :autoEdit="true"
+          :additionalInfo="formatTime(getCurrentTimer(mech.key))"
+          additionalInfoClass="text-yellow-300 text-sm"
+          :showOnlyAdditionalInfo="true"
+        />
+      </div>
+      <div class="text-xs text-gray-400">
+        Next Cost: <span class="text-yellow-300">{{ formatDecimalNumber(getNextTimeCost(mech.key)) }}</span>
+      </div>
+    </div>
+
+    <!-- Multi Upgrades -->
+    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+      <div class="flex items-center mb-2">
+        <IconTrendingUp size="16" class="text-green-400 mr-2" />
+        <span class="text-sm font-medium text-gray-300">Multi Upgrades</span>
+      </div>
+      <div class="flex items-center justify-between mb-2">
+        <ToolValueControls
+          :value="mechSettings[mech.key]?.multiUpgrades || 0"
+          @update:value="updateMechSetting(mech.key, 'multiUpgrades', $event)"
+          :minValue="1"
+          :maxValue="mech.multiMaxLevels"
+          :step="1"
+          :fastStep="10"
+          value-class="text-green-400 font-medium"
+          :autoEdit="true"
+        />
+      </div>
+      <div class="text-xs text-gray-400">
+        Next Cost: <span class="text-green-300">{{ formatDecimalNumber(getNextMultiCost(mech.key)) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Output Information Grid - Unterschiedlich für Token vs Normal -->
+  <div v-if="mech.key !== 'token_mk1'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <!-- Current Output Multiplier -->
+    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+      <div class="flex items-center mb-2">
+        <IconChartLine size="16" class="text-purple-400 mr-2" />
+        <span class="text-sm font-medium text-gray-300">Current Output</span>
+        <InfoTooltip 
+          class="ml-1"
+          content="<b>Supported formats:</b><br/>
+          • Scientific notation: <code>1e100</code>, <code>5.5e50</code><br/>
+          • Suffixes: <code>1k</code>, <code>2.5m</code>, <code>100b</code>, <code>5t</code><br/>
+          • Available suffixes: k, m, b, t, qa, qu, sx, sp, oc, n, d<br/>"
+          placement="top"
+        />
+      </div>
+      <div class="flex items-center justify-between mb-2">
+        <input
+          :value="getCurrentOutputMultiplierInput(mech.key)"
+          @keydown.enter="handleOutputMultiplierSubmit(mech.key)"
+          @blur="handleOutputMultiplierBlur(mech.key)"
+          @focus="selectAllOutputInput($event, mech.key)"
+          @click="selectAllOutputInput($event, mech.key)"
+          @input="handleOutputMultiplierInput(mech.key, $event.target.value)"
+          type="text"
+          class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-purple-400 font-medium text-sm w-full text-right"
+          placeholder="1e100"
+        />
+      </div>
+      <div class="text-xs text-gray-400">
+        Time to Cap: <span class="text-purple-300">{{ getTimeToCap(mech.key) }}</span>
+      </div>
+    </div>
+
+    <!-- Output Statistics -->
+    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+      <div class="flex items-center mb-2">
+        <IconTrendingUp size="16" class="text-cyan-400 mr-2" />
+        <span class="text-sm font-medium text-gray-300">Output Statistics</span>
+      </div>
+      <div class="space-y-2">
+        <!-- Output per Day -->
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-gray-400">Per Day:</span>
+          <span class="text-xs text-cyan-300 font-medium">
+            {{ formatDecimalNumber(getOutputPerDay(mech.key)) }}
+          </span>
+        </div>
+        
+        <!-- Output per Week -->
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-gray-400">Per Week:</span>
+          <span class="text-xs text-cyan-300 font-medium">
+            {{ formatDecimalNumber(getOutputPerWeek(mech.key)) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Token Unit spezifische Statistiken -->
+  <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <!-- Token Generation -->
+    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+      <div class="flex items-center mb-2">
+        <IconStar size="16" class="text-yellow-400 mr-2" />
+        <span class="text-sm font-medium text-gray-300">Token Generation</span>
+      </div>
+      <div class="space-y-2">
+        <!-- Tokens per Cycle -->
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-gray-400">Per Cycle:</span>
+          <span class="text-xs text-yellow-300 font-medium">
+            {{ formatDecimalNumber(getTokensPerCycle(mech.key)) }}
+          </span>
+        </div>
+        
+        <!-- Tokens per Day -->
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-gray-400">Per Day:</span>
+          <span class="text-xs text-yellow-300 font-medium">
+            {{ formatDecimalNumber(getTokensPerDay(mech.key)) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Token Statistics -->
+    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+      <div class="flex items-center mb-2">
+        <IconTrendingUp size="16" class="text-cyan-400 mr-2" />
+        <span class="text-sm font-medium text-gray-300">Token Statistics</span>
+      </div>
+      <div class="space-y-2">
+        <!-- Tokens per Week -->
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-gray-400">Per Week:</span>
+          <span class="text-xs text-cyan-300 font-medium">
+            {{ formatDecimalNumber(getTokensPerWeek(mech.key)) }}
+          </span>
+        </div>
+        
+        <!-- Cycles per Day -->
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-gray-400">Cycles/Day:</span>
+          <span class="text-xs text-cyan-300 font-medium">
+            {{ formatDecimalNumber(getCyclesPerDay(mech.key)) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+              </div>
+            </div>
+            
+            <!-- Locked Mechs Info -->
+            <div v-if="lockedMechs.length > 0" class="mt-4 p-3 bg-gray-800/30 rounded-lg border border-gray-600/50">
+              <h4 class="text-sm font-medium text-gray-300 mb-2 flex items-center">
+                <IconLock size="16" class="mr-2 text-gray-400" />
+                Locked Mechs ({{ lockedMechs.length }})
+              </h4>
+              <div class="space-y-1">
+                <div v-for="mech in lockedMechs" :key="mech.key" class="flex items-center justify-between text-xs">
+                  <span class="text-gray-400">{{ mech.name }}</span>
+                  <span class="text-purple-400 font-medium">
+                    Requires Creation Gem Level {{ mech.unlock }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue';
+import Decimal from 'break_infinity.js';
+import { 
+  IconSettings, 
+  IconRefresh,
+  IconRobot,
+  IconClock,
+  IconUsers,
+  IconTrendingUp,
+  IconTarget,
+  IconDiamond,
+  IconStar,
+  IconCpu,
+  IconAssembly,
+  IconTool,
+  IconBook,
+  IconBookmarks,
+  IconChartLine,
+  IconLock
+} from '@tabler/icons-vue';
+import ToolValueControls from '@/composables/ToolValueControls.vue';
+import { formatNumber } from '@/composables/format.js';
+import { 
+  mechs, 
+  getMechByKey,
+  calculateTierCost,
+  getTimeCostMultiplier
+} from '@/constants/mech-planner/index.js';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
+
+// Global Settings
+const creationGemLevel = ref(0);
+const creationGemNode2 = ref(false);
+const creationMechBonusCap = ref(0);
+const coorsRelic = ref(0);
+const tulsandstofKit = ref(0);
+const mechEngineerToolPants = ref(0);
+const transmissionAmplifierTier = ref(0);
+const transmissionAmplifierLevel = ref(0);
+
+// Current Output Multiplier Settings - pro Mech
+const currentOutputMultiplier = ref({});
+const currentOutputMultiplierInput = ref({});
+const inputWasFocused = ref({});
+
+// Mech Settings - Reactive object für alle Mechs
+const mechSettings = ref({});
+
+// Computed Properties für Unlock-System
+const visibleMechs = computed(() => {
+  return mechs.filter(mech => {
+    // Wenn kein unlock property vorhanden ist, ist der Mech immer verfügbar
+    if (!mech.unlock) return true;
+    
+    // Ansonsten muss das Creation Gem Level >= unlock sein
+    return creationGemLevel.value >= mech.unlock;
+  });
+});
+
+const lockedMechs = computed(() => {
+  return mechs.filter(mech => {
+    // Nur Mechs mit unlock property können gesperrt sein
+    if (!mech.unlock) return false;
+    
+    // Gesperrt wenn Creation Gem Level < unlock
+    return creationGemLevel.value < mech.unlock;
+  });
+});
+
+// Initialize mech settings - nur für sichtbare Mechs
+const initializeMechSettings = () => {
+  // Initialisiere alle Mechs (auch die noch nicht sichtbaren)
+  mechs.forEach(mech => {
+    if (!mechSettings.value[mech.key]) {
+      mechSettings.value[mech.key] = {
+        owned: 1,
+        timeUpgrades: 0,
+        multiUpgrades: 1
+      };
+    }
+  });
+};
+
+// Initialize current output multiplier settings - nur für sichtbare Mechs
+const initializeCurrentOutputMultiplier = () => {
+  // Initialisiere alle Mechs (auch die noch nicht sichtbaren)
+  mechs.forEach(mech => {
+    if (!currentOutputMultiplier.value[mech.key]) {
+      currentOutputMultiplier.value[mech.key] = new Decimal(1);
+    }
+    if (!currentOutputMultiplierInput.value[mech.key]) {
+      currentOutputMultiplierInput.value[mech.key] = '1';
+    }
+    if (!inputWasFocused.value[mech.key]) {
+      inputWasFocused.value[mech.key] = false;
+    }
+  });
+};
+
+// Watch für Creation Gem Level Änderungen
+watch(creationGemLevel, (newLevel, oldLevel) => {
+  // Wenn das Level steigt, initialisiere neue Mechs
+  if (newLevel > oldLevel) {
+    initializeMechSettings();
+    initializeCurrentOutputMultiplier();
+  }
+  
+  // Speichere die Einstellungen
+  saveSettings();
+});
+
+// Update mech setting helper
+const updateMechSetting = (mechKey, setting, value) => {
+  if (!mechSettings.value[mechKey]) {
+    mechSettings.value[mechKey] = {
+      owned: 1,
+      timeUpgrades: 0,
+      multiUpgrades: 1
+    };
+  }
+  mechSettings.value[mechKey][setting] = value;
+  saveSettings();
+};
+
+// Update current output multiplier
+const updateCurrentOutputMultiplier = (mechKey, value) => {
+  if (!currentOutputMultiplier.value[mechKey]) {
+    currentOutputMultiplier.value[mechKey] = 0;
+  }
+  currentOutputMultiplier.value[mechKey] = value;
+  saveSettings();
+};
+
+const getCurrentMultiplier = (mechKey) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  const settings = mechSettings.value[mechKey];
+  
+  if (!mech || !settings || settings.owned === 0) {
+    return new Decimal(0);
+  }
+  
+  // Spezialbehandlung für Token Unit
+  if (mech.key === 'token_mk1') {
+    // Für Token Unit: multiIncrease * multiUpgrades (keine baseMulti)
+    return new Decimal(mech.multiIncrease || 10000).mul(settings.multiUpgrades || 1);
+  }
+  
+  // Normale Formel für andere Mechs
+  const baseValue = new Decimal(1);
+  const multiIncreaseValue = new Decimal(mech.multiIncrease || 0);
+  const baseMultiValue = new Decimal(mech.baseMulti || 0);
+  
+  const multiIncreaseBonus = multiIncreaseValue.mul(settings.multiUpgrades || 0);
+  const mechsBonus = multiIncreaseBonus.mul(settings.owned || 0);
+  
+  const totalMultiplier = baseValue.add(mechsBonus).add(baseMultiValue);
+    
+  return totalMultiplier;
+};
+
+const getCurrentTimer = (mechKey) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  const settings = mechSettings.value[mechKey];
+  
+  if (!mech || !settings) return mech?.timeStart || 0;
+  
+  // Base time - time upgrades
+  let currentTime = mech.timeStart;
+  
+  // Time upgrades: reduce by timeReduce seconds per level
+  currentTime -= settings.timeUpgrades * mech.timeReduce;
+  
+  // Minimum 10 seconds
+  return Math.max(10, currentTime);
+};
+
+const getMaxCapacity = (mechKey) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  
+  // Token Unit hat keine Capacity
+  if (mech?.key === 'token_mk1') {
+    return new Decimal(0);
+  }
+
+  const settings = mechSettings.value[mechKey];
+  
+  if (!mech || !settings) return new Decimal(0);
+  
+  // Base capacity aus der mech definition
+  let capacity = new Decimal(mech.baseCap);
+  
+  // COORS bonus: 1e5 per level
+  if (coorsRelic.value > 0) {
+    const coorsBonus = new Decimal(10).pow(5 * coorsRelic.value);
+    capacity = capacity.mul(coorsBonus);
+  }
+  
+  // Creation Gem Level und Mech Bonus Cap formula:
+  // POW(POW(100000000, creation_mech_bonus_cap), (1 + (creation_gem_level * 0.1) - 0.1))
+  if (creationGemLevel.value > 0 || creationMechBonusCap.value > 0) {
+    const base = new Decimal(100000000); // 1e8
+    const exponent1 = creationMechBonusCap.value;
+    const exponent2 = 1 + (creationGemLevel.value * 0.1) - 0.1;
+    
+    // POW(100000000, creation_mech_bonus_cap)
+    const firstPow = base.pow(exponent1);
+    // POW(result, (1 + (creation_gem_level * 0.1) - 0.1))
+    const gemBonusCapFormula = firstPow.pow(exponent2);
+    
+    capacity = capacity.mul(gemBonusCapFormula);
+  }
+  
+  // Creation Gem Node #2 bonus für units mit creagn2: true
+  if (mech.creagn2 && creationGemNode2.value) {
+    const creagn2Bonus = new Decimal(10).pow(1000); // 1e1000
+    capacity = capacity.mul(creagn2Bonus);
+  }
+  
+  // Mech Engineer Tool-Pants bonus
+  if (mechEngineerToolPants.value > 0) {
+    // Math.pow(1.4, level) * Math.pow(10, Math.floor(level / 10))
+    const toolPantsBonus1 = new Decimal(1.4).pow(mechEngineerToolPants.value);
+    const toolPantsBonus2 = new Decimal(10).pow(Math.floor(mechEngineerToolPants.value / 10));
+    const toolPantsBonus = toolPantsBonus1.mul(toolPantsBonus2);
+    
+    capacity = capacity.mul(toolPantsBonus);
+  }
+  
+  // Transmission Amplifier bonus
+  if (transmissionAmplifierLevel.value > 0) {
+    // Base: 1e3, pro tier +1e1 auf die base
+    const baseExponent = 3 + transmissionAmplifierTier.value; // 3 + tier
+    const amplifierBonus = new Decimal(10).pow(baseExponent * transmissionAmplifierLevel.value);
+    
+    capacity = capacity.mul(amplifierBonus);
+  }
+  
+  return capacity;
+};
+
+// Calculate time to cap
+// Calculate time to cap
+const getTimeToCap = (mechKey) => {
+  const currentOutput = getCurrentOutputMultiplierDecimal(mechKey);
+  const maxCapacity = getMaxCapacity(mechKey);
+  const currentMulti = getCurrentMultiplier(mechKey);
+  const currentTimer = getCurrentTimer(mechKey);
+  
+  // Wenn bereits gecappt oder keine Daten
+  if (currentOutput.gte(maxCapacity) || currentMulti.eq(0) || currentOutput.eq(0)) {
+    return 'Already capped or no data';
+  }
+  
+  if (currentMulti.lte(1)) {
+    return 'No growth (multiplier ≤ 1)';
+  }
+  
+  try {
+    // Verwende den Input-Wert direkt als Exponenten
+    const currentExpInput = currentOutputMultiplierInput.value[mechKey] || '1';
+    let currentExp = 0;
+    
+    // Parse den Input-Wert zu einem Exponenten
+    if (currentExpInput.includes('e')) {
+      const parts = currentExpInput.split('e');
+      const base = parseFloat(parts[0]);
+      const exp = parseInt(parts[1]);
+      currentExp = exp + Math.log10(base);
+    } else {
+      // Für Suffix-Werte oder normale Zahlen
+      const parsed = parseSuffixValue(currentExpInput);
+      currentExp = parsed.log10();
+    }
+    
+    // Schätze Max Capacity Exponent manuell
+    const maxCapStr = maxCapacity.toString();
+    
+    let maxCapacityExp;
+    if (maxCapStr.includes('e+')) {
+      const parts = maxCapStr.split('e+');
+      const base = parseFloat(parts[0]);
+      const exp = parseInt(parts[1]);
+      maxCapacityExp = exp + Math.log10(base);
+    } else if (maxCapStr.includes('e')) {
+      const parts = maxCapStr.split('e');
+      const base = parseFloat(parts[0]);
+      const exp = parseInt(parts[1]);
+      maxCapacityExp = exp + Math.log10(base);
+    } else {
+      maxCapacityExp = Math.log10(parseFloat(maxCapStr));
+    }
+    
+    // Current Multiplier log10
+    const multiLog = Math.log10(currentMulti.toNumber());
+    
+    if (multiLog <= 0) {
+      return 'No growth (log multiplier ≤ 0)';
+    }
+    
+    // Berechne Cycles
+    const expDifference = maxCapacityExp - currentExp;
+    const cycles = expDifference / multiLog;
+    
+    if (!isFinite(cycles) || cycles <= 0 || isNaN(cycles)) {
+      return 'Invalid calculation';
+    }
+    
+    // Zeit in Sekunden
+    const timeInSeconds = cycles * currentTimer;
+    
+    if (!isFinite(timeInSeconds)) {
+      return 'Infinite time';
+    }
+    
+    // Formatiere die Zeit
+    const result = formatDuration(new Decimal(timeInSeconds));
+    
+    return result;
+  } catch (error) {
+    console.error('Error calculating time to cap:', error);
+    return 'Calculation error';
+  }
+};
+
+const formatDuration = (seconds) => {
+  if (!(seconds instanceof Decimal)) {
+    return 'Invalid';
+  }
+  
+  if (seconds.eq(0)) return '0 minutes';
+  
+  if (seconds.lt(0)) {
+    return 'Invalid (negative time)';
+  }
+  
+  let totalSeconds;
+  try {
+    totalSeconds = seconds.toNumber();
+  } catch (error) {
+    return 'Number too large';
+  }
+  
+  if (!isFinite(totalSeconds) || isNaN(totalSeconds)) {
+    return 'Infinite time';
+  }
+  
+  // Konstanten für Zeitumrechnung
+  const SECONDS_PER_MINUTE = 60;
+  const SECONDS_PER_HOUR = 3600;
+  const SECONDS_PER_DAY = 86400;
+  const SECONDS_PER_YEAR = 31536000; // 365 Tage
+  
+  // Für sehr große Zeiten (über 100 Jahre) - vereinfacht anzeigen
+  if (totalSeconds >= SECONDS_PER_YEAR * 100) {
+    const years = Math.round(totalSeconds / SECONDS_PER_YEAR);
+    return `${years} years`;
+  }
+  
+  // Berechne Jahre, Tage, Stunden, Minuten
+  const years = Math.floor(totalSeconds / SECONDS_PER_YEAR);
+  const remainingAfterYears = totalSeconds % SECONDS_PER_YEAR;
+  
+  const days = Math.floor(remainingAfterYears / SECONDS_PER_DAY);
+  const remainingAfterDays = remainingAfterYears % SECONDS_PER_DAY;
+  
+  const hours = Math.floor(remainingAfterDays / SECONDS_PER_HOUR);
+  const remainingAfterHours = remainingAfterDays % SECONDS_PER_HOUR;
+  
+  const minutes = Math.round(remainingAfterHours / SECONDS_PER_MINUTE);
+  
+  // Baue die Ausgabe basierend auf der größten Einheit
+  const parts = [];
+  
+  if (years > 0) {
+    parts.push(`${years} year${years !== 1 ? 's' : ''}`);
+    if (days > 0) {
+      parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+    }
+    if (hours > 0 && days === 0) { // Nur Stunden zeigen wenn keine Tage
+      parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+    }
+  } else if (days > 0) {
+    parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+    if (hours > 0) {
+      parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+    }
+    if (minutes > 0 && hours === 0) { // Nur Minuten zeigen wenn keine Stunden
+      parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+    }
+  } else if (hours > 0) {
+    parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+    if (minutes > 0) {
+      parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+    }
+  } else {
+    // Nur Minuten, keine Sekunden
+    parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+  }
+  
+  // Verbinde die Teile mit Leerzeichen
+  return parts.join(' ');
+};
+
+const getStatus = (mechKey) => {
+  const settings = mechSettings.value[mechKey];
+  
+  if (!settings || settings.owned === 0) return 'Inactive';
+  
+  const currentMulti = getCurrentMultiplier(mechKey);
+  const maxCapacity = getMaxCapacity(mechKey);
+  
+  if (currentMulti.gte(maxCapacity)) return 'Capped';
+  
+  return 'Active';
+};
+
+const getStatusColor = (mechKey) => {
+  const status = getStatus(mechKey);
+  
+  switch (status) {
+    case 'Active': return 'text-green-400';
+    case 'Capped': return 'text-red-400';
+    case 'Inactive': return 'text-gray-400';
+    default: return 'text-gray-400';
+  }
+};
+
+const getProgressPercentage = (mechKey) => {
+  // Placeholder for timer progress - würde in real implementation einen Timer brauchen
+  return Math.random() * 100;
+};
+
+// Formatting functions
+const formatMultiplier = (value) => {
+  if (value instanceof Decimal) {
+    if (value.eq(0)) return '0';
+    if (value.lt(1000)) return value.toFixed(2);
+    return value.toExponential(2);
+  }
+  return '0';
+};
+
+// Korrigierte formatNumber Funktion für Decimal-Werte
+const formatDecimalNumber = (value) => {
+  // Spezialbehandlung für MAX
+  if (value === 'MAX') {
+    return '-';
+  }
+  
+  if (value instanceof Decimal) {
+    if (value.eq(0)) return '0';
+    
+    // Für sehr große Zahlen (über 1e39 statt 1e36) verwende Exponential-Notation
+    if (value.gte(1e39)) {
+      return value.toExponential(2);
+    }
+    
+    // Für kleinere Zahlen verwende die erweiterte Suffix-Formatierung
+    if (value.lt(Number.MAX_SAFE_INTEGER)) {
+      const numberValue = value.toNumber();
+      return formatNumberWithSuffixes(numberValue);
+    }
+    
+    // Für mittlere große Zahlen: Teste ob sie im Suffix-Bereich sind
+    if (value.lt(1e39)) {
+      try {
+        const numberValue = value.toNumber();
+        if (isFinite(numberValue)) {
+          return formatNumberWithSuffixes(numberValue);
+        }
+      } catch (error) {
+        // Fallback to exponential
+      }
+    }
+    
+    // Für mittlere große Zahlen verwende Exponential-Notation
+    return value.toExponential(2);
+  }
+  
+  // Für normale Zahlen verwende die Suffix-Formatierung
+  return formatNumberWithSuffixes(value);
+};
+
+// Formatierungsfunktion mit den gleichen Suffixen wie formatNumber
+const formatNumberWithSuffixes = (value) => {
+  if (typeof value !== 'number' || isNaN(value)) {
+    return '0';
+  }
+  
+  // Sonderbehandlung für Werte sehr nahe bei Null
+  if (Math.abs(value) < 0.01) {
+    return '0';
+  }
+  
+  // Behandlung für kleine Werte zwischen 0.01 und 1
+  if (Math.abs(value) < 1) {
+    return value.toFixed(2);
+  }
+  
+  const absValue = Math.abs(value);
+  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d'];
+  
+  // Berechne die Größenordnung korrekt
+  let tier = Math.max(0, Math.min(Math.floor(Math.log10(absValue) / 3), suffixes.length - 1));
+  
+  // Für Werte < 1000, zeige ohne Suffix
+  if (tier === 0) {
+    // Verwende weniger Dezimalstellen für größere Zahlen
+    if (absValue >= 100) {
+      return value.toFixed(0);
+    } else if (absValue >= 10) {
+      return value.toFixed(1);
+    } else {
+      return value.toFixed(2);
+    }
+  }
+  
+  const suffix = suffixes[tier];
+  const scaledValue = value / Math.pow(10, tier * 3);
+  
+  // Formatiere die skalierte Zahl mit 2 Dezimalstellen + Suffix
+  return `${scaledValue.toFixed(2)}${suffix}`;
+};
+
+const formatTime = (seconds) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+};
+
+// Cost calculation functions
+const getNextMechCost = (mechKey) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  const settings = mechSettings.value[mechKey];
+  
+  if (!mech || !settings) return new Decimal(0);
+  
+  // Formula: mechCost * (mechCostMulti ^ owned)
+  const cost = new Decimal(mech.mechCost).mul(
+    new Decimal(mech.mechCostMulti).pow(settings.owned - 1)
+  );
+  
+  return cost;
+};
+
+// Hilfsfunktion für erweiterte Time Max Levels
+const getEffectiveTimeMaxLevels = (mechKey) => {
+  const mech = getMechByKey(mechKey);
+  if (!mech) return 0;
+  
+  // Base max levels + Tulsandstof Kit bonus (+5 per level)
+  const baseMaxLevels = mech.timeMaxLevels;
+  const tulsandstofBonus = tulsandstofKit.value * 5;
+  
+  return baseMaxLevels + tulsandstofBonus;
+};
+
+// Aktualisierte getNextTimeCost Funktion
+const getNextTimeCost = (mechKey) => {
+  const mech = getMechByKey(mechKey);
+  const settings = mechSettings.value[mechKey];
+  
+  if (!mech || !settings) return new Decimal(0);
+  
+  // Verwende die erweiterten Max Levels durch Tulsandstof Kit
+  const effectiveMaxLevels = getEffectiveTimeMaxLevels(mechKey);
+  
+  if (settings.timeUpgrades >= effectiveMaxLevels) {
+    return 'MAX'; // Spezialwert für Max Level
+  }
+  
+  // Verwende Tier-basierte Berechnung wenn Tiers vorhanden, sonst Fallback
+  if (mech.timeCostTiers) {
+    const cost = calculateTierCost(mech.timeCost, settings.timeUpgrades, mech.timeCostTiers);
+    return new Decimal(cost);
+  } else {
+    // Fallback zur alten Methode
+    const cost = new Decimal(mech.timeCost).mul(
+      new Decimal(mech.timeCostMulti).pow(settings.timeUpgrades)
+    );
+    return cost;
+  }
+};
+
+const getNextMultiCost = (mechKey) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  const settings = mechSettings.value[mechKey];
+  
+  if (!mech || !settings) return new Decimal(0);
+  
+  if (settings.multiUpgrades >= mech.multiMaxLevels) {
+    return 'MAX'; // Spezialwert für Max Level
+  }
+  
+  // Formula: multiCost * (multiCostMulti ^ multiUpgrades)
+  const cost = new Decimal(mech.multiCost).mul(
+    new Decimal(mech.multiCostMulti).pow(settings.multiUpgrades - 1)
+  );
+  
+  return cost;
+};
+
+// Helper functions für Mech-Farben
+const getMechIconClass = (color) => {
+  const colorMap = {
+    'green': 'bg-green-500',
+    'red': 'bg-red-500',
+    'blue': 'bg-blue-500',
+    'orange': 'bg-orange-500',
+    'yellow': 'bg-yellow-500',
+    'brown': 'bg-amber-500'
+  };
+  
+  return colorMap[color] || 'bg-orange-500';
+};
+
+const getMechOutputClass = (color) => {
+  const colorMap = {
+    'green': 'text-green-400',
+    'red': 'text-red-400',
+    'blue': 'text-blue-400',
+    'orange': 'text-orange-400',
+    'yellow': 'text-yellow-400',
+    'brown': 'text-amber-400'
+  };
+  
+  return colorMap[color] || 'text-green-400';
+};
+
+// Mech image path helper
+const getMechImagePath = (index) => {
+  return `/src/assets/mechs/${index}.png`;
+};
+
+// Error handler for missing images
+const handleImageError = (event) => {
+  // Fallback zu einem Standard-Icon wenn das Bild nicht gefunden wird
+  event.target.style.display = 'none';
+  // Zeige stattdessen das IconRobot
+  const parent = event.target.parentElement;
+  if (parent && !parent.querySelector('.fallback-icon')) {
+    const fallbackIcon = document.createElement('div');
+    fallbackIcon.className = 'fallback-icon w-full h-full flex items-center justify-center';
+    fallbackIcon.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-orange-400"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>';
+    parent.appendChild(fallbackIcon);
+  }
+};
+
+const getTokensPerCycle = (mechKey) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  const settings = mechSettings.value[mechKey];
+  
+  if (!mech || !settings || mech.key !== 'token_mk1') {
+    return new Decimal(0);
+  }
+  
+  // Für Token Unit: multiIncrease * multiUpgrades * owned
+  const tokensPerCycle = new Decimal(mech.multiIncrease || 10000)
+    .mul(settings.multiUpgrades || 1)
+    .mul(settings.owned || 1);
+  
+  return tokensPerCycle;
+};
+
+const getTokensPerDay = (mechKey) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  
+  if (!mech || mech.key !== 'token_mk1') {
+    return new Decimal(0);
+  }
+  
+  const tokensPerCycle = getTokensPerCycle(mechKey);
+  const cyclesPerDay = getCyclesPerDay(mechKey);
+  
+  return tokensPerCycle.mul(cyclesPerDay);
+};
+
+const getTokensPerWeek = (mechKey) => {
+  const tokensPerDay = getTokensPerDay(mechKey);
+  return tokensPerDay.mul(7);
+};
+
+const getCyclesPerDay = (mechKey) => {
+  const currentTimer = getCurrentTimer(mechKey);
+  
+  if (currentTimer === 0) {
+    return new Decimal(0);
+  }
+  
+  // Cycles pro Tag: 86400 Sekunden / Timer
+  const cyclesPerDay = 86400 / currentTimer;
+  
+  return new Decimal(cyclesPerDay);
+};
+
+// Settings management
+const resetSettings = () => {
+  creationGemLevel.value = 0;
+  creationGemNode2.value = false;
+  creationMechBonusCap.value = 0;
+  coorsRelic.value = 0;
+  tulsandstofKit.value = 0;
+  mechEngineerToolPants.value = 0;
+  transmissionAmplifierTier.value = 0;
+  transmissionAmplifierLevel.value = 0;
+
+  mechs.forEach(mech => {
+    mechSettings.value[mech.key] = {
+      owned: 1,
+      timeUpgrades: 0,
+      multiUpgrades: 1
+    };
+    currentOutputMultiplier.value[mech.key] = 0;
+  });
+  
+  saveSettings();
+};
+
+// Get current output multiplier as input value (string)
+const getCurrentOutputMultiplierInput = (mechKey) => {
+  return currentOutputMultiplierInput.value[mechKey] || '1';
+};
+
+// Get current output multiplier as Decimal
+const getCurrentOutputMultiplierDecimal = (mechKey) => {
+  const value = currentOutputMultiplier.value[mechKey] || new Decimal(1);
+  return value.lt(1) ? new Decimal(1) : value;
+};
+
+// Parse suffix values 
+function parseSuffixValue(input) {
+  if (input instanceof Decimal) return input.lt(1) ? new Decimal(1) : input;
+  
+  const str = input.toString().toLowerCase().trim();
+  
+  try {
+    // Direkte wissenschaftliche Notation (1e500, 1.5e1000, etc.)
+    if (str.includes('e')) {
+      const parsed = new Decimal(str);
+      // Begrenze auf maximal 1e9999 und minimum 1
+      if (parsed.gt('1e9999')) {
+        return new Decimal('1e9999');
+      }
+      if (parsed.lt(1)) {
+        return new Decimal(1);
+      }
+      return parsed;
+    }
+    
+    // Suffix-Mapping mit Decimal
+    const suffixMap = {
+      'k': new Decimal('1e3'),
+      'm': new Decimal('1e6'),
+      'b': new Decimal('1e9'),
+      't': new Decimal('1e12'),
+      'qa': new Decimal('1e15'),
+      'qu': new Decimal('1e18'),
+      'sx': new Decimal('1e21'),
+      'sp': new Decimal('1e24'),
+      'oc': new Decimal('1e27'),
+      'n': new Decimal('1e30'),
+      'd': new Decimal('1e33')
+    };
+    
+    // Extrahiere Zahl und Suffix
+    const match = str.match(/^([0-9]*\.?[0-9]+)([a-z]+)?$/);
+    
+    if (!match) return new Decimal(1); // Fallback
+    
+    const numberStr = match[1];
+    const suffix = match[2] || '';
+    
+    // Prüfe ob die Zahl gültig ist BEVOR wir Decimal erstellen
+    if (!numberStr || isNaN(parseFloat(numberStr))) return new Decimal(1);
+    
+    const number = new Decimal(numberStr);
+    
+    // Multipliziere mit Suffix-Wert
+    const multiplier = suffixMap[suffix] || new Decimal(1);
+    const result = number.mul(multiplier);
+    
+    // Begrenze auf maximal 1e9999 und minimum 1
+    if (result.gt('1e9999')) {
+      return new Decimal('1e9999');
+    }
+    if (result.lt(1)) {
+      return new Decimal(1);
+    }
+    
+    return result;
+    
+  } catch (error) {
+    console.error('Parse error:', error);
+    return new Decimal(1);
+  }
+}
+
+// Format multiplier for display
+function formatMultiplierForDisplay(value) {
+  try {
+    if (value.gte(1000)) {
+      // Für sehr große Zahlen: wissenschaftliche Notation
+      if (value.gte('1e15')) {
+        return value.toExponential(2);
+      } else {
+        // Normale Formatierung für kleinere große Zahlen
+        const exponent = Math.floor(value.log10());
+        const mantisse = value.div(new Decimal(10).pow(exponent));
+        return mantisse.toFixed(2) + 'e' + exponent;
+      }
+    } else {
+      return value.toString();
+    }
+  } catch (error) {
+    console.error('Format error:', error);
+    return '1';
+  }
+}
+
+// Input handlers
+function selectAllOutputInput(event, mechKey) {
+  // Nur beim ersten Klick/Focus alles auswählen
+  if (!inputWasFocused.value[mechKey]) {
+    setTimeout(() => {
+      event.target.select();
+    }, 10);
+    inputWasFocused.value[mechKey] = true;
+  }
+}
+
+function handleOutputMultiplierInput(mechKey, value) {
+  // Aktualisiere sofort den Input-Wert ohne Parsing
+  currentOutputMultiplierInput.value[mechKey] = value;
+}
+
+function handleOutputMultiplierBlur(mechKey) {
+  inputWasFocused.value[mechKey] = false;
+  handleOutputMultiplierSubmit(mechKey);
+}
+
+function handleOutputMultiplierSubmit(mechKey) {
+  const inputValue = getCurrentOutputMultiplierInput(mechKey);
+  const parsedValue = parseSuffixValue(inputValue);
+  
+  // Stelle sicher, dass der Wert mindestens 1 ist
+  const finalValue = parsedValue.lt(1) ? new Decimal(1) : parsedValue;
+  
+  currentOutputMultiplier.value[mechKey] = finalValue;
+  
+  // Formatiere die Anzeige nur wenn das Input nicht fokussiert ist
+  if (!inputWasFocused.value[mechKey]) {
+    formatOutputMultiplierDisplay(mechKey);
+  }
+  
+  saveSettings();
+}
+
+function formatOutputMultiplierDisplay(mechKey) {
+  const value = currentOutputMultiplier.value[mechKey];
+  if (!value) return;
+  
+  try {
+    currentOutputMultiplierInput.value[mechKey] = formatMultiplierForDisplay(value);
+  } catch (error) {
+    console.error('Format error:', error);
+    currentOutputMultiplierInput.value[mechKey] = '1';
+  }
+}
+
+const getOutputPerDay = (mechKey) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  const settings = mechSettings.value[mechKey];
+  
+  if (!mech || !settings || settings.owned === 0) {
+    return new Decimal(0);
+  }
+  
+  // Aktueller Multiplier und Timer
+  const currentMulti = getCurrentMultiplier(mechKey);
+  const currentTimer = getCurrentTimer(mechKey);
+  
+  if (currentMulti.eq(0) || currentTimer === 0) {
+    return new Decimal(0);
+  }
+  
+  // Cycles pro Tag: 86400 Sekunden / Timer
+  const cyclesPerDay = 86400 / currentTimer;
+  
+  // Output pro Cycle: currentMulti (das ist der Multi-Output pro Cycle)
+  const outputPerCycle = currentMulti;
+  
+  // Output pro Tag: outputPerCycle * cyclesPerDay
+  const outputPerDay = outputPerCycle.mul(cyclesPerDay);
+  
+  return outputPerDay;
+};
+
+const getOutputPerWeek = (mechKey) => {
+  const outputPerDay = getOutputPerDay(mechKey);
+  
+  // Output pro Woche: outputPerDay * 7
+  const outputPerWeek = outputPerDay.mul(7);
+  
+  return outputPerWeek;
+};
+
+const saveSettings = () => {
+  try {
+    // Konvertiere Decimal-Werte zu Strings für localStorage
+    const currentOutputMultiplierForSave = {};
+    Object.keys(currentOutputMultiplier.value).forEach(key => {
+      currentOutputMultiplierForSave[key] = currentOutputMultiplier.value[key].toString();
+    });
+    
+    localStorage.setItem('mechPlanner_settings', JSON.stringify({
+      creationGemLevel: creationGemLevel.value,
+      creationGemNode2: creationGemNode2.value,
+      creationMechBonusCap: creationMechBonusCap.value,
+      coorsRelic: coorsRelic.value,
+      tulsandstofKit: tulsandstofKit.value,
+      mechEngineerToolPants: mechEngineerToolPants.value,
+      transmissionAmplifierTier: transmissionAmplifierTier.value,
+      transmissionAmplifierLevel: transmissionAmplifierLevel.value,
+      mechSettings: mechSettings.value,
+      currentOutputMultiplier: currentOutputMultiplierForSave,
+      currentOutputMultiplierInput: currentOutputMultiplierInput.value
+    }));
+  } catch (error) {
+    console.error('Error saving settings:', error);
+  }
+};
+
+const loadSettings = () => {
+  try {
+    const savedSettings = JSON.parse(localStorage.getItem('mechPlanner_settings') || '{}');
+    
+    if (savedSettings.creationGemLevel !== undefined) creationGemLevel.value = savedSettings.creationGemLevel;
+    if (savedSettings.creationGemNode2 !== undefined) creationGemNode2.value = savedSettings.creationGemNode2;
+    if (savedSettings.creationMechBonusCap !== undefined) creationMechBonusCap.value = savedSettings.creationMechBonusCap;
+    if (savedSettings.coorsRelic !== undefined) coorsRelic.value = savedSettings.coorsRelic;
+    if (savedSettings.tulsandstofKit !== undefined) tulsandstofKit.value = savedSettings.tulsandstofKit;
+    if (savedSettings.mechEngineerToolPants !== undefined) mechEngineerToolPants.value = savedSettings.mechEngineerToolPants;
+    if (savedSettings.transmissionAmplifierTier !== undefined) transmissionAmplifierTier.value = savedSettings.transmissionAmplifierTier;
+    if (savedSettings.transmissionAmplifierLevel !== undefined) transmissionAmplifierLevel.value = savedSettings.transmissionAmplifierLevel;
+    if (savedSettings.mechSettings !== undefined) mechSettings.value = savedSettings.mechSettings;
+    
+    if (savedSettings.currentOutputMultiplier !== undefined) {
+      // Konvertiere Strings zurück zu Decimal
+      Object.keys(savedSettings.currentOutputMultiplier).forEach(key => {
+        currentOutputMultiplier.value[key] = new Decimal(savedSettings.currentOutputMultiplier[key]);
+      });
+    }
+    
+    if (savedSettings.currentOutputMultiplierInput !== undefined) {
+      currentOutputMultiplierInput.value = savedSettings.currentOutputMultiplierInput;
+    }
+    
+    // Ensure all mechs have settings
+    initializeMechSettings();
+    initializeCurrentOutputMultiplier();
+  } catch (error) {
+    console.error('Error loading saved settings:', error);
+    initializeMechSettings();
+    initializeCurrentOutputMultiplier();
+  }
+};
+
+// KORRIGIERTE Watch für neue Settings
+watch([
+  creationGemLevel, 
+  creationGemNode2, 
+  creationMechBonusCap, 
+  coorsRelic, 
+  tulsandstofKit, 
+  mechEngineerToolPants,
+  transmissionAmplifierTier,
+  transmissionAmplifierLevel
+], () => {
+  saveSettings();
+});
+
+watch(mechSettings, () => {
+  saveSettings();
+}, { deep: true });
+
+// Watch für currentOutputMultiplier
+watch(currentOutputMultiplier, () => {
+  saveSettings();
+}, { deep: true });
+
+// Watch für currentOutputMultiplier
+watch(currentOutputMultiplier, (newValue) => {
+  // Aktualisiere die Input-Felder NUR wenn sie nicht fokussiert sind
+  Object.keys(newValue).forEach(mechKey => {
+    const activeElement = document.activeElement;
+    const isInputFocused = activeElement && activeElement.type === 'text' && 
+                          activeElement.placeholder === '1e100';
+    
+    // Nur formatieren wenn das Input nicht fokussiert ist UND der User nicht gerade tippt
+    if (!isInputFocused && !inputWasFocused.value[mechKey]) {
+      formatOutputMultiplierDisplay(mechKey);
+    }
+  });
+}, { deep: true });
+
+// Initialize on mount
+onMounted(() => {
+  initializeMechSettings();
+  initializeCurrentOutputMultiplier();
+  loadSettings();
+});
+</script>
+
+<style scoped>
+.header {
+  background: linear-gradient(to right, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.95));
+}
+</style>

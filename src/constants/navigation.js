@@ -17,7 +17,7 @@ import {
   IconBoxModel,
   IconHexagon,
   IconAbacus,
-  IconMeeple
+  IconRobot
 } from '@tabler/icons-vue';
 
 const IconMP = {
@@ -157,6 +157,12 @@ export const NAVIGATION = {
           name: 'Gadget Planner',
           path: '/tools/gadget-calculator',
           icon: IconTool
+        },
+        {
+          id: 'mechplanner',
+          name: 'Mech Planner',
+          path: '/tools/mech-planner',
+          icon: IconRobot
         },
         {
           id: 'tsplanner',

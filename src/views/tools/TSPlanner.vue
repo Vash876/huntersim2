@@ -167,6 +167,40 @@
               </div>
             </div>
             
+            <!-- Boon of Juncture - SEPARATES DIV -->
+            <div class="mt-3 bg-gray-900/60 rounded-lg p-2 border border-gray-700/50">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
+                    <IconStar size="16" class="text-red-400" />
+                  </div>
+                  <span class="text-xs sm:text-sm text-gray-300">Boon of Ouroboros: Juncture</span>
+                  <span class="text-xs text-gray-500 ml-2">(+1 Antimatter Core)</span>
+                </div>
+                <div class="flex items-center">
+                  <!-- Toggle Switch -->
+                  <div 
+                    @click="boonOfJuncture = !boonOfJuncture" 
+                    class="relative inline-flex h-6 w-11 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                    :class="{
+                      'bg-red-600': boonOfJuncture,
+                      'bg-gray-600': !boonOfJuncture
+                    }"
+                    role="switch"
+                    :aria-checked="boonOfJuncture"
+                  >
+                    <span 
+                      class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
+                      :class="{
+                        'translate-x-5': boonOfJuncture,
+                        'translate-x-0': !boonOfJuncture
+                      }"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <!-- Core Summary -->
             <div class="mt-3 bg-purple-900/30 rounded-lg p-2 border border-purple-800/50">
               <div class="flex justify-between items-center">
@@ -620,6 +654,9 @@ const currentCellMilestones = ref(0);
 const currentMPMilestones = ref(0);
 const currentRPMilestones = ref(0);
 
+// NEUE STATE für Boon of Juncture
+const boonOfJuncture = ref(false);
+
 const selectedTraitSpheres = ref([1]);
 
 const showPresetsModal = ref(false);
@@ -796,13 +833,15 @@ const currentCores = computed(() => {
          startRPMilestones.value * 2 +
          (currentCellMilestones.value - startCellMilestones.value) +
          (currentMPMilestones.value - startMPMilestones.value) +
-         (currentRPMilestones.value - startRPMilestones.value);
+         (currentRPMilestones.value - startRPMilestones.value) +
+         (boonOfJuncture.value ? 1 : 0); // +1 Core wenn Boon aktiv
 });
 
 const totalCores = computed(() => {
   return currentCellMilestones.value * 2 +
          currentMPMilestones.value * 2 +
-         currentRPMilestones.value * 2;
+         currentRPMilestones.value * 2 +
+         (boonOfJuncture.value ? 1 : 0); // +1 Core wenn Boon aktiv
 });
 
 const usedCores = computed(() => {
@@ -895,6 +934,7 @@ function resetSettings() {
   currentCellMilestones.value = 0;
   currentMPMilestones.value = 0;
   currentRPMilestones.value = 0;
+  boonOfJuncture.value = false; // Reset Boon of Juncture
   selectedTraitSpheres.value = [1]; // TS#1 immer ausgewählt
   // Reset LP values
   playerLevel.value = 0;
@@ -1021,6 +1061,7 @@ function saveSettings() {
       currentCellMilestones: currentCellMilestones.value,
       currentMPMilestones: currentMPMilestones.value,
       currentRPMilestones: currentRPMilestones.value,
+      boonOfJuncture: boonOfJuncture.value, // Speichere Boon of Juncture
       selectedTraitSpheres: selectedTraitSpheres.value,
       // Save LP values
       playerLevel: playerLevel.value,
@@ -1043,6 +1084,9 @@ function loadSettings() {
     if (savedSettings.currentCellMilestones !== undefined) currentCellMilestones.value = savedSettings.currentCellMilestones;
     if (savedSettings.currentMPMilestones !== undefined) currentMPMilestones.value = savedSettings.currentMPMilestones;
     if (savedSettings.currentRPMilestones !== undefined) currentRPMilestones.value = savedSettings.currentRPMilestones;
+    
+    // Lade Boon of Juncture
+    if (savedSettings.boonOfJuncture !== undefined) boonOfJuncture.value = savedSettings.boonOfJuncture;
     
     // Load LP values
     if (savedSettings.playerLevel !== undefined) playerLevel.value = savedSettings.playerLevel;
@@ -1083,6 +1127,7 @@ const copyTimeoutId = ref(null);
 watch([
   startCellMilestones, startMPMilestones, startRPMilestones,
   currentCellMilestones, currentMPMilestones, currentRPMilestones,
+  boonOfJuncture, // Füge Boon of Juncture zum Watch hinzu
   selectedTraitSpheres, playerLevel, researchLevels, lpAchievements, shipEvolutions
 ], () => {
   saveSettings();
