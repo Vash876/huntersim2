@@ -8,7 +8,7 @@ const changelog =
       {
         text: 'NEW: Mech Planner Tool',
         subItems: [
-          'Added comprehensive Mech Planner tool for planning and optimizing Mech builds',
+          'Added comprehensive Mech Planner tool for planning and optimizing Mechs',
           'Integrated with backup/restore system',
         ]
       },
