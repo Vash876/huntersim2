@@ -43,7 +43,7 @@
                     :minValue="0"
                     :maxValue="4"
                     :step="1"
-                    :fastStep="1"
+                    :fastStep="5"
                     value-class="text-purple-400 font-medium"
                     :autoEdit="true"
                     class="ml-2"
@@ -143,7 +143,7 @@
                     :minValue="0"
                     :maxValue="8"
                     :step="1"
-                    :fastStep="1"
+                    :fastStep="5"
                     value-class="text-green-400 font-medium"
                     :autoEdit="true"
                     class="ml-2"
@@ -244,249 +244,257 @@
                 :data-mech-key="mech.key"
                 class="bg-gray-900/60 rounded-lg border border-gray-700/50 overflow-hidden"
               >
-<!-- Mech Header -->
-<div class="p-3 border-b border-gray-600 bg-gradient-to-r from-gray-800 to-gray-700">
-  <div class="flex items-center justify-between">
-    <div class="flex items-center">
-      <!-- Mech Asset Image -->
-      <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-3 bg-gray-700/50 p-1">
-        <img 
-          :src="getMechImagePath(index + 1)" 
-          :alt="mech.name"
-          class="w-full h-full object-contain rounded-lg"
-          @error="handleImageError"
-        />
-      </div>
-      <div>
-        <h4 class="text-white font-semibold text-sm">{{ mech.name }}</h4>
-        <div class="text-xs text-gray-400">
-          Output: <span :class="getMechOutputClass(mech.color)">{{ mech.output }}</span>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Header Right Side: Nur für Nicht-Token Units -->
-    <div v-if="mech.key !== 'token_mk1'" class="flex items-center space-x-3">
-      <!-- Labels -->
-      <div class="text-right hidden sm:block">
-        <div class="text-xs text-gray-400 pt-1">Max Output Cap</div>
-        <div class="text-xs text-gray-400 pt-3">Current Multi</div>
-      </div>
-      
-      <!-- Werte -->
-      <div class="text-right">
-        <div class="text-lg font-bold text-red-400">
-          {{ formatDecimalNumber(getMaxCapacity(mech.key)) }}
-        </div>
-        <div class="text-lg font-bold text-yellow-400">
-          ×{{ formatMultiplier(getCurrentMultiplier(mech.key)) }}
-        </div>
-      </div>
-    </div>
-    
-    <!-- Token Unit spezifisches Header -->
-    <div v-else class="flex items-center space-x-3">
-      <!-- Current Output per Cycle -->
-      <div class="flex items-center space-x-2">
-        <span class="text-xs text-gray-400 hidden sm:block">Current Output per Cycle</span>
-        <span class="text-lg font-bold text-yellow-400">
-          {{ formatDecimalNumber(getTokensPerCycle(mech.key)) }}
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
+                <!-- Mech Header -->
+                <div class="p-3 border-b border-gray-600 bg-gradient-to-r from-gray-800 to-gray-700">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <!-- Mech Asset Image -->
+                      <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-3 bg-gray-700/50 p-1">
+                        <img 
+                          v-if="getMechImagePath(index + 1)"
+                          :src="getMechImagePath(index + 1)" 
+                          :alt="mech.name"
+                          class="w-full h-full object-contain rounded-lg"
+                          @error="handleImageError"
+                          style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;"
+                        />
+                        <!-- Fallback Icon wenn kein Bild geladen werden kann -->
+                        <IconRobot 
+                          v-else 
+                          size="24" 
+                          class="text-orange-400"
+                        />
+                      </div>
+                      <div>
+                        <h4 class="text-white font-semibold text-sm">{{ mech.name }}</h4>
+                        <div class="text-xs text-gray-400">
+                          Output: <span :class="getMechOutputClass(mech.color)">{{ mech.output }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Header Right Side: Nur für Nicht-Token Units -->
+                    <div v-if="mech.key !== 'token_mk1'" class="flex items-center space-x-3">
+                      <!-- Labels -->
+                      <div class="text-right hidden sm:block">
+                        <div class="text-xs text-gray-400 pt-1">Max Output Cap</div>
+                        <div class="text-xs text-gray-400 pt-3">Current Multi</div>
+                      </div>
+                      
+                      <!-- Werte -->
+                      <div class="text-right">
+                        <div class="text-lg font-bold text-red-400">
+                          {{ formatDecimalNumber(getMaxCapacity(mech.key)) }}
+                        </div>
+                        <div class="text-lg font-bold text-yellow-400">
+                          ×{{ formatMultiplier(getCurrentMultiplier(mech.key)) }}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Token Unit spezifisches Header -->
+                    <div v-else class="flex items-center space-x-3">
+                      <!-- Current Output per Cycle -->
+                      <div class="flex items-center space-x-2">
+                        <span class="text-xs text-gray-400 hidden sm:block">Current Output per Cycle</span>
+                        <span class="text-lg font-bold text-yellow-400">
+                          {{ formatDecimalNumber(getTokensPerCycle(mech.key)) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-<!-- Mech Content -->
-<div class="p-3">
-  <!-- Upgrade Controls Grid -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-    <!-- Mechs Owned -->
-    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
-      <div class="flex items-center mb-2">
-        <IconUsers size="16" class="text-blue-400 mr-2" />
-        <span class="text-sm font-medium text-gray-300">Mechs Owned</span>
-      </div>
-      <div class="flex items-center justify-between mb-2">
-        <ToolValueControls
-          :value="mechSettings[mech.key]?.owned || 0"
-          @update:value="updateMechSetting(mech.key, 'owned', $event)"
-          :minValue="1"
-          :maxValue="999999"
-          :step="1"
-          :fastStep="10"
-          value-class="text-blue-400 font-medium"
-          :autoEdit="true"
-        />
-      </div>
-      <div class="text-xs text-gray-400">
-        Next Cost: <span class="text-blue-300">{{ formatDecimalNumber(getNextMechCost(mech.key)) }}</span>
-      </div>
-    </div>
+                <!-- Mech Content -->
+                <div class="p-3">
+                  <!-- Upgrade Controls Grid -->
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                    <!-- Mechs Owned -->
+                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                      <div class="flex items-center mb-2">
+                        <IconUsers size="16" class="text-blue-400 mr-2" />
+                        <span class="text-sm font-medium text-gray-300">Mechs Owned</span>
+                      </div>
+                      <div class="flex items-center justify-between mb-2">
+                        <ToolValueControls
+                          :value="mechSettings[mech.key]?.owned || 0"
+                          @update:value="updateMechSetting(mech.key, 'owned', $event)"
+                          :minValue="1"
+                          :maxValue="999999"
+                          :step="1"
+                          :fastStep="10"
+                          value-class="text-blue-400 font-medium"
+                          :autoEdit="true"
+                        />
+                      </div>
+                      <div class="text-xs text-gray-400">
+                        Next Cost: <span class="text-blue-300">{{ formatDecimalNumber(getNextMechCost(mech.key)) }}</span>
+                      </div>
+                    </div>
 
-    <!-- Time Upgrades -->
-    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
-      <div class="flex items-center mb-2">
-        <IconClock size="16" class="text-yellow-400 mr-2" />
-        <span class="text-sm font-medium text-gray-300">Time Upgrades</span>
-      </div>
-      <div class="flex items-center justify-between mb-2">
-        <ToolValueControls
-          :value="mechSettings[mech.key]?.timeUpgrades || 0"
-          @update:value="updateMechSetting(mech.key, 'timeUpgrades', $event)"
-          :minValue="0"
-          :maxValue="getEffectiveTimeMaxLevels(mech.key)"
-          :step="1"
-          :fastStep="10"
-          value-class="text-yellow-400 font-medium"
-          :autoEdit="true"
-          :additionalInfo="formatTime(getCurrentTimer(mech.key))"
-          additionalInfoClass="text-yellow-300 text-sm"
-          :showOnlyAdditionalInfo="true"
-        />
-      </div>
-      <div class="text-xs text-gray-400">
-        Next Cost: <span class="text-yellow-300">{{ formatDecimalNumber(getNextTimeCost(mech.key)) }}</span>
-      </div>
-    </div>
+                    <!-- Time Upgrades -->
+                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                      <div class="flex items-center mb-2">
+                        <IconClock size="16" class="text-yellow-400 mr-2" />
+                        <span class="text-sm font-medium text-gray-300">Time Upgrades</span>
+                      </div>
+                      <div class="flex items-center justify-between mb-2">
+                        <ToolValueControls
+                          :value="mechSettings[mech.key]?.timeUpgrades || 0"
+                          @update:value="updateMechSetting(mech.key, 'timeUpgrades', $event)"
+                          :minValue="0"
+                          :maxValue="getEffectiveTimeMaxLevels(mech.key)"
+                          :step="1"
+                          :fastStep="10"
+                          value-class="text-yellow-400 font-medium"
+                          :autoEdit="true"
+                          :additionalInfo="formatTime(getCurrentTimer(mech.key))"
+                          additionalInfoClass="text-yellow-300 text-sm"
+                          :showOnlyAdditionalInfo="true"
+                        />
+                      </div>
+                      <div class="text-xs text-gray-400">
+                        Next Cost: <span class="text-yellow-300">{{ formatDecimalNumber(getNextTimeCost(mech.key)) }}</span>
+                      </div>
+                    </div>
 
-    <!-- Multi Upgrades -->
-    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
-      <div class="flex items-center mb-2">
-        <IconTrendingUp size="16" class="text-green-400 mr-2" />
-        <span class="text-sm font-medium text-gray-300">Multi Upgrades</span>
-      </div>
-      <div class="flex items-center justify-between mb-2">
-        <ToolValueControls
-          :value="mechSettings[mech.key]?.multiUpgrades || 0"
-          @update:value="updateMechSetting(mech.key, 'multiUpgrades', $event)"
-          :minValue="1"
-          :maxValue="mech.multiMaxLevels"
-          :step="1"
-          :fastStep="10"
-          value-class="text-green-400 font-medium"
-          :autoEdit="true"
-        />
-      </div>
-      <div class="text-xs text-gray-400">
-        Next Cost: <span class="text-green-300">{{ formatDecimalNumber(getNextMultiCost(mech.key)) }}</span>
-      </div>
-    </div>
-  </div>
+                    <!-- Multi Upgrades -->
+                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                      <div class="flex items-center mb-2">
+                        <IconTrendingUp size="16" class="text-green-400 mr-2" />
+                        <span class="text-sm font-medium text-gray-300">Multi Upgrades</span>
+                      </div>
+                      <div class="flex items-center justify-between mb-2">
+                        <ToolValueControls
+                          :value="mechSettings[mech.key]?.multiUpgrades || 0"
+                          @update:value="updateMechSetting(mech.key, 'multiUpgrades', $event)"
+                          :minValue="1"
+                          :maxValue="mech.multiMaxLevels"
+                          :step="1"
+                          :fastStep="10"
+                          value-class="text-green-400 font-medium"
+                          :autoEdit="true"
+                        />
+                      </div>
+                      <div class="text-xs text-gray-400">
+                        Next Cost: <span class="text-green-300">{{ formatDecimalNumber(getNextMultiCost(mech.key)) }}</span>
+                      </div>
+                    </div>
+                  </div>
 
-  <!-- Output Information Grid - Unterschiedlich für Token vs Normal -->
-  <div v-if="mech.key !== 'token_mk1'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-    <!-- Current Output Multiplier -->
-    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
-      <div class="flex items-center mb-2">
-        <IconChartLine size="16" class="text-purple-400 mr-2" />
-        <span class="text-sm font-medium text-gray-300">Current Output</span>
-        <InfoTooltip 
-          class="ml-1"
-          content="<b>Supported formats:</b><br/>
-          • Scientific notation: <code>1e100</code>, <code>5.5e50</code><br/>
-          • Suffixes: <code>1k</code>, <code>2.5m</code>, <code>100b</code>, <code>5t</code><br/>
-          • Available suffixes: k, m, b, t, qa, qu, sx, sp, oc, n, d<br/>"
-          placement="top"
-        />
-      </div>
-      <div class="flex items-center justify-between mb-2">
-        <input
-          :value="getCurrentOutputMultiplierInput(mech.key)"
-          @keydown.enter="handleOutputMultiplierSubmit(mech.key)"
-          @blur="handleOutputMultiplierBlur(mech.key)"
-          @focus="selectAllOutputInput($event, mech.key)"
-          @click="selectAllOutputInput($event, mech.key)"
-          @input="handleOutputMultiplierInput(mech.key, $event.target.value)"
-          type="text"
-          class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-purple-400 font-medium text-sm w-full text-right"
-          placeholder="1e100"
-        />
-      </div>
-      <div class="text-xs text-gray-400">
-        Time to Cap: <span class="text-purple-300">{{ getTimeToCap(mech.key) }}</span>
-      </div>
-    </div>
+                  <!-- Output Information Grid - Unterschiedlich für Token vs Normal -->
+                  <div v-if="mech.key !== 'token_mk1'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Current Output Multiplier -->
+                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                      <div class="flex items-center mb-2">
+                        <IconChartLine size="16" class="text-purple-400 mr-2" />
+                        <span class="text-sm font-medium text-gray-300">Current Output</span>
+                        <InfoTooltip 
+                          class="ml-1"
+                          content="<b>Supported formats:</b><br/>
+                          • Scientific notation: <code>1e100</code>, <code>5.5e50</code><br/>
+                          • Suffixes: <code>1k</code>, <code>2.5m</code>, <code>100b</code>, <code>5t</code><br/>
+                          • Available suffixes: k, m, b, t, qa, qu, sx, sp, oc, n, d<br/>"
+                          placement="top"
+                        />
+                      </div>
+                      <div class="flex items-center justify-between mb-2">
+                        <input
+                          :value="getCurrentOutputMultiplierInput(mech.key)"
+                          @keydown.enter="handleOutputMultiplierSubmit(mech.key)"
+                          @blur="handleOutputMultiplierBlur(mech.key)"
+                          @focus="selectAllOutputInput($event, mech.key)"
+                          @click="selectAllOutputInput($event, mech.key)"
+                          @input="handleOutputMultiplierInput(mech.key, $event.target.value)"
+                          type="text"
+                          class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-purple-400 font-medium text-sm w-full text-right"
+                          placeholder="1e100"
+                        />
+                      </div>
+                      <div class="text-xs text-gray-400">
+                        Time to Cap: <span class="text-purple-300">{{ getTimeToCap(mech.key) }}</span>
+                      </div>
+                    </div>
 
-    <!-- Output Statistics -->
-    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
-      <div class="flex items-center mb-2">
-        <IconTrendingUp size="16" class="text-cyan-400 mr-2" />
-        <span class="text-sm font-medium text-gray-300">Output Statistics</span>
-      </div>
-      <div class="space-y-2">
-        <!-- Output per Day -->
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-400">Per Day:</span>
-          <span class="text-xs text-cyan-300 font-medium">
-            {{ formatDecimalNumber(getOutputPerDay(mech.key)) }}
-          </span>
-        </div>
-        
-        <!-- Output per Week -->
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-400">Per Week:</span>
-          <span class="text-xs text-cyan-300 font-medium">
-            {{ formatDecimalNumber(getOutputPerWeek(mech.key)) }}
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Token Unit spezifische Statistiken -->
-  <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-    <!-- Token Generation -->
-    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
-      <div class="flex items-center mb-2">
-        <IconStar size="16" class="text-yellow-400 mr-2" />
-        <span class="text-sm font-medium text-gray-300">Token Generation</span>
-      </div>
-      <div class="space-y-2">
-        <!-- Tokens per Cycle -->
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-400">Per Cycle:</span>
-          <span class="text-xs text-yellow-300 font-medium">
-            {{ formatDecimalNumber(getTokensPerCycle(mech.key)) }}
-          </span>
-        </div>
-        
-        <!-- Tokens per Day -->
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-400">Per Day:</span>
-          <span class="text-xs text-yellow-300 font-medium">
-            {{ formatDecimalNumber(getTokensPerDay(mech.key)) }}
-          </span>
-        </div>
-      </div>
-    </div>
+                    <!-- Output Statistics -->
+                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                      <div class="flex items-center mb-2">
+                        <IconTrendingUp size="16" class="text-cyan-400 mr-2" />
+                        <span class="text-sm font-medium text-gray-300">Output Statistics</span>
+                      </div>
+                      <div class="space-y-2">
+                        <!-- Output per Day -->
+                        <div class="flex items-center justify-between">
+                          <span class="text-xs text-gray-400">Per Day:</span>
+                          <span class="text-xs text-cyan-300 font-medium">
+                            {{ formatDecimalNumber(getOutputPerDay(mech.key)) }}
+                          </span>
+                        </div>
+                        
+                        <!-- Output per Week -->
+                        <div class="flex items-center justify-between">
+                          <span class="text-xs text-gray-400">Per Week:</span>
+                          <span class="text-xs text-cyan-300 font-medium">
+                            {{ formatDecimalNumber(getOutputPerWeek(mech.key)) }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Token Unit spezifische Statistiken -->
+                  <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Token Generation -->
+                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                      <div class="flex items-center mb-2">
+                        <IconStar size="16" class="text-yellow-400 mr-2" />
+                        <span class="text-sm font-medium text-gray-300">Token Generation</span>
+                      </div>
+                      <div class="space-y-2">
+                        <!-- Tokens per Cycle -->
+                        <div class="flex items-center justify-between">
+                          <span class="text-xs text-gray-400">Per Cycle:</span>
+                          <span class="text-xs text-yellow-300 font-medium">
+                            {{ formatDecimalNumber(getTokensPerCycle(mech.key)) }}
+                          </span>
+                        </div>
+                        
+                        <!-- Tokens per Day -->
+                        <div class="flex items-center justify-between">
+                          <span class="text-xs text-gray-400">Per Day:</span>
+                          <span class="text-xs text-yellow-300 font-medium">
+                            {{ formatDecimalNumber(getTokensPerDay(mech.key)) }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-    <!-- Token Statistics -->
-    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
-      <div class="flex items-center mb-2">
-        <IconTrendingUp size="16" class="text-cyan-400 mr-2" />
-        <span class="text-sm font-medium text-gray-300">Token Statistics</span>
-      </div>
-      <div class="space-y-2">
-        <!-- Tokens per Week -->
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-400">Per Week:</span>
-          <span class="text-xs text-cyan-300 font-medium">
-            {{ formatDecimalNumber(getTokensPerWeek(mech.key)) }}
-          </span>
-        </div>
-        
-        <!-- Cycles per Day -->
-        <div class="flex items-center justify-between">
-          <span class="text-xs text-gray-400">Cycles/Day:</span>
-          <span class="text-xs text-cyan-300 font-medium">
-            {{ formatDecimalNumber(getCyclesPerDay(mech.key)) }}
-          </span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+                    <!-- Token Statistics -->
+                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                      <div class="flex items-center mb-2">
+                        <IconTrendingUp size="16" class="text-cyan-400 mr-2" />
+                        <span class="text-sm font-medium text-gray-300">Token Statistics</span>
+                      </div>
+                      <div class="space-y-2">
+                        <!-- Tokens per Week -->
+                        <div class="flex items-center justify-between">
+                          <span class="text-xs text-gray-400">Per Week:</span>
+                          <span class="text-xs text-cyan-300 font-medium">
+                            {{ formatDecimalNumber(getTokensPerWeek(mech.key)) }}
+                          </span>
+                        </div>
+                        
+                        <!-- Cycles per Day -->
+                        <div class="flex items-center justify-between">
+                          <span class="text-xs text-gray-400">Cycles/Day:</span>
+                          <span class="text-xs text-cyan-300 font-medium">
+                            {{ formatDecimalNumber(getCyclesPerDay(mech.key)) }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -560,6 +568,8 @@ const inputWasFocused = ref({});
 
 // Mech Settings - Reactive object für alle Mechs
 const mechSettings = ref({});
+
+const mechImages = ref({});
 
 // Computed Properties für Unlock-System
 const visibleMechs = computed(() => {
@@ -1147,9 +1157,38 @@ const getMechOutputClass = (color) => {
   return colorMap[color] || 'text-green-400';
 };
 
-// Mech image path helper
+// Lade alle Mech-Bilder dynamisch
+async function loadMechImages() {
+  try {
+    // Lade alle Mech-Bilder (1-11) dynamisch
+    const imagePromises = [];
+    for (let i = 1; i <= 11; i++) {
+      imagePromises.push(
+        import(`@/assets/mechs/${i}.png`)
+          .then(module => ({ id: i, url: module.default }))
+          .catch(error => {
+            console.warn(`Could not load mech image ${i}:`, error);
+            return { id: i, url: null };
+          })
+      );
+    }
+    
+    const results = await Promise.all(imagePromises);
+    
+    // Speichere die URLs in mechImages
+    results.forEach(result => {
+      mechImages.value[result.id] = result.url;
+    });
+    
+    console.log('Loaded mech images:', mechImages.value);
+  } catch (error) {
+    console.error('Error loading mech images:', error);
+  }
+}
+
+// Mech image path helper 
 const getMechImagePath = (index) => {
-  return `/src/assets/mechs/${index}.png`;
+  return mechImages.value[index] || null;
 };
 
 // Error handler for missing images
@@ -1524,7 +1563,10 @@ watch(currentOutputMultiplier, (newValue) => {
 }, { deep: true });
 
 // Initialize on mount
-onMounted(() => {
+onMounted(async () => {
+  // Lade Mech Images zuerst
+  await loadMechImages();
+  
   initializeMechSettings();
   initializeCurrentOutputMultiplier();
   loadSettings();
