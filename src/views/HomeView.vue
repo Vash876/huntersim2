@@ -8,8 +8,7 @@ const changelog =
       {
         text: 'NEW: Mech Planner Tool',
         subItems: [
-          'Added comprehensive Mech Planner for optimizing Mech Units and calculating output statistics',
-          'Features include upgrade management for Mechs Owned, Time Upgrades, and Multi Upgrades',
+          'Added comprehensive Mech Planner tool for planning and optimizing Mech builds',
           'Integrated with backup/restore system',
         ]
       },
