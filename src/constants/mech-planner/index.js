@@ -6,7 +6,7 @@ export const mechs = [
     color: 'green',
     baseMulti: 0.05,
     baseCap: 1e75,
-    timeStart: 60 * 60 * 5.5, // 5.5 hours in seconds
+    timeStart: 60 * 60 * 6, 
     timeReduce: 120,
     timeCost: 2,
     timeMaxLevels: 90,
@@ -22,7 +22,7 @@ export const mechs = [
     multiIncrease: 0.027,
     multiCost: 2,
     multiCostMulti: 3.6,
-    multiMaxLevels: 11,
+    multiMaxLevels: 10,
     mechCost: 5.4,
     mechCostMulti: 1.8,
     creagn2: true,
@@ -34,7 +34,7 @@ export const mechs = [
     color: 'red',
     baseMulti: 0.04,
     baseCap: 1e25,
-    timeStart: 60 * 60 * 9.5, // 9.5 hours in seconds
+    timeStart: 60 * 60 * 10, 
     timeReduce: 180,
     timeCost: 200,
     timeMaxLevels: 60,
@@ -61,7 +61,7 @@ export const mechs = [
     color: 'blue',
     baseMulti: 0.03,
     baseCap: 1e25,
-    timeStart: 60 * 60 * 11.5, // 11.5 hours in seconds
+    timeStart: 60 * 60 * 12, 
     timeReduce: 240,
     timeCost: 2e4,
     timeMaxLevels: 30,
@@ -88,7 +88,7 @@ export const mechs = [
     color: 'orange',
     baseMulti: 0.03,
     baseCap: 1e25,
-    timeStart: 60 * 60 * 15.5, // 15.5 hours in seconds
+    timeStart: 60 * 60 * 16,
     timeReduce: 300,
     timeCost: 3e5,
     timeMaxLevels: 30,
@@ -115,7 +115,7 @@ export const mechs = [
     color: 'yellow',
     baseMulti: 0,
     baseCap: 0,
-    timeStart: 60 * 60 * 23.5, // 23.5 hours in seconds
+    timeStart: 60 * 60 * 24, 
     timeReduce: 600,
     timeCost: 1e5,
     timeMaxLevels: 72,
@@ -142,7 +142,7 @@ export const mechs = [
     color: 'green',
     baseMulti: 0.1,
     baseCap: 1e200,
-    timeStart: 60 * 60 * 11.5, // 11.5 hours in seconds
+    timeStart: 60 * 60 * 12,
     timeReduce: 240,
     timeCost: 5e5,
     timeCostMulti: 1.2,
@@ -171,7 +171,7 @@ export const mechs = [
     color: 'blue',
     baseMulti: 0.02,
     baseCap: 1e1,
-    timeStart: 60 * 60 * 23.5, // 23.5 hours in seconds
+    timeStart: 60 * 60 * 24, 
     timeReduce: 300,
     timeCost: 5e9,
     timeMaxLevels: 30,
@@ -190,6 +190,7 @@ export const mechs = [
     multiMaxLevels: 5,
     mechCost: 1.5e11,
     mechCostMulti: 2.5,
+    unlock: 2,
   },
   {
     name: 'Auxbot-H Unit MK1',
@@ -198,7 +199,7 @@ export const mechs = [
     color: 'orange',
     baseMulti: 0.03,
     baseCap: 1e1,
-    timeStart: 60 * 60 * 23.5, // 23.5 hours in seconds
+    timeStart: 60 * 60 * 24, 
     timeReduce: 300,
     timeCost: 1e10,
     timeMaxLevels: 30,
@@ -217,6 +218,7 @@ export const mechs = [
     multiMaxLevels: 5,
     mechCost: 2e11,
     mechCostMulti: 2,
+    unlock: 3,
   },
   {
     name: 'Zag-Unit MK2',
@@ -225,7 +227,7 @@ export const mechs = [
     color: 'red',
     baseMulti: 10,
     baseCap: 1,
-    timeStart: 60 * 60 * 47.5, // 47.5 hours in seconds
+    timeStart: 60 * 60 * 48, 
     timeReduce: 900,
     timeCost: 5e18,
     timeMaxLevels: 30,
@@ -253,7 +255,7 @@ export const mechs = [
     color: 'blue',
     baseMulti: 10,
     baseCap: 1,
-    timeStart: 60 * 60 * 71.5, // 71.5 hours in seconds
+    timeStart: 60 * 60 * 72,
     timeReduce: 1200,
     timeCost: 5e18,
     timeMaxLevels: 30,
@@ -281,7 +283,7 @@ export const mechs = [
     color: 'brown',
     baseMulti: 10,
     baseCap: 1,
-    timeStart: 60 * 60 * 95.5, // 95.5 hours in seconds
+    timeStart: 60 * 60 * 96,
     timeReduce: 1500,
     timeCost: 5e18,
     timeMaxLevels: 30,

@@ -50,6 +50,37 @@
                   />
                 </div>
 
+                <!-- Creation Gem Node #1 -->
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconClock size="16" class="text-blue-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">Creation Gem Node #1</span>
+                  </div>
+                  <div class="flex items-center">
+                    <!-- Toggle Switch -->
+                    <div 
+                      @click="creationGemNode1 = !creationGemNode1" 
+                      class="relative inline-flex h-6 w-11 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                      :class="{
+                        'bg-blue-600': creationGemNode1,
+                        'bg-gray-600': !creationGemNode1
+                      }"
+                      role="switch"
+                      :aria-checked="creationGemNode1"
+                    >
+                      <span 
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
+                        :class="{
+                          'translate-x-5': creationGemNode1,
+                          'translate-x-0': !creationGemNode1
+                        }"
+                      ></span>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Creation Gem Node #2 -->
                 <div class="flex items-center justify-between mb-3">
                   <div class="flex items-center">
@@ -553,6 +584,7 @@ import InfoTooltip from '@/composables/InfoTooltip.vue';
 
 // Global Settings
 const creationGemLevel = ref(0);
+const creationGemNode1 = ref(false);
 const creationGemNode2 = ref(false);
 const creationMechBonusCap = ref(0);
 const coorsRelic = ref(0);
@@ -694,6 +726,11 @@ const getCurrentTimer = (mechKey) => {
   
   // Time upgrades: reduce by timeReduce seconds per level
   currentTime -= settings.timeUpgrades * mech.timeReduce;
+  
+  // Creation Gem Node #1 bonus: -30 minutes (1800 seconds)
+  if (creationGemNode1.value) {
+    currentTime -= 1800; // 30 * 60 = 1800 seconds
+  }
   
   // Minimum 10 seconds
   return Math.max(10, currentTime);
@@ -1255,6 +1292,7 @@ const getCyclesPerDay = (mechKey) => {
 // Settings management
 const resetSettings = () => {
   creationGemLevel.value = 0;
+  creationGemNode1.value = false; // NEU
   creationGemNode2.value = false;
   creationMechBonusCap.value = 0;
   coorsRelic.value = 0;
@@ -1473,6 +1511,7 @@ const saveSettings = () => {
     
     localStorage.setItem('mechPlanner_settings', JSON.stringify({
       creationGemLevel: creationGemLevel.value,
+      creationGemNode1: creationGemNode1.value, // NEU
       creationGemNode2: creationGemNode2.value,
       creationMechBonusCap: creationMechBonusCap.value,
       coorsRelic: coorsRelic.value,
@@ -1489,11 +1528,13 @@ const saveSettings = () => {
   }
 };
 
+// Aktualisierte loadSettings Funktion
 const loadSettings = () => {
   try {
     const savedSettings = JSON.parse(localStorage.getItem('mechPlanner_settings') || '{}');
     
     if (savedSettings.creationGemLevel !== undefined) creationGemLevel.value = savedSettings.creationGemLevel;
+    if (savedSettings.creationGemNode1 !== undefined) creationGemNode1.value = savedSettings.creationGemNode1; // NEU
     if (savedSettings.creationGemNode2 !== undefined) creationGemNode2.value = savedSettings.creationGemNode2;
     if (savedSettings.creationMechBonusCap !== undefined) creationMechBonusCap.value = savedSettings.creationMechBonusCap;
     if (savedSettings.coorsRelic !== undefined) coorsRelic.value = savedSettings.coorsRelic;
@@ -1527,6 +1568,7 @@ const loadSettings = () => {
 // KORRIGIERTE Watch für neue Settings
 watch([
   creationGemLevel, 
+  creationGemNode1,
   creationGemNode2, 
   creationMechBonusCap, 
   coorsRelic, 
