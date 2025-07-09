@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.6.4',
+    date: '2025-07-09',
+    changes: [
+      {
+        text: 'Mech Planner Tool Enhancements',
+        subItems: [
+          'Fixed output per day/week calculations',
+          'Integrated cost-benefit analysis for upgrade recommendations showing the most efficient upgrade path',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.6.3',
     date: '2025-07-07',
     changes: [

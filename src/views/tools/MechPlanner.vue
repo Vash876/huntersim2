@@ -338,13 +338,19 @@
 
                 <!-- Mech Content -->
                 <div class="p-3">
-                  <!-- Upgrade Controls Grid -->
+                  <!-- Upgrade Controls Grid mit Best Upgrade Highlighting -->
                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                     <!-- Mechs Owned -->
-                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                    <div 
+                      class="bg-gray-800/50 rounded-lg p-3 border"
+                      :class="getBestUpgradeClass(mech.key, 'owned')"
+                    >
                       <div class="flex items-center mb-2">
                         <IconUsers size="16" class="text-blue-400 mr-2" />
                         <span class="text-sm font-medium text-gray-300">Mechs Owned</span>
+                        <span v-if="getBestUpgrade(mech.key) === 'owned'" class="ml-auto text-xs bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">
+                          BEST
+                        </span>
                       </div>
                       <div class="flex items-center justify-between mb-2">
                         <ToolValueControls
@@ -364,10 +370,16 @@
                     </div>
 
                     <!-- Time Upgrades -->
-                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                    <div 
+                      class="bg-gray-800/50 rounded-lg p-3 border"
+                      :class="getBestUpgradeClass(mech.key, 'time')"
+                    >
                       <div class="flex items-center mb-2">
                         <IconClock size="16" class="text-yellow-400 mr-2" />
                         <span class="text-sm font-medium text-gray-300">Time Upgrades</span>
+                        <span v-if="getBestUpgrade(mech.key) === 'time'" class="ml-auto text-xs bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">
+                          BEST
+                        </span>
                       </div>
                       <div class="flex items-center justify-between mb-2">
                         <ToolValueControls
@@ -390,10 +402,16 @@
                     </div>
 
                     <!-- Multi Upgrades -->
-                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                    <div 
+                      class="bg-gray-800/50 rounded-lg p-3 border"
+                      :class="getBestUpgradeClass(mech.key, 'multi')"
+                    >
                       <div class="flex items-center mb-2">
                         <IconTrendingUp size="16" class="text-green-400 mr-2" />
                         <span class="text-sm font-medium text-gray-300">Multi Upgrades</span>
+                        <span v-if="getBestUpgrade(mech.key) === 'multi'" class="ml-auto text-xs bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">
+                          BEST
+                        </span>
                       </div>
                       <div class="flex items-center justify-between mb-2">
                         <ToolValueControls
@@ -458,7 +476,7 @@
                         <div class="flex items-center justify-between">
                           <span class="text-xs text-gray-400">Per Day:</span>
                           <span class="text-xs text-cyan-300 font-medium">
-                            {{ formatDecimalNumber(getOutputPerDay(mech.key)) }}
+                            {{ formatOutputStatistic(getOutputPerDay(mech.key)) }}
                           </span>
                         </div>
                         
@@ -466,7 +484,7 @@
                         <div class="flex items-center justify-between">
                           <span class="text-xs text-gray-400">Per Week:</span>
                           <span class="text-xs text-cyan-300 font-medium">
-                            {{ formatDecimalNumber(getOutputPerWeek(mech.key)) }}
+                            {{ formatOutputStatistic(getOutputPerWeek(mech.key)) }}
                           </span>
                         </div>
                       </div>
@@ -997,7 +1015,11 @@ const formatMultiplier = (value) => {
   if (value instanceof Decimal) {
     if (value.eq(0)) return '0';
     if (value.lt(1000)) return value.toFixed(2);
-    return value.toExponential(2);
+    
+    let exponentialString = value.toExponential(2);
+    // Entferne das '+' nach dem 'e'
+    exponentialString = exponentialString.replace('e+', 'e');
+    return exponentialString;
   }
   return '0';
 };
@@ -1014,7 +1036,10 @@ const formatDecimalNumber = (value) => {
     
     // Für sehr große Zahlen (über 1e39 statt 1e36) verwende Exponential-Notation
     if (value.gte(1e39)) {
-      return value.toExponential(2);
+      let exponentialString = value.toExponential(2);
+      // Entferne das '+' nach dem 'e'
+      exponentialString = exponentialString.replace('e+', 'e');
+      return exponentialString;
     }
     
     // Für kleinere Zahlen verwende die erweiterte Suffix-Formatierung
@@ -1041,6 +1066,39 @@ const formatDecimalNumber = (value) => {
   
   // Für normale Zahlen verwende die Suffix-Formatierung
   return formatNumberWithSuffixes(value);
+};
+
+const formatOutputStatistic = (value) => {
+  if (!(value instanceof Decimal)) {
+    return '0';
+  }
+  
+  if (value.eq(0)) {
+    return '0';
+  }
+  
+  // Für Zahlen unter 1000: normale Anzeige ohne 'e'
+  if (value.lt(1000)) {
+    const numValue = value.toNumber();
+    
+    if (numValue >= 100) {
+      return numValue.toFixed(0);
+    } else if (numValue >= 10) {
+      return numValue.toFixed(1);
+    } else if (numValue >= 1) {
+      return numValue.toFixed(2);
+    } else {
+      return numValue.toFixed(3);
+    }
+  }
+  
+  // Für Zahlen >= 1000: wissenschaftliche Notation mit 2 Dezimalstellen
+  let exponentialString = value.toExponential(2);
+  
+  // Entferne das '+' nach dem 'e'
+  exponentialString = exponentialString.replace('e+', 'e');
+  
+  return exponentialString;
 };
 
 // Formatierungsfunktion mit den gleichen Suffixen wie formatNumber
@@ -1466,13 +1524,13 @@ function formatOutputMultiplierDisplay(mechKey) {
 
 const getOutputPerDay = (mechKey) => {
   const mech = mechs.find(m => m.key === mechKey);
-  const settings = mechSettings.value[mechKey];
   
-  if (!mech || !settings || settings.owned === 0) {
-    return new Decimal(0);
+  // Spezialbehandlung für Token Unit
+  if (mech?.key === 'token_mk1') {
+    return getTokensPerDay(mechKey);
   }
   
-  // Aktueller Multiplier und Timer
+  // Normale Berechnung für andere Mechs
   const currentMulti = getCurrentMultiplier(mechKey);
   const currentTimer = getCurrentTimer(mechKey);
   
@@ -1480,25 +1538,277 @@ const getOutputPerDay = (mechKey) => {
     return new Decimal(0);
   }
   
-  // Cycles pro Tag: 86400 Sekunden / Timer
-  const cyclesPerDay = 86400 / currentTimer;
+  // Timer in Tagen umrechnen
+  const timerInDays = currentTimer / 86400;
   
-  // Output pro Cycle: currentMulti (das ist der Multi-Output pro Cycle)
-  const outputPerCycle = currentMulti;
-  
-  // Output pro Tag: outputPerCycle * cyclesPerDay
-  const outputPerDay = outputPerCycle.mul(cyclesPerDay);
+  // n-te Wurzel: Multi^(1/timerInDays)
+  const outputPerDay = currentMulti.pow(1 / timerInDays);
   
   return outputPerDay;
 };
 
 const getOutputPerWeek = (mechKey) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  
+  // Spezialbehandlung für Token Unit
+  if (mech?.key === 'token_mk1') {
+    return getTokensPerWeek(mechKey);
+  }
+  
+  // Normale Berechnung für andere Mechs
   const outputPerDay = getOutputPerDay(mechKey);
   
-  // Output pro Woche: outputPerDay * 7
-  const outputPerWeek = outputPerDay.mul(7);
+  // Output pro Woche: outputPerDay^7
+  const outputPerWeek = outputPerDay.pow(7);
   
   return outputPerWeek;
+};
+
+// Kosten-Nutzen-Analyse Funktionen - NEUE IMPLEMENTATION
+const getUpgradeEfficiency = (mechKey, upgradeType) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  const settings = mechSettings.value[mechKey];
+  
+  if (!mech || !settings) return new Decimal(0);
+  
+  try {
+    // Berechne aktuellen "Per Day" Output
+    const currentPerDayOutput = getOutputPerDay(mechKey);
+    
+    if (upgradeType === 'owned') {
+      // Simuliere +1 Mech Owned
+      const mechCost = getNextMechCost(mechKey);
+      if (mechCost === 'MAX' || mechCost.eq(0)) return new Decimal(0);
+      
+      // Simuliere neue Settings mit +1 owned
+      const newSettings = { ...settings, owned: settings.owned + 1 };
+      const newPerDayOutput = simulateOutputPerDay(mechKey, newSettings);
+      
+      // Verbesserung berechnen
+      const improvement = newPerDayOutput.sub(currentPerDayOutput);
+      const efficiency = improvement.div(mechCost);
+      
+      return efficiency;
+    }
+    
+    if (upgradeType === 'time') {
+      // Simuliere +1 Time Upgrade
+      const timeCost = getNextTimeCost(mechKey);
+      if (timeCost === 'MAX' || timeCost.eq(0)) return new Decimal(0);
+      
+      const effectiveMaxLevels = getEffectiveTimeMaxLevels(mechKey);
+      if (settings.timeUpgrades >= effectiveMaxLevels) return new Decimal(0);
+      
+      // Simuliere neue Settings mit +1 timeUpgrades
+      const newSettings = { ...settings, timeUpgrades: settings.timeUpgrades + 1 };
+      const newPerDayOutput = simulateOutputPerDay(mechKey, newSettings);
+      
+      // Verbesserung berechnen
+      const improvement = newPerDayOutput.sub(currentPerDayOutput);
+      const efficiency = improvement.div(timeCost);
+      
+      return efficiency;
+    }
+    
+    if (upgradeType === 'multi') {
+      // Simuliere +1 Multi Upgrade
+      const multiCost = getNextMultiCost(mechKey);
+      if (multiCost === 'MAX' || multiCost.eq(0)) return new Decimal(0);
+      
+      if (settings.multiUpgrades >= mech.multiMaxLevels) return new Decimal(0);
+      
+      // Simuliere neue Settings mit +1 multiUpgrades
+      const newSettings = { ...settings, multiUpgrades: settings.multiUpgrades + 1 };
+      const newPerDayOutput = simulateOutputPerDay(mechKey, newSettings);
+      
+      // Verbesserung berechnen
+      const improvement = newPerDayOutput.sub(currentPerDayOutput);
+      const efficiency = improvement.div(multiCost);
+      
+      return efficiency;
+    }
+    
+    return new Decimal(0);
+  } catch (error) {
+    console.error('Error calculating efficiency for', mechKey, upgradeType, error);
+    return new Decimal(0);
+  }
+};
+
+// Hilfsfunktion um Output Per Day mit simulierten Settings zu berechnen
+const simulateOutputPerDay = (mechKey, simulatedSettings) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  if (!mech) return new Decimal(0);
+  
+  // Spezialbehandlung für Token Unit
+  if (mech.key === 'token_mk1') {
+    return simulateTokensPerDay(mechKey, simulatedSettings);
+  }
+  
+  // Normale Berechnung für andere Mechs
+  const simulatedMulti = simulateCurrentMultiplier(mechKey, simulatedSettings);
+  const simulatedTimer = simulateCurrentTimer(mechKey, simulatedSettings);
+  
+  if (simulatedMulti.eq(0) || simulatedTimer === 0) {
+    return new Decimal(0);
+  }
+  
+  // Timer in Tagen umrechnen
+  const timerInDays = simulatedTimer / 86400;
+  
+  // n-te Wurzel: Multi^(1/timerInDays)
+  const outputPerDay = simulatedMulti.pow(1 / timerInDays);
+  
+  return outputPerDay;
+};
+
+const simulateTokensPerDay = (mechKey, simulatedSettings) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  if (!mech || mech.key !== 'token_mk1') {
+    return new Decimal(0);
+  }
+  
+  // Simuliere Token per Cycle
+  const tokensPerCycle = new Decimal(mech.multiIncrease || 10000)
+    .mul(simulatedSettings.multiUpgrades || 1)
+    .mul(simulatedSettings.owned || 1);
+  
+  // Simuliere Timer
+  const simulatedTimer = simulateCurrentTimer(mechKey, simulatedSettings);
+  
+  if (simulatedTimer === 0) {
+    return new Decimal(0);
+  }
+  
+  // Cycles pro Tag
+  const cyclesPerDay = 86400 / simulatedTimer;
+  
+  // Tokens pro Tag
+  const tokensPerDay = tokensPerCycle.mul(cyclesPerDay);
+  
+  return tokensPerDay;
+};
+
+// Hilfsfunktion um getCurrentMultiplier mit simulierten Settings zu berechnen
+const simulateCurrentMultiplier = (mechKey, simulatedSettings) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  if (!mech || !simulatedSettings || simulatedSettings.owned === 0) {
+    return new Decimal(0);
+  }
+  
+  // Spezialbehandlung für Token Unit
+  if (mech.key === 'token_mk1') {
+    // Für Token Unit: multiIncrease * multiUpgrades * owned
+    return new Decimal(mech.multiIncrease || 10000)
+      .mul(simulatedSettings.multiUpgrades || 1)
+      .mul(simulatedSettings.owned || 1);
+  }
+  
+  // Normale Formel für andere Mechs
+  const baseValue = new Decimal(1);
+  const multiIncreaseValue = new Decimal(mech.multiIncrease || 0);
+  const baseMultiValue = new Decimal(mech.baseMulti || 0);
+  
+  const multiIncreaseBonus = multiIncreaseValue.mul(simulatedSettings.multiUpgrades || 0);
+  const mechsBonus = multiIncreaseBonus.mul(simulatedSettings.owned || 0);
+  
+  const totalMultiplier = baseValue.add(mechsBonus).add(baseMultiValue);
+    
+  return totalMultiplier;
+};
+
+// Hilfsfunktion um getCurrentTimer mit simulierten Settings zu berechnen
+const simulateCurrentTimer = (mechKey, simulatedSettings) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  if (!mech || !simulatedSettings) return mech?.timeStart || 0;
+  
+  // Base time - time upgrades
+  let currentTime = mech.timeStart;
+  
+  // Time upgrades: reduce by timeReduce seconds per level
+  currentTime -= simulatedSettings.timeUpgrades * mech.timeReduce;
+  
+  // Creation Gem Node #1 bonus: -30 minutes (1800 seconds)
+  if (creationGemNode1.value) {
+    currentTime -= 1800;
+  }
+  
+  // Minimum 10 seconds
+  return Math.max(10, currentTime);
+};
+
+// Aktualisierte getBestUpgrade Funktion (bleibt gleich)
+const getBestUpgrade = (mechKey) => {
+  const efficiencies = {
+    owned: getUpgradeEfficiency(mechKey, 'owned'),
+    time: getUpgradeEfficiency(mechKey, 'time'),
+    multi: getUpgradeEfficiency(mechKey, 'multi')
+  };
+  
+  // Stelle sicher, dass alle Effizienzen Decimal-Objekte sind
+  if (!(efficiencies.owned instanceof Decimal)) efficiencies.owned = new Decimal(0);
+  if (!(efficiencies.time instanceof Decimal)) efficiencies.time = new Decimal(0);
+  if (!(efficiencies.multi instanceof Decimal)) efficiencies.multi = new Decimal(0);
+  
+  // Finde das Upgrade mit der höchsten Effizienz
+  let bestUpgrade = 'owned';
+  let bestEfficiency = efficiencies.owned;
+  
+  if (efficiencies.time.gt(bestEfficiency)) {
+    bestUpgrade = 'time';
+    bestEfficiency = efficiencies.time;
+  }
+  
+  if (efficiencies.multi.gt(bestEfficiency)) {
+    bestUpgrade = 'multi';
+    bestEfficiency = efficiencies.multi;
+  }
+  
+  // Wenn alle Effizienzen 0 sind, return null
+  if (bestEfficiency.eq(0)) {
+    return null;
+  }
+  
+  return bestUpgrade;
+};
+
+// Aktualisierte formatEfficiency Funktion für bessere Lesbarkeit
+const formatEfficiency = (efficiency) => {
+  if (!(efficiency instanceof Decimal) || efficiency.eq(0)) {
+    return '0';
+  }
+  
+  // Für sehr kleine Werte
+  if (efficiency.lt(0.001)) {
+    let exponentialString = efficiency.toExponential(2);
+    exponentialString = exponentialString.replace('e+', 'e');
+    return exponentialString;
+  }
+  
+  // Für normale kleine Werte
+  if (efficiency.lt(1)) {
+    return efficiency.toFixed(4);
+  }
+  
+  // Für mittelgroße Werte
+  if (efficiency.lt(1000)) {
+    return efficiency.toFixed(3);
+  }
+  
+  // Für große Werte
+  let exponentialString = efficiency.toExponential(2);
+  exponentialString = exponentialString.replace('e+', 'e');
+  return exponentialString;
+};
+
+const getBestUpgradeClass = (mechKey, upgradeType) => {
+  const bestUpgrade = getBestUpgrade(mechKey);
+  
+  if (bestUpgrade === upgradeType) {
+    return 'border-green-500 shadow-lg shadow-green-500/20';
+  }
+  
+  return 'border-gray-700/50';
 };
 
 const saveSettings = () => {
