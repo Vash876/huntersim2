@@ -1,4 +1,4 @@
-// Random Number Generator (identisch mit Borge)
+// Random Number Generator
 let seed: u32 = 12345;
 function random(): f64 {
   seed = (((seed as u64) * 1664525 + 1013904223) % 4294967296) as u32;
@@ -9,7 +9,7 @@ function ck(chance: f64): boolean {
   return chance > 0 && chance > random();
 }
 
-// Multi-Funktion (EXAKT wie JS)
+// Multi-Funktion
 function multi(enemyNum: i32): f64 {
   return Math.max(1, 1 +
     Math.max(0, (enemyNum - 149) * 0.006) +
@@ -33,7 +33,7 @@ function minAll(a: f64, b: f64, c: f64, d: f64, e: f64, f: f64): f64 {
   return Math.min(Math.min(Math.min(Math.min(Math.min(a, b), c), d), e), f);
 }
 
-// Ozzy Enemy-Struktur (EXAKT wie JS simEnemy)
+// Ozzy Enemy-Struktur
 class OzzyEnemy {
   maxHp: f64;
   hp: f64;
@@ -55,47 +55,37 @@ class OzzyEnemy {
     const isBoss = enemyNum > 0 && enemyNum % 100 === 0;
     const is300 = enemyNum === 300;
     
-    // EXAKT wie JS: (11+6 * enemyNum) * multi(enemyNum)*Math.pow(2.9,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 48 : 1)*(enemyNum === 300 ? .94 : 1)
     this.maxHp = (11 + 6 * enemyNum) * multiVal * Math.pow(2.9, floorDiv as f64) * (isBoss ? 48 : 1) * (is300 ? 0.94 : 1);
     this.hp = 1;
-    
-    // EXAKT wie JS: (1.35+ .75 * enemyNum) * multi(enemyNum)*Math.pow(2.7,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 3 : 1)*(enemyNum === 300 ? .94 : 1)
+
     this.atk = (1.35 + 0.75 * enemyNum) * multiVal * Math.pow(2.7, floorDiv as f64) * (isBoss ? 3 : 1) * (is300 ? 0.94 : 1);
     
-    // EXAKT wie JS: Math.min(.25,(.0994 + .0006 * enemyNum + (enemyNum>0 && enemyNum%100 === 0 ? .1 : 0)))
     this.critRate = Math.min(0.25, (0.0994 + 0.0006 * enemyNum + (isBoss ? 0.1 : 0)));
     
-    // EXAKT wie JS: Math.min(2.5,1.03 + .008 * enemyNum)
     this.critDmg = Math.min(2.5, 1.03 + 0.008 * enemyNum);
     
-    // EXAKT wie JS: (1-(enemyNum>=200?(Math.max(0,Math.floor((enemyNum-1)/100)-2))*.02+.04:0)) - (enemyNum>0 && enemyNum%100 === 0 ? .05 : 0)
     if (enemyNum >= 200) {
       this.dr = (1 - (Math.max(0, floorDiv - 2) * 0.02 + 0.04)) - (isBoss ? 0.05 : 0);
     } else {
       this.dr = 1 - (isBoss ? 0.05 : 0);
     }
-    
-    // EXAKT wie JS: enemyNum>=100?.01+.01*(Math.max(0,(Math.floor((enemyNum-1)/100))-1)):0
+
     if (enemyNum >= 100) {
       this.evade = 0.01 + 0.01 * Math.max(0, floorDiv - 1);
     } else {
       this.evade = 0;
     }
-    
-    // EXAKT wie JS: enemyNum>=300?.04+.01*(Math.max(0,(Math.floor((enemyNum-1)/100))-3)) + (enemyNum>0 && enemyNum%100 === 0 ? .04 : 0):0
+
     if (enemyNum >= 300) {
       this.effect = 0.04 + 0.01 * Math.max(0, floorDiv - 3) + (isBoss ? 0.04 : 0);
     } else {
       this.effect = 0;
     }
-    
-    // EXAKT wie JS: Math.max(0,-.08 +.1* (enemyNum) * multi(enemyNum)*Math.pow(1.25,Math.floor(Math.max(0,enemyNum-1)/100)))*(enemyNum>0 && enemyNum%100 === 0 ? 6 : 1)*(enemyNum === 300 ? .97 : 1)
+
     this.regen = Math.max(0, -0.08 + 0.1 * enemyNum * multiVal * Math.pow(1.25, floorDiv as f64)) * (isBoss ? 6 : 1) * (is300 ? 0.97 : 1);
-    
-    // EXAKT wie JS: (3.2 - .004 * enemyNum)*(enemyNum>0 && enemyNum%100 === 0 ? 2.45 : 1)
+
     this.atkSpd = (3.2 - 0.004 * enemyNum) * (isBoss ? 2.45 : 1);
-    
-    // EXAKT wie JS: 999*(1.35+ .75 * enemyNum) * multi(enemyNum)*Math.pow(2.7,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 3 : 1)*Math.min(2.5,1.03 + .008 * enemyNum)/(3.2 - .004 * enemyNum)
+
     this.maxDps = 999 * (1.35 + 0.75 * enemyNum) * multiVal * Math.pow(2.7, floorDiv as f64) * (isBoss ? 3 : 1) * Math.min(2.5, 1.03 + 0.008 * enemyNum) / (3.2 - 0.004 * enemyNum);
     
     this.enrage = 0;
@@ -122,7 +112,7 @@ function initOzzyEnemies(): void {
   }
 }
 
-// Ozzy Character Struktur (VOLLSTÄNDIG wie JS baseOzzy + getTalents + getPath)
+// Ozzy Character Struktur
 class Ozzy {
   // Base Stats
   lvl: i32;
@@ -151,7 +141,7 @@ class Ozzy {
   remainingBullets: i32;
   time: f64;
   
-  // Base Stats Record (für Stats-Export)
+  // Base Stats Record 
   basehp: i32;
   baseatk: i32;
   baseregen: i32;
@@ -162,7 +152,7 @@ class Ozzy {
   basechargeGain: i32;
   basereload: i32;
   
-  // Talente (EXAKT wie JS getTalents)
+  // Talente
   revival: i32;
   trickster: i32;
   ua: i32;
@@ -173,7 +163,7 @@ class Ozzy {
   echoBullets: i32;
   ultimaTalent: i32;
   
-  // Pfade (EXAKT wie JS getPath)
+  // Pfade 
   lotl: i32;
   exo: i32;
   scorp: i32;
@@ -312,10 +302,10 @@ let nextHarden: f64 = 0;
 let currentOzzyAttr: i32 = 0;
 let currentOzzyCatchup99gu: i32 = 0;
 let currentOzzyMaxStage: i32 = 0;
-let bossKillsByRevive = new StaticArray<i32>(11); // Revive 0-10
-let bossAttemptsByRevive = new StaticArray<i32>(11); // Revive 0-10
+let bossKillsByRevive = new StaticArray<i32>(11); 
+let bossAttemptsByRevive = new StaticArray<i32>(11); 
 let lastTrackedBossStage: i32 = -1; 
-let entryRevivesForRun: i32 = -1; // ← NEU: Global definieren
+let entryRevivesForRun: i32 = -1; 
 
 // Boss-Tracking initialisieren
 function initBossTracking(): void {
@@ -338,7 +328,7 @@ function ozzyArrayAverage(arr: StaticArray<f64>): f64 {
   return ozzyArraySum(arr) / arr.length;
 }
 
-// Regen function (EXAKT wie JS)
+// Regen function
 function ozzyRegen(): void {
   let medDmg: f64 = 0;
   if (currentOzzyEnem % 1000 === 0 && currentOzzyEnem >= 3000) {
@@ -356,7 +346,7 @@ function ozzyRegen(): void {
   }
 }
 
-// Harden function (EXAKT wie JS)
+// Harden function 
 function ozzyHarden(): void {
   if (!hardenEnd) {
     hardenEnd = currentOzzyTime + 5;
@@ -374,7 +364,7 @@ function ozzyHarden(): void {
   }
 }
 
-// Enemy Attack function (EXAKT wie JS)
+// Enemy Attack function 
 function ozzyEnemyAttack(): void {
   let dmg = currentOzzyEnemy.atk;
   
@@ -451,7 +441,7 @@ function ozzyKillEnemy(): void {
   }
 }
 
-// Attack function (EXAKT wie JS - SEHR KOMPLIZIERT!)
+// Attack function 
 function ozzyAtk(skipAtkReset: boolean = false, dmgMod: f64 = 1, isMultistrike: boolean = false): void {
   let evaded = currentOzzyEnemy.evade > 0 && ck(currentOzzyEnemy.evade);
   
@@ -493,7 +483,7 @@ function ozzyAtk(skipAtkReset: boolean = false, dmgMod: f64 = 1, isMultistrike: 
   }
 }
 
-// Simulation-Funktion (EXAKT wie JS sim)
+// Simulation-Funktion
 function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd: i32, 
                  special: f64, iap: boolean, ultima: f64, scavengers: i32, m0: i32, r7: i32, 
                  attrGN3: boolean, lootgu: i32, i32_: i32, i81: i32, research81: i32, 
@@ -543,7 +533,7 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
   
   // Haupt-Kampfschleife 
   while (ozzy.hp > 0) {
-    // Boss-Encounter-Tracking beim ersten Boss-Frame (UNABHÄNGIG von Revive-Logic)
+    // Boss-Encounter-Tracking beim ersten Boss-Frame 
     if (currentOzzyEnem > 0 && currentOzzyEnem % 1000 === 0) {
       let currentBossStage = Math.floor(currentOzzyEnem / 10) as i32;
       
@@ -577,10 +567,10 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
     if (ozzy.revives && ozzy.hp <= 0) {
       ozzy.hp = 0.8 * ozzy.currentMaxHp;
       
-      // NEU: Death Tracking
+      // Death Tracking
       let reviveNumber = ozzy.maxRevives - ozzy.revives + 1;
       let currentStage = Math.floor(currentOzzyEnem / 10) as i32;
-      let numericKey = currentStage * 1000 + reviveNumber; // Stage 351, Revive 2 → 351002
+      let numericKey = currentStage * 1000 + reviveNumber;
       
       if (ozzy.deathsByStageAndRevive.has(numericKey)) {
         ozzy.deathsByStageAndRevive.set(numericKey, ozzy.deathsByStageAndRevive.get(numericKey) + 1);
@@ -596,7 +586,6 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
     } 
   }
 
-  // Boss-Kill-Tracking NACH der while-Schleife (wie vorher):
   if (entryRevivesForRun >= 0) {
     // Prüfe ob Boss getötet wurde
     let lastBossStage = (Math.floor(currentOzzyEnem / 10) / 100) as i32 * 100;
@@ -688,7 +677,6 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
   }
 }
 
-// EVALOZZY_WASM - EXAKTE JS-ÜBERTRAGUNG
 export function EVALOZZY_WASM(
   lvl: i32, maxStage: i32, hp: i32, atk: i32, regen: i32, 
   dr: i32, evade: i32, effect: i32, multistrike: i32, multistrikePower: i32,
@@ -710,18 +698,18 @@ export function EVALOZZY_WASM(
   initOzzyEnemies();
   initBossTracking();
   
-  // Gadget/Creature Multipliers (EXAKT WIE JS)
+  // Gadget/Creature Multipliers 
   const gadgetMulti = Math.pow(1.001, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const gadgetLootMulti = Math.pow(1.005, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const crea4GUMulti = 1.0 + (creastat as f64) * 0.01;
   
-  // Ozzy erstellen und konfigurieren (EXAKT WIE JS getBaseStats)
+  // Ozzy erstellen und konfigurieren 
   const ozzy = new Ozzy();
   
   ozzy.lvl = lvl;
   ozzy.maxStage = maxStage;
   
-  // Base Stats (EXAKT WIE JS getBaseStats)
+  // Base Stats
   ozzy.maxHp = (16 + (2 + Math.floor(hp / 5) * 0.03) * hp) * gadgetMulti * (1 + 0.03 * r4) * (card ? 1.03 : 1) * crea4GUMulti;
   ozzy.atk = (2 + (0.3 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r17) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * crea4GUMulti;
   ozzy.regen = (0.1 + (0.05 + Math.floor(regen / 30) * 0.01) * regen) * gadgetMulti * (innoGN2 ? 1.25 : 1) * (card ? 1.03 : 1) * crea4GUMulti;
@@ -732,7 +720,7 @@ export function EVALOZZY_WASM(
   ozzy.multistrikePower = 0.01 * multistrikePower + 0.25;
   ozzy.reload = 4 - 0.02 * aspd - 0.03 * i36;
   
-  // Base Stats Record (für Stats-Export)
+  // Base Stats Record 
   ozzy.basehp = hp;
   ozzy.baseatk = atk;
   ozzy.baseregen = regen;
@@ -743,7 +731,7 @@ export function EVALOZZY_WASM(
   ozzy.basechargeGain = multistrikePower;
   ozzy.basereload = aspd;
   
-  // Talente setzen (EXAKT wie JS getTalents)
+  // Talente setzen 
   ozzy.revival = revival;
   ozzy.trickster = trickster;
   ozzy.ua = ua;
@@ -754,7 +742,7 @@ export function EVALOZZY_WASM(
   ozzy.echoBullets = echoBullets;
   ozzy.ultimaTalent = ultimaTalent;
   
-  // Pfade setzen (EXAKT wie JS getPath)
+  // Pfade setzen 
   ozzy.lotl = lotl;
   ozzy.exo = exo;
   ozzy.scorp = scorp;
@@ -771,7 +759,7 @@ export function EVALOZZY_WASM(
   ozzy.dwd = dwd;
   ozzy.sisters = sisters;
   
-  // PrepOzzy (EXAKT WIE JS prepOzzy)
+  // PrepOzzy 
   ozzy.maxHp *= (1 + 0.02 * ozzy.lotl) * (1 + 0.01 * ozzy.ultimaTalent);
   ozzy.regen *= (1 + 0.02 * ozzy.lotl) * (1 + 0.01 * ozzy.ultimaTalent);
   ozzy.atk *= (1 + 0.012 * ozzy.exo) * (1 + 0.02 * ozzy.cat) * (1 + 0.01 * ozzy.ultimaTalent);
@@ -793,7 +781,7 @@ export function EVALOZZY_WASM(
   // lastOzzy für Export-Funktionen setzen
   lastOzzy = ozzy;
   
-  // Ergebnis zurückgeben (Loot per minute)
+  // Ergebnis zurückgeben 
   return ozzy.ls * 60;
 }
 
@@ -834,7 +822,7 @@ export function getLastOzzyBossHpPercent(): f64 {
     return 0; // Kein Boss erreicht oder alle Bosse getötet
   }
   
-  // Boss HP Percentage berechnen (wie in JS)
+  // Boss HP Percentage berechnen 
   let bossMaxHp = OZZY_ENEMIES[(bossStatsIdx + 1) * 100].maxHp;
   return lastOzzy.bossStats[bossStatsIdx].hp / (lastOzzy.iters as f64) / bossMaxHp * 100;
 }
@@ -855,7 +843,7 @@ export function getLastOzzyBossKillRate(): f64 {
     return 0; // Kein Boss erreicht oder alle Bosse getötet
   }
   
-  // Boss Kill Rate berechnen (wie in JS)
+  // Boss Kill Rate berechnen 
   return (lastOzzy.bossStats[bossStatsIdx].kills as f64) / (lastOzzy.iters as f64) * 100;
 }
 
@@ -942,7 +930,7 @@ export function getOzzyDeathsByStageAndReviveSize(): i32 {
 export function getOzzyDeathKeyAt(index: i32): i32 {
   if (index >= lastOzzy.deathsByStageAndRevive.size) return -1;
   let keys = lastOzzy.deathsByStageAndRevive.keys();
-  return keys[index]; // Gib numericKey zurück
+  return keys[index]; 
 }
 
 export function getOzzyDeathCountAt(index: i32): i32 {
@@ -974,7 +962,6 @@ export function getOzzyDeathsByStageAndReviveString(): string {
   return result;
 }
 
-// Am Ende der Datei:
 export function getOzzyBossKillsByReviveSize(): i32 {
   let count = 0;
   for (let i = 0; i < 11; i++) {
@@ -990,7 +977,7 @@ export function getOzzyBossRemainingReviveAt(index: i32): i32 {
   for (let remaining = 0; remaining < 11; remaining++) {
     if (bossAttemptsByRevive[remaining] > 0) {
       if (count === index) {
-        return remaining;    // ← liefert jetzt korrekt 3, 2, 1
+        return remaining;   
       }
       count++;
     }

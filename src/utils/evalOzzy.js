@@ -391,7 +391,6 @@ var sim = (ozzy) => {
 
   for(var k = 0 ;k < opts.length;k++){
     for(var i = 0;i<iters;i++){
-        // Fortschrittsbenachrichtigung senden, falls wir im Worker-Kontext sind
         if (typeof self !== 'undefined' && self.postMessage && i % Math.max(1, Math.floor(iters / 100)) === 0) {
             self.postMessage({
                 type: 'progress',

@@ -1,4 +1,4 @@
-// Random Number Generator (identisch mit Borge/Ozzy)
+// Random Number Generator 
 let seed: u32 = 12345;
 function random(): f64 {
   seed = (((seed as u64) * 1664525 + 1013904223) % 4294967296) as u32;
@@ -9,7 +9,7 @@ function ck(chance: f64): boolean {
   return chance > 0 && chance > random();
 }
 
-// Multi-Funktion für Knox (EXAKT wie JS - andere Werte als Borge/Ozzy!)
+// Multi-Funktion für Knox 
 function knoxMulti(enemyNum: i32): f64 {
   return Math.max(1, 1 + (enemyNum - 49) * 0.006 +
     Math.max(0, (enemyNum - 99) * 0.006) +
@@ -42,7 +42,7 @@ function knoxMinAll(a: f64, b: f64, c: f64, d: f64, e: f64): f64 {
   return Math.min(Math.min(Math.min(Math.min(a, b), c), d), e);
 }
 
-// Knox Enemy-Struktur (EXAKT wie JS simEnemy - andere Werte als Borge/Ozzy!)
+// Knox Enemy-Struktur
 class KnoxEnemy {
   maxHp: f64;
   hp: f64;
@@ -61,36 +61,27 @@ class KnoxEnemy {
     const floorDiv = Math.floor(Math.max(0, enemyNum - 1) / 100) as i32;
     const isBoss = enemyNum > 0 && enemyNum % 100 === 0;
     
-    // EXAKT wie JS: (7 + 9 * enemyNum) * multi(enemyNum)*Math.pow(3.2,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 120 : 1)
     this.maxHp = (7 + 9 * enemyNum) * multiVal * Math.pow(3.2, floorDiv as f64) * (isBoss ? 120 : 1);
     this.hp = (7 + 9 * enemyNum) * multiVal * Math.pow(3.2, floorDiv as f64);
     
-    // EXAKT wie JS: (2.4 + 1.4 * enemyNum) * multi(enemyNum)*Math.pow(2.7,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 4 : 1)
     this.atk = (2.4 + 1.4 * enemyNum) * multiVal * Math.pow(2.7, floorDiv as f64) * (isBoss ? 4 : 1);
     
-    // EXAKT wie JS: Math.min(.25,.0994 + .0006 * enemyNum + (enemyNum>0 && enemyNum%100 === 0 ? .1 : 0))
     this.critRate = Math.min(0.25, 0.0994 + 0.0006 * enemyNum + (isBoss ? 0.1 : 0));
     
-    // EXAKT wie JS: Math.min(2.5,1.032 + .008 * enemyNum)
     this.critDmg = Math.min(2.5, 1.032 + 0.008 * enemyNum);
     
-    // EXAKT wie JS: (1-(enemyNum>=200?(Math.max(0,Math.floor(Math.max(0,enemyNum-1)/100)-2))*.02+.04:0)) - (enemyNum>0 && enemyNum%100 === 0 ? .05 : 0)
     if (enemyNum >= 200) {
       this.dr = (1 - (Math.max(0, floorDiv - 2) * 0.02 + 0.04)) - (isBoss ? 0.05 : 0);
     } else {
       this.dr = 1 - (isBoss ? 0.05 : 0);
     }
     
-    // EXAKT wie JS: .01*Math.floor(enemyNum/100)
     this.evade = 0.01 * Math.floor(enemyNum / 100);
     
-    // EXAKT wie JS: .04 * enemyNum * multi(enemyNum)*Math.pow(1.4,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 2 : 1)
     this.regen = 0.04 * enemyNum * multiVal * Math.pow(1.4, floorDiv as f64) * (isBoss ? 2 : 1);
     
-    // EXAKT wie JS: (6.005 - .005 * enemyNum)*(enemyNum>0 && enemyNum%100 === 0 ? 2.85 : 1)
     this.atkSpd = (6.005 - 0.005 * enemyNum) * (isBoss ? 2.85 : 1);
     
-    // EXAKT wie JS: (2.4 + 1.4 * enemyNum) * multi(enemyNum)*(1.03 + .008 * enemyNum)/(6 - .005 * enemyNum)*Math.pow(2.7,Math.floor(Math.max(0,enemyNum-1)/100))
     this.maxDps = (2.4 + 1.4 * enemyNum) * multiVal * (1.03 + 0.008 * enemyNum) / (6 - 0.005 * enemyNum) * Math.pow(2.7, floorDiv as f64);
     
     this.enrage = 0;
@@ -116,7 +107,7 @@ function initKnoxEnemies(): void {
   }
 }
 
-// Knox Character Struktur (VOLLSTÄNDIG wie JS baseKnox + getTalents + getPath)
+// Knox Character Struktur 
 class Knox {
   // Base Stats
   lvl: i32;
@@ -151,7 +142,7 @@ class Knox {
   bonusRegen: i32;
   gbHit: boolean;
   
-  // Base Stats Record (für Stats-Export)
+  // Base Stats Record 
   basehp: i32;
   baseatk: i32;
   basesalvo: i32;
@@ -163,7 +154,7 @@ class Knox {
   basechargeGain: i32;
   basereload: i32;
   
-  // Talente (EXAKT wie JS getTalents)
+  // Talente 
   revival: i32;
   calyp: i32;
   ua: i32;
@@ -173,7 +164,7 @@ class Knox {
   pog: i32;
   finish: i32;
   
-  // Pfade (EXAKT wie JS getPath)
+  // Pfade 
   kraken: i32;
   amp: i32;
   dead: i32;
@@ -310,7 +301,7 @@ let nextKnoxEnemAtk: f64 = 0;
 let nextKnoxRegen: f64 = 0;
 let currentKnoxRespec: i32 = 0;
 
-// Array-Hilfsfunktionen für JS-äquivalente Operationen
+// Array-Hilfsfunktionen 
 function knoxArraySum(arr: StaticArray<f64>): f64 {
   let sum: f64 = 0;
   for (let i = 0; i < arr.length; i++) {
@@ -323,12 +314,12 @@ function knoxArrayAverage(arr: StaticArray<f64>): f64 {
   return knoxArraySum(arr) / arr.length;
 }
 
-// Soul-Multiplier function (EXAKT wie JS)
+// Soul-Multiplier function
 function knoxSoulmult(): f64 {
   return 1 + currentKnox.souls * 0.005 * (1 + currentKnox.amp * 0.01);
 }
 
-// Regen function (EXAKT wie JS)
+// Regen function
 function knoxRegen(): void {
   if (currentKnox.hp < currentKnox.currentMaxHp) {
     currentKnox.hp = Math.min(currentKnox.currentMaxHp, currentKnox.hp + currentKnox.currentRegen * (currentKnox.bonusRegen ? 1 + 0.1 * currentKnox.elixer : 1));
@@ -338,7 +329,7 @@ function knoxRegen(): void {
   nextKnoxRegen = currentKnoxTime + 1;
 }
 
-// Enemy Attack function (EXAKT wie JS)
+// Enemy Attack function
 function knoxEnemyAttack(): void {
   let dmg = currentKnoxEnemy.atk * (1 - currentKnox.pog * 0.03);
   
@@ -377,7 +368,7 @@ function knoxEnemyAttack(): void {
     // Death Tracking
     let reviveNumber = currentKnox.maxRevives - currentKnox.revives + 1;
     let currentStage = Math.floor(currentKnoxEnem / 10) as i32;
-    let numericKey = currentStage * 1000 + reviveNumber; // Stage 351, Revive 2 → 351002
+    let numericKey = currentStage * 1000 + reviveNumber;
     
     if (currentKnox.deathsByStageAndRevive.has(numericKey)) {
       currentKnox.deathsByStageAndRevive.set(numericKey, currentKnox.deathsByStageAndRevive.get(numericKey) + 1);
@@ -389,7 +380,7 @@ function knoxEnemyAttack(): void {
   }
 }
 
-// Torpedo function (EXAKT wie JS)
+// Torpedo function 
 function knoxTorpedo(): void {
   for (let i = 0; i < 5 + currentKnox.torpedos; i++) {
     currentKnoxEnemy.hp -= currentKnox.currentAtk * 30 * (1 + 0.08 * currentKnox.charger) * (1 + 0.2 * currentKnox.torpedos);
@@ -404,7 +395,7 @@ function knoxTorpedo(): void {
   nextKnoxTorpedo = 99999999;
 }
 
-// Kill Enemy function (EXAKT wie JS)
+// Kill Enemy function 
 function knoxKillEnemy(extraTime: f64 = 0): void {
   if (currentKnoxEnem > 0 && currentKnoxEnem % 1000 === 0) {
     currentKnoxEnem += 10;
@@ -456,7 +447,7 @@ function knoxKillEnemy(extraTime: f64 = 0): void {
   }
 }
 
-// Bullet function (EXAKT wie JS)
+// Bullet function 
 function knoxBullet(): void {
   currentKnox.remainingBullets--;
   currentKnoxEnemy.hp -= currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade) ? 0 : (currentKnox.finish && (currentKnox.remainingBullets === (currentKnox.gbHit ? 1 : 0)) && ck(currentKnox.effect * 2) ? currentKnox.currentAtk * (1 + currentKnox.finish * 0.2) * currentKnoxEnemy.dr : currentKnox.currentAtk * currentKnoxEnemy.dr);
@@ -477,7 +468,7 @@ function knoxBullet(): void {
   }
 }
 
-// Attack function (EXAKT wie JS - SEHR KOMPLIZIERT!)
+// Attack function
 function knoxAtk(skipAtkReset: boolean = false): void {
   currentKnoxEnemy.hp -= currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade) ? 0 : currentKnox.currentAtk * currentKnoxEnemy.dr;
   
@@ -529,7 +520,7 @@ function knoxAtk(skipAtkReset: boolean = false): void {
   }
 }
 
-// Simulation-Funktion (EXAKT wie JS sim)
+// Simulation-Funktion
 function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64, 
                  reviveCd: i32, special: f64, iap: boolean, ultima: f64, 
                  research81: i32, cm46: i32, cm47: i32, cm48: i32, cm51: i32, iters: i32): void {
@@ -571,8 +562,8 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
   if (knox.maxRevives === 0) {
     knox.maxRevives = knox.revival; 
   }
-  
-  // Haupt-Kampfschleife (EXAKT wie JS)
+
+  // Haupt-Kampfschleife
   while (knox.hp > 0) {
     currentKnoxTime = knoxMinAll(nextKnoxAtk, nextKnoxBullet, nextKnoxTorpedo, nextKnoxEnemAtk, nextKnoxRegen);
     
@@ -589,7 +580,7 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
     }
   }
   
-  // Boss Stats Update (EXAKT wie JS)
+  // Boss Stats Update
   for (let i = 0; i < 10; i++) {
     if (currentKnoxEnem < (i + 1) * 1000) {
       knox.bossStats[i].hp += KNOX_ENEMIES[(i + 1) * 100].maxHp;
@@ -600,7 +591,7 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
     }
   }
   
-  // Material Calculations (EXAKT WIE JS)
+  // Material Calculations
   const mat1 = new StaticArray<f64>(7);
   mat1[0] = 1; mat1[1] = 1.04; mat1[2] = 1.06; mat1[3] = 1.08; mat1[4] = 1.11; mat1[5] = 1.18; mat1[6] = 1.25;
   
@@ -618,7 +609,7 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
 
   let stageGrowth: f64 = 1.074;
   let enemiesInSection: i32 = 1010;
-  let excludedXpMultis: f64 = 1; // None for now
+  let excludedXpMultis: f64 = 1; 
   let includedMultis = (1 + knox.timeless * 0.13) * gadgetLootMulti;
   let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * (research81 >= 3 ? 1.1 : 1) * (research81 >= 6 ? 1.2 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1);
   
@@ -674,7 +665,6 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
   }
 }
 
-// EVALKNOX_WASM - EXAKTE JS-ÜBERTRAGUNG
 export function EVALKNOX_WASM(
   lvl: i32, maxStage: i32, hp: i32, atk: i32, regen: i32, 
   dr: i32, block: i32, effect: i32, charge: i32, chargeGain: i32,
@@ -695,18 +685,18 @@ export function EVALKNOX_WASM(
   // Enemies initialisieren
   initKnoxEnemies();
   
-  // Gadget/Creature Multipliers (EXAKT WIE JS)
+  // Gadget/Creature Multipliers 
   const gadgetMulti = Math.pow(1.001, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const gadgetLootMulti = Math.pow(1.005, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const crea4GUMulti = 1.0 + (creastat as f64) * 0.01;
   
-  // Knox erstellen und konfigurieren (EXAKT WIE JS getBaseStats)
+  // Knox erstellen und konfigurieren 
   const knox = new Knox();
   
   knox.lvl = lvl;
   knox.maxStage = maxStage;
   
-  // Base Stats (EXAKT WIE JS getBaseStats)
+  // Base Stats 
   knox.maxHp = (20 + (2 + Math.floor(hp / 5) * 0.1) * hp) * gadgetMulti * crea4GUMulti;
   knox.hp = knox.maxHp;
   knox.atk = (1.2 + (0.06 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * crea4GUMulti;
@@ -719,7 +709,7 @@ export function EVALKNOX_WASM(
   knox.chargeGain = 0.01 * chargeGain + 0.25;
   knox.reload = 7 - 0.03 * reload;
   
-  // Base Stats Record (für Stats-Export)
+  // Base Stats Record 
   knox.basehp = hp;
   knox.baseatk = atk;
   knox.basesalvo = proj;
@@ -731,7 +721,7 @@ export function EVALKNOX_WASM(
   knox.basechargeGain = chargeGain;
   knox.basereload = reload;
   
-  // Talente setzen (EXAKT wie JS getTalents)
+  // Talente setzen 
   knox.revival = revival;
   knox.calyp = calyp;
   knox.ua = ua;
@@ -741,7 +731,7 @@ export function EVALKNOX_WASM(
   knox.pog = pog;
   knox.finish = finish;
   
-  // Pfade setzen (EXAKT wie JS getPath)
+  // Pfade setzen 
   knox.kraken = kraken;
   knox.amp = amp;
   knox.dead = dead;
@@ -754,7 +744,7 @@ export function EVALKNOX_WASM(
   knox.elixer = elixer;
   knox.reflect = reflect;
   
-  // PrepKnox (EXAKT WIE JS prepKnox)
+  // PrepKnox 
   knox.maxHp *= (1 + 0.005 * knox.kraken);
   knox.regen *= (1 + 0.008 * knox.kraken);
   knox.atk *= (1 + 0.005 * knox.kraken);
@@ -776,7 +766,7 @@ export function EVALKNOX_WASM(
   // lastKnox für Export-Funktionen setzen
   lastKnox = knox;
   
-  // Ergebnis zurückgeben (Loot per minute)
+  // Ergebnis zurückgeben 
   return knox.ls * 60;
 }
 
@@ -817,7 +807,7 @@ export function getLastKnoxBossHpPercent(): f64 {
     return 0; // Kein Boss erreicht oder alle Bosse getötet
   }
   
-  // Boss HP Percentage berechnen (wie in JS)
+  // Boss HP Percentage berechnen
   let bossMaxHp = KNOX_ENEMIES[(bossStatsIdx + 1) * 100].maxHp;
   return lastKnox.bossStats[bossStatsIdx].hp / (lastKnox.iters as f64) / bossMaxHp * 100;
 }
@@ -838,7 +828,7 @@ export function getLastKnoxBossKillRate(): f64 {
     return 0; // Kein Boss erreicht oder alle Bosse getötet
   }
   
-  // Boss Kill Rate berechnen (wie in JS)
+  // Boss Kill Rate berechnen 
   return (lastKnox.bossStats[bossStatsIdx].kills as f64) / (lastKnox.iters as f64) * 100;
 }
 
@@ -929,7 +919,7 @@ export function getKnoxDeathsByStageAndReviveSize(): i32 {
 export function getKnoxDeathKeyAt(index: i32): i32 {
   if (index >= lastKnox.deathsByStageAndRevive.size) return -1;
   let keys = lastKnox.deathsByStageAndRevive.keys();
-  return keys[index]; // Gib numericKey zurück
+  return keys[index]; 
 }
 
 export function getKnoxDeathCountAt(index: i32): i32 {

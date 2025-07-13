@@ -1,4 +1,4 @@
-// Random Number Generator (ersetzt Math.random)
+// Random Number Generator 
 let seed: u32 = 12345;
 function random(): f64 {
   seed = (((seed as u64) * 1664525 + 1013904223) % 4294967296) as u32;
@@ -9,7 +9,7 @@ function ck(chance: f64): boolean {
   return chance > 0 && chance > random();
 }
 
-// Multi-Funktion (exakt wie JS)
+// Multi-Funktion 
 function multi(enemyNum: i32): f64 {
   return Math.max(1, 1 +
     Math.max(0, (enemyNum - 149) * 0.006) +
@@ -33,7 +33,7 @@ function minAll(a: f64, b: f64, c: f64, d: f64, e: f64, f: f64): f64 {
   return Math.min(Math.min(Math.min(Math.min(Math.min(a, b), c), d), e), f);
 }
 
-// Enemy-Struktur (exakt wie JS)
+// Enemy-Struktur 
 class Enemy {
   maxHp: f64;
   hp: f64;
@@ -104,7 +104,7 @@ function initEnemies(): void {
   }
 }
 
-// Borge Character Struktur (VOLLSTÄNDIG)
+// Borge Character Struktur
 class Borge {
   // Basis Stats
   lvl: i32;
@@ -339,8 +339,7 @@ function enemyAttack(isBonus: boolean = false): void {
     let reviveNumber = currentBorge.maxRevives - currentBorge.revives + 1;
     let currentStage = Math.floor(currentEnem / 10) as i32;
     
-    // TESTE ERST: Einfache Konkatenation ohne toString()
-    let numericKey = currentStage * 1000 + reviveNumber; // Stage 351, Revive 2 → 351002
+    let numericKey = currentStage * 1000 + reviveNumber; 
     
     if (currentBorge.deathsByStageAndRevive.has(numericKey)) {
       currentBorge.deathsByStageAndRevive.set(numericKey, currentBorge.deathsByStageAndRevive.get(numericKey) + 1);
@@ -371,10 +370,10 @@ function killEnemy(): void {
     currentEnem++;
   }
   
-  // KORRIGIERT: Enemy nur einmal und korrekt erstellen
+  // Enemy nur einmal und korrekt erstellen
   if (currentEnem % 10 === 0) {
     let enemyIndex = Math.min(1000, Math.floor(currentEnem / 10)) as i32;
-    currentEnemy = ENEMIES[enemyIndex]; // Verwende vorgefertigten Enemy
+    currentEnemy = ENEMIES[enemyIndex]; 
   }
   
   // Trample-Logik
@@ -383,7 +382,7 @@ function killEnemy(): void {
     trampleDamage -= currentEnemy.maxHp;
     currentEnem++;
     
-    // KORRIGIERT: Nach jedem Enemy-Increment prüfen
+    // Nach jedem Enemy-Increment prüfen
     if (currentEnem % 10 === 0) {
       let enemyIndex = Math.min(1000, Math.floor(currentEnem / 10)) as i32;
       currentEnemy = ENEMIES[enemyIndex];
@@ -484,7 +483,7 @@ function atk(isAthena: boolean = false): void {
   }
 }
 
-// Array-Hilfsfunktionen für JS-äquivalente Operationen
+// Array-Hilfsfunktionen
 function arraySum(arr: StaticArray<f64>): f64 {
   let sum: f64 = 0;
   for (let i = 0; i < arr.length; i++) {
@@ -568,17 +567,15 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
   // Boss Stats Update
   for (let i = 0; i < 10; i++) {
     if (currentEnem < (i + 1) * 1000) {
-      // KORRIGIERT: Verwende vorgefertigte Enemies
       borge.bossStats[i].hp += ENEMIES[(i + 1) * 100].maxHp;
     } else if (currentEnem === (i + 1) * 1000) {
-      // KORRIGIERT: .hp verwenden (nicht .maxHp)
       borge.bossStats[i].hp += ENEMIES[(i + 1) * 100].hp;
     } else {
       borge.bossStats[i].kills += 1;
     }
   }
   
-  // Material Calculations (EXAKT WIE JS)
+  // Material Calculations
   const mat1 = new StaticArray<f64>(7);
   mat1[0] = 1; mat1[1] = 1.1; mat1[2] = 1.3; mat1[3] = 1.5; mat1[4] = 1.7; mat1[5] = 2; mat1[6] = 3.2;
   
@@ -647,7 +644,6 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
   }
 }
 
-// EVALBORGE_WASM - EXAKTE JS-ÜBERTRAGUNG
 export function EVALBORGE_WASM(
   lvl: i32, maxStage: i32, hp: i32, atk: i32, regen: i32, 
   dr: i32, evade: i32, effect: i32, critRate: i32, critPower: i32,
@@ -671,18 +667,18 @@ export function EVALBORGE_WASM(
   // Enemies initialisieren
   initEnemies();
   
-  // Gadget/Creature Multipliers (EXAKT WIE JS)
+  // Gadget/Creature Multipliers 
   const gadgetMulti = Math.pow(1.001, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const gadgetLootMulti = Math.pow(1.005, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const crea4GUMulti = 1.0 + (creastat as f64) * 0.01;
   
-  // Borge erstellen und konfigurieren (EXAKT WIE JS)
+  // Borge erstellen und konfigurieren
   const borge = new Borge();
   
   borge.lvl = lvl;
   borge.maxStage = maxStage;
   
-  // Base Stats (EXAKT WIE JS)
+  // Base Stats 
   borge.maxHp = (43 + i3 * 6 + i27 * 24 + (2.5 + Math.floor(hp / 5) * 0.01) * hp) * gadgetMulti * (1 + 0.03 * r4) * (card ? 1.03 : 1) * (creaGN1 ? 1.2 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.015) : 1) * (1 + i60 * 0.03) * (1 + 0.05 * i84) * crea4GUMulti;
   
   borge.atk = (3 + i13 + 2 * impacts + (0.5 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r16) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.01) : 1) * (1 + i60 * 0.03) * Math.pow(1.05, i87 as f64) * crea4GUMulti;
@@ -724,7 +720,7 @@ export function EVALBORGE_WASM(
   borge.hermes = hermes;
   borge.inhaler = inhaler;
   
-  // PrepBorge (EXAKT WIE JS)
+  // PrepBorge
   borge.maxHp *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.01 * borge.ares);
   borge.regen *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.009 * borge.ylith);
   borge.atk *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.002 * borge.ares) * (1 + 0.01 * borge.mino);
@@ -796,7 +792,7 @@ export function getLastBossHpPercent(): f64 {
     return 0; // Kein Boss erreicht oder alle Bosse getötet
   }
   
-  // Boss HP Percentage berechnen (wie in JS)
+  // Boss HP Percentage berechnen 
   let bossMaxHp = ENEMIES[(bossStatsIdx + 1) * 100].maxHp;
   return lastBorge.bossStats[bossStatsIdx].hp / (lastBorge.iters as f64) / bossMaxHp * 100;
 }
@@ -817,7 +813,7 @@ export function getLastBossKillRate(): f64 {
     return 0; // Kein Boss erreicht oder alle Bosse getötet
   }
   
-  // Boss Kill Rate berechnen (wie in JS)
+  // Boss Kill Rate berechnen 
   return (lastBorge.bossStats[bossStatsIdx].kills as f64) / (lastBorge.iters as f64) * 100;
 }
 
@@ -925,7 +921,7 @@ export function getDeathsByStageAndReviveSize(): i32 {
 export function getDeathKeyAt(index: i32): i32 {
   if (index >= lastBorge.deathsByStageAndRevive.size) return -1;
   let keys = lastBorge.deathsByStageAndRevive.keys();
-  return keys[index]; // Gib numericKey zurück
+  return keys[index]; 
 }
 
 export function getDeathCountAt(index: i32): i32 {
@@ -946,7 +942,6 @@ export function getDeathsByStageAndReviveString(): string {
     let numericKey = keys[i];
     let count = lastBorge.deathsByStageAndRevive.get(numericKey);
     
-    // Konvertiere numericKey zurück zu "stage_revive" Format für JSON
     let stage = Math.floor(numericKey / 1000) as i32;
     let revive = numericKey % 1000;
     
@@ -1063,7 +1058,6 @@ function getEventTypeId(eventType: string): i32 {
 let liveState: LiveSimulationState = new LiveSimulationState();
 
 // Live Simulation: Initialisierung
-// Live Simulation: Initialisierung - EXAKT GLEICHE PARAMETER WIE EVALBORGE_WASM
 export function initLiveSimulation(
   lvl: i32, maxStage: i32, hp: i32, atk: i32, regen: i32, 
   dr: i32, evade: i32, effect: i32, critRate: i32, critPower: i32,
@@ -1084,26 +1078,25 @@ export function initLiveSimulation(
   cm46: i32, cm47: i32, cm48: i32, cm51: i32, creastat: i32
 ): void {
   
-  // Enemies initialisieren (falls noch nicht geschehen)
+  // Enemies initialisieren
   initEnemies();
   
   // Neue Live State erstellen
   liveState = new LiveSimulationState();
   
-  // ✅ AB HIER: EXAKT IDENTISCH MIT EVALBORGE_WASM
   
-  // Gadget/Creature Multipliers (EXAKT WIE EVALBORGE_WASM)
+  // Gadget/Creature Multipliers
   const gadgetMulti = Math.pow(1.001, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const gadgetLootMulti = Math.pow(1.005, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const crea4GUMulti = 1.0 + (creastat as f64) * 0.01;
   
-  // Borge konfigurieren (EXAKT WIE EVALBORGE_WASM)
+  // Borge konfigurieren
   const borge = liveState.borge;
   
   borge.lvl = lvl;
   borge.maxStage = maxStage;
   
-  // Base Stats (EXAKT WIE EVALBORGE_WASM - 1:1 KOPIERT)
+  // Base Stats 
   borge.maxHp = (43 + i3 * 6 + i27 * 24 + (2.5 + Math.floor(hp / 5) * 0.01) * hp) * gadgetMulti * (1 + 0.03 * r4) * (card ? 1.03 : 1) * (creaGN1 ? 1.2 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.015) : 1) * (1 + i60 * 0.03) * (1 + 0.05 * i84) * crea4GUMulti;
   
   borge.atk = (3 + i13 + 2 * impacts + (0.5 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r16) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.01) : 1) * (1 + i60 * 0.03) * Math.pow(1.05, i87 as f64) * crea4GUMulti;
@@ -1117,7 +1110,7 @@ export function initLiveSimulation(
   borge.critPower = 0.01 * (critPower as f64) + 1.3;
   borge.reload = 5 - 0.03 * (aspd as f64) - i23 * 0.04;
   
-  // Talente setzen (EXAKT WIE EVALBORGE_WASM)
+  // Talente setzen
   borge.revival = revival;
   borge.life = life;
   borge.ua = ua;
@@ -1143,8 +1136,8 @@ export function initLiveSimulation(
   borge.hermes = hermes;
   borge.inhaler = inhaler;
   
-  // ✅ HIER WAR DER FEHLER: PrepBorge FEHLTE KOMPLETT!
-  // PrepBorge (EXAKT WIE EVALBORGE_WASM - 1:1 KOPIERT)
+
+  // PrepBorge 
   borge.maxHp *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.01 * borge.ares);
   borge.regen *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.009 * borge.ylith);
   borge.atk *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.002 * borge.ares) * (1 + 0.01 * borge.mino);
@@ -1161,11 +1154,10 @@ export function initLiveSimulation(
   liveState.trample = trample > 0;
   liveState.maxStage = maxStage;
   
-  // ✅ INITIAL COMBAT STATE: EXAKT WIE sim() FUNKTION in EVALBORGE_WASM
   liveState.currentEnem = 0;
   liveState.currentTime = 0;
   
-  // Current Stats setzen (EXAKT WIE sim() Funktion)
+  // Current Stats setzen 
   borge.evadeStacks = 0;
   borge.hp = borge.maxHp;
   borge.currentMaxHp = borge.maxHp;
@@ -1178,14 +1170,14 @@ export function initLiveSimulation(
   borge.time += 40 - Math.min(reviveCd, 30);
   borge.remainingBullets = 0;
   
-  // Combat State (EXAKT WIE sim() Funktion)
+  // Combat State 
   liveState.furyEnabled = false;
   liveState.trampleDamage = 0;
   liveState.fowRemaining = 0;
   liveState.currentEnemy = ENEMIES[0];
   liveState.currentEnemy.hp = liveState.currentEnemy.maxHp;
   
-  // Timing (EXAKT WIE sim() Funktion)
+  // Timing 
   liveState.nextAtk = borge.reload;
   liveState.nextAthena = borge.athena > 0 ? borge.reload * 6 : 999999999;
   liveState.nextEnemAtk = liveState.currentEnemy.atkSpd;
@@ -1208,7 +1200,7 @@ export function liveSimulationStep(): boolean {
     return false; // Simulation beendet
   }
   
-  // Nächstes Event bestimmen (EXAKT WIE HAUPTSIMULATION)
+  // Nächstes Event bestimmen 
   liveState.currentTime = minAll(
     liveState.nextAtk, 
     liveState.nextEnemAtk, 
@@ -1218,7 +1210,7 @@ export function liveSimulationStep(): boolean {
     liveState.nextFury
   );
   
-  // Event verarbeiten (EXAKT WIE HAUPTSIMULATION)
+  // Event verarbeiten 
   if (liveState.currentTime === liveState.nextRegen) {
     liveRegenEvent();
   } else if (liveState.currentTime === liveState.nextEnemAtk) {
@@ -1236,12 +1228,11 @@ export function liveSimulationStep(): boolean {
   return true; // Simulation läuft weiter
 }
 
-// Live Events (EXAKT WIE HAUPTSIMULATION, aber mit Event-Tracking)
+// Live Events
 function liveRegenEvent(): void {
   const oldHp = liveState.borge.hp;
   const oldEnemyHp = liveState.currentEnemy.hp;
   
-  // EXAKT WIE regen() Funktion
   liveState.borge.hp = Math.min(liveState.borge.currentMaxHp, liveState.borge.hp + liveState.borge.currentRegen + liveState.borge.inhaler * 0.0008 * (liveState.borge.currentMaxHp - liveState.borge.hp));
   liveState.currentEnemy.hp = Math.min(liveState.currentEnemy.maxHp, liveState.currentEnemy.hp + liveState.currentEnemy.regen * (1 - liveState.borge.omen * 0.08 / (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0 ? 2 : 1)));
   liveState.nextRegen = liveState.currentTime + 1;
@@ -1257,7 +1248,6 @@ function liveRegenEvent(): void {
 }
 
 function liveEnemyAttackEvent(): void {
-  // EXAKT WIE enemyAttack() Funktion
   let dmg = liveState.currentEnemy.atk * (1 - liveState.borge.currentDr) * (1 - 0.01 * liveState.borge.mino);
   
   if (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0) {
@@ -1290,7 +1280,7 @@ function liveEnemyAttackEvent(): void {
     liveState.borge.currentDr = Math.max(0, liveState.borge.currentDr - 0.02);
   }
   
-  // Revive Logic (EXAKT WIE HAUPTSIMULATION)
+  // Revive Logic 
   if (liveState.borge.revives && liveState.borge.hp <= 0) {
     liveState.borge.hp = 0.8 * liveState.borge.currentMaxHp;
     liveState.borge.revives--;
@@ -1318,7 +1308,6 @@ function liveAthenaEvent(): void {
 }
 
 function liveAttackLogic(isAthena: boolean): void {
-  // EXAKT WIE atk() Funktion
   let evaded = liveState.currentEnemy.evade > 0 && ck(liveState.currentEnemy.evade);
   let dmg = evaded ? 0 : (liveState.borge.currentAtk * (1 + 0.1 * liveState.borge.bfb * (1 - liveState.borge.hp / liveState.borge.currentMaxHp)) * (isAthena ? liveState.borge.critPower * 1.5 : (ck(liveState.borge.currentCritRate) ? liveState.borge.critPower : 1)));
   
@@ -1391,7 +1380,6 @@ function liveAttackLogic(isAthena: boolean): void {
 }
 
 function liveBonusAttackEvent(): void {
-  // EXAKT WIE enemyAttack(true)
   let dmg = liveState.currentEnemy.atk * (1 - liveState.borge.currentDr) * (1 - 0.01 * liveState.borge.mino);
   
   liveState.currentEnemy.enrage++;
@@ -1440,7 +1428,6 @@ function liveBonusAttackEvent(): void {
 }
 
 function liveFuryEvent(): void {
-  // EXAKT WIE fury() Funktion
   liveState.furyEnabled = !liveState.furyEnabled;
   let stunRemaining = Math.max(0, liveState.currentEnemy.stunEnd - liveState.currentTime);
   
@@ -1461,7 +1448,6 @@ function liveFuryEvent(): void {
 }
 
 function liveKillEnemyEvent(): void {
-  // EXAKT WIE killEnemy() Funktion
   const oldStage = Math.floor(liveState.currentEnem / 10) as i32;
   
   if (liveState.currentEnem > 0 && liveState.currentEnem % 1000 === 0) {
@@ -1708,7 +1694,7 @@ export function getLiveEnemyAtkSpd(): f64 {
   return liveState.currentEnemy.atkSpd;
 }
 
-// NEU: Live Enemy Enrage und Fury Exports
+// Live Enemy Enrage und Fury Exports
 export function getLiveEnemyEnrage(): i32 {
   return liveState.currentEnemy.enrage;
 }
@@ -1717,12 +1703,12 @@ export function getLiveNextBossBonusAtk(): f64 {
   return liveState.nextBossBonusAtk;
 }
 
-// Optional: Berechne wann der nächste Fury Toggle ist
+// Berechne wann der nächste Fury Toggle ist
 export function getLiveNextFuryToggle(): f64 {
   return liveState.nextFury;
 }
 
-// Optional: Enrage Speed Reduction berechnen
+// Enrage Speed Reduction berechnen
 export function getLiveEnemyEnrageSpeedReduction(): f64 {
   if (liveState.currentEnem === 0 || liveState.currentEnem % 1000 !== 0) {
     return 0; // Nur Bosse haben Enrage
@@ -1731,8 +1717,7 @@ export function getLiveEnemyEnrageSpeedReduction(): f64 {
   const baseSpeed = liveState.currentEnemy.atkSpd;
   const enrageLevel = liveState.currentEnemy.enrage;
   
-  // Wie in der WASM: Speed reduziert sich um enrage * baseSpeed / 200
   const speedReduction = (enrageLevel as f64) * baseSpeed / 200.0;
-  return Math.min(speedReduction, baseSpeed - 0.5); // Max bis 0.5s minimum
+  return Math.min(speedReduction, baseSpeed - 0.5); 
 }
 

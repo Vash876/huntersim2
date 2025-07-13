@@ -27,6 +27,18 @@ function calculateI33(level) {
 }
 
 /**
+ * Berechnet die Kosten für Inscryption #52
+ * @param {number} level - Das aktuelle Level (1-basiert)
+ * @returns {number} - Die Kosten für dieses Level
+ */
+function calculateI52(level) {
+  const startValue = 91200;
+  const multi = 2.4;
+  if (level <= 1) return startValue;
+  return startValue * Math.pow(multi, level - 1);
+}
+
+/**
  * Berechnet die Kosten für Inscryption #60
  * @param {number} level - Das aktuelle Level (1-basiert)
  * @returns {number} - Die Kosten für dieses Level

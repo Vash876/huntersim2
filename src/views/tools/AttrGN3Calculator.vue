@@ -521,10 +521,10 @@ function formatNumber(num) {
     return num.toExponential(2).replace('+', '');
   }
   if (num >= 1e6) {
-    return (num / 1e6).toFixed(2) + 'M';
+    return (num / 1e6).toFixed(2) + 'm';
   }
   if (num >= 1e3) {
-    return (num / 1e3).toFixed(2) + 'K';
+    return (num / 1e3).toFixed(2) + 'k';
   }
   return num.toFixed(2);
 }

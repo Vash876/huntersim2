@@ -332,5 +332,5 @@ export enum HunterType {
 }
 
 export function getWasmBuildTimestamp(): i32 {
-  return 20250613; // Ändere das Datum bei jedem Build
+  return 20250613; 
 }

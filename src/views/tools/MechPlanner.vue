@@ -118,7 +118,7 @@
                     <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
                       <IconTarget size="16" class="text-cyan-400" />
                     </div>
-                    <span class="text-sm text-gray-300">Creation Mech Bonus Cap</span>
+                    <span class="text-sm text-gray-300">Creation Mech Bonus Cap (GU)</span>
                     <span class="ml-1 text-xs text-gray-500">(max: 999)</span>
                   </div>
                   <ToolValueControls
@@ -1244,6 +1244,7 @@ const getMechOutputClass = (color) => {
     'green': 'text-green-400',
     'red': 'text-red-400',
     'blue': 'text-blue-400',
+    'cyan': 'text-cyan-400',
     'orange': 'text-orange-400',
     'yellow': 'text-yellow-400',
     'brown': 'text-amber-400'
