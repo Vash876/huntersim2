@@ -10,8 +10,18 @@ const sql = neon(NEON_DATABASE_URL);
 
 const handler = async (event, context) => {
   // CORS headers
+  const allowedOrigins = [
+    'https://huntersimtest.netlify.app',
+    'https://cifi-tools.com',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ];
+  
+  const origin = event.headers.origin;
+  const allowedOrigin = allowedOrigins.includes(origin) ? origin : '*';
+  
   const headers = {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
     'Content-Type': 'application/json'

@@ -23,7 +23,7 @@
       </div>
 
       <!-- Modal-Inhalt -->
-      <div class="p-5">
+      <div class="p-5 pb-0">
         <!-- OAuth Buttons (only for signin/signup) -->
         <div v-if="mode !== 'reset'" class="space-y-3 mb-6">
           <button
@@ -50,125 +50,6 @@
             </svg>
             Continue with GitHub
           </button>
-
-          <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-              <div class="w-full border-t border-gray-600"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-              <span class="px-2 bg-gray-800 text-gray-400">or</span>
-            </div>
-          </div>
-        </div>
-
-        <form @submit.prevent="handleSubmit" class="space-y-4">
-          <!-- Email Field -->
-          <div>
-            <label for="email" class="block text-sm font-medium text-gray-300 mb-1">
-              Email
-            </label>
-            <input
-              id="email"
-              v-model="form.email"
-              type="email"
-              required
-              class="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="your.email@example.com"
-            />
-          </div>
-
-          <!-- Password Field (not for reset) -->
-          <div v-if="mode !== 'reset'">
-            <label for="password" class="block text-sm font-medium text-gray-300 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              v-model="form.password"
-              type="password"
-              required
-              class="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <!-- Name Field (only for signup) -->
-          <div v-if="mode === 'signup'">
-            <label for="name" class="block text-sm font-medium text-gray-300 mb-1">
-              Name (optional)
-            </label>
-            <input
-              id="name"
-              v-model="form.name"
-              type="text"
-              class="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Your Name"
-            />
-          </div>
-
-          <!-- Error Message -->
-          <div v-if="error" class="text-red-400 text-sm bg-red-900/30 p-3 rounded-lg border border-red-800/50">
-            {{ error }}
-          </div>
-
-          <!-- Success Message -->
-          <div v-if="success" class="text-green-400 text-sm bg-green-900/30 p-3 rounded-lg border border-green-800/50">
-            {{ success }}
-          </div>
-
-          <!-- Submit Button -->
-          <button
-            type="submit"
-            :disabled="loading"
-            class="w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
-          >
-            <span v-if="loading" class="flex items-center justify-center">
-              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Processing...
-            </span>
-            <span v-else>
-              {{ mode === 'signin' ? 'Sign In' : mode === 'signup' ? 'Sign Up' : 'Reset Password' }}
-            </span>
-          </button>
-        </form>
-
-        <!-- Mode Switch Links -->
-        <div class="mt-6 text-center text-sm">
-          <template v-if="mode === 'signin'">
-            <p class="text-gray-400">
-              Don't have an account?
-              <button @click="switchMode('signup')" class="text-blue-400 hover:text-blue-300 hover:underline transition-colors">
-                Sign up
-              </button>
-            </p>
-            <p class="text-gray-400 mt-2">
-              Forgot your password?
-              <button @click="switchMode('reset')" class="text-blue-400 hover:text-blue-300 hover:underline transition-colors">
-                Reset it
-              </button>
-            </p>
-          </template>
-          
-          <template v-else-if="mode === 'signup'">
-            <p class="text-gray-400">
-              Already have an account?
-              <button @click="switchMode('signin')" class="text-blue-400 hover:text-blue-300 hover:underline transition-colors">
-                Sign in
-              </button>
-            </p>
-          </template>
-          
-          <template v-else>
-            <p class="text-gray-400">
-              Remember your password?
-              <button @click="switchMode('signin')" class="text-blue-400 hover:text-blue-300 hover:underline transition-colors">
-                Sign in
-              </button>
-            </p>
-          </template>
         </div>
       </div>
     </div>

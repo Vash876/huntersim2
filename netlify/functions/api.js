@@ -3,8 +3,18 @@ const { neon } = require('@neondatabase/serverless');
 
 exports.handler = async (event, context) => {
   // CORS Headers
+  const allowedOrigins = [
+    'https://huntersimtest.netlify.app',
+    'https://cifi-tools.com',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ];
+  
+  const origin = event.headers.origin;
+  const allowedOrigin = allowedOrigins.includes(origin) ? origin : (process.env.NETLIFY ? 'https://cifi-tools.com' : '*');
+  
   const headers = {
-    'Access-Control-Allow-Origin': process.env.NETLIFY ? 'https://cifi-tools.com' : '*',
+    'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-User-ID',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Credentials': 'true'
