@@ -256,17 +256,34 @@ class NeonAuthService {
       this.error.value = null;
 
       console.log('Neon Auth: Attempting Google OAuth sign in');
+      console.log('Available stackClientApp methods:', Object.getOwnPropertyNames(stackClientApp));
+      console.log('Available stackClientApp prototype methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(stackClientApp)));
+      
+      // Check all available methods that might be OAuth related
+      const allMethods = [...Object.getOwnPropertyNames(stackClientApp), ...Object.getOwnPropertyNames(Object.getPrototypeOf(stackClientApp))];
+      const oauthMethods = allMethods.filter(method => 
+        method.toLowerCase().includes('oauth') || 
+        method.toLowerCase().includes('signin') || 
+        method.toLowerCase().includes('redirect') ||
+        method.toLowerCase().includes('google')
+      );
+      console.log('Potential OAuth methods:', oauthMethods);
 
       // Stack Auth OAuth redirect methods - try different possible names
       if (stackClientApp.signInWithOAuth) {
+        console.log('Using signInWithOAuth method');
         await stackClientApp.signInWithOAuth('google');
       } else if (stackClientApp.redirectToOAuth) {
+        console.log('Using redirectToOAuth method');
         await stackClientApp.redirectToOAuth('google');
       } else if (stackClientApp.signInWithProvider) {
+        console.log('Using signInWithProvider method');
         await stackClientApp.signInWithProvider('google');
       } else if (stackClientApp.oauthSignIn) {
+        console.log('Using oauthSignIn method');
         await stackClientApp.oauthSignIn('google');
       } else {
+        console.error('Available methods:', Object.getOwnPropertyNames(stackClientApp));
         throw new Error('OAuth methods not available in Stack Auth SDK');
       }
       
@@ -289,17 +306,33 @@ class NeonAuthService {
       this.error.value = null;
 
       console.log('Neon Auth: Attempting GitHub OAuth sign in');
+      console.log('Available stackClientApp methods:', Object.getOwnPropertyNames(stackClientApp));
+      
+      // Check all available methods that might be OAuth related
+      const allMethods = [...Object.getOwnPropertyNames(stackClientApp), ...Object.getOwnPropertyNames(Object.getPrototypeOf(stackClientApp))];
+      const oauthMethods = allMethods.filter(method => 
+        method.toLowerCase().includes('oauth') || 
+        method.toLowerCase().includes('signin') || 
+        method.toLowerCase().includes('redirect') ||
+        method.toLowerCase().includes('github')
+      );
+      console.log('Potential OAuth methods:', oauthMethods);
 
       // Stack Auth OAuth redirect methods - try different possible names
       if (stackClientApp.signInWithOAuth) {
+        console.log('Using signInWithOAuth method');
         await stackClientApp.signInWithOAuth('github');
       } else if (stackClientApp.redirectToOAuth) {
+        console.log('Using redirectToOAuth method');
         await stackClientApp.redirectToOAuth('github');
       } else if (stackClientApp.signInWithProvider) {
+        console.log('Using signInWithProvider method');
         await stackClientApp.signInWithProvider('github');
       } else if (stackClientApp.oauthSignIn) {
+        console.log('Using oauthSignIn method');
         await stackClientApp.oauthSignIn('github');
       } else {
+        console.error('Available methods:', Object.getOwnPropertyNames(stackClientApp));
         throw new Error('OAuth methods not available in Stack Auth SDK');
       }
       
