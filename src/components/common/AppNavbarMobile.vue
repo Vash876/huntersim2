@@ -197,6 +197,115 @@
         </a>
       </div>
     </div>
+
+    <!-- ACCOUNT MENU -->
+    <div 
+      class="mobile-submenu account-submenu"
+      :class="{visible: activeSection === 'account'}"
+    >
+      <div class="submenu-header">
+        <h3 v-if="neonAuthService.isAuthenticatedComputed.value">Account</h3>
+        <h3 v-else>Sign In</h3>
+      </div>
+      
+      <!-- Unauthenticated State -->
+      <div v-if="!neonAuthService.isAuthenticatedComputed.value" class="px-3 py-4">
+        <button
+          @click="showAuthModal = true; activeSection = null"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2"
+        >
+          <IconLogin size="20" />
+          <span>Sign In / Sign Up</span>
+        </button>
+        <p class="text-xs text-gray-400 text-center mt-3">
+          Sign in to sync your data across devices
+        </p>
+      </div>
+      
+      <!-- Authenticated State -->
+      <div v-else class="px-3 py-4 space-y-4">
+        <!-- User Info -->
+        <div class="flex items-center space-x-3 pb-3 border-b border-gray-700">
+          <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+            {{ (neonAuthService.getUserDisplayName() || 'U').charAt(0).toUpperCase() }}
+          </div>
+          <div class="flex-1">
+            <div class="text-sm font-medium text-white">{{ neonAuthService.getUserDisplayName() || 'User' }}</div>
+            <div class="text-xs text-gray-400">{{ neonAuthService.getUserEmail() || 'No email' }}</div>
+          </div>
+        </div>
+
+        <!-- Sync Status -->
+        <div class="pb-3 border-b border-gray-700">
+          <div class="text-xs text-gray-400 mb-2">Sync Status</div>
+          <div class="flex items-center space-x-2">
+            <div 
+              class="w-2 h-2 rounded-full"
+              :class="{
+                'bg-green-500': !syncStore.isSyncing && !syncStore.lastSyncError,
+                'bg-yellow-500': syncStore.isSyncing,
+                'bg-red-500': syncStore.lastSyncError
+              }"
+            ></div>
+            <span class="text-xs text-gray-300">
+              {{ syncStore.isSyncing ? 'Syncing...' : 
+                 syncStore.lastSyncError ? 'Sync Error' : 
+                 syncStore.lastSyncTime ? `Last: ${formatSyncTime(syncStore.lastSyncTime)}` : 'Never synced' }}
+            </span>
+          </div>
+          
+          <!-- Manual Sync Info -->
+          <div class="mt-2 p-2 bg-blue-900/20 rounded-lg">
+            <div class="text-xs text-blue-300 font-medium mb-1">📱 Manual Sync</div>
+            <div class="text-xs text-gray-400">Use the buttons below to sync your data when needed.</div>
+          </div>
+        </div>
+
+        <!-- Sync Actions -->
+        <div class="space-y-2 pb-3 border-b border-gray-700">
+          <button
+            @click="syncFromCloud"
+            :disabled="syncStore.isSyncing"
+            class="w-full text-left px-3 py-2 text-sm bg-blue-900/20 text-blue-300 hover:bg-blue-900/30 rounded-lg flex items-center space-x-2 disabled:opacity-50 transition-colors"
+          >
+            <div class="flex items-center space-x-2">
+              <IconCloudDown size="18" />
+              <IconLoader2 
+                v-if="syncStore.isSyncing && syncAction === 'download'"
+                size="14" 
+                class="animate-spin"
+              />
+            </div>
+            <span>{{ syncStore.isSyncing && syncAction === 'download' ? 'Downloading...' : 'Download from Cloud' }}</span>
+          </button>
+          
+          <button
+            @click="syncToCloud"
+            :disabled="syncStore.isSyncing"
+            class="w-full text-left px-3 py-2 text-sm bg-green-900/20 text-green-300 hover:bg-green-900/30 rounded-lg flex items-center space-x-2 disabled:opacity-50 transition-colors"
+          >
+            <div class="flex items-center space-x-2">
+              <IconCloudUp size="18" />
+              <IconLoader2 
+                v-if="syncStore.isSyncing && syncAction === 'upload'"
+                size="14" 
+                class="animate-spin"
+              />
+            </div>
+            <span>{{ syncStore.isSyncing && syncAction === 'upload' ? 'Uploading...' : 'Upload to Cloud' }}</span>
+          </button>
+        </div>
+
+        <!-- Sign Out -->
+        <button
+          @click="signOut"
+          class="w-full text-left px-3 py-2 text-sm text-red-300 hover:bg-red-900/20 rounded-lg flex items-center space-x-2 transition-colors"
+        >
+          <IconLogout size="18" />
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </div>
     
     <!-- Die Navbar NACH den Submenüs, damit sie immer über den Submenüs liegt -->
     <div class="bg-slate-900/95 backdrop-blur-sm border-t border-indigo-500/30 shadow-lg">
@@ -241,6 +350,31 @@
           <span v-if="activeSection === 'tools'" class="active-indicator"></span>
         </button>
         
+        <!-- Account (Login/User) -->
+        <button 
+          class="nav-button relative"
+          :class="{'active': activeSection === 'account'}"
+          @click="toggleSection('account')"
+        >
+          <div class="nav-button-inner">
+            <!-- Unauthenticated State -->
+            <IconUser 
+              v-if="!neonAuthService.isAuthenticatedComputed.value"
+              size="22" 
+              class="mx-auto text-indigo-200" 
+            />
+            <!-- Authenticated State -->
+            <div 
+              v-else
+              class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold mx-auto"
+            >
+              {{ (neonAuthService.getUserDisplayName() || 'U').charAt(0).toUpperCase() }}
+            </div>
+            <span class="text-xs mt-1 font-medium text-slate-300">Account</span>
+          </div>
+          <span v-if="activeSection === 'account'" class="active-indicator"></span>
+        </button>
+        
         <!-- Misc (Settings etc.) -->
         <button 
           class="nav-button relative"
@@ -256,24 +390,43 @@
       </div>
     </div>
   </nav>
+
+  <!-- Neon Auth Modal -->
+  <NeonAuthModal 
+    :show="showAuthModal"
+    @close="showAuthModal = false"
+    @success="handleAuthSuccess"
+  />
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { NAVIGATION } from '../../constants/navigation';
 import { getAllHunters } from '../../constants/hunters';
+import { neonAuthService } from '@/services/neonAuthService';
+import { useSyncStore } from '@/store/syncStore';
+import NeonAuthModal from '@/components/common/NeonAuthModal.vue';
 import { 
   IconArrowUpCircle,
   IconSettings,
   IconCoffee,
   IconTools,
   IconHistory,
-  IconBow
+  IconBow,
+  IconUser,
+  IconLogin,
+  IconLogout,
+  IconCloudDown,
+  IconCloudUp,
+  IconLoader2
 } from '@tabler/icons-vue';
 
 const navigation = NAVIGATION;
 const hunters = getAllHunters();
 const activeSection = ref(null);
+const syncStore = useSyncStore();
+const showAuthModal = ref(false);
+const syncAction = ref(null);
 
 // Ausgewählte Kategorie für Upgrades
 const selectedUpgradeCategory = ref(0);
@@ -290,6 +443,53 @@ function toggleSection(section) {
       selectedUpgradeCategory.value = 0;
     }
   }
+}
+
+// Auth und Sync functions
+function handleAuthSuccess() {
+  showAuthModal.value = false;
+  // Optional: Auto-sync nach Login
+}
+
+function signOut() {
+  neonAuthService.signOut();
+  activeSection.value = null;
+}
+
+async function syncFromCloud() {
+  syncAction.value = 'download';
+  try {
+    await syncStore.syncFromServer();
+    console.log('📥 Mobile sync from cloud completed');
+  } catch (error) {
+    console.error('❌ Mobile sync from cloud failed:', error);
+  } finally {
+    syncAction.value = null;
+  }
+}
+
+async function syncToCloud() {
+  syncAction.value = 'upload';
+  try {
+    await syncStore.syncToServer();
+    console.log('📤 Mobile sync to cloud completed');
+  } catch (error) {
+    console.error('❌ Mobile sync to cloud failed:', error);
+  } finally {
+    syncAction.value = null;
+  }
+}
+
+function formatSyncTime(timestamp) {
+  if (!timestamp) return 'Never';
+  const now = new Date();
+  const syncTime = new Date(timestamp);
+  const diffMinutes = Math.floor((now - syncTime) / (1000 * 60));
+  
+  if (diffMinutes < 1) return 'Just now';
+  if (diffMinutes < 60) return `${diffMinutes}m ago`;
+  if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)}h ago`;
+  return `${Math.floor(diffMinutes / 1440)}d ago`;
 }
 
 // Helper-Funktionen für Tool-Farben
@@ -337,7 +537,7 @@ function getToolLabelClass(categoryColor, tool) {
 /* Moderne UI-Anpassungen */
 /* Navigation Buttons */
 .nav-button {
-  width: 25%;
+  width: 20%; /* Geändert von 25% auf 20% für 5 Buttons */
   padding: 0.35rem 0.25rem;
   position: relative;
   display: flex;
@@ -468,9 +668,11 @@ function getToolLabelClass(categoryColor, tool) {
 .settings-card { border-top: 3px solid rgba(20, 184, 166, 0.7); }
 .changelog-card { border-top: 3px solid rgba(59, 130, 246, 0.7); }
 .support-card { border-top: 3px solid rgba(245, 158, 11, 0.7); }
-.settings-card { border-top: 3px solid rgba(20, 184, 166, 0.7); }
-.changelog-card { border-top: 3px solid rgba(59, 130, 246, 0.7); }
-.support-card { border-top: 3px solid rgba(245, 158, 11, 0.7); }
+
+/* Account Menu Styling */
+.account-submenu .modern-card {
+  background-color: rgba(30, 41, 59, 0.95);
+}
 
 /* Moderne Tab-Navigation */
 .tab-navigation {

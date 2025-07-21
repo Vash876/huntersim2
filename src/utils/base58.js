@@ -90,3 +90,14 @@ export const Base58 = {
     return new TextDecoder().decode(new Uint8Array(bytes.reverse()));
   }
 };
+
+/**
+ * Generate a random ID using Base58 encoding
+ * @param {number} length - Length of the random bytes (default: 8)
+ * @returns {string} - Base58 encoded random ID
+ */
+export function generateId(length = 8) {
+  const randomBytes = new Uint8Array(length);
+  crypto.getRandomValues(randomBytes);
+  return Base58.encode(randomBytes);
+}

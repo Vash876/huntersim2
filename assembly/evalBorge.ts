@@ -53,6 +53,7 @@ class Enemy {
     const floorDiv = Math.floor(Math.max(0, enemyNum - 1) / 100) as i32;
     const isBoss = enemyNum > 0 && enemyNum % 100 === 0;
     const is300 = enemyNum === 300;
+    const is400 = enemyNum === 400;
     
     this.maxHp = (9 + 4 * enemyNum) * multiVal * Math.pow(2.85, floorDiv as f64) * (isBoss ? 90 : 1) * (is300 ? 0.9 : 1);
     this.hp = 1;

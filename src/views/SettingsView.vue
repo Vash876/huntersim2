@@ -24,7 +24,7 @@
           
           <div class="flex flex-col gap-4">
             <button 
-              @click="createBackup" 
+              @click="createBackupWrapper" 
               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors w-fit"
               :disabled="isCreatingBackup"
             >
@@ -101,7 +101,7 @@
               
               <div class="flex flex-col sm:flex-row gap-3 items-center">
                 <button 
-                  @click="restoreFromBackup" 
+                  @click="restoreFromBackupWrapper" 
                   class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
                   :disabled="!restoreCode || isRestoring"
                   :class="{ 'opacity-50 cursor-not-allowed': !restoreCode || isRestoring }"
@@ -284,6 +284,9 @@
 import { ref, onMounted } from 'vue';
 import { useHunterStore } from '@/store/hunterStore';
 import { useTRPlannerStore } from '@/store/orbStore';
+import { useTRTrackingStore } from '@/store/trTrackingStore';
+import { useUltimaStore } from '@/store/ultimaStore';
+import { useBackupRestore } from '@/composables/useBackupRestore';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 import { 
   IconDatabaseExport, 
@@ -306,13 +309,14 @@ import {
 // Stores
 const hunterStore = useHunterStore();
 const trPlannerStore = useTRPlannerStore();
+const trTrackingStore = useTRTrackingStore();
+const ultimaStore = useUltimaStore();
+const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBackupRestore();
 
 // UI State
 const backupCode = ref('');
 const restoreCode = ref('');
 const codeCopied = ref(false);
-const isCreatingBackup = ref(false);
-const isRestoring = ref(false);
 const showResetConfirmation = ref(false);
 const fileInput = ref(null);
 const toast = ref({ show: false, message: '', type: 'info' });
@@ -379,194 +383,6 @@ function toggleHighIterationsMode() {
   }
 }
 
-// Create base58-encoded backup
-async function createBackup() {
-  try {
-    isCreatingBackup.value = true;
-    
-    // 1. Hunter Simulator Daten (Store-State klonen, um den Store nicht zu verändern)
-    const hunterStoreState = JSON.parse(JSON.stringify(hunterStore.$state));
-    
-    // Evaluation-Cache aus dem Backup entfernen, um die Größe zu reduzieren
-    if (hunterStoreState.evaluationCache) {
-      delete hunterStoreState.evaluationCache;
-    }
-    
-    // 2. TR-Planner Daten
-    const trPlannerData = JSON.parse(JSON.stringify(trPlannerStore.$state));
-    
-    // 3. Gadget Calculator Daten aus localStorage
-    const gadgetCurrentLevels = localStorage.getItem('gadgetCalculator_currentLevels');
-    const gadgetTargetLevels = localStorage.getItem('gadgetCalculator_targetLevels');
-    const gadgetReferenceBuildId = localStorage.getItem('gadgetCalculator_referenceBuildId');
-    
-    // 4. Mech Planner Daten aus localStorage
-    const mechPlannerSettings = localStorage.getItem('mechPlanner_settings');
-    
-    // 5. Weitere relevante localStorage-Einträge sammeln
-    const trPlanOrderIds = localStorage.getItem('trPlanOrderIds');
-    const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
-    
-    // Backup-Datenpaket erstellen
-    const backupData = {
-      data: {
-        hunterStore: hunterStoreState,
-        trPlannerStore: trPlannerData,
-        localStorage: {
-          gadgetCalculator_currentLevels: gadgetCurrentLevels ? JSON.parse(gadgetCurrentLevels) : {},
-          gadgetCalculator_targetLevels: gadgetTargetLevels ? JSON.parse(gadgetTargetLevels) : {},
-          gadgetCalculator_referenceBuildId: gadgetReferenceBuildId,
-          mechPlanner_settings: mechPlannerSettings ? JSON.parse(mechPlannerSettings) : {},
-          trPlanOrderIds: trPlanOrderIds ? JSON.parse(trPlanOrderIds) : [],
-          huntersim_high_iterations_mode: highIterationsMode
-        }
-      },
-      version: '2.0.0',
-      timestamp: new Date().toISOString(),
-      type: 'hunter-simulator-backup'
-    };
-    
-    // Konvertiere zu JSON-String
-    const jsonData = JSON.stringify(backupData);
-    
-    // Base64-Encoding für den Backup-Code
-    backupCode.value = btoa(jsonData);
-    
-    showToast('Backup created successfully! Includes Hunter Simulator, TR-Planner, Gadget Calculator, and Mech Planner data.', 'success');
-    isCreatingBackup.value = false;
-  } catch (error) {
-    console.error('Error creating backup:', error);
-    showToast('Failed to create backup', 'error');
-    isCreatingBackup.value = false;
-  }
-}
-
-// Restore from backup
-async function restoreFromBackup() {
-  if (!restoreCode.value) return;
-  
-  showDialog({
-    title: 'Restore Data',
-    message: 'This will replace all your current data. Are you sure you want to continue?',
-    type: 'warning',
-    confirmText: 'Yes, Restore',
-    cancelText: 'Cancel',
-    onConfirm: async () => {
-      try {
-        isRestoring.value = true;
-        
-        // Backup-Code dekodieren
-        const jsonData = atob(restoreCode.value);
-        
-        // JSON parsen und validieren
-        const backupData = JSON.parse(jsonData);
-        
-        // Grundlegende Validierung
-        if (!backupData || !backupData.data || !backupData.type || backupData.type !== 'hunter-simulator-backup') {
-          throw new Error('Invalid backup format');
-        }
-        
-        // 1. Hunter Store wiederherstellen
-        if (backupData.data.hunterStore) {
-          // Aktuellen Cache speichern
-          const currentCache = hunterStore.$state.evaluationCache ? 
-            { ...hunterStore.$state.evaluationCache } : {};
-          
-          // Store-Daten ersetzen
-          const storeData = backupData.data.hunterStore;
-          
-          // Leere zuerst den aktuellen State
-          Object.keys(hunterStore.$state).forEach(key => {
-            if (key !== 'evaluationCache') {
-              if (Array.isArray(hunterStore.$state[key])) {
-                hunterStore.$state[key] = [];
-              } else if (typeof hunterStore.$state[key] === 'object' && hunterStore.$state[key] !== null) {
-                hunterStore.$state[key] = {};
-              } else {
-                hunterStore.$state[key] = null;
-              }
-            }
-          });
-          
-          // Mit Backup-Daten füllen
-          for (const key in storeData) {
-            if (key !== 'evaluationCache' && key in hunterStore.$state) {
-              hunterStore.$state[key] = storeData[key];
-            }
-          }
-          
-          // Original-Cache wiederherstellen
-          if (currentCache && Object.keys(currentCache).length > 0) {
-            hunterStore.$state.evaluationCache = currentCache;
-          }
-        }
-        
-        // 2. TR-Planner Store wiederherstellen
-        if (backupData.data.trPlannerStore) {
-          const trPlannerData = backupData.data.trPlannerStore;
-          
-          // State ersetzen
-          Object.keys(trPlannerData).forEach(key => {
-            if (key in trPlannerStore.$state) {
-              trPlannerStore.$state[key] = trPlannerData[key];
-            }
-          });
-        }
-        
-        // 3. localStorage-Einträge wiederherstellen
-        if (backupData.data.localStorage) {
-          const localStorageData = backupData.data.localStorage;
-          
-          // Gadget-Daten wiederherstellen
-          if (localStorageData.gadgetCalculator_currentLevels) {
-            localStorage.setItem('gadgetCalculator_currentLevels', 
-              JSON.stringify(localStorageData.gadgetCalculator_currentLevels));
-          }
-          
-          if (localStorageData.gadgetCalculator_targetLevels) {
-            localStorage.setItem('gadgetCalculator_targetLevels', 
-              JSON.stringify(localStorageData.gadgetCalculator_targetLevels));
-          }
-          
-          if (localStorageData.gadgetCalculator_referenceBuildId) {
-            localStorage.setItem('gadgetCalculator_referenceBuildId', 
-              localStorageData.gadgetCalculator_referenceBuildId);
-          }
-          
-          // Mech Planner Daten wiederherstellen
-          if (localStorageData.mechPlanner_settings) {
-            localStorage.setItem('mechPlanner_settings', 
-              JSON.stringify(localStorageData.mechPlanner_settings));
-          }
-          
-          // TR-Planner Reihenfolge wiederherstellen
-          if (localStorageData.trPlanOrderIds) {
-            localStorage.setItem('trPlanOrderIds', 
-              JSON.stringify(localStorageData.trPlanOrderIds));
-          }
-          
-          // High Iterations Mode wiederherstellen
-          if (localStorageData.huntersim_high_iterations_mode !== undefined) {
-            localStorage.setItem('huntersim_high_iterations_mode', 
-              localStorageData.huntersim_high_iterations_mode);
-            
-            // UI aktualisieren
-            highIterationsEnabled.value = localStorageData.huntersim_high_iterations_mode === 'true';
-          }
-        }
-        
-        showToast('All data restored successfully!', 'success');
-        restoreCode.value = '';
-        isRestoring.value = false;
-      } catch (error) {
-        console.error('Error restoring backup:', error);
-        showToast('Failed to restore backup. Invalid or corrupted backup code.', 'error');
-        isRestoring.value = false;
-      }
-    }
-  });
-}
-
 // Copy backup code to clipboard
 function copyBackupCode() {
   if (!backupCode.value) return;
@@ -586,7 +402,7 @@ function copyBackupCode() {
 function showResetDataDialog() {
   showDialog({
     title: 'Reset All Data',
-    message: 'This will reset all your data including all hunters, builds, TR-Planner data, and Gadget Calculator settings. This action cannot be undone.',
+    message: 'This will reset all your data including all hunters, builds, TR-Planner data, Gadget Calculator, Mech Planner, Ultima Calculator, AttrGN3 Calculator, TS Planner, Research Overview, and Loop Mod Overview settings. This action cannot be undone.',
     type: 'error',
     confirmText: 'Yes, Reset Everything',
     cancelText: 'Cancel',
@@ -662,7 +478,21 @@ function resetAllData() {
       }
     });
     
-    // 3. Gadget Calculator und TR-Planner-spezifische localStorage-Einträge löschen
+    // 3. TR-Tracking Store zurücksetzen
+    trTrackingStore.clearAllData();
+    
+    // 4. Ultima Calculator Store zurücksetzen
+    Object.keys(ultimaStore.$state).forEach(key => {
+      if (Array.isArray(ultimaStore.$state[key])) {
+        ultimaStore.$state[key] = [];
+      } else if (typeof ultimaStore.$state[key] === 'object' && ultimaStore.$state[key] !== null) {
+        ultimaStore.$state[key] = {};
+      } else {
+        ultimaStore.$state[key] = null;
+      }
+    });
+    
+    // 5. Tool-spezifische localStorage-Einträge löschen
     // Gadget Calculator
     localStorage.removeItem('gadgetCalculator_currentLevels');
     localStorage.removeItem('gadgetCalculator_targetLevels');
@@ -671,11 +501,23 @@ function resetAllData() {
     // Mech Planner
     localStorage.removeItem('mechPlanner_settings');
     
+    // AttrGN3 Calculator
+    localStorage.removeItem('attrGN3Calculator_settings');
+    
+    // TS Planner
+    localStorage.removeItem('traitSpherePlanner_settings');
+    
+    // Research Overview
+    localStorage.removeItem('researchOverview_filters');
+    
+    // Loop Mod Overview
+    localStorage.removeItem('loopModOverview_filters');
+    
     // TR Planner
     localStorage.removeItem('trPlanOrderIds');
     localStorage.removeItem('tr-planner-data'); // Falls genutzt
     
-    // 4. Alle anderen gespeicherten TR-Planner-Pläne suchen und löschen
+    // 6. Alle anderen gespeicherten TR-Planner-Pläne suchen und löschen
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('tr-plan-')) {
         localStorage.removeItem(key);
@@ -761,6 +603,45 @@ function showToast(message, type = 'info') {
   setTimeout(() => {
     toast.value.show = false;
   }, 5000);
+}
+
+// Create backup using composable
+async function createBackupWrapper() {
+  try {
+    const backup = await createBackup();
+    backupCode.value = backup;
+    showToast('Backup created successfully!', 'success');
+  } catch (error) {
+    console.error('Error creating backup:', error);
+    showToast('Failed to create backup', 'error');
+  }
+}
+
+// Restore from backup using composable
+async function restoreFromBackupWrapper() {
+  if (!restoreCode.value) return;
+  
+  showDialog({
+    title: 'Restore Data',
+    message: 'This will replace all your current data. Are you sure you want to continue?',
+    type: 'warning',
+    confirmText: 'Yes, Restore',
+    cancelText: 'Cancel',
+    onConfirm: async () => {
+      try {
+        await restoreFromBackup(restoreCode.value);
+        showToast('All data restored successfully!', 'success');
+        restoreCode.value = '';
+        
+        // Update UI state after restore
+        const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
+        highIterationsEnabled.value = highIterationsMode === 'true';
+      } catch (error) {
+        console.error('Error restoring backup:', error);
+        showToast('Failed to restore backup. Invalid or corrupted backup code.', 'error');
+      }
+    }
+  });
 }
 </script>
 

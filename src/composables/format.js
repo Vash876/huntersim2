@@ -157,37 +157,81 @@ export function parseNumberWithSuffix(input) {
 }
 
 /**
- * Generiert eine schöne Anzeige für Zahlen mit Suffix-Notation
+ * Formatiert einen numerischen Wert in Suffix-Notation für die Anzeige
  * 
- * @param {number} value - Der umzuwandelnde Wert
- * @returns {string} - Formatierter String mit Suffix
+ * @param {number} value - Der numerische Wert
+ * @returns {string} - Der formatierte Wert mit Suffix (z.B. "3.50t")
  */
-export function formatSuffixNotation(value) {
-  if (typeof value !== 'number' || isNaN(value)) {
-    return '0';
+export function formatSuffixInput(value) {
+  if (typeof value !== 'number' || isNaN(value) || value === 0) {
+    return '0.00';
   }
   
-  if (value < 1000) return value.toString();
+  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d'];
   
-  const suffixPairs = [
-    [1e33, 'd'],
-    [1e30, 'n'],
-    [1e27, 'oc'],
-    [1e24, 'sp'],
-    [1e21, 'sx'],
-    [1e18, 'qi'],
-    [1e15, 'qa'],
-    [1e12, 't'],
-    [1e9, 'b'],
-    [1e6, 'm'],
-    [1e3, 'k']
-  ];
-  
-  for (const [threshold, suffix] of suffixPairs) {
-    if (value >= threshold) {
-      return (value / threshold).toFixed(2).replace(/\.?0+$/, '') + suffix;
-    }
+  // Für Werte < 1000, zeige ohne Suffix
+  if (Math.abs(value) < 1000) {
+    return value.toFixed(2);
   }
   
-  return value.toString();
+  // Berechne die Größenordnung
+  let tier = Math.max(0, Math.min(Math.floor(Math.log10(Math.abs(value)) / 3), suffixes.length - 1));
+  
+  const suffix = suffixes[tier];
+  const scaledValue = value / Math.pow(10, tier * 3);
+  
+  // Formatiere die skalierte Zahl mit 2 Dezimalstellen + Suffix
+  return `${scaledValue.toFixed(2)}${suffix}`;
 }
+
+/**
+ * Parst eine Suffix-Eingabe und gibt den numerischen Wert zurück
+ * 
+ * @param {string} input - Der Eingabestring (z.B. "3.5t" oder "1000")
+ * @returns {number} - Der geparste numerische Wert
+ */
+export function parseSuffixInput(input) {
+  if (!input || typeof input !== 'string') {
+    return 0;
+  }
+  
+  const trimmedInput = input.trim();
+  
+  // Leerer String oder nur Punkt/Komma
+  if (trimmedInput === '' || trimmedInput === '.' || trimmedInput === ',') {
+    return 0;
+  }
+  
+  // Nur Ziffern und Dezimaltrennzeichen -> direkter Wert
+  const numberMatch = trimmedInput.match(/^(\d+(?:[.,]\d*)?)$/);
+  if (numberMatch) {
+    return parseFloat(numberMatch[1].replace(',', '.'));
+  }
+  
+  // Suffix-Notation wie "1.5b" oder "2k"
+  const suffixMatch = trimmedInput.match(/^(\d+(?:[.,]\d*)?)([kmbtqsond])([aeixpu])?$/i);
+  if (suffixMatch) {
+    const num = parseFloat(suffixMatch[1].replace(',', '.'));
+    const primarySuffix = suffixMatch[2].toLowerCase();
+    const secondarySuffix = suffixMatch[3] ? suffixMatch[3].toLowerCase() : '';
+    
+    const suffixMap = {
+      'k': 1e3,
+      'm': 1e6,
+      'b': 1e9,
+      't': 1e12,
+      'q': secondarySuffix === 'a' ? 1e15 : secondarySuffix === 'u' ? 1e18 : 1e15,
+      's': secondarySuffix === 'x' ? 1e21 : secondarySuffix === 'p' ? 1e24 : 1e21,
+      'o': secondarySuffix === 'c' ? 1e27 : 1e27,
+      'n': 1e30,
+      'd': 1e33
+    };
+    
+    return num * (suffixMap[primarySuffix] || 1);
+  }
+  
+  return 0; // Ungültiges Format
+}
+
+// Legacy alias for backwards compatibility
+export const formatSuffixNotation = formatSuffixInput;

@@ -621,20 +621,61 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'openNewPlan']);
 
-// State
+// State - Verwende Store statt lokale refs
 const searchQuery = ref('');
-const trCount = ref(props.currentStats?.trCount || 0);
-const allTimeOrbs = ref(props.currentStats?.allTimeOrbs || 0);
-const isEditingAllTimeOrbs = ref(false);
-const allTimeOrbsRawInput = ref("");
-const allTimeOrbsDisplay = ref(formatSuffixNotation(props.currentStats?.allTimeOrbs || 0));
-const currentBoosts = ref({});
-const targetBoosts = ref({});
 const showBoostOverview = ref(false);
 const showCreateOptions = ref(false);
 const isPlanValid = ref(false);
+const isEditingAllTimeOrbs = ref(false);
+const allTimeOrbsRawInput = ref("");
 
 const trPlannerStore = useTRPlannerStore();
+
+// Store-basierte reactive properties
+const trCount = computed({
+  get() {
+    return trPlannerStore.orbCalculator.trCount;
+  },
+  set(value) {
+    trPlannerStore.updateOrbCalculatorTRCount(value);
+  }
+});
+
+const allTimeOrbs = computed({
+  get() {
+    return trPlannerStore.orbCalculator.allTimeOrbs;
+  },
+  set(value) {
+    trPlannerStore.updateOrbCalculatorAllTimeOrbs(value);
+  }
+});
+
+const currentBoosts = computed({
+  get() {
+    return trPlannerStore.orbCalculator.currentBoosts;
+  },
+  set(value) {
+    trPlannerStore.updateOrbCalculatorCurrentBoosts(value);
+  }
+});
+
+const targetBoosts = computed({
+  get() {
+    return trPlannerStore.orbCalculator.targetBoosts;
+  },
+  set(value) {
+    trPlannerStore.updateOrbCalculatorTargetBoosts(value);
+  }
+});
+
+const allTimeOrbsDisplay = computed({
+  get() {
+    return formatSuffixNotation(allTimeOrbs.value);
+  },
+  set(value) {
+    // Wird über allTimeOrbsInput verwaltet
+  }
+});
 
 // Gem-Levels aus dem Store laden
 const gemLevels = computed(() => {
@@ -947,17 +988,32 @@ const filteredBoostCategories = computed(() => {
 
 // Methods
 function initData() {
-  // Current-Stats aus Props übernehmen
-  currentBoosts.value = { ...props.currentStats };
-  // Target-Stats initial gleich setzen
-  targetBoosts.value = { ...props.currentStats };
+  // Prüfe ob bereits Daten im Store vorhanden sind
+  if (trPlannerStore.orbCalculator.trCount > 0 || Object.keys(trPlannerStore.orbCalculator.currentBoosts).length > 0) {
+    // Store hat bereits Daten - diese verwenden
+    console.log("OrbCalculator: Loading existing data from store");
+    return;
+  }
+  
+  // Ansonsten initialisiere mit currentStats aus Props
+  console.log("OrbCalculator: Initializing with props.currentStats");
+  
+  // Current-Stats aus Props übernehmen und in Store speichern
+  const currentBoostsData = { ...props.currentStats };
+  const targetBoostsData = { ...props.currentStats };
   
   // TR-Count und All-Time Orbs separieren
-  trCount.value = props.currentStats?.trCount || 0;
-  allTimeOrbs.value = props.currentStats?.allTimeOrbs || 0;
+  const trCountValue = props.currentStats?.trCount || 0;
+  const allTimeOrbsValue = props.currentStats?.allTimeOrbs || 0;
   
   // Wichtig: Formatiere die Anzeige beim Initialisieren konsistent mit 2 Nachkommastellen
-  allTimeOrbsDisplay.value = formatSuffixWithDecimals(props.currentStats?.allTimeOrbs || 0, 2);
+  allTimeOrbsDisplay.value = formatSuffixWithDecimals(allTimeOrbsValue, 2);
+
+  // Store aktualisieren
+  trPlannerStore.updateOrbCalculatorTRCount(trCountValue);
+  trPlannerStore.updateOrbCalculatorAllTimeOrbs(allTimeOrbsValue);
+  trPlannerStore.updateOrbCalculatorCurrentBoosts(currentBoostsData);
+  trPlannerStore.updateOrbCalculatorTargetBoosts(targetBoostsData);
 
   // Stelle sicher, dass der Store initial korrekt geladen ist
   if (trPlannerStore && trPlannerStore.userStats) {
@@ -965,17 +1021,23 @@ function initData() {
     const storeStats = trPlannerStore.userStats;
     
     // Ergänze fehlende Werte aus dem Store
+    const updatedCurrentBoosts = { ...currentBoostsData };
+    const updatedTargetBoosts = { ...targetBoostsData };
+    
     Object.entries(storeStats).forEach(([key, value]) => {
-      if (currentBoosts.value[key] === undefined && value !== undefined) {
-        currentBoosts.value[key] = value;
-        targetBoosts.value[key] = value;
+      if (updatedCurrentBoosts[key] === undefined && value !== undefined) {
+        updatedCurrentBoosts[key] = value;
+        updatedTargetBoosts[key] = value;
       }
     });
+    
+    // Store nochmal aktualisieren mit ergänzten Werten
+    trPlannerStore.updateOrbCalculatorCurrentBoosts(updatedCurrentBoosts);
+    trPlannerStore.updateOrbCalculatorTargetBoosts(updatedTargetBoosts);
   }
   
   // Debug-Ausgabe
-  console.log("InitData completed, current boosts:", currentBoosts.value);
-  console.log("Store values:", trPlannerStore.userStats);
+  console.log("InitData completed, store orbCalculator:", trPlannerStore.orbCalculator);
 }
 
 // Formatierungsfunktion mit Dezimalstellen
@@ -1026,11 +1088,11 @@ function updateRawTargetValue(boost, newValue) {
   // WICHTIG: Stelle sicher, dass der target-Wert nicht unter den current-Wert fallen kann
   if (newValue < currentValue) {
     // Wenn der neue Wert unter dem Current-Wert liegt, direkt auf Current-Wert setzen
-    targetBoosts.value[boost.key] = currentValue;
+    trPlannerStore.updateOrbCalculatorTargetBoost(boost.key, currentValue);
     console.log(`Verhindere Target-Wert ${newValue} unter Current-Wert ${currentValue} für ${boost.key}`);
   } else {
     // Ansonsten den neuen Wert normal setzen
-    targetBoosts.value[boost.key] = newValue;
+    trPlannerStore.updateOrbCalculatorTargetBoost(boost.key, newValue);
   }
   
   // Berechnungen aktualisieren
@@ -1045,7 +1107,7 @@ function finalizeTargetValue(boost) {
   // Wenn der targetValue kleiner ist als currentValue, korrigieren
   if (targetValue < currentValue) {
     console.log(`Korrigiere Target-Wert für ${boost.key}: ${targetValue} -> ${currentValue}`);
-    targetBoosts.value[boost.key] = currentValue;
+    trPlannerStore.updateOrbCalculatorTargetBoost(boost.key, currentValue);
     recalculateAll();
     return;
   }
@@ -1060,19 +1122,21 @@ function finalizeTargetValue(boost) {
 function toggleTargetBoolean(key) {
   // Wenn der current Boost aktiviert ist, kann der target Boost nicht deaktiviert werden
   if (currentBoosts.value[key]) {
-    targetBoosts.value[key] = true; // Erzwinge true, wenn current true ist
+    trPlannerStore.updateOrbCalculatorTargetBoost(key, true); // Erzwinge true, wenn current true ist
   } else {
-    targetBoosts.value[key] = !targetBoosts.value[key]; // Sonst normal umschalten
+    const newValue = !targetBoosts.value[key];
+    trPlannerStore.updateOrbCalculatorTargetBoost(key, newValue); // Sonst normal umschalten
   }
   recalculateAll();
 }
 
 function toggleCurrentBoolean(key) {
-  currentBoosts.value[key] = !currentBoosts.value[key];
+  const newValue = !currentBoosts.value[key];
+  trPlannerStore.updateOrbCalculatorCurrentBoost(key, newValue);
   
   // Wenn current aktiviert wird, muss target auch aktiviert werden
-  if (currentBoosts.value[key]) {
-    targetBoosts.value[key] = true;
+  if (newValue) {
+    trPlannerStore.updateOrbCalculatorTargetBoost(key, true);
   }
   
   recalculateAll();
@@ -1186,6 +1250,7 @@ function debugVoidBadgeStatus() {
 
 // In recalculateAll() hinzufügen:
 function recalculateAll() {
+  // Trigger reactivity update
   currentBoosts.value = { ...currentBoosts.value };
   targetBoosts.value = { ...targetBoosts.value };
   
@@ -1200,14 +1265,14 @@ function recalculateAll() {
 }
 
 function resetToCurrentStats() {
-  // Reset target values to current values
-  targetBoosts.value = { ...currentBoosts.value };
+  // Reset target values to current values using store
+  trPlannerStore.updateOrbCalculatorTargetBoosts({ ...currentBoosts.value });
   recalculateAll();
 }
 
 function copyTargetsToCurrent() {
-  // Copy target values to current values
-  currentBoosts.value = { ...targetBoosts.value };
+  // Copy target values to current values using store
+  trPlannerStore.updateOrbCalculatorCurrentBoosts({ ...targetBoosts.value });
   recalculateAll();
 }
 
@@ -1215,53 +1280,8 @@ function cancelAndClose() {
   emit('close');
 }
 
-// Korrigierte Funktion für die Speicherung im LocalStorage
-function saveOrbCalcToLocalStorage() {
-  try {
-    // Speichern der aktuellen Werte
-    const orbCalcData = {
-      currentBoosts: { ...currentBoosts.value },
-      targetBoosts: { ...targetBoosts.value },
-      trCount: trCount.value,
-      allTimeOrbs: allTimeOrbs.value, // Wichtig: allTimeOrbs direkt speichern
-      lastUpdated: new Date().toISOString()
-    };
-    
-    localStorage.setItem('trplanner_orbcalc', JSON.stringify(orbCalcData));
-    console.log('Orb Calculator data saved to localStorage with allTimeOrbs:', allTimeOrbs.value);
-  } catch (e) {
-    console.error("Error saving to localStorage:", e);
-  }
-}
-
-// Laden der Werte aus dem LocalStorage
-function loadOrbCalcFromLocalStorage() {
-  try {
-    const savedData = localStorage.getItem('trplanner_orbcalc');
-    if (savedData) {
-      const parsedData = JSON.parse(savedData);
-      
-      // Nur übernehmen, wenn Daten vorhanden
-      if (parsedData.currentBoosts) currentBoosts.value = parsedData.currentBoosts;
-      if (parsedData.targetBoosts) targetBoosts.value = parsedData.targetBoosts;
-      if (parsedData.trCount !== undefined) trCount.value = parsedData.trCount;
-      
-      // WICHTIG: All-Time-Orbs laden
-      if (parsedData.allTimeOrbs !== undefined) {
-        allTimeOrbs.value = parsedData.allTimeOrbs;
-        allTimeOrbsDisplay.value = formatSuffixWithDecimals(parsedData.allTimeOrbs, 2);
-        console.log('Loaded allTimeOrbs from localStorage:', parsedData.allTimeOrbs);
-      }
-      
-      console.log('Orb Calculator data loaded from localStorage');
-      
-      // Nach dem Laden neu berechnen
-      recalculateAll();
-    }
-  } catch (e) {
-    console.error("Error loading from localStorage:", e);
-  }
-}
+// Store-Funktionen ersetzen die lokalen localStorage-Funktionen
+// Alle Daten werden automatisch über den Store mit useStorage synchronisiert
 
 function updateBoostCurrent(boost, newValue) {
   // Validate value
@@ -1271,13 +1291,13 @@ function updateBoostCurrent(boost, newValue) {
   if (boost.max !== undefined) {
     validValue = Math.min(validValue, boost.max);
   }
-  
-  // Update value
-  currentBoosts.value[boost.key] = validValue;
+
+  // Update value in store
+  trPlannerStore.updateOrbCalculatorCurrentBoost(boost.key, validValue);
   
   // Wenn current erhöht wird, muss target ggf. angepasst werden
   if (validValue > (targetBoosts.value[boost.key] || 0)) {
-    targetBoosts.value[boost.key] = validValue;
+    trPlannerStore.updateOrbCalculatorTargetBoost(boost.key, validValue);
   }
   
   // Update calculations
@@ -1390,7 +1410,7 @@ watch(() => getGemDataFromLocalStorage(), (newGemData, oldGemData) => {
 onMounted(() => {
   // Bestehender Code...
   initData();
-  loadOrbCalcFromLocalStorage();
+  // loadOrbCalcFromLocalStorage() entfernt - Store übernimmt das automatisch
   
   // Auto-Scroll beim Tabben einrichten
   setupAutoScrollOnTabbing();
@@ -1404,10 +1424,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('gemDataChanged', handleGemDataChanged);
 });
 
-// Watch für Änderungen und lokales Speichern
-watch([currentBoosts, targetBoosts, trCount, allTimeOrbs], () => {
-  saveOrbCalcToLocalStorage();
-}, { deep: true });
+// Watch für Änderungen - Store übernimmt automatisch das Speichern mit useStorage
+// Watcher entfernt, da Store automatisch mit localStorage synchronisiert
 
 // Watch for prop changes
 watch(() => props.isVisible, (newValue) => {
@@ -1424,9 +1442,9 @@ watch(() => props.currentStats, (newValue) => {
 
 // Initialize
 onMounted(() => {
-  // Erst Props übernehmen, dann lokale Daten wenn vorhanden
+  // Props werden automatisch über initData() übernommen
   initData();
-  loadOrbCalcFromLocalStorage();
+  // loadOrbCalcFromLocalStorage() entfernt - Store übernimmt das automatisch
 });
 
 function toggleCreateOptions() {
@@ -1434,6 +1452,7 @@ function toggleCreateOptions() {
 }
 
 function resetForm() {
+  trPlannerStore.resetOrbCalculator();
   resetToCurrentStats();
 }
 
@@ -1703,16 +1722,12 @@ function finalizeAllTimeOrbsInput() {
   const parsed = parseNumberWithSuffix(input);
   
   if (parsed !== null) {
-    allTimeOrbs.value = parsed;
+    allTimeOrbs.value = parsed; // Dies aktualisiert automatisch den Store durch das computed property
     const formattedValue = formatSuffixWithDecimals(parsed, 2);
     allTimeOrbsDisplay.value = formattedValue;
-    
-    // Direkt nach dem Ändern der All-Time-Orbs den Wert ins localStorage speichern
-    saveOrbCalcToLocalStorage();
   } else {
-    allTimeOrbs.value = 0;
+    allTimeOrbs.value = 0; // Dies aktualisiert automatisch den Store durch das computed property
     allTimeOrbsDisplay.value = "0.00";
-    saveOrbCalcToLocalStorage();
   }
   
   // Berechnungen aktualisieren

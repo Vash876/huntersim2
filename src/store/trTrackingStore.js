@@ -1,892 +1,518 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { generateId } from '@/utils/base58';
+
+// Default available resources that users can choose from
+const DEFAULT_AVAILABLE_RESOURCES = [
+  { id: 'hours-in-tr', name: 'Hours in TR', color: '#ffffff', category: 'main' },
+  { id: 'oo-accum', name: 'OO (Accum)', color: '#a200ff', category: 'main' },
+  { id: 'lr-ticks', name: 'LR Ticks', color: '#ffffff', category: 'main' },
+  { id: 'lr-count', name: 'LR Count', color: '#ffffff', category: 'main' },
+  { id: 'loops-filled', name: 'Loops Filled', color: '#ffffff', category: 'main' },
+  { id: 'loop-mods-purchased', name: 'Loop Mods Purchased', color: '#ff0000', category: 'main' },
+  { id: 'attgn3-buff', name: 'AttGN3 Buff', color: '#00d9ff', category: 'main' },
+  { id: 'cells', name: 'Cells', color: '#00b90f', category: 'resources' },
+  { id: 'mp', name: 'MP', color: '#ff0000', category: 'resources' },
+  { id: 'mp-accum', name: 'MP (Accum)', color: '#ff0000', category: 'resources' },
+  { id: 'shards', name: 'Shards', color: '#00d9ff', category: 'resources' },
+  { id: 'rp', name: 'RP', color: '#ffa600', category: 'resources' },
+  { id: 'ap', name: 'AP', color: '#464cff', category: 'resources' },
+  { id: 'blueprints', name: 'Blueprints', color: '#ffffff', category: 'zeus' },
+  { id: 'f1-1-difar', name: 'F1-1 Difar', color: '#ffffff', category: 'zeus' },
+  { id: 'inno-cores', name: 'Inno Cores', color: '#ffffff', category: 'zeus' },
+  { id: 'daily-farm-frags', name: 'Daily Farm Frags', color: '#ffffff', category: 'zeus' },
+  { id: 'current-camp', name: 'Current Camp', color: '#ffffff', category: 'camp' },
+  { id: 'camp-timer', name: 'Camp Timer', color: '#ffffff', category: 'camp' },
+  { id: 'notes', name: 'Notes', color: '#ffffff', category: 'other' },
+];
+
+// Default selected resources for new users
+const DEFAULT_SELECTED_RESOURCES = [
+  'hours-in-tr',
+  'oo-accum', 
+  'attgn3-buff',
+  'cells',
+  'mp',
+  'mp-accum',
+  'shards',
+  'rp',
+  'ap',
+  'notes'
+];
+
+// Helper function to get default selected resources
+function getDefaultSelectedResources() {
+  return DEFAULT_AVAILABLE_RESOURCES.filter(resource => 
+    DEFAULT_SELECTED_RESOURCES.includes(resource.id)
+  );
+}
 
 export const useTRTrackingStore = defineStore('trTracking', () => {
   // State
-  const isSheetConnected = ref(false);
-  const sheetUrl = ref('');
-  const sheetInfo = ref(null);
-  const trackingPlans = ref([]);
-  const activeTrackingPlan = ref(null);
-  const connectionError = ref(null);
-  const isLoading = ref(false);
+  const availableResources = ref([...DEFAULT_AVAILABLE_RESOURCES]);
+  const selectedResources = ref([]);
+  const trTracks = ref([]);
+  const isInitialized = ref(false);
 
   // Computed
-  const activePlansCount = computed(() => {
-    return trackingPlans.value.filter(plan => plan.status === 'active').length;
-  });
+  const activeTracks = computed(() => trTracks.value.filter(track => track.isActive));
+  const completedTracks = computed(() => trTracks.value.filter(track => !track.isActive));
 
-  const completedPlansCount = computed(() => {
-    return trackingPlans.value.filter(plan => plan.status === 'completed').length;
-  });
+  // Methods
+  function init() {
+    if (isInitialized.value) return;
+    
+    loadFromStorage();
+    isInitialized.value = true;
+  }
 
-  const totalTrackingDays = computed(() => {
-    return trackingPlans.value.reduce((total, plan) => {
-      return total + (plan.daysActive || 0);
-    }, 0);
-  });
-
-  const hasActiveConnection = computed(() => {
-    const connected = isSheetConnected.value && sheetUrl.value && !connectionError.value;
-    console.log('hasActiveConnection check:', {
-      isSheetConnected: isSheetConnected.value,
-      hasSheetUrl: !!sheetUrl.value,
-      sheetUrl: sheetUrl.value,
-      hasConnectionError: !!connectionError.value,
-      result: connected
-    });
-    return connected;
-  });
-
-  // Actions
-
-  /**
-   * Load connection state from localStorage
-   */
-  function loadConnectionState() {
+  function loadFromStorage() {
     try {
-      const saved = localStorage.getItem('tr-tracking-connection');
-      if (saved) {
-        const data = JSON.parse(saved);
-        isSheetConnected.value = data.connected || false;
-        sheetUrl.value = data.url || '';
-        sheetInfo.value = data.sheetInfo || null;
-        
-        // Validate connection is still working
-        if (isSheetConnected.value && sheetUrl.value) {
-          validateConnection();
-        }
+      // Load selected resources
+      const savedSelectedResources = localStorage.getItem('tr_tracking_selected_resources');
+      if (savedSelectedResources) {
+        selectedResources.value = JSON.parse(savedSelectedResources);
+      } else {
+        // Set default selected resources for new users
+        selectedResources.value = getDefaultSelectedResources();
+        console.log('Setting default selected resources for new user:', selectedResources.value.map(r => r.id));
+      }
+
+      // Load custom resources and merge with defaults
+      const savedCustomResources = localStorage.getItem('tr_tracking_custom_resources');
+      if (savedCustomResources) {
+        const customResources = JSON.parse(savedCustomResources);
+        // Merge custom resources with defaults, avoiding duplicates
+        const allResources = [...DEFAULT_AVAILABLE_RESOURCES];
+        customResources.forEach(custom => {
+          if (!allResources.find(res => res.id === custom.id)) {
+            allResources.push(custom);
+          }
+        });
+        availableResources.value = allResources;
+      }
+
+      // Load TR tracks
+      const savedTracks = localStorage.getItem('tr_tracking_tracks');
+      if (savedTracks) {
+        trTracks.value = JSON.parse(savedTracks);
       }
     } catch (error) {
-      console.error('Error loading connection state:', error);
-      resetConnection();
+      console.error('Error loading TR tracking data from storage:', error);
+      // Fallback to defaults on error
+      selectedResources.value = getDefaultSelectedResources();
     }
   }
 
-  /**
-   * Save connection state to localStorage
-   */
-  function saveConnectionState() {
+  function saveToStorage() {
     try {
-      const data = {
-        connected: isSheetConnected.value,
-        url: sheetUrl.value,
-        sheetInfo: sheetInfo.value,
-        savedAt: new Date().toISOString()
-      };
-      localStorage.setItem('tr-tracking-connection', JSON.stringify(data));
+      localStorage.setItem('tr_tracking_selected_resources', JSON.stringify(selectedResources.value));
+      localStorage.setItem('tr_tracking_tracks', JSON.stringify(trTracks.value));
+      
+      // Save only custom resources (not the defaults)
+      const customResources = availableResources.value.filter(
+        resource => !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
+      );
+      localStorage.setItem('tr_tracking_custom_resources', JSON.stringify(customResources));
     } catch (error) {
-      console.error('Error saving connection state:', error);
+      console.error('Error saving TR tracking data to storage:', error);
     }
   }
 
-  function postWithJSONP(url, data) {
-    return new Promise((resolve, reject) => {
-      const callbackName = 'jsonp_post_callback_' + Date.now();
-      const script = document.createElement('script');
-      
-      // Set up callback
-      window[callbackName] = function(response) {
-        resolve(response);
-        document.head.removeChild(script);
-        delete window[callbackName];
-      };
-      
-      // Handle errors
-      script.onerror = function() {
-        reject(new Error('JSONP POST request failed'));
-        document.head.removeChild(script);
-        delete window[callbackName];
-      };
-      
-      // Create request URL with data as query params
-      const params = new URLSearchParams({
-        action: data.action,
-        resetNumber: data.resetNumber,
-        startDate: data.startDate, // NEU: startDate hinzufügen!
-        planName: data.planName,
-        goals: JSON.stringify(data.goals),
-        startingValues: JSON.stringify(data.startingValues),
-        customResources: JSON.stringify(data.customResources),
-        callback: callbackName
-      });
-      
-      script.src = url + '?' + params.toString();
-      document.head.appendChild(script);
-      
-      // Timeout after 15 seconds
-      setTimeout(() => {
-        if (window[callbackName]) {
-          reject(new Error('JSONP POST request timeout'));
-          document.head.removeChild(script);
-          delete window[callbackName];
-        }
-      }, 15000);
-    });
+  function updateSelectedResources(resources) {
+    selectedResources.value = resources;
+    saveToStorage();
   }
 
-  function fetchWithJSONP(url) {
-    return new Promise((resolve, reject) => {
-      const callbackName = 'jsonp_callback_' + Date.now();
-      const script = document.createElement('script');
-      
-      window[callbackName] = function(response) {
-        resolve(response);
-        document.head.removeChild(script);
-        delete window[callbackName];
-      };
-      
-      script.onerror = () => reject(new Error('JSONP failed'));
-      script.src = url + '&callback=' + callbackName;
-      document.head.appendChild(script);
-      
-      setTimeout(() => {
-        if (window[callbackName]) {
-          reject(new Error('JSONP timeout'));
-          document.head.removeChild(script);
-          delete window[callbackName];
-        }
-      }, 10000);
-    });
+  function addCustomResource(resource) {
+    const newResource = {
+      ...resource,
+      id: resource.id || generateId(),
+      category: resource.category || 'custom'
+    };
+    
+    availableResources.value.push(newResource);
+    saveToStorage();
+    return newResource;
   }
 
-  /**
-   * Connect to Google Sheet
-   */
-  async function connectSheet(connectionData) {
+  function removeCustomResource(resourceId) {
+    // Don't allow removing default resources
+    const isDefault = DEFAULT_AVAILABLE_RESOURCES.find(res => res.id === resourceId);
+    if (isDefault) return false;
+
+    availableResources.value = availableResources.value.filter(res => res.id !== resourceId);
+    
+    // Also remove from selected resources if it was selected
+    selectedResources.value = selectedResources.value.filter(res => res.id !== resourceId);
+    
+    saveToStorage();
+    return true;
+  }
+
+  function updateStandardResourceColor(resourceId, color) {
+    const resource = availableResources.value.find(res => res.id === resourceId);
+    if (!resource) return false;
+
+    resource.color = color;
+    saveToStorage();
+    return true;
+  }
+
+  function updateCustomResource(resourceId, updates) {
+    const resourceIndex = availableResources.value.findIndex(res => res.id === resourceId);
+    if (resourceIndex === -1) return false;
+
+    // Don't allow updating default resources' names, only custom ones
+    const isDefault = DEFAULT_AVAILABLE_RESOURCES.find(res => res.id === resourceId);
+    if (isDefault && updates.name) {
+      delete updates.name; // Remove name update for default resources
+    }
+
+    availableResources.value[resourceIndex] = {
+      ...availableResources.value[resourceIndex],
+      ...updates
+    };
+
+    saveToStorage();
+    return true;
+  }
+
+  function createTRTrack(trackData) {
+    const newTrack = {
+      id: generateId(),
+      name: trackData.name,
+      startDate: trackData.startDate || new Date().toISOString().split('T')[0],
+      endDate: null,
+      isActive: true,
+      entries: [],
+      notes: trackData.notes || '',
+      resourceOrder: generateDefaultResourceOrder(), // Set default resource order based on store order
+      trCount: trackData.trCount || null,
+      initialValues: trackData.initialValues || null,
+      targetGoals: trackData.targetGoals || null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    trTracks.value.push(newTrack);
+    saveToStorage();
+    return newTrack;
+  }
+
+  // Helper function to generate default resource order based on store order and selected resources
+  function generateDefaultResourceOrder() {
+    // Get the IDs of all selected resources
+    const selectedResourceIds = selectedResources.value.map(r => r.id);
+    
+    // Create an ordered array based on the store's availableResources order
+    const defaultOrder = [];
+    
+    // Go through availableResources in their store order and add selected ones
+    availableResources.value.forEach(storeResource => {
+      if (selectedResourceIds.includes(storeResource.id)) {
+        defaultOrder.push(storeResource.id);
+      }
+    });
+    
+    // Add any selected resources that might not be in the store (fallback)
+    selectedResourceIds.forEach(selectedId => {
+      if (!defaultOrder.includes(selectedId)) {
+        defaultOrder.push(selectedId);
+      }
+    });
+    
+    console.log('Generated default resource order:', defaultOrder);
+    return defaultOrder;
+  }
+
+  function updateTRTrack(trackData) {
+    const index = trTracks.value.findIndex(track => track.id === trackData.id);
+    if (index === -1) return false;
+
+    trTracks.value[index] = {
+      ...trTracks.value[index],
+      ...trackData,
+      updatedAt: new Date().toISOString()
+    };
+    
+    saveToStorage();
+    return true;
+  }
+
+  function updateResourceOrder(trackId, resourceOrder) {
+    const track = trTracks.value.find(track => track.id === trackId);
+    if (!track) {
+      console.warn('Track not found for resource order update:', trackId);
+      return false;
+    }
+
+    console.log('Updating resource order in store:', trackId, resourceOrder);
+    track.resourceOrder = resourceOrder;
+    track.updatedAt = new Date().toISOString();
+    
+    saveToStorage();
+    console.log('Resource order updated and saved to storage');
+    return true;
+  }
+
+  function deleteTRTrack(trackId) {
+    const index = trTracks.value.findIndex(track => track.id === trackId);
+    if (index === -1) return false;
+
+    trTracks.value.splice(index, 1);
+    saveToStorage();
+    return true;
+  }
+
+  function completeTRTrack(trackId) {
+    const track = trTracks.value.find(track => track.id === trackId);
+    if (!track) return false;
+
+    track.isActive = false;
+    track.endDate = new Date().toISOString().split('T')[0];
+    track.updatedAt = new Date().toISOString();
+    
+    saveToStorage();
+    return true;
+  }
+
+  function addEntry(trackId, entryData) {
+    const track = trTracks.value.find(track => track.id === trackId);
+    if (!track) return false;
+
+    const newEntry = {
+      id: generateId(),
+      date: entryData.date,
+      values: entryData.values, // Object with resourceId: value pairs
+      notes: entryData.notes || '',
+      createdAt: new Date().toISOString()
+    };
+
+    track.entries.push(newEntry);
+    track.updatedAt = new Date().toISOString();
+    
+    // Sort entries by date (newest first)
+    track.entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    saveToStorage();
+    return newEntry;
+  }
+
+  function updateEntry(trackId, entryId, entryData) {
+    const track = trTracks.value.find(track => track.id === trackId);
+    if (!track) return false;
+
+    const entryIndex = track.entries.findIndex(entry => entry.id === entryId);
+    if (entryIndex === -1) return false;
+
+    track.entries[entryIndex] = {
+      ...track.entries[entryIndex],
+      ...entryData,
+      updatedAt: new Date().toISOString()
+    };
+
+    track.updatedAt = new Date().toISOString();
+    
+    // Re-sort entries by date
+    track.entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    saveToStorage();
+    return true;
+  }
+
+  function deleteEntry(trackId, entryId) {
+    const track = trTracks.value.find(track => track.id === trackId);
+    if (!track) return false;
+
+    const entryIndex = track.entries.findIndex(entry => entry.id === entryId);
+    if (entryIndex === -1) return false;
+
+    track.entries.splice(entryIndex, 1);
+    track.updatedAt = new Date().toISOString();
+    
+    saveToStorage();
+    return true;
+  }
+
+  function getTRTrack(trackId) {
+    return trTracks.value.find(track => track.id === trackId);
+  }
+
+  function getTrackProgress(trackId, resourceId) {
+    const track = getTRTrack(trackId);
+    if (!track || track.entries.length === 0) return null;
+
+    const sortedEntries = [...track.entries].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const values = sortedEntries.map(entry => entry.values[resourceId] || 0);
+    
+    if (values.length < 2) return null;
+
+    const firstValue = values[0];
+    const lastValue = values[values.length - 1];
+    const totalGain = lastValue - firstValue;
+    const dayCount = Math.max(1, (new Date(sortedEntries[sortedEntries.length - 1].date) - new Date(sortedEntries[0].date)) / (1000 * 60 * 60 * 24));
+    const avgPerDay = totalGain / dayCount;
+
+    return {
+      firstValue,
+      lastValue,
+      totalGain,
+      dayCount,
+      avgPerDay,
+      values: values,
+      dates: sortedEntries.map(entry => entry.date)
+    };
+  }
+
+  function exportData() {
+    return {
+      selectedResources: selectedResources.value,
+      customResources: availableResources.value.filter(
+        resource => !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
+      ),
+      trTracks: trTracks.value
+    };
+  }
+
+  function importData(data) {
     try {
-      isLoading.value = true;
-      connectionError.value = null;
-
-      // Save connection data IMMEDIATELY
-      isSheetConnected.value = true;
-      sheetUrl.value = connectionData.url;
-      sheetInfo.value = connectionData.sheetInfo;
-      
-      console.log('Store: Saved sheet URL:', sheetUrl.value); // Debug log
-      
-      saveConnectionState();
-      
-      // Optional: Test the connection
-      const isValid = await validateSheetConnection(connectionData.url);
-      if (!isValid) {
-        console.warn('Connection validation failed, but continuing...');
+      if (data.selectedResources) {
+        selectedResources.value = data.selectedResources;
       }
       
-      // Load existing tracking plans
-      await loadTrackingPlans();
-
+      if (data.customResources) {
+        const allResources = [...DEFAULT_AVAILABLE_RESOURCES, ...data.customResources];
+        availableResources.value = allResources;
+      }
+      
+      if (data.trTracks) {
+        trTracks.value = data.trTracks;
+      }
+      
+      saveToStorage();
       return true;
     } catch (error) {
-      console.error('Error connecting sheet:', error);
-      connectionError.value = error.message;
-      // Don't reset connection on error, keep the URL
-      throw error;
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  /**
-   * Disconnect from Google Sheet
-   */
-  function disconnectSheet() {
-    isSheetConnected.value = false;
-    sheetUrl.value = '';
-    sheetInfo.value = null;
-    trackingPlans.value = [];
-    activeTrackingPlan.value = null;
-    connectionError.value = null;
-    
-    // Clear localStorage
-    localStorage.removeItem('tr-tracking-connection');
-    localStorage.removeItem('tr-tracking-plans');
-  }
-
-  /**
-   * Reset connection state
-   */
-  function resetConnection() {
-    isSheetConnected.value = false;
-    sheetUrl.value = '';
-    sheetInfo.value = null;
-    connectionError.value = null;
-  }
-
-  /**
-   * Validate existing connection
-   */
-  async function validateConnection() {
-    if (!sheetUrl.value) return false;
-
-    try {
-      const response = await fetch(sheetUrl.value + '?action=validateConnection', {
-        method: 'GET',
-        mode: 'cors'
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      if (data.success && data.data.connected) {
-        connectionError.value = null;
-        // Update sheet info if needed
-        if (data.data.spreadsheetName) {
-          sheetInfo.value = {
-            ...sheetInfo.value,
-            name: data.data.spreadsheetName,
-            sheetCount: data.data.sheetCount,
-            trackingPlans: data.data.traversalSheets
-          };
-          saveConnectionState();
-        }
-        return true;
-      } else {
-        throw new Error('Connection validation failed');
-      }
-    } catch (error) {
-      console.error('Connection validation failed:', error);
-      connectionError.value = 'Connection lost: ' + error.message;
+      console.error('Error importing TR tracking data:', error);
       return false;
     }
   }
 
-  /**
-   * Validate sheet connection URL
-   */
-  async function validateSheetConnection(url) {
-    try {
-      const response = await fetch(url + '?action=validateConnection', {
-        method: 'GET',
-        mode: 'cors'
-      });
-
-      if (!response.ok) return false;
-      
-      const data = await response.json();
-      return data.success && data.data.connected;
-    } catch (error) {
-      console.error('Sheet validation failed:', error);
-      return false;
-    }
+  function clearAllData() {
+    selectedResources.value = [];
+    trTracks.value = [];
+    availableResources.value = [...DEFAULT_AVAILABLE_RESOURCES];
+    
+    localStorage.removeItem('tr_tracking_selected_resources');
+    localStorage.removeItem('tr_tracking_tracks');
+    localStorage.removeItem('tr_tracking_custom_resources');
   }
 
-  /**
-   * Load tracking plans from sheet
-   */
-  async function loadTrackingPlans() {
-    console.log('=== LOADING TRACKING PLANS ===');
-    
-    if (!hasActiveConnection.value) {
-      console.log('❌ No active sheet connection');
-      return;
-    }
+  function resetToDefaults() {
+    selectedResources.value = getDefaultSelectedResources();
+    saveToStorage();
+    console.log('Reset to default selected resources:', selectedResources.value.map(r => r.id));
+  }
 
-    isLoading.value = true;
-    
+  // Import/Export methods for sharing between users
+  function importTrackData(track, options = {}) {
     try {
-      console.log('📡 Fetching tracking plans from sheet...');
-      
-      const requestData = {
-        action: 'getTraversalSheets'
+      // Generate a new ID for the imported track to avoid conflicts
+      const newTrack = {
+        ...track,
+        id: generateId(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
-      const result = await postEntryWithJSONP(sheetUrl.value, requestData);
-      console.log('📨 Raw plans result:', result);
+      // Generate new IDs for all entries
+      newTrack.entries = track.entries.map(entry => ({
+        ...entry,
+        id: generateId()
+      }));
+
+      // Add the track
+      trTracks.value.push(newTrack);
+      saveToStorage();
       
-      if (result && result.success && result.data && result.data.sheets) {
-        console.log('✅ Plans loaded successfully:', result.data.sheets.length);
-        
-        // NEU: Transformiere zu Tracking Plans mit Resources UND korrigierter Entry-Anzahl
-        const transformedPlans = await Promise.all(
-          result.data.sheets.map(async (sheet) => {
-            // KORRIGIERT: Berechne Resources für diesen Plan (inkl. _realEntryCount)
-            const resourcesData = await calculatePlanResources(sheet.name);
-            const realEntryCount = resourcesData._realEntryCount || 0;
-            const realPlanName = await getPlanNameFromSheet(sheet.name);
-            
-            // Entferne _realEntryCount aus resources
-            const { _realEntryCount, ...resources } = resourcesData;
-            
-            const plan = {
-              id: sheet.name,
-              name: realPlanName,
-              resetNumber: sheet.resetNumber,
-              status: 'active',
-              daysActive: realEntryCount, // KORRIGIERT: Verwende echte Entry-Anzahl
-              entriesCount: realEntryCount, // KORRIGIERT: Verwende echte Entry-Anzahl
-              lastUpdate: sheet.lastModified,
-              createdAt: sheet.lastModified,
-              goals: {},
-              totalGoals: 0,
-              goalsAchieved: 0,
-              resources: resources // Ohne _realEntryCount
-            };
-            
-            return plan;
-          })
-        );
-        
-        trackingPlans.value = transformedPlans;
-        console.log('📊 Transformed tracking plans:', transformedPlans);
-        
-        saveTrackingPlansCache();
-      } else {
-        console.error('❌ Invalid plans response:', result);
-        trackingPlans.value = [];
-      }
+      return newTrack;
     } catch (error) {
-      console.error('💥 Error loading tracking plans:', error);
-      trackingPlans.value = [];
-    } finally {
-      isLoading.value = false;
+      console.error('Error importing track data:', error);
+      throw new Error('Failed to import track data');
     }
   }
 
-  async function getPlanNameFromSheet(sheetName) {
+  function importMultipleTracksData(tracks, resources = [], options = {}) {
     try {
-      const url = sheetUrl.value + '?action=getSheetData&sheetName=' + encodeURIComponent(sheetName);
-      
-      const response = await fetch(url, { method: 'GET', mode: 'cors' });
-      const data = response.ok ? await response.json() : await fetchWithJSONP(url);
-      
-      if (data?.success && data?.data?.data && data.data.data.length > 0) {
-        // Erste Zeile der Daten = Row 2, Spalte B = Index 1
-        const planName = data.data.data[0]?.[1];
-        return planName ? planName.toString().trim() : null;
+      const importedTracks = [];
+
+      // Import resources if requested
+      if (options.replaceResources && resources.length > 0) {
+        selectedResources.value = [...resources];
       }
-    } catch (error) {
-      console.error('Error getting plan name:', error);
-    }
-    
-    return null;
-  }
 
-  /**
-   * NEUE FUNCTION: Berechne Resources für einen Plan
-   */
-  async function calculatePlanResources(planId) {
-    try {
-      const url = sheetUrl.value + '?action=getSheetData&sheetName=' + encodeURIComponent(planId);
-      
-      let data;
-      try {
-        const response = await fetch(url, { method: 'GET', mode: 'cors' });
-        data = response.ok ? await response.json() : await fetchWithJSONP(url);
-      } catch {
-        data = await fetchWithJSONP(url);
-      }
-      
-      if (!data?.success || !data?.data?.data) {
-        return { cells: { current: 0, highest: 0 }, mp: { current: 0, highest: 0 }, shards: { current: 0, highest: 0 }, rp: { current: 0, highest: 0 }, ap: { current: 0, highest: 0 } };
-      }
-      
-      const resources = { cells: { current: 0, highest: 0 }, mp: { current: 0, highest: 0 }, shards: { current: 0, highest: 0 }, rp: { current: 0, highest: 0 }, ap: { current: 0, highest: 0 } };
-      
-      // KORRIGIERT: Finde Spalten-Indizes mit spezifischen MP-Varianten
-      const headers = data.data.headers;
-      const cellsIndex = headers.findIndex(h => h && h.toString().toLowerCase().includes('cells'));
-      
-      // KORRIGIERT: MP mit mehreren Varianten wie in PlanView
-      let mpIndex = -1;
-      const mpVariants = ['MP (Accumulated)', 'MP', 'mp', 'MP on Hand', 'MP (Accum)', 'mp accumulated'];
-      for (const variant of mpVariants) {
-        mpIndex = headers.findIndex(h => {
-          if (!h) return false;
-          const headerLower = h.toString().toLowerCase().trim();
-          const variantLower = variant.toLowerCase().trim();
-          return headerLower === variantLower;
-        });
-        if (mpIndex !== -1) {
-          console.log(`Found MP column with variant "${variant}" at index ${mpIndex}`);
-          break;
-        }
-      }
-      
-      const shardsIndex = headers.findIndex(h => h && h.toString().toLowerCase().includes('shards'));
-      const rpIndex = headers.findIndex(h => h && h.toString().toLowerCase().includes('rp'));
-      const apIndex = headers.findIndex(h => h && h.toString().toLowerCase().includes('ap'));
-      
-      console.log('Column indices:', { cellsIndex, mpIndex, shardsIndex, rpIndex, apIndex });
-      
-      // KORRIGIERT: Zähle nur echte Entries (mit Timestamp)
-      let realEntryCount = 0;
-      
-      // Durchlaufe alle Datenzeilen
-      data.data.data.forEach(row => {
-        // KORRIGIERT: Prüfe auf echten Timestamp-Wert (nicht nur formatierte Zelle)
-        const timestamp = row[2]; // Spalte C (Log Timestamp)
-        const hasRealTimestamp = timestamp && 
-                                timestamp.toString().trim() !== '' && 
-                                timestamp.toString().trim() !== 'undefined' &&
-                                timestamp.toString().trim() !== 'null';
-        
-        if (!hasRealTimestamp) return; // Skip leere oder formatierte Zeilen
-        
-        // Diese Zeile hat echte Daten
-        realEntryCount++;
-        
-        [
-          { key: 'cells', index: cellsIndex },
-          { key: 'mp', index: mpIndex },
-          { key: 'shards', index: shardsIndex },
-          { key: 'rp', index: rpIndex },
-          { key: 'ap', index: apIndex }
-        ].forEach(({ key, index }) => {
-          if (index !== -1) {
-            const value = parseFloat(row[index]);
-            if (!isNaN(value) && value > 0) {
-              resources[key].current = value;
-              if (value > resources[key].highest) {
-                resources[key].highest = value;
-              }
-            }
-          }
-        });
-      });
-      
-      console.log(`Resources calculated for ${planId}:`, resources);
-      console.log(`Real entry count for ${planId}: ${realEntryCount}`);
-      
-      // KORRIGIERT: Gib auch die echte Entry-Anzahl zurück
-      return {
-        ...resources,
-        _realEntryCount: realEntryCount
-      };
-    } catch (error) {
-      console.error(`Error calculating resources for ${planId}:`, error);
-      return { cells: { current: 0, highest: 0 }, mp: { current: 0, highest: 0 }, shards: { current: 0, highest: 0 }, rp: { current: 0, highest: 0 }, ap: { current: 0, highest: 0 }, _realEntryCount: 0 };
-    }
-  }
-
-  /**
-   * Load detailed data for all tracking plans
-   */
-  async function loadTrackingPlansDetails() {
-    const detailPromises = trackingPlans.value.map(async (plan) => {
-      try {
-        const response = await fetch(sheetUrl.value + `?action=getSheetData&sheetName=${encodeURIComponent(plan.id)}`, {
-          method: 'GET',
-          mode: 'cors'
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            // Update plan with detailed data
-            updatePlanWithSheetData(plan, data.data);
-          }
-        }
-      } catch (error) {
-        console.error(`Error loading details for ${plan.id}:`, error);
-      }
-    });
-
-    await Promise.allSettled(detailPromises);
-  }
-
-  /**
-   * Update plan object with sheet data
-   */
-  function updatePlanWithSheetData(plan, sheetData) {
-    // Update goals
-    plan.goals = sheetData.goals || {};
-    plan.totalGoals = Object.keys(plan.goals).length;
-
-    // Update resources (get latest values from data)
-    if (sheetData.data && sheetData.data.length > 0) {
-      const latestEntry = sheetData.data[sheetData.data.length - 1];
-      const headers = sheetData.headers;
-      
-      plan.resources = {};
-      headers.forEach((header, index) => {
-        if (['cells', 'mp', 'shards', 'rp'].includes(header.toLowerCase())) {
-          const current = latestEntry[index] || 0;
-          const start = sheetData.data[0] ? sheetData.data[0][index] || 0 : 0;
-          
-          plan.resources[header.toLowerCase()] = {
-            current: current,
-            start: start,
-            gain: current - start
-          };
-        }
-      });
-
-      // Calculate goals achieved
-      plan.goalsAchieved = Object.entries(plan.goals).filter(([resource, goal]) => {
-        const current = plan.resources[resource]?.current || 0;
-        return current >= goal;
-      }).length;
-
-      // Update status based on goals
-      if (plan.goalsAchieved === plan.totalGoals && plan.totalGoals > 0) {
-        plan.status = 'completed';
-      } else if (plan.entriesCount > 0) {
-        plan.status = 'active';
-      }
-    }
-
-    plan.lastUpdate = sheetData.lastUpdate || plan.lastUpdate;
-  }
-
-  /**
-   * Create new tracking plan
-   */
-  async function createTrackingPlan(planData) {
-    console.log('createTrackingPlan called with:', planData);
-    console.log('Store state:', {
-      isSheetConnected: isSheetConnected.value,
-      sheetUrl: sheetUrl.value,
-      connectionError: connectionError.value,
-      hasActiveConnection: hasActiveConnection.value
-    });
-
-    if (!hasActiveConnection.value) {
-      console.error('No active connection details:', {
-        isSheetConnected: isSheetConnected.value,
-        sheetUrl: sheetUrl.value,
-        connectionError: connectionError.value
-      });
-      throw new Error('No active sheet connection');
-    }
-
-    try {
-      isLoading.value = true;
-
-      const requestData = {
-        action: 'createTraversalSheet',
-        resetNumber: planData.resetNumber,
-        startDate: planData.startDate, // NEU: startDate hinzufügen!
-        planName: planData.planName,
-        goals: planData.goals,
-        startingValues: planData.startingValues,
-        customResources: planData.customResources
-      };
-
-      console.log('Creating tracking plan with JSONP including startDate:', requestData);
-
-      // Use JSONP directly (skip POST attempt)
-      const result = await postWithJSONP(sheetUrl.value, requestData);
-      console.log('JSONP result:', result);
-      
-      if (result && result.success) {
-        // Create local plan object
-        const newPlan = {
-          id: result.data.sheetName,
-          name: planData.planName,
-          resetNumber: planData.resetNumber,
-          startDate: planData.startDate, // NEU: startDate speichern!
-          status: 'new',
-          daysActive: 0,
-          entriesCount: 0,
-          lastUpdate: new Date(),
-          createdAt: new Date(),
-          resources: {},
-          goals: planData.goals || {},
-          goalsAchieved: 0,
-          totalGoals: Object.keys(planData.goals || {}).length,
-          description: planData.description
+      // Import all tracks
+      tracks.forEach(track => {
+        const newTrack = {
+          ...track,
+          id: generateId(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         };
 
-        // Add to store
-        trackingPlans.value.push(newPlan);
-        
-        // Set as active plan
-        activeTrackingPlan.value = newPlan;
+        // Generate new IDs for all entries
+        newTrack.entries = track.entries.map(entry => ({
+          ...entry,
+          id: generateId()
+        }));
 
-        // Save cache
-        saveTrackingPlansCache();
-
-        console.log('Created new tracking plan with startDate:', newPlan);
-        return newPlan;
-      } else {
-        throw new Error(result?.error || 'Failed to create tracking plan - no success response');
-      }
-    } catch (error) {
-      console.error('Error creating tracking plan:', error);
-      throw error;
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  /**
-   * Delete tracking plan
-   */
-  async function deleteTrackingPlan(planId) {
-    try {
-      // Remove from local state immediately
-      const planIndex = trackingPlans.value.findIndex(p => p.id === planId);
-      if (planIndex > -1) {
-        trackingPlans.value.splice(planIndex, 1);
-      }
-
-      if (activeTrackingPlan.value?.id === planId) {
-        activeTrackingPlan.value = null;
-      }
-
-      // Save cache
-      saveTrackingPlansCache();
-
-      // Note: Google Sheets API doesn't easily allow sheet deletion
-      // Users would need to manually delete sheets if desired
-      
-      return true;
-    } catch (error) {
-      console.error('Error deleting tracking plan:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * JSONP für addDailyEntry - KORRIGIERT!
-   */
-  function postEntryWithJSONP(url, data) {
-    console.log('=== POST ENTRY WITH JSONP ===');
-    console.log('📥 URL:', url);
-    console.log('📥 Data:', data);
-    
-    return new Promise((resolve, reject) => {
-      const callbackName = 'jsonp_entry_callback_' + Date.now();
-      console.log('🏷️ Callback name:', callbackName);
-      
-      const script = document.createElement('script');
-      
-      // Set up callback
-      window[callbackName] = function(response) {
-        console.log('📨 JSONP callback triggered with response:', response);
-        resolve(response);
-        document.head.removeChild(script);
-        delete window[callbackName];
-        console.log('🧹 Cleaned up callback and script');
-      };
-      
-      // Handle errors
-      script.onerror = function() {
-        console.error('💥 JSONP script error');
-        reject(new Error('JSONP POST request failed'));
-        document.head.removeChild(script);
-        delete window[callbackName];
-      };
-      
-      // KORRIGIERTE Parameter-Erstellung
-      const params = new URLSearchParams({
-        action: data.action,
-        sheetName: data.sheetName,
-        callback: callbackName
+        trTracks.value.push(newTrack);
+        importedTracks.push(newTrack);
       });
-      
-      console.log('📦 Base params:', {
-        action: data.action,
-        sheetName: data.sheetName,
-        callback: callbackName
-      });
-      
-      // Entry-Daten als separate Parameter hinzufügen
-      if (data.entryData) {
-        console.log('📦 Processing entry data for JSONP:', data.entryData);
-        
-        // Jedes Feld als entry_* Parameter hinzufügen
-        Object.entries(data.entryData).forEach(([key, value]) => {
-          if (value !== null && value !== undefined && value !== '') {
-            // KORRIGIERT: Verwende den Key direkt (da er schon der displayName ist)
-            const paramName = `entry_${key.replace(/\s+/g, '_').toLowerCase()}`;
-            params.append(paramName, value);
-            console.log(`📎 Added param: ${paramName} = ${value} (from key: ${key})`);
-          } else {
-            console.log(`⏭️ Skipped param: ${key} (empty value: ${value})`);
-          }
-        });
-      } else {
-        console.warn('⚠️ No entryData to process');
-      }
-      
-      const finalUrl = url + '?' + params.toString();
-      console.log('🌐 Final JSONP URL:', finalUrl);
-      console.log('📏 URL length:', finalUrl.length);
-      
-      script.src = finalUrl;
-      document.head.appendChild(script);
-      console.log('📄 Script added to DOM');
-      
-      // Timeout after 15 seconds
-      setTimeout(() => {
-        if (window[callbackName]) {
-          console.error('⏰ JSONP request timeout');
-          reject(new Error('JSONP POST request timeout'));
-          document.head.removeChild(script);
-          delete window[callbackName];
-        }
-      }, 15000);
-    });
-  }
 
-  /**
-   * Add daily entry with column-based mapping - KORRIGIERT!
-   */
-  async function addDailyEntry(planId, entryData) {
-    console.log('=== STORE ADD DAILY ENTRY ===');
-    console.log('📥 Store received planId:', planId);
-    console.log('📥 Store received entryData:', entryData);
-    console.log('🔍 hasActiveConnection:', hasActiveConnection.value);
-    console.log('🔍 sheetUrl:', sheetUrl.value);
-    console.log('🔍 isSheetConnected:', isSheetConnected.value);
-    console.log('🔍 connectionError:', connectionError.value);
-    
-    if (!hasActiveConnection.value) {
-      console.error('❌ No active connection');
-      console.error('   - isSheetConnected:', isSheetConnected.value);
-      console.error('   - sheetUrl:', sheetUrl.value);
-      console.error('   - connectionError:', connectionError.value);
-      throw new Error('No active sheet connection');
-    }
-
-    try {
-      isLoading.value = true;
-      console.log('📊 Set isLoading to true');
-
-      console.log('📦 Preparing request data...');
-      const requestData = {
-        action: 'addDailyEntry',
-        sheetName: planId,
-        entryData: entryData
-      };
-
-      console.log('📦 Request data prepared:', requestData);
-      console.log('🌐 Using sheet URL:', sheetUrl.value);
-
-      console.log('🚀 Calling postEntryWithJSONP...');
-      const result = await postEntryWithJSONP(sheetUrl.value, requestData);
-      console.log('📨 JSONP result received:', result);
-      
-      if (result && result.success) {
-        console.log('✅ Entry added successfully');
-        
-        // Update local plan
-        const plan = trackingPlans.value.find(p => p.id === planId);
-        if (plan) {
-          console.log('📊 Updating local plan:', plan.name);
-          plan.entriesCount++;
-          plan.daysActive++;
-          plan.lastUpdate = new Date();
-          plan.status = 'active';
-          console.log('📊 Plan updated:', plan);
-        } else {
-          console.warn('⚠️ Plan not found in local store:', planId);
-        }
-
-        // Save cache
-        saveTrackingPlansCache();
-        console.log('💾 Cache saved');
-
-        return result;
-      } else {
-        console.error('❌ Entry failed:', result?.error || 'No success response');
-        throw new Error(result?.error || 'Failed to add entry');
-      }
+      saveToStorage();
+      return importedTracks;
     } catch (error) {
-      console.error('💥 Error in store addDailyEntry:', error);
-      console.error('💥 Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
-      throw error;
-    } finally {
-      console.log('🏁 Setting isLoading to false');
-      isLoading.value = false;
+      console.error('Error importing tracks data:', error);
+      throw new Error('Failed to import tracks data');
     }
-  }
-
-  /**
-   * Set active tracking plan
-   */
-  function setActiveTrackingPlan(planId) {
-    const plan = trackingPlans.value.find(p => p.id === planId);
-    if (plan) {
-      activeTrackingPlan.value = plan;
-    }
-  }
-
-  /**
-   * Save tracking plans to cache
-   */
-  function saveTrackingPlansCache() {
-    try {
-      const cache = {
-        plans: trackingPlans.value,
-        activePlanId: activeTrackingPlan.value?.id || null,
-        cachedAt: new Date().toISOString()
-      };
-      localStorage.setItem('tr-tracking-plans', JSON.stringify(cache));
-    } catch (error) {
-      console.error('Error saving plans cache:', error);
-    }
-  }
-
-  /**
-   * Load tracking plans from cache
-   */
-  function loadTrackingPlansCache() {
-    try {
-      const cached = localStorage.getItem('tr-tracking-plans');
-      if (cached) {
-        const data = JSON.parse(cached);
-        trackingPlans.value = data.plans || [];
-        
-        if (data.activePlanId) {
-          activeTrackingPlan.value = trackingPlans.value.find(p => p.id === data.activePlanId) || null;
-        }
-      }
-    } catch (error) {
-      console.error('Error loading plans cache:', error);
-    }
-  }
-
-  /**
-   * Clear all data
-   */
-  function clearAllData() {
-    isSheetConnected.value = false;
-    sheetUrl.value = '';
-    sheetInfo.value = null;
-    trackingPlans.value = [];
-    activeTrackingPlan.value = null;
-    connectionError.value = null;
-    
-    localStorage.removeItem('tr-tracking-connection');
-    localStorage.removeItem('tr-tracking-plans');
   }
 
   return {
     // State
-    isSheetConnected,
-    sheetUrl,
-    sheetInfo,
-    trackingPlans,
-    activeTrackingPlan,
-    connectionError,
-    isLoading,
+    availableResources,
+    selectedResources,
+    trTracks,
+    isInitialized,
 
     // Computed
-    activePlansCount,
-    completedPlansCount,
-    totalTrackingDays,
-    hasActiveConnection,
+    activeTracks,
+    completedTracks,
 
-    // Actions
-    loadConnectionState,
-    connectSheet,
-    disconnectSheet,
-    validateConnection,
-    loadTrackingPlans,
-    createTrackingPlan,
-    deleteTrackingPlan,
-    addDailyEntry,
-    setActiveTrackingPlan,
-    clearAllData
+    // Methods
+    init,
+    loadFromStorage,
+    saveToStorage,
+    updateSelectedResources,
+    addCustomResource,
+    removeCustomResource,
+    createTRTrack,
+    updateTRTrack,
+    updateResourceOrder,
+    deleteTRTrack,
+    completeTRTrack,
+    addEntry,
+    updateEntry,
+    deleteEntry,
+    getTRTrack,
+    getTrackProgress,
+    exportData,
+    importData,
+    clearAllData,
+    resetToDefaults,
+    importTrackData,
+    importMultipleTracksData,
+    updateStandardResourceColor,
+    updateCustomResource
   };
 });

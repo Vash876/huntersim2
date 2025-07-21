@@ -2,6 +2,32 @@
 const changelog = 
 [
   {
+    version: '2.7.0',
+    date: '2025-07-19',
+    changes: [
+      {
+        text: '<b class="text-yellow-400">NEW:</b> Cloud Sync System',
+        subItems: [
+          'Added user authentication and cloud synchronization for seamless data backup across devices',
+          'Secure login system with Google and GitHub OAuth support'
+        ]
+      },
+      {
+        text: '<b class="text-yellow-400">NEW:</b> TR Tracking Tool',
+        subItems: [
+          'Added comprehensive TR Tracking system for monitoring your TR progress',
+          'Progress charts and analytics showing cumulative progress and gains',
+        ]
+      },
+      {
+        text: 'Settings',
+        subItems: [
+          'All tools are now included in backup/restore functionality',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.6.4',
     date: '2025-07-09',
     changes: [
@@ -19,7 +45,7 @@ const changelog =
     date: '2025-07-07',
     changes: [
       {
-        text: 'NEW: Mech Planner Tool',
+        text: '<b class="text-yellow-400">NEW:</b> Mech Planner Tool',
         subItems: [
           'Added comprehensive Mech Planner tool for planning and optimizing Mechs',
           'Integrated with backup/restore system',

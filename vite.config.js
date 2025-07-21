@@ -74,6 +74,10 @@ export default defineConfig({
     },
     target: 'esnext',
     sourcemap: false,
+    // Entferne sensible Environment Variables aus Production Build
+    define: {
+      'import.meta.env.VITE_NEON_DATABASE_URL': JSON.stringify(''), // Entfernt in Production
+    }
   },
   resolve: {
     alias: {
@@ -81,6 +85,10 @@ export default defineConfig({
     }
   },
   server: {
+    port: 5173,
+    host: 'localhost',
+    https: false,
+    open: true,
     fs: {
       allow: ['..']
     }

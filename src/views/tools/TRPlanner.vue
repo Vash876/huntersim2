@@ -9,9 +9,9 @@
             <!-- Bild und Überschrift in einer Zeile -->
             <div class="flex items-center mb-1">
               <img src="@/assets/general/orbs.png" class="w-6 h-6 mr-2" alt="Orbs" />
-              <h1 class="text-2xl font-bold text-shadow-lg/40">TR Planner</h1>
+              <h1 class="text-2xl font-bold">TR Planner</h1>
             </div>
-            <p class="text-sm text-gray-300 text-shadow-lg/30">Plan and optimize your Traversal Resets</p>
+            <p class="text-sm text-gray-300">Plan and optimize your Traversal Resets</p>
           </div>
           
           <!-- Mobile: Die Buttons untereinander in einer Button-Gruppe mit Icons -->
@@ -47,18 +47,9 @@
               <span>New Plan</span>
               <IconPlus size="16" />
             </button>
-
-            <button
-              @click="toggleMode"
-              class="flex items-center justify-between px-3 py-2 rounded-md transition-colors shadow-sm"
-              :class="isTrackingMode ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'"
-            >
-              <span>TR Tracking</span>
-              <IconChartLine size="16" />
-            </button>
           </div>
           
-          <!-- Desktop: Die Buttons nebeneinander -->
+          <!-- Desktop: Die Buttons nebeneinander wie bisher -->
           <div class="hidden sm:flex">
             <button 
               @click="openGemOverviewModal"
@@ -85,21 +76,11 @@
             </button>
             
             <button
-              class="px-3 py-2 bg-blue-600 hover:bg-blue-700 flex items-center gap-2 transition-colors shadow-sm"
+              class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-r-md flex items-center gap-2 transition-colors shadow-sm"
               @click="openTRPlanModal"
             >
               <IconPlus size="16" />
               <span>New Plan</span>
-            </button>
-
-            <!-- Neuer TR Tracking Button -->
-            <button
-              @click="toggleMode"
-              class="flex items-center px-3 py-2 rounded-r-md transition-colors shadow-sm border-r border-gray-700"
-              :class="isTrackingMode ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-600 hover:bg-gray-700 text-white'"
-            >
-              <IconChartLine size="16" class="mr-2" />
-              <span>TR Tracking</span>
             </button>
           </div>
         </div>
@@ -125,56 +106,48 @@
 
     <!-- Main Content - Plan Grid -->
     <div class="mt-6">
-      <!-- Planning Mode (existing) -->
-      <div v-if="!isTrackingMode">
-        <!-- Keine Pläne Nachricht -->
-        <div v-if="trPlannerStore.trPlanCount === 0" class="bg-gray-850 rounded-lg p-8 text-center border border-gray-700">
-          <IconFile size="48" class="text-gray-600 mx-auto mb-4" />
-          <h3 class="text-xl font-bold text-gray-300 mb-2">No Plans Created</h3>
-          <p class="text-gray-400 mb-6">Create your first TR plan to get started with optimizing your gameplay.</p>
-          <button
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-md flex items-center gap-2 mx-auto transition-colors"
-            @click="openTRPlanModal"
-          >
-            <IconPlus size="16" />
-            <span>Create First Plan</span>
-          </button>
-        </div>
-        
-        <!-- Plan Grid -->
-        <div v-else>
-          <Draggable 
-            v-model="filteredPlans" 
-            tag="div"
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" 
-            handle=".grip-handle"
-            :group="{ name: 'plans', pull: false, put: false }"
-            item-key="id"
-            :animation="200"
-            ghost-class="ghost"
-            chosen-class="chosen"
-            drag-class="dragging"
-            @change="onDragEnd"
-          >
-            <template #item="{ element }">
-              <div class="card-wrapper">
-                <TRPlanCard
-                  :plan="element"
-                  :currentStats="currentStats"
-                  @click="openTRPlanDetailModal(element.id)"
-                  @edit="handleEditPlan(element.id)"
-                  @copy="handleCopyPlan(element.id)"
-                  @delete="handleDeletePlan(element.id)"
-                />
-              </div>
-            </template>
-          </Draggable>
-        </div>
+      <!-- Keine Pläne Nachricht -->
+      <div v-if="trPlannerStore.trPlanCount === 0" class="bg-gray-850 rounded-lg p-8 text-center border border-gray-700">
+        <IconFile size="48" class="text-gray-600 mx-auto mb-4" />
+        <h3 class="text-xl font-bold text-gray-300 mb-2">No Plans Created</h3>
+        <p class="text-gray-400 mb-6">Create your first TR plan to get started with optimizing your gameplay.</p>
+        <button
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-md flex items-center gap-2 mx-auto transition-colors"
+          @click="openTRPlanModal"
+        >
+          <IconPlus size="16" />
+          <span>Create First Plan</span>
+        </button>
       </div>
       
-      <!-- Tracking Mode (NEU) - v-else statt v-else-if -->
+      <!-- Plan Grid -->
       <div v-else>
-        <TRTrackingGrid />
+        <Draggable 
+          v-model="filteredPlans" 
+          tag="div"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" 
+          handle=".grip-handle"
+          :group="{ name: 'plans', pull: false, put: false }"
+          item-key="id"
+          :animation="200"
+          ghost-class="ghost"
+          chosen-class="chosen"
+          drag-class="dragging"
+          @change="onDragEnd"
+        >
+          <template #item="{ element }">
+            <div class="card-wrapper">
+              <TRPlanCard
+                :plan="element"
+                :currentStats="currentStats"
+                @click="openTRPlanDetailModal(element.id)"
+                @edit="handleEditPlan(element.id)"
+                @copy="handleCopyPlan(element.id)"
+                @delete="handleDeletePlan(element.id)"
+              />
+            </div>
+          </template>
+        </Draggable>
       </div>
     </div>
     
@@ -282,7 +255,6 @@ import TRPlanDetailModal from '@/components/tr-planner/TRPlanDetailModal.vue';
 import OrbCalculatorModal from '@/components/tr-planner/OrbCalculatorModal.vue';
 import GemOverviewModal from '@/components/tr-planner/GemOverviewModal.vue';
 import GemWelcomeModal from '@/components/tr-planner/GemWelcomeModal.vue';
-import TRTrackingGrid from '@/components/tr-tracking/TRTrackingGrid.vue';
 import Draggable from 'vuedraggable';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { 
@@ -294,9 +266,7 @@ import {
   IconInfoCircle,
   IconFile,
   IconCalculator,
-  IconZodiacGemini,
-  IconChartLine,
-  IconSettings
+  IconZodiacGemini
 } from '@tabler/icons-vue';
 
 // Pinia Store einbinden
@@ -311,15 +281,6 @@ const trPlanModalRef = ref(null);
 const selectedPlanId = ref(null);
 const editingPlanId = ref(null);
 const showOrbCalculatorModal = ref(false);
-
-// State für Tracking Mode
-const isTrackingMode = ref(false);
-
-// Function zum Wechseln zwischen Modi
-function toggleMode() {
-  isTrackingMode.value = !isTrackingMode.value;
-}
-
 
 // Toast notification
 const toast = ref({ show: false, message: '', type: 'info' });

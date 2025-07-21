@@ -4,8 +4,20 @@ import AppNavbar from './components/common/AppNavbar.vue';
 import AppNavbarMobile from './components/common/AppNavbarMobile.vue';
 import AppFooter from './components/common/AppFooter.vue';
 import { useRoute } from 'vue-router';
+import { onMounted } from 'vue';
+import { useSyncStore } from './store/syncStore';
 
 const route = useRoute();
+const syncStore = useSyncStore();
+
+// Initialize sync on app start
+onMounted(() => {
+  try {
+    syncStore.init();
+  } catch (error) {
+    console.error('Sync initialization failed:', error);
+  }
+});
 </script>
 
 <template>

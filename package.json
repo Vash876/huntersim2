@@ -18,7 +18,10 @@
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^4.6.1",
     "@formkit/auto-animate": "^0.8.2",
+    "@neondatabase/serverless": "^1.0.1",
     "@netlify/edge-functions": "^2.0.0",
+    "@stackframe/react": "^2.8.22",
+    "@stackframe/stack": "^2.8.22",
     "@supabase/supabase-js": "^2.49.4",
     "@tabler/icons": "^3.30.0",
     "@tabler/icons-vue": "^3.30.0",
@@ -26,6 +29,7 @@
     "@vitejs/plugin-vue-jsx": "^4.1.1",
     "@vueuse/core": "^12.7.0",
     "@vueuse/motion": "^3.0.3",
+    "ag-grid-vue3": "^34.0.2",
     "bignumber.js": "^9.3.0",
     "break_infinity.js": "^2.2.0",
     "chart.js": "^4.4.8",
@@ -40,6 +44,7 @@
     "tippy.js": "^6.3.7",
     "uuid": "^11.1.0",
     "vue": "^3.5.13",
+    "vue-chartjs": "^5.3.2",
     "vue-router": "^4.5.0",
     "vue-tabler-icons": "^2.21.0",
     "vuedraggable": "^4.1.0"

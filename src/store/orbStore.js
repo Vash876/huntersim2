@@ -37,6 +37,14 @@ export const useTRPlannerStore = defineStore('trPlanner', {
     planModalShouldOpen: null,
     tempPlanData: null,
 
+    // OrbCalculator State
+    orbCalculator: useStorage('trplanner_orbcalculator', {
+      trCount: 0,
+      allTimeOrbs: 0,
+      currentBoosts: {},
+      targetBoosts: {}
+    }),
+
   }),
   
   getters: {
@@ -410,6 +418,64 @@ export const useTRPlannerStore = defineStore('trPlanner', {
     init() {
       // Pläne aus dem LocalStorage laden und sortieren
       this.loadTRPlans();
+    },
+
+    /**
+     * OrbCalculator Actions
+     */
+    updateOrbCalculatorTRCount(trCount) {
+      this.orbCalculator.trCount = trCount;
+    },
+
+    updateOrbCalculatorAllTimeOrbs(allTimeOrbs) {
+      this.orbCalculator.allTimeOrbs = allTimeOrbs;
+    },
+
+    updateOrbCalculatorCurrentBoosts(boosts) {
+      this.orbCalculator.currentBoosts = { ...boosts };
+    },
+
+    updateOrbCalculatorTargetBoosts(boosts) {
+      this.orbCalculator.targetBoosts = { ...boosts };
+    },
+
+    updateOrbCalculatorCurrentBoost(key, value) {
+      this.orbCalculator.currentBoosts[key] = value;
+    },
+
+    updateOrbCalculatorTargetBoost(key, value) {
+      this.orbCalculator.targetBoosts[key] = value;
+    },
+
+    resetOrbCalculator() {
+      this.orbCalculator = {
+        trCount: 0,
+        allTimeOrbs: 0,
+        currentBoosts: {},
+        targetBoosts: {}
+      };
+    },
+
+    /**
+     * Initialisiert OrbCalculator mit aktuellen User Stats
+     */
+    initOrbCalculatorFromUserStats() {
+      if (!this.userStats) return;
+      
+      this.orbCalculator.trCount = this.userStats.trCount || 0;
+      this.orbCalculator.allTimeOrbs = this.userStats.allTimeOrbs || 0;
+      
+      // Current boosts aus userStats übernehmen
+      const currentBoosts = {};
+      allBoosts.forEach(boost => {
+        if (this.userStats[boost.key] !== undefined) {
+          currentBoosts[boost.key] = this.userStats[boost.key];
+        }
+      });
+      this.orbCalculator.currentBoosts = currentBoosts;
+      
+      // Target boosts initial gleich current boosts setzen
+      this.orbCalculator.targetBoosts = { ...currentBoosts };
     }
   }
 });

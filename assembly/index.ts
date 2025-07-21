@@ -209,7 +209,7 @@ export {
   getDeathKeyAt,
   getDeathCountAt,
   getDeathsByStageAndReviveString,
-  // NEU: Live Simulation Exports
+  // Live Simulation Exports
   initLiveSimulation,
   liveSimulationStep,
   getLiveBorgeHp,

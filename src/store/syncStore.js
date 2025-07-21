@@ -1,0 +1,373 @@
+/**
+ * Simplified Sync Store - Cloud Backup/Restore Integration
+ * Uses existing backup/restore functionality from Settings for seamless sync
+ */
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+import { neonAuthService } from '@/services/neonAuthService';
+import { databaseService } from '@/services/databaseService';
+
+export const useSyncStore = defineStore('sync', () => {
+  // State
+  const isAuthenticated = ref(false);
+  const currentUser = ref(null);
+  const isSyncing = ref(false);
+  const lastSyncTime = ref(null);
+  const lastSyncError = ref(null);
+  const syncStatus = ref('idle'); // 'idle', 'syncing', 'success', 'error'
+  
+  // Sync Throttling
+  const MIN_SYNC_INTERVAL = 10000; // 10 Sekunden zwischen Syncs
+  const APP_VERSION = '2.7.0';
+
+  // Computed
+  const userDisplayName = computed(() => {
+    return currentUser.value?.displayName || 
+           currentUser.value?.primaryEmail || 
+           currentUser.value?.email || 
+           currentUser.value?.name || 
+           'Unknown';
+  });
+
+  const canSync = computed(() => {
+    const now = Date.now();
+    const lastSync = lastSyncTime.value ? new Date(lastSyncTime.value).getTime() : 0;
+    const timeSinceLastSync = now - lastSync;
+    const cooldownPassed = timeSinceLastSync >= MIN_SYNC_INTERVAL;
+    
+    return isAuthenticated.value && !isSyncing.value && cooldownPassed;
+  });
+
+  // Helper functions
+  function setLastSyncTime() {
+    const now = new Date().toISOString();
+    lastSyncTime.value = now;
+    localStorage.setItem('sync_last_sync_time', now);
+  }
+
+  function init() {
+    const savedLastSync = localStorage.getItem('sync_last_sync_time');
+    if (savedLastSync) {
+      lastSyncTime.value = savedLastSync;
+    }
+    
+    // Initial auth state update
+    updateAuthState();
+    
+    // Register for auth state changes
+    if (neonAuthService.onAuthStateChanged) {
+      neonAuthService.onAuthStateChanged = (user) => {
+        updateAuthState();
+      };
+    }
+    
+    // Also poll for auth state changes every 5 seconds as backup
+    setInterval(() => {
+      updateAuthState();
+    }, 5000);
+  }
+
+  function updateAuthState() {
+    try {
+      const actualUser = neonAuthService.userComputed.value;
+      const actualIsAuthenticated = neonAuthService.isAuthenticatedComputed.value;
+      
+      currentUser.value = actualUser;
+      isAuthenticated.value = actualIsAuthenticated;
+    } catch (error) {
+      console.error('SyncStore: Error updating auth state:', error);
+      currentUser.value = null;
+      isAuthenticated.value = false;
+    }
+  }
+
+  async function createLocalBackup() {
+    try {
+      const { useHunterStore } = await import('@/store/hunterStore');
+      const { useTRPlannerStore } = await import('@/store/orbStore');
+      const { useTRTrackingStore } = await import('@/store/trTrackingStore');
+      const { useUltimaStore } = await import('@/store/ultimaStore');
+
+      const hunterStore = useHunterStore();
+      const trPlannerStore = useTRPlannerStore();
+      const trTrackingStore = useTRTrackingStore();
+      const ultimaStore = useUltimaStore();
+
+      // Create backup data (same as Settings createBackup)
+      const hunterStoreState = JSON.parse(JSON.stringify(hunterStore.$state));
+      if (hunterStoreState.evaluationCache) {
+        delete hunterStoreState.evaluationCache;
+      }
+
+      const backupData = {
+        data: {
+          hunterStore: hunterStoreState,
+          trPlannerStore: JSON.parse(JSON.stringify(trPlannerStore.$state)),
+          trTrackingStore: trTrackingStore.exportData(),
+          ultimaStore: JSON.parse(JSON.stringify(ultimaStore.$state)),
+          localStorage: {
+            gadgetCalculator_currentLevels: JSON.parse(localStorage.getItem('gadgetCalculator_currentLevels') || '{}'),
+            gadgetCalculator_targetLevels: JSON.parse(localStorage.getItem('gadgetCalculator_targetLevels') || '{}'),
+            gadgetCalculator_referenceBuildId: localStorage.getItem('gadgetCalculator_referenceBuildId'),
+            mechPlanner_settings: JSON.parse(localStorage.getItem('mechPlanner_settings') || '{}'),
+            attrGN3Calculator_settings: JSON.parse(localStorage.getItem('attrGN3Calculator_settings') || '{}'),
+            traitSpherePlanner_settings: JSON.parse(localStorage.getItem('traitSpherePlanner_settings') || '{}'),
+            researchOverview_filters: JSON.parse(localStorage.getItem('researchOverview_filters') || '{}'),
+            loopModOverview_filters: JSON.parse(localStorage.getItem('loopModOverview_filters') || '{}'),
+            trPlanOrderIds: JSON.parse(localStorage.getItem('trPlanOrderIds') || '[]'),
+            huntersim_high_iterations_mode: localStorage.getItem('huntersim_high_iterations_mode')
+          }
+        },
+        version: '2.0.0',
+        timestamp: new Date().toISOString(),
+        type: 'hunter-simulator-backup'
+      };
+
+      return btoa(JSON.stringify(backupData));
+    } catch (error) {
+      console.error('Failed to create local backup:', error);
+      throw error;
+    }
+  }
+
+  async function restoreLocalBackup(backupCode) {
+    try {
+      console.log('Attempting to restore backup. Code type:', typeof backupCode);
+      console.log('Backup code value:', backupCode);
+      console.log('Backup code length:', backupCode?.length);
+      
+      if (!backupCode || typeof backupCode !== 'string') {
+        throw new Error('Invalid backup code: not a string');
+      }
+
+      let backupData;
+      
+      // Try parsing as JSON first (in case it's stored as unencoded JSON)
+      try {
+        backupData = JSON.parse(backupCode);
+        console.log('Backup code was JSON, not Base64');
+      } catch (jsonError) {
+        // If JSON parsing fails, try Base64 decode
+        console.log('JSON parsing failed, trying Base64 decode');
+        
+        // Validate Base64 format
+        const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+        if (!base64Regex.test(backupCode)) {
+          throw new Error('Invalid backup code: not valid Base64 format');
+        }
+
+        try {
+          const decoded = atob(backupCode);
+          backupData = JSON.parse(decoded);
+          console.log('Successfully decoded Base64 backup');
+        } catch (decodeError) {
+          console.error('Base64 decode error:', decodeError);
+          throw new Error('Invalid backup code: failed to decode Base64');
+        }
+      }
+      
+      if (!backupData || !backupData.data || backupData.type !== 'hunter-simulator-backup') {
+        throw new Error('Invalid backup format');
+      }
+
+      const { useHunterStore } = await import('@/store/hunterStore');
+      const { useTRPlannerStore } = await import('@/store/orbStore');
+      const { useTRTrackingStore } = await import('@/store/trTrackingStore');
+      const { useUltimaStore } = await import('@/store/ultimaStore');
+
+      const hunterStore = useHunterStore();
+      const trPlannerStore = useTRPlannerStore();
+      const trTrackingStore = useTRTrackingStore();
+      const ultimaStore = useUltimaStore();
+
+      // Restore stores (same as Settings restoreFromBackup)
+      if (backupData.data.hunterStore) {
+        const currentCache = hunterStore.$state.evaluationCache ? 
+          { ...hunterStore.$state.evaluationCache } : {};
+        
+        Object.keys(hunterStore.$state).forEach(key => {
+          if (key !== 'evaluationCache') {
+            if (Array.isArray(hunterStore.$state[key])) {
+              hunterStore.$state[key] = [];
+            } else if (typeof hunterStore.$state[key] === 'object' && hunterStore.$state[key] !== null) {
+              hunterStore.$state[key] = {};
+            } else {
+              hunterStore.$state[key] = null;
+            }
+          }
+        });
+        
+        for (const key in backupData.data.hunterStore) {
+          if (key !== 'evaluationCache' && key in hunterStore.$state) {
+            hunterStore.$state[key] = backupData.data.hunterStore[key];
+          }
+        }
+        
+        if (currentCache && Object.keys(currentCache).length > 0) {
+          hunterStore.$state.evaluationCache = currentCache;
+        }
+      }
+
+      if (backupData.data.trPlannerStore) {
+        Object.keys(backupData.data.trPlannerStore).forEach(key => {
+          if (key in trPlannerStore.$state) {
+            trPlannerStore.$state[key] = backupData.data.trPlannerStore[key];
+          }
+        });
+      }
+
+      if (backupData.data.trTrackingStore) {
+        trTrackingStore.importData(backupData.data.trTrackingStore);
+      }
+
+      if (backupData.data.ultimaStore) {
+        Object.keys(backupData.data.ultimaStore).forEach(key => {
+          if (key in ultimaStore.$state) {
+            ultimaStore.$state[key] = backupData.data.ultimaStore[key];
+          }
+        });
+      }
+
+      // Restore localStorage
+      if (backupData.data.localStorage) {
+        const localStorageData = backupData.data.localStorage;
+        
+        if (localStorageData.gadgetCalculator_currentLevels) {
+          localStorage.setItem('gadgetCalculator_currentLevels', JSON.stringify(localStorageData.gadgetCalculator_currentLevels));
+        }
+        if (localStorageData.gadgetCalculator_targetLevels) {
+          localStorage.setItem('gadgetCalculator_targetLevels', JSON.stringify(localStorageData.gadgetCalculator_targetLevels));
+        }
+        if (localStorageData.gadgetCalculator_referenceBuildId) {
+          localStorage.setItem('gadgetCalculator_referenceBuildId', localStorageData.gadgetCalculator_referenceBuildId);
+        }
+        if (localStorageData.mechPlanner_settings) {
+          localStorage.setItem('mechPlanner_settings', JSON.stringify(localStorageData.mechPlanner_settings));
+        }
+        if (localStorageData.attrGN3Calculator_settings) {
+          localStorage.setItem('attrGN3Calculator_settings', JSON.stringify(localStorageData.attrGN3Calculator_settings));
+        }
+        if (localStorageData.traitSpherePlanner_settings) {
+          localStorage.setItem('traitSpherePlanner_settings', JSON.stringify(localStorageData.traitSpherePlanner_settings));
+        }
+        if (localStorageData.researchOverview_filters) {
+          localStorage.setItem('researchOverview_filters', JSON.stringify(localStorageData.researchOverview_filters));
+        }
+        if (localStorageData.loopModOverview_filters) {
+          localStorage.setItem('loopModOverview_filters', JSON.stringify(localStorageData.loopModOverview_filters));
+        }
+        if (localStorageData.trPlanOrderIds) {
+          localStorage.setItem('trPlanOrderIds', JSON.stringify(localStorageData.trPlanOrderIds));
+        }
+        if (localStorageData.huntersim_high_iterations_mode !== undefined) {
+          localStorage.setItem('huntersim_high_iterations_mode', localStorageData.huntersim_high_iterations_mode);
+        }
+      }
+
+      console.log('Local backup restored successfully');
+    } catch (error) {
+      console.error('Failed to restore local backup:', error);
+      throw error;
+    }
+  }
+
+  async function syncToServer() {
+    if (!canSync.value) {
+      return;
+    }
+
+    try {
+      isSyncing.value = true;
+      syncStatus.value = 'syncing';
+      lastSyncError.value = null;
+
+      const backupCode = await createLocalBackup();
+      const userId = currentUser.value?.id;
+      
+      if (!userId) {
+        throw new Error('No user ID available');
+      }
+
+      await databaseService.saveUserBackup(userId, backupCode, APP_VERSION);
+
+      syncStatus.value = 'success';
+      setLastSyncTime();
+
+    } catch (error) {
+      console.error('SyncStore: Sync to cloud failed:', error);
+      syncStatus.value = 'error';
+      lastSyncError.value = error.message;
+      throw error;
+    } finally {
+      isSyncing.value = false;
+    }
+  }
+
+  async function syncFromServer() {
+    if (!canSync.value) {
+      return;
+    }
+
+    try {
+      isSyncing.value = true;
+      syncStatus.value = 'syncing';
+      lastSyncError.value = null;
+
+      const userId = currentUser.value?.id;
+      if (!userId) {
+        throw new Error('No user ID available');
+      }
+
+      console.log('Fetching cloud backup for user:', userId);
+      const cloudBackup = await databaseService.getUserBackup(userId);
+      
+      if (!cloudBackup) {
+        console.log('No cloud backup found');
+        syncStatus.value = 'success';
+        setLastSyncTime();
+        return;
+      }
+
+      console.log('Cloud backup received:', {
+        user_id: cloudBackup.user_id,
+        app_version: cloudBackup.app_version,
+        backupCodeLength: cloudBackup.backup_code?.length,
+        backupCodeType: typeof cloudBackup.backup_code,
+        fullBackup: cloudBackup
+      });
+
+      await restoreLocalBackup(cloudBackup.backup_code);
+
+      syncStatus.value = 'success';
+      setLastSyncTime();
+
+    } catch (error) {
+      console.error('SyncStore: Sync from cloud failed:', error);
+      syncStatus.value = 'error';
+      lastSyncError.value = error.message;
+      throw error;
+    } finally {
+      isSyncing.value = false;
+    }
+  }
+
+  return {
+    // State
+    isAuthenticated,
+    currentUser,
+    isSyncing,
+    lastSyncTime,
+    lastSyncError,
+    syncStatus,
+    
+    // Computed
+    userDisplayName,
+    canSync,
+    
+    // Methods
+    init,
+    updateAuthState,
+    syncToServer,
+    syncFromServer
+  };
+});

@@ -17,7 +17,8 @@ import {
   IconBoxModel,
   IconHexagon,
   IconAbacus,
-  IconRobot
+  IconRobot,
+  IconChartLine
 } from '@tabler/icons-vue';
 
 const IconMP = {
@@ -151,6 +152,12 @@ export const NAVIGATION = {
           name: 'TR Planner',
           path: '/tools/tr-planner',
           icon: IconClockFilled
+        },
+        {
+          id: 'trtracking',
+          name: 'TR Tracking',
+          path: '/tools/tr-tracking',
+          icon: IconChartLine
         },
         {
           id: 'gadgetcalculator',

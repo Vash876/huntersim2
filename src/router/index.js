@@ -103,6 +103,11 @@ const routes = [
     component: () => import('../views/tools/TRPlanner.vue'),
   },
   {
+    path: '/tools/tr-tracking',
+    name: 'TR Tracking',
+    component: () => import('../views/tools/TRTracking.vue'),
+  },
+  {
     path: '/tools/gadget-calculator',
     name: 'Gadget Calculator',    
     component: () => import('../views/tools/GadgetCalculator.vue'),
@@ -144,6 +149,12 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: () => import('../views/SettingsView.vue')
+  },
+  // OAuth Callback Route
+  {
+    path: '/handler/oauth-callback',
+    name: 'OAuthCallback',
+    component: () => import('../components/common/OAuthCallback.vue')
   },
   // 404 Route
   {
