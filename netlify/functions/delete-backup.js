@@ -1,10 +1,10 @@
 /**
  * delete-backup.js - Löscht User Backup aus der Cloud
- * DELETE /.netlify/functions/delete-backup
+ * DELETE /.netlify/functions/delete-backup?userId=xxx
  */
 const { neon } = require('@neondatabase/serverless');
 
-const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL;
+const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.VITE_NEON_DATABASE_URL;
 
 const sql = neon(NEON_DATABASE_URL);
 

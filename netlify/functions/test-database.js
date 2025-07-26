@@ -1,10 +1,10 @@
 /**
- * test-database.js - Test Database Connection
+ * test-database.js - Testet die Datenbank-Verbindung
  * GET /.netlify/functions/test-database
  */
 const { neon } = require('@neondatabase/serverless');
 
-const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL;
+const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.VITE_NEON_DATABASE_URL;
 
 const sql = neon(NEON_DATABASE_URL);
 
