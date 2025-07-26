@@ -14,6 +14,11 @@ import Components from 'unplugin-vue-components/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  esbuild: {
+    // Handle React "use client" directives
+    banner: '',
+    legalComments: 'none'
+  },
   plugins: [
     vue(),
     tailwindcss(),
@@ -24,6 +29,17 @@ export default defineConfig({
         global: true
       }
     }),
+
+    // Plugin to remove "use client" directives
+    {
+      name: 'remove-use-client',
+      transform(code, id) {
+        if (id.includes('@stackframe') || id.includes('node_modules')) {
+          return code.replace(/^['"]use client['"];?\s*/gm, '');
+        }
+        return code;
+      }
+    },
 
     Components({
       resolvers: [
@@ -74,10 +90,33 @@ export default defineConfig({
     },
     target: 'esnext',
     sourcemap: false,
+    // Stack Auth Module handling
+    rollupOptions: {
+      external: [],
+      output: {
+        manualChunks: {
+          'stack-auth': ['@stackframe/stack', '@stackframe/react']
+        }
+      }
+    },
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    },
     // Entferne sensible Environment Variables aus Production Build
     define: {
       'import.meta.env.VITE_NEON_DATABASE_URL': JSON.stringify(''), // Entfernt in Production
     }
+  },
+  optimizeDeps: {
+    include: ['@stackframe/stack', '@stackframe/react'],
+    exclude: [],
+    esbuildOptions: {
+      target: 'esnext'
+    }
+  },
+  ssr: {
+    noExternal: ['@stackframe/stack', '@stackframe/react']
   },
   resolve: {
     alias: {
