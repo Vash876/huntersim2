@@ -4,10 +4,6 @@
  */
 const { neon } = require('@neondatabase/serverless');
 
-const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.VITE_NEON_DATABASE_URL;
-
-const sql = neon(NEON_DATABASE_URL);
-
 const handler = async (event, context) => {
   // CORS headers
   const allowedOrigins = [
@@ -48,6 +44,23 @@ const handler = async (event, context) => {
   }
 
   try {
+    // Initialize database connection at runtime
+    const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.VITE_NEON_DATABASE_URL;
+    
+    if (!NEON_DATABASE_URL) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({
+          success: false,
+          error: 'Database configuration error',
+          message: 'No database connection string available'
+        })
+      };
+    }
+    
+    const sql = neon(NEON_DATABASE_URL);
+
     // Get userId from query parameters
     const { userId } = event.queryStringParameters || {};
 

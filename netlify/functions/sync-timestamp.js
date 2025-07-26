@@ -24,7 +24,17 @@ exports.handler = async (event, context) => {
 
   try {
     // Database connection
-    const sql = neon(process.env.NEON_DATABASE_URL || process.env.VITE_NEON_DATABASE_URL);
+    const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.VITE_NEON_DATABASE_URL;
+    
+    if (!NEON_DATABASE_URL) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'Database configuration error' })
+      };
+    }
+    
+    const sql = neon(NEON_DATABASE_URL);
 
     // Authentication
     const authHeader = event.headers.authorization;
