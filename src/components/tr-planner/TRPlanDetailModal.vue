@@ -410,8 +410,18 @@ const totalTRsInPlan = computed(() => {
 // Erster TR Hours
 const firstTrHours = computed(() => {
   if (!plan.value?.boosts) return 0;
-  const hoursBoost = plan.value.boosts.find(b => b.key === 'hoursInTR');
-  return hoursBoost ? hoursBoost.targetLevel : 0;
+  
+  // Unterstützung für beide Formate: Array (alt) und Object (neu)
+  if (Array.isArray(plan.value.boosts)) {
+    // Altes Array-Format
+    const hoursBoost = plan.value.boosts.find(b => b.key === 'hoursInTR');
+    return hoursBoost?.targetLevel || 0;
+  } else if (plan.value.boosts && typeof plan.value.boosts === 'object') {
+    // Neues Object-Format
+    return plan.value.boosts.hoursInTR?.targetLevel || 0;
+  }
+  
+  return 0;
 });
 
 // Erster TR Orb Gains
@@ -428,8 +438,17 @@ const firstTrFragGains = computed(() => {
 function getChainTrHours(chainStep) {
   if (!chainStep?.boosts) return 0;
   
-  const hoursBoost = chainStep.boosts.find(b => b.key === 'hoursInTR');
-  return hoursBoost ? hoursBoost.targetLevel : 0;
+  // Unterstützung für beide Formate: Array (alt) und Object (neu)
+  if (Array.isArray(chainStep.boosts)) {
+    // Altes Array-Format
+    const hoursBoost = chainStep.boosts.find(b => b.key === 'hoursInTR');
+    return hoursBoost?.targetLevel || 0;
+  } else if (chainStep.boosts && typeof chainStep.boosts === 'object') {
+    // Neues Object-Format
+    return chainStep.boosts.hoursInTR?.targetLevel || 0;
+  }
+  
+  return 0;
 }
 
 // Total Hours in TR für alle TRs zusammen
@@ -828,15 +847,35 @@ const hasLoopModInPlan = computed(() => {
   if (!plan.value) return false;
   
   // Im ersten TR suchen
-  if (plan.value.boosts && plan.value.boosts.some(b => b.key === 'lmConsistency')) {
-    return true;
+  if (plan.value.boosts) {
+    if (Array.isArray(plan.value.boosts)) {
+      // Altes Array-Format
+      if (plan.value.boosts.some(b => b.key === 'lmConsistency')) {
+        return true;
+      }
+    } else if (typeof plan.value.boosts === 'object') {
+      // Neues Object-Format
+      if (plan.value.boosts.lmConsistency) {
+        return true;
+      }
+    }
   }
   
   // In der TR-Chain suchen
   if (plan.value.trChain) {
     for (const chainStep of plan.value.trChain) {
-      if (chainStep.boosts && chainStep.boosts.some(b => b.key === 'lmConsistency')) {
-        return true;
+      if (chainStep.boosts) {
+        if (Array.isArray(chainStep.boosts)) {
+          // Altes Array-Format
+          if (chainStep.boosts.some(b => b.key === 'lmConsistency')) {
+            return true;
+          }
+        } else if (typeof chainStep.boosts === 'object') {
+          // Neues Object-Format
+          if (chainStep.boosts.lmConsistency) {
+            return true;
+          }
+        }
       }
     }
   }
@@ -851,16 +890,36 @@ function getLoopModCostDisplay() {
   
   // Im ersten TR suchen
   if (plan.value.boosts) {
-    const lmBoost = plan.value.boosts.find(b => b.key === 'lmConsistency');
-    if (lmBoost) highestLevel = Math.max(highestLevel, lmBoost.targetLevel);
+    let lmLevel = 0;
+    
+    if (Array.isArray(plan.value.boosts)) {
+      // Altes Array-Format
+      const lmBoost = plan.value.boosts.find(b => b.key === 'lmConsistency');
+      lmLevel = lmBoost?.targetLevel || 0;
+    } else if (typeof plan.value.boosts === 'object') {
+      // Neues Object-Format
+      lmLevel = plan.value.boosts.lmConsistency?.targetLevel || 0;
+    }
+    
+    highestLevel = Math.max(highestLevel, lmLevel);
   }
   
   // In der TR-Chain suchen
   if (plan.value.trChain) {
     for (const chainStep of plan.value.trChain) {
       if (chainStep.boosts) {
-        const lmBoost = chainStep.boosts.find(b => b.key === 'lmConsistency');
-        if (lmBoost) highestLevel = Math.max(highestLevel, lmBoost.targetLevel);
+        let lmLevel = 0;
+        
+        if (Array.isArray(chainStep.boosts)) {
+          // Altes Array-Format
+          const lmBoost = chainStep.boosts.find(b => b.key === 'lmConsistency');
+          lmLevel = lmBoost?.targetLevel || 0;
+        } else if (typeof chainStep.boosts === 'object') {
+          // Neues Object-Format
+          lmLevel = chainStep.boosts.lmConsistency?.targetLevel || 0;
+        }
+        
+        highestLevel = Math.max(highestLevel, lmLevel);
       }
     }
   }
@@ -1200,9 +1259,22 @@ function getChainStartDate(index) {
 // die auch in der Boosts Progression Sektion erscheinen
 function getBoostListHtml(trIndex) {
   // Erster TR oder Chain-TR?
-  const currentBoosts = trIndex === 0 
-    ? plan.value?.boosts || [] 
-    : plan.value?.trChain?.[trIndex-1]?.boosts || [];
+  const rawBoosts = trIndex === 0 
+    ? plan.value?.boosts 
+    : plan.value?.trChain?.[trIndex-1]?.boosts;
+
+  // Konvertiere Boosts zu einheitlichem Array-Format
+  let currentBoosts = [];
+  if (Array.isArray(rawBoosts)) {
+    // Altes Array-Format
+    currentBoosts = rawBoosts;
+  } else if (rawBoosts && typeof rawBoosts === 'object') {
+    // Neues Object-Format - konvertiere zu Array
+    currentBoosts = Object.entries(rawBoosts).map(([key, boostData]) => ({
+      key,
+      ...boostData
+    }));
+  }
 
   // Rekursive Funktion, um den aktuellsten Wert eines Boosts vor diesem TR zu finden
   function findMostRecentValue(boostKey, currentTrIndex) {
@@ -1220,13 +1292,29 @@ function getBoostListHtml(trIndex) {
     
     // Für TR 1 (index 0) suchen wir direkt in den Boosts
     if (currentTrIndex === 1) {
-      const boost = plan.value?.boosts?.find(b => b.key === boostKey);
+      const planBoosts = plan.value?.boosts;
+      let boost = null;
+      
+      if (Array.isArray(planBoosts)) {
+        boost = planBoosts.find(b => b.key === boostKey);
+      } else if (planBoosts && typeof planBoosts === 'object') {
+        boost = planBoosts[boostKey];
+      }
+      
       if (boost) {
         return boost.targetLevel;
       }
     } else {
       // Für TR 2+ suchen wir in der Chain
-      const boost = plan.value?.trChain?.[currentTrIndex-2]?.boosts?.find(b => b.key === boostKey);
+      const chainBoosts = plan.value?.trChain?.[currentTrIndex-2]?.boosts;
+      let boost = null;
+      
+      if (Array.isArray(chainBoosts)) {
+        boost = chainBoosts.find(b => b.key === boostKey);
+      } else if (chainBoosts && typeof chainBoosts === 'object') {
+        boost = chainBoosts[boostKey];
+      }
+      
       if (boost) {
         return boost.targetLevel;
       }

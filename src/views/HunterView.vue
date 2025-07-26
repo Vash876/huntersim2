@@ -666,8 +666,6 @@ function closeBuildModal() {
 
 // Event-Handler für erstellten Build
 function onBuildCreated(build) {
-  console.log('Build created:', build);
-  
   // Aktualisiere die lokale Liste der Builds
   // Wichtig: Die Builds müssen manuell aktualisiert werden!
   if (build) {
@@ -683,9 +681,7 @@ function onBuildCreated(build) {
 
 
 // Event-Handler für aktualisierten Build
-function onBuildUpdated(build) {
-  console.log('Build updated:', build);
-  
+function onBuildUpdated(build) {  
   // Aktualisiere die lokale Liste der Builds
   if (build) {
     const updatedBuilds = hunterStore.getOrderedBuildsForHunter(route.params.hunterId) || [];
@@ -935,12 +931,10 @@ watchEffect(() => {
 
 // Handler für das Drag-Ende-Event - aktualisiert
 function onDragEnd(event) {
-  console.log('Neue Reihenfolge:', builds.value);
-  
+
   // Stelle sicher, dass alle Builds nach dem Drag & Drop die hunterId haben
   builds.value = builds.value.map(build => {
     if (!build.hunterId) {
-      console.log('HunterId fehlt bei Build:', build.name);
       return {
         ...build,
         hunterId: route.params.hunterId
@@ -959,7 +953,6 @@ function onDragEnd(event) {
     // Wenn sich der Referenz-Build geändert hat
     if (referenceBuildId.value !== newReferenceId) {
       referenceBuildId.value = newReferenceId;
-      console.log('Referenz-Build geändert nach Drag & Drop:', newReferenceId);
       
       // Suche nach Ergebnissen für den neuen Referenz-Build im Cache
       const firstBuildKey = Object.keys(evaluationCache.value).find(key => {
@@ -973,10 +966,6 @@ function onDragEnd(event) {
       
       if (firstBuildKey && evaluationCache.value[firstBuildKey]) {
         referenceBuildResults.value = { ...evaluationCache.value[firstBuildKey] };
-        console.log('Referenz-Ergebnisse aus Cache aktualisiert');
-      } else {
-        // Warte auf die Evaluierung des neuen Referenz-Builds
-        console.log('Warte auf Evaluierung des neuen Referenz-Builds');
       }
       
       // Wichtig: Erhöhe den Aktualisierungszähler, um alle Builds zu aktualisieren
@@ -994,7 +983,6 @@ function handleBuildEvaluated({ buildId, results, isReference }) {
   // Wenn dies der Referenz-Build ist, aktualisiere seine Ergebnisse
   if (isReference || buildId === referenceBuildId.value) {
     referenceBuildResults.value = { ...results };
-    console.log('Reference build results updated via event:', referenceBuildResults.value);
     // Erhöhe den Zähler, damit alle anderen Builds aktualisiert werden
     referenceUpdateCounter.value++;
   }
@@ -1022,7 +1010,6 @@ function handleBuildReevaluate(buildId) {
 
 // Füge auch die Funktion zum Aktualisieren der Display-Einstellungen hinzu
 function onDisplaySettingsUpdated(settings) {
-  console.log('Display settings updated:', settings);
   // Hier kannst du auf Änderungen reagieren, z.B. alle Karten neu rendern
   // Oder den aktuellen Anzeigemodus aktualisieren
   

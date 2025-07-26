@@ -1,24 +1,72 @@
 import { useTRPlannerStore } from '@/store/orbStore';
 import { getGemDataFromLocalStorage, getDefaultGemData } from '@/utils/gemDataUtils.js';
 
-// Helper-Funktion um Gem-Daten aus dem Store zu laden
-export function getGemDataFromStore() {
+// Context-aware gem data loading for plan calculations
+let currentPlanContext = null;
+
+/**
+ * Sets the current plan context for gem-dependent calculations
+ * @param {Object|null} context - Plan context containing gem data, or null for local context
+ */
+export function setPlanContext(context) {
+  currentPlanContext = context;
+}
+
+/**
+ * Gets the current plan context
+ * @returns {Object|null} Current plan context or null
+ */
+export function getCurrentPlanContext() {
+  return currentPlanContext;
+}
+
+/**
+ * Gets gem data based on current plan context
+ * For imported plans: uses plan's gem context
+ * For local plans: uses user's local gem data
+ * @param {string|null} planId - Plan ID to get context for (if any)
+ * @returns {Object} Gem data object
+ */
+export function getContextualGemData(planId = null) {
   try {
-    // Lade Daten direkt aus localStorage
+    // If we have a plan context set globally, use it
+    if (currentPlanContext?.gemData) {
+      return currentPlanContext.gemData;
+    }
+    
+    // If we have a planId, try to get its context from the store
+    if (planId) {
+      try {
+        const store = useTRPlannerStore();
+        const planGemContext = store.getPlanGemContext(planId);
+        if (planGemContext) {
+          return planGemContext;
+        }
+      } catch (error) {
+        // Store might not be available in all contexts, continue with local data
+        console.warn('Could not access store for plan context:', error);
+      }
+    }
+    
+    // Otherwise use local gem data
     const gemData = getGemDataFromLocalStorage();
     
-    // Wenn gültige Daten vorhanden sind, verwende sie
     if (gemData && gemData.levels) {
       return gemData;
     }
     
-    // DEFAULT: Fallback-Werte
+    // DEFAULT: Fallback values
     return getDefaultGemData();
     
   } catch (error) {
-    console.warn('Could not load gem data:', error);
+    console.warn('Could not load contextual gem data:', error);
     return getDefaultGemData();
   }
+}
+
+// Legacy function for backward compatibility
+export function getGemDataFromStore() {
+  return getContextualGemData();
 }
 
 // Boost-Kategorien und ihre zugehörigen Boosts
@@ -87,9 +135,10 @@ export const generalStats = [
   }
 ];
 
-// Alle Boosts mit Kategoriezuordnung
+// Alle Boosts mit Kategoriezuordnung und IDs
 export const allBoosts = [
   {
+    id: 1,
     key: 'hoursInTR',
     label: 'Hours in TR',
     category: 'time',
@@ -111,6 +160,7 @@ export const allBoosts = [
     },
   },
   {
+    id: 2,
     key: 'loopMods',
     label: 'Loop Mods Count',
     category: 'time',
@@ -122,6 +172,7 @@ export const allBoosts = [
     multiplier: 1,
   },
   {
+    id: 3,
     key: 'lmConsistency',
     label: 'Ultima LM: Rule of Consistency',
     category: 'time',
@@ -136,6 +187,7 @@ export const allBoosts = [
   },
   // Milestones
   {
+    id: 4,
     key: 'ms0',
     label: 'Milestone #0',
     category: 'milestone',
@@ -145,11 +197,16 @@ export const allBoosts = [
     tooltip: 'For Campaign Fragments Multiplier Attraction Gem Level #3 required.',
     multiplier: (value) => Math.pow(1.1, value),
     fragmulti: (value, allValues) => {
-      // Store-Integration: Attraction Gem Level und Node direkt aus Store laden
-      const gemData = getGemDataFromLocalStorage();
+      // Context-aware gem data loading - check plan context first
+      let gemData;
+      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+        gemData = window.__PLAN_CONTEXT__.gemData;
+      } else {
+        gemData = getContextualGemData();
+      }
       const attractionLevel = gemData.levels.attraction || 0;
       
-      // Prüfe ob Attraction Level 3
+      // Check if Attraction Level 3 is available
       if (attractionLevel >= 3) {
         return Math.pow(1.011, value);
       }
@@ -160,6 +217,7 @@ export const allBoosts = [
 
   // Relics
   {
+    id: 5,
     key: 'r6',
     label: 'Relic #6',
     category: 'relic',
@@ -175,6 +233,7 @@ export const allBoosts = [
     max: 11
   },
   {
+    id: 6,
     key: 'r9',
     label: 'Relic #9',
     category: 'relic',
@@ -188,6 +247,7 @@ export const allBoosts = [
 
   // Inscriptions
   {
+    id: 7,
     key: 'i52',
     label: 'Inscryp. #52',
     category: 'inscryption',
@@ -199,6 +259,7 @@ export const allBoosts = [
     max: 8
   },
   {
+    id: 8,
     key: 'i78',
     label: 'Inscryp. #78',
     category: 'inscryption',
@@ -210,6 +271,7 @@ export const allBoosts = [
     max: 8
   },
   {
+    id: 9,
     key: 'i101',
     label: 'Inscryp. #101',
     category: 'inscryption',
@@ -223,6 +285,7 @@ export const allBoosts = [
 
   //Construction Milestones
   {
+    id: 10,
     key: 'cm47',
     label: 'CM #47',
     category: 'cm',
@@ -235,6 +298,7 @@ export const allBoosts = [
     multiplier: 1.04,
   },
   {
+    id: 11,
     key: 'cm49',
     label: 'CM #49',
     category: 'cm',
@@ -247,6 +311,7 @@ export const allBoosts = [
     multiplier: 1.08,
   },
   {
+    id: 12,
     key: 'cm50',
     label: 'CM #50',
     category: 'cm',
@@ -259,6 +324,7 @@ export const allBoosts = [
     multiplier: 1.05,
   },
   {
+    id: 13,
     key: 'cm51',
     label: 'CM #51',
     category: 'cm',
@@ -273,6 +339,7 @@ export const allBoosts = [
 
   // Boon E
   {
+    id: 14,
     key: 'boonELevel',
     label: 'Boon E Level',
     category: 'boonE',
@@ -286,6 +353,7 @@ export const allBoosts = [
     max: 2
   },
   {
+    id: 15,
     key: 'campaigns',
     label: 'Campaigns',
     category: 'boonE',
@@ -326,6 +394,7 @@ export const allBoosts = [
 
   // Boon H
   {
+    id: 16,
     key: 'boonHLevel',
     label: 'Boon H Level',
     category: 'boonH',
@@ -339,6 +408,7 @@ export const allBoosts = [
     max: 2
   },
   {
+    id: 17,
     key: 'shipinstalls',
     label: 'Ship Installs',
     category: 'boonH',
@@ -371,6 +441,7 @@ export const allBoosts = [
     },
   },
   {
+    id: 18,
     key: 'ouroinstalls',
     label: 'Ouro Installs',
     category: 'boonH',
@@ -404,6 +475,7 @@ export const allBoosts = [
 
   // Gadgets
   {
+    id: 19,
     key: 'oogadget',
     label: 'Serpents Connection Band',
     category: 'gadget',
@@ -421,6 +493,7 @@ export const allBoosts = [
     }
   },
   {
+    id: 20,
     key: 'campfragdet',
     label: 'Galactic Fragment Magnet',
     category: 'gadget',
@@ -440,6 +513,7 @@ export const allBoosts = [
 
   // Researches
   {
+    id: 21,
     key: 'research',
     label: 'Research Points',
     category: 'research',
@@ -452,17 +526,22 @@ export const allBoosts = [
     normalControl: 100,
     fastControl: 1000,
     multiplier: (value, allValues) => {
-      // Store-Integration: Innovation Gem Level direkt aus Store laden
-      const gemData = getGemDataFromLocalStorage();
+      // Context-aware gem data loading - check plan context first
+      let gemData;
+      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+        gemData = window.__PLAN_CONTEXT__.gemData;
+      } else {
+        gemData = getContextualGemData();
+      }
       const innovationGemLevel = gemData.levels.innovation || 0;
       
       if (innovationGemLevel < 2) {
-        return 1; // Kein Multiplikator wenn Innovation Gem unter Level 2
+        return 1; // No multiplier if Innovation Gem below Level 2
       }
       
       let overallMultiplier = 1;
       
-      // Rest der Research-Logik bleibt gleich...
+      // Rest of research logic remains the same...
       for (const research in researchData) {
         let researchMultiplier = 1;
         
@@ -483,6 +562,7 @@ export const allBoosts = [
   },
 
   {
+    id: 22,
     key: 'research89',
     label: 'Research #89',
     category: 'research',
@@ -508,6 +588,7 @@ export const allBoosts = [
 
   // Trinkets
   {
+    id: 23,
     key: 'trinket_oo_tier',
     label: 'The Ouro Recursive Index Tier',
     category: 'trinkets',
@@ -520,6 +601,7 @@ export const allBoosts = [
     multiplier: 1,
   },  
   {
+    id: 24,
     key: 'trinket_oo_level',
     label: 'The Ouro Recursive Index Level',
     category: 'trinkets',
@@ -542,6 +624,7 @@ export const allBoosts = [
 
   // Premium
   {
+    id: 25,
     key: 'tr5Special',
     label: 'Diamond Special',
     category: 'premium',
@@ -553,6 +636,7 @@ export const allBoosts = [
     max: 10
   },
   {
+    id: 26,
     key: 'iap',
     label: 'IAP Trav. Pack',
     category: 'premium',
@@ -563,6 +647,7 @@ export const allBoosts = [
     multiplier: 1.25,
   },
   {
+    id: 27,
     key: 'hera',
     label: 'Hera Card',
     category: 'premium',
@@ -573,6 +658,7 @@ export const allBoosts = [
     multiplier: 1.05,
   },
   {
+    id: 28,
     key: 'jaxis',
     label: 'Jaxis Card',
     category: 'premium',
@@ -585,6 +671,7 @@ export const allBoosts = [
 
   // Void Badges
   {
+    id: 29,
     key: 'vb1',
     label: 'Void Badge #1',
     category: 'badge',
@@ -597,6 +684,7 @@ export const allBoosts = [
     multiplier: 1.25,
   },
   {
+    id: 30,
     key: 'vb2',
     label: 'Void Badge #2',
     category: 'badge',
@@ -609,6 +697,7 @@ export const allBoosts = [
     multiplier: 1.25,
   },
   {
+    id: 31,
     key: 'vb3',
     label: 'Void Badge #3',
     category: 'badge',
@@ -621,6 +710,7 @@ export const allBoosts = [
     multiplier: 1.25,
   },
   {
+    id: 32,
     key: 'vb4',
     label: 'Void Badge #4',
     category: 'badge',
@@ -633,6 +723,7 @@ export const allBoosts = [
     multiplier: 1.5,
   },
   {
+    id: 33,
     key: 'vb5',
     label: 'Void Badge #5',
     category: 'badge',
@@ -645,6 +736,195 @@ export const allBoosts = [
     multiplier: 2,
   },
 ];
+
+// Utility functions for boost ID management
+/**
+ * Gets the next available boost ID
+ * @returns {number} Next available ID
+ */
+export function getNextBoostId() {
+  const usedIds = allBoosts.map(boost => boost.id);
+  const maxId = Math.max(...usedIds);
+  return maxId + 1;
+}
+
+/**
+ * Validates that all boost IDs are unique
+ * @returns {Object} Validation result with isValid boolean and any duplicate IDs
+ */
+export function validateBoostIds() {
+  const idCounts = {};
+  const duplicates = [];
+  
+  allBoosts.forEach(boost => {
+    if (!boost.id) {
+      console.error(`Boost ${boost.key} is missing an ID`);
+      return;
+    }
+    
+    idCounts[boost.id] = (idCounts[boost.id] || 0) + 1;
+    if (idCounts[boost.id] > 1 && !duplicates.includes(boost.id)) {
+      duplicates.push(boost.id);
+    }
+  });
+  
+  const isValid = duplicates.length === 0;
+  
+  if (!isValid) {
+    console.error('Duplicate boost IDs found:', duplicates);
+    duplicates.forEach(id => {
+      const boostsWithSameId = allBoosts.filter(b => b.id === id);
+      console.error(`ID ${id} is used by:`, boostsWithSameId.map(b => b.key));
+    });
+  }
+  
+  return {
+    isValid,
+    duplicates,
+    nextAvailableId: Math.max(...Object.keys(idCounts).map(Number)) + 1
+  };
+}
+
+// Run validation in development
+if (process.env.NODE_ENV === 'development') {
+  const validation = validateBoostIds();
+  if (!validation.isValid) {
+    console.warn('⚠️ Boost ID validation failed! Check console for details.');
+  } else {
+    console.log(`✅ Boost IDs validated. Next available ID: ${validation.nextAvailableId}`);
+  }
+}
+
+// Mapping functions for ID-based export/import
+export const boostKeyToId = new Map();
+export const boostIdToKey = new Map();
+
+// Initialize mappings and validate
+allBoosts.forEach(boost => {
+  if (!boost.id) {
+    console.error(`Boost ${boost.key} is missing an ID!`);
+    return;
+  }
+  
+  if (boostKeyToId.has(boost.key)) {
+    console.error(`Duplicate key found: ${boost.key}`);
+  }
+  
+  if (boostIdToKey.has(boost.id)) {
+    const existingKey = boostIdToKey.get(boost.id);
+    console.error(`Duplicate ID ${boost.id} found! Used by both ${existingKey} and ${boost.key}`);
+  }
+  
+  boostKeyToId.set(boost.key, boost.id);
+  boostIdToKey.set(boost.id, boost.key);
+});
+
+/**
+ * Helper function to create a new boost with automatic ID assignment
+ * Usage example:
+ * const newBoost = createBoost({
+ *   key: 'newBoost',
+ *   label: 'New Boost',
+ *   category: 'milestone',
+ *   type: 'number',
+ *   orbcalc: true,
+ *   multiplier: (value) => Math.pow(1.1, value)
+ * });
+ * 
+ * @param {Object} boostConfig - Boost configuration object
+ * @returns {Object} Complete boost object with auto-assigned ID
+ */
+export function createBoost(boostConfig) {
+  const id = getNextBoostId();
+  
+  return {
+    id,
+    tooltip: '0', // Default tooltip
+    permanent: false, // Default permanent
+    ...boostConfig
+  };
+}
+
+/**
+ * Convert boost data from key-based to ID-based format for export
+ * @param {Object|Array} boostData - Object with boost keys as properties OR Array with boost objects
+ * @returns {Object} - Object with boost IDs as properties
+ */
+export function convertBoostDataToIds(boostData) {
+  const idBasedData = {};
+  
+  // Handle array format (legacy)
+  if (Array.isArray(boostData)) {
+    for (const boost of boostData) {
+      if (!boost || !boost.key) continue;
+      
+      const id = boostKeyToId.get(boost.key);
+      if (id !== undefined) {
+        let actualValue;
+        if (boost.type === 'number') {
+          actualValue = boost.targetLevel !== undefined ? boost.targetLevel : (boost.value !== undefined ? boost.value : 0);
+        } else if (boost.type === 'boolean') {
+          actualValue = boost.targetState !== undefined ? boost.targetState : (boost.value !== undefined ? boost.value : false);
+        } else {
+          actualValue = boost.value !== undefined ? boost.value : 0;
+        }
+        
+        // Include ALL values, even 0 and false
+        if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
+          idBasedData[id] = actualValue;
+        }
+      }
+    }
+  } else {
+    // Handle object format (new)
+    for (const [key, value] of Object.entries(boostData)) {
+      const id = boostKeyToId.get(key);
+      if (id !== undefined) {
+        // Handle both object format and direct value format
+        let actualValue;
+        if (typeof value === 'object' && value !== null) {
+          // Object format: {type: 'number', targetLevel: 5} or {type: 'boolean', targetState: true}
+          if (value.type === 'number') {
+            actualValue = value.targetLevel !== undefined ? value.targetLevel : (value.value !== undefined ? value.value : 0);
+          } else if (value.type === 'boolean') {
+            actualValue = value.targetState !== undefined ? value.targetState : (value.value !== undefined ? value.value : false);
+          } else {
+            actualValue = value.value !== undefined ? value.value : 0;
+          }
+        } else {
+          // Direct value format
+          actualValue = value;
+        }
+        
+        // Include ALL values, even 0 and false - they might be intentional settings
+        if (actualValue !== undefined && actualValue !== null && actualValue !== '') {
+          idBasedData[id] = actualValue;
+        }
+      }
+    }
+  }
+  
+  return idBasedData;
+}
+
+/**
+ * Convert boost data from ID-based to key-based format for import
+ * @param {Object} idBasedData - Object with boost IDs as properties
+ * @returns {Object} - Object with boost keys as properties
+ */
+export function convertBoostDataFromIds(idBasedData) {
+  const keyBasedData = {};
+  
+  for (const [idStr, value] of Object.entries(idBasedData)) {
+    const id = parseInt(idStr);
+    const key = boostIdToKey.get(id);
+    if (key && value !== undefined) {
+      keyBasedData[key] = value;
+    }
+  }
+  
+  return keyBasedData;
+}
 
 // Research data for multiplier calculations
 export const researchData = {

@@ -22,23 +22,15 @@ class NeonAuthService {
       this.isLoading.value = true;
       this.error.value = null;
 
-      console.log('Neon Auth init: Checking authentication status...');
-      console.log('stackClientApp:', stackClientApp);
-      console.log('Available methods:', Object.getOwnPropertyNames(stackClientApp.__proto__));
-
       // Check if user is already authenticated
       const currentUser = await stackClientApp.getUser();
-      
-      console.log('stackClientApp.getUser() result:', currentUser);
       
       if (currentUser) {
         this.user.value = currentUser;
         this.isAuthenticated.value = true;
-        console.log('Neon Auth: User already authenticated', currentUser.primaryEmail || currentUser.email);
       } else {
         this.user.value = null;
         this.isAuthenticated.value = false;
-        console.log('Neon Auth: No authenticated user');
       }
 
       // Stack Auth doesn't have onUserChange, we'll poll for changes or use events
@@ -49,23 +41,17 @@ class NeonAuthService {
       this.error.value = error.message;
     } finally {
       this.isLoading.value = false;
-      console.log('Neon Auth init complete. Final state:', {
-        isAuthenticated: this.isAuthenticated.value,
-        user: this.user.value
-      });
     }
   }
 
   // Manually refresh auth state (useful after OAuth callback)
   async refreshAuthState() {
     try {
-      console.log('Neon Auth: Refreshing auth state...');
       const currentUser = await stackClientApp.getUser();
       
       if (currentUser) {
         this.user.value = currentUser;
         this.isAuthenticated.value = true;
-        console.log('Neon Auth: Auth state refreshed - user authenticated', currentUser.primaryEmail || currentUser.email);
         
         // Trigger the callback if it exists
         if (this.onAuthStateChanged) {
@@ -74,7 +60,6 @@ class NeonAuthService {
       } else {
         this.user.value = null;
         this.isAuthenticated.value = false;
-        console.log('Neon Auth: Auth state refreshed - no user');
         
         // Trigger the callback if it exists
         if (this.onAuthStateChanged) {
@@ -96,8 +81,6 @@ class NeonAuthService {
       this.isLoading.value = true;
       this.error.value = null;
 
-      console.log('Neon Auth: Attempting sign in with email:', email);
-      
       let result;
       // Try different possible method names for credential sign in
       if (stackClientApp.signInWithCredential) {
@@ -112,12 +95,9 @@ class NeonAuthService {
         throw new Error('Sign in methods not available in Stack Auth SDK');
       }
 
-      console.log('Neon Auth: Sign in result:', result);
-
       if (result && result.user) {
         this.user.value = result.user;
         this.isAuthenticated.value = true;
-        console.log('Neon Auth: Sign in successful', result.user.primaryEmail || result.user.email);
         return result.user;
       } else {
         throw new Error('Sign in failed - no user returned');
@@ -137,8 +117,6 @@ class NeonAuthService {
       this.isLoading.value = true;
       this.error.value = null;
 
-      console.log('Neon Auth: Attempting sign up with email:', email, 'displayName:', displayName);
-
       let result;
       // Try different possible method names for credential sign up
       if (stackClientApp.signUpWithCredential) {
@@ -153,8 +131,6 @@ class NeonAuthService {
         throw new Error('Sign up methods not available in Stack Auth SDK');
       }
 
-      console.log('Neon Auth: Sign up result:', result);
-
       if (result && result.user) {
         this.user.value = result.user;
         this.isAuthenticated.value = true;
@@ -162,18 +138,15 @@ class NeonAuthService {
         // If displayName was provided, try different methods to set it
         if (displayName && displayName.trim()) {
           const trimmedName = displayName.trim();
-          console.log('Neon Auth: Attempting to set display name to:', trimmedName);
           
           try {
             // Try method 1: updateUser
             if (stackClientApp.updateUser) {
               const updatedUser = await stackClientApp.updateUser({ displayName: trimmedName });
-              console.log('Neon Auth: updateUser result:', updatedUser);
               if (updatedUser) this.user.value = updatedUser;
             } else if (stackClientApp.updateCurrentUser) {
               // Try method 2: updateCurrentUser
               const updatedUser = await stackClientApp.updateCurrentUser({ displayName: trimmedName });
-              console.log('Neon Auth: updateCurrentUser result:', updatedUser);
               if (updatedUser) this.user.value = updatedUser;
             }
           } catch (updateError) {
@@ -181,7 +154,6 @@ class NeonAuthService {
           }
         }
         
-        console.log('Neon Auth: Sign up successful', result.user.primaryEmail || result.user.email, 'final displayName:', this.user.value.displayName || this.user.value.display_name);
         return this.user.value;
       } else {
         throw new Error('Sign up failed - no user returned');
@@ -206,7 +178,6 @@ class NeonAuthService {
       this.user.value = null;
       this.isAuthenticated.value = false;
       
-      console.log('Neon Auth: Sign out successful');
       return true;
     } catch (error) {
       console.error('Neon Auth sign out failed:', error);
@@ -223,8 +194,6 @@ class NeonAuthService {
       this.isLoading.value = true;
       this.error.value = null;
 
-      console.log('Neon Auth: Sending password reset email to:', email);
-
       // Try different possible method names for password reset
       if (stackClientApp.sendPasswordResetEmail) {
         await stackClientApp.sendPasswordResetEmail(email);
@@ -238,7 +207,6 @@ class NeonAuthService {
         throw new Error('Password reset methods not available in Stack Auth SDK');
       }
       
-      console.log('Neon Auth: Password reset email sent to', email);
       return true;
     } catch (error) {
       console.error('Neon Auth password reset failed:', error);
@@ -255,35 +223,18 @@ class NeonAuthService {
       this.isLoading.value = true;
       this.error.value = null;
 
-      console.log('Neon Auth: Attempting Google OAuth sign in');
-      console.log('Available stackClientApp methods:', Object.getOwnPropertyNames(stackClientApp));
-      console.log('Available stackClientApp prototype methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(stackClientApp)));
-      
-      // Check all available methods that might be OAuth related
-      const allMethods = [...Object.getOwnPropertyNames(stackClientApp), ...Object.getOwnPropertyNames(Object.getPrototypeOf(stackClientApp))];
-      const oauthMethods = allMethods.filter(method => 
-        method.toLowerCase().includes('oauth') || 
-        method.toLowerCase().includes('signin') || 
-        method.toLowerCase().includes('redirect') ||
-        method.toLowerCase().includes('google')
-      );
-      console.log('Potential OAuth methods:', oauthMethods);
-
-      // Stack Auth OAuth redirect methods - try different possible names
-      if (stackClientApp.signInWithOAuth) {
-        console.log('Using signInWithOAuth method');
+      // Try the actual Stack Auth OAuth methods
+      if (stackClientApp.redirectToSignIn) {
+        await stackClientApp.redirectToSignIn();
+      } else if (stackClientApp.signInWithOAuth) {
         await stackClientApp.signInWithOAuth('google');
       } else if (stackClientApp.redirectToOAuth) {
-        console.log('Using redirectToOAuth method');
         await stackClientApp.redirectToOAuth('google');
       } else if (stackClientApp.signInWithProvider) {
-        console.log('Using signInWithProvider method');
         await stackClientApp.signInWithProvider('google');
       } else if (stackClientApp.oauthSignIn) {
-        console.log('Using oauthSignIn method');
         await stackClientApp.oauthSignIn('google');
       } else {
-        console.error('Available methods:', Object.getOwnPropertyNames(stackClientApp));
         throw new Error('OAuth methods not available in Stack Auth SDK');
       }
       
@@ -305,34 +256,18 @@ class NeonAuthService {
       this.isLoading.value = true;
       this.error.value = null;
 
-      console.log('Neon Auth: Attempting GitHub OAuth sign in');
-      console.log('Available stackClientApp methods:', Object.getOwnPropertyNames(stackClientApp));
-      
-      // Check all available methods that might be OAuth related
-      const allMethods = [...Object.getOwnPropertyNames(stackClientApp), ...Object.getOwnPropertyNames(Object.getPrototypeOf(stackClientApp))];
-      const oauthMethods = allMethods.filter(method => 
-        method.toLowerCase().includes('oauth') || 
-        method.toLowerCase().includes('signin') || 
-        method.toLowerCase().includes('redirect') ||
-        method.toLowerCase().includes('github')
-      );
-      console.log('Potential OAuth methods:', oauthMethods);
-
-      // Stack Auth OAuth redirect methods - try different possible names
-      if (stackClientApp.signInWithOAuth) {
-        console.log('Using signInWithOAuth method');
+      // Try the actual Stack Auth OAuth methods
+      if (stackClientApp.redirectToSignIn) {
+        await stackClientApp.redirectToSignIn();
+      } else if (stackClientApp.signInWithOAuth) {
         await stackClientApp.signInWithOAuth('github');
       } else if (stackClientApp.redirectToOAuth) {
-        console.log('Using redirectToOAuth method');
         await stackClientApp.redirectToOAuth('github');
       } else if (stackClientApp.signInWithProvider) {
-        console.log('Using signInWithProvider method');
         await stackClientApp.signInWithProvider('github');
       } else if (stackClientApp.oauthSignIn) {
-        console.log('Using oauthSignIn method');
         await stackClientApp.oauthSignIn('github');
       } else {
-        console.error('Available methods:', Object.getOwnPropertyNames(stackClientApp));
         throw new Error('OAuth methods not available in Stack Auth SDK');
       }
       
@@ -350,12 +285,10 @@ class NeonAuthService {
 
   // Utility methods
   getCurrentUser() {
-    console.log('getCurrentUser called, user.value:', this.user.value);
     return this.user.value;
   }
 
   isSignedIn() {
-    console.log('isSignedIn called, isAuthenticated.value:', this.isAuthenticated.value);
     return this.isAuthenticated.value;
   }
 

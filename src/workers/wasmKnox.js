@@ -10,11 +10,8 @@ async function initWasm() {
   }
   
   try {
-    console.log('WASM Knox: Versuche mit AssemblyScript Loader...');
-    
     // AssemblyScript Loader verwenden
     const wasmUrl = `/wasm/release.wasm?v=${__BUILD_TIME__}`;
-    console.log(`Loading WASM: ${wasmUrl}`);
     
     wasmModule = await instantiate(fetch(wasmUrl), {
       // Imports falls benötigt
@@ -26,8 +23,6 @@ async function initWasm() {
     });
     
     wasmInitialized = true;
-    console.log('WASM Knox: Erfolgreich mit AssemblyScript Loader initialisiert');
-    console.log('WASM Knox: Verfügbare Exports:', Object.keys(wasmModule.exports));
     
     return wasmModule;
     
@@ -76,7 +71,6 @@ async function EVALKNOX_WASM(...params) {
         const sc = wasm.exports.getLastKnoxSc();
         
         debugResults.stats = `${maxHp},${atk},${regen},${dr},${block},${effect},${charge},${chargeGain},${reload},${sc}`;
-        console.log(`WASM Knox: Numerische Stats = ${debugResults.stats}`);
       } else {
         console.error('WASM Knox: Numerische Knox-Funktionen nicht verfügbar!');
       }
@@ -88,7 +82,6 @@ async function EVALKNOX_WASM(...params) {
     try {
       if (wasm.exports.getKnoxProgressSize) {
         const progressSize = wasm.exports.getKnoxProgressSize();
-        console.log(`WASM Knox: Progress Size = ${progressSize}`);
         
         if (progressSize > 0 && wasm.exports.getKnoxProgressStageAt && wasm.exports.getKnoxProgressCountAt) {
           let progressObj = {};
@@ -102,12 +95,7 @@ async function EVALKNOX_WASM(...params) {
           }
           
           debugResults.progress = JSON.stringify(progressObj);
-          console.log(`WASM Knox: Numerische Progress = ${debugResults.progress}`);
-        } else {
-          console.log('WASM Knox: Progress-Iterator-Funktionen nicht verfügbar');
         }
-      } else {
-        console.log('WASM Knox: getKnoxProgressSize nicht verfügbar');
       }
     } catch (e) {
       console.error('WASM Knox: Fehler bei numerischer Progress:', e);
@@ -117,7 +105,6 @@ async function EVALKNOX_WASM(...params) {
     try {
       if (wasm.exports.getKnoxDeathsByStageAndReviveSize) {
         const deathsSize = wasm.exports.getKnoxDeathsByStageAndReviveSize();
-        console.log(`WASM Knox: Deaths By Stage And Revive Size = ${deathsSize}`);
         
         if (deathsSize > 0 && wasm.exports.getKnoxDeathKeyAt && wasm.exports.getKnoxDeathCountAt) {
           let deathsArray = []; // ARRAY statt Object!
@@ -141,7 +128,6 @@ async function EVALKNOX_WASM(...params) {
           
           // WICHTIG: Als Array, nicht als JSON String!
           debugResults.deathTracking = deathsArray;
-          console.log('WASM Knox: Death Tracking Array:', deathsArray);
         } else {
           debugResults.deathTracking = [];
         }
@@ -171,10 +157,6 @@ async function EVALKNOX_WASM(...params) {
       debugResults.deathTracking  // 13: NEU - Detaillierte Death Info
     ]];
     
-    console.log('WASM Knox: Finales Ergebnis-Array:', result[0]);
-    console.log('WASM Knox: Array-Länge:', result[0].length);
-    
-    console.log('WASM Knox: Knox Evaluierung abgeschlossen');
     return result;
   } catch (error) {
     console.error('WASM Knox: Fehler bei Knox Evaluierung:', error);

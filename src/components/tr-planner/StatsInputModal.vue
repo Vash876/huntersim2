@@ -328,6 +328,12 @@ function saveAndClose() {
   // Speichere im localStorage für direkte Verwendung in anderen Modals
   try {
     localStorage.setItem('trplanner_userstats', JSON.stringify(updatedStats));
+    
+    // WICHTIG: Event auslösen für andere Modals (z.B. OrbCalculatorModal)
+    window.dispatchEvent(new CustomEvent('maxLevelStatsChanged', {
+      detail: updatedStats
+    }));
+    
   } catch (e) {
     console.error("Error saving stats to localStorage:", e);
   }

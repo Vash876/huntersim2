@@ -54,6 +54,11 @@ export function saveGemDataToLocalStorage(gemData) {
     // Benachrichtige alle Listener über die Änderung
     notifyGemDataChanged();
     
+    // WICHTIG: Event auch für maxLevelStats-Änderungen auslösen
+    window.dispatchEvent(new CustomEvent('maxLevelStatsChanged', {
+      detail: currentStats
+    }));
+    
     return true;
   } catch (error) {
     console.error('Error saving gem data:', error);

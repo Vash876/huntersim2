@@ -3,13 +3,13 @@ const changelog =
 [
   {
     version: '2.7.0',
-    date: '2025-07-19',
+    date: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
     changes: [
       {
         text: '<b class="text-yellow-400">NEW:</b> Cloud Sync System',
         subItems: [
-          'Added user authentication and cloud synchronization for seamless data backup across devices',
-          'Secure login system with Google and GitHub OAuth support'
+          'Secure login system with Google and GitHub OAuth support',
+          'Sync your builds, tools data, and settings across all your devices'
         ]
       },
       {
@@ -17,6 +17,20 @@ const changelog =
         subItems: [
           'Added comprehensive TR Tracking system for monitoring your TR progress',
           'Progress charts and analytics showing cumulative progress and gains',
+        ]
+      },
+      {
+        text: '<b class="text-yellow-400">NEW:</b> TR Plan Import/Export System',
+        subItems: [
+          'Added TR Plan sharing with export/import functionality',
+          'Enhanced sharing with dual-format options: Raw codes for direct import and Discord-formatted versions with plan statistics',
+        ]
+      },
+      {
+        text: 'Enhanced Hunter Build Sharing',
+        subItems: [
+          'Added dual-format sharing system for Hunter builds with Raw Code and Discord-formatted options',
+          'Discord format includes hunter name, level, and loot score for easy community sharing',
         ]
       },
       {

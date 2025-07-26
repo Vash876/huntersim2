@@ -13,7 +13,9 @@
           <IconGripVertical size="20" />
         </div>
         <div class="w-full">
-          <h3 class="text-lg font-bold text-white pr-2">{{ truncatedPlanName }}</h3>
+          <div class="flex items-center">
+            <h3 class="text-lg font-bold text-white pr-2">{{ truncatedPlanName }}</h3>
+          </div>
           
           <!-- Datum in zweiter Zeile -->
           <div class="flex items-center text-xs text-gray-400 mt-1"> 
@@ -29,57 +31,97 @@
       <div class="h-px bg-gray-500/50 my-2 -mx-4"></div>
       
       <!-- Action-Buttons in dritter Zeile, linksbündig -->
-      <div class="flex items-center space-x-3 mt-2 justify-start relative">
-        <button 
-          @click.stop="$emit('edit')" 
-          class="icon-button"
-          title="Edit plan"
-        >
-          <IconEdit size="16" />
-        </button>
-        <button 
-          @click.stop="$emit('copy')" 
-          class="icon-button"
-          title="Copy plan"
-        >
-          <IconCopy size="16" />
-        </button>
-        
-        <!-- Delete Button mit Dropdown-Bestätigung -->
-        <div class="relative" ref="deleteButtonContainer">
+      <div class="flex items-center justify-between mt-2 relative">
+        <!-- Linke Seite: Action Buttons -->
+        <div class="flex items-center space-x-3">
           <button 
-            @click.stop="toggleDeleteConfirmation"
-            class="icon-button text-red-500/70 hover:text-red-400"
-            :class="{ 'bg-red-900/30': showDeleteConfirmation }"
-            title="Delete plan"
+            @click.stop="$emit('edit')" 
+            class="icon-button"
+            title="Edit plan"
           >
-            <IconTrash size="16" />
+            <IconEdit size="16" />
+          </button>
+          <button 
+            @click.stop="$emit('copy')" 
+            class="icon-button"
+            title="Copy plan"
+          >
+            <IconCopy size="16" />
+          </button>
+          <!-- <button 
+            @click.stop="$emit('adjustments')" 
+            class="icon-button"
+            title="Gem overrides"
+          >
+            <IconAdjustments size="16" />
+          </button> -->
+          <button 
+            @click.stop="$emit('share')" 
+            class="icon-button"
+            title="Share plan"
+          >
+            <IconShare size="16" />
           </button>
           
-          <!-- Delete Confirmation Dropdown -->
-          <div 
-            v-if="showDeleteConfirmation"
-            class="absolute top-full left-0 mt-1 z-50 bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-[180px]"
-            @click.stop
-          >
-            <div class="text-sm text-white mb-2 font-medium">
-              Delete "{{ truncatedPlanName }}"?
-            </div>
-            <div class="flex space-x-2">
-              <button 
-                @click="confirmDelete"
-                class="flex-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors font-medium"
-              >
-                Delete
-              </button>
-              <button 
-                @click="cancelDelete"
-                class="flex-1 px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-white text-sm rounded-md transition-colors"
-              >
-                Cancel
-              </button>
+          <!-- Delete Button mit Dropdown-Bestätigung -->
+          <div class="relative" ref="deleteButtonContainer">
+            <button 
+              @click.stop="toggleDeleteConfirmation"
+              class="icon-button text-red-500/70 hover:text-red-400"
+              :class="{ 'bg-red-900/30': showDeleteConfirmation }"
+              title="Delete plan"
+            >
+              <IconTrash size="16" />
+            </button>
+            
+            <!-- Delete Confirmation Dropdown -->
+            <div 
+              v-if="showDeleteConfirmation"
+              class="absolute top-full left-0 mt-1 z-50 bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 min-w-[180px]"
+              @click.stop
+            >
+              <div class="text-sm text-white mb-2 font-medium">
+                Delete "{{ truncatedPlanName }}"?
+              </div>
+              <div class="flex space-x-2">
+                <button 
+                  @click="confirmDelete"
+                  class="flex-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors font-medium"
+                >
+                  Delete
+                </button>
+                <button 
+                  @click="cancelDelete"
+                  class="flex-1 px-3 py-1.5 bg-gray-600 hover:bg-gray-500 text-white text-sm rounded-md transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
+        </div>
+        
+        <!-- Rechte Seite: Override Tags -->
+        <div class="flex items-center space-x-2">
+          <!-- Gem Overrides Badge -->
+          <span 
+            v-if="hasGemOverrides" 
+            class="px-2 py-0.5 bg-purple-600/20 text-purple-300 text-xs rounded border border-purple-500/30 flex items-center"
+            title="This plan has gem overrides"
+          >
+            <IconAdjustments size="12" class="mr-1" />
+            Gems
+          </span>
+          
+          <!-- Maxed Boosts Overrides Badge -->
+          <span 
+            v-if="hasMaxedBoostsOverrides" 
+            class="px-2 py-0.5 bg-blue-600/20 text-blue-300 text-xs rounded border border-blue-500/30 flex items-center"
+            title="This plan has maxed boosts overrides"
+          >
+            <IconAdjustments size="12" class="mr-1" />
+            Maxed
+          </span>
         </div>
       </div>
     </div>
@@ -140,7 +182,9 @@ import {
   IconTrash, 
   IconClock,
   IconCopy,
-  IconGripVertical
+  IconShare,
+  IconGripVertical,
+  IconAdjustments
 } from '@tabler/icons-vue';
 import { formatNumber } from '@/composables/format';
 
@@ -155,7 +199,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['click', 'edit', 'copy', 'delete']);
+const emit = defineEmits(['click', 'edit', 'copy', 'share', 'adjustments', 'delete']);
 
 // Debug-Update für die Plan-Änderungen
 watch(() => props.plan, (newPlan) => {
@@ -276,7 +320,7 @@ const planEndDate = computed(() => {
   let totalHours = 0;
   
   // Stunden für den ersten TR
-  const hoursBoost = props.plan.boosts?.find(b => b.key === 'hoursInTR');
+  const hoursBoost = props.plan.boosts?.hoursInTR;
   if (hoursBoost) {
     totalHours += hoursBoost.targetLevel || 0;
   }
@@ -285,7 +329,7 @@ const planEndDate = computed(() => {
   if (props.plan.trChain && Array.isArray(props.plan.trChain)) {
     props.plan.trChain.forEach(step => {
       if (step) {
-        const chainHoursBoost = step.boosts?.find(b => b.key === 'hoursInTR');
+        const chainHoursBoost = step.boosts?.hoursInTR;
         if (chainHoursBoost) {
           totalHours += chainHoursBoost.targetLevel || 0;
         }
@@ -463,6 +507,22 @@ const truncatedPlanName = computed(() => {
   }
   
   return props.plan.name.substring(0, maxLength) + '...';
+});
+
+// Check für Gem Overrides
+const hasGemOverrides = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
+  return props.plan.gemOverrides && Object.keys(props.plan.gemOverrides).length > 0;
+});
+
+// Check für Maxed Boosts Overrides
+const hasMaxedBoostsOverrides = computed(() => {
+  // Dummy-Zugriff auf forceUpdateCounter, um Reaktivität zu erzwingen
+  const _ = forceUpdateCounter.value;
+  
+  return props.plan.maxedBoostsOverrides && Object.keys(props.plan.maxedBoostsOverrides).length > 0;
 });
 
 // Delete Confirmation State

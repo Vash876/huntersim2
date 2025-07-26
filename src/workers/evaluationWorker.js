@@ -25,11 +25,6 @@ const paramsConfig = {
   knox: KNOX_PARAMS
 };
 
-// Debug-Ausgaben für die Parameter
-console.log("Anzahl der Parameter für Borge:", BORGE_PARAMS.length);
-console.log("Anzahl der Parameter für Ozzy:", OZZY_PARAMS.length);
-console.log("Anzahl der Parameter für Knox:", KNOX_PARAMS.length);
-
 let isInitialized = true;
 let initializationPromise = null;
 
@@ -153,7 +148,6 @@ function extractParamValue(storeData, hunterId, buildData, param) {
   }
 
   // Fallback - für alle sonstigen Parameter
-  console.log(`Parameter ${param} nicht gefunden, verwende 0`);
   return 0;
 }
 
@@ -167,7 +161,6 @@ function parseEvalResults(evalResults, hunterId, buildData, sampleSize) {
   }
   
   const result = evalResults[0];
-  console.log(`Erhaltene Ergebnisse für ${hunterId}:`, result.length, "Elemente");
   
   // Basis-Ergebnis
   const baseResult = {
@@ -214,9 +207,6 @@ function parseEvalResults(evalResults, hunterId, buildData, sampleSize) {
     // Death Tracking 
     const deathData = result[13];
     
-    console.log('EVAL WORKER: Death data type:', typeof deathData);
-    console.log('EVAL WORKER: Death data:', deathData);
-    
     // Prüfe ob es bereits ein Array ist (neue WASM Version)
     if (Array.isArray(deathData)) {
       deathDistribution = deathData.map(item => ({
@@ -225,7 +215,6 @@ function parseEvalResults(evalResults, hunterId, buildData, sampleSize) {
         percentage: item.count / (baseResult.iterations || 1000) * 100
       }));
       
-      console.log('EVAL WORKER: Processed death distribution (array):', deathDistribution);
     }
     // Falls es noch ein JSON String ist (alte Version)
     else if (typeof deathData === 'string' && deathData.startsWith('{')) {
@@ -237,7 +226,6 @@ function parseEvalResults(evalResults, hunterId, buildData, sampleSize) {
         percentage: count / (baseResult.iterations || 1000) * 100
       }));
       
-      console.log('EVAL WORKER: Processed death distribution (string):', deathDistribution);
     }
     
     // Sortierung für "stage_revive" Format anpassen
@@ -305,32 +293,11 @@ async function evaluate(hunterId, buildData, storeData) {
   }
   
   // Debugging: Ausführliche Parameter-Details
-  console.log(`===== DEBUGGING PARAMETER-ÜBERGABE FÜR ${hunterId} =====`);
-  console.log("Anzahl der erwarteten Parameter:", paramConfig.length);
   
   // Parameter extrahieren mit ausführlichen Logs
   const params = paramConfig.map((param, index) => {
     const value = extractParamValue(storeData, hunterId, buildData, param);
-    console.log(`Parameter [${index}] ${param} = ${value}`);
     return value;
-  });
-  
-  // Wichtige Parameter für Loot-Berechnung hervorheben
-  console.log("\n===== WICHTIGE PARAMETER FÜR LOOT-BERECHNUNG =====");
-  
-  // Iterations
-  const itersIndex = paramConfig.indexOf('iterations');
-  console.log(`Iterations: ${itersIndex >= 0 ? params[itersIndex] : 'nicht gefunden'} (Index: ${itersIndex})`);
-  
-  // Parameter, die möglicherweise die Loot-Berechnung beeinflussen könnten
-  const lootRelevantParams = ['ll', 'pog', 'omen', 'fow', 'ultimaTalent', 'scavengers'];
-  lootRelevantParams.forEach(param => {
-    const index = paramConfig.indexOf(param);
-    if (index >= 0) {
-      console.log(`${param}: ${params[index]} (Index: ${index})`);
-    } else {
-      console.log(`${param}: nicht gefunden`);
-    }
   });
   
   // Prüfen, ob die Parameter-Anzahl korrekt ist
@@ -340,46 +307,19 @@ async function evaluate(hunterId, buildData, storeData) {
   
   // Evaluierung durchführen
   try {
-    console.log(`\nWorker: Evaluiere ${hunterId} mit ${params.length} Parametern`);
-    
     // Speichere die aktuelle Zeit für Performance-Messung
     const startTime = performance.now();
     
     let evalResults;
     
     // ALLE HUNTER VERWENDEN JETZT WASM!
-    console.log(`Worker: WASM-Funktion wird aufgerufen für ${hunterId}...`);
     evalResults = await evalFn(...params);
     
     // Berechne die Ausführungszeit
     const endTime = performance.now();
-    console.log(`Evaluierung abgeschlossen in ${(endTime - startTime).toFixed(2)} ms`);
-    
-    // Debug-Ausgabe der Rohergebnisse
-    console.log("\n===== ROHE EVALUIERUNGSERGEBNISSE =====");
-    if (evalResults && evalResults.length > 0 && evalResults[0]) {
-      console.log(`Loot per minute (raw): ${evalResults[0][0]}`);
-      console.log(`Average stage (raw): ${evalResults[0][1]}`);
-      console.log(`Average time (raw): ${evalResults[0][2]}`);
-      console.log(`Mat1 (raw): ${evalResults[0][7]}`);
-      console.log(`Mat2 (raw): ${evalResults[0][8]}`);
-      console.log(`Mat3 (raw): ${evalResults[0][9]}`);
-    } else {
-      console.error("Keine gültigen Evaluierungsergebnisse erhalten!");
-    }
     
     // Parsen und Rückgabe der Ergebnisse
     const parsedResults = parseEvalResults(evalResults, hunterId, buildData, storeData.hunterIterations?.[hunterId] || 1000);
-    
-    // Debug-Ausgabe der geparsten Ergebnisse
-    console.log("\n===== GEPARSTE EVALUIERUNGSERGEBNISSE =====");
-    console.log(`lootPerMin: ${parsedResults.lootPerMin}`);
-    console.log(`avgStage: ${parsedResults.avgStage}`);
-    console.log(`mat1: ${parsedResults.mat1}`);
-    console.log(`mat2: ${parsedResults.mat2}`);
-    console.log(`mat3: ${parsedResults.mat3}`);
-    
-    console.log("===== ENDE DER PARAMETER-DEBUG-AUSGABE =====\n");
     
     return parsedResults;
   } catch (error) {

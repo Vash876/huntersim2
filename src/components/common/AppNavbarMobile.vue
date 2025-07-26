@@ -276,7 +276,7 @@
                 class="animate-spin"
               />
             </div>
-            <span>{{ syncStore.isSyncing && syncAction === 'download' ? 'Downloading...' : 'Download from Cloud' }}</span>
+            <span>{{ syncStore.isSyncing && syncAction === 'download' ? 'Loading...' : 'Load from Cloud' }}</span>
           </button>
           
           <button
@@ -292,7 +292,7 @@
                 class="animate-spin"
               />
             </div>
-            <span>{{ syncStore.isSyncing && syncAction === 'upload' ? 'Uploading...' : 'Upload to Cloud' }}</span>
+            <span>{{ syncStore.isSyncing && syncAction === 'upload' ? 'Saving...' : 'Save to Cloud' }}</span>
           </button>
         </div>
 
@@ -397,6 +397,48 @@
     @close="showAuthModal = false"
     @success="handleAuthSuccess"
   />
+
+  <!-- Toast Notification -->
+  <div 
+    v-if="notification.show"
+    class="fixed bottom-20 right-4 z-[60] bg-gray-800 border rounded-lg shadow-lg p-4 max-w-sm animate-slide-up"
+    :class="{
+      'border-green-500': notification.type === 'success',
+      'border-red-500': notification.type === 'error', 
+      'border-blue-500': notification.type === 'info'
+    }"
+  >
+    <div class="flex items-start space-x-3">
+      <div class="flex-shrink-0 mt-0.5">
+        <IconCircleCheck 
+          v-if="notification.type === 'success'"
+          size="20" 
+          class="text-green-400"
+        />
+        <IconAlertCircle 
+          v-else-if="notification.type === 'error'"
+          size="20" 
+          class="text-red-400"
+        />
+        <IconInfoCircle 
+          v-else
+          size="20" 
+          class="text-blue-400"
+        />
+      </div>
+      <div class="flex-1">
+        <p class="text-sm text-gray-200">{{ notification.message }}</p>
+      </div>
+      <button 
+        @click="hideNotification"
+        class="flex-shrink-0 ml-4 text-gray-400 hover:text-gray-200"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -405,6 +447,7 @@ import { NAVIGATION } from '../../constants/navigation';
 import { getAllHunters } from '../../constants/hunters';
 import { neonAuthService } from '@/services/neonAuthService';
 import { useSyncStore } from '@/store/syncStore';
+import { useBackupRestore } from '@/composables/useBackupRestore';
 import NeonAuthModal from '@/components/common/NeonAuthModal.vue';
 import { 
   IconArrowUpCircle,
@@ -418,15 +461,27 @@ import {
   IconLogout,
   IconCloudDown,
   IconCloudUp,
-  IconLoader2
+  IconLoader2,
+  IconCircleCheck,
+  IconAlertCircle,
+  IconInfoCircle
 } from '@tabler/icons-vue';
 
 const navigation = NAVIGATION;
 const hunters = getAllHunters();
 const activeSection = ref(null);
 const syncStore = useSyncStore();
+const { createBackup, restoreFromBackup } = useBackupRestore();
 const showAuthModal = ref(false);
 const syncAction = ref(null);
+
+// Notification state
+const notification = ref({
+  show: false,
+  type: 'success', // 'success', 'error', 'info'
+  message: '',
+  timeout: null
+});
 
 // Ausgewählte Kategorie für Upgrades
 const selectedUpgradeCategory = ref(0);
@@ -456,13 +511,37 @@ function signOut() {
   activeSection.value = null;
 }
 
+// Notification functions
+function showNotification(type, message) {
+  if (notification.value.timeout) {
+    clearTimeout(notification.value.timeout);
+  }
+  
+  notification.value.show = true;
+  notification.value.type = type;
+  notification.value.message = message;
+  
+  notification.value.timeout = setTimeout(() => {
+    notification.value.show = false;
+  }, 5000);
+}
+
+function hideNotification() {
+  if (notification.value.timeout) {
+    clearTimeout(notification.value.timeout);
+  }
+  notification.value.show = false;
+}
+
 async function syncFromCloud() {
   syncAction.value = 'download';
   try {
     await syncStore.syncFromServer();
+    showNotification('success', 'Data loaded from cloud successfully!');
     console.log('📥 Mobile sync from cloud completed');
   } catch (error) {
     console.error('❌ Mobile sync from cloud failed:', error);
+    showNotification('error', 'Failed to load from cloud: ' + (error.message || 'Unknown error'));
   } finally {
     syncAction.value = null;
   }
@@ -472,9 +551,11 @@ async function syncToCloud() {
   syncAction.value = 'upload';
   try {
     await syncStore.syncToServer();
+    showNotification('success', 'Data saved to cloud successfully!');
     console.log('📤 Mobile sync to cloud completed');
   } catch (error) {
     console.error('❌ Mobile sync to cloud failed:', error);
+    showNotification('error', 'Failed to save to cloud: ' + (error.message || 'Unknown error'));
   } finally {
     syncAction.value = null;
   }
@@ -711,5 +792,21 @@ function getToolLabelClass(categoryColor, tool) {
   overflow-y: auto;
   max-height: calc(100vh - 220px); /* Optimiert für maximale Lesbarkeit */
   padding-bottom: 1rem; /* Zusätzlicher Platz am Ende */
+}
+
+/* Toast Animation */
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 </style>>

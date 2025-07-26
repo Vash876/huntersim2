@@ -55,7 +55,6 @@ export async function EVALBORGE_WASM(
 ) {
   
   try {
-    console.log('WASM: Initialisiere WASM-Modul...');
     const wasm = await initWasm();
     const exports = wasm.instance.exports;
     

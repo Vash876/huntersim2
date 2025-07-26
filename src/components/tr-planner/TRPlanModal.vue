@@ -25,22 +25,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Legacy-Plan Warning Banner - direkt nach dem Header einfügen -->
-      <div 
-        v-if="isLegacyPlan && hasLegacyGemChanges" 
-        class="p-3 mb-4 bg-red-900/30 border border-red-500 rounded-md animate-fade-in"
-      >
-        <div class="flex items-start">
-          <div>
-            <p class="text-red-300 text-sm font-medium">Legacy Gem Boosts Detected</p>
-            <p class="text-red-200/80 text-xs mt-1">
-              This plan contains modified gem boosts in later TRs(Innovation Gem Level, Attraction Gem Level #3, Attraction GN #1, Power GN #2) that are no longer supported. 
-              These changes will not work correctly. Please create a new plan (do not copy this plan).
-            </p>
-          </div>
-        </div>
-      </div>
       
       <!-- Description Area -->
       <div class="p-3 bg-gray-750/60 border-b border-gray-700">
@@ -155,6 +139,43 @@
               />
             </div>
           </div>
+        </div>
+      </div>
+      
+      <!-- Override Panels -->
+      <div class="p-3 border-b border-gray-700 space-y-3">
+        <!-- Gem Override Panel -->
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col">
+            <label class="text-xs font-medium text-gray-300 mb-1">Gem Overrides</label>
+            <p class="text-xs text-gray-400">
+              Set custom gem levels for this plan
+            </p>
+          </div>
+          <button 
+            @click="openGemOverrideModal"
+            class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-md text-xs font-medium flex items-center gap-1.5"
+          >
+            <IconSettings size="14" />
+            Configure Gems
+          </button>
+        </div>
+        
+        <!-- Maxed Boosts Override Panel -->
+        <div class="flex items-center justify-between">
+          <div class="flex flex-col">
+            <label class="text-xs font-medium text-gray-300 mb-1">Maxed Boosts Overrides</label>
+            <p class="text-xs text-gray-400">
+              Override which boosts are considered maxed
+            </p>
+          </div>
+          <button 
+            @click="openMaxedBoostsOverrideModal"
+            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs font-medium flex items-center gap-1.5"
+          >
+            <IconSettings size="14" />
+            Configure Maxed Boosts
+          </button>
         </div>
       </div>
       
@@ -581,9 +602,10 @@
                 'bg-blue-600 hover:bg-blue-500 text-white' : 
                 'bg-gray-700 text-gray-400 cursor-not-allowed'"
             >
-              <IconPlus size="14" v-if="!editPlanId && isPlanValid" />
-              <IconEdit size="14" v-if="editPlanId && isPlanValid" />
-              {{ editPlanId ? 'Update Plan' : 'Create Plan' }}
+              <IconPlus size="14" v-if="!editPlanId && !importedPlanData && isPlanValid" />
+              <IconEdit size="14" v-if="editPlanId && !importedPlanData && isPlanValid" />
+              <IconPlus size="14" v-if="importedPlanData && isPlanValid" />
+              {{ getButtonText() }}
             </button>
           </div>
         </div>
@@ -611,16 +633,33 @@
   @confirm="handleAlertClose"
   @cancel="handleAlertCancel"
 />
+
+  <GemOverrideModal
+    :isVisible="showGemOverrideModal"
+    :gemOverrides="localGemOverrides"
+    @close="showGemOverrideModal = false"
+    @update:gemOverrides="localGemOverrides = $event"
+  />
+
+  <MaxedBoostsOverrideModal
+    :isVisible="showMaxedBoostsOverrideModal"
+    :maxedBoostsOverrides="localMaxedBoostsOverrides"
+    @close="showMaxedBoostsOverrideModal = false"
+    @update:maxedBoostsOverrides="localMaxedBoostsOverrides = $event"
+  />
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted, nextTick, onBeforeUnmount } from 'vue';
 import { useNow } from '@vueuse/core';
-import { allBoosts, boostsByCategory, generalStats, alwaysUpdateKeys, getGemDataFromStore } from '@/constants/tr-planner';
+import { allBoosts, boostsByCategory, generalStats, alwaysUpdateKeys, getGemDataFromStore, setPlanContext, getCurrentPlanContext } from '@/constants/tr-planner';
+import { getAllGemData } from '@/constants/tr-planner/gems.js';
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import TRUpdateModal from './TRUpdateModal.vue';
+import GemOverrideModal from './GemOverrideModal.vue';
+import MaxedBoostsOverrideModal from './MaxedBoostsOverrideModal.vue';
 import TRValueControls from '@/composables/TRValueControls.vue';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 import { formatMultiplier, formatNumber, parseNumberWithSuffix, formatSuffixNotation } from '@/composables/format';
@@ -636,7 +675,8 @@ import {
   IconCircleX,
   IconEdit,
   IconCheck,
-  IconLock
+  IconLock,
+  IconSettings
 } from '@tabler/icons-vue';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
 
@@ -655,6 +695,10 @@ const props = defineProps({
   editPlanId: {
     type: String,
     default: null
+  },
+  importedPlanData: {
+    type: Object,
+    default: null
   }
 });
 
@@ -670,6 +714,14 @@ const searchQuery = ref('');
 const hasUnsavedChanges = ref(false);
 const pendingSavePlanId = ref(null);
 const pendingSaveData = ref(null);
+
+// Gem Override Modal State
+const showGemOverrideModal = ref(false);
+const localGemOverrides = ref({});
+
+// Maxed Boosts Override Modal State
+const showMaxedBoostsOverrideModal = ref(false);
+const localMaxedBoostsOverrides = ref({});
 
 // Neue Referenz-Variable für den ursprünglichen Zustand
 const originalState = ref(null);
@@ -869,8 +921,15 @@ function initDateTimePicker() {
 
 // Ändere den Header-Text basierend darauf, ob wir bearbeiten oder neu erstellen
 const modalTitle = computed(() => {
+  if (props.importedPlanData) return 'Import TR Plan';
   return props.editPlanId ? 'Edit TR Plan' : 'Create New Plan';
 });
+
+// Button-Text für den Speichern-Button
+function getButtonText() {
+  if (props.importedPlanData) return 'Save Plan';
+  return props.editPlanId ? 'Update Plan' : 'Create Plan';
+}
 
 // Hilfsfunktion zum Erstellen eines neuen TR-Step
 function createNewTRStep() {
@@ -1072,15 +1131,146 @@ const isPlanValid = computed(() => {
   });
 });
 
+// Computed property für merged maxed boosts
+const mergedMaxedBoosts = computed(() => {
+  return getMaxedBoostsWithOverrides();
+});
+
+// Computed property für merged gem data
+const mergedGemData = computed(() => {
+  return getGemDataWithOverrides();
+});
+
+// Gem-Daten mit Overrides zusammenführen
+function getGemDataWithOverrides() {
+  // Globale Gem-Daten laden
+  const globalGemData = getGemDataFromStore();
+  
+  // Debug: Zeige aktuelle Overrides
+  console.log('Local gem overrides:', localGemOverrides.value);
+  console.log('Global gem data:', globalGemData);
+  
+  // Wenn keine Overrides vorhanden sind, globale Daten zurückgeben
+  if (!localGemOverrides.value || Object.keys(localGemOverrides.value).length === 0) {
+    // Clear any existing plan context when no overrides
+    if (typeof window !== 'undefined') {
+      window.__PLAN_CONTEXT__ = null;
+    }
+    return globalGemData;
+  }
+  
+  // Kopie der globalen Daten erstellen
+  const mergedGemData = {
+    levels: { ...globalGemData.levels },
+    activeNodes: { ...globalGemData.activeNodes }
+  };
+  
+  // Overrides anwenden
+  Object.entries(localGemOverrides.value).forEach(([key, value]) => {
+    console.log(`Processing override: ${key} = ${value}`);
+    
+    if (key.endsWith('Level')) {
+      // Gem Level Override
+      const gemId = key.replace('Level', '');
+      mergedGemData.levels[gemId] = value;
+      console.log(`Applied level override for ${gemId}: ${value}`);
+    } else if (key.includes('Node')) {
+      // Gem Node Override
+      const match = key.match(/^(.+)Node(\d+)$/);
+      if (match) {
+        const gemId = match[1];
+        const nodeIndex = parseInt(match[2], 10);
+        
+        console.log(`Processing node override for ${gemId}, node ${nodeIndex}, value: ${value}`);
+        
+        // Stelle sicher, dass das Array für den Gem existiert
+        if (!mergedGemData.activeNodes[gemId]) {
+          mergedGemData.activeNodes[gemId] = [];
+        }
+        
+        if (value === 1 || value === true) {
+          // Node aktivieren
+          if (!mergedGemData.activeNodes[gemId].includes(nodeIndex)) {
+            mergedGemData.activeNodes[gemId].push(nodeIndex);
+            console.log(`Activated node ${nodeIndex} for ${gemId}`);
+          }
+        } else {
+          // Node deaktivieren
+          const index = mergedGemData.activeNodes[gemId].indexOf(nodeIndex);
+          if (index !== -1) {
+            mergedGemData.activeNodes[gemId].splice(index, 1);
+            console.log(`Deactivated node ${nodeIndex} for ${gemId}`);
+          }
+        }
+      }
+    }
+  });
+  
+  console.log('Final merged gem data:', mergedGemData);
+  
+  // Set global plan context for calculations
+  if (typeof window !== 'undefined') {
+    window.__PLAN_CONTEXT__ = { gemData: mergedGemData };
+    console.log('Set global plan context for calculations:', mergedGemData);
+  }
+  
+  return mergedGemData;
+}
+
+// Maxed Boosts mit Overrides zusammenführen
+function getMaxedBoostsWithOverrides() {
+  // Globale Maxed Boosts aus localStorage laden
+  let globalMaxedBoosts = {};
+  try {
+    const statsJSON = localStorage.getItem('trplanner_userstats');
+    if (statsJSON) {
+      const stats = JSON.parse(statsJSON);
+      globalMaxedBoosts = stats._orbCalcMaxedBoosts || {};
+    }
+  } catch (error) {
+    console.warn('Could not load global maxed boosts:', error);
+  }
+  
+  console.log("🔍 Global maxed boosts:", globalMaxedBoosts);
+  console.log("🔍 Local maxedBoostsOverrides:", localMaxedBoostsOverrides.value);
+  
+  // Wenn keine Overrides vorhanden sind, globale Daten zurückgeben
+  if (!localMaxedBoostsOverrides.value || Object.keys(localMaxedBoostsOverrides.value).length === 0) {
+    console.log("❌ No overrides found, returning global boosts");
+    return globalMaxedBoosts;
+  }
+  
+  // Kopie der globalen Daten erstellen und Overrides anwenden
+  const mergedMaxedBoosts = { ...globalMaxedBoosts };
+  
+  Object.entries(localMaxedBoostsOverrides.value).forEach(([boostKey, isMaxed]) => {
+    console.log(`🔄 Processing override: ${boostKey} = ${isMaxed} (global was: ${globalMaxedBoosts[boostKey]})`);
+    if (isMaxed === true) {
+      mergedMaxedBoosts[boostKey] = true;
+    } else if (isMaxed === false) {
+      delete mergedMaxedBoosts[boostKey];
+    }
+  });
+  
+  console.log("✅ Final merged maxed boosts:", mergedMaxedBoosts);
+  
+  // Set global plan context for calculations (extend existing or create new)
+  if (typeof window !== 'undefined') {
+    if (!window.__PLAN_CONTEXT__) {
+      window.__PLAN_CONTEXT__ = {};
+    }
+    window.__PLAN_CONTEXT__.maxedBoosts = mergedMaxedBoosts;
+  }
+  
+  return mergedMaxedBoosts;
+}
+
 // Gefilterte Boosts nach Kategorien
 function getFilteredBoostsByCategory(step) {
   try {
-    // Versuche die maxLevelStats aus dem localStorage zu laden
-    const maxStatsJSON = localStorage.getItem('trplanner_userstats');
-    const maxStats = maxStatsJSON ? JSON.parse(maxStatsJSON) : {};
-    
-    // Die im OrbCalc gemaxten Boosts identifizieren
-    const orbCalcMaxedBoosts = step.stats._orbCalcMaxedBoosts || {};
+    // Verwende computed properties für bessere Reaktivität
+    const orbCalcMaxedBoosts = getMaxedBoostsWithOverrides(); // Direkt die Funktion aufrufen
+    const gemData = mergedGemData.value;
     
     console.log("DEBUG in getFilteredBoostsByCategory - orbCalcMaxedBoosts:", orbCalcMaxedBoosts);
     
@@ -1106,9 +1296,6 @@ function getFilteredBoostsByCategory(step) {
       }
     }
     
-    // Aktuelle Gem-Daten aus dem Store laden
-    const gemData = getGemDataFromStore();
-    
     // Filterung der Kategorien
     const filteredCategories = [];
     
@@ -1117,7 +1304,7 @@ function getFilteredBoostsByCategory(step) {
       const filteredBoosts = [];
       
       for (const boost of category.boosts) {
-        // HAUPTREGEL 1: Boost ausblenden, wenn er in _orbCalcMaxedBoosts als maxed markiert ist
+        // HAUPTREGEL 1: Boost ausblenden, wenn er in orbCalcMaxedBoosts als maxed markiert ist
         // AUSNAHME: hoursInTR wird immer angezeigt
         if (orbCalcMaxedBoosts[boost.key] && boost.key !== 'hoursInTR') {
           continue; // Boost überspringen, wenn er maxed ist
@@ -1488,48 +1675,127 @@ function getStepOrbGains(step) {
   const baseStats = { ...step.stats };           // Start in diesem TR
   const planStats = { ...step.stats };           // nach allen Targets
 
-  /* Wichtig: Maximierte Boosts einbeziehen */
-  const orbCalcMaxedBoosts = step.stats._orbCalcMaxedBoosts || {};
-  
-  /* Für alle maximierten Boosts die maximalen Werte setzen */
-  Object.keys(orbCalcMaxedBoosts).forEach(key => {
-    const boost = allBoosts.find(b => b.key === key);
-    if (boost) {
-      if (boost.type === 'boolean') {
-        planStats[key] = 1; // Boolean-Boosts auf aktiviert setzen
-      } else if (boost.type === 'number' && boost.max !== undefined) {
-        planStats[key] = boost.max; // Numerische Boosts auf Maximum setzen
-      }
-    }
-  });
+  console.log(`🔍 Calculating orb gains for step with stats:`, step.stats);
 
+  /* Wichtig: Erst target levels/bools setzen, dann maxed boosts (mit Overrides) anwenden */
+  
   /* numerische Ziele einblenden */
   Object.entries(step.targetLevels).forEach(([k, v]) => { 
-    // Nur überschreiben, wenn der Boost nicht maximal ist
-    if (!orbCalcMaxedBoosts[k]) {
-      planStats[k] = v; 
-    }
+    planStats[k] = v; 
   });
 
   /* Boolean‑Ziele verarbeiten */
   Object.entries(step.targetBools).forEach(([k, active]) => {
-    // Nur überschreiben, wenn der Boost nicht maximal ist
-    if (!orbCalcMaxedBoosts[k]) {
-      const def = allBoosts.find(b => b.key === k);
+    const def = allBoosts.find(b => b.key === k);
 
-      if (def && !def.permanent) {
-        // nicht‑permanent → in BEIDEN Stat‑Sätzen fixieren
-        baseStats[k] = planStats[k] = active ? 1 : 0;
-      } else if (active) {
-        // permanent → nur Ziel‑Stats auf 1 setzen
-        planStats[k] = 1;
+    if (def && !def.permanent) {
+      // nicht‑permanent → in BEIDEN Stat‑Sätzen fixieren
+      baseStats[k] = planStats[k] = active ? 1 : 0;
+    } else if (active) {
+      // permanent → nur Ziel‑Stats auf 1 setzen
+      planStats[k] = 1;
+    }
+  });
+
+  /* Maximierte Boosts einbeziehen (mit Overrides) - überschreibt target levels */
+  const orbCalcMaxedBoosts = getMaxedBoostsWithOverrides(); // Direkt die Funktion aufrufen
+  
+  console.log(`🎯 Merged maxed boosts for orb calculation:`, orbCalcMaxedBoosts);
+  
+  /* Für alle maximierten Boosts die maximalen Werte setzen */
+  Object.entries(orbCalcMaxedBoosts).forEach(([key, isMaxed]) => {
+    if (isMaxed === true) { // Nur wenn tatsächlich auf true gesetzt
+      const boost = allBoosts.find(b => b.key === key);
+      if (boost) {
+        if (boost.type === 'boolean') {
+          console.log(`Setting maxed boolean boost ${key} = 1 in planStats`);
+          planStats[key] = 1; // Boolean-Boosts auf aktiviert setzen
+          
+          // Spezifischer Debug für Premium Boosts
+          if (['iap', 'hera', 'jaxis'].includes(key)) {
+            console.log(`🎖️ PREMIUM BOOST ${key}: Set to 1 in planStats, permanent=${boost.permanent}`);
+          }
+        } else if (boost.type === 'number' && boost.max !== undefined) {
+          console.log(`Setting maxed numeric boost ${key} = ${boost.max} in planStats`);
+          planStats[key] = boost.max; // Numerische Boosts auf Maximum setzen
+        }
+      }
+    } else {
+      console.log(`⏭️ Skipping boost ${key} because isMaxed = ${isMaxed}`);
+      
+      // Spezifischer Debug für Premium Boosts
+      if (['iap', 'hera', 'jaxis'].includes(key)) {
+        console.log(`🎖️ PREMIUM BOOST ${key}: SKIPPED because isMaxed = ${isMaxed}`);
       }
     }
   });
 
+  console.log(`📊 Final planStats for orb calculation:`, planStats);
+  console.log(`📊 Final baseStats for orb calculation:`, baseStats);
+
+  /* ---------------- Gem-Overrides einbeziehen -------------------- */
+  const gemDataWithOverrides = mergedGemData.value;
+  
+  // Gem-Daten in beide Stat-Sets einbauen
+  if (gemDataWithOverrides.levels) {
+    Object.entries(gemDataWithOverrides.levels).forEach(([gemId, level]) => {
+      baseStats[`${gemId}Level`] = level;
+      planStats[`${gemId}Level`] = level;
+    });
+  }
+  
+  // Alle möglichen Gem-Nodes erst auf 0 setzen, dann nur aktive auf 1
+  const allGemData = getAllGemData ? getAllGemData() : [];
+  allGemData.forEach(gem => {
+    if (gem.nodes && Array.isArray(gem.nodes)) {
+      gem.nodes.forEach((node, nodeIndex) => {
+        const nodeKey = `${gem.id}Node${nodeIndex}`;
+        baseStats[nodeKey] = 0;
+        planStats[nodeKey] = 0;
+      });
+    }
+  });
+  
+  // Jetzt nur die aktiven Nodes auf 1 setzen
+  if (gemDataWithOverrides.activeNodes) {
+    Object.entries(gemDataWithOverrides.activeNodes).forEach(([gemId, nodeArray]) => {
+      if (Array.isArray(nodeArray)) {
+        nodeArray.forEach(nodeIndex => {
+          const nodeKey = `${gemId}Node${nodeIndex}`;
+          baseStats[nodeKey] = 1;
+          planStats[nodeKey] = 1;
+        });
+      }
+    });
+  }
+
   /* ---------------- Orb‑Gains berechnen ------------------------ */
-  const orbCalcBoosts = allBoosts.filter(b => b.orbcalc);
-  return calculateOrbGains(baseStats, planStats, orbCalcBoosts);
+  
+  try {
+    const orbCalcBoosts = allBoosts.filter(b => b.orbcalc);
+    console.log(`⚡ Using ${orbCalcBoosts.length} orb calculation boosts`);
+    console.log(`⚡ Orb calc boosts:`, orbCalcBoosts.map(b => `${b.key} (${b.type})`));
+    
+    // Debug: Prüfe speziell nach vb1-4 Boosts
+    const vbBoosts = orbCalcBoosts.filter(b => b.key.startsWith('vb'));
+    console.log(`🔍 VB boosts found in orbCalcBoosts:`, vbBoosts.map(b => b.key));
+    
+    // Debug: Prüfe planStats für vb1-4 Werte
+    const vbValues = {};
+    ['vb1', 'vb2', 'vb3', 'vb4'].forEach(key => {
+      if (planStats[key] !== undefined) {
+        vbValues[key] = planStats[key];
+      }
+    });
+    console.log(`🔍 VB values in planStats:`, vbValues);
+    
+    const result = calculateOrbGains(baseStats, planStats, orbCalcBoosts);
+    console.log(`⚡ Orb gains calculation result: ${result}`);
+    return result;
+  } catch (error) {
+    console.error('Error calculating orb gains:', error);
+    return 0;
+  }
 }
 
 
@@ -1538,44 +1804,112 @@ function getStepFragGains(step) {
   // Plan Stats für diesen Schritt zusammenstellen
   const planStats = { ...step.stats };
   
-  /* Wichtig: Maximierte Boosts einbeziehen */
-  const orbCalcMaxedBoosts = step.stats._orbCalcMaxedBoosts || {};
-  
-  /* Für alle maximierten Boosts die maximalen Werte setzen */
-  Object.keys(orbCalcMaxedBoosts).forEach(key => {
-    const boost = allBoosts.find(b => b.key === key);
-    if (boost) {
-      if (boost.type === 'boolean') {
-        planStats[key] = 1; // Boolean-Boosts auf aktiviert setzen
-      } else if (boost.type === 'number' && boost.max !== undefined) {
-        planStats[key] = boost.max; // Numerische Boosts auf Maximum setzen
-      }
-    }
-  });
+  // Erst target levels/bools setzen
   
   // Numerische Boosts aus targetLevels
   Object.keys(step.targetLevels).forEach(key => {
-    // Nur überschreiben, wenn der Boost nicht maximal ist
-    if (!orbCalcMaxedBoosts[key]) {
-      planStats[key] = step.targetLevels[key];
-    }
+    planStats[key] = step.targetLevels[key];
   });
   
   // Boolean Boosts aus targetBools
   Object.entries(step.targetBools).forEach(([key, isActive]) => {
-    // Nur überschreiben, wenn der Boost nicht maximal ist
-    if (!orbCalcMaxedBoosts[key]) {
-      if (isActive) {
-        planStats[key] = 1;
+    if (isActive) {
+      planStats[key] = 1;
+    }
+  });
+  
+  /* Wichtig: Maximierte Boosts einbeziehen (mit Overrides) - überschreibt target levels */
+  const orbCalcMaxedBoosts = getMaxedBoostsWithOverrides(); // Direkt die Funktion aufrufen
+  
+  /* Für alle maximierten Boosts die maximalen Werte setzen */
+  Object.entries(orbCalcMaxedBoosts).forEach(([key, isMaxed]) => {
+    if (isMaxed === true) { // Nur wenn tatsächlich auf true gesetzt
+      const boost = allBoosts.find(b => b.key === key);
+      if (boost) {
+        if (boost.type === 'boolean') {
+          planStats[key] = 1; // Boolean-Boosts auf aktiviert setzen
+        } else if (boost.type === 'number' && boost.max !== undefined) {
+          planStats[key] = boost.max; // Numerische Boosts auf Maximum setzen
+        }
       }
     }
   });
   
+  /* ---------------- Gem-Overrides einbeziehen -------------------- */
+  const gemDataWithOverrides = mergedGemData.value;
+  
+  // Gem-Daten in planStats einbauen
+  if (gemDataWithOverrides.levels) {
+    Object.entries(gemDataWithOverrides.levels).forEach(([gemId, level]) => {
+      planStats[`${gemId}Level`] = level;
+    });
+  }
+  
+  // Alle möglichen Gem-Nodes erst auf 0 setzen, dann nur aktive auf 1
+  const allGemData = getAllGemData();
+  allGemData.forEach(gem => {
+    if (gem.nodes && Array.isArray(gem.nodes)) {
+      gem.nodes.forEach((node, nodeIndex) => {
+        const nodeKey = `${gem.id}Node${nodeIndex}`;
+        planStats[nodeKey] = 0;
+      });
+    }
+  });
+  
+  // Jetzt nur die aktiven Nodes auf 1 setzen
+  if (gemDataWithOverrides.activeNodes) {
+    Object.entries(gemDataWithOverrides.activeNodes).forEach(([gemId, nodeArray]) => {
+      if (Array.isArray(nodeArray)) {
+        nodeArray.forEach(nodeIndex => {
+          const nodeKey = `${gemId}Node${nodeIndex}`;
+          planStats[nodeKey] = 1;
+        });
+      }
+    });
+  }
+  
   // Fragment-relevante Boosts filtern
   const fragMultiBoosts = allBoosts.filter(b => b.fragmulti !== undefined);
   
+  // Basis-Stats auch mit Gem-Overrides anreichern für korrekte Berechnungen
+  const baseStatsWithGems = { ...step.stats };
+  if (gemDataWithOverrides.levels) {
+    Object.entries(gemDataWithOverrides.levels).forEach(([gemId, level]) => {
+      baseStatsWithGems[`${gemId}Level`] = level;
+    });
+  }
+  
+  // Alle möglichen Gem-Nodes erst auf 0 setzen, dann nur aktive auf 1
+  allGemData.forEach(gem => {
+    if (gem.nodes && Array.isArray(gem.nodes)) {
+      gem.nodes.forEach((node, nodeIndex) => {
+        const nodeKey = `${gem.id}Node${nodeIndex}`;
+        baseStatsWithGems[nodeKey] = 0;
+      });
+    }
+  });
+  
+  // Jetzt nur die aktiven Nodes auf 1 setzen
+  if (gemDataWithOverrides.activeNodes) {
+    Object.entries(gemDataWithOverrides.activeNodes).forEach(([gemId, nodeArray]) => {
+      if (Array.isArray(nodeArray)) {
+        nodeArray.forEach(nodeIndex => {
+          const nodeKey = `${gemId}Node${nodeIndex}`;
+          baseStatsWithGems[nodeKey] = 1;
+        });
+      }
+    });
+  }
+  
   // Fragment-Gewinne berechnen
-  return calculateCampaignFragGains(step.stats, planStats, fragMultiBoosts);
+  
+  try {
+    const result = calculateCampaignFragGains(baseStatsWithGems, planStats, fragMultiBoosts);
+    return result;
+  } catch (error) {
+    console.error('Error calculating fragment gains:', error);
+    return 0;
+  }
 }
 
 // Verfügbare Orbs für einen Schritt berechnen
@@ -1809,79 +2143,27 @@ function clearSearch() {
 }
 
 function applyChainStepBoosts(newStep, chainStep) {
-  chainStep.boosts.forEach(boost => {
-    if (boost.type === 'number') {
-      newStep.targetLevels[boost.key] = boost.targetLevel;
-    } else if (boost.type === 'boolean') {
-      newStep.targetBools[boost.key] = boost.targetState; 
-    }
-  });
-}
-
-function mapLegacyGemBoosts() {
-  try {
-    console.log('=== LEGACY GEM MAPPING ===');
-    
-    const trPlannerStore = useTRPlannerStore();
-    const currentStats = props.currentStats || {};
-    
-    // Prüfe ob bereits Gem-Daten vorhanden sind
-    if (trPlannerStore.userStats?.gemData?.levels) {
-      console.log('Gem data already exists, skipping legacy mapping');
-      return;
-    }
-    
-    // Legacy Gem Mapping
-    const legacyGemData = {
-      levels: {
-        exodus: 0,
-        temporal: 0,
-        innovation: currentStats.innogem || 0, // Innovation Gem Level
-        attraction: 0,
-        power: 0,
-        creation: 0,
-        evolution: 0
-      },
-      activeNodes: {
-        temporal: [],
-        innovation: [],
-        attraction: [],
-        power: [],
-        creation: [],
-        evolution: []
+  if (Array.isArray(chainStep.boosts)) {
+    // Array-Format
+    chainStep.boosts.forEach(boost => {
+      if (boost.type === 'number') {
+        newStep.targetLevels[boost.key] = boost.targetLevel;
+      } else if (boost.type === 'boolean') {
+        newStep.targetBools[boost.key] = boost.targetState; 
       }
-    };
-    
-    // attr1 → Attraction Gem Level 1 + Node #1
-    if (currentStats.attr1 === true || currentStats.attr1 === 1) {
-      legacyGemData.levels.attraction = Math.max(1, legacyGemData.levels.attraction);
-      legacyGemData.activeNodes.attraction.push(0); // Node #1 = Index 0
-      console.log('Mapped attr1 → Attraction Level 1 + Node #1');
-    }
-    
-    // attr3 → Attraction Gem Level 3
-    if (currentStats.attr3 === true || currentStats.attr3 === 1) {
-      legacyGemData.levels.attraction = Math.max(3, legacyGemData.levels.attraction);
-      console.log('Mapped attr3 → Attraction Level 3');
-    }
-    
-    // pow2 → Power Gem Level 1 + Node #2
-    if (currentStats.pow2 === true || currentStats.pow2 === 1) {
-      legacyGemData.levels.power = Math.max(1, legacyGemData.levels.power);
-      legacyGemData.activeNodes.power.push(1); // Node #2 = Index 1
-      console.log('Mapped pow2 → Power Level 1 + Node #2');
-    }
-
-    //
-    
-    // Speichere die gemappten Gem-Daten
-    if (Object.values(legacyGemData.levels).some(level => level > 0)) {
-      console.log('Saving mapped gem data:', legacyGemData);
-      trPlannerStore.updateUserStats({ gemData: legacyGemData });
-    }
-    
-  } catch (error) {
-    console.error('Error mapping legacy gem boosts:', error);
+    });
+  } else if (chainStep.boosts && typeof chainStep.boosts === 'object') {
+    // Neues Objekt-Format
+    Object.entries(chainStep.boosts).forEach(([key, boostData]) => {
+      const boostDef = allBoosts.find(x => x.key === key);
+      if (boostDef) {
+        if (boostDef.type === 'number') {
+          newStep.targetLevels[key] = boostData.targetLevel;
+        } else if (boostDef.type === 'boolean') {
+          newStep.targetBools[key] = boostData.targetState;
+        }
+      }
+    });
   }
 }
 
@@ -1895,8 +2177,6 @@ function initData() {
     trSteps.length = 0;
     initDateTimePicker();
 
-    mapLegacyGemBoosts();
-
     // Basis‑Stats aus props kopieren
     const baseStats = {
       ...props.currentStats,
@@ -1904,7 +2184,147 @@ function initData() {
       allTimeOrbs: props.currentStats.allTimeOrbs || 0
     };
 
-    // ───────────────────────── erster Step ─────────────────────────
+    // ───────────────────────── IMPORT MODUS ─────────────────────────
+    if (props.importedPlanData) {
+      const plan = props.importedPlanData;
+      
+      // Meta‑Infos
+      planName.value    = plan.name || 'Imported Plan';
+      trStartDate.value = plan.trStartDate || trStartDate.value;
+      trStartTime.value = plan.trStartTime || trStartTime.value;
+      
+      // Gem Overrides laden
+      localGemOverrides.value = plan.gemOverrides ? { ...plan.gemOverrides } : {};
+      
+      // Maxed Boosts Overrides laden
+      localMaxedBoostsOverrides.value = plan.maxedBoostsOverrides ? { ...plan.maxedBoostsOverrides } : {};
+
+      trCount.value        = plan.updatedStats?.trCount     ?? baseStats.trCount;
+      trCountDisplay.value = String(trCount.value);
+      allTimeOrbs.value    = plan.updatedStats?.allTimeOrbs ?? baseStats.allTimeOrbs;
+      allTimeOrbsDisplay.value = formatSuffixNotation(allTimeOrbs.value);
+
+      const statsWithOrbCalcFlags = {
+        ...baseStats,
+        trCount:     trCount.value,
+        allTimeOrbs: allTimeOrbs.value
+      };
+      
+      // Wenn der gespeicherte Plan _orbCalcMaxedBoosts enthält, übernimm es
+      if (plan.updatedStats && plan.updatedStats._orbCalcMaxedBoosts) {
+        statsWithOrbCalcFlags._orbCalcMaxedBoosts = {...plan.updatedStats._orbCalcMaxedBoosts};
+        console.log("Importierte _orbCalcMaxedBoosts-Flags:", statsWithOrbCalcFlags._orbCalcMaxedBoosts);
+      }
+
+      const firstStep = {
+        id: `step_${Date.now()}`,
+        stats: statsWithOrbCalcFlags,
+        targetLevels:      {},
+        targetBools:       {},
+        selectedForNextTR: Array.isArray(plan.selectedForNextTR)
+                           ? [...plan.selectedForNextTR]
+                           : ['hoursInTR']
+      };
+      if (!firstStep.selectedForNextTR.includes('hoursInTR'))
+        firstStep.selectedForNextTR.push('hoursInTR');
+
+      // Boosts aus plan.boosts übernehmen
+      if (Array.isArray(plan.boosts)) {
+        // Array-Format
+        plan.boosts.forEach(b => {
+          if (b.type === 'number') {
+            firstStep.targetLevels[b.key] = b.targetLevel;
+            firstStep.stats[b.key]        = b.targetLevel;
+          } else if (b.type === 'boolean') {
+            const boostDef = allBoosts.find(x => x.key === b.key);
+            const state = Boolean(b.targetState);
+            firstStep.targetBools[b.key] = state;
+            firstStep.stats[b.key]       = state ? 1 : (boostDef?.permanent ? firstStep.stats[b.key] || 0 : 0);
+          }
+        });
+      } else if (plan.boosts && typeof plan.boosts === 'object') {
+        // Neues Objekt-Format
+        Object.entries(plan.boosts).forEach(([key, boostData]) => {
+          const boostDef = allBoosts.find(x => x.key === key);
+          if (boostDef) {
+            if (boostDef.type === 'number') {
+              firstStep.targetLevels[key] = boostData.targetLevel;
+              firstStep.stats[key] = boostData.targetLevel;
+            } else if (boostDef.type === 'boolean') {
+              const state = Boolean(boostData.targetState);
+              firstStep.targetBools[key] = state;
+              firstStep.stats[key] = state ? 1 : (boostDef?.permanent ? firstStep.stats[key] || 0 : 0);
+            }
+          }
+        });
+      }
+      
+      trSteps.push(firstStep);
+      
+      // Chain‑Schritte für Import laden
+      if (Array.isArray(plan.trChain) && plan.trChain.length) {
+        let acc = { ...firstStep.stats };
+        acc.trCount++;
+        acc.allTimeOrbs += getStepOrbGains(firstStep);
+
+        plan.trChain.forEach((chain, idx) => {
+          const step = {
+            id: `chain_${Date.now()}_${idx}`,
+            stats: { ...acc },
+            targetLevels:      {},
+            targetBools:       {},
+            selectedForNextTR: Array.isArray(chain.selectedForNextTR)
+                               ? [...chain.selectedForNextTR]
+                               : ['hoursInTR']
+          };
+          if (!step.selectedForNextTR.includes('hoursInTR'))
+            step.selectedForNextTR.push('hoursInTR');
+
+          // Boosts laden...
+          if (Array.isArray(chain.boosts)) {
+            chain.boosts.forEach(b => {
+              if (b.type === 'number') {
+                step.targetLevels[b.key] = b.targetLevel;
+                step.stats[b.key] = b.targetLevel;
+              } else if (b.type === 'boolean') {
+                const boostDef = allBoosts.find(x => x.key === b.key);
+                const state = Boolean(b.targetState);
+                step.targetBools[b.key] = state;
+                step.stats[b.key] = state ? 1 : (boostDef?.permanent ? step.stats[b.key] || 0 : 0);
+              }
+            });
+          } else if (chain.boosts && typeof chain.boosts === 'object') {
+            Object.entries(chain.boosts).forEach(([key, boostData]) => {
+              const boostDef = allBoosts.find(x => x.key === key);
+              if (boostDef) {
+                if (boostDef.type === 'number') {
+                  step.targetLevels[key] = boostData.targetLevel;
+                  step.stats[key] = boostData.targetLevel;
+                } else if (boostDef.type === 'boolean') {
+                  const state = Boolean(boostData.targetState);
+                  step.targetBools[key] = state;
+                  step.stats[key] = state ? 1 : (boostDef?.permanent ? step.stats[key] || 0 : 0);
+                }
+              }
+            });
+          }
+
+          trSteps.push(step);
+          
+          // Accumulate für nächsten Schritt
+          acc.trCount++;
+          acc.allTimeOrbs += getStepOrbGains(step);
+          Object.entries(step.targetLevels).forEach(([k, v]) => acc[k] = v);
+          Object.entries(step.targetBools).forEach(([k, v]) => acc[k] = v ? 1 : 0);
+        });
+      }
+      
+      // Erfasse Originalzustand
+      captureOriginalState();
+      return;
+    }
+
+    // ───────────────────────── erster Step (Edit oder New) ─────────────────────────
     let firstStep;
     if (props.editPlanId) {
       const plan = trPlannerStore.getTRPlanById(props.editPlanId);
@@ -1914,6 +2334,12 @@ function initData() {
       planName.value    = plan.name;
       trStartDate.value = plan.trStartDate || trStartDate.value;
       trStartTime.value = plan.trStartTime || trStartTime.value;
+      
+      // Gem Overrides laden
+      localGemOverrides.value = plan.gemOverrides ? { ...plan.gemOverrides } : {};
+      
+      // Maxed Boosts Overrides laden
+      localMaxedBoostsOverrides.value = plan.maxedBoostsOverrides ? { ...plan.maxedBoostsOverrides } : {};
 
       trCount.value        = plan.updatedStats?.trCount     ?? baseStats.trCount;
       trCountDisplay.value = String(trCount.value);
@@ -1945,19 +2371,40 @@ function initData() {
         firstStep.selectedForNextTR.push('hoursInTR');
 
       // Boosts aus plan.boosts übernehmen
-      plan.boosts.forEach(b => {
-        if (b.type === 'number') {
-          firstStep.targetLevels[b.key] = b.targetLevel;
-          firstStep.stats[b.key]        = b.targetLevel;
-        } else if (b.type === 'boolean') {
-          const boostDef = allBoosts.find(x => x.key === b.key);
-          const state = Boolean(b.targetState);
-          firstStep.targetBools[b.key] = state;
-          firstStep.stats[b.key]       = state ? 1 : (boostDef?.permanent ? firstStep.stats[b.key] || 0 : 0);
-        }
-      });
+      if (Array.isArray(plan.boosts)) {
+        // Array-Format
+        plan.boosts.forEach(b => {
+          if (b.type === 'number') {
+            firstStep.targetLevels[b.key] = b.targetLevel;
+            firstStep.stats[b.key]        = b.targetLevel;
+          } else if (b.type === 'boolean') {
+            const boostDef = allBoosts.find(x => x.key === b.key);
+            const state = Boolean(b.targetState);
+            firstStep.targetBools[b.key] = state;
+            firstStep.stats[b.key]       = state ? 1 : (boostDef?.permanent ? firstStep.stats[b.key] || 0 : 0);
+          }
+        });
+      } else if (plan.boosts && typeof plan.boosts === 'object') {
+        // Neues Objekt-Format
+        Object.entries(plan.boosts).forEach(([key, boostData]) => {
+          const boostDef = allBoosts.find(x => x.key === key);
+          if (boostDef) {
+            if (boostDef.type === 'number') {
+              firstStep.targetLevels[key] = boostData.targetLevel;
+              firstStep.stats[key] = boostData.targetLevel;
+            } else if (boostDef.type === 'boolean') {
+              const state = Boolean(boostData.targetState);
+              firstStep.targetBools[key] = state;
+              firstStep.stats[key] = state ? 1 : (boostDef?.permanent ? firstStep.stats[key] || 0 : 0);
+            }
+          }
+        });
+      }
     } else {
       // Neuer Plan
+      localGemOverrides.value = {};
+      localMaxedBoostsOverrides.value = {};
+      
       const statsWithFlags = { ...baseStats };
 
       if (props.currentStats && props.currentStats._orbCalcMaxedBoosts) {
@@ -1975,12 +2422,6 @@ function initData() {
     }
 
     trSteps.push(firstStep);
-
-    if (props.editPlanId && isLegacyPlan.value) {
-      nextTick(() => {
-        captureLegacyGemValues();
-      });
-    }
 
     // ───────────────────────── Chain‑Schritte ─────────────────────────
     if (props.editPlanId) {
@@ -2004,34 +2445,71 @@ function initData() {
             step.selectedForNextTR.push('hoursInTR');
 
           // ---------------- numerische Boosts ----------------
-          chain.boosts
-            .filter(b => b.type === 'number')
-            .forEach(b => {
-              step.targetLevels[b.key] = b.targetLevel;
-              step.stats[b.key]        = b.targetLevel;
+          if (Array.isArray(chain.boosts)) {
+            // Array-Format
+            chain.boosts
+              .filter(b => b.type === 'number')
+              .forEach(b => {
+                step.targetLevels[b.key] = b.targetLevel;
+                step.stats[b.key]        = b.targetLevel;
+              });
+          } else if (chain.boosts && typeof chain.boosts === 'object') {
+            // Neues Objekt-Format
+            Object.entries(chain.boosts).forEach(([key, boostData]) => {
+              const boostDef = allBoosts.find(x => x.key === key);
+              if (boostDef && boostDef.type === 'number') {
+                step.targetLevels[key] = boostData.targetLevel;
+                step.stats[key] = boostData.targetLevel;
+              }
             });
+          }
 
           // ---------------- Boolean‑Boosts (Fix!) ----------------
-          chain.boosts
-            .filter(b => b.type === 'boolean')      // KEIN selectedForNextTR‑Filter mehr
-            .forEach(b => {
-              const def   = allBoosts.find(x => x.key === b.key);
-              const state = Boolean(b.targetState);
+          if (Array.isArray(chain.boosts)) {
+            // Array-Format
+            chain.boosts
+              .filter(b => b.type === 'boolean')      // KEIN selectedForNextTR‑Filter mehr
+              .forEach(b => {
+                const def   = allBoosts.find(x => x.key === b.key);
+                const state = Boolean(b.targetState);
 
-              step.targetBools[b.key] = state;
+                step.targetBools[b.key] = state;
 
-              // stats korrekt auf 0/1 setzen
-              if (def?.permanent) {
-                if (state) step.stats[b.key] = 1;
-              } else {
-                step.stats[b.key] = state ? 1 : 0;
-              }
+                // stats korrekt auf 0/1 setzen
+                if (def?.permanent) {
+                  if (state) step.stats[b.key] = 1;
+                } else {
+                  step.stats[b.key] = state ? 1 : 0;
+                }
 
-              // UI‑Merker ergänzen, falls noch nicht vorhanden
-              if (!step.selectedForNextTR.includes(b.key)) {
-                step.selectedForNextTR.push(b.key);
+                // UI‑Merker ergänzen, falls noch nicht vorhanden
+                if (!step.selectedForNextTR.includes(b.key)) {
+                  step.selectedForNextTR.push(b.key);
+                }
+              });
+          } else if (chain.boosts && typeof chain.boosts === 'object') {
+            // Neues Objekt-Format
+            Object.entries(chain.boosts).forEach(([key, boostData]) => {
+              const def = allBoosts.find(x => x.key === key);
+              if (def && def.type === 'boolean') {
+                const state = Boolean(boostData.targetState);
+                
+                step.targetBools[key] = state;
+
+                // stats korrekt auf 0/1 setzen
+                if (def?.permanent) {
+                  if (state) step.stats[key] = 1;
+                } else {
+                  step.stats[key] = state ? 1 : 0;
+                }
+
+                // UI‑Merker ergänzen, falls noch nicht vorhanden
+                if (!step.selectedForNextTR.includes(key)) {
+                  step.selectedForNextTR.push(key);
+                }
               }
             });
+          }
 
 // ----- Boolean‑Reset: unmarkierte, nicht‑permanente Boosts sollen
           //       denselben Wert haben wie im Haupt‑TR -------------------------
@@ -2143,7 +2621,7 @@ function createPlan() {
     updatedStats._orbCalcMaxedBoosts = { ...firstStep.stats._orbCalcMaxedBoosts };
     console.log("_orbCalcMaxedBoosts in updatedStats übernommen:", updatedStats._orbCalcMaxedBoosts);
   }
-  const boostDetails = [];
+  const boostDetails = {}; // Objekt-Format statt Array
 
   // 3a) Numerische Boosts
   Object.entries(firstStep.targetLevels || {}).forEach(([key, targetLevel]) => {
@@ -2151,14 +2629,13 @@ function createPlan() {
     if (!boost) return;
     const currentLevel = props.currentStats[key] || 0;
     if (targetLevel > currentLevel) {
-      boostDetails.push({
-        key,
+      boostDetails[key] = {
         type: 'number',
         label: boost.label || key,
         currentLevel,
         targetLevel,
         remainingLevels: targetLevel - currentLevel
-      });
+      };
     }
   });
 
@@ -2168,13 +2645,12 @@ function createPlan() {
       const boost = allBoosts.find(b => b.key === key);
       if (!boost) return;
       const currentState = !!props.currentStats[key];
-      boostDetails.push({
-        key,
+      boostDetails[key] = {
         type: 'boolean',
         label: boost.label || key,
         currentState,
         targetState: isActive
-      });
+      };
     });
 
   // --- 4) Ergebnisse für den ersten TR ---
@@ -2221,7 +2697,7 @@ function createPlan() {
     }
 
     // c) Boost‑Liste dieses Schritts
-    const stepBoosts = [];
+    const stepBoosts = {}; // Objekt-Format statt Array
 
     // –– numerische Boosts wie gehabt
     Object.entries(step.targetLevels || {}).forEach(([key, targetLevel]) => {
@@ -2233,14 +2709,13 @@ function createPlan() {
       const prevLevel = prev.targetLevels?.[key] ?? prev.stats?.[key] ?? 0;
 
       if (key === 'hoursInTR' || !boost.permanent || targetLevel > prevLevel) {
-        stepBoosts.push({
-          key,
+        stepBoosts[key] = {
           type: 'number',
           label: boost.label || key,
           currentLevel: prevLevel,
           targetLevel,
           remainingLevels: targetLevel - prevLevel
-        });
+        };
       }
     });
 
@@ -2253,13 +2728,12 @@ function createPlan() {
           ? validChainSteps[validChainSteps.length - 1]
           : firstStep;
         const prevState = !!prev.targetBools?.[key] || !!prev.stats?.[key];
-        stepBoosts.push({
-          key,
+        stepBoosts[key] = {
           type: 'boolean',
           label: boost.label || key,
           currentState: prevState,
           targetState: isActive
-        });
+        };
       });
 
     // d) Ergebnisse dieses Schritts
@@ -2302,7 +2776,9 @@ function createPlan() {
     progress: {
       completed:   false,
       lastUpdated: new Date().toISOString()
-    }
+    },
+    gemOverrides:      localGemOverrides.value ? { ...localGemOverrides.value } : {},
+    maxedBoostsOverrides: localMaxedBoostsOverrides.value ? { ...localMaxedBoostsOverrides.value } : {}
   };
 
   // --- 7) Plan-ID generieren, aber NICHT speichern ---
@@ -2337,9 +2813,30 @@ function createPlan() {
 
   emit('save', planId);
   captureOriginalState();
-  emit('close');
+  closeModal();
 }
 
+// Gem Override Functions
+function openGemOverrideModal() {
+  showGemOverrideModal.value = true;
+}
+
+// Maxed Boosts Override Functions
+function openMaxedBoostsOverrideModal() {
+  showMaxedBoostsOverrideModal.value = true;
+}
+
+function clearPlanContext() {
+  if (typeof window !== 'undefined') {
+    window.__PLAN_CONTEXT__ = null;
+    console.log('Cleared global plan context');
+  }
+}
+
+function closeModal() {
+  clearPlanContext();
+  emit('close');
+}
 
 
 function cancelAndClose() {
@@ -2351,7 +2848,7 @@ function cancelAndClose() {
     showAlertDialog.value = true;
   } else {
     // Keine Änderungen, direkt schließen
-    emit('close');
+    closeModal();
   }
 }
 
@@ -2362,7 +2859,7 @@ function handleAlertClose() {
   if (alertTitle.value === "Discard changes?") {
     // Wenn der Benutzer im "Discard changes?"-Dialog auf "Discard" klickt,
     // soll das Modal geschlossen werden
-    emit('close');
+    closeModal();
   } else if (alertTitle.value === "Warning" && alertMessage.value.includes("TRs were saved")) {
     // Jetzt erst speichern, wenn der Benutzer OK klickt
     if (pendingSavePlanId.value && pendingSaveData.value) {
@@ -2379,7 +2876,7 @@ function handleAlertClose() {
       
       emit('save', planId);
       captureOriginalState();
-      emit('close');
+      closeModal();
       pendingSavePlanId.value = null;
     }
   }
@@ -2573,10 +3070,20 @@ onMounted(() => {
     window.addEventListener('scroll', handleScroll);
     setTimeout(handleScroll, 300);
   }
+  
+  // Event-Listener für Gem-Level-Änderungen hinzufügen
+  window.addEventListener('maxLevelStatsChanged', handleMaxLevelStatsChanged);
+  window.addEventListener('gemDataChanged', handleGemDataChanged);
+  window.addEventListener('storage', handleStorageChange);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll);
+  
+  // Event-Listener für Gem-Level-Änderungen entfernen
+  window.removeEventListener('maxLevelStatsChanged', handleMaxLevelStatsChanged);
+  window.removeEventListener('gemDataChanged', handleGemDataChanged);
+  window.removeEventListener('storage', handleStorageChange);
 });
 
 watch(() => trSteps.length, () => {
@@ -2591,8 +3098,18 @@ watch(() => props.isVisible, (newValue) => {
   if (newValue) {
     window.addEventListener('scroll', handleScroll);
     setTimeout(handleScroll, 300);
+    
+    // Event-Listener für Gem-Level-Änderungen hinzufügen wenn Modal geöffnet wird
+    window.addEventListener('maxLevelStatsChanged', handleMaxLevelStatsChanged);
+    window.addEventListener('gemDataChanged', handleGemDataChanged);
+    window.addEventListener('storage', handleStorageChange);
   } else {
     window.removeEventListener('scroll', handleScroll);
+    
+    // Event-Listener entfernen wenn Modal geschlossen wird
+    window.removeEventListener('maxLevelStatsChanged', handleMaxLevelStatsChanged);
+    window.removeEventListener('gemDataChanged', handleGemDataChanged);
+    window.removeEventListener('storage', handleStorageChange);
   }
 });
 
@@ -2613,9 +3130,6 @@ function initializeWithCopyData(copyData) {
   try {
     console.log("Initializing TRPlanModal with copyData:", copyData);
 
-    // *** LEGACY GEM MAPPING AUCH HIER ***
-    mapLegacyGemBoosts();
-
     // 1) Plan‑Metadaten setzen
     planName.value = copyData.name || `TR Plan ${new Date().toLocaleDateString()}`;
     trStartDate.value = copyData.trStartDate || new Date().toISOString().split('T')[0];
@@ -2628,19 +3142,13 @@ function initializeWithCopyData(copyData) {
     // 2) Bestehende Schritte löschen
     trSteps.length = 0;
 
-    // 3) Basis‑Stats vom copyData übernehmen ABER Legacy Gem Boosts entfernen
+    // 3) Basis‑Stats vom copyData übernehmen
     const baseStats = { 
       ...props.currentStats, 
       ...copyData, 
       trCount: copyData.trCount || 0, 
       allTimeOrbs: copyData.allTimeOrbs || 0 
     };
-
-    // *** LEGACY BOOSTS ENTFERNEN ***
-    delete baseStats.attr1;
-    delete baseStats.attr3;
-    delete baseStats.pow2;
-    delete baseStats.innogem;
 
     // 4) Ersten Schritt anlegen
     const firstStep = {
@@ -2657,11 +3165,6 @@ function initializeWithCopyData(copyData) {
       
       allBoosts.forEach(boost => {
         const key = boost.key;
-        
-        // *** LEGACY GEM BOOSTS ÜBERSPRINGEN ***
-        if (['attr1', 'attr3', 'pow2', 'innogem'].includes(key)) {
-          return;
-        }
         
         if (key === 'trCount' || key === 'allTimeOrbs' || key.startsWith('_')) {
           return;
@@ -2686,10 +3189,7 @@ function initializeWithCopyData(copyData) {
       if (props.currentStats._orbCalcMaxedBoosts) {
         firstStep.stats._orbCalcMaxedBoosts = {};
         Object.keys(props.currentStats._orbCalcMaxedBoosts).forEach(key => {
-          // *** LEGACY BOOSTS AUCH HIER ÜBERSPRINGEN ***
-          if (!['attr1', 'attr3', 'pow2', 'innogem'].includes(key)) {
-            firstStep.stats._orbCalcMaxedBoosts[key] = true;
-          }
+          firstStep.stats._orbCalcMaxedBoosts[key] = true;
         });
       }
     } else {
@@ -2702,11 +3202,6 @@ function initializeWithCopyData(copyData) {
       }
 
       copyData.boosts.forEach(b => {
-        // *** LEGACY GEM BOOSTS ÜBERSPRINGEN ***
-        if (['attr1', 'attr3', 'pow2', 'innogem'].includes(b.key)) {
-          return;
-        }
-        
         const def = allBoosts.find(x => x.key === b.key);
         if (!def) return;
         
@@ -2726,21 +3221,35 @@ function initializeWithCopyData(copyData) {
 
     trSteps.push(firstStep);
 
-    // Chain-Steps übernehmen mit Legacy-Filter
+    // Chain-Steps übernehmen
     if (copyData.trChain && Array.isArray(copyData.trChain)) {
       copyData.trChain.forEach((chainStep, index) => {
         const step = createNewTRStep();
         
-        if (chainStep.boosts && Array.isArray(chainStep.boosts)) {
-          chainStep.boosts
-            .filter(b => !['attr1', 'attr3', 'pow2', 'innogem'].includes(b.key)) // Legacy Filter
-            .forEach(b => {
-              if (b.type === 'boolean') {
-                step.targetBools[b.key] = b.targetState;
-              } else if (b.type === 'number') {
-                step.targetLevels[b.key] = b.targetLevel;
+        if (chainStep.boosts) {
+          if (Array.isArray(chainStep.boosts)) {
+            // Array-Format
+            chainStep.boosts
+              .forEach(b => {
+                if (b.type === 'boolean') {
+                  step.targetBools[b.key] = b.targetState;
+                } else if (b.type === 'number') {
+                  step.targetLevels[b.key] = b.targetLevel;
+                }
+              });
+          } else if (typeof chainStep.boosts === 'object') {
+            // Objekt-Format
+            Object.entries(chainStep.boosts).forEach(([key, boostData]) => {
+              const boostDef = allBoosts.find(x => x.key === key);
+              if (boostDef) {
+                if (boostDef.type === 'boolean') {
+                  step.targetBools[key] = boostData.targetState;
+                } else if (boostDef.type === 'number') {
+                  step.targetLevels[key] = boostData.targetLevel;
+                }
               }
             });
+          }
         }
         
         if (chainStep.selectedForNextTR && Array.isArray(chainStep.selectedForNextTR)) {
@@ -2870,6 +3379,27 @@ function showAlert(message, title = 'TR Planner', type = 'info') {
   showAlertDialog.value = true;
 }
 
+// Event-Handler für Gem-Level-Änderungen
+function handleMaxLevelStatsChanged() {
+  console.log("TRPlanModal: maxLevelStatsChanged event empfangen");
+  // Computed properties werden automatisch aktualisiert
+}
+
+function handleGemDataChanged() {
+  console.log("TRPlanModal: gemDataChanged event empfangen");
+  // Computed properties werden automatisch aktualisiert
+}
+
+function handleStorageChange(event) {
+  if (event.key === 'trplanner_userstats') {
+    console.log("TRPlanModal: localStorage 'trplanner_userstats' geändert");
+    handleMaxLevelStatsChanged();
+  } else if (event.key && event.key.includes('gem')) {
+    console.log("TRPlanModal: Gem-bezogene localStorage Änderung erkannt");
+    handleGemDataChanged();
+  }
+}
+
 watch(trSteps, () => {
 }, { deep: true });
 
@@ -2927,24 +3457,40 @@ function isBoostAvailable(boost, step) {
   // NEUE Logik: Gem-basierte Verfügbarkeitsprüfung (zusätzlich)
   if (boost.unlock) {
     try {
-      const trPlannerStore = useTRPlannerStore();
-      const userStats = trPlannerStore.userStats;
+      // KORRIGIERT: Verwende Plan-Context Gem-Daten wenn verfügbar
+      let gemData;
       
-      if (userStats && userStats.gemData && userStats.gemData.levels) {
-        const gemLevel = userStats.gemData.levels[boost.unlock] || 0;
+      // Zuerst prüfen, ob Plan-Context verfügbar ist (mit Overrides)
+      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+        gemData = window.__PLAN_CONTEXT__.gemData;
+        console.log(`🔧 Using plan context gem data for boost availability ${boost.key}:`, gemData);
+      } else {
+        // Fallback: Normale Store Gem-Daten
+        const trPlannerStore = useTRPlannerStore();
+        const userStats = trPlannerStore.userStats;
+        gemData = userStats?.gemData;
+        console.log(`🔧 Using store gem data for boost availability ${boost.key}:`, gemData);
+      }
+      
+      if (gemData && gemData.levels) {
+        const gemLevel = gemData.levels[boost.unlock] || 0;
         
         // Prüfe ob Gem-Level ausreicht
         if (gemLevel < (boost.unlock_level || 1)) {
+          console.log(`❌ Boost ${boost.key} not available: ${boost.unlock} Level ${gemLevel} < ${boost.unlock_level}`);
           return false;
         }
         
         // Prüfe zusätzliche Node-Anforderungen
-        if (boost.unlock_node && userStats.gemData.activeNodes) {
+        if (boost.unlock_node && gemData.activeNodes) {
           const nodeKey = `${boost.unlock}_${boost.unlock_node}`;
-          if (!userStats.gemData.activeNodes[nodeKey]) {
+          if (!gemData.activeNodes[nodeKey]) {
+            console.log(`❌ Boost ${boost.key} not available: Node ${nodeKey} not active`);
             return false;
           }
         }
+        
+        console.log(`✅ Boost ${boost.key} available: ${boost.unlock} Level ${gemLevel} >= ${boost.unlock_level}`);
       }
     } catch (error) {
       console.warn('Error checking gem availability for boost:', boost.key, error);
@@ -2990,139 +3536,14 @@ function getFullTooltipContent(boost, step) {
   return content;
 }
 
-// Speichert die ursprünglichen Legacy-Gem-Werte
-const originalLegacyGemValues = ref({
-  innogem: 0,
-  attr1: false,
-  attr3: false,
-  pow2: false
+// Gem Override Computed Properties
+const hasGemOverrides = computed(() => {
+  return localGemOverrides.value && Object.keys(localGemOverrides.value).length > 0;
 });
 
-// Erfasse die ursprünglichen Legacy-Gem-Werte DIREKT aus dem ersten TR-Schritt
-function captureLegacyGemValues() {
-  if (!props.editPlanId || trSteps.length === 0) return;
-  
-  const plan = trPlannerStore.getTRPlanById(props.editPlanId);
-  if (!plan) return;
-  
-  // Initialisiere mit 0/false, um undefined zu vermeiden
-  originalLegacyGemValues.value = {
-    innogem: 0,
-    attr1: false,
-    attr3: false,
-    pow2: false
-  };
-  
-  // Extrahiere Werte direkt aus dem trSteps[0]-Objekt, NICHT aus dem Plan
-  const firstStep = trSteps[0];
-  if (firstStep) {
-    // Innovation Gem - nummerischer Wert
-    originalLegacyGemValues.value.innogem = 
-      firstStep.stats.innogem || 0; // Basis-Wert bevor irgendeine Änderung erfolgt
-    
-    // Boolean Gem Boosts - true/false Werte
-    originalLegacyGemValues.value.attr1 = 
-      Boolean(firstStep.stats.attr1); // Basis-Werte bevor irgendeine Änderung erfolgt
-    originalLegacyGemValues.value.attr3 = 
-      Boolean(firstStep.stats.attr3);
-    originalLegacyGemValues.value.pow2 = 
-      Boolean(firstStep.stats.pow2);
-  }
-  
-  console.log("Erfasste Legacy-Gem-Werte aus firstStep:", originalLegacyGemValues.value);
-}
-
-// Prüft, ob Legacy-Gem-Boosts geändert wurden
-const hasLegacyGemChanges = computed(() => {
-  if (!isLegacyPlan.value) return false;
-  if (trSteps.length === 0) return false;
-  
-  // Durchlaufe ALLE TR-Schritte, nicht nur den ersten
-  for (let stepIndex = 0; stepIndex < trSteps.length; stepIndex++) {
-    const step = trSteps[stepIndex];
-    let hasChangesInThisStep = false;
-    
-    console.log(`Prüfe Legacy-Gem-Änderungen in TR-Schritt ${stepIndex + 1}:`);
-    
-    // Prüfe innogem (numerisch)
-    if (Object.prototype.hasOwnProperty.call(step.targetLevels, 'innogem')) {
-      const currentInnogem = step.targetLevels.innogem || 0;
-      const origInnogem = originalLegacyGemValues.value.innogem || 0;
-      
-      console.log(`- innogem in Schritt ${stepIndex + 1}: Original=${origInnogem}, Aktuell=${currentInnogem}`);
-      if (currentInnogem !== origInnogem) {
-        console.log(`  ✓ innogem wurde in Schritt ${stepIndex + 1} geändert`);
-        hasChangesInThisStep = true;
-      }
-    }
-    
-    // Prüfe Boolean-Gem-Boosts
-    const keys = ['attr1', 'attr3', 'pow2'];
-    for (const key of keys) {
-      // Nur wenn der key in targetBools definiert ist (explizite Änderung)
-      if (Object.prototype.hasOwnProperty.call(step.targetBools, key)) {
-        const currentValue = Boolean(step.targetBools[key]);
-        const origValue = Boolean(originalLegacyGemValues.value[key]);
-        
-        console.log(`- ${key} in Schritt ${stepIndex + 1}: Original=${origValue}, Aktuell=${currentValue}`);
-        if (currentValue !== origValue) {
-          console.log(`  ✓ ${key} wurde in Schritt ${stepIndex + 1} geändert`);
-          hasChangesInThisStep = true;
-        }
-      }
-    }
-    
-    // Wenn Änderungen in diesem Schritt gefunden wurden, sofort true zurückgeben
-    if (hasChangesInThisStep) {
-      return true;
-    }
-  }
-  
-  // Keine Änderungen in irgendeinem Schritt gefunden
-  return false;
-});
-
-// Prüft, ob es sich um einen Legacy-Plan handelt (enthält alte Gem-Boost-Keys)
-const isLegacyPlan = computed(() => {
-  if (!props.editPlanId) return false;
-  const plan = trPlannerStore.getTRPlanById(props.editPlanId);
-  if (!plan) return false;
-  
-  // Prüfen, ob alte Gem-Boost-Keys in den Boosts vorhanden sind
-  const hasLegacyGemBoosts = plan.boosts?.some(b => 
-    ['innogem', 'attr1', 'attr3', 'pow2'].includes(b.key)
-  );
-  
-  return hasLegacyGemBoosts;
-});
-
-// Erfasse Legacy-Gem-Werte beim Initialisieren
-onMounted(() => {
-  if (props.isVisible && props.editPlanId) {
-    nextTick(() => {
-      captureLegacyGemValues();
-    });
-  }
-});
-
-// Rufe captureLegacyGemValues NACH der vollständigen Initialisierung auf
-watch(() => props.isVisible, (isVisible) => {
-  if (isVisible && props.editPlanId) {
-    // Verzögerung hinzufügen, um sicherzustellen, dass initData() komplett ausgeführt wurde
-    nextTick(() => {
-      // Stelle sicher, dass trSteps bereits geladen ist
-      if (trSteps.length > 0) {
-        captureLegacyGemValues();
-        console.log("Legacy-Gem-Werte nach Initialisierung erfasst");
-      } else {
-        // Wenn trSteps noch nicht bereit ist, warte zusätzlich
-        setTimeout(() => {
-          captureLegacyGemValues();
-          console.log("Legacy-Gem-Werte mit Verzögerung erfasst");
-        }, 200);
-      }
-    });
-  }
+const gemOverrideCount = computed(() => {
+  if (!localGemOverrides.value) return 0;
+  return Object.keys(localGemOverrides.value).length;
 });
 
 watch(

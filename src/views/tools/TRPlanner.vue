@@ -40,6 +40,14 @@
               <IconCalculator size="16" />
             </button>
             
+            <button 
+              @click="openImportModal"
+              class="flex items-center justify-between px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors shadow-sm"
+            >
+              <span>Import Plan</span>
+              <IconDownload size="16" />
+            </button>
+            
             <button
               @click="openTRPlanModal"
               class="flex items-center justify-between px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm"
@@ -73,6 +81,15 @@
             >
               <IconCalculator size="16" class="mr-2" />
               <span>Orb Calculator</span>
+            </button>
+            
+            <!-- Import Button -->
+            <button 
+              @click="openImportModal"
+              class="flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white border-r border-green-700 transition-colors shadow-sm"
+            >
+              <IconDownload size="16" class="mr-2" />
+              <span>Import</span>
             </button>
             
             <button
@@ -143,6 +160,8 @@
                 @click="openTRPlanDetailModal(element.id)"
                 @edit="handleEditPlan(element.id)"
                 @copy="handleCopyPlan(element.id)"
+                @share="handleSharePlan(element.id)"
+                @adjustments="handleGemAdjustments(element.id)"
                 @delete="handleDeletePlan(element.id)"
               />
             </div>
@@ -168,6 +187,7 @@
       :isVisible="showTRPlanModal"
       :currentStats="trPlannerStore.userStats"
       :editPlanId="editingPlanId"
+      :importedPlanData="importedPlanData"
       @close="closeTRPlanModal"
       @save="handlePlanSaved"
       @openNewPlan="handleOpenNewPlan"
@@ -211,6 +231,15 @@
       @close="showGemOverviewModal = false"
     />
     
+    <!-- Gem Override Modal -->
+    <GemOverrideModal
+      v-if="showGemOverrideModal"
+      :isVisible="showGemOverrideModal"
+      :gemOverrides="selectedPlanForGemOverrides?.gemOverrides || {}"
+      @close="closeGemOverrideModal"
+      @update:gemOverrides="updatePlanGemOverrides"
+    />
+    
     <!-- Welcome Modal für erste Besucher -->
     <GemWelcomeModal
       v-if="showGemWelcomeModal"
@@ -242,11 +271,27 @@
         <span>{{ toast.message }}</span>
       </div>
     </Transition>
+
+    <!-- Import Modal -->
+    <TRPlanImportModal
+      v-if="showImportModal"
+      :show="showImportModal"
+      @close="closeImportModal"
+      @import-plan="handlePlanImported"
+    />
+
+    <!-- Share Modal -->
+    <TRPlanShareModal
+      v-if="showShareModal"
+      :show="showShareModal"
+      :plan="planToShare"
+      @close="closeShareModal"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
 import StatsInputModal from '@/components/tr-planner/StatsInputModal.vue';
 import TRPlanModal from '@/components/tr-planner/TRPlanModal.vue';
 import TRResultsSidePanel from '@/components/tr-planner/TRResultsSidePanel.vue';
@@ -255,6 +300,9 @@ import TRPlanDetailModal from '@/components/tr-planner/TRPlanDetailModal.vue';
 import OrbCalculatorModal from '@/components/tr-planner/OrbCalculatorModal.vue';
 import GemOverviewModal from '@/components/tr-planner/GemOverviewModal.vue';
 import GemWelcomeModal from '@/components/tr-planner/GemWelcomeModal.vue';
+import GemOverrideModal from '@/components/tr-planner/GemOverrideModal.vue';
+import TRPlanImportModal from '@/components/tr-planner/TRPlanImportModal.vue';
+import TRPlanShareModal from '@/components/tr-planner/TRPlanShareModal.vue';
 import Draggable from 'vuedraggable';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { 
@@ -266,7 +314,11 @@ import {
   IconInfoCircle,
   IconFile,
   IconCalculator,
-  IconZodiacGemini
+  IconZodiacGemini,
+  IconFileImport,
+  IconDownload,
+  IconUpload,
+  IconChevronDown
 } from '@tabler/icons-vue';
 
 // Pinia Store einbinden
@@ -277,10 +329,20 @@ const showStatsModal = ref(false);
 const showTRPlanModal = ref(false);
 const showGemOverviewModal = ref(false);
 const showGemWelcomeModal = ref(false);
+const showGemOverrideModal = ref(false);
+const selectedPlanForGemOverrides = ref(null);
 const trPlanModalRef = ref(null);
 const selectedPlanId = ref(null);
 const editingPlanId = ref(null);
 const showOrbCalculatorModal = ref(false);
+
+// Import state
+const showImportModal = ref(false);
+const importedPlanData = ref(null);
+
+// Share modal state
+const showShareModal = ref(false);
+const planToShare = ref(null);
 
 // Toast notification
 const toast = ref({ show: false, message: '', type: 'info' });
@@ -326,11 +388,43 @@ function openTRPlanDetailModal(planId) {
 function closeTRPlanModal() {
   showTRPlanModal.value = false;
   editingPlanId.value = null;
+  importedPlanData.value = null; // Reset imported plan data
 }
 
 // Funktion zum Öffnen des Orb Calculator Modals
 function openOrbCalculatorModal() {
   showOrbCalculatorModal.value = true;
+}
+
+// Import functions
+function openImportModal() {
+  showImportModal.value = true;
+}
+
+function closeImportModal() {
+  showImportModal.value = false;
+}
+
+// Share functions
+function openShareModal(plan) {
+  planToShare.value = plan;
+  showShareModal.value = true;
+}
+
+function closeShareModal() {
+  showShareModal.value = false;
+  planToShare.value = null;
+}
+
+function handlePlanImported(plan) {
+  // Öffne das TRPlanModal direkt mit den importierten Daten (ohne zu speichern)
+  nextTick(() => {
+    // Setze die importierten Plan-Daten für das Modal
+    importedPlanData.value = plan;
+    editingPlanId.value = null; // Kein Edit-Modus, sondern Import-Modus
+    showTRPlanModal.value = true;
+    console.log(`TRPlanModal für Import geöffnet: ${plan.name}`);
+  });
 }
 
 // Save user stats from modal
@@ -359,10 +453,26 @@ function handleEditPlan(planId) {
 // Handle new plan created/updated
 function handlePlanSaved(planId) {
   const isEditing = editingPlanId.value !== null;
-  showToastMessage(
-    isEditing ? 'Plan updated successfully' : 'Plan created successfully', 
-    'success'
-  );
+  const isImporting = importedPlanData.value !== null;
+  
+  let message;
+  if (isImporting) {
+    message = `Plan "${importedPlanData.value?.name || 'Imported Plan'}" imported and saved successfully!`;
+    
+    // Check if it's incompatible with current gem levels
+    if (importedPlanData.value?.importedGemContext) {
+      const isImported = importedPlanData.value.isImported;
+      if (isImported) {
+        message += ' (Using original gem levels for calculations)';
+      }
+    }
+  } else if (isEditing) {
+    message = 'Plan updated successfully';
+  } else {
+    message = 'Plan created successfully';
+  }
+  
+  showToastMessage(message, 'success');
   
   // Schließe Detail-Ansicht, falls wir den aktuell angezeigten Plan bearbeiten
   if (selectedPlanId.value === planId) {
@@ -414,6 +524,43 @@ function handleCopyPlan(planId) {
   
   // Feedback anzeigen
   showToastMessage('Creating a copy of the plan', 'info');
+}
+
+// Share plan
+function handleSharePlan(planId) {
+  const plan = trPlannerStore.getTRPlanById(planId);
+  if (plan) {
+    openShareModal(plan);
+  }
+}
+
+// Handle gem adjustments/overrides for a plan
+function handleGemAdjustments(planId) {
+  const plan = trPlannerStore.getTRPlanById(planId);
+  if (plan) {
+    selectedPlanForGemOverrides.value = plan;
+    showGemOverrideModal.value = true;
+  }
+}
+
+// Update gem overrides for a plan
+function updatePlanGemOverrides(overrides) {
+  if (selectedPlanForGemOverrides.value) {
+    // Update the plan with new gem overrides
+    const updatedPlan = {
+      ...selectedPlanForGemOverrides.value,
+      gemOverrides: overrides
+    };
+    
+    trPlannerStore.updateTRPlan(updatedPlan.id, updatedPlan);
+    showToastMessage('Gem overrides updated', 'success');
+  }
+}
+
+// Close gem override modal
+function closeGemOverrideModal() {
+  showGemOverrideModal.value = false;
+  selectedPlanForGemOverrides.value = null;
 }
 
 // Delete plan
@@ -550,6 +697,11 @@ onMounted(() => {
   
   // Prüfe Welcome Modal
   checkShowGemWelcome();
+});
+
+// Cleanup on unmount
+onUnmounted(() => {
+  // Cleanup function - currently empty
 });
 
 // Watch für Änderungen im Store - mit tiefer Überwachung

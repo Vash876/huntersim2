@@ -545,6 +545,11 @@ async function autoDeactivateMaxedBoosts(changedGems) {
       currentStats._orbCalcMaxedBoosts = orbCalcMaxedBoosts;
       localStorage.setItem('trplanner_userstats', JSON.stringify(currentStats));
       
+      // WICHTIG: Event auslösen für andere Modals (z.B. OrbCalculatorModal)
+      window.dispatchEvent(new CustomEvent('maxLevelStatsChanged', {
+        detail: currentStats
+      }));
+      
       // Detailliertes User-Feedback
       if (deactivatedBoosts.length > 0) {
         const changedGemNames = changedGems.map(({ gemId }) => {

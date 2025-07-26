@@ -135,6 +135,11 @@ function resetAllMaxedBoosts() {
       localStorage.setItem('trplanner_userstats', JSON.stringify(currentStats));
       console.log('Stats after reset in localStorage:', JSON.parse(localStorage.getItem('trplanner_userstats')));
       
+      // WICHTIG: Event auslösen für andere Modals (z.B. OrbCalculatorModal)
+      window.dispatchEvent(new CustomEvent('maxLevelStatsChanged', {
+        detail: currentStats
+      }));
+      
       // WICHTIG: Auch den Store updaten
       try {
         trPlannerStore.updateUserStats(currentStats);

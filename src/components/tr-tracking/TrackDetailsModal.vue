@@ -124,12 +124,6 @@
                 Add New Entry
               </button>
               <button
-                @click="sortOrder = sortOrder === 'desc' ? 'asc' : 'desc'"
-                class="text-xs bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded-md transition-colors"
-              >
-                {{ sortOrder === 'desc' ? 'Newest First' : 'Oldest First' }}
-              </button>
-              <button
                 @click="exportToCsv"
                 class="text-xs bg-blue-600 hover:bg-blue-500 text-white px-2 py-1 rounded-md transition-colors"
               >

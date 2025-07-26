@@ -119,11 +119,27 @@ export function calculateOrbGains(currentStats, planStats, boosts = []) {
     try {
       if (boost.type === 'boolean') {
         // Boolean Boosts
+        console.log(`🔍 Boolean boost ${boost.key}: value=${value}, truthy=${!!value}`);
+        
+        // Spezifischer Debug für Premium Boosts
+        if (['iap', 'hera', 'jaxis'].includes(boost.key)) {
+          console.log(`🎖️ PREMIUM BOOST ${boost.key} in calculateOrbGains: value=${value}, type=${typeof value}`);
+        }
+        
         if (value) {
           if (typeof boost.multiplier === 'number') {
             multiplier = boost.multiplier;
+            console.log(`✅ Applied boolean boost ${boost.key}: multiplier=${multiplier}`);
           } else if (typeof boost.multiplier === 'function') {
             multiplier = boost.multiplier(1, planStats);
+            console.log(`✅ Applied boolean boost ${boost.key}: function multiplier=${multiplier}`);
+          }
+        } else {
+          console.log(`❌ Skipped boolean boost ${boost.key}: value is falsy (${value})`);
+          
+          // Extra Debug für Premium Boosts
+          if (['iap', 'hera', 'jaxis'].includes(boost.key)) {
+            console.log(`🎖️ PREMIUM BOOST ${boost.key} SKIPPED: value=${value} is falsy`);
           }
         }
       } else if (value > 0) {
@@ -192,8 +208,18 @@ function isBoostAvailable(boost, stats) {
     return true;
   }
   
-  // WICHTIG: Immer frische Gem-Daten laden, kein Caching!
-  const gemLevels = forceRefreshGemData();
+  // KORRIGIERT: Verwende Plan-Context Gem-Daten wenn verfügbar, sonst localStorage
+  let gemLevels = {};
+  
+  // Prüfe zuerst auf Plan-Context (für TR-Plan Overrides)
+  if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+    gemLevels = window.__PLAN_CONTEXT__.gemData.levels || {};
+    console.log(`🔧 Using plan context gem data for ${boost.key}:`, gemLevels);
+  } else {
+    // Fallback: Normale localStorage Gem-Daten
+    gemLevels = forceRefreshGemData();
+    console.log(`🔧 Using localStorage gem data for ${boost.key}:`, gemLevels);
+  }
   
   // Prüfe, ob das erforderliche Gem-Level erreicht ist
   const requiredGem = boost.unlock;
@@ -203,7 +229,7 @@ function isBoostAvailable(boost, stats) {
   const isAvailable = currentLevel >= requiredLevel;
   
   // Debug nur für problematische Boosts
-  if (['oogadget', 'vb1', 'vb2', 'vb3', 'vb4', 'vb5'].includes(boost.key)) {
+  if (['oogadget', 'vb1', 'vb2', 'vb3', 'vb4', 'vb5', 'iap', 'hera', 'jaxis'].includes(boost.key)) {
     console.log(`🔍 isBoostAvailable ${boost.key}: ${requiredGem} Level ${currentLevel} >= ${requiredLevel} = ${isAvailable}`);
   }
   
@@ -404,6 +430,12 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
   // Store-Integration: Gem-Daten direkt laden
   function getGemDataFromStore() {
     try {
+      // First check for plan context (for overrides in TR plans)
+      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+        console.log('Using plan context gem data in calculations:', window.__PLAN_CONTEXT__.gemData);
+        return window.__PLAN_CONTEXT__.gemData;
+      }
+      
       // Prüfe ob wir im Browser-Kontext sind und der Store verfügbar ist
       if (typeof window !== 'undefined' && window.__PINIA__) {
         // Versuche über globales Pinia-Instance auf den Store zuzugreifen
@@ -473,6 +505,29 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
         levels: { exodus: 0, temporal: 0, innovation: 0, attraction: 0, power: 0, creation: 0, evolution: 0 },
         activeNodes: { temporal: [], innovation: [], attraction: [], power: [], creation: [], evolution: [] }
       };
+    }
+  }
+  
+  // Get maxed boosts data from plan context or localStorage
+  function getMaxedBoostsFromStore() {
+    try {
+      // First check for plan context (for overrides in TR plans)
+      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.maxedBoosts) {
+        console.log('Using plan context maxed boosts in calculations:', window.__PLAN_CONTEXT__.maxedBoosts);
+        return window.__PLAN_CONTEXT__.maxedBoosts;
+      }
+      
+      // Fallback: Try localStorage
+      const localStorageData = localStorage.getItem('trplanner_userstats');
+      if (localStorageData) {
+        const parsedData = JSON.parse(localStorageData);
+        return parsedData._orbCalcMaxedBoosts || {};
+      }
+      
+      return {};
+    } catch (error) {
+      console.warn('Could not load maxed boosts from store in calculations:', error);
+      return {};
     }
   }
   

@@ -77,7 +77,6 @@ export async function loadHunterModule(hunterId) {
     const hunter = getHunterById(hunterId);
     if (hunter && hunter.statsModule) {
       const module = await hunter.statsModule();
-      console.log(`[Cache] Loaded module for hunter: ${hunterId}`);
       return module;
     }
   } catch (error) {
@@ -169,9 +168,6 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore }) {
     const jsonStr = JSON.stringify(dataToHash);
     const hash = stringToHash(jsonStr);
     
-    // Debug-Log
-    console.log(`[Cache] Generated cache key for ${buildData.name || 'unnamed'}: ${hash}`);
-    
     return hash;
   } catch (error) {
     console.error("[Cache] Error generating cache key:", error);
@@ -236,12 +232,8 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
     // Generiere den Cache-Schlüssel
     const cacheKey = await generateCacheKey({ hunterId, buildData, hunterStore });
     
-    // Debug-Log
-    console.log(`[Cache] Checking if build '${buildData.name || 'unnamed'}' needs evaluation. Key: ${cacheKey}`);
-    
     // Prüfe, ob der Key als ungültig markiert wurde
     if (invalidCacheKeys[hunterId] && invalidCacheKeys[hunterId].has(cacheKey)) {
-      console.log(`Cache key ${cacheKey} was invalidated, forcing evaluation`);
       return {
         shouldEvaluate: true,
         cachedResult: null,
@@ -251,7 +243,6 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
     
     // Prüfe den In-Memory-Cache
     if (memoryCache[cacheKey]) {
-      console.log(`[Cache] Found result in memory cache for build '${buildData.name || 'unnamed'}'`);
       return { 
         shouldEvaluate: false, 
         cachedResult: memoryCache[cacheKey],
@@ -265,7 +256,6 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
         hunterStore.evaluationCache[hunterId][cacheKey]) {
       
       const cachedResult = hunterStore.evaluationCache[hunterId][cacheKey];
-      console.log(`[Cache] Found result in store cache for build '${buildData.name || 'unnamed'}'`);
       
       // Auch in In-Memory-Cache speichern
       memoryCache[cacheKey] = cachedResult;
@@ -288,8 +278,6 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
         const MAX_CACHE_AGE = 24 * 60 * 60 * 1000; // 24 Stunden
         
         if (cacheAge < MAX_CACHE_AGE) {
-          console.log(`[Cache] Found result in localStorage for build '${buildData.name || 'unnamed'}'`);
-          
           // In Memory-Cache speichern
           memoryCache[cacheKey] = parsedData.result;
           
@@ -347,7 +335,6 @@ export async function cacheResult({ hunterId, buildData, hunterStore, result, ca
     if (!result.sampleSize) {
       const sampleSize = hunterStore.hunterIterations?.[hunterId] || 1000;
       result.sampleSize = sampleSize;
-      console.log(`[Cache] Added missing sampleSize to result: ${sampleSize}`);
     }
     
     // In Memory-Cache speichern
@@ -361,8 +348,6 @@ export async function cacheResult({ hunterId, buildData, hunterStore, result, ca
     // Boss Kill Rate Caching
     if (result.bossKillsByRevive?.length > 0 && buildData?.id) {
       const sampleSize = result.sampleSize; // Verwende die sampleSize aus result
-      
-      console.log(`[Cache] Boss Kill Rate - Using sampleSize: ${sampleSize} for ${hunterId}_${buildData.id}`);
       
       hunterStore.cacheBossKillsByRevive(hunterId, buildData.id, result.bossKillsByRevive, sampleSize);
     }
@@ -380,7 +365,6 @@ export async function cacheResult({ hunterId, buildData, hunterStore, result, ca
       console.warn('[Cache] Could not save to localStorage:', e);
     }
     
-    console.log(`[Cache] Stored result for build '${buildData.name || 'unnamed'}'. Key: ${key}`);
   } catch (error) {
     console.error('[Cache] Error saving to cache:', error);
   }
@@ -419,7 +403,6 @@ export async function invalidateCache({ hunterId, buildData, hunterStore }) {
       console.warn('[Cache] Could not remove from localStorage:', e);
     }
     
-    console.log(`[Cache] Invalidated cache for build '${buildData.name || 'unnamed'}'`);
   } catch (error) {
     console.error('[Cache] Error invalidating cache:', error);
   }
@@ -439,25 +422,20 @@ export async function clearCache(hunterId, cacheKey) {
       return false;
     }
     
-    console.log(`[Cache] Clearing cache for hunter ${hunterId} with key ${cacheKey}`);
-    
     // In-Memory-Cache löschen (direkt nach Schlüssel)
     if (memoryCache[cacheKey]) {
       delete memoryCache[cacheKey];
-      console.log(`[Cache] Cleared in-memory cache for key ${cacheKey}`);
     }
     
     // Auch im hunter-spezifischen Memory-Cache nachsehen
     if (memoryCache[hunterId] && memoryCache[hunterId][cacheKey]) {
       delete memoryCache[hunterId][cacheKey];
-      console.log(`[Cache] Cleared hunter-specific memory cache for ${hunterId}:${cacheKey}`);
     }
     
     // LocalStorage-Cache löschen
     try {
       const localStorageKey = `huntersim_cache_${hunterId}_${cacheKey}`;
       localStorage.removeItem(localStorageKey);
-      console.log(`[Cache] Cleared localStorage cache for ${hunterId}:${cacheKey}`);
     } catch (e) {
       console.warn('[Cache] Error clearing localStorage cache:', e);
     }
@@ -477,12 +455,9 @@ export async function clearCache(hunterId, cacheKey) {
  */
 export async function clearAllCacheForHunter(hunterId) {
   try {
-    console.log(`Clearing all cache for hunter ${hunterId}`);
-    
     // In-Memory-Cache löschen
     if (memoryCache[hunterId]) {
       delete memoryCache[hunterId];
-      console.log(`Cleared all in-memory cache for ${hunterId}`);
     }
     
     // LocalStorage-Cache löschen
@@ -501,7 +476,6 @@ export async function clearAllCacheForHunter(hunterId) {
       // Alle gefundenen Keys löschen
       keysToRemove.forEach(key => localStorage.removeItem(key));
       
-      console.log(`Cleared ${keysToRemove.length} localStorage cache entries for ${hunterId}`);
     } catch (e) {
       console.warn('Error clearing localStorage cache:', e);
     }
@@ -540,7 +514,6 @@ export function clearAllCache(hunterStore) {
     console.warn('[Cache] Could not clear localStorage:', e);
   }
   
-  console.log('[Cache] All caches cleared');
 }
 
 /**
@@ -560,7 +533,6 @@ export async function invalidateCacheKey(hunterId, cacheKey) {
     }
     invalidCacheKeys[hunterId].add(cacheKey);
     
-    console.log(`Invalidated cache key ${cacheKey} for hunter ${hunterId}`);
     return true;
   } catch (error) {
     console.error('Error invalidating cache key:', error);

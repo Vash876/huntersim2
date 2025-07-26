@@ -42,7 +42,7 @@
     </div>
     
     <!-- Modals -->
-    <BuildCodeModal :show="showCodeModal" :build="buildData" @close="showCodeModal = false" />
+    <BuildCodeModal :show="showCodeModal" :build="buildData" :results="results" @close="showCodeModal = false" />
     
     <!-- Statistics Modal - direkt einbinden ohne verschachteltes Teleport -->
     <StatisticsModal 

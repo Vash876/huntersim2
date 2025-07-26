@@ -12,7 +12,7 @@
       <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-4 border-b border-gray-600 flex justify-between items-center">
         <h2 class="text-xl font-bold text-white flex items-center">
           <IconShare size="20" class="mr-2 text-blue-400" />
-          Share Build
+          Share TR Plan
         </h2>
         <button 
           @click="$emit('close')"
@@ -75,40 +75,16 @@
           </button>
         </div>
         
-        <div class="p-3 bg-blue-900/20 border border-blue-500/30 rounded-md mb-4">
+        <div class="p-3 bg-blue-900/20 border border-blue-500/30 rounded-md">
           <p class="text-xs text-blue-300 mb-1">
             <strong>{{ codeFormat === 'discord' ? 'Discord Format:' : 'Raw Format:' }}</strong>
           </p>
           <p class="text-xs text-gray-400">
             {{ codeFormat === 'discord' 
-                ? 'Includes build info and Discord code block formatting for easy sharing.' 
-                : 'Pure build code for direct import into the application.' 
+                ? 'Includes plan name and Discord code block formatting for easy sharing.' 
+                : 'Pure plan code for direct import into the TR planner.' 
             }}
           </p>
-        </div>
-        
-        <div class="border-t border-gray-600 pt-4">
-          <p class="text-sm text-gray-300 mb-3">
-            Or share this link:
-          </p>
-          
-          <div class="flex">
-            <input
-              ref="linkInput"
-              :value="shareLink"
-              readonly
-              class="flex-grow bg-gray-700 border border-gray-600 rounded-l-md p-2 text-white text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-              @click="selectLink"
-            />
-            <button 
-              @click="copyLinkToClipboard"
-              :class="{ 'bg-green-600 hover:bg-green-700': linkCopied, 'bg-blue-600 hover:bg-blue-700': !linkCopied }"
-              class="px-3 rounded-r-md transition-colors"
-            >
-              <IconCheck v-if="linkCopied" size="18" />
-              <IconCopy v-else size="18" />
-            </button>
-          </div>
         </div>
       </div>
     </div>
@@ -118,88 +94,130 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { IconShare, IconX, IconCopy, IconCheck, IconBrandDiscord } from '@tabler/icons-vue';
-import { BuildCodeHandler } from '../../utils/BuildCodeHandler';
-import { useHunterStore } from '../../store/hunterStore';
+import { exportTRPlan } from '@/utils/trImportExport';
+import { getGemDataFromLocalStorage } from '@/utils/gemDataUtils';
 import { formatNumber } from '@/composables/format';
-import { getHunterById } from '@/constants/hunters';
 
 // Props
 const props = defineProps({
   show: Boolean,
-  build: Object,
-  results: Object  // Add results prop
+  plan: Object
 });
 
 // Emits
 const emit = defineEmits(['close']);
 
-// Store
-const hunterStore = useHunterStore();
-
 // Refs
 const codeTextarea = ref(null);
-const linkInput = ref(null);
 const rawCopied = ref(false);
 const discordCopied = ref(false);
-const linkCopied = ref(false);
 const codeFormat = ref('raw'); // 'raw' or 'discord'
 
 // Computed
-const buildCode = computed(() => {
-  if (!props.build) return '';
+const rawCode = computed(() => {
+  if (!props.plan) return '';
   
-  // Get store data for encoding
-  const storeData = {
-    hunterStats: { ...hunterStore.hunterStats },
-    upgrades: { ...hunterStore.upgrades }
-  };
-  
-  return BuildCodeHandler.generateCode(props.build, storeData) || '';
+  try {
+    const currentGemData = getGemDataFromLocalStorage();
+    return exportTRPlan(props.plan, currentGemData) || '';
+  } catch (error) {
+    console.error('Error generating TR plan code:', error);
+    return '';
+  }
 });
 
 const discordCode = computed(() => {
-  if (!props.build) return '';
+  if (!props.plan) return '';
   
   try {
-    const rawBuildCode = buildCode.value;
+    const currentGemData = getGemDataFromLocalStorage();
+    const rawPlanCode = exportTRPlan(props.plan, currentGemData) || '';
     
-    // Get hunter info using getHunterById
-    const hunterId = props.build.hunter || props.build.hunterId;
-    const hunterInfo = getHunterById(hunterId);
-    const hunterName = hunterInfo.name;
+    // Plan basic info
+    const planName = props.plan.name || 'Unnamed TR Plan';
+    const planDate = props.plan.trStartDate || 'Unknown Date';
     
-    // Build basic info
-    const buildName = props.build.name || 'Unnamed Build';
-    const buildLevel = props.build.level || 'Unknown';
+    // Calculate additional stats (same logic as TRPlanCard)
     
-    // Get loot score from results if available
-    let lootScore = 'N/A';
-    
-    // Check both props.results and props.build.results
-    const buildResults = props.results || props.build.results;
-    if (buildResults && typeof buildResults.lootPerMin === 'number') {
-      lootScore = formatNumber(buildResults.lootPerMin);
+    // Total TRs (1 + TR Chain length)
+    let totalTRs = 1;
+    if (props.plan.trChain && Array.isArray(props.plan.trChain)) {
+      totalTRs += props.plan.trChain.filter(step => step && typeof step === 'object').length;
     }
     
-    // Create Discord format with build stats
-    return `🏹 **${hunterName}** • Level ${buildLevel} • 💰 ${lootScore} Loot Score
+    // Total Orb Gains
+    let totalOrbGains = 0;
+    if (props.plan.results && props.plan.results.orbGains) {
+      totalOrbGains += props.plan.results.orbGains;
+    }
+    if (props.plan.trChain && Array.isArray(props.plan.trChain)) {
+      props.plan.trChain.forEach(step => {
+        if (step && step.results && step.results.orbGains) {
+          totalOrbGains += step.results.orbGains;
+        }
+      });
+    }
+    
+    // Total Fragment Gains
+    let totalFragGains = 0;
+    if (props.plan.results && props.plan.results.campaignFragGains) {
+      totalFragGains += props.plan.results.campaignFragGains;
+    }
+    if (props.plan.trChain && Array.isArray(props.plan.trChain)) {
+      props.plan.trChain.forEach(step => {
+        if (step && step.results && step.results.campaignFragGains) {
+          totalFragGains += step.results.campaignFragGains;
+        }
+      });
+    }
+    
+    // Calculate duration
+    let totalHours = 0;
+    const hoursBoost = props.plan.boosts?.hoursInTR;
+    if (hoursBoost) {
+      totalHours += hoursBoost.targetLevel || 0;
+    }
+    if (props.plan.trChain && Array.isArray(props.plan.trChain)) {
+      props.plan.trChain.forEach(step => {
+        if (step) {
+          const chainHoursBoost = step.boosts?.hoursInTR;
+          if (chainHoursBoost) {
+            totalHours += chainHoursBoost.targetLevel || 0;
+          }
+        }
+      });
+    }
+    
+    // Format duration
+    let durationText = 'N/A';
+    if (totalHours > 0) {
+      if (totalHours < 24) {
+        durationText = `${totalHours}h`;
+      } else {
+        const days = Math.floor(totalHours / 24);
+        const remainingHours = totalHours % 24;
+        if (remainingHours === 0) {
+          durationText = `${days}d`;
+        } else {
+          durationText = `${days}d ${remainingHours}h`;
+        }
+      }
+    }
+    
+    // Create Discord format with plan stats
+    return `🎯 **${planName}** 📅 ${planDate}
+📊 **Stats:** ${totalTRs} TRs • ${durationText} • :CIFI_ResourceOuroborosOrbsOO: ${formatNumber(totalOrbGains)} Orbs • :CIFI_ZeusFragments: ${formatNumber(totalFragGains)} Frags
 \`\`\`
-${rawBuildCode}
+${rawPlanCode}
 \`\`\``;
   } catch (error) {
     console.error('Error generating Discord formatted code:', error);
-    return buildCode.value;
+    return '';
   }
 });
 
 const currentCode = computed(() => {
-  return codeFormat.value === 'discord' ? discordCode.value : buildCode.value;
-});
-
-const shareLink = computed(() => {
-  if (!buildCode.value) return '';
-  // The URL of the application + a parameter for the build code
-  return `${window.location.origin}/${props.build?.hunter || props.build?.hunterId}?code=${encodeURIComponent(buildCode.value)}`;
+  return codeFormat.value === 'discord' ? discordCode.value : rawCode.value;
 });
 
 // Methods
@@ -209,18 +227,12 @@ const selectCode = () => {
   }
 };
 
-const selectLink = () => {
-  if (linkInput.value) {
-    linkInput.value.select();
-  }
-};
-
 const copyRawCode = async () => {
   codeFormat.value = 'raw';
   
   try {
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      await navigator.clipboard.writeText(buildCode.value);
+      await navigator.clipboard.writeText(rawCode.value);
     } else {
       selectCode();
       document.execCommand('copy');
@@ -273,43 +285,11 @@ const copyDiscordCode = async () => {
   }
 };
 
-const copyLinkToClipboard = async () => {
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      // Moderne Clipboard API verwenden
-      await navigator.clipboard.writeText(shareLink.value);
-    } else {
-      // Fallback mit document.execCommand
-      selectLink();
-      document.execCommand('copy');
-    }
-    linkCopied.value = true;
-    setTimeout(() => { linkCopied.value = false; }, 2000);
-  } catch (err) {
-    console.error('Failed to copy link to clipboard:', err);
-    // Fallback-Strategie bei Fehler
-    try {
-      selectLink();
-      const success = document.execCommand('copy');
-      if (success) {
-        linkCopied.value = true;
-        setTimeout(() => { linkCopied.value = false; }, 2000);
-      } else {
-        console.warn('execCommand copy returned false');
-      }
-    } catch (execErr) {
-      console.error('Both clipboard methods failed:', execErr);
-      alert('Copying link to clipboard failed. Please copy manually.');
-    }
-  }
-};
-
 // Reset functionality when the modal is closed
 watch(() => props.show, (newVal) => {
   if (!newVal) {
     rawCopied.value = false;
     discordCopied.value = false;
-    linkCopied.value = false;
     codeFormat.value = 'raw';
   }
 });

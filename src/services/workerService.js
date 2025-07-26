@@ -17,9 +17,7 @@ class WorkerPool {
     this.initialize();
   }
 
-  initialize() {
-    console.log(`Initializing worker pool with ${this.poolSize} workers`);
-    
+  initialize() {    
     for (let i = 0; i < this.poolSize; i++) {
       const worker = new Worker(new URL('../workers/evaluationWorker.js', import.meta.url), { type: 'module' });
       const api = Comlink.wrap(worker);
@@ -122,11 +120,6 @@ function sanitizeForWorker(obj) {
  */
 export async function evaluateBuildWithWorker(hunterId, buildData, store, progressCallback = null) {
   // Hole einen verfügbaren Worker aus dem Pool
-  console.log("Store input check:", {
-    hasHunterSeedSettings: !!store?.hunterSeedSettings,
-    hunterSeedSettings: store?.hunterSeedSettings,
-    borgeSeeded: store?.hunterSeedSettings?.borge
-  });
   const { worker, api, release } = await workerPool.getAvailableWorker();
   
   try {
@@ -134,7 +127,6 @@ export async function evaluateBuildWithWorker(hunterId, buildData, store, progre
       throw new Error("BuildData is undefined or null");
     }
     
-    console.log(`Preparing worker request for ${buildData.name || 'unnamed build'}...`);
     const sanitizedBuildData = sanitizeForWorker(buildData);
     
     if (!sanitizedBuildData) {
@@ -184,7 +176,6 @@ export async function evaluateBuildWithWorker(hunterId, buildData, store, progre
           });
         }
         
-        console.log(`Worker response received for ${buildData.name || 'unnamed build'}`);
         return result;
       } finally {
         // Event-Listener entfernen, wenn wir fertig sind
@@ -193,9 +184,8 @@ export async function evaluateBuildWithWorker(hunterId, buildData, store, progre
     }
     else {
       // Wenn kein Callback vorhanden ist, einfach normal evaluieren
-      console.log(`Sending request to worker for ${buildData.name || 'unnamed build'}...`);
       const result = await api.evaluate(hunterId, sanitizedBuildData, storeData);
-      console.log(`Worker response received for ${buildData.name || 'unnamed build'}`);
+
       return result;
     }
   } catch (error) {

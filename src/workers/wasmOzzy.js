@@ -10,11 +10,8 @@ async function initWasm() {
   }
   
   try {
-    console.log('WASM Ozzy: Versuche mit AssemblyScript Loader...');
-    
     // AssemblyScript Loader verwenden
     const wasmUrl = `/wasm/release.wasm?v=${__BUILD_TIME__}`;
-    console.log(`Loading WASM: ${wasmUrl}`);
     
     wasmModule = await instantiate(fetch(wasmUrl), {
       // Imports falls benötigt
@@ -26,8 +23,6 @@ async function initWasm() {
     });
     
     wasmInitialized = true;
-    console.log('WASM Ozzy: Erfolgreich mit AssemblyScript Loader initialisiert');
-    console.log('WASM Ozzy: Verfügbare Exports:', Object.keys(wasmModule.exports));
     
     return wasmModule;
     
@@ -75,7 +70,6 @@ async function EVALOZZY_WASM(...params) {
         const reload = wasm.exports.getLastOzzyReload();
         
         debugResults.stats = `${maxHp},${atk},${regen},${dr},${evade},${effect},${multistrike},${multistrikePower},${reload}`;
-        console.log(`WASM Ozzy: Numerische Stats = ${debugResults.stats}`);
       } else {
         console.error('WASM Ozzy: Numerische Ozzy-Funktionen nicht verfügbar!');
       }
@@ -87,7 +81,6 @@ async function EVALOZZY_WASM(...params) {
     try {
       if (wasm.exports.getOzzyProgressSize) {
         const progressSize = wasm.exports.getOzzyProgressSize();
-        console.log(`WASM Ozzy: Progress Size = ${progressSize}`);
         
         if (progressSize > 0 && wasm.exports.getOzzyProgressStageAt && wasm.exports.getOzzyProgressCountAt) {
           let progressObj = {};
@@ -101,12 +94,7 @@ async function EVALOZZY_WASM(...params) {
           }
           
           debugResults.progress = JSON.stringify(progressObj);
-          console.log(`WASM Ozzy: Numerische Progress = ${debugResults.progress}`);
-        } else {
-          console.log('WASM Ozzy: Progress-Iterator-Funktionen nicht verfügbar');
         }
-      } else {
-        console.log('WASM Ozzy: getOzzyProgressSize nicht verfügbar');
       }
     } catch (e) {
       console.error('WASM Ozzy: Fehler bei numerischer Progress:', e);
@@ -116,7 +104,6 @@ async function EVALOZZY_WASM(...params) {
     try {
       if (wasm.exports.getOzzyDeathsByStageAndReviveSize) {
         const deathsSize = wasm.exports.getOzzyDeathsByStageAndReviveSize();
-        console.log(`WASM Ozzy: Deaths By Stage And Revive Size = ${deathsSize}`);
         
         if (deathsSize > 0 && wasm.exports.getOzzyDeathKeyAt && wasm.exports.getOzzyDeathCountAt) {
           let deathsArray = []; // ARRAY statt Object!
@@ -140,7 +127,6 @@ async function EVALOZZY_WASM(...params) {
           
           // WICHTIG: Als Array, nicht als JSON String!
           debugResults.deathTracking = deathsArray;
-          console.log('WASM Ozzy: Death Tracking Array:', deathsArray);
         } else {
           debugResults.deathTracking = [];
         }
@@ -156,8 +142,6 @@ async function EVALOZZY_WASM(...params) {
       if (wasm.exports.getOzzyBossKillsByReviveSize) {
         const bossKillSize = wasm.exports.getOzzyBossKillsByReviveSize();
         
-        console.log('WASM Ozzy: Boss Kill Size =', bossKillSize);
-        
         if (bossKillSize > 0) {
           let bossKillsByRevive = [];
           
@@ -166,8 +150,6 @@ async function EVALOZZY_WASM(...params) {
             const kills = wasm.exports.getOzzyBossKillCountAt(i);
             const attempts = wasm.exports.getOzzyBossAttemptCountAt(i);
             const finalStage = wasm.exports.getLastOzzyMaxStage ? wasm.exports.getLastOzzyMaxStage(i) : 0;
-
-            console.log(`WASM Ozzy: Index ${i} - Revive: ${revive}, Kills: ${kills}, Attempts: ${attempts}`);
             
             if (revive >= 0 && attempts > 0) {
               bossKillsByRevive.push({
@@ -181,13 +163,10 @@ async function EVALOZZY_WASM(...params) {
           }
           
           debugResults.bossKillsByRevive = bossKillsByRevive;
-          console.log('WASM Ozzy: Final Boss Kills by Revive:', bossKillsByRevive);
         } else {
-          console.log('WASM Ozzy: No boss kill data (size = 0)');
           debugResults.bossKillsByRevive = [];
         }
       } else {
-        console.log('WASM Ozzy: getOzzyBossKillsByReviveSize not available');
         debugResults.bossKillsByRevive = [];
       }
     } catch (e) {
@@ -214,10 +193,6 @@ async function EVALOZZY_WASM(...params) {
       debugResults.bossKillsByRevive // 14: Boss Kills by Revive
     ]];
     
-    console.log('WASM Ozzy: Finales Ergebnis-Array:', result[0]);
-    console.log('WASM Ozzy: Array-Länge:', result[0].length);
-    
-    console.log('WASM Ozzy: Ozzy Evaluierung abgeschlossen');
     return result;
   } catch (error) {
     console.error('WASM Ozzy: Fehler bei Ozzy Evaluierung:', error);

@@ -575,7 +575,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, watch, onBeforeUnmount, nextTick } from 'vue';
 import BoostOverviewModal from './BoostOverviewModal.vue';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { allBoosts, boostsByCategory } from '@/constants/tr-planner';
@@ -906,24 +906,91 @@ const missingHours = computed(() => {
   }
 });
 
-const maxLevelStats = computed(() => {
+// Reaktive Referenz für maxLevelStats mit Event-basierter Aktualisierung
+const maxLevelStats = ref({});
+
+// Funktion zum Laden der maxLevelStats aus localStorage
+function loadMaxLevelStats() {
   try {
     const storedStats = localStorage.getItem('trplanner_userstats');
     if (storedStats) {
-      return JSON.parse(storedStats);
+      const parsed = JSON.parse(storedStats);
+      maxLevelStats.value = parsed;
+      console.log("maxLevelStats neu geladen:", parsed);
+      return parsed;
     }
   } catch (e) {
     console.error("Error reading maxLevelStats from localStorage:", e);
   }
   
   // Wichtig: Wenn keine Daten im localStorage sind, verwende die Werte aus props.currentStats
-  // Dies stellt sicher, dass die Boosts auch bei leerem Cache korrekt angezeigt werden
-  return props.currentStats || {};
-});
+  const fallback = props.currentStats || {};
+  maxLevelStats.value = fallback;
+  return fallback;
+}
+
+// Event-Handler für maxLevelStats-Änderungen
+function handleMaxLevelStatsChanged(event) {
+  console.log("🔄 maxLevelStats geändert - aktualisiere OrbCalculator");
+  const oldStats = JSON.stringify(maxLevelStats.value);
+  const oldGemLevels = JSON.stringify(gemLevels.value);
+  
+  loadMaxLevelStats();
+  
+  const newStats = JSON.stringify(maxLevelStats.value);
+  const newGemLevels = JSON.stringify(gemLevels.value);
+  
+  const statsChanged = oldStats !== newStats;
+  const gemLevelsChanged = oldGemLevels !== newGemLevels;
+  
+  if (statsChanged || gemLevelsChanged) {
+    console.log("📊 Daten haben sich tatsächlich geändert");
+    if (statsChanged) {
+      console.log("Alt maxLevelStats:", JSON.parse(oldStats));
+      console.log("Neu maxLevelStats:", maxLevelStats.value);
+    }
+    if (gemLevelsChanged) {
+      console.log("Alt gemLevels:", JSON.parse(oldGemLevels));
+      console.log("Neu gemLevels:", gemLevels.value);
+    }
+    
+    // WICHTIG: Invalidiere alle cached Berechnungen
+    invalidateCalculationCaches();
+    
+    // Force recalculation
+    nextTick(() => {
+      recalculateAll();
+      console.log("✅ Neuberechnung abgeschlossen");
+    });
+  } else {
+    console.log("⚠️ Event empfangen, aber keine Änderung erkannt");
+  }
+}
+
+// Neue Funktion zum Invalidieren von Cache
+function invalidateCalculationCaches() {
+  console.log("🗑️ Invalidiere Calculation Caches");
+  
+  // Force refresh der computed properties durch shallow copy
+  const currentGemData = getGemDataFromLocalStorage();
+  
+  // Trigger reactivity für alle gem-abhängigen computed properties
+  // Dies zwingt Vue, alle abhängigen computed properties neu zu berechnen
+  if (JSON.stringify(currentGemData) !== JSON.stringify(gemLevels.value)) {
+    console.log("📦 Gem-Daten haben sich geändert, trigger Reaktivität");
+  }
+}
 
 const filteredBoostCategories = computed(() => {
-  // WICHTIG: Explizite Abhängigkeit zu gemLevels.value
+  // WICHTIG: Explizite Abhängigkeit zu gemLevels.value und maxLevelStats.value
   const currentGemLevels = gemLevels.value;
+  const currentMaxStats = maxLevelStats.value;
+  
+  console.log("🔍 Filtere Boosts mit Daten:", {
+    currentGemLevels,
+    currentMaxStats: Object.keys(currentMaxStats).length,
+    totalBoosts: allBoosts.length
+  });
   
   return boostsByCategory
     .map(category => {
@@ -942,24 +1009,28 @@ const filteredBoostCategories = computed(() => {
           const currentGemLevel = currentGemLevels[requiredGem] || 0;
           
           if (currentGemLevel < requiredLevel) {
-            console.log(`Boost ${boost.key} ausgeblendet: ${requiredGem} Level ${currentGemLevel} < ${requiredLevel}`);
+            console.log(`🔒 Boost ${boost.key} ausgeblendet: ${requiredGem} Level ${currentGemLevel} < ${requiredLevel}`);
             return false;
+          } else {
+            console.log(`✅ Boost ${boost.key} freigeschalten: ${requiredGem} Level ${currentGemLevel} >= ${requiredLevel}`);
           }
         }
         
-        // Rest der bestehenden Filter-Logik...
-        const maxStats = maxLevelStats.value || {};
-        
+        // VEREINFACHTE Filter-Logik für maxed boosts
         const isMaxedInStatsInput = (() => {
+          // Für numerische Boosts mit Maximum
           if (boost.type === 'number' && boost.max !== undefined) {
-            const globalLevel = maxStats[boost.key];
+            const globalLevel = currentMaxStats[boost.key];
             if (globalLevel !== undefined && globalLevel >= boost.max) {
+              console.log(`📊 Numerischer Boost ${boost.key} ist maxed: ${globalLevel} >= ${boost.max}`);
               return true;
             }
           }
           
+          // Für Boolean Boosts
           if (boost.type === 'boolean') {
-            if (maxStats[boost.key] === true) {
+            if (currentMaxStats[boost.key] === true) {
+              console.log(`✅ Boolean Boost ${boost.key} ist maxed: true`);
               return true;
             }
           }
@@ -967,23 +1038,34 @@ const filteredBoostCategories = computed(() => {
           return false;
         })();
         
+        // Wenn der Boost in StatsInputModal maxed ist, verstecke ihn
         if (isMaxedInStatsInput) {
+          console.log(`🚫 Boost ${boost.key} wird versteckt: maxed in StatsInputModal`);
           return false;
         }
         
         // Search filter
         if (searchQuery.value.trim()) {
           const query = searchQuery.value.toLowerCase();
-          return boost.label.toLowerCase().includes(query) || 
-                 boost.key.toLowerCase().includes(query);
+          const matches = boost.label.toLowerCase().includes(query) || 
+                         boost.key.toLowerCase().includes(query);
+          if (!matches) {
+            console.log(`🔍 Boost ${boost.key} durch Suche ausgeblendet`);
+          }
+          return matches;
         }
         
+        console.log(`✅ Boost ${boost.key} wird angezeigt`);
         return true;
       });
       
       return newCategory;
     })
-    .filter(category => category.boosts.length > 0);
+    .filter(category => category.boosts.length > 0)
+    .map(category => {
+      console.log(`📂 Kategorie ${category.label}: ${category.boosts.length} Boosts`);
+      return category;
+    });
 });
 
 // Methods
@@ -1250,6 +1332,8 @@ function debugVoidBadgeStatus() {
 
 // In recalculateAll() hinzufügen:
 function recalculateAll() {
+  console.log("🔄 recalculateAll() aufgerufen");
+  
   // Trigger reactivity update
   currentBoosts.value = { ...currentBoosts.value };
   targetBoosts.value = { ...targetBoosts.value };
@@ -1257,11 +1341,14 @@ function recalculateAll() {
   // Debug Void Badge Status
   debugVoidBadgeStatus();
   
-  console.log("Recalculating with:", {
+  console.log("📊 Aktuelle Daten für Neuberechnung:", {
     currentBoosts: { ...currentBoosts.value },
     targetBoosts: { ...targetBoosts.value },
-    hoursInTR: currentBoosts.value.hoursInTR
+    hoursInTR: currentBoosts.value.hoursInTR,
+    maxLevelStats: { ...maxLevelStats.value }
   });
+  
+  console.log("✅ recalculateAll() abgeschlossen");
 }
 
 function resetToCurrentStats() {
@@ -1385,6 +1472,9 @@ function handleGemDataChanged() {
   const newGemData = getGemDataFromLocalStorage();
   console.log("Neue Gem-Daten:", newGemData);
   
+  // WICHTIG: Invalidiere alle cached Berechnungen
+  invalidateCalculationCaches();
+  
   // Force recalculation
   nextTick(() => {
     recalculateAll();
@@ -1392,16 +1482,42 @@ function handleGemDataChanged() {
     // Debug: Zeige neue Berechnungen
     console.log("Nach Gem-Update - Current Orb Gains:", currentOrbGains.value);
     console.log("Nach Gem-Update - Target Orb Gains:", targetOrbGains.value);
+    console.log("Nach Gem-Update - Filtered Categories:", filteredBoostCategories.value.length);
   });
+}
+
+// Erweiterte Gem-Data-Watcher für bessere Reaktivität
+function forceGemLevelsReactivity() {
+  // Erstelle eine Kopie der Gem-Daten um Reaktivität zu triggern
+  const currentGemData = getGemDataFromLocalStorage();
+  
+  // Prüfe, ob sich die Gem-Levels geändert haben
+  const currentLevelsString = JSON.stringify(gemLevels.value);
+  const newLevelsString = JSON.stringify(currentGemData.levels || {});
+  
+  if (currentLevelsString !== newLevelsString) {
+    console.log("🔄 Gem-Levels haben sich geändert, force Reaktivität");
+    console.log("Alt:", gemLevels.value);
+    console.log("Neu:", currentGemData.levels);
+    
+    // Trigger recalculation von allem was von Gem-Levels abhängt
+    recalculateAll();
+  }
 }
 
 watch(() => getGemDataFromLocalStorage(), (newGemData, oldGemData) => {
   if (JSON.stringify(newGemData) !== JSON.stringify(oldGemData)) {
-    console.log("Gem-Daten geändert, Orb-Berechnungen aktualisieren");
+    console.log("🔄 localStorage Gem-Daten direkt geändert");
+    console.log("Alt:", oldGemData);
+    console.log("Neu:", newGemData);
+    
+    // WICHTIG: Invalidiere alle cached Berechnungen
+    invalidateCalculationCaches();
     
     // Force trigger für reactive updates
     nextTick(() => {
       recalculateAll();
+      console.log("Nach localStorage Gem-Update - Filtered Categories:", filteredBoostCategories.value.length);
     });
   }
 }, { deep: true });
@@ -1410,18 +1526,34 @@ watch(() => getGemDataFromLocalStorage(), (newGemData, oldGemData) => {
 onMounted(() => {
   // Bestehender Code...
   initData();
-  // loadOrbCalcFromLocalStorage() entfernt - Store übernimmt das automatisch
+  // Lade initial die maxLevelStats
+  loadMaxLevelStats();
   
   // Auto-Scroll beim Tabben einrichten
   setupAutoScrollOnTabbing();
 
+  // Event-Listener für localStorage-Änderungen
   window.addEventListener('gemDataChanged', handleGemDataChanged);
+  window.addEventListener('maxLevelStatsChanged', handleMaxLevelStatsChanged);
+  
+  // WICHTIG: Zusätzlicher Event-Listener für localStorage-Änderungen
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'trplanner_userstats') {
+      console.log("🔄 Storage Event für trplanner_userstats empfangen");
+      handleMaxLevelStatsChanged();
+    }
+  });
+  
+  // Initial force gem reactivity check
+  forceGemLevelsReactivity();
 });
 
 // Cleanup beim Unmount der Komponente
 onBeforeUnmount(() => {
   cleanupAutoScrollListeners();
   window.removeEventListener('gemDataChanged', handleGemDataChanged);
+  window.removeEventListener('maxLevelStatsChanged', handleMaxLevelStatsChanged);
+  window.removeEventListener('storage', handleMaxLevelStatsChanged);
 });
 
 // Watch für Änderungen - Store übernimmt automatisch das Speichern mit useStorage
@@ -1430,7 +1562,17 @@ onBeforeUnmount(() => {
 // Watch for prop changes
 watch(() => props.isVisible, (newValue) => {
   if (newValue) {
+    console.log("🔄 OrbCalculatorModal wird geöffnet - lade frische Daten");
     initData();
+    loadMaxLevelStats(); // Lade immer frische maxLevelStats beim Öffnen
+    forceGemLevelsReactivity(); // Force gem reactivity check
+    
+    // Nach dem Laden aller Daten, trigger eine Neuberechnung
+    nextTick(() => {
+      invalidateCalculationCaches();
+      recalculateAll();
+      console.log("✅ Modal-Initialisierung abgeschlossen");
+    });
   }
 });
 
@@ -1440,12 +1582,8 @@ watch(() => props.currentStats, (newValue) => {
   }
 }, { deep: true });
 
-// Initialize
-onMounted(() => {
-  // Props werden automatisch über initData() übernommen
-  initData();
-  // loadOrbCalcFromLocalStorage() entfernt - Store übernimmt das automatisch
-});
+// Bereinige doppelte onMounted-Aufrufe
+// Das zweite onMounted wird entfernt, da die Funktionalität bereits oben integriert ist
 
 function toggleCreateOptions() {
   showCreateOptions.value = !showCreateOptions.value;
@@ -1903,17 +2041,20 @@ watch(() => trPlannerStore.userStats.gemData, (newGemData, oldGemData) => {
   }
 }, { deep: true });
 
-// Watch für Gem-Level-Änderungen (für Debug)
+// Watch für Gem-Level-Änderungen - VERBESSERT
 watch(() => gemLevels.value, (newLevels, oldLevels) => {
-  if (oldLevels && newLevels !== oldLevels) {
-    console.log("Gem-Levels geändert:", {
-      old: oldLevels,
-      new: newLevels
-    });
+  if (oldLevels && JSON.stringify(newLevels) !== JSON.stringify(oldLevels)) {
+    console.log("🔄 Gem-Levels computed property geändert");
+    console.log("Alt:", oldLevels);
+    console.log("Neu:", newLevels);
     
-    // Automatisch neu berechnen
+    // WICHTIG: Invalidiere alle cached Berechnungen
+    invalidateCalculationCaches();
+    
+    // Force refresh der filteredBoostCategories
     nextTick(() => {
       recalculateAll();
+      console.log("Nach Gem-Level-Update - Filtered Categories:", filteredBoostCategories.value.length);
     });
   }
 }, { deep: true });

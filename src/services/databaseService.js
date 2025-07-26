@@ -11,7 +11,6 @@ export class DatabaseService {
     this.apiBaseUrl = import.meta.env.VITE_API_URL || '/.netlify/functions';
     this.useLocalStorage = false;
     
-    console.log('DatabaseService: Using API at', this.apiBaseUrl);
     this.clientId = this.generateClientId();
   }
 
@@ -58,10 +57,6 @@ export class DatabaseService {
         const tokenPayload = `stack-auth:${currentUser.id}`;
         const userToken = btoa(tokenPayload);
         
-        console.log('Generated auth token for user:', currentUser.id);
-        console.log('Token payload:', tokenPayload);
-        console.log('Encoded token:', userToken);
-        
         return {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${userToken}`,
@@ -88,7 +83,6 @@ export class DatabaseService {
     try {
       // Development: Mock-Antwort
       if (this.useLocalStorage) {
-        console.log(`DEV MODE: Mock getUser for Stack Auth ID: ${stackUserId}`);
         return {
           id: stackUserId,
           provider: 'stack-auth',
@@ -111,8 +105,6 @@ export class DatabaseService {
    */
   async saveUserData(userId, dataType, dataValue, dataKey = null) {
     try {
-      console.log(`API: Saving user data - ${dataType}:`, dataValue);
-      
       // API Call
       const response = await fetch(`${this.apiBaseUrl}/api`, {
         method: 'POST',
@@ -126,7 +118,6 @@ export class DatabaseService {
       }
       
       const result = await response.json();
-      console.log(`API: Saved user data for ${dataType}`, result);
       return result;
     } catch (error) {
       console.error('Database: Save user data failed:', error);
@@ -136,8 +127,6 @@ export class DatabaseService {
 
   async getUserData(userId, dataType, dataKey = null) {
     try {
-      console.log(`API: Getting user data - ${dataType}`, dataKey);
-      
       // Build query parameters
       const params = new URLSearchParams({ userId });
       if (dataType) params.append('dataType', dataType);
@@ -145,15 +134,11 @@ export class DatabaseService {
       
       // API Call
       const url = `${this.apiBaseUrl}/api?${params}`;
-      console.log('API: Making request to:', url);
       
       const response = await fetch(url, {
         method: 'GET',
         headers: await this.getAuthHeaders()
       });
-      
-      console.log('API: Response status:', response.status);
-      console.log('API: Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
         const errorData = await response.text();
@@ -162,7 +147,6 @@ export class DatabaseService {
       }
       
       const responseText = await response.text();
-      console.log('API: Raw response:', responseText);
       
       let result;
       try {
@@ -171,8 +155,6 @@ export class DatabaseService {
         console.error('API: JSON parse failed. Raw response:', responseText);
         throw new Error(`Invalid JSON response: ${parseError.message}`);
       }
-      
-      console.log(`API: Retrieved user data for ${dataType}`, result);
       
       // Return in the same format as localStorage version
       if (Array.isArray(result)) {
@@ -196,8 +178,6 @@ export class DatabaseService {
 
   async getAllUserData(userId) {
     try {
-      console.log('API: Getting all user data for:', userId);
-      
       // API Call - get all data for this user
       const response = await fetch(`${this.apiBaseUrl}/api?userId=${userId}`, {
         method: 'GET',
@@ -210,7 +190,6 @@ export class DatabaseService {
       }
       
       const result = await response.json();
-      console.log('API: Retrieved all user data:', result);
       
       // Group by data_type for easier consumption
       const grouped = {};
@@ -236,12 +215,10 @@ export class DatabaseService {
    */
   clearLocalData(userId = null) {
     // This method is kept for backward compatibility but does nothing now
-    console.log('Clear local data called (no-op in API mode)');
   }
 
   listLocalData() {
     // This method is kept for backward compatibility but does nothing now
-    console.log('List local data called (no-op in API mode)');
     return [];
   }
 
@@ -287,7 +264,6 @@ export class DatabaseService {
       }
       
       const result = await response.json();
-      console.log('Database cleanup completed:', result);
       return result;
     } catch (error) {
       console.error('Database cleanup failed:', error);
@@ -308,8 +284,6 @@ export class DatabaseService {
    */
   async saveUserBackup(userId, backupCode, appVersion) {
     try {
-      console.log('Saving user backup to cloud:', { userId, appVersion, backupCodeLength: backupCode.length });
-
       // Development: Mock save
       if (this.useLocalStorage) {
         const mockBackup = {
@@ -320,7 +294,6 @@ export class DatabaseService {
           updated_at: new Date().toISOString()
         };
         localStorage.setItem(`cifi_cloud_backup_${userId}`, JSON.stringify(mockBackup));
-        console.log('DEV MODE: Backup saved to localStorage');
         return mockBackup;
       }
 
@@ -341,7 +314,6 @@ export class DatabaseService {
       }
 
       const result = await response.json();
-      console.log('Backup saved successfully:', result);
       return result.data; // Return the data object
 
     } catch (error) {
@@ -357,17 +329,13 @@ export class DatabaseService {
    */
   async getUserBackup(userId) {
     try {
-      console.log('Loading user backup from cloud:', userId);
-
       // Development: Mock load
       if (this.useLocalStorage) {
         const stored = localStorage.getItem(`cifi_cloud_backup_${userId}`);
         if (stored) {
           const backup = JSON.parse(stored);
-          console.log('DEV MODE: Backup loaded from localStorage');
           return backup;
         }
-        console.log('DEV MODE: No backup found in localStorage');
         return null;
       }
 
@@ -378,7 +346,6 @@ export class DatabaseService {
       });
 
       if (response.status === 404) {
-        console.log('No backup found for user');
         return null;
       }
 
@@ -388,7 +355,6 @@ export class DatabaseService {
       }
 
       const result = await response.json();
-      console.log('Backup loaded successfully:', result);
       return result.data; // Return the data object with backup_code, etc.
 
     } catch (error) {
@@ -403,12 +369,9 @@ export class DatabaseService {
    */
   async deleteUserBackup(userId) {
     try {
-      console.log('Deleting user backup from cloud:', userId);
-
       // Development: Mock delete
       if (this.useLocalStorage) {
         localStorage.removeItem(`cifi_cloud_backup_${userId}`);
-        console.log('DEV MODE: Backup deleted from localStorage');
         return { success: true };
       }
 
@@ -427,7 +390,6 @@ export class DatabaseService {
       }
 
       const result = await response.json();
-      console.log('Backup deleted successfully:', result);
       return result;
 
     } catch (error) {

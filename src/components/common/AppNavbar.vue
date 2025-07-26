@@ -257,7 +257,7 @@
                           class="animate-spin"
                         />
                       </div>
-                      <span>{{ syncStore.isSyncing && syncAction === 'download' ? 'Downloading...' : 'Download from Cloud' }}</span>
+                      <span>{{ syncStore.isSyncing && syncAction === 'download' ? 'Loading...' : 'Load from Cloud' }}</span>
                     </button>
                     
                     <button
@@ -273,7 +273,7 @@
                           class="animate-spin"
                         />
                       </div>
-                      <span>{{ syncStore.isSyncing && syncAction === 'upload' ? 'Uploading...' : 'Upload to Cloud' }}</span>
+                      <span>{{ syncStore.isSyncing && syncAction === 'upload' ? 'Saving...' : 'Save to Cloud' }}</span>
                     </button>
                   </div>
 
@@ -420,11 +420,11 @@ async function syncFromCloud() {
   try {
     syncAction.value = 'download';
     await syncStore.syncFromServer();
-    showSyncNotification('Data successfully downloaded from cloud', 'success');
+    showSyncNotification('Data successfully loaded from cloud', 'success');
     activeCategory.value = null;
   } catch (error) {
     console.error('Sync from cloud failed:', error);
-    showSyncNotification(`Download failed: ${error.message}`, 'error');
+    showSyncNotification(`Load failed: ${error.message}`, 'error');
   } finally {
     syncAction.value = null;
   }
@@ -434,11 +434,11 @@ async function syncToCloud() {
   try {
     syncAction.value = 'upload';
     await syncStore.syncToServer();
-    showSyncNotification('Data successfully uploaded to cloud', 'success');
+    showSyncNotification('Data successfully saved to cloud', 'success');
     activeCategory.value = null;
   } catch (error) {
     console.error('Sync to cloud failed:', error);
-    showSyncNotification(`Upload failed: ${error.message}`, 'error');
+    showSyncNotification(`Save failed: ${error.message}`, 'error');
   } finally {
     syncAction.value = null;
   }

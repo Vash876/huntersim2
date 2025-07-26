@@ -9,13 +9,9 @@ async function initWasm() {
     return wasmModule;
   }
   
-  try {
-    console.log('WASM: Versuche mit AssemblyScript Loader...');
-    
+  try {   
     // AssemblyScript Loader verwenden
     const wasmUrl = `/wasm/release.wasm?v=${__BUILD_TIME__}`;
-    console.log(`Loading WASM: ${wasmUrl}`);
-    
     wasmModule = await instantiate(fetch(wasmUrl), {
       // Imports falls benötigt
       env: {
@@ -26,8 +22,6 @@ async function initWasm() {
     });
     
     wasmInitialized = true;
-    console.log('WASM: Erfolgreich mit AssemblyScript Loader initialisiert');
-    console.log('WASM: Verfügbare Exports:', Object.keys(wasmModule.exports));
     
     return wasmModule;
     
@@ -75,7 +69,6 @@ async function EVALBORGE_WASM(...params) {
         const reload = wasm.exports.getLastBorgeReload();
         
         debugResults.stats = `${maxHp},${atk},${regen},${dr},${evade},${effect},${critRate},${critPower},${reload}`;
-        console.log(`WASM: Numerische Stats = ${debugResults.stats}`);
       } else {
         console.error('WASM: Numerische Borge-Funktionen nicht verfügbar!');
       }
@@ -87,7 +80,6 @@ async function EVALBORGE_WASM(...params) {
     try {
       if (wasm.exports.getProgressSize) {
         const progressSize = wasm.exports.getProgressSize();
-        console.log(`WASM: Progress Size = ${progressSize}`);
         
         if (progressSize > 0 && wasm.exports.getProgressStageAt && wasm.exports.getProgressCountAt) {
           let progressObj = {};
@@ -101,7 +93,6 @@ async function EVALBORGE_WASM(...params) {
           }
           
           debugResults.progress = JSON.stringify(progressObj);
-          console.log(`WASM: Numerische Progress = ${debugResults.progress}`);
         } else {
           console.log('WASM: Progress-Iterator-Funktionen nicht verfügbar');
         }
@@ -116,7 +107,6 @@ async function EVALBORGE_WASM(...params) {
     try {
       if (wasm.exports.getDeathsByStageAndReviveSize) {
         const deathsSize = wasm.exports.getDeathsByStageAndReviveSize();
-        console.log(`WASM: Deaths By Stage And Revive Size = ${deathsSize}`);
         
         if (deathsSize > 0 && wasm.exports.getDeathKeyAt && wasm.exports.getDeathCountAt) {
           let deathsArray = []; // ARRAY statt Object!
@@ -140,7 +130,6 @@ async function EVALBORGE_WASM(...params) {
           
           // WICHTIG: Als Array, nicht als JSON String!
           debugResults.deathTracking = deathsArray;
-          console.log('WASM: Death Tracking Array:', deathsArray);
         } else {
           debugResults.deathTracking = [];
         }

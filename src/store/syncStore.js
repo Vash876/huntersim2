@@ -132,10 +132,6 @@ export const useSyncStore = defineStore('sync', () => {
 
   async function restoreLocalBackup(backupCode) {
     try {
-      console.log('Attempting to restore backup. Code type:', typeof backupCode);
-      console.log('Backup code value:', backupCode);
-      console.log('Backup code length:', backupCode?.length);
-      
       if (!backupCode || typeof backupCode !== 'string') {
         throw new Error('Invalid backup code: not a string');
       }
@@ -145,10 +141,8 @@ export const useSyncStore = defineStore('sync', () => {
       // Try parsing as JSON first (in case it's stored as unencoded JSON)
       try {
         backupData = JSON.parse(backupCode);
-        console.log('Backup code was JSON, not Base64');
       } catch (jsonError) {
         // If JSON parsing fails, try Base64 decode
-        console.log('JSON parsing failed, trying Base64 decode');
         
         // Validate Base64 format
         const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
@@ -159,7 +153,6 @@ export const useSyncStore = defineStore('sync', () => {
         try {
           const decoded = atob(backupCode);
           backupData = JSON.parse(decoded);
-          console.log('Successfully decoded Base64 backup');
         } catch (decodeError) {
           console.error('Base64 decode error:', decodeError);
           throw new Error('Invalid backup code: failed to decode Base64');
@@ -264,7 +257,6 @@ export const useSyncStore = defineStore('sync', () => {
         }
       }
 
-      console.log('Local backup restored successfully');
     } catch (error) {
       console.error('Failed to restore local backup:', error);
       throw error;
@@ -318,23 +310,13 @@ export const useSyncStore = defineStore('sync', () => {
         throw new Error('No user ID available');
       }
 
-      console.log('Fetching cloud backup for user:', userId);
       const cloudBackup = await databaseService.getUserBackup(userId);
       
       if (!cloudBackup) {
-        console.log('No cloud backup found');
         syncStatus.value = 'success';
         setLastSyncTime();
         return;
       }
-
-      console.log('Cloud backup received:', {
-        user_id: cloudBackup.user_id,
-        app_version: cloudBackup.app_version,
-        backupCodeLength: cloudBackup.backup_code?.length,
-        backupCodeType: typeof cloudBackup.backup_code,
-        fullBackup: cloudBackup
-      });
 
       await restoreLocalBackup(cloudBackup.backup_code);
 

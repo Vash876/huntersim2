@@ -99,6 +99,7 @@
       <BuildCodeModal
         :show="showCodeModal"
         :build="buildData"
+        :results="results"
         @close="showCodeModal = false"
       />
       

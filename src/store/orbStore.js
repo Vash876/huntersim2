@@ -37,6 +37,9 @@ export const useTRPlannerStore = defineStore('trPlanner', {
     planModalShouldOpen: null,
     tempPlanData: null,
 
+    // Import/Export State for plan contexts
+    importedPlanContexts: useStorage('trplanner_imported_contexts', {}),
+
     // OrbCalculator State
     orbCalculator: useStorage('trplanner_orbcalculator', {
       trCount: 0,
@@ -357,6 +360,103 @@ export const useTRPlannerStore = defineStore('trPlanner', {
       
       // Aktualisiere den Store mit den neu geordneten Plänen
       this.trPlans = [...orderedPlans];
+    },
+
+    /**
+     * Import a TR Plan from encoded data
+     * @param {string} encodedData - Base58 encoded plan data
+     * @returns {Object} Import result with plan and metadata
+     */
+    async importTRPlan(encodedData) {
+      try {
+        // Import the plan data
+        const { importTRPlan } = await import('@/utils/trImportExport');
+        const importResult = importTRPlan(encodedData);
+        
+        // Store the gem context for this imported plan
+        if (importResult.gemContext) {
+          this.importedPlanContexts[importResult.plan.id] = importResult.gemContext;
+        }
+        
+        // Add the plan to our store
+        this.trPlans.push(importResult.plan);
+        
+        // Update the order
+        const orderedIds = this.trPlans.map(p => p.id);
+        localStorage.setItem('trPlanOrderIds', JSON.stringify(orderedIds));
+        
+        return {
+          success: true,
+          plan: importResult.plan,
+          requiresGems: importResult.requiresGems,
+          isCompatible: importResult.isCompatible,
+          warnings: importResult.isCompatible.warnings || []
+        };
+      } catch (error) {
+        console.error('Error importing TR plan:', error);
+        return {
+          success: false,
+          error: error.message
+        };
+      }
+    },
+
+    /**
+     * Export a TR Plan to encoded string
+     * @param {string} planId - ID of the plan to export
+     * @returns {Object} Export result with encoded data
+     */
+    async exportTRPlan(planId) {
+      try {
+        const plan = this.getTRPlanById(planId);
+        if (!plan) {
+          throw new Error('Plan not found');
+        }
+
+        // Get current gem data or imported gem context
+        let gemContext = null;
+        if (plan.isImported && this.importedPlanContexts[planId]) {
+          // Use the imported gem context
+          gemContext = this.importedPlanContexts[planId];
+        } else {
+          // Use current user's gem data
+          const { getGemDataFromLocalStorage } = await import('@/utils/gemDataUtils');
+          gemContext = getGemDataFromLocalStorage();
+        }
+
+        // Export the plan
+        const { exportTRPlan } = await import('@/utils/trImportExport');
+        const encodedData = exportTRPlan(plan, gemContext);
+        
+        return {
+          success: true,
+          encodedData: encodedData,
+          planName: plan.name
+        };
+      } catch (error) {
+        console.error('Error exporting TR plan:', error);
+        return {
+          success: false,
+          error: error.message
+        };
+      }
+    },
+
+    /**
+     * Get gem context for a specific plan
+     * @param {string} planId - ID of the plan
+     * @returns {Object|null} Gem context or null
+     */
+    getPlanGemContext(planId) {
+      const plan = this.getTRPlanById(planId);
+      if (!plan) return null;
+      
+      if (plan.isImported && this.importedPlanContexts[planId]) {
+        return this.importedPlanContexts[planId];
+      }
+      
+      // For local plans, return null (will use local gem data)
+      return null;
     },
     
     // Beim Laden der Pläne
