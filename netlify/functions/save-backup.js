@@ -47,6 +47,16 @@ const handler = async (event, context) => {
     // Initialize database connection at runtime
     const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.VITE_NEON_DATABASE_URL;
     
+    // Debug: Log available environment variables (mask sensitive data)
+    console.log('Environment debug:', {
+      NODE_ENV: process.env.NODE_ENV,
+      NETLIFY: process.env.NETLIFY,
+      hasNEON_DATABASE_URL: !!process.env.NEON_DATABASE_URL,
+      hasVITE_NEON_DATABASE_URL: !!process.env.VITE_NEON_DATABASE_URL,
+      finalDatabaseUrl: !!NEON_DATABASE_URL,
+      allEnvKeys: Object.keys(process.env).filter(key => key.includes('NEON') || key.includes('DATABASE'))
+    });
+    
     if (!NEON_DATABASE_URL) {
       return {
         statusCode: 500,
@@ -54,7 +64,12 @@ const handler = async (event, context) => {
         body: JSON.stringify({
           success: false,
           error: 'Database configuration error',
-          message: 'No database connection string available'
+          message: 'No database connection string available',
+          debug: {
+            hasNEON_DATABASE_URL: !!process.env.NEON_DATABASE_URL,
+            hasVITE_NEON_DATABASE_URL: !!process.env.VITE_NEON_DATABASE_URL,
+            availableEnvKeys: Object.keys(process.env).filter(key => key.includes('NEON') || key.includes('DATABASE'))
+          }
         })
       };
     }

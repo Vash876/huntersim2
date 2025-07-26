@@ -36,6 +36,15 @@ const handler = async (event, context) => {
   try {
     console.log('Testing database connection...');
     
+    // Debug: Log environment variables
+    console.log('Environment debug:', {
+      NODE_ENV: process.env.NODE_ENV,
+      NETLIFY: process.env.NETLIFY,
+      hasNEON_DATABASE_URL: !!process.env.NEON_DATABASE_URL,
+      hasVITE_NEON_DATABASE_URL: !!process.env.VITE_NEON_DATABASE_URL,
+      allEnvKeys: Object.keys(process.env).filter(key => key.includes('NEON') || key.includes('DATABASE') || key.includes('VITE'))
+    });
+    
     // Initialize database connection at runtime
     const NEON_DATABASE_URL = process.env.NEON_DATABASE_URL || process.env.VITE_NEON_DATABASE_URL;
     
@@ -47,7 +56,18 @@ const handler = async (event, context) => {
           success: false,
           error: 'Database configuration error',
           message: 'No database connection string available',
-          databaseUrl: '[NOT CONFIGURED]'
+          debug: {
+            NODE_ENV: process.env.NODE_ENV,
+            NETLIFY: process.env.NETLIFY,
+            hasNEON_DATABASE_URL: !!process.env.NEON_DATABASE_URL,
+            hasVITE_NEON_DATABASE_URL: !!process.env.VITE_NEON_DATABASE_URL,
+            allEnvKeys: Object.keys(process.env).filter(key => 
+              key.includes('NEON') || 
+              key.includes('DATABASE') || 
+              key.includes('VITE') ||
+              key.includes('STACK')
+            )
+          }
         })
       };
     }
