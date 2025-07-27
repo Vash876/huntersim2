@@ -246,34 +246,38 @@
                   <div class="py-3 space-y-1 border-b border-gray-700">
                     <button
                       @click="syncFromCloud"
-                      :disabled="syncStore.isSyncing"
-                      class="w-full text-left px-3 py-2 text-sm text-blue-300 hover:bg-blue-900/20 rounded flex items-center space-x-2 disabled:opacity-50"
+                      :disabled="syncStore.isSyncing || isWaitingForAuth"
+                      class="w-full text-left px-3 py-2 text-sm text-blue-300 hover:bg-blue-900/20 rounded flex items-center space-x-2"
+                      :class="{ 'opacity-50': syncStore.isSyncing || isWaitingForAuth }"
                     >
                       <div class="flex items-center space-x-2">
                         <IconCloudDown size="18" />
                         <IconLoader2 
-                          v-if="syncStore.isSyncing && syncAction === 'download'"
+                          v-if="(syncStore.isSyncing && syncAction === 'download') || isWaitingForAuth"
                           size="14" 
                           class="animate-spin"
                         />
                       </div>
-                      <span>{{ syncStore.isSyncing && syncAction === 'download' ? 'Loading...' : 'Load from Cloud' }}</span>
+                      <span>{{ syncStore.isSyncing && syncAction === 'download' ? 'Loading...' : 
+                                 isWaitingForAuth ? 'Connecting...' : 'Load from Cloud' }}</span>
                     </button>
                     
                     <button
                       @click="syncToCloud"
-                      :disabled="syncStore.isSyncing"
-                      class="w-full text-left px-3 py-2 text-sm text-green-300 hover:bg-green-900/20 rounded flex items-center space-x-2 disabled:opacity-50"
+                      :disabled="syncStore.isSyncing || isWaitingForAuth"
+                      class="w-full text-left px-3 py-2 text-sm text-green-300 hover:bg-green-900/20 rounded flex items-center space-x-2"
+                      :class="{ 'opacity-50': syncStore.isSyncing || isWaitingForAuth }"
                     >
                       <div class="flex items-center space-x-2">
                         <IconCloudUp size="18" />
                         <IconLoader2 
-                          v-if="syncStore.isSyncing && syncAction === 'upload'"
+                          v-if="(syncStore.isSyncing && syncAction === 'upload') || isWaitingForAuth"
                           size="14" 
                           class="animate-spin"
                         />
                       </div>
-                      <span>{{ syncStore.isSyncing && syncAction === 'upload' ? 'Saving...' : 'Save to Cloud' }}</span>
+                      <span>{{ syncStore.isSyncing && syncAction === 'upload' ? 'Saving...' : 
+                                 isWaitingForAuth ? 'Connecting...' : 'Save to Cloud' }}</span>
                     </button>
                   </div>
 
@@ -400,16 +404,23 @@ const showAuthModal = ref(false);
 const showAccountSettings = ref(false);
 const syncAction = ref(null); // 'upload', 'download', or null
 const syncNotification = ref({ show: false, message: '', type: 'info' });
+const isWaitingForAuth = ref(false); // New state for timeout period
 
 // Initialize Neon Auth and Sync Store
 neonAuthService.initAuth();
 syncStore.init();
 
-// Check for sign-in query parameter
+// Check for sign-in query parameter and handle page refresh auth delay
 onMounted(() => {
   if (route.query.signIn === 'true') {
     showAuthModal.value = true;
   }
+  
+  // Disable sync buttons for 5 seconds after page refresh to allow auth to stabilize
+  isWaitingForAuth.value = true;
+  setTimeout(() => {
+    isWaitingForAuth.value = false;
+  }, 5000);
 });
 
 // Watch for route changes to handle sign-in parameter

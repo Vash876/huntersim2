@@ -253,57 +253,68 @@
                  syncStore.lastSyncTime ? `Last: ${formatSyncTime(syncStore.lastSyncTime)}` : 'Never synced' }}
             </span>
           </div>
-          
-          <!-- Manual Sync Info -->
-          <div class="mt-2 p-2 bg-blue-900/20 rounded-lg">
-            <div class="text-xs text-blue-300 font-medium mb-1">📱 Manual Sync</div>
-            <div class="text-xs text-gray-400">Use the buttons below to sync your data when needed.</div>
-          </div>
         </div>
 
         <!-- Sync Actions -->
         <div class="space-y-2 pb-3 border-b border-gray-700">
           <button
             @click="syncFromCloud"
-            :disabled="syncStore.isSyncing"
-            class="w-full text-left px-3 py-2 text-sm bg-blue-900/20 text-blue-300 hover:bg-blue-900/30 rounded-lg flex items-center space-x-2 disabled:opacity-50 transition-colors"
+            :disabled="syncStore.isSyncing || isWaitingForAuth"
+            class="w-full text-left px-3 py-2 text-sm bg-blue-900/20 text-blue-300 hover:bg-blue-900/30 rounded-lg flex items-center space-x-2 transition-colors"
+            :class="{ 'opacity-50': syncStore.isSyncing || isWaitingForAuth }"
           >
             <div class="flex items-center space-x-2">
               <IconCloudDown size="18" />
               <IconLoader2 
-                v-if="syncStore.isSyncing && syncAction === 'download'"
+                v-if="(syncStore.isSyncing && syncAction === 'download') || isWaitingForAuth"
                 size="14" 
                 class="animate-spin"
               />
             </div>
-            <span>{{ syncStore.isSyncing && syncAction === 'download' ? 'Loading...' : 'Load from Cloud' }}</span>
+            <span>{{ syncStore.isSyncing && syncAction === 'download' ? 'Loading...' : 
+                       isWaitingForAuth ? 'Connecting...' : 'Load from Cloud' }}</span>
           </button>
           
           <button
             @click="syncToCloud"
-            :disabled="syncStore.isSyncing"
-            class="w-full text-left px-3 py-2 text-sm bg-green-900/20 text-green-300 hover:bg-green-900/30 rounded-lg flex items-center space-x-2 disabled:opacity-50 transition-colors"
+            :disabled="syncStore.isSyncing || isWaitingForAuth"
+            class="w-full text-left px-3 py-2 text-sm bg-green-900/20 text-green-300 hover:bg-green-900/30 rounded-lg flex items-center space-x-2 transition-colors"
+            :class="{ 'opacity-50': syncStore.isSyncing || isWaitingForAuth }"
           >
             <div class="flex items-center space-x-2">
               <IconCloudUp size="18" />
               <IconLoader2 
-                v-if="syncStore.isSyncing && syncAction === 'upload'"
+                v-if="(syncStore.isSyncing && syncAction === 'upload') || isWaitingForAuth"
                 size="14" 
                 class="animate-spin"
               />
             </div>
-            <span>{{ syncStore.isSyncing && syncAction === 'upload' ? 'Saving...' : 'Save to Cloud' }}</span>
+            <span>{{ syncStore.isSyncing && syncAction === 'upload' ? 'Saving...' : 
+                       isWaitingForAuth ? 'Connecting...' : 'Save to Cloud' }}</span>
+          </button>
+        </div>
+
+        <!-- Account Management -->
+        <div class="pb-3 border-b border-gray-700">
+          <button
+            @click="openAccountSettings"
+            class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <IconSettings size="18" />
+            <span>Account Settings</span>
           </button>
         </div>
 
         <!-- Sign Out -->
-        <button
-          @click="signOut"
-          class="w-full text-left px-3 py-2 text-sm text-red-300 hover:bg-red-900/20 rounded-lg flex items-center space-x-2 transition-colors"
-        >
-          <IconLogout size="18" />
-          <span>Sign Out</span>
-        </button>
+        <div class="pt-3">
+          <button
+            @click="signOut"
+            class="w-full text-left px-3 py-2 text-sm text-red-300 hover:bg-red-900/20 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <IconLogout size="18" />
+            <span>Sign Out</span>
+          </button>
+        </div>
       </div>
     </div>
     
@@ -398,6 +409,12 @@
     @success="handleAuthSuccess"
   />
 
+  <!-- Account Settings Modal -->
+  <AccountSettingsModal 
+    :show="showAccountSettings"
+    @close="showAccountSettings = false"
+  />
+
   <!-- Toast Notification -->
   <div 
     v-if="notification.show"
@@ -442,13 +459,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { NAVIGATION } from '../../constants/navigation';
 import { getAllHunters } from '../../constants/hunters';
+import { useRoute } from 'vue-router';
 import { neonAuthService } from '@/services/neonAuthService';
 import { useSyncStore } from '@/store/syncStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
 import NeonAuthModal from '@/components/common/NeonAuthModal.vue';
+import AccountSettingsModal from '@/components/common/AccountSettingsModal.vue';
 import { 
   IconArrowUpCircle,
   IconSettings,
@@ -469,13 +488,41 @@ import {
 
 const navigation = NAVIGATION;
 const hunters = getAllHunters();
+const route = useRoute();
 const activeSection = ref(null);
 const syncStore = useSyncStore();
-const { createBackup, restoreFromBackup } = useBackupRestore();
+const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBackupRestore();
 const showAuthModal = ref(false);
+const showAccountSettings = ref(false);
 const syncAction = ref(null);
+const syncNotification = ref({ show: false, message: '', type: 'info' });
+const isWaitingForAuth = ref(false); // New state for timeout period
 
-// Notification state
+// Initialize Neon Auth and Sync Store
+neonAuthService.initAuth();
+syncStore.init();
+
+// Check for sign-in query parameter and handle page refresh auth delay
+onMounted(() => {
+  if (route.query.signIn === 'true') {
+    showAuthModal.value = true;
+  }
+  
+  // Disable sync buttons for 5 seconds after page refresh to allow auth to stabilize
+  isWaitingForAuth.value = true;
+  setTimeout(() => {
+    isWaitingForAuth.value = false;
+  }, 5000);
+});
+
+// Watch for route changes to handle sign-in parameter
+watch(() => route.query, (newQuery) => {
+  if (newQuery.signIn === 'true') {
+    showAuthModal.value = true;
+  }
+});
+
+// Notification state (keeping old structure for backward compatibility)
 const notification = ref({
   show: false,
   type: 'success', // 'success', 'error', 'info'
@@ -501,17 +548,27 @@ function toggleSection(section) {
 }
 
 // Auth und Sync functions
-function handleAuthSuccess() {
+function handleAuthSuccess(type) {
   showAuthModal.value = false;
+  activeSection.value = null;
   // Optional: Auto-sync nach Login
 }
 
-function signOut() {
-  neonAuthService.signOut();
+async function signOut() {
+  try {
+    await neonAuthService.signOut();
+    activeSection.value = null;
+  } catch (error) {
+    console.error('Sign out failed:', error);
+  }
+}
+
+function openAccountSettings() {
+  showAccountSettings.value = true;
   activeSection.value = null;
 }
 
-// Notification functions
+// Notification functions (using both structures for compatibility)
 function showNotification(type, message) {
   if (notification.value.timeout) {
     clearTimeout(notification.value.timeout);
@@ -526,6 +583,16 @@ function showNotification(type, message) {
   }, 5000);
 }
 
+function showSyncNotification(message, type = 'info') {
+  syncNotification.value = { show: true, message, type };
+  setTimeout(() => {
+    syncNotification.value.show = false;
+  }, 5000);
+  
+  // Also show via the mobile notification system
+  showNotification(type, message);
+}
+
 function hideNotification() {
   if (notification.value.timeout) {
     clearTimeout(notification.value.timeout);
@@ -534,28 +601,28 @@ function hideNotification() {
 }
 
 async function syncFromCloud() {
-  syncAction.value = 'download';
   try {
+    syncAction.value = 'download';
     await syncStore.syncFromServer();
-    showNotification('success', 'Data loaded from cloud successfully!');
-    console.log('📥 Mobile sync from cloud completed');
+    showSyncNotification('Data successfully loaded from cloud', 'success');
+    activeSection.value = null;
   } catch (error) {
-    console.error('❌ Mobile sync from cloud failed:', error);
-    showNotification('error', 'Failed to load from cloud: ' + (error.message || 'Unknown error'));
+    console.error('Sync from cloud failed:', error);
+    showSyncNotification(`Load failed: ${error.message}`, 'error');
   } finally {
     syncAction.value = null;
   }
 }
 
 async function syncToCloud() {
-  syncAction.value = 'upload';
   try {
+    syncAction.value = 'upload';
     await syncStore.syncToServer();
-    showNotification('success', 'Data saved to cloud successfully!');
-    console.log('📤 Mobile sync to cloud completed');
+    showSyncNotification('Data successfully saved to cloud', 'success');
+    activeSection.value = null;
   } catch (error) {
-    console.error('❌ Mobile sync to cloud failed:', error);
-    showNotification('error', 'Failed to save to cloud: ' + (error.message || 'Unknown error'));
+    console.error('Sync to cloud failed:', error);
+    showSyncNotification(`Save failed: ${error.message}`, 'error');
   } finally {
     syncAction.value = null;
   }
@@ -563,11 +630,11 @@ async function syncToCloud() {
 
 function formatSyncTime(timestamp) {
   if (!timestamp) return 'Never';
+  const date = new Date(timestamp);
   const now = new Date();
-  const syncTime = new Date(timestamp);
-  const diffMinutes = Math.floor((now - syncTime) / (1000 * 60));
+  const diffMinutes = Math.floor((now - date) / (1000 * 60));
   
-  if (diffMinutes < 1) return 'Just now';
+  if (diffMinutes < 1) return 'just now';
   if (diffMinutes < 60) return `${diffMinutes}m ago`;
   if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)}h ago`;
   return `${Math.floor(diffMinutes / 1440)}d ago`;
