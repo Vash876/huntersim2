@@ -122,13 +122,13 @@
             </div>
             
             <!-- Chart Display -->
-            <div class="h-96 relative bg-transparent">
+            <div class="h-96 relative bg-transparent" :key="`chart-container-${chartRenderKey}`">
               <!-- Line Chart -->
               <div v-if="activeChartType === 'line' && chartData" class="w-full h-full">
                 <Line
                   :data="chartData"
                   :options="chartOptions"
-                  :key="`line-${xAxisType}-${chartSelectedResources.join(',')}-${track?.id || 'unknown'}`"
+                  :key="`line-${chartRenderKey}`"
                   class="w-full h-full"
                 />
               </div>
@@ -138,7 +138,7 @@
                 <Bar
                   :data="chartData"
                   :options="chartOptions"
-                  :key="`bar-${xAxisType}-${chartSelectedResources.join(',')}-${track?.id || 'unknown'}`"
+                  :key="`bar-${chartRenderKey}`"
                   class="w-full h-full"
                 />
               </div>
@@ -148,7 +148,7 @@
                 <Line
                   :data="areaChartData"
                   :options="chartOptions"
-                  :key="`area-${xAxisType}-${chartSelectedResources.join(',')}-${track?.id || 'unknown'}`"
+                  :key="`area-${chartRenderKey}`"
                   class="w-full h-full"
                 />
               </div>
@@ -158,7 +158,7 @@
                 <Bar
                   :data="gainsChartData"
                   :options="gainsChartOptions"
-                  :key="`gains-${xAxisType}-${chartSelectedResources.join(',')}-${track?.id || 'unknown'}`"
+                  :key="`gains-${chartRenderKey}`"
                   class="w-full h-full"
                 />
               </div>
@@ -274,6 +274,7 @@ defineEmits(['close']);
 const activeChartType = ref('line');
 const chartSelectedResources = ref([]);
 const xAxisType = ref('timestamp'); // 'timestamp' or 'timeInTR'
+const chartRenderKey = ref(0); // Force chart re-render
 
 const chartTypes = [
   { id: 'line', name: 'Progress' },
@@ -301,8 +302,21 @@ watch(() => props.show, (newShow) => {
     } else {
       chartSelectedResources.value = availableDefaults;
     }
+    
+    // Force chart re-render when modal opens
+    forceChartUpdate();
   }
 }, { immediate: true });
+
+// Watch for changes that should trigger chart re-render
+watch([activeChartType, chartSelectedResources, xAxisType], () => {
+  forceChartUpdate();
+}, { deep: true });
+
+// Force chart update function
+function forceChartUpdate() {
+  chartRenderKey.value += 1;
+}
 
 // Filter out notes and other non-relevant resources from chartable resources
 const chartableResources = computed(() => {
@@ -491,6 +505,8 @@ const darkThemeOptions = {
 
 const chartOptions = computed(() => ({
   ...darkThemeOptions,
+  // Add unique ID to prevent data sharing between charts
+  chartId: `chart-${chartRenderKey.value}-${Date.now()}`,
   plugins: {
     ...darkThemeOptions.plugins,
     tooltip: {
@@ -542,11 +558,20 @@ const chartOptions = computed(() => ({
         }
       }
     }
-  }
+  },
+  // Force chart destruction and recreation
+  animation: {
+    duration: 0
+  },
+  // Unique responsive setting to force reflow
+  responsive: true,
+  maintainAspectRatio: false
 }));
 
 const gainsChartOptions = computed(() => ({
   ...darkThemeOptions,
+  // Add unique ID to prevent data sharing between charts
+  chartId: `gains-chart-${chartRenderKey.value}-${Date.now()}`,
   plugins: {
     ...darkThemeOptions.plugins,
     tooltip: {
@@ -588,7 +613,14 @@ const gainsChartOptions = computed(() => ({
         }
       }
     }
-  }
+  },
+  // Force chart destruction and recreation
+  animation: {
+    duration: 0
+  },
+  // Unique responsive setting to force reflow
+  responsive: true,
+  maintainAspectRatio: false
 }));
 
 // Chart data generators
@@ -703,6 +735,10 @@ function toggleResourceInChart(resourceId) {
       chartSelectedResources.value.push(resourceId);
     }
   }
+  // Force chart update immediately after resource change
+  nextTick(() => {
+    forceChartUpdate();
+  });
 }
 
 // Methods
