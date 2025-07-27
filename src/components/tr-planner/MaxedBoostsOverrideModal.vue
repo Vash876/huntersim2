@@ -114,7 +114,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { IconX, IconAlertCircle } from '@tabler/icons-vue';
-import { allBoosts, boostsByCategory } from '@/constants/tr-planner';
+import { allBoosts, boostsByCategory, getBoostMaxValue, getGemDataFromStore } from '@/constants/tr-planner';
 
 const props = defineProps({
   isVisible: {
@@ -135,6 +135,11 @@ const loadError = ref(null);
 const localOverrides = ref({});
 const boostCategories = ref([]);
 
+// Gem-Levels aus dem Store laden
+const gemLevels = computed(() => {
+  return getGemDataFromStore()?.levels || {};
+});
+
 // Initialize boost data with GemOverrideModal structure
 async function loadBoostData() {
   try {
@@ -149,12 +154,13 @@ async function loadBoostData() {
       
       // Include both numeric boosts (with max property) and boolean boosts
       category.boosts.forEach(boost => {
-        if (boost.max !== undefined || boost.type === 'boolean') {
+        const maxValue = getBoostMaxValue(boost, gemLevels.value);
+        if (maxValue !== undefined || boost.type === 'boolean') {
           categoryParams.push({
             key: boost.key,
             name: boost.label,
             globalValue: getGlobalMaxedState(boost.key),
-            maxValue: boost.max || null, // null for boolean boosts
+            maxValue: maxValue || null, // null for boolean boosts
             type: boost.type || 'number'
           });
         }

@@ -146,7 +146,7 @@
                       class="ml-1"
                     />
                   </div>
-                  <div v-if="boost.max !== undefined" class="text-[10px] text-gray-400">Max: {{ boost.max }}</div>
+                  <div v-if="getBoostMaxValue(boost, gemLevels) !== undefined" class="text-[10px] text-gray-400">Max: {{ getBoostMaxValue(boost, gemLevels) }}</div>
                 </td>
                   
                   <!-- Neue Spalte für Kosten -->
@@ -215,7 +215,7 @@
                         <TRValueControls
                           :value="currentBoosts[boost.key] || 0"
                           :minValue="0"
-                          :maxValue="boost.max || 999999"
+                          :maxValue="getBoostMaxValue(boost, gemLevels) || 999999"
                           :showFastControls="true"
                           :step="boost.normalControl || 1"
                           :fastStep="boost.fastControl || 10"
@@ -255,7 +255,7 @@
                         <TRValueControls
                           :value="targetBoosts[boost.key] || 0"
                           :minValue="0"  
-                          :maxValue="boost.max || 999999"
+                          :maxValue="getBoostMaxValue(boost, gemLevels) || 999999"
                           :showFastControls="true"
                           :step="boost.normalControl || 1"
                           :fastStep="boost.fastControl || 10"
@@ -304,7 +304,7 @@
                       />
                     </div>
                     
-                    <div v-if="boost.max !== undefined" class="text-[10px] text-gray-400">Max: {{ boost.max }}</div>
+                    <div v-if="getBoostMaxValue(boost, gemLevels) !== undefined" class="text-[10px] text-gray-400">Max: {{ getBoostMaxValue(boost, gemLevels) }}</div>
                     
                     <!-- Multiplier rechts anzeigen -->
                     <div class="text-xs text-right">
@@ -360,7 +360,7 @@
                           <TRValueControls
                             :value="currentBoosts[boost.key] || 0"
                             :minValue="0"
-                            :maxValue="boost.max || 999999"
+                            :maxValue="getBoostMaxValue(boost, gemLevels) || 999999"
                             :showFastControls="true"
                             :step="boost.normalControl || 1"
                             :fastStep="boost.fastControl || 10"
@@ -412,7 +412,7 @@
                           <TRValueControls
                             :value="targetBoosts[boost.key] || 0"
                             :minValue="0"  
-                            :maxValue="boost.max || 999999"
+                            :maxValue="getBoostMaxValue(boost, gemLevels) || 999999"
                             :showFastControls="true"
                             :step="boost.normalControl || 1"
                             :fastStep="boost.fastControl || 10"
@@ -594,7 +594,7 @@ import {
   calculateCupMultiplier,  
   calculateMultiplier      
 } from '@/composables/calculations';
-import { getGemDataFromStore } from '@/constants/tr-planner/index.js';
+import { getGemDataFromStore, getBoostMaxValue } from '@/constants/tr-planner/index.js';
 import { 
   IconX,
   IconSearch,
@@ -1019,10 +1019,11 @@ const filteredBoostCategories = computed(() => {
         // VEREINFACHTE Filter-Logik für maxed boosts
         const isMaxedInStatsInput = (() => {
           // Für numerische Boosts mit Maximum
-          if (boost.type === 'number' && boost.max !== undefined) {
+          const maxValue = getBoostMaxValue(boost, gemLevels.value);
+          if (boost.type === 'number' && maxValue !== undefined) {
             const globalLevel = currentMaxStats[boost.key];
-            if (globalLevel !== undefined && globalLevel >= boost.max) {
-              console.log(`📊 Numerischer Boost ${boost.key} ist maxed: ${globalLevel} >= ${boost.max}`);
+            if (globalLevel !== undefined && globalLevel >= maxValue) {
+              console.log(`📊 Numerischer Boost ${boost.key} ist maxed: ${globalLevel} >= ${maxValue}`);
               return true;
             }
           }
@@ -1153,8 +1154,9 @@ function updateBoostTarget(boost, newValue) {
   let validValue = Math.max(Math.floor(newValue), currentValue);
   
   // Max-Level berücksichtigen
-  if (boost.max !== undefined) {
-    validValue = Math.min(validValue, boost.max);
+  const maxValue = getBoostMaxValue(boost, gemLevels.value);
+  if (maxValue !== undefined) {
+    validValue = Math.min(validValue, maxValue);
   }
   
   // Wert aktualisieren
@@ -1195,8 +1197,9 @@ function finalizeTargetValue(boost) {
   }
   
   // Max-Level prüfen falls vorhanden
-  if (boost.max !== undefined && targetValue > boost.max) {
-    targetBoosts.value[boost.key] = boost.max;
+  const maxValue = getBoostMaxValue(boost, gemLevels.value);
+  if (maxValue !== undefined && targetValue > maxValue) {
+    targetBoosts.value[boost.key] = maxValue;
     recalculateAll();
   }
 }
@@ -1232,7 +1235,7 @@ function getBoostMultiplier(boost, level, isTarget = false) {
   
   // Spezialfall: hoursInTR zeigt den Catch-Up Multiplier an
   if (boost.key === 'hoursInTR') {
-    return calculateCupMultiplier(level);
+    return calculateCupMultiplier(level, stats);
   }
   
   // Spezialfall: loopMods zeigt den eigentlichen hoursInTR-Boost-Multiplikator an
@@ -1375,8 +1378,9 @@ function updateBoostCurrent(boost, newValue) {
   let validValue = Math.max(Math.floor(newValue), 0);
   
   // Respect max level if available
-  if (boost.max !== undefined) {
-    validValue = Math.min(validValue, boost.max);
+  const maxValue = getBoostMaxValue(boost, gemLevels.value);
+  if (maxValue !== undefined) {
+    validValue = Math.min(validValue, maxValue);
   }
 
   // Update value in store
@@ -1650,19 +1654,20 @@ function createPlanWithCurrentValues() {
   
   allBoosts.forEach(boost => {
     // Für numerische Boosts mit maximalen Wert
-    if (boost.max !== undefined && boost.type === 'number') {
+    const maxValue = getBoostMaxValue(boost, gemLevels.value);
+    if (maxValue !== undefined && boost.type === 'number') {
       // Aktueller Wert im OrbCalculator
       const currentValue = currentBoosts.value[boost.key];
       
       // Wenn der Boost im OrbCalculator maximal ist...
-      if (currentValue !== undefined && currentValue >= boost.max) {
+      if (currentValue !== undefined && currentValue >= maxValue) {
         // Wert aus maxLevelStats (StatsInputModal)
         const maxLevelValue = maxStats[boost.key];
         
         // Wenn maxLevelValue nicht existiert oder kleiner als max ist,
         // dann wurde dieser Boost nur im OrbCalculator maximiert
-        if (maxLevelValue === undefined || maxLevelValue < boost.max) {
-          console.log(`Boost ${boost.key} ist maximal in OrbCalc (${currentValue}/${boost.max}) aber nicht in maxLevelStats (${maxLevelValue}) - markiere als OrbCalcMaxed`);
+        if (maxLevelValue === undefined || maxLevelValue < maxValue) {
+          console.log(`Boost ${boost.key} ist maximal in OrbCalc (${currentValue}/${maxValue}) aber nicht in maxLevelStats (${maxLevelValue}) - markiere als OrbCalcMaxed`);
           currentValues._orbCalcMaxedBoosts[boost.key] = true;
         } else {
           console.log(`Boost ${boost.key} ist maximal sowohl in OrbCalc als auch in maxLevelStats - kein Flag nötig`);
@@ -1763,19 +1768,20 @@ function createPlanWithTargetValues() {
   
   allBoosts.forEach(boost => {
     // Für numerische Boosts mit maximalen Wert
-    if (boost.max !== undefined && boost.type === 'number') {
+    const maxValue = getBoostMaxValue(boost, gemLevels.value);
+    if (maxValue !== undefined && boost.type === 'number') {
       // Target-Wert im OrbCalculator
       const targetValue = targetBoosts.value[boost.key];
       
       // Wenn der Boost im OrbCalculator Target maximal ist...
-      if (targetValue !== undefined && targetValue >= boost.max) {
+      if (targetValue !== undefined && targetValue >= maxValue) {
         // Wert aus maxLevelStats (StatsInputModal)
         const maxLevelValue = maxStats[boost.key];
         
         // Wenn maxLevelValue nicht existiert oder kleiner als max ist,
         // dann wurde dieser Boost nur im OrbCalculator maximiert
-        if (maxLevelValue === undefined || maxLevelValue < boost.max) {
-          console.log(`Boost ${boost.key} ist maximal in OrbCalc Target (${targetValue}/${boost.max}) aber nicht in maxLevelStats (${maxLevelValue}) - markiere als OrbCalcMaxed`);
+        if (maxLevelValue === undefined || maxLevelValue < maxValue) {
+          console.log(`Boost ${boost.key} ist maximal in OrbCalc Target (${targetValue}/${maxValue}) aber nicht in maxLevelStats (${maxLevelValue}) - markiere als OrbCalcMaxed`);
           targetStats._orbCalcMaxedBoosts[boost.key] = true;
         } else {
           console.log(`Boost ${boost.key} ist maximal sowohl in OrbCalc Target als auch in maxLevelStats - kein Flag nötig`);

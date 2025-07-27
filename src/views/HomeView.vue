@@ -23,7 +23,15 @@ const changelog =
         text: '<b class="text-yellow-400">NEW:</b> TR Plan Import/Export System',
         subItems: [
           'Added TR Plan sharing with export/import functionality',
+          'Added Gem and Maxed Boosts Overrides for TR Plans',
           'Enhanced sharing with dual-format options: Raw codes for direct import and Discord-formatted versions with plan statistics',
+        ]
+      },
+      {
+        text: 'TR Planner Enhancements',
+        subItems: [
+          'Added Innovation Level 3 Researches',
+          '<b class="text-red-400">NOTE:</b> Existing TR plans need to have their "All-Time Highest Research Points" values adjusted as Research 89 (Campaign Frags) has been removed.'
         ]
       },
       {

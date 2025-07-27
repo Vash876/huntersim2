@@ -324,10 +324,10 @@
                       <!-- Max Level Badge (wenn vorhanden) - oben rechts -->
                       <div class="flex-shrink-0 ml-2">
                         <span 
-                          v-if="boost.max !== undefined"
+                          v-if="getBoostMaxValue(boost, mergedGemData) !== undefined"
                           class="text-[10px] px-1.5 py-0.5 rounded bg-gray-600/80 text-gray-300 font-medium inline-block"
                         >
-                          Max: {{ boost.max }}
+                          Max: {{ getBoostMaxValue(boost, mergedGemData) }}
                         </span>
                       </div>
                     </div>
@@ -409,7 +409,7 @@
                           <TRValueControls
                             :value="getTargetLevel(step.id, boost.key)"
                             :minValue="stepIndex === 0 ? 0 : (boost.permanent ? getPreviousStepLevel(stepIndex, boost.key) : 0)"  
-                            :maxValue="boost.max || 999999"
+                            :maxValue="getBoostMaxValue(boost, mergedGemData) || 999999"
                             :showFastControls="true"
                             :step="boost.normalControl || 1"
                             :fastStep="boost.fastControl || 10"
@@ -652,7 +652,7 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, nextTick, onBeforeUnmount } from 'vue';
 import { useNow } from '@vueuse/core';
-import { allBoosts, boostsByCategory, generalStats, alwaysUpdateKeys, getGemDataFromStore, setPlanContext, getCurrentPlanContext } from '@/constants/tr-planner';
+import { allBoosts, boostsByCategory, generalStats, alwaysUpdateKeys, getGemDataFromStore, setPlanContext, getCurrentPlanContext, getBoostMaxValue } from '@/constants/tr-planner';
 import { getAllGemData } from '@/constants/tr-planner/gems.js';
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
@@ -663,7 +663,7 @@ import MaxedBoostsOverrideModal from './MaxedBoostsOverrideModal.vue';
 import TRValueControls from '@/composables/TRValueControls.vue';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 import { formatMultiplier, formatNumber, parseNumberWithSuffix, formatSuffixNotation } from '@/composables/format';
-import { calculateOrbRequirement, calculateOrbGains, calculateCampaignFragGains, calculateMissingHours } from '@/composables/calculations';
+import { calculateOrbRequirement, calculateOrbGains, calculateCampaignFragGains, calculateMissingHours, calculateCupMultiplier } from '@/composables/calculations';
 import { 
   IconX, 
   IconPlus,
@@ -873,7 +873,7 @@ const formatTREndDate = computed(() => {
           );
         }
       } catch (e) {
-        console.error("Error calculating additional hours:", e);
+        // Fehler beim Berechnen der zusätzlichen Stunden
       }
       
       totalHours += hoursInTR + additionalHours;
@@ -903,7 +903,6 @@ const formatTREndDate = computed(() => {
     
     return endDate.toLocaleDateString(undefined, dateOptions);
   } catch (e) {
-    console.error("Error calculating TR end date:", e);
     return "Error calculating end date";
   }
 });
@@ -1146,10 +1145,6 @@ function getGemDataWithOverrides() {
   // Globale Gem-Daten laden
   const globalGemData = getGemDataFromStore();
   
-  // Debug: Zeige aktuelle Overrides
-  console.log('Local gem overrides:', localGemOverrides.value);
-  console.log('Global gem data:', globalGemData);
-  
   // Wenn keine Overrides vorhanden sind, globale Daten zurückgeben
   if (!localGemOverrides.value || Object.keys(localGemOverrides.value).length === 0) {
     // Clear any existing plan context when no overrides
@@ -1167,21 +1162,16 @@ function getGemDataWithOverrides() {
   
   // Overrides anwenden
   Object.entries(localGemOverrides.value).forEach(([key, value]) => {
-    console.log(`Processing override: ${key} = ${value}`);
-    
     if (key.endsWith('Level')) {
       // Gem Level Override
       const gemId = key.replace('Level', '');
       mergedGemData.levels[gemId] = value;
-      console.log(`Applied level override for ${gemId}: ${value}`);
     } else if (key.includes('Node')) {
       // Gem Node Override
       const match = key.match(/^(.+)Node(\d+)$/);
       if (match) {
         const gemId = match[1];
         const nodeIndex = parseInt(match[2], 10);
-        
-        console.log(`Processing node override for ${gemId}, node ${nodeIndex}, value: ${value}`);
         
         // Stelle sicher, dass das Array für den Gem existiert
         if (!mergedGemData.activeNodes[gemId]) {
@@ -1192,26 +1182,21 @@ function getGemDataWithOverrides() {
           // Node aktivieren
           if (!mergedGemData.activeNodes[gemId].includes(nodeIndex)) {
             mergedGemData.activeNodes[gemId].push(nodeIndex);
-            console.log(`Activated node ${nodeIndex} for ${gemId}`);
           }
         } else {
           // Node deaktivieren
           const index = mergedGemData.activeNodes[gemId].indexOf(nodeIndex);
           if (index !== -1) {
             mergedGemData.activeNodes[gemId].splice(index, 1);
-            console.log(`Deactivated node ${nodeIndex} for ${gemId}`);
           }
         }
       }
     }
   });
   
-  console.log('Final merged gem data:', mergedGemData);
-  
   // Set global plan context for calculations
   if (typeof window !== 'undefined') {
     window.__PLAN_CONTEXT__ = { gemData: mergedGemData };
-    console.log('Set global plan context for calculations:', mergedGemData);
   }
   
   return mergedGemData;
@@ -1228,15 +1213,11 @@ function getMaxedBoostsWithOverrides() {
       globalMaxedBoosts = stats._orbCalcMaxedBoosts || {};
     }
   } catch (error) {
-    console.warn('Could not load global maxed boosts:', error);
+    // Fehler beim Laden wird ignoriert, verwende leere Defaults
   }
-  
-  console.log("🔍 Global maxed boosts:", globalMaxedBoosts);
-  console.log("🔍 Local maxedBoostsOverrides:", localMaxedBoostsOverrides.value);
   
   // Wenn keine Overrides vorhanden sind, globale Daten zurückgeben
   if (!localMaxedBoostsOverrides.value || Object.keys(localMaxedBoostsOverrides.value).length === 0) {
-    console.log("❌ No overrides found, returning global boosts");
     return globalMaxedBoosts;
   }
   
@@ -1244,15 +1225,12 @@ function getMaxedBoostsWithOverrides() {
   const mergedMaxedBoosts = { ...globalMaxedBoosts };
   
   Object.entries(localMaxedBoostsOverrides.value).forEach(([boostKey, isMaxed]) => {
-    console.log(`🔄 Processing override: ${boostKey} = ${isMaxed} (global was: ${globalMaxedBoosts[boostKey]})`);
     if (isMaxed === true) {
       mergedMaxedBoosts[boostKey] = true;
     } else if (isMaxed === false) {
       delete mergedMaxedBoosts[boostKey];
     }
   });
-  
-  console.log("✅ Final merged maxed boosts:", mergedMaxedBoosts);
   
   // Set global plan context for calculations (extend existing or create new)
   if (typeof window !== 'undefined') {
@@ -1271,8 +1249,6 @@ function getFilteredBoostsByCategory(step) {
     // Verwende computed properties für bessere Reaktivität
     const orbCalcMaxedBoosts = getMaxedBoostsWithOverrides(); // Direkt die Funktion aufrufen
     const gemData = mergedGemData.value;
-    
-    console.log("DEBUG in getFilteredBoostsByCategory - orbCalcMaxedBoosts:", orbCalcMaxedBoosts);
     
     // Finde den Index des aktuellen Schritts
     const stepIndex = trSteps.findIndex(s => s.id === step.id);
@@ -1347,7 +1323,6 @@ function getFilteredBoostsByCategory(step) {
     
     return filteredCategories;
   } catch (error) {
-    console.error("### Fehler beim Laden der maxLevelStats:", error);
     // Falls ein Fehler auftritt, Standard-Filterung ohne maxLevelStats
     return boostsByCategory;
   }
@@ -1379,7 +1354,6 @@ function toggleBooleanTarget(stepId, boostKey) {
         
         if (wasActive) {
           // Boost war in einem früheren TR aktiviert - deaktivieren nicht erlaubt
-          console.log(`Permanenter Boolean-Boost ${boostKey} kann nicht deaktiviert werden, da er in einem früheren TR aktiviert wurde`);
           return; // Ohne Änderung abbrechen
         }
       }
@@ -1444,8 +1418,9 @@ function updateTargetLevel(stepId, boostKey, newValue) {
     let validValue = Math.max(Math.floor(newValue), minLevel);
     
     // Max Level beachten wenn vorhanden
-    if (boost.max !== undefined) {
-      validValue = Math.min(validValue, boost.max);
+    const maxValue = getBoostMaxValue(boost, mergedGemData.value);
+    if (maxValue !== undefined) {
+      validValue = Math.min(validValue, maxValue);
     }
     
     // Wert im aktuellen Schritt aktualisieren
@@ -1644,8 +1619,6 @@ function getStepOrbRequirement(step, stepIndex) {
     // Für den Haupt-TR - Berechne für den AKTUELLEN TR
     const requirement = calculateOrbRequirement(trCount.value , allTimeOrbs.value);
     
-    console.log(`Haupt-TR: TR ${trCount.value}, AllTimeOrbs: ${allTimeOrbs.value.toLocaleString()}, Requirement: ${requirement.toLocaleString()}`);
-    
     return requirement;
   } else {
     // Für Folge-TRs - Rekonstruiere die Werte direkt
@@ -1663,8 +1636,6 @@ function getStepOrbRequirement(step, stepIndex) {
     const currentTR = trCount.value + stepIndex;
     const requirement = calculateOrbRequirement(currentTR, calculatedAllTimeOrbs);
     
-    console.log(`Folge-TR ${stepIndex}: TR ${currentTR}, Berechnete AllTimeOrbs: ${calculatedAllTimeOrbs.toLocaleString()}, Requirement: ${requirement.toLocaleString()}`);
-    
     return requirement;
   }
 }
@@ -1674,8 +1645,6 @@ function getStepOrbGains(step) {
   /* ---------------- Basis‑ und Ziel‑Stats bauen ---------------- */
   const baseStats = { ...step.stats };           // Start in diesem TR
   const planStats = { ...step.stats };           // nach allen Targets
-
-  console.log(`🔍 Calculating orb gains for step with stats:`, step.stats);
 
   /* Wichtig: Erst target levels/bools setzen, dann maxed boosts (mit Overrides) anwenden */
   
@@ -1700,38 +1669,22 @@ function getStepOrbGains(step) {
   /* Maximierte Boosts einbeziehen (mit Overrides) - überschreibt target levels */
   const orbCalcMaxedBoosts = getMaxedBoostsWithOverrides(); // Direkt die Funktion aufrufen
   
-  console.log(`🎯 Merged maxed boosts for orb calculation:`, orbCalcMaxedBoosts);
-  
   /* Für alle maximierten Boosts die maximalen Werte setzen */
   Object.entries(orbCalcMaxedBoosts).forEach(([key, isMaxed]) => {
     if (isMaxed === true) { // Nur wenn tatsächlich auf true gesetzt
       const boost = allBoosts.find(b => b.key === key);
       if (boost) {
         if (boost.type === 'boolean') {
-          console.log(`Setting maxed boolean boost ${key} = 1 in planStats`);
           planStats[key] = 1; // Boolean-Boosts auf aktiviert setzen
-          
-          // Spezifischer Debug für Premium Boosts
-          if (['iap', 'hera', 'jaxis'].includes(key)) {
-            console.log(`🎖️ PREMIUM BOOST ${key}: Set to 1 in planStats, permanent=${boost.permanent}`);
+        } else if (boost.type === 'number') {
+          const maxValue = getBoostMaxValue(boost, mergedGemData.value);
+          if (maxValue !== undefined) {
+            planStats[key] = maxValue; // Numerische Boosts auf Maximum setzen
           }
-        } else if (boost.type === 'number' && boost.max !== undefined) {
-          console.log(`Setting maxed numeric boost ${key} = ${boost.max} in planStats`);
-          planStats[key] = boost.max; // Numerische Boosts auf Maximum setzen
         }
-      }
-    } else {
-      console.log(`⏭️ Skipping boost ${key} because isMaxed = ${isMaxed}`);
-      
-      // Spezifischer Debug für Premium Boosts
-      if (['iap', 'hera', 'jaxis'].includes(key)) {
-        console.log(`🎖️ PREMIUM BOOST ${key}: SKIPPED because isMaxed = ${isMaxed}`);
       }
     }
   });
-
-  console.log(`📊 Final planStats for orb calculation:`, planStats);
-  console.log(`📊 Final baseStats for orb calculation:`, baseStats);
 
   /* ---------------- Gem-Overrides einbeziehen -------------------- */
   const gemDataWithOverrides = mergedGemData.value;
@@ -1773,27 +1726,9 @@ function getStepOrbGains(step) {
   
   try {
     const orbCalcBoosts = allBoosts.filter(b => b.orbcalc);
-    console.log(`⚡ Using ${orbCalcBoosts.length} orb calculation boosts`);
-    console.log(`⚡ Orb calc boosts:`, orbCalcBoosts.map(b => `${b.key} (${b.type})`));
-    
-    // Debug: Prüfe speziell nach vb1-4 Boosts
-    const vbBoosts = orbCalcBoosts.filter(b => b.key.startsWith('vb'));
-    console.log(`🔍 VB boosts found in orbCalcBoosts:`, vbBoosts.map(b => b.key));
-    
-    // Debug: Prüfe planStats für vb1-4 Werte
-    const vbValues = {};
-    ['vb1', 'vb2', 'vb3', 'vb4'].forEach(key => {
-      if (planStats[key] !== undefined) {
-        vbValues[key] = planStats[key];
-      }
-    });
-    console.log(`🔍 VB values in planStats:`, vbValues);
-    
     const result = calculateOrbGains(baseStats, planStats, orbCalcBoosts);
-    console.log(`⚡ Orb gains calculation result: ${result}`);
     return result;
   } catch (error) {
-    console.error('Error calculating orb gains:', error);
     return 0;
   }
 }
@@ -1828,8 +1763,11 @@ function getStepFragGains(step) {
       if (boost) {
         if (boost.type === 'boolean') {
           planStats[key] = 1; // Boolean-Boosts auf aktiviert setzen
-        } else if (boost.type === 'number' && boost.max !== undefined) {
-          planStats[key] = boost.max; // Numerische Boosts auf Maximum setzen
+        } else if (boost.type === 'number') {
+          const maxValue = getBoostMaxValue(boost, mergedGemData.value);
+          if (maxValue !== undefined) {
+            planStats[key] = maxValue; // Numerische Boosts auf Maximum setzen
+          }
         }
       }
     }
@@ -1907,7 +1845,6 @@ function getStepFragGains(step) {
     const result = calculateCampaignFragGains(baseStatsWithGems, planStats, fragMultiBoosts);
     return result;
   } catch (error) {
-    console.error('Error calculating fragment gains:', error);
     return 0;
   }
 }
@@ -1965,7 +1902,6 @@ function getBoostMultiplier(boost, level, stats) {
       try {
         return isActive ? boost.multiplier(1, stats) : 1;
       } catch (e) {
-        console.error(`Error calculating multiplier for ${boost.key}:`, e);
         return null;
       }
     }
@@ -1977,7 +1913,6 @@ function getBoostMultiplier(boost, level, stats) {
       try {
         return boost.multiplier(level, stats);
       } catch (e) {
-        console.error(`Error calculating multiplier for ${boost.key}:`, e);
         return null;
       }
     }
@@ -2036,7 +1971,6 @@ function getMultiplierText(boost, step) {
         return formatMultiplier(boost.multiplier);
       }
     } catch (e) {
-      console.error(`Error calculating multiplier for ${boostKey}:`, e);
       return '×1.00';
     }
   }
@@ -2050,7 +1984,6 @@ function getMultiplierText(boost, step) {
       const value = boost.multiplier(targetLevel, combinedStats);
       return formatMultiplier(value);
     } catch (e) {
-      console.error(`Error calculating multiplier for ${boostKey}:`, e);
       return '×1.00';
     }
   }
@@ -2100,7 +2033,6 @@ function getFragMultiplierText(boost, step) {
         part2: formatMultiplier(part2)
       };
     } catch (e) {
-      console.error(`Error calculating r6 fragmulti:`, e);
       return {
         part1: '+0.00',
         part2: '×1.00'
@@ -2117,7 +2049,6 @@ function getFragMultiplierText(boost, step) {
       const value = boost.fragmulti(targetLevel, combinedStats);
       return formatMultiplier(value);
     } catch (e) {
-      console.error(`Error calculating fragmulti for ${boostKey}:`, e);
       return '×1.00';
     }
   }
@@ -2131,9 +2062,14 @@ function getCupMultiplierText(step) {
                     step.targetLevels['hoursInTR'] : 
                     step.stats.hoursInTR || 0;
   
-  if (!hoursInTR) return '×1.00'; // Standardwert
+  // Stelle sicher, dass alle targetLevels in die Stats integriert sind
+  const enhancedStats = { 
+    ...step.stats,
+    ...step.targetLevels
+  };
   
-  const cupMulti = Math.min(2, Math.max(1, (hoursInTR * 0.00024) / 0.25 + 1));
+  // Verwende die calculateCupMultiplier Funktion mit erweiterten Stats für Research-Boni
+  const cupMulti = calculateCupMultiplier(hoursInTR, enhancedStats);
   return formatMultiplier(cupMulti);
 }
 
@@ -2213,7 +2149,6 @@ function initData() {
       // Wenn der gespeicherte Plan _orbCalcMaxedBoosts enthält, übernimm es
       if (plan.updatedStats && plan.updatedStats._orbCalcMaxedBoosts) {
         statsWithOrbCalcFlags._orbCalcMaxedBoosts = {...plan.updatedStats._orbCalcMaxedBoosts};
-        console.log("Importierte _orbCalcMaxedBoosts-Flags:", statsWithOrbCalcFlags._orbCalcMaxedBoosts);
       }
 
       const firstStep = {
@@ -2355,7 +2290,6 @@ function initData() {
       // Wenn der gespeicherte Plan _orbCalcMaxedBoosts enthält, übernimm es
       if (plan.updatedStats && plan.updatedStats._orbCalcMaxedBoosts) {
         statsWithOrbCalcFlags._orbCalcMaxedBoosts = {...plan.updatedStats._orbCalcMaxedBoosts};
-        console.log("Wiederhergestellte _orbCalcMaxedBoosts-Flags:", statsWithOrbCalcFlags._orbCalcMaxedBoosts);
       }
 
       firstStep = {
@@ -2409,7 +2343,6 @@ function initData() {
 
       if (props.currentStats && props.currentStats._orbCalcMaxedBoosts) {
         statsWithFlags._orbCalcMaxedBoosts = {...props.currentStats._orbCalcMaxedBoosts};
-        console.log("Übernommene _orbCalcMaxedBoosts-Flags aus currentStats:", statsWithFlags._orbCalcMaxedBoosts);
       }
 
       firstStep = {
@@ -2597,7 +2530,6 @@ function initData() {
     });
   }
   catch (e) {
-    console.error('initData Error:', e);
     error.value = `Initialization failed: ${e.message}`;
   }
 }
@@ -2619,7 +2551,6 @@ function createPlan() {
   // --- 3) Boost‑Details aus dem ersten Schritt (Plan.boosts) ---
   if (firstStep.stats._orbCalcMaxedBoosts) {
     updatedStats._orbCalcMaxedBoosts = { ...firstStep.stats._orbCalcMaxedBoosts };
-    console.log("_orbCalcMaxedBoosts in updatedStats übernommen:", updatedStats._orbCalcMaxedBoosts);
   }
   const boostDetails = {}; // Objekt-Format statt Array
 
@@ -2829,7 +2760,6 @@ function openMaxedBoostsOverrideModal() {
 function clearPlanContext() {
   if (typeof window !== 'undefined') {
     window.__PLAN_CONTEXT__ = null;
-    console.log('Cleared global plan context');
   }
 }
 
@@ -2925,7 +2855,6 @@ function getRequiredHoursForStep(step, stepIndex) {
     );
     return result;
   } catch (error) {
-    console.error("Error in calculation:", error);
     return 0;
   }
 }
@@ -2957,7 +2886,6 @@ function getHoursNeededText(step, stepIndex) {
       } 
     }
   } catch (e) {
-    console.error("Error in getHoursNeededText:", e);
     return "Error calculating";
   }
 }
@@ -3128,8 +3056,6 @@ onMounted(() => {
 // Funktion zum Initialisieren mit kopierten Daten
 function initializeWithCopyData(copyData) {
   try {
-    console.log("Initializing TRPlanModal with copyData:", copyData);
-
     // 1) Plan‑Metadaten setzen
     planName.value = copyData.name || `TR Plan ${new Date().toLocaleDateString()}`;
     trStartDate.value = copyData.trStartDate || new Date().toISOString().split('T')[0];
@@ -3161,8 +3087,6 @@ function initializeWithCopyData(copyData) {
 
     // 5) Wenn es ein Plan aus dem OrbCalculatorModal ist
     if (!copyData.boosts) {
-      console.log("Initializing from OrbCalculatorModal data");
-      
       allBoosts.forEach(boost => {
         const key = boost.key;
         
@@ -3264,11 +3188,8 @@ function initializeWithCopyData(copyData) {
     }
 
     nextTick(() => updateFollowingStepsStats(0));
-
-    console.log("Copy data initialized successfully:", trSteps);
   }
   catch (error) {
-    console.error('Error initializing copy data:', error);
     initData();
   }
 }
@@ -3381,21 +3302,17 @@ function showAlert(message, title = 'TR Planner', type = 'info') {
 
 // Event-Handler für Gem-Level-Änderungen
 function handleMaxLevelStatsChanged() {
-  console.log("TRPlanModal: maxLevelStatsChanged event empfangen");
   // Computed properties werden automatisch aktualisiert
 }
 
 function handleGemDataChanged() {
-  console.log("TRPlanModal: gemDataChanged event empfangen");
   // Computed properties werden automatisch aktualisiert
 }
 
 function handleStorageChange(event) {
   if (event.key === 'trplanner_userstats') {
-    console.log("TRPlanModal: localStorage 'trplanner_userstats' geändert");
     handleMaxLevelStatsChanged();
   } else if (event.key && event.key.includes('gem')) {
-    console.log("TRPlanModal: Gem-bezogene localStorage Änderung erkannt");
     handleGemDataChanged();
   }
 }
@@ -3463,13 +3380,11 @@ function isBoostAvailable(boost, step) {
       // Zuerst prüfen, ob Plan-Context verfügbar ist (mit Overrides)
       if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
         gemData = window.__PLAN_CONTEXT__.gemData;
-        console.log(`🔧 Using plan context gem data for boost availability ${boost.key}:`, gemData);
       } else {
         // Fallback: Normale Store Gem-Daten
         const trPlannerStore = useTRPlannerStore();
         const userStats = trPlannerStore.userStats;
         gemData = userStats?.gemData;
-        console.log(`🔧 Using store gem data for boost availability ${boost.key}:`, gemData);
       }
       
       if (gemData && gemData.levels) {
@@ -3477,7 +3392,6 @@ function isBoostAvailable(boost, step) {
         
         // Prüfe ob Gem-Level ausreicht
         if (gemLevel < (boost.unlock_level || 1)) {
-          console.log(`❌ Boost ${boost.key} not available: ${boost.unlock} Level ${gemLevel} < ${boost.unlock_level}`);
           return false;
         }
         
@@ -3485,15 +3399,11 @@ function isBoostAvailable(boost, step) {
         if (boost.unlock_node && gemData.activeNodes) {
           const nodeKey = `${boost.unlock}_${boost.unlock_node}`;
           if (!gemData.activeNodes[nodeKey]) {
-            console.log(`❌ Boost ${boost.key} not available: Node ${nodeKey} not active`);
             return false;
           }
         }
-        
-        console.log(`✅ Boost ${boost.key} available: ${boost.unlock} Level ${gemLevel} >= ${boost.unlock_level}`);
       }
     } catch (error) {
-      console.warn('Error checking gem availability for boost:', boost.key, error);
       // Bei Fehlern: Fallback auf alte Logik (boost verfügbar)
     }
   }

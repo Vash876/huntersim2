@@ -707,7 +707,7 @@ function compressMaxedBoosts(maxedBoosts) {
     'r20': 'r20',
     // Boolean boosts
     'campfragdet': 'cfd',
-    'research89': 'r89',
+    'research_alltime': 'r89',
     'ouroinstalls': 'oi',
     'vb1': 'vb1',
     'vb2': 'vb2',

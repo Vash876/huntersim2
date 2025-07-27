@@ -91,7 +91,7 @@
                   </div>
                   <div class="text-[11px] text-gray-300 mt-0.5">
                     Max: <span :class="boost.type === 'boolean' ? 'text-green-400' : 'text-blue-400'">
-                      {{ boost.type === 'boolean' ? 'ON' : boost.max || '-' }}
+                      {{ boost.type === 'boolean' ? 'ON' : getBoostMaxValue(boost, gemLevels) || '-' }}
                     </span>
                   </div>
                 </div>
@@ -144,7 +144,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue';
-import { allBoosts, boostsByCategory } from '@/constants/tr-planner';
+import { allBoosts, boostsByCategory, getBoostMaxValue, getGemDataFromStore } from '@/constants/tr-planner';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { 
   IconX, 
@@ -207,7 +207,7 @@ const filteredBoostsByCategory = computed(() => {
         // Ausschließen: hoursInTR und loopMods
         boost.key !== 'hoursInTR' && boost.key !== 'loopMods' &&
         // Einschließen: Alle Boolean-Boosts oder numerische Boosts mit max Level
-        (boost.type === 'boolean' || (boost.type === 'number' && boost.max !== undefined)) &&
+        (boost.type === 'boolean' || (boost.type === 'number' && getBoostMaxValue(boost, gemLevels.value) !== undefined)) &&
         // Nur freigeschaltete Boosts anzeigen
         isBoostUnlocked(boost)
       );
@@ -259,7 +259,7 @@ function initializeMaxedState() {
       if (boost.type === 'boolean') {
         // Boolean Boosts sind "maxed" wenn sie in _orbCalcMaxedBoosts markiert sind
         maxedBoosts[boost.key] = orbCalcMaxedBoosts[boost.key] === true;
-      } else if (boost.type === 'number' && boost.max !== undefined) {
+      } else if (boost.type === 'number' && getBoostMaxValue(boost, gemLevels.value) !== undefined) {
         // Numerische Boosts sind "maxed" wenn sie in _orbCalcMaxedBoosts markiert sind
         maxedBoosts[boost.key] = orbCalcMaxedBoosts[boost.key] === true;
       }
@@ -312,8 +312,11 @@ function saveAndClose() {
       // Zusätzlich setzen wir den eigentlichen Wert auf den Maximalwert
       if (boost.type === 'boolean') {
         updatedStats[key] = true;
-      } else if (boost.type === 'number' && boost.max !== undefined) {
-        updatedStats[key] = boost.max;
+      } else if (boost.type === 'number') {
+        const maxValue = getBoostMaxValue(boost, gemLevels.value);
+        if (maxValue !== undefined) {
+          updatedStats[key] = maxValue;
+        }
       }
     } else {
       // Wenn der Boost nicht als maxed markiert ist, setzen wir nur den eigentlichen Wert zurück

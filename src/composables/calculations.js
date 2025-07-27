@@ -1,3 +1,6 @@
+// Import für Research-Daten
+import { researchData_permanent } from '../constants/tr-planner/index.js';
+
 /**
  * Berechnet die benötigten Orbs für den nächsten TR
  * @param {number} trCount - Die aktuelle TR-Anzahl
@@ -40,13 +43,52 @@ export function calculateOrbRequirement(trCount, allTimeOrbs) {
 }
 
 /**
- * Berechnet den Catch-Up Multiplier basierend auf hoursInTR
+ * Berechnet den Catch-Up Multiplier basierend auf hoursInTR und Research 109/110
  * @param {number} hoursInTR - Stunden im aktuellen TR
+ * @param {Object} allValues - Alle aktuellen Werte für Research-Zugriff (optional)
  * @returns {number} Berechneter Catch-Up Multiplier
  */
-export function calculateCupMultiplier(hoursInTR) {
-  if (!hoursInTR) return 1; // Standardwert
-  return Math.min(2, Math.max(1, (hoursInTR * 0.00024) / 0.25 + 1));
+export function calculateCupMultiplier(hoursInTR, allValues = {}) {
+  // Research 110: Bonus-Stunden hinzufügen (8-48 Stunden je nach Level)
+  let effectiveHours = hoursInTR || 0; // Auch bei 0 Stunden weiterrechnen für Research-Boni
+  const researchAlltimeValue = allValues.research_alltime || 0;
+  
+  // Research 110 & 109 Boni berechnen
+  let totalBonusHours = 0;
+  let totalSpeedBonus = 0;
+  
+  if (researchAlltimeValue > 0) {
+    // Research 110: Bonus-Stunden (additiv)
+    const research110Data = researchData_permanent['110'] || [];
+    for (const level of research110Data) {
+      if (researchAlltimeValue >= level.price && level.catchupHours) {
+        totalBonusHours += level.catchupHours; // Additiv: 8 + 16 + 24 + 32 + 40 + 48 = 168 Stunden
+      }
+    }
+    
+    // Research 109: Speed-Bonus (additiv)
+    const research109Data = researchData_permanent['109'] || [];
+    for (const level of research109Data) {
+      if (researchAlltimeValue >= level.price && level.catchupBonus) {
+        totalSpeedBonus += level.catchupBonus; // Additiv: 0.02 + 0.03 + 0.05 + 0.08 + 0.13 + 0.21 = 0.52 (52%)
+      }
+    }
+  }
+  
+  // Effektive Stunden mit Research 110 Bonus
+  effectiveHours += totalBonusHours;
+  
+  // Speed-Multiplikator mit Research 109 Bonus
+  const speedMultiplier = 1 + totalSpeedBonus;
+  
+  // KORRIGIERTE Catch-Up Formel: 
+  // Original: Math.min(2, Math.max(1, (hoursInTR * 0.00024) / 0.25 + 1))
+  // Mit Research-Boni: 
+  const enhancedRate = 0.00024 * speedMultiplier;
+  const result = Math.min(2, Math.max(1, (effectiveHours * enhancedRate) / 0.25 + 1));
+  
+  // Rückgabe: Mindestens 1.0, auch wenn keine Stunden vorhanden sind
+  return Math.max(1, result);
 }
 
 /**
@@ -68,7 +110,6 @@ export function calculateMultiplier(boost, value, allValues) {
     try {
       return boost.multiplier(value, allValues);
     } catch (e) {
-      console.error(`Error calculating multiplier for ${boost.key}:`, e);
       return 1;
     }
   } else if (typeof boost.multiplier === 'number') {
@@ -100,7 +141,7 @@ export function calculateOrbGains(currentStats, planStats, boosts = []) {
   let result = baseOrbRate;
 
   // Catch-Up Multiplier berechnen
-  const catchUpMultiplier = calculateCupMultiplier(hoursInTR);
+  const catchUpMultiplier = calculateCupMultiplier(hoursInTR, planStats);
 
   // Durch alle relevanten Boosts iterieren und Multiplikatoren anwenden
   boosts.forEach((boost) => {
@@ -119,27 +160,11 @@ export function calculateOrbGains(currentStats, planStats, boosts = []) {
     try {
       if (boost.type === 'boolean') {
         // Boolean Boosts
-        console.log(`🔍 Boolean boost ${boost.key}: value=${value}, truthy=${!!value}`);
-        
-        // Spezifischer Debug für Premium Boosts
-        if (['iap', 'hera', 'jaxis'].includes(boost.key)) {
-          console.log(`🎖️ PREMIUM BOOST ${boost.key} in calculateOrbGains: value=${value}, type=${typeof value}`);
-        }
-        
         if (value) {
           if (typeof boost.multiplier === 'number') {
             multiplier = boost.multiplier;
-            console.log(`✅ Applied boolean boost ${boost.key}: multiplier=${multiplier}`);
           } else if (typeof boost.multiplier === 'function') {
             multiplier = boost.multiplier(1, planStats);
-            console.log(`✅ Applied boolean boost ${boost.key}: function multiplier=${multiplier}`);
-          }
-        } else {
-          console.log(`❌ Skipped boolean boost ${boost.key}: value is falsy (${value})`);
-          
-          // Extra Debug für Premium Boosts
-          if (['iap', 'hera', 'jaxis'].includes(boost.key)) {
-            console.log(`🎖️ PREMIUM BOOST ${boost.key} SKIPPED: value=${value} is falsy`);
           }
         }
       } else if (value > 0) {
@@ -153,12 +178,11 @@ export function calculateOrbGains(currentStats, planStats, boosts = []) {
       
       // Sicherheitscheck gegen ungültige Werte
       if (isNaN(multiplier) || !isFinite(multiplier)) {
-        console.warn(`Ungültiger Multiplikator für ${boost.key}:`, multiplier);
+        // Ungültiger Multiplikator, überspringen
       } else {
         result *= multiplier;
       }
     } catch (e) {
-      console.error(`Fehler bei Berechnung des Multiplikators für ${boost.key}:`, e);
       // Bei einem Fehler: neutralen Wert (1) verwenden
     }
   });
@@ -191,7 +215,6 @@ function forceRefreshGemData() {
       evolution: 0
     };
   } catch (e) {
-    console.warn('Error force-refreshing gem data:', e);
     return {};
   }
 }
@@ -214,11 +237,9 @@ function isBoostAvailable(boost, stats) {
   // Prüfe zuerst auf Plan-Context (für TR-Plan Overrides)
   if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
     gemLevels = window.__PLAN_CONTEXT__.gemData.levels || {};
-    console.log(`🔧 Using plan context gem data for ${boost.key}:`, gemLevels);
   } else {
     // Fallback: Normale localStorage Gem-Daten
     gemLevels = forceRefreshGemData();
-    console.log(`🔧 Using localStorage gem data for ${boost.key}:`, gemLevels);
   }
   
   // Prüfe, ob das erforderliche Gem-Level erreicht ist
@@ -227,11 +248,6 @@ function isBoostAvailable(boost, stats) {
   const currentLevel = gemLevels[requiredGem] || 0;
   
   const isAvailable = currentLevel >= requiredLevel;
-  
-  // Debug nur für problematische Boosts
-  if (['oogadget', 'vb1', 'vb2', 'vb3', 'vb4', 'vb5', 'iap', 'hera', 'jaxis'].includes(boost.key)) {
-    console.log(`🔍 isBoostAvailable ${boost.key}: ${requiredGem} Level ${currentLevel} >= ${requiredLevel} = ${isAvailable}`);
-  }
   
   return isAvailable;
 }
@@ -250,18 +266,7 @@ export function calculateOrbGainsCalc(currentStats, planStats, boosts = []) {
 
   // Catch-Up Multiplier berechnen
   const hoursInTR = planStats.hoursInTR || 0;
-  const catchUpMultiplier = calculateCupMultiplier(hoursInTR);
-
-  console.log("=== DETAILED ORB GAINS CALCULATION DEBUG ===");
-  console.log(`🎯 Base Orb Rate: ${baseOrbRate}`);
-  console.log(`⏰ Hours in TR: ${hoursInTR}`);
-  console.log(`📈 Catch-Up Multiplier: ${catchUpMultiplier.toFixed(6)}`);
-  console.log("PlanStats:", planStats);
-  console.log("Verfügbare Boosts:", boosts.map(b => b.key));
-  
-  // NEUE DEBUG: Gem-Status anzeigen
-  const gemData = forceRefreshGemData();
-  console.log("🔮 Aktuelle Gem-Levels:", gemData);
+  const catchUpMultiplier = calculateCupMultiplier(hoursInTR, planStats);
 
   // Array für aktive Boosts sammeln
   const activeBoosts = [];
@@ -334,7 +339,6 @@ export function calculateOrbGainsCalc(currentStats, planStats, boosts = []) {
       
       // Schutz vor NaN und Infinity
       if (isNaN(multiplier) || !isFinite(multiplier)) {
-        console.warn(`Ungültiger Multiplikator für ${boost.key}:`, multiplier);
         skippedBoosts.push({
           name: boost.label,
           key: boost.key,
@@ -357,7 +361,6 @@ export function calculateOrbGainsCalc(currentStats, planStats, boosts = []) {
         });
       }
     } catch (e) {
-      console.error(`Fehler bei Berechnung des Multiplikators für ${boost.key}:`, e);
       skippedBoosts.push({
         name: boost.label,
         key: boost.key,
@@ -369,47 +372,6 @@ export function calculateOrbGainsCalc(currentStats, planStats, boosts = []) {
   // Catch-Up Multiplier anwenden
   const beforeCatchUp = result;
   result *= catchUpMultiplier;
-
-  // ========== DETAILLIERTE DEBUG-AUSGABE ==========
-  console.log("\n🚀 === ACTIVE BOOSTS BREAKDOWN ===");
-  if (activeBoosts.length > 0) {
-    activeBoosts.forEach((boost, index) => {
-      console.log(`${index + 1}. 📊 ${boost.name} (${boost.key})`);
-      console.log(`   Type: ${boost.type}`);
-      console.log(`   Value: ${boost.value}`);
-      console.log(`   Multiplier: ×${boost.multiplier.toFixed(6)}`);
-      console.log(`   Result: ${boost.resultBefore.toFixed(6)} → ${boost.resultAfter.toFixed(6)}`);
-      console.log(`   Contribution: +${boost.contribution}`);
-      console.log('');
-    });
-    
-    console.log(`📈 Total Boosts Multiplier: ×${(beforeCatchUp / baseOrbRate).toFixed(6)}`);
-  } else {
-    console.log("❌ No active boosts found!");
-  }
-
-  console.log("\n⏰ === CATCH-UP MULTIPLIER ===");
-  console.log(`Hours in TR: ${hoursInTR}`);
-  console.log(`Catch-Up Multiplier: ×${catchUpMultiplier.toFixed(6)}`);
-  console.log(`Before Catch-Up: ${beforeCatchUp.toFixed(6)}`);
-  console.log(`After Catch-Up: ${result.toFixed(6)}`);
-
-  if (skippedBoosts.length > 0) {
-    console.log("\n❌ === SKIPPED BOOSTS ===");
-    skippedBoosts.forEach((boost, index) => {
-      console.log(`${index + 1}. ⚠️ ${boost.name} (${boost.key})`);
-      console.log(`   Reason: ${boost.reason}`);
-    });
-  }
-
-  console.log("\n🎯 === FINAL CALCULATION SUMMARY ===");
-  console.log(`Base Rate: ${baseOrbRate}`);
-  console.log(`Active Boosts: ${activeBoosts.length}`);
-  console.log(`Skipped Boosts: ${skippedBoosts.length}`);
-  console.log(`Total Boost Multiplier: ×${(beforeCatchUp / baseOrbRate).toFixed(6)}`);
-  console.log(`Catch-Up Multiplier: ×${catchUpMultiplier.toFixed(6)}`);
-  console.log(`FINAL RESULT: ${result.toFixed(6)}`);
-  console.log("=== END DETAILED DEBUG ===\n");
 
   return isNaN(result) ? 0 : result;
 }
@@ -432,7 +394,6 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
     try {
       // First check for plan context (for overrides in TR plans)
       if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
-        console.log('Using plan context gem data in calculations:', window.__PLAN_CONTEXT__.gemData);
         return window.__PLAN_CONTEXT__.gemData;
       }
       
@@ -500,7 +461,6 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
       throw new Error('No gem data found');
       
     } catch (error) {
-      console.warn('Could not load gem data from store in calculations:', error);
       return {
         levels: { exodus: 0, temporal: 0, innovation: 0, attraction: 0, power: 0, creation: 0, evolution: 0 },
         activeNodes: { temporal: [], innovation: [], attraction: [], power: [], creation: [], evolution: [] }
@@ -513,7 +473,6 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
     try {
       // First check for plan context (for overrides in TR plans)
       if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.maxedBoosts) {
-        console.log('Using plan context maxed boosts in calculations:', window.__PLAN_CONTEXT__.maxedBoosts);
         return window.__PLAN_CONTEXT__.maxedBoosts;
       }
       
@@ -526,7 +485,6 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
       
       return {};
     } catch (error) {
-      console.warn('Could not load maxed boosts from store in calculations:', error);
       return {};
     }
   }
@@ -542,7 +500,6 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
       try {
         return boost.fragmulti(value, values);
       } catch (e) {
-        console.error(`Error calculating fragmulti for ${boostKey}:`, e);
         return 1;
       }
     } else if (typeof boost.fragmulti === 'number') {
@@ -568,7 +525,7 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
   let attr1 = 1; // Attraction GN #1 direkt aus Store
   let campfragdet = getFragMultiplier("campfragdet", planStats.campfragdet, planStats);
   let pow2 = 1; // Power GN #2 direkt aus Store
-  let research89 = getFragMultiplier("research89", planStats.research89, planStats);
+  let research_alltime = getFragMultiplier("research_alltime", planStats.research_alltime, planStats);
   let ouroinstalls = getFragMultiplier("ouroinstalls", planStats.ouroinstalls, planStats);
   
   // Store-basierte Gem-Node-Checks
@@ -590,7 +547,7 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
   
   // Kampagnen-Schleife
   for (let i = 0; i < campaigns; i++) {
-    let baseFrags = (2.5 + r6Add) * (m0 * attr1 * campfragdet * pow2 * research89 * ouroinstalls * r6Multi);
+    let baseFrags = (2.5 + r6Add) * (m0 * attr1 * campfragdet * pow2 * research_alltime * ouroinstalls * r6Multi);
     
     // Spezielle Multiplikatoren für bestimmte Kampagnen
     let campaignMulti = 1;
@@ -649,8 +606,10 @@ export function calculateMissingHours(
       }
       
       // Berechnung des Cup-Multiplikator-Verhältnisses
-      const initialCupMultiplier = calculateCupMultiplier(currentHours);
-      const newCupMultiplier = calculateCupMultiplier(hours);
+      const baseValues = { ...planStats, hoursInTR: currentHours };
+      const newValues = { ...planStats, hoursInTR: hours };
+      const initialCupMultiplier = calculateCupMultiplier(currentHours, baseValues);
+      const newCupMultiplier = calculateCupMultiplier(hours, newValues);
       const cupMultiRatio = newCupMultiplier / initialCupMultiplier;
       
       // Kombination beider Multiplikator-Verhältnisse

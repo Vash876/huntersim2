@@ -111,11 +111,18 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       const savedTracks = localStorage.getItem('tr_tracking_tracks');
       if (savedTracks) {
         trTracks.value = JSON.parse(savedTracks);
+        console.log(`Loaded ${trTracks.value.length} TR tracks from storage`);
+      } else {
+        console.log('No TR tracks found in storage');
       }
     } catch (error) {
       console.error('Error loading TR tracking data from storage:', error);
-      // Fallback to defaults on error
-      selectedResources.value = getDefaultSelectedResources();
+      // Fallback to defaults on error, but preserve any existing tracks!
+      if (selectedResources.value.length === 0) {
+        selectedResources.value = getDefaultSelectedResources();
+        console.warn('Restored default selected resources due to storage error');
+      }
+      // Don't clear tracks on storage errors - they might still be in memory
     }
   }
 
@@ -466,9 +473,10 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
   }
 
   function resetToDefaults() {
+    // Only reset selected resources, NOT the tracking plans!
     selectedResources.value = getDefaultSelectedResources();
     saveToStorage();
-    console.log('Reset to default selected resources:', selectedResources.value.map(r => r.id));
+    console.log('Reset to default selected resources (tracks preserved):', selectedResources.value.map(r => r.id));
   }
 
   // Import/Export methods for sharing between users

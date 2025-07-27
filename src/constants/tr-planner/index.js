@@ -541,11 +541,27 @@ export const allBoosts = [
       
       let overallMultiplier = 1;
       
-      // Rest of research logic remains the same...
-      for (const research in researchData) {
+      // Define which researches are available at each Innovation level
+      const availableResearches = {};
+      if (innovationGemLevel >= 2) {
+        // Innovation Level 2: Original researches
+        availableResearches['85'] = researchData['85'];
+        availableResearches['87'] = researchData['87'];
+        availableResearches['88'] = researchData['88'];
+        availableResearches['90'] = researchData['90'];
+      }
+      if (innovationGemLevel >= 3) {
+        // Innovation Level 3: New researches
+        availableResearches['98'] = researchData['98'];
+        availableResearches['99'] = researchData['99'];
+        availableResearches['103'] = researchData['103'];
+      }
+      
+      // Calculate multiplier only for available researches
+      for (const research in availableResearches) {
         let researchMultiplier = 1;
         
-        for (const levelData of researchData[research]) {
+        for (const levelData of availableResearches[research]) {
           if (value >= levelData.price) {
             researchMultiplier *= levelData.multiplier;
           } else {
@@ -558,32 +574,175 @@ export const allBoosts = [
       
       return overallMultiplier;
     },
-    max: 4465
+    // Dynamic max based on Innovation Gem Level
+    getMax: () => {
+      let gemData;
+      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+        gemData = window.__PLAN_CONTEXT__.gemData;
+      } else {
+        gemData = getContextualGemData();
+      }
+      const innovationGemLevel = gemData.levels.innovation || 0;
+      
+      if (innovationGemLevel >= 3) {
+        return 8040; // Innovation Level 3: New research max
+      } else if (innovationGemLevel >= 2) {
+        return 4465; // Innovation Level 2: Original research max
+      }
+      
+      return 0; // Below Level 2: No research available
+    }
   },
 
   {
     id: 22,
-    key: 'research89',
-    label: 'Research #89',
+    key: 'research_alltime',
+    label: 'All-Time Highest Research Points',
     category: 'research',
     unlock: 'innovation',
     unlock_level: 2,
     type: 'number',
-    orbcalc: false,
+    orbcalc: true,
     permanent: true,
     tooltip: '0',
-    fragmulti: (value, allValues) => {
-      // Bestehende Research #89 Logik
-      const multipliers = [1.1, 1.1, 1.14, 1.14, 1.18, 1.18];
-      let result = 1;
+    normalControl: 100,
+    fastControl: 1000,
+    multiplier: (value, allValues) => {
+      // Context-aware gem data loading - check plan context first
+      let gemData;
+      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+        gemData = window.__PLAN_CONTEXT__.gemData;
+      } else {
+        gemData = getContextualGemData();
+      }
+      const innovationGemLevel = gemData.levels.innovation || 0;
       
-      for (let i = 0; i < value && i < multipliers.length; i++) {
-        result *= multipliers[i];
+      if (innovationGemLevel < 2) {
+        return 1; // No multiplier if Innovation Gem below Level 2
       }
       
-      return result;
+      let overallMultiplier = 1;
+      
+      // Define which researches are available at each Innovation level
+      const availableResearches = {};
+      if (innovationGemLevel >= 2) {
+        // Innovation Level 2: No orb multipliers from permanent researches
+      }
+      if (innovationGemLevel >= 3) {
+        // Innovation Level 3: Only orb multiplier researches
+        availableResearches['100'] = researchData_permanent['100'];
+        availableResearches['temporal_ultima'] = researchData_permanent['temporal_ultima'];
+        // Note: Research 109 and 110 have special functions, not included in multiplier
+      }
+      
+      // Calculate multiplier for available researches
+      for (const research in availableResearches) {
+        const researchLevels = availableResearches[research];
+        
+        if (research === '100') {
+          // Research 100: Orb multiplier with specific levels only
+          for (const levelData of researchLevels) {
+            if (value >= levelData.price && levelData.multiplier) {
+              overallMultiplier *= levelData.multiplier;
+            }
+          }
+        } else if (research === 'temporal_ultima') {
+          // Temporal Ultima Research - standard price-based progression
+          for (const levelData of researchLevels) {
+            if (value >= levelData.price && levelData.multiplier) {
+              overallMultiplier *= levelData.multiplier;
+            } else {
+              break;
+            }
+          }
+        } else {
+          // Other researches: Standard price-based progression
+          for (const levelData of researchLevels) {
+            if (value >= levelData.price) {
+              if (levelData.multiplier) {
+                overallMultiplier *= levelData.multiplier;
+              }
+            } else {
+              break;
+            }
+          }
+        }
+      }
+      
+      return overallMultiplier;
     },
-    max: 6
+    fragmulti: (value, allValues) => {
+      // Context-aware gem data loading - check plan context first
+      let gemData;
+      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+        gemData = window.__PLAN_CONTEXT__.gemData;
+      } else {
+        gemData = getContextualGemData();
+      }
+      const innovationGemLevel = gemData.levels.innovation || 0;
+      
+      if (innovationGemLevel < 2) {
+        return 1; // No multiplier if Innovation Gem below Level 2
+      }
+      
+      let overallMultiplier = 1;
+      
+      // Define which researches are available at each Innovation level
+      const availableResearches = {};
+      if (innovationGemLevel >= 2) {
+        // Innovation Level 2: Research 89 only
+        availableResearches['89'] = researchData_permanent['89'];
+      }
+      if (innovationGemLevel >= 3) {
+        // Innovation Level 3: Fragment-based researches
+        availableResearches['97'] = researchData_permanent['97'];
+      }
+      
+      // Calculate fragment multiplier for available researches
+      for (const research in availableResearches) {
+        const researchLevels = availableResearches[research];
+        
+        if (research === '89') {
+          // Research 89: Fragment multiplier logic with price requirements
+          for (const levelData of researchLevels) {
+            if (value >= levelData.price && levelData.fragMultiplier) {
+              overallMultiplier *= levelData.fragMultiplier;
+            } else {
+              break;
+            }
+          }
+        } else if (research === '97') {
+          // Research 97: Fragment multiplier with price requirements
+          for (const levelData of researchLevels) {
+            if (value >= levelData.price && levelData.fragMultiplier) {
+              overallMultiplier *= levelData.fragMultiplier;
+            } else {
+              break;
+            }
+          }
+        }
+      }
+      
+      return overallMultiplier;
+    },
+    // Dynamic max based on Innovation Gem Level
+    getMax: () => {
+      let gemData;
+      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+        gemData = window.__PLAN_CONTEXT__.gemData;
+      } else {
+        gemData = getContextualGemData();
+      }
+      const innovationGemLevel = gemData.levels.innovation || 0;
+      
+      if (innovationGemLevel >= 3) {
+        return 14500; // Innovation Level 3: Highest permanent research requirement
+      } else if (innovationGemLevel >= 2) {
+        return 4155; // Innovation Level 2: Research 89 max price
+      }
+      
+      return 0; // Below Level 2: No research available
+    }
   },
 
   // Trinkets
@@ -820,7 +979,32 @@ allBoosts.forEach(boost => {
 });
 
 /**
- * Helper function to create a new boost with automatic ID assignment
+ * Gets the maximum value for a boost, handling dynamic max functions
+ * @param {Object} boost - The boost object
+ * @param {Object|null} gemData - Optional gem data context
+ * @returns {number|undefined} Maximum value or undefined if no limit
+ */
+export function getBoostMaxValue(boost, gemData = null) {
+  // If boost has a getMax function, use it
+  if (typeof boost.getMax === 'function') {
+    return boost.getMax(gemData);
+  }
+  
+  // Otherwise use static max property
+  return boost.max;
+}
+
+/**
+ * Gets a boost by its key
+ * @param {string} key - Boost key
+ * @returns {Object|undefined} Boost object or undefined
+ */
+export function getBoostByKey(key) {
+  return allBoosts.find(boost => boost.key === key);
+}
+
+/**
+ * Utility function to create a new boost with automatic ID assignment
  * Usage example:
  * const newBoost = createBoost({
  *   key: 'newBoost',
@@ -926,8 +1110,9 @@ export function convertBoostDataFromIds(idBasedData) {
   return keyBasedData;
 }
 
-// Research data for multiplier calculations
+// Research data for multiplier calculations (temporary, resets each TR)
 export const researchData = {
+  // Innovation Level 2 Researches
   '85': [
     { level: 1, price: 2840, multiplier: 1.01 },
     { level: 2, price: 2985, multiplier: 1.02 },
@@ -959,6 +1144,77 @@ export const researchData = {
     { level: 4, price: 4075, multiplier: 1.08 },
     { level: 5, price: 4270, multiplier: 1.13 },
     { level: 6, price: 4465, multiplier: 1.21 }
+  ],
+  // Innovation Level 3 Researches
+  '98': [
+    { level: 1, price: 5300, multiplier: 1.02 },
+    { level: 2, price: 5530, multiplier: 1.03 },
+    { level: 3, price: 5760, multiplier: 1.04 },
+    { level: 4, price: 5990, multiplier: 1.05 },
+    { level: 5, price: 6220, multiplier: 1.06 },
+    { level: 6, price: 6450, multiplier: 1.07 }
+  ],
+  '99': [
+    { level: 1, price: 5350, multiplier: 1.02 },
+    { level: 2, price: 5580, multiplier: 1.03 },
+    { level: 3, price: 5810, multiplier: 1.04 },
+    { level: 4, price: 6040, multiplier: 1.05 },
+    { level: 5, price: 6270, multiplier: 1.06 },
+    { level: 6, price: 6500, multiplier: 1.07 }
+  ],
+  '103': [
+    { level: 1, price: 6240, multiplier: 1.03 },
+    { level: 2, price: 6600, multiplier: 1.05 },
+    { level: 3, price: 6960, multiplier: 1.08 },
+    { level: 4, price: 7320, multiplier: 1.13 },
+    { level: 5, price: 7680, multiplier: 1.21 },
+    { level: 6, price: 8040, multiplier: 1.34 }
+  ]
+};
+
+// Research data for permanent multiplier calculations (persists across TRs)
+export const researchData_permanent = {
+  // Innovation Level 2 Research (Fragment multiplier)
+  '89': [
+    { level: 1, price: 3380, fragMultiplier: 1.1 },
+    { level: 2, price: 3535, fragMultiplier: 1.1 },
+    { level: 3, price: 3690, fragMultiplier: 1.14 },
+    { level: 4, price: 3845, fragMultiplier: 1.14 },
+    { level: 5, price: 4000, fragMultiplier: 1.18 },
+    { level: 6, price: 4155, fragMultiplier: 1.18 }
+  ],
+  // Innovation Level 3 Researches
+  '97': [
+    { level: 1, price: 5275, fragMultiplier: 1.03 },
+    { level: 2, price: 5775, fragMultiplier: 1.04 },
+    { level: 3, price: 6275, fragMultiplier: 1.05 },
+    { level: 4, price: 6775, fragMultiplier: 1.06 },
+    { level: 5, price: 7275, fragMultiplier: 1.07 },
+    { level: 6, price: 7775, fragMultiplier: 1.08 }
+  ],
+  '100': [
+    { level: 3, price: 6440, multiplier: 1.2 },
+    { level: 6, price: 8000, multiplier: 1.4 }
+  ],
+  'temporal_ultima': [
+    { level: 1, price: 4835, multiplier: 1.1 }
+    // Additional levels not yet discovered
+  ],
+  '109': [
+    { level: 1, price: 9000,  catchupBonus: 0.02 },
+    { level: 2, price: 10000, catchupBonus: 0.03 },
+    { level: 3, price: 11000, catchupBonus: 0.05 },
+    { level: 4, price: 12000, catchupBonus: 0.08 },
+    { level: 5, price: 13000, catchupBonus: 0.13 },
+    { level: 6, price: 14000, catchupBonus: 0.21 }
+  ],
+  '110': [
+    { level: 1, price: 9500,  catchupHours: 8 },
+    { level: 2, price: 10500, catchupHours: 16 },
+    { level: 3, price: 11500, catchupHours: 24 },
+    { level: 4, price: 12500, catchupHours: 32 },
+    { level: 5, price: 13500, catchupHours: 40 },
+    { level: 6, price: 14500, catchupHours: 48 }
   ]
 };
 
