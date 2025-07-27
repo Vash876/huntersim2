@@ -194,12 +194,6 @@
               >
                 Export CSV
               </button>
-              <button
-                @click="shareTrack"
-                class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-2 py-1 rounded-md transition-colors"
-              >
-                Share Track
-              </button>
             </div>
           </div>
           
@@ -385,7 +379,11 @@ const buildColumnDefs = () => {
       headerName: isMobile ? 'Timestamp' : 'Log Timestamp',
       field: 'date',
       pinned: isMobile ? false : 'left', // false für Mobile, explizit unpinned
-      width: isMobile ? 100 : 160,
+      minWidth: isMobile ? 110 : 140,
+      maxWidth: isMobile ? 150 : 220,
+      flex: 0, // No flex growth
+      autoSizeColumn: true, // Auto-size based on content
+      suppressSizeToFit: false, // Allow auto-sizing
       cellRenderer: (params) => {
         // Use the same native browser localization as TRPlanCard
         let dateValue = params.value;
@@ -2023,14 +2021,22 @@ function onGridReady(params) {
   gridApi.value = params.api;
   
   // Auto-size columns to prevent overlap and optimize layout
-  // Notes column should auto-size based on content, others keep fixed sizes
   setTimeout(() => {
+    // Auto-size timestamp column based on content
+    const timestampColumn = gridApi.value.getColumns().find(col => 
+      col.getColId() === 'date'
+    );
+    
+    if (timestampColumn) {
+      gridApi.value.autoSizeColumns([timestampColumn.getColId()], false);
+    }
+    
+    // Auto-size notes column based on content
     const notesColumn = gridApi.value.getColumns().find(col => 
       col.getColId().includes('resource_notes')
     );
     
     if (notesColumn) {
-      // Auto-size only the notes column based on content
       gridApi.value.autoSizeColumns([notesColumn.getColId()], false);
     }
     
