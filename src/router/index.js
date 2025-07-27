@@ -156,6 +156,30 @@ const routes = [
     name: 'OAuthCallback',
     component: () => import('../components/common/OAuthCallback.vue')
   },
+  // Stack Auth sign-in route (redirect to home with modal)
+  {
+    path: '/handler/sign-in',
+    name: 'StackSignIn',
+    beforeEnter: (to, from, next) => {
+      // Redirect to home with sign-in modal triggered
+      const returnTo = to.query.after_auth_return_to || '/';
+      next({ path: '/', query: { signIn: 'true', returnTo } });
+    }
+  },
+  // Catch all Stack Auth handler routes
+  {
+    path: '/handler/:pathMatch(.*)*',
+    name: 'StackHandlers',
+    beforeEnter: (to, from, next) => {
+      // If it's the OAuth callback, handle it properly
+      if (to.path === '/handler/oauth-callback') {
+        next({ name: 'OAuthCallback', query: to.query });
+      } else {
+        // For any other handler route, redirect to home
+        next('/');
+      }
+    }
+  },
   // 404 Route
   {
     path: '/:pathMatch(.*)*',

@@ -277,6 +277,17 @@
                     </button>
                   </div>
 
+                  <!-- Account Management -->
+                  <div class="py-3 space-y-1 border-b border-gray-700">
+                    <button
+                      @click="openAccountSettings"
+                      class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded flex items-center space-x-2"
+                    >
+                      <IconSettings size="18" />
+                      <span>Account Settings</span>
+                    </button>
+                  </div>
+
                   <!-- Sign Out -->
                   <div class="py-3 space-y-1">
                     <button
@@ -320,6 +331,12 @@
       @success="handleAuthSuccess"
     />
 
+    <!-- Account Settings Modal -->
+    <AccountSettingsModal 
+      :show="showAccountSettings"
+      @close="showAccountSettings = false"
+    />
+
     <!-- Sync Notification -->
     <Transition name="toast">
       <div 
@@ -347,13 +364,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { NAVIGATION } from '../../constants/navigation';
 import { useRoute } from 'vue-router';
 import { neonAuthService } from '@/services/neonAuthService';
 import { useSyncStore } from '@/store/syncStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
 import NeonAuthModal from '@/components/common/NeonAuthModal.vue';
+import AccountSettingsModal from '@/components/common/AccountSettingsModal.vue';
 import { 
   IconTargetArrow, 
   IconChevronDown, 
@@ -379,12 +397,27 @@ const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBa
 // Desktop menu state
 const activeCategory = ref(null);
 const showAuthModal = ref(false);
+const showAccountSettings = ref(false);
 const syncAction = ref(null); // 'upload', 'download', or null
 const syncNotification = ref({ show: false, message: '', type: 'info' });
 
 // Initialize Neon Auth and Sync Store
 neonAuthService.initAuth();
 syncStore.init();
+
+// Check for sign-in query parameter
+onMounted(() => {
+  if (route.query.signIn === 'true') {
+    showAuthModal.value = true;
+  }
+});
+
+// Watch for route changes to handle sign-in parameter
+watch(() => route.query, (newQuery) => {
+  if (newQuery.signIn === 'true') {
+    showAuthModal.value = true;
+  }
+});
 
 // Components
 const components = {
@@ -412,6 +445,11 @@ async function signOut() {
 
 function handleAuthSuccess(type) {
   showAuthModal.value = false;
+  activeCategory.value = null;
+}
+
+function openAccountSettings() {
+  showAccountSettings.value = true;
   activeCategory.value = null;
 }
 

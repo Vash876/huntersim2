@@ -59,6 +59,7 @@
 <script>
 import { ref, reactive, watch } from 'vue'
 import { neonAuthService } from '@/services/neonAuthService'
+import { stackClientApp } from '@/services/stackAuth'
 
 export default {
   name: 'NeonAuthModal',
@@ -154,22 +155,45 @@ export default {
       success.value = ''
 
       try {
-        let user
+        // Direct Stack Auth OAuth call instead of through neonAuthService
         if (provider === 'google') {
-          user = await neonAuthService.signInWithGoogle()
+          // Try different Stack Auth OAuth methods
+          if (stackClientApp.signInWithOAuth) {
+            await stackClientApp.signInWithOAuth('google');
+          } else if (stackClientApp.redirectToOAuth) {
+            await stackClientApp.redirectToOAuth('google');
+          } else if (stackClientApp.signInWithProvider) {
+            await stackClientApp.signInWithProvider('google');
+          } else {
+            throw new Error('No Google OAuth methods available in Stack Auth');
+          }
+          
         } else if (provider === 'github') {
-          user = await neonAuthService.signInWithGitHub()
+          // Try different Stack Auth OAuth methods
+          if (stackClientApp.signInWithOAuth) {
+            await stackClientApp.signInWithOAuth('github');
+          } else if (stackClientApp.redirectToOAuth) {
+            await stackClientApp.redirectToOAuth('github');
+          } else if (stackClientApp.signInWithProvider) {
+            await stackClientApp.signInWithProvider('github');
+          } else {
+            throw new Error('No GitHub OAuth methods available in Stack Auth');
+          }
         }
 
-        if (user) {
-          success.value = `${provider.charAt(0).toUpperCase() + provider.slice(1)} sign in successful!`
-          setTimeout(() => {
-            emit('success', provider)
-            closeModal()
-          }, 1000)
-        }
+        // If we reach here without redirect, something went wrong
+        error.value = `${provider} OAuth did not redirect properly. Please check your Stack Auth dashboard configuration.`;
+
       } catch (err) {
-        error.value = err.message || `${provider} sign in failed`
+        error.value = err.message || `${provider} sign in failed`;
+        
+        // Add specific error messages for common issues
+        if (err.message?.includes('OAuth')) {
+          error.value += '\n\nPlease ensure OAuth providers are configured in your Stack Auth dashboard.';
+        }
+        if (err.message?.includes('redirect')) {
+          error.value += '\n\nPlease check that callback URLs are properly configured.';
+        }
       } finally {
         loading.value = false
       }

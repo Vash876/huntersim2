@@ -283,6 +283,52 @@ class NeonAuthService {
     }
   }
 
+  // Update user display name
+  async updateUserDisplayName(displayName) {
+    try {
+      this.isLoading.value = true;
+      this.error.value = null;
+
+      if (!displayName || !displayName.trim()) {
+        throw new Error('Display name cannot be empty');
+      }
+
+      const trimmedName = displayName.trim();
+
+      // Try different methods to update the user display name
+      let updatedUser = null;
+      
+      if (stackClientApp.updateUser) {
+        updatedUser = await stackClientApp.updateUser({ displayName: trimmedName });
+      } else if (stackClientApp.updateCurrentUser) {
+        updatedUser = await stackClientApp.updateCurrentUser({ displayName: trimmedName });
+      } else if (stackClientApp.updateProfile) {
+        updatedUser = await stackClientApp.updateProfile({ displayName: trimmedName });
+      } else if (this.user.value && this.user.value.update) {
+        updatedUser = await this.user.value.update({ displayName: trimmedName });
+      } else {
+        throw new Error('User update methods not available in Stack Auth SDK');
+      }
+
+      // Update local user state if successful
+      if (updatedUser) {
+        this.user.value = updatedUser;
+      } else {
+        // Refresh user data if no updated user returned
+        await this.refreshAuthState();
+      }
+
+      return this.user.value;
+
+    } catch (error) {
+      console.error('Neon Auth update display name failed:', error);
+      this.error.value = error.message || 'Display name update failed';
+      throw error;
+    } finally {
+      this.isLoading.value = false;
+    }
+  }
+
   // Utility methods
   getCurrentUser() {
     return this.user.value;
