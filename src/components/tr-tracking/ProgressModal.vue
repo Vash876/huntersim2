@@ -40,20 +40,61 @@
               <div class="w-1.5 h-5 bg-blue-500 rounded-r mr-2"></div>
               <h4 class="font-medium text-sm text-blue-200">Progress Charts</h4>
             </div>
-            <div class="flex gap-1">
-              <button
-                v-for="chartType in chartTypes"
-                :key="chartType.id"
-                @click="activeChartType = chartType.id"
-                :class="[
-                  'px-2 py-1 text-xs rounded transition-colors',
-                  activeChartType === chartType.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                ]"
-              >
-                {{ chartType.name }}
-              </button>
+            <div class="flex gap-3">
+              <!-- X-Axis Selection -->
+              <div class="flex flex-col gap-1">
+                <label class="text-xs text-gray-400 font-medium">X-Axis:</label>
+                <div class="flex gap-1 bg-gray-800 rounded-md p-1">
+                  <button
+                    @click="xAxisType = 'timestamp'"
+                    :class="[
+                      'px-3 py-1.5 text-xs rounded transition-all duration-200 font-medium flex items-center gap-1.5',
+                      xAxisType === 'timestamp'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                    ]"
+                  >
+                    <IconCalendarEvent size="14" />
+                    Log Time
+                  </button>
+                  <button
+                    @click="xAxisType = 'timeInTR'"
+                    :disabled="!hasTimeInTRData"
+                    :class="[
+                      'px-3 py-1.5 text-xs rounded transition-all duration-200 font-medium flex items-center gap-1.5',
+                      !hasTimeInTRData 
+                        ? 'text-gray-600 cursor-not-allowed opacity-40'
+                        : xAxisType === 'timeInTR'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                    ]"
+                    :title="!hasTimeInTRData ? 'Time in TR data not available in tracked entries' : ''"
+                  >
+                    <IconClockHour2 size="14" />
+                    Time in TR
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Chart Type Selection -->
+              <div class="flex flex-col gap-1">
+                <label class="text-xs text-gray-400 font-medium">Chart-Type:</label>
+                <div class="flex gap-1">
+                  <button
+                    v-for="chartType in chartTypes"
+                    :key="chartType.id"
+                    @click="activeChartType = chartType.id"
+                    :class="[
+                      'px-2 py-1.5 text-xs rounded transition-colors font-medium',
+                      activeChartType === chartType.id
+                        ? 'bg-green-600 text-white shadow-md'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white'
+                    ]"
+                  >
+                    {{ chartType.name }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -81,38 +122,46 @@
             </div>
             
             <!-- Chart Display -->
-            <div class="h-96 relative">
+            <div class="h-96 relative bg-transparent">
               <!-- Line Chart -->
-              <Line
-                v-if="activeChartType === 'line' && chartData"
-                :data="chartData"
-                :options="chartOptions"
-                class="w-full h-full"
-              />
+              <div v-if="activeChartType === 'line' && chartData" class="w-full h-full">
+                <Line
+                  :data="chartData"
+                  :options="chartOptions"
+                  :key="`line-${xAxisType}-${chartSelectedResources.join(',')}-${track?.id || 'unknown'}`"
+                  class="w-full h-full"
+                />
+              </div>
               
               <!-- Bar Chart -->
-              <Bar
-                v-if="activeChartType === 'bar' && chartData"
-                :data="chartData"
-                :options="chartOptions"
-                class="w-full h-full"
-              />
+              <div v-if="activeChartType === 'bar' && chartData" class="w-full h-full">
+                <Bar
+                  :data="chartData"
+                  :options="chartOptions"
+                  :key="`bar-${xAxisType}-${chartSelectedResources.join(',')}-${track?.id || 'unknown'}`"
+                  class="w-full h-full"
+                />
+              </div>
               
               <!-- Area Chart -->
-              <Line
-                v-if="activeChartType === 'area' && areaChartData"
-                :data="areaChartData"
-                :options="chartOptions"
-                class="w-full h-full"
-              />
+              <div v-if="activeChartType === 'area' && areaChartData" class="w-full h-full">
+                <Line
+                  :data="areaChartData"
+                  :options="chartOptions"
+                  :key="`area-${xAxisType}-${chartSelectedResources.join(',')}-${track?.id || 'unknown'}`"
+                  class="w-full h-full"
+                />
+              </div>
               
               <!-- Gains Chart -->
-              <Bar
-                v-if="activeChartType === 'gains' && gainsChartData"
-                :data="gainsChartData"
-                :options="gainsChartOptions"
-                class="w-full h-full"
-              />
+              <div v-if="activeChartType === 'gains' && gainsChartData" class="w-full h-full">
+                <Bar
+                  :data="gainsChartData"
+                  :options="gainsChartOptions"
+                  :key="`gains-${xAxisType}-${chartSelectedResources.join(',')}-${track?.id || 'unknown'}`"
+                  class="w-full h-full"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -182,7 +231,7 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
 import { formatNumber, formatSuffixInput } from '@/composables/format.js';
-import { IconX, IconChartLine, IconTrendingUp } from '@tabler/icons-vue';
+import { IconX, IconChartLine, IconTrendingUp, IconClockHour2, IconCalendarEvent } from '@tabler/icons-vue';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -224,6 +273,7 @@ defineEmits(['close']);
 // Chart state
 const activeChartType = ref('line');
 const chartSelectedResources = ref([]);
+const xAxisType = ref('timestamp'); // 'timestamp' or 'timeInTR'
 
 const chartTypes = [
   { id: 'line', name: 'Progress' },
@@ -235,8 +285,22 @@ const chartTypes = [
 // Initialize chart resources when modal opens
 watch(() => props.show, (newShow) => {
   if (newShow && chartableResources.value.length > 0) {
-    // Start with first 3 chartable resources selected for better performance
-    chartSelectedResources.value = chartableResources.value.slice(0, 3).map(r => r.id);
+    // Select MP, MP(Accum), Shards, and RP by default
+    const defaultResources = ['mp', 'mp-accum', 'shards', 'rp'];
+    const availableDefaults = defaultResources.filter(id => 
+      chartableResources.value.some(r => r.id === id)
+    );
+    
+    // If not all defaults are available, add other resources to reach 4
+    if (availableDefaults.length < 4) {
+      const otherResources = chartableResources.value
+        .filter(r => !defaultResources.includes(r.id))
+        .slice(0, 4 - availableDefaults.length)
+        .map(r => r.id);
+      chartSelectedResources.value = [...availableDefaults, ...otherResources];
+    } else {
+      chartSelectedResources.value = availableDefaults;
+    }
   }
 }, { immediate: true });
 
@@ -252,6 +316,11 @@ const overviewResources = computed(() => {
   return props.selectedResources.filter(resource => !excludeFromOverview.includes(resource.id));
 });
 
+// Check if Time in TR data is available
+const hasTimeInTRData = computed(() => {
+  return sortedEntries.value.some(entry => entry.values && entry.values['hours-in-tr']);
+});
+
 // Chart data computeds
 const sortedEntries = computed(() => {
   if (!props.track?.entries) return [];
@@ -259,21 +328,57 @@ const sortedEntries = computed(() => {
 });
 
 const chartLabels = computed(() => {
-  return sortedEntries.value.map(entry => {
-    const date = new Date(entry.date);
-    return date.toLocaleDateString('de-DE', { 
-      month: 'short', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+  if (xAxisType.value === 'timeInTR') {
+    // Check if Time in TR is available
+    const hasTimeInTR = sortedEntries.value.some(entry => entry.values && entry.values['hours-in-tr']);
+    
+    if (!hasTimeInTR) {
+      // Fallback to timestamp if Time in TR is not available
+      console.warn('Time in TR data not available, falling back to timestamps');
+      return sortedEntries.value.map(entry => {
+        const date = new Date(entry.date);
+        return date.toLocaleString(undefined, {
+          year: 'numeric',
+          month: '2-digit', 
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      });
+    }
+    
+    // Use "Time in TR" values for X-axis
+    return sortedEntries.value.map(entry => {
+      const timeInTR = entry.values['hours-in-tr'] || '0:00';
+      return timeInTR;
     });
-  });
+  } else {
+    // Use log timestamps for X-axis (default) - use native browser localization like TrackDetailsModal
+    return sortedEntries.value.map(entry => {
+      const date = new Date(entry.date);
+      return date.toLocaleString(undefined, {
+        year: 'numeric',
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    });
+  }
 });
 
 // Dark theme colors
 const darkThemeOptions = {
   responsive: true,
   maintainAspectRatio: false,
+  layout: {
+    padding: {
+      top: 10,
+      bottom: 10,
+      left: 10,
+      right: 10
+    }
+  },
   plugins: {
     legend: {
       position: 'top',
@@ -295,6 +400,13 @@ const darkThemeOptions = {
       cornerRadius: 8,
       displayColors: true,
       callbacks: {
+        title: function(context) {
+          if (xAxisType.value === 'timeInTR') {
+            return `Time in TR: ${context[0].label}`;
+          } else {
+            return context[0].label;
+          }
+        },
         label: function(context) {
           const value = context.parsed.y;
           const resourceId = context.dataset.resourceId;
@@ -311,32 +423,43 @@ const darkThemeOptions = {
   },
   scales: {
     x: {
+      display: true,
       grid: {
         color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)'
+        borderColor: 'rgba(75, 85, 99, 0.5)',
+        drawOnChartArea: true,
+        drawTicks: true
       },
       ticks: {
         color: '#9ca3af',
         font: {
           size: 11
         },
-        maxTicksLimit: 8
+        maxTicksLimit: 8,
+        display: true
       }
     },
     y: {
+      display: true,
+      position: 'left',
       grid: {
         color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)'
+        borderColor: 'rgba(75, 85, 99, 0.5)',
+        drawOnChartArea: true,
+        drawTicks: true
       },
       ticks: {
         color: '#9ca3af',
         font: {
           size: 11
         },
+        maxTicksLimit: 8,
+        display: true,
         callback: function(value) {
           return formatNumber(value);
         }
-      }
+      },
+      suggestedMin: 0
     }
   },
   elements: {
@@ -351,10 +474,76 @@ const darkThemeOptions = {
   interaction: {
     intersect: false,
     mode: 'index'
+  },
+  // Isolate this chart instance
+  animation: {
+    duration: 0
+  },
+  datasets: {
+    line: {
+      pointBackgroundColor: 'rgba(255, 255, 255, 0.8)'
+    },
+    bar: {
+      backgroundColor: 'rgba(255, 255, 255, 0.8)'
+    }
   }
 };
 
-const chartOptions = computed(() => darkThemeOptions);
+const chartOptions = computed(() => ({
+  ...darkThemeOptions,
+  plugins: {
+    ...darkThemeOptions.plugins,
+    tooltip: {
+      ...darkThemeOptions.plugins.tooltip,
+      callbacks: {
+        title: function(context) {
+          if (xAxisType.value === 'timeInTR') {
+            return `Time in TR: ${context[0].label}`;
+          } else {
+            return context[0].label;
+          }
+        },
+        label: function(context) {
+          const value = context.parsed.y;
+          const resourceId = context.dataset.resourceId;
+          
+          // Special formatting for oo-accum
+          if (resourceId === 'oo-accum') {
+            return `${context.dataset.label}: ${formatSuffixInput(value)}`;
+          }
+          
+          return `${context.dataset.label}: ${formatNumber(value)}`;
+        }
+      }
+    }
+  },
+  scales: {
+    ...darkThemeOptions.scales,
+    x: {
+      ...darkThemeOptions.scales.x,
+      title: {
+        display: true,
+        text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
+        color: '#9ca3af',
+        font: {
+          size: 12
+        }
+      }
+    },
+    y: {
+      ...darkThemeOptions.scales.y,
+      beginAtZero: true,
+      ticks: {
+        ...darkThemeOptions.scales.y.ticks,
+        maxTicksLimit: 8,
+        stepSize: undefined,
+        callback: function(value) {
+          return formatNumber(value);
+        }
+      }
+    }
+  }
+}));
 
 const gainsChartOptions = computed(() => ({
   ...darkThemeOptions,
@@ -363,6 +552,13 @@ const gainsChartOptions = computed(() => ({
     tooltip: {
       ...darkThemeOptions.plugins.tooltip,
       callbacks: {
+        title: function(context) {
+          if (xAxisType.value === 'timeInTR') {
+            return `Time in TR: ${context[0].label}`;
+          } else {
+            return context[0].label;
+          }
+        },
         label: function(context) {
           const value = context.parsed.y;
           const resourceId = context.dataset.resourceId;
@@ -381,8 +577,11 @@ const gainsChartOptions = computed(() => ({
     ...darkThemeOptions.scales,
     y: {
       ...darkThemeOptions.scales.y,
+      beginAtZero: true,
       ticks: {
         ...darkThemeOptions.scales.y.ticks,
+        maxTicksLimit: 8,
+        stepSize: undefined,
         callback: function(value) {
           const prefix = value >= 0 ? '+' : '';
           return prefix + formatNumber(Math.abs(value));

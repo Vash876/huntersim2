@@ -17,20 +17,88 @@
           </h3>
         </div>
         <button
-          @click="$emit('close')"
+          @click="closeModalDirect"
           class="p-1.5 rounded-full hover:bg-gray-700 transition-colors"
         >
           <IconX size="16" />
         </button>
       </div>
 
-      <!-- Description -->
-      <div class="px-3 py-2 border-b border-gray-700" v-if="track">
-        <p class="text-xs text-gray-300">
-          Started: {{ formatDate(track.startDate) }} • 
-          {{ track.entries.length }} entries • 
-          {{ track.isActive ? 'Active' : 'Completed' }}
-        </p>
+      <!-- Help Guide -->
+      <div class="border-b border-gray-700" v-if="track">
+        <!-- Guide Header -->
+        <div class="px-3 py-2 bg-gray-700/20">
+          <div class="flex items-center justify-between">
+            <button
+              @click="toggleHelpGuide"
+              class="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            >
+              <IconChevronDown 
+                size="14" 
+                :class="{ 'rotate-180': isHelpGuideExpanded }"
+                class="transition-transform duration-200"
+              />
+              Guide
+            </button>
+            <div class="flex items-center">
+              <p class="text-xs text-gray-300">
+                Started: {{ formatDate(track.startDate) }} • 
+                {{ track.entries.length }} entries • 
+                {{ track.isActive ? 'Active' : 'Completed' }}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Expandable Guide Content -->
+        <div 
+          v-if="isHelpGuideExpanded"
+          class="px-3 py-3 bg-gray-800/30 border-t border-gray-600"
+        >
+          <div class="text-xs text-gray-300 space-y-2">
+            <h4 class="font-medium text-blue-200 mb-2">Input Format Guide</h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <!-- Number Formats -->
+              <div class="space-y-1">
+                <p class="font-medium text-yellow-300">Standard Numbers:</p>
+                <p class="text-gray-400">• Basic: 1000, 50000, 999999</p>
+                <p class="text-gray-400">• Suffix: 1k, 2.5m, 1.2b, 500t</p>
+                <p class="text-gray-400">• Scientific: 1e6, 2.5e9 (AttGN3 only)</p>
+              </div>
+              
+              <!-- Special Formats -->
+              <div class="space-y-1">
+                <p class="font-medium text-cyan-300">Special Formats:</p>
+                <p class="text-gray-400">• Time: 5 30, 12:45, 123 54 (Auto-converts to 5:30, 12:45, 123:54)</p>
+                <p class="text-gray-400">• Camp: C1-5, C4-12, c3-8, c3 8 (Auto-converts to C3-8)</p>
+                <p class="text-gray-400">• Notes: Any text or description</p>
+              </div>
+              
+              <!-- Large Numbers -->
+              <div class="space-y-1">
+                <p class="font-medium text-purple-300">Large Numbers (OO, LR Ticks, AttGN3):</p>
+                <p class="text-gray-400">• Supports large values</p>
+                <p class="text-gray-400">• Use suffix notation: 1.5k, 2.3b</p>
+                <p class="text-gray-400">• AttGN3: up to 1e333</p>
+              </div>
+              
+              <!-- Tips -->
+              <div class="space-y-1">
+                <p class="font-medium text-green-300">Tips:</p>
+                <p class="text-gray-400">• Tab/Shift+Tab to navigate between fields</p>
+                <p class="text-gray-400">• Enter to confirm entry</p>
+              </div>
+              
+              <!-- AttGN3 Calculation -->
+              <div class="space-y-1">
+                <p class="font-medium text-cyan-300">AttGN3 Days to 1e333:</p>
+                <p class="text-gray-400">• Uses current LR Ticks, RP, and AttGN3 Buff from tracking data</p>
+                <p class="text-gray-400">• Other settings taken from AttGN3 Calculator</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Content -->
@@ -92,7 +160,7 @@
             <h4 class="font-medium text-sm text-blue-200">Track Statistics</h4>
           </div>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div :class="getCampTimerValue() > 0 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2'">
             <!-- Duration -->
             <div class="bg-gray-700/30 rounded-md p-2">
               <div class="text-xs text-gray-400">Duration</div>
@@ -106,6 +174,22 @@
               <div class="text-xs text-gray-400">Total Entries</div>
               <div class="text-sm font-semibold text-white">
                 {{ track.entries.length }}
+              </div>
+            </div>
+
+            <!-- AttGN3 Days to 1e333 -->
+            <div class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">AttGN3 to 1e333</div>
+              <div class="text-sm font-semibold text-cyan-400">
+                {{ formatAttGN3Days(getAttGN3DaysToMax()) }} left
+              </div>
+            </div>
+
+            <!-- Camp Timer End (only shown if current camp timer > 0) -->
+            <div v-if="getCampTimerValue() > 0" class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">Camp Ends</div>
+              <div class="text-sm font-semibold text-orange-400">
+                {{ getCampEndDateTime() }}
               </div>
             </div>
 
@@ -251,7 +335,7 @@
         </div>
         
         <button
-          @click="$emit('close')"
+          @click="closeModalDirect"
           class="px-3 py-1.5 bg-gray-600 text-gray-200 rounded-md hover:bg-gray-500 transition-colors text-xs"
         >
           Close
@@ -276,7 +360,7 @@
 
 <script setup>
 import { ref, computed, nextTick, watch, h } from 'vue';
-import { IconX, IconDatabase, IconTrash, IconChartLine, IconPlus, IconGripVertical, IconCheck, IconEdit, IconShare } from '@tabler/icons-vue';
+import { IconX, IconDatabase, IconTrash, IconChartLine, IconPlus, IconGripVertical, IconCheck, IconEdit, IconShare, IconChevronDown } from '@tabler/icons-vue';
 import { AgGridVue } from 'ag-grid-vue3';
 import { ModuleRegistry, AllCommunityModule, themeQuartz, colorSchemeDark } from 'ag-grid-community';
 import AlertDialog from '@/components/common/AlertDialog.vue';
@@ -284,6 +368,7 @@ import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { exportTrack } from '@/utils/trImportExport';
 import { getM0Cost } from '@/constants/m0Costs';
 import { formatNumber, formatSuffixInput, parseSuffixInput } from '@/composables/format.js';
+import Decimal from 'break_infinity.js';
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -304,6 +389,37 @@ const draggableResources = ref([]);
 const gridApi = ref(null);
 const resourceOrder = ref([]); // Track current column order
 const initialColumnDefs = ref([]); // Store initial column definitions
+
+// Help Guide state
+const isHelpGuideExpanded = ref(true); // Default to expanded
+
+// Initialize help guide state from localStorage
+const initializeHelpGuideState = () => {
+  try {
+    const saved = localStorage.getItem('tr-tracking-help-guide-expanded');
+    if (saved !== null) {
+      isHelpGuideExpanded.value = JSON.parse(saved);
+    }
+    // If no saved state exists, keep default (true)
+  } catch (error) {
+    console.warn('Failed to load help guide state from localStorage:', error);
+  }
+};
+
+// Save help guide state to localStorage
+const saveHelpGuideState = () => {
+  try {
+    localStorage.setItem('tr-tracking-help-guide-expanded', JSON.stringify(isHelpGuideExpanded.value));
+  } catch (error) {
+    console.warn('Failed to save help guide state to localStorage:', error);
+  }
+};
+
+// Toggle help guide
+const toggleHelpGuide = () => {
+  isHelpGuideExpanded.value = !isHelpGuideExpanded.value;
+  saveHelpGuideState();
+};
 
 // AG Grid Configuration
 const defaultColDef = ref({
@@ -546,9 +662,25 @@ const buildColumnDefs = () => {
       headerClass: `text-center resource-header multi-line-header drag-header`,
       editable: true,
       // Treat lr-ticks as text too for suffix handling
-      cellDataType: (resource.id === 'notes' || resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.format === 'time' || resource.format === 'camp') ? 'text' : 'number',
+      cellDataType: (resource.id === 'notes' || resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff' || resource.format === 'time' || resource.format === 'camp') ? 'text' : 'number',
       suppressMovable: false, // Allow these columns to be moved
       suppressSizeToFit: resource.id === 'notes' ? false : false, // Allow auto-sizing for all columns
+      // Add custom comparator for time format
+      comparator: resource.format === 'time' ? (valueA, valueB) => {
+        // Convert time strings to total minutes for comparison
+        const timeToMinutes = (timeStr) => {
+          if (!timeStr || timeStr === '') return 0;
+          const parts = timeStr.split(':');
+          if (parts.length !== 2) return 0;
+          const hours = parseInt(parts[0], 10) || 0;
+          const minutes = parseInt(parts[1], 10) || 0;
+          return hours * 60 + minutes;
+        };
+        
+        const minutesA = timeToMinutes(valueA);
+        const minutesB = timeToMinutes(valueB);
+        return minutesA - minutesB;
+      } : undefined,
       resizable: true, // Enable resizing for better flexibility
       autoHeight: resource.id === 'notes', // Enable auto-height for notes to handle long content
       minWidth: resource.id === 'notes' ? minWidth : 70, // Set minimum width
@@ -624,18 +756,80 @@ const buildColumnDefs = () => {
             return true;
           }
           const str = String(params.newValue).trim();
+          
+          // Check for standard format: C[1-9]-[0-9]{1,2} (case-insensitive)
           const campPattern = /^[Cc][1-9]-\d{1,2}$/;
-          if (!campPattern.test(str)) {
-            console.warn('Invalid camp code rejected:', params.newValue);
-            return false;
+          if (campPattern.test(str)) {
+            params.data.values[resource.id] = str.toUpperCase();
+            return true;
           }
-          params.data.values[resource.id] = str.toUpperCase();
-          return true;
+          
+          // Check for space format: C[1-9] [0-9]{1,2} (case-insensitive)
+          const spacePattern = /^[Cc]([1-9])\s+(\d{1,2})$/;
+          const spaceMatch = str.match(spacePattern);
+          if (spaceMatch) {
+            const campNumber = spaceMatch[1];
+            const subNumber = spaceMatch[2];
+            params.data.values[resource.id] = `C${campNumber}-${subNumber}`;
+            return true;
+          }
+          
+          console.warn('Invalid camp code rejected:', params.newValue);
+          return false;
         }
-        // Special handling for oo-accum and lr-ticks to support suffix input
-        if ((resource.id === 'oo-accum' || resource.id === 'lr-ticks') && parseSuffixInput) {
+        // Special handling for oo-accum, lr-ticks, and attgn3-buff to support suffix input
+        if ((resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff') && parseSuffixInput) {
+          // For attgn3-buff, also allow exponential notation (e.g., 1e6, 2.5e9)
+          if (resource.id === 'attgn3-buff') {
+            const inputString = String(params.newValue).toLowerCase().trim();
+            
+            // Check if it's exponential notation (e.g., 1e6, 2.5e9, 1.5E+10)
+            if (inputString.includes('e') && (inputString.match(/^\d+\.?\d*e[+-]?\d+$/) || inputString.match(/^\d*\.\d+e[+-]?\d+$/))) {
+              try {
+                // Use Decimal for large number handling
+                const exponentialDecimal = new Decimal(params.newValue);
+                const maxValue = new Decimal('1e333');
+                
+                if (exponentialDecimal.isNaN() || exponentialDecimal.lt(0) || exponentialDecimal.gt(maxValue)) {
+                  console.warn(`Invalid attgn3-buff exponential value rejected:`, params.newValue, 'parsed to:', exponentialDecimal.toString());
+                  return false;
+                }
+                
+                // Store as number for compatibility, but limit to safe range
+                if (exponentialDecimal.gt(Number.MAX_SAFE_INTEGER)) {
+                  params.data.values[resource.id] = exponentialDecimal.toString();
+                } else {
+                  params.data.values[resource.id] = exponentialDecimal.toNumber();
+                }
+                return true;
+              } catch (error) {
+                console.warn(`Error parsing attgn3-buff exponential value:`, params.newValue, error);
+                return false;
+              }
+            }
+          }
+          
+          // Use suffix input parsing for all three resources
           const parsedValue = parseSuffixInput(params.newValue);
-          if (isNaN(parsedValue) || !isFinite(parsedValue) || parsedValue < 0 || parsedValue > 1e15) {
+          // Higher maximum for attgn3-buff since buff values can be very large
+          let maxValue;
+          if (resource.id === 'attgn3-buff') {
+            try {
+              const maxDecimal = new Decimal('1e333');
+              const parsedDecimal = new Decimal(parsedValue);
+              if (parsedDecimal.gt(maxDecimal)) {
+                console.warn(`Invalid ${resource.id} value rejected:`, params.newValue, 'parsed to:', parsedValue, '(exceeds 1e333)');
+                return false;
+              }
+              maxValue = maxDecimal.toNumber();
+            } catch (error) {
+              maxValue = 1e30; // Fallback
+            }
+          } else {
+            maxValue = 1e15;
+          }
+          
+          if (isNaN(parsedValue) || !isFinite(parsedValue) || parsedValue < 0 || parsedValue > maxValue) {
             console.warn(`Invalid ${resource.id} value rejected:`, params.newValue, 'parsed to:', parsedValue);
             return false;
           }
@@ -672,15 +866,31 @@ const buildColumnDefs = () => {
         // Check if this is a whole number and we should show difference
         const isWholeNumber = Number.isInteger(currentValue) && currentValue !== 0;
         
-        // Special display for oo-accum - always format with suffix notation
-        if (resource.id === 'oo-accum') {
-          const displayValue = formatSuffixInput(currentValue);
+        // Special display for oo-accum and attgn3-buff - always format with suffix notation
+        if (resource.id === 'oo-accum' || resource.id === 'attgn3-buff') {
+          let displayValue;
+          
+          if (resource.id === 'attgn3-buff') {
+            // Handle very large numbers for attgn3-buff using Decimal
+            try {
+              const decimal = new Decimal(currentValue);
+              if (decimal.gte('1e15')) {
+                displayValue = decimal.toExponential(2);
+              } else {
+                displayValue = formatSuffixInput(currentValue);
+              }
+            } catch (error) {
+              displayValue = formatSuffixInput(currentValue);
+            }
+          } else {
+            displayValue = formatSuffixInput(currentValue);
+          }
           
           if (!shouldShowDifference || !isWholeNumber) {
             return displayValue;
           }
           
-          // Calculate difference for oo-accum
+          // Calculate difference for oo-accum and attgn3-buff
           const allEntries = [];
           params.api.forEachNode(node => {
             // Skip temporary entries
@@ -713,7 +923,22 @@ const buildColumnDefs = () => {
             return displayValue;
           }
           
-          const diffText = difference > 0 ? `+${formatSuffixInput(difference)}` : `-${formatSuffixInput(Math.abs(difference))}`;
+          let diffText;
+          if (resource.id === 'attgn3-buff') {
+            // Handle large number differences for attgn3-buff
+            try {
+              const diffDecimal = new Decimal(Math.abs(difference));
+              if (diffDecimal.gte('1e15')) {
+                diffText = (difference > 0 ? '+' : '-') + diffDecimal.toExponential(2);
+              } else {
+                diffText = difference > 0 ? `+${formatSuffixInput(difference)}` : `-${formatSuffixInput(Math.abs(difference))}`;
+              }
+            } catch (error) {
+              diffText = difference > 0 ? `+${formatSuffixInput(difference)}` : `-${formatSuffixInput(Math.abs(difference))}`;
+            }
+          } else {
+            diffText = difference > 0 ? `+${formatSuffixInput(difference)}` : `-${formatSuffixInput(Math.abs(difference))}`;
+          }
           
           return `
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2px;">
@@ -784,8 +1009,8 @@ const buildColumnDefs = () => {
       headerTooltip: `Drag to reorder: ${resource.name}`,
       // Tab navigation support - prevent auto-save on tab and select text
       suppressKeyboardEvent: (params) => {
-        // Always prevent 'e' and 'E' for scientific notation, except for notes
-        if (resource.id !== 'notes' && (params.event.key === 'e' || params.event.key === 'E')) {
+        // Allow 'e' and 'E' for scientific notation in attgn3-buff, prevent for others except notes
+        if (resource.id !== 'notes' && resource.id !== 'attgn3-buff' && (params.event.key === 'e' || params.event.key === 'E')) {
           console.warn('Scientific notation key blocked:', params.event.key);
           params.event.preventDefault();
           return true; // Suppress the event
@@ -856,9 +1081,27 @@ const buildColumnDefs = () => {
         if (resource.format === 'time' || resource.format === 'camp') {
           return { selectAllOnFocusIn: true, maxLength: 6, value: params.value || '' };
         }
-        // For oo-accum and lr-ticks, show suffix input
-        if (resource.id === 'oo-accum' || resource.id === 'lr-ticks') {
-          return { selectAllOnFocusIn: true, value: formatSuffixInput(params.value || 0) };
+        // For oo-accum, lr-ticks, and attgn3-buff, show suffix input
+        if (resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff') {
+          let displayValue;
+          
+          if (resource.id === 'attgn3-buff') {
+            // Handle very large numbers for attgn3-buff
+            try {
+              const decimal = new Decimal(params.value || 0);
+              if (decimal.gte('1e15')) {
+                displayValue = decimal.toExponential(2);
+              } else {
+                displayValue = formatSuffixInput(params.value || 0);
+              }
+            } catch (error) {
+              displayValue = formatSuffixInput(params.value || 0);
+            }
+          } else {
+            displayValue = formatSuffixInput(params.value || 0);
+          }
+          
+          return { selectAllOnFocusIn: true, value: displayValue };
         }
         // Numeric default
         if (resource.id !== 'notes') {
@@ -1159,6 +1402,7 @@ watch(() => props.show, (newShow) => {
   if (newShow) {
     // Initialize when modal opens
     initializeDraggableResources();
+    initializeHelpGuideState();
   }
 }, { immediate: true });
 
@@ -1261,6 +1505,281 @@ function confirmDialog() {
 
 function cancelDialog() {
   alertDialog.value.isVisible = false;
+}
+
+// Modal close functions
+function hasUnsavedEntry() {
+  // Check if there's a new entry being edited
+  if (!gridApi.value) return false;
+  
+  let hasUnsaved = false;
+  gridApi.value.forEachNode(node => {
+    if (node.data.isNew && node.data.isEditing) {
+      hasUnsaved = true;
+    }
+  });
+  
+  return hasUnsaved;
+}
+
+function closeModalDirect() {
+  if (hasUnsavedEntry()) {
+    closeModalWithUnsavedWarning();
+  } else {
+    emit('close');
+  }
+}
+
+function closeModalWithUnsavedWarning() {
+  showDialog({
+    title: 'Unsaved Entry',
+    message: 'You have an unsaved entry that is still being edited. Are you sure you want to close this modal? Your changes will be lost.',
+    type: 'warning',
+    showCancel: true,
+    confirmText: 'Close Anyway',
+    cancelText: 'Continue Editing',
+    onConfirm: () => {
+      // Cancel the unsaved entry and close
+      if (gridApi.value) {
+        gridApi.value.forEachNode(node => {
+          if (node.data.isNew && node.data.isEditing) {
+            // Remove the unsaved entry
+            const rowData = [];
+            gridApi.value.forEachNode(n => {
+              if (n.data.id !== node.data.id) {
+                rowData.push(n.data);
+              }
+            });
+            gridApi.value.setGridOption('rowData', rowData);
+          }
+        });
+      }
+      emit('close');
+    }
+  });
+}
+
+// AttGN3 Calculator Functions (based on AttrGN3Calculator.vue)
+const researchData = [
+  { id: "research44", level: 2, bonus: 0.2, cost: "115" },
+  { id: "research44", level: 4, bonus: 0.3, cost: "165" },
+  { id: "research44", level: 6, bonus: 0.5, cost: "219" },
+  { id: "research51", level: 2, bonus: 0.4, cost: "302" },
+  { id: "research51", level: 4, bonus: 0.6, cost: "405" },
+  { id: "research51", level: 6, bonus: 1, cost: "507" },
+  { id: "research61", level: 2, bonus: 2, cost: "363" },
+  { id: "research61", level: 4, bonus: 4, cost: "495" },
+  { id: "research61", level: 6, bonus: 6, cost: "627" },
+  { id: "research71", level: 2, bonus: 3, cost: "822" },
+  { id: "research71", level: 4, bonus: 5, cost: "1165" },
+  { id: "research71", level: 6, bonus: 7, cost: "1509" },
+  { id: "research91", level: 1, bonus: 0.2, cost: "4500" },
+  { id: "research91", level: 3, bonus: 0.6, cost: "5200" },
+  { id: "research91", level: 5, bonus: 1, cost: "5900" },
+];
+
+function getAttGN3DaysToMax() {
+  const latestValues = getLatestValues();
+  
+  // Get current attgn3-buff value
+  const currentAttrMultiplier = latestValues['attgn3-buff'] || 0;
+  if (currentAttrMultiplier === 0) return '∞';
+  
+  // Convert to Decimal for large number handling
+  const currentDecimal = new Decimal(currentAttrMultiplier);
+  if (currentDecimal.gte('1e333')) return '0'; // Already at max
+  
+  // Get LR Ticks and RP from latest entry (LR Ticks = Current Ticks in LR)
+  const currentTicksInLR = latestValues['lr-ticks'] || 0;
+  const researchPoints = latestValues.rp || 0;
+  
+  // Get other values from AttrGN3 Calculator settings (load from localStorage)
+  let calculatorSettings = {
+    tickSpeed: 1.5,
+    ticksPerTick: 1,
+    relic14: 0,
+    efficiencyBadge: false,
+    ts5: false
+  };
+  
+  try {
+    const savedSettings = JSON.parse(localStorage.getItem('attrGN3Calculator_settings') || '{}');
+    if (savedSettings.tickSpeed !== undefined) calculatorSettings.tickSpeed = savedSettings.tickSpeed;
+    if (savedSettings.ticksPerTick !== undefined) calculatorSettings.ticksPerTick = savedSettings.ticksPerTick;
+    if (savedSettings.relic14 !== undefined) calculatorSettings.relic14 = savedSettings.relic14;
+    if (savedSettings.efficiencyBadge !== undefined) calculatorSettings.efficiencyBadge = savedSettings.efficiencyBadge;
+    if (savedSettings.ts5 !== undefined) calculatorSettings.ts5 = savedSettings.ts5;
+  } catch (error) {
+    console.warn('Could not load AttrGN3 Calculator settings, using defaults');
+  }
+  
+  // Calculate ticks per day
+  const ticksPerDay = (86400 / calculatorSettings.tickSpeed) * calculatorSettings.ticksPerTick;
+  
+  // Calculate ticks per operation
+  const ticksPerOperation = 29 - calculatorSettings.relic14;
+  if (ticksPerOperation <= 0) return '∞';
+  
+  // Calculate operations per operation
+  let operationsPerOperation = 1;
+  if (calculatorSettings.efficiencyBadge) operationsPerOperation *= 3;
+  if (calculatorSettings.ts5) operationsPerOperation *= 2;
+  
+  // Calculate operations per day
+  const operationsPerDay = (ticksPerDay / ticksPerOperation) * operationsPerOperation;
+  
+  // Calculate affordable research
+  const affordableResearch = researchData.filter(research => {
+    const cost = parseFloat(research.cost);
+    return cost <= researchPoints;
+  });
+  
+  // Calculate retained operations percentage
+  const retainedOperations = affordableResearch.reduce((sum, research) => sum + research.bonus, 0);
+  
+  // Calculate retained per day
+  const retainedPerDay = operationsPerDay * (retainedOperations / 100);
+  
+  // Calculate multiplier per day
+  const attributionRate = 0.001; // 0.10%
+  const multiPerDay = Math.pow(1 + attributionRate, retainedPerDay);
+  
+  if (multiPerDay <= 1) return '∞';
+  
+  try {
+    // Target and current as Decimal
+    const target = new Decimal('1e333');
+    const current = currentDecimal;
+    const dailyMulti = new Decimal(multiPerDay);
+    
+    if (current.gte(target)) return '0'; // Already reached
+    if (dailyMulti.lte(1)) return '∞';
+    
+    // Calculate current operations in LR (using currentTicksInLR from tracking data)
+    const currentOperations = (currentTicksInLR / ticksPerOperation) * operationsPerOperation;
+    const currentRetained = currentOperations * (retainedOperations / 100);
+    
+    // Calculate pending multiplier from current LR (this is the same as currentMultiplier in AttrGN3Calculator)
+    const pendingMultiplier = currentRetained <= 0 ? new Decimal(1) : new Decimal(1 + attributionRate).pow(currentRetained);
+    
+    // Calculate final result (current * pending) with max cap
+    const finalResult = current.mul(pendingMultiplier);
+    const maxValue = new Decimal('1e333');
+    
+    // If final result exceeds 1e333, limit the pending multiplier
+    let effectivePendingMultiplier = pendingMultiplier;
+    if (finalResult.gt(maxValue)) {
+      effectivePendingMultiplier = maxValue.div(current);
+      if (effectivePendingMultiplier.lt(1)) effectivePendingMultiplier = new Decimal(1);
+    }
+    
+    // Calculate days in current LR
+    const actualTickEvents = currentTicksInLR / calculatorSettings.ticksPerTick;
+    const secondsInLR = actualTickEvents * calculatorSettings.tickSpeed;
+    const daysInLR = secondsInLR / 86400;
+    
+    // Use the same logic as AttrGN3Calculator's daysLeftTo1e333
+    // Calculate total days needed from current position
+    const ratio = target.dividedBy(current);
+    const logRatio = Math.log(ratio.toNumber());
+    const logDaily = Math.log(dailyMulti.toNumber());
+    
+    const totalDaysNeeded = logRatio / logDaily;
+    
+    // Subtract the days already spent in current LR
+    const remainingDays = totalDaysNeeded - daysInLR;
+    
+    return Math.max(0, remainingDays);
+    
+  } catch (error) {
+    console.error('AttGN3 calculation error:', error);
+    return '∞';
+  }
+}
+
+function formatAttGN3Days(days) {
+  if (days === '∞' || days === Infinity) return '∞';
+  if (days === '0' || days === 0) return 'Complete!';
+  
+  const numDays = parseFloat(days);
+  if (isNaN(numDays)) return '∞';
+  
+  if (numDays >= 1) {
+    const wholeDays = Math.floor(numDays);
+    const remainingHours = Math.round((numDays - wholeDays) * 24);
+    
+    if (remainingHours > 0) {
+      return `${wholeDays} days ${remainingHours} hours`;
+    } else {
+      return `${wholeDays} days`;
+    }
+  } else {
+    const hours = Math.ceil(numDays * 24);
+    return `${hours} hours`;
+  }
+}
+
+// Get latest values from the most recent entry
+function getLatestValues() {
+  if (!props.track || !props.track.entries || props.track.entries.length === 0) {
+    return {};
+  }
+  
+  // Sort entries by date to get the most recent
+  const sortedEntries = [...props.track.entries].sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateB - dateA; // Most recent first
+  });
+  
+  const latestEntry = sortedEntries[0];
+  return latestEntry.values || {};
+}
+
+// Get camp timer value from latest entry
+function getCampTimerValue() {
+  const latestValues = getLatestValues();
+  const campTimerValue = latestValues['camp-timer'] || 0;
+  
+  // Convert time format (HH:MM) to minutes if it's a string
+  if (typeof campTimerValue === 'string' && campTimerValue.includes(':')) {
+    const [hours, minutes] = campTimerValue.split(':').map(Number);
+    return (hours * 60) + minutes; // Return total minutes
+  }
+  
+  return Number(campTimerValue) || 0;
+}
+
+// Calculate camp end date/time
+function getCampEndDateTime() {
+  const campTimerMinutes = getCampTimerValue();
+  if (campTimerMinutes <= 0) return '';
+  
+  if (!props.track || !props.track.entries || props.track.entries.length === 0) {
+    return '';
+  }
+  
+  // Get the most recent entry
+  const sortedEntries = [...props.track.entries].sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateB - dateA; // Most recent first
+  });
+  
+  const latestEntry = sortedEntries[0];
+  const entryDate = new Date(latestEntry.date);
+  
+  // Add camp timer minutes to the entry date
+  const campEndDate = new Date(entryDate.getTime() + (campTimerMinutes * 60 * 1000));
+  
+  // Format in local date/time format
+  return campEndDate.toLocaleString(undefined, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 }
 
 // Methods
@@ -1618,17 +2137,6 @@ function getGridHeight() {
   return Math.min(Math.max(calculatedHeight, minHeight), maxHeight);
 }
 
-// Get latest entry values
-function getLatestValues() {
-  if (!props.track || !props.track.entries || props.track.entries.length === 0) {
-    return {};
-  }
-  
-  // Sort entries by date and get the latest one
-  const sortedEntries = [...props.track.entries].sort((a, b) => new Date(b.date) - new Date(a.date));
-  return sortedEntries[0].values || {};
-}
-
 // Progress calculation functions
 function formatCellsProgress() {
   const latestValues = getLatestValues();
@@ -1641,22 +2149,27 @@ function formatCellsProgress() {
   if (difference <= 0) {
     return '✓ Goal Reached!';
   } else {
-    return `${difference} missing`;
+    return `e${difference} missing`;
   }
 }
 
 function formatMpProgress() {
   const latestValues = getLatestValues();
   const currentMp = latestValues.mp || 0;
+  const currentMpAccum = latestValues['mp-accum'] || 0;
   const goalMp = props.track?.targetGoals?.mpGoal || 0;
   
   if (goalMp === 0) return '-';
   
-  const difference = goalMp - currentMp;
+  // Use the higher value between MP and MP(Accum) as reference
+  const referenceMp = Math.max(currentMp, currentMpAccum);
+  const referenceType = currentMpAccum > currentMp ? 'MP(Accum)' : 'MP';
+  
+  const difference = goalMp - referenceMp;
   if (difference <= 0) {
-    return '✓ Goal Reached!';
+    return `✓ Goal Reached! (${referenceType})`;
   } else {
-    return `${difference} missing`;
+    return `e${difference} missing`;
   }
 }
 
@@ -1671,7 +2184,7 @@ function formatRpProgress() {
   if (difference <= 0) {
     return '✓ Goal Reached!';
   } else {
-    return `${difference} missing`;
+    return `e${difference} missing`;
   }
 }
 
@@ -1689,7 +2202,7 @@ function formatM0Progress() {
   if (difference <= 0) {
     return '✓ Goal Reached!';
   } else {
-    return `${difference} shards missing`;
+    return `e${difference} shards missing`;
   }
 }
 
@@ -2242,7 +2755,7 @@ function handleModalClick(event) {
   
   // Only close if the click was directly on the backdrop
   if (event.target === event.currentTarget) {
-    emit('close');
+    closeModalDirect();
   }
 }
 
