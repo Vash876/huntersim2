@@ -248,11 +248,7 @@ async function saveDisplayName() {
     }
     
     editingName.value = false;
-    newDisplayName.value = '';
-    
-    // Show success message
-    alert('Display name updated successfully!');
-    
+    newDisplayName.value = '';    
   } catch (error) {
     console.error('Failed to update display name:', error);
     alert(`Failed to update display name: ${error.message}`);

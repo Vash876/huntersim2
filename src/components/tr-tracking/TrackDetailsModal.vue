@@ -1,12 +1,12 @@
 <template>
   <div 
     v-if="show" 
-    class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4"
+    class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-start justify-center p-4"
     @click="handleModalClick"
   >
     <div 
       ref="modalContent"
-      class="bg-gray-800 rounded-xl shadow-2xl w-[95%] max-h-[95vh] overflow-y-auto animate-fade-in border border-gray-700"
+      class="bg-gray-800 rounded-xl shadow-2xl w-[95%] min-h-fit animate-fade-in border border-gray-700"
     >
       <!-- Header -->
       <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-2.5 border-b border-gray-600 flex justify-between items-center">
@@ -35,14 +35,64 @@
 
       <!-- Content -->
       <div class="p-3 space-y-3" v-if="track">
+        <!-- Initial Values -->
+        <div v-if="track.initialValues">
+          <div class="flex items-center mb-1.5">
+            <div class="w-1.5 h-5 bg-yellow-500 rounded-r mr-2"></div>
+            <h4 class="font-medium text-sm text-yellow-200">Initial Values (TR Start)</h4>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+            <!-- OO Lifetime -->
+            <div v-if="track.initialValues.ooLifetime !== undefined" class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">OO Lifetime</div>
+              <div class="text-sm font-semibold text-purple-400">
+                {{ formatNumber(track.initialValues.ooLifetime) }}
+              </div>
+            </div>
+
+            <!-- Frags Lifetime -->
+            <div v-if="track.initialValues.fragsLifetime !== undefined" class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">Frags Lifetime</div>
+              <div class="text-sm font-semibold text-purple-400">
+                {{ formatNumber(track.initialValues.fragsLifetime) }}
+              </div>
+            </div>
+
+            <!-- TS Milestones -->
+            <div v-if="track.initialValues.tsMilestones" class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">TS Milestones</div>
+              <div class="text-sm font-semibold">
+                <span class="text-green-400">{{ track.initialValues.tsMilestones.level1 || 0 }}</span>
+                <span class="text-gray-400"> / </span>
+                <span class="text-red-400">{{ track.initialValues.tsMilestones.level2 || 0 }}</span>
+                <span class="text-gray-400"> / </span>
+                <span class="text-orange-400">{{ track.initialValues.tsMilestones.level3 || 0 }}</span>
+              </div>
+            </div>
+
+            <!-- Hunter Levels -->
+            <div class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">Hunter Levels</div>
+              <div class="text-sm font-semibold">
+                <span class="text-red-400">{{ track.initialValues.borgeLevel || 0 }}</span>
+                <span class="text-gray-400"> / </span>
+                <span class="text-green-400">{{ track.initialValues.ozzyLevel || 0 }}</span>
+                <span class="text-gray-400"> / </span>
+                <span class="text-blue-400">{{ track.initialValues.knoxLevel || 0 }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Track Stats Overview -->
         <div>
           <div class="flex items-center mb-1.5">
             <div class="w-1.5 h-5 bg-blue-500 rounded-r mr-2"></div>
-            <h4 class="font-medium text-sm text-blue-200">Track Statistics & Goals</h4>
+            <h4 class="font-medium text-sm text-blue-200">Track Statistics</h4>
           </div>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-2">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             <!-- Duration -->
             <div class="bg-gray-700/30 rounded-md p-2">
               <div class="text-xs text-gray-400">Duration</div>
@@ -59,57 +109,72 @@
               </div>
             </div>
 
-            <!-- Goals Progress -->
-            <div v-if="track.targetGoals" class="md:col-span-2 lg:col-span-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2">
-                <!-- OO Goal -->
-                <div v-if="track.targetGoals.ooGoal" class="bg-gray-700/30 rounded-md p-2">
-                  <div class="text-xs text-gray-400">OO Goal ({{ formatNumber(track.targetGoals.ooGoal) }})</div>
-                  <div class="text-sm font-semibold text-purple-400">
-                    {{ formatOoProgress() }}
-                  </div>
-                </div>
-
-                <!-- Cells Goal -->
-                <div v-if="track.targetGoals.cellsGoal" class="bg-gray-700/30 rounded-md p-2">
-                  <div class="text-xs text-gray-400">Cells Goal (e{{ track.targetGoals.cellsGoal }})</div>
-                  <div class="text-sm font-semibold text-green-400">
-                    {{ formatCellsProgress() }}
-                  </div>
-                </div>
-
-                <!-- MP Goal -->
-                <div v-if="track.targetGoals.mpGoal" class="bg-gray-700/30 rounded-md p-2">
-                  <div class="text-xs text-gray-400">MP Goal (e{{ track.targetGoals.mpGoal }})</div>
-                  <div class="text-sm font-semibold text-red-400">
-                    {{ formatMpProgress() }}
-                  </div>
-                </div>
-
-                <!-- RP Goal -->
-                <div v-if="track.targetGoals.rpGoal" class="bg-gray-700/30 rounded-md p-2">
-                  <div class="text-xs text-gray-400">RP Goal (e{{ track.targetGoals.rpGoal }})</div>
-                  <div class="text-sm font-semibold text-orange-400">
-                    {{ formatRpProgress() }}
-                  </div>
-                </div>
-
-                <!-- M0 Goal -->
-                <div v-if="track.targetGoals.m0Goal" class="bg-gray-700/30 rounded-md p-2">
-                  <div class="text-xs text-gray-400">m0 Goal ({{ track.targetGoals.m0Goal }})</div>
-                  <div class="text-sm font-semibold text-cyan-400">
-                    {{ formatM0Progress() }}
-                  </div>
-                </div>
+            <!-- Time Drift -->
+            <div class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">Time Drift</div>
+              <div class="text-sm font-semibold" :class="{
+                'text-red-400': getTimeDriftStats().totalDriftHours > 0 && Math.abs(parseFloat(getTimeDriftStats().totalDriftHours)) > 5,
+                'text-yellow-400': getTimeDriftStats().totalDriftHours > 0 && Math.abs(parseFloat(getTimeDriftStats().totalDriftHours)) > 1 && Math.abs(parseFloat(getTimeDriftStats().totalDriftHours)) <= 5,
+                'text-green-400': Math.abs(parseFloat(getTimeDriftStats().totalDriftHours || 0)) <= 1,
+                'text-blue-400': getTimeDriftStats().totalDriftHours < 0
+              }">
+                {{ getTimeDriftStats().driftDescription }}
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Goals Progress -->
+        <div v-if="track.targetGoals">
+          <div class="flex items-center mb-1.5">
+            <div class="w-1.5 h-5 bg-green-500 rounded-r mr-2"></div>
+            <h4 class="font-medium text-sm text-green-200">Goals Progress</h4>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2">
+            <!-- OO Goal -->
+            <div v-if="track.targetGoals.ooGoal" class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">OO Goal ({{ formatNumber(track.targetGoals.ooGoal) }})</div>
+              <div class="text-sm font-semibold text-purple-400">
+                {{ formatOoProgress() }}
+              </div>
+            </div>
 
+            <!-- Cells Goal -->
+            <div v-if="track.targetGoals.cellsGoal" class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">Cells Goal (e{{ track.targetGoals.cellsGoal }})</div>
+              <div class="text-sm font-semibold text-green-400">
+                {{ formatCellsProgress() }}
+              </div>
+            </div>
+
+            <!-- MP Goal -->
+            <div v-if="track.targetGoals.mpGoal" class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">MP Goal (e{{ track.targetGoals.mpGoal }})</div>
+              <div class="text-sm font-semibold text-red-400">
+                {{ formatMpProgress() }}
+              </div>
+            </div>
+
+            <!-- RP Goal -->
+            <div v-if="track.targetGoals.rpGoal" class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">RP Goal (e{{ track.targetGoals.rpGoal }})</div>
+              <div class="text-sm font-semibold text-orange-400">
+                {{ formatRpProgress() }}
+              </div>
+            </div>
+
+            <!-- M0 Goal -->
+            <div v-if="track.targetGoals.m0Goal" class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">m0 Goal ({{ track.targetGoals.m0Goal }})</div>
+              <div class="text-sm font-semibold text-cyan-400">
+                {{ formatM0Progress() }}
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- All Entries Table -->
-        <div>
           <div class="flex items-center justify-between mb-1.5">
             <div class="flex items-center">
               <div class="w-1.5 h-5 bg-purple-500 rounded-r mr-2"></div>
@@ -138,8 +203,8 @@
             </div>
           </div>
           
-          <!-- AG Grid übernimmt selbst den Scroll -->
-          <div class="ag-grid-container" style="width:100%; height:400px;" @click.stop>
+          <!-- AG Grid mit dynamischer Höhe basierend auf Anzahl der Einträge -->
+          <div class="ag-grid-container" :style="`width:100%; height:${getGridHeight()}px;`" @click.stop>
             <ag-grid-vue
               style="height: 100%; width: 100%;"
               :columnDefs="columnDefs"
@@ -149,6 +214,7 @@
               @grid-ready="onGridReady"
               @column-moved="onColumnMoved"
               @cell-value-changed="onCellValueChanged"
+              @cell-editing-stopped="onCellEditingStopped"
             />
           </div>
           
@@ -164,7 +230,6 @@
               Add First Entry
             </button>
           </div>
-        </div>
       </div>
 
       <!-- Footer -->
@@ -216,7 +281,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, watch } from 'vue';
+import { ref, computed, nextTick, watch, h } from 'vue';
 import { IconX, IconDatabase, IconTrash, IconChartLine, IconPlus, IconGripVertical, IconCheck, IconEdit, IconShare } from '@tabler/icons-vue';
 import { AgGridVue } from 'ag-grid-vue3';
 import { ModuleRegistry, AllCommunityModule, themeQuartz, colorSchemeDark } from 'ag-grid-community';
@@ -292,10 +357,10 @@ const gridOptions = ref({
   alwaysShowHorizontalScroll: false, // Only show when needed
   alwaysShowVerticalScroll: false, // Only show when needed
   singleClickEdit: true,
-  stopEditingWhenCellsLoseFocus: false, // Don't stop editing when cells lose focus for new entries
+  stopEditingWhenCellsLoseFocus: true, // Beende Editiermodus bei Klick außerhalb, Wert wird übernommen
   undoRedoCellEditing: true,
   undoRedoCellEditingLimit: 20,
-  domLayout: 'normal', // Enable horizontal scrolling
+  domLayout: 'normal', // Use normal layout with scrolling instead of autoHeight
   suppressHorizontalScroll: false, // Allow horizontal scrolling
   suppressColumnVirtualisation: false, // Enable virtualisation for better performance
   suppressAutoSize: false, // Allow auto-sizing
@@ -322,14 +387,119 @@ const buildColumnDefs = () => {
       pinned: isMobile ? false : 'left', // false für Mobile, explizit unpinned
       width: isMobile ? 100 : 160,
       cellRenderer: (params) => {
-        // Responsive Datum-Formatierung
-        const date = new Date(params.value);
-        const currentIsMobile = window.innerWidth <= 1023;
-
-        return formatDate(params.value);
+        // Use the same native browser localization as TRPlanCard
+        let dateValue = params.value;
+        
+        // If we have a localized string (not ISO format), try to parse it
+        if (typeof dateValue === 'string' && !dateValue.includes('T') && !dateValue.match(/^\d{4}-\d{2}-\d{2}/)) {
+          try {
+            const parsedDate = parseLocalizedDateTime(dateValue);
+            if (parsedDate && !isNaN(parsedDate.getTime())) {
+              dateValue = parsedDate.toISOString();
+            }
+          } catch (error) {
+            console.warn('cellRenderer - Failed to parse localized date:', dateValue, error);
+          }
+        }
+        
+        const date = new Date(dateValue);
+        
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          console.warn('cellRenderer - Invalid date:', params.value);
+          return 'Invalid Date';
+        }
+        
+        return date.toLocaleString(undefined, {
+          year: 'numeric',
+          month: '2-digit', 
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
       },
-      editable: false,
+      editable: true, // Make timestamp editable
       suppressMovable: true,
+      cellDataType: 'text', // Use text for better custom handling
+      cellEditor: 'agTextCellEditor', // Use text editor for custom date format
+      cellEditorParams: (params) => {
+        // Return the localized format for editing
+        const date = new Date(params.value);
+        const localizedValue = date.toLocaleString(undefined, {
+          year: 'numeric',
+          month: '2-digit', 
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        
+        console.log('cellEditorParams - Setting initial value to:', localizedValue);
+        
+        return {
+          placeholder: 'Enter date and time',
+          value: localizedValue // Set the initial value directly
+        };
+      },
+      // Custom value setter for editing - parses localized input
+      valueSetter: (params) => {
+        const inputValue = params.newValue;
+        
+        console.log('valueSetter - Input value:', inputValue);
+        console.log('valueSetter - Input type:', typeof inputValue);
+        
+        // If input is empty, null, or undefined, keep the original date
+        if (inputValue === null || inputValue === undefined || (typeof inputValue === 'string' && inputValue.trim() === '')) {
+          console.log('valueSetter - Empty/null input, keeping original date');
+          return false;
+        }
+        
+        // Convert to string if it's not already
+        const stringValue = String(inputValue);
+        console.log('valueSetter - String value:', stringValue);
+        
+        let parsedDate = null;
+        
+        // Try to parse using our custom parser first
+        try {
+          parsedDate = parseLocalizedDateTime(stringValue);
+          console.log('valueSetter - Custom parser result:', parsedDate);
+        } catch (error) {
+          console.warn('valueSetter - Custom parser failed:', error);
+        }
+        
+        // If custom parser failed, try native Date constructor
+        if (!parsedDate || isNaN(parsedDate.getTime())) {
+          try {
+            console.log('valueSetter - Trying native Date constructor');
+            parsedDate = new Date(stringValue);
+            console.log('valueSetter - Native Date result:', parsedDate);
+          } catch (error) {
+            console.warn('valueSetter - Native Date constructor failed:', error);
+          }
+        }
+        
+        // Final validation
+        if (!parsedDate || isNaN(parsedDate.getTime())) {
+          console.warn('valueSetter - All parsing attempts failed for:', stringValue);
+          return false; // Reject invalid input
+        }
+        
+        // Additional check for reasonable dates (not 1970 epoch or too old)
+        if (parsedDate.getFullYear() < 2020) {
+          console.warn('valueSetter - Parsed date seems invalid (too old):', parsedDate);
+          // If it's clearly an epoch date (1970), try to use current date instead
+          if (parsedDate.getFullYear() === 1970) {
+            console.log('valueSetter - Detected 1970 epoch date, using current date as fallback');
+            parsedDate = new Date(); // Use current date/time as fallback
+          } else {
+            return false; // Reject other old dates
+          }
+        }
+        
+        console.log('valueSetter - Final parsed date:', parsedDate);
+        params.data.date = parsedDate.toISOString();
+        return true;
+      },
       cellStyle: {
         display: 'flex',
         alignItems: 'center',
@@ -370,14 +540,15 @@ const buildColumnDefs = () => {
     }
 
     columns.push({
-      headerName: resource.name.replace(/ /g, '\n'), // Add line breaks after spaces for multi-line headers
+      headerName: `⋮⋮\n${resource.name.replace(/ /g, '\n')}`,
       field: `resource_${resource.id}`,
       width: columnWidth,
       flex: flexValue, // Only Notes gets flex for expansion
       cellClass: 'text-center',
-      headerClass: 'text-center resource-header multi-line-header',
-      editable: true, // Always editable
-      cellDataType: resource.id === 'notes' ? 'text' : (resource.id === 'oo-accum' ? 'text' : 'number'),
+      headerClass: `text-center resource-header multi-line-header drag-header`,
+      editable: true,
+      // Treat lr-ticks as text too for suffix handling
+      cellDataType: (resource.id === 'notes' || resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.format === 'time' || resource.format === 'camp') ? 'text' : 'number',
       suppressMovable: false, // Allow these columns to be moved
       suppressSizeToFit: resource.id === 'notes' ? false : false, // Allow auto-sizing for all columns
       resizable: true, // Enable resizing for better flexibility
@@ -422,15 +593,69 @@ const buildColumnDefs = () => {
           return true;
         }
         if (!params.data.values) params.data.values = {};
-        
-        // Special handling for oo-accum to support suffix input
-        if (resource.id === 'oo-accum') {
+        // Handle time format (HHH:MM or HHH MM)
+        if (resource.format === 'time') {
+          // Allow empty to clear the cell
+          const raw = String(params.newValue || '').trim();
+          if (raw === '') {
+            params.data.values[resource.id] = '';
+            return true;
+          }
+          // Only hours provided (e.g. "5" -> "5:00")
+          if (/^\d+$/.test(raw)) {
+            params.data.values[resource.id] = `${raw}:00`;
+            return true;
+          }
+          // Hours:minutes or Hours minutes, pad minutes to two digits
+          // Accept both ":" and " " (space) as separators
+          const match = raw.match(/^(\d+)[:|\s]([0-5]?\d)$/);
+          if (!match) {
+            console.warn('Invalid time format rejected:', params.newValue);
+            return false;
+          }
+          const hours = match[1];
+          const mins = String(parseInt(match[2], 10)).padStart(2, '0');
+          params.data.values[resource.id] = `${hours}:${mins}`;
+          return true;
+        }
+        // Handle camp code format (C[1-9]-[0-9]{1,2}, case-insensitive)
+        if (resource.format === 'camp') {
+          // Allow empty/null to clear the cell
+          if (params.newValue === null || params.newValue === undefined || String(params.newValue).trim() === '') {
+            params.data.values[resource.id] = '';
+            return true;
+          }
+          const str = String(params.newValue).trim();
+          const campPattern = /^[Cc][1-9]-\d{1,2}$/;
+          if (!campPattern.test(str)) {
+            console.warn('Invalid camp code rejected:', params.newValue);
+            return false;
+          }
+          params.data.values[resource.id] = str.toUpperCase();
+          return true;
+        }
+        // Special handling for oo-accum and lr-ticks to support suffix input
+        if ((resource.id === 'oo-accum' || resource.id === 'lr-ticks') && parseSuffixInput) {
           const parsedValue = parseSuffixInput(params.newValue);
+          if (isNaN(parsedValue) || !isFinite(parsedValue) || parsedValue < 0 || parsedValue > 1e15) {
+            console.warn(`Invalid ${resource.id} value rejected:`, params.newValue, 'parsed to:', parsedValue);
+            return false;
+          }
           params.data.values[resource.id] = parsedValue;
           return true;
         }
-        
-        params.data.values[resource.id] = parseFloat(params.newValue) || 0;
+        // Numeric default
+        const numericValue = parseFloat(params.newValue);
+        if (isNaN(numericValue) || !isFinite(numericValue) || numericValue < 0 || numericValue > 1e12) {
+          console.warn('Invalid numeric value rejected:', params.newValue);
+          return false;
+        }
+        const inputString = String(params.newValue).toLowerCase();
+        if (inputString.includes('e') && (inputString.match(/\d+e[+-]?\d+/) || inputString.match(/\d+\.\d+e[+-]?\d+/))) {
+          console.warn('Scientific notation rejected:', params.newValue);
+          return false;
+        }
+        params.data.values[resource.id] = numericValue;
         return true;
       },
       cellRenderer: (params) => {
@@ -561,17 +786,29 @@ const buildColumnDefs = () => {
       headerTooltip: `Drag to reorder: ${resource.name}`,
       // Tab navigation support - prevent auto-save on tab and select text
       suppressKeyboardEvent: (params) => {
+        // Always prevent 'e' and 'E' for scientific notation, except for notes
+        if (resource.id !== 'notes' && (params.event.key === 'e' || params.event.key === 'E')) {
+          console.warn('Scientific notation key blocked:', params.event.key);
+          params.event.preventDefault();
+          return true; // Suppress the event
+        }
+        
         // For new entries being edited, allow tab navigation between cells without saving
         if (params.data.isNew && params.data.isEditing) {
           if (params.event.key === 'Tab') {
             // Stop current cell editing
             gridApi.value.stopEditing();
             
-            // Find editable columns
-            const editableColumns = columnDefs.value.filter(col => 
-              col.editable && col.field.startsWith('resource_')
-            );
-            const currentIndex = editableColumns.findIndex(col => col.field === params.column.colId);
+            // Get the actual displayed column order from the grid
+            const displayedColumns = gridApi.value.getAllDisplayedColumns();
+            const editableColumns = displayedColumns.filter(col => {
+              const colId = col.getColId();
+              return colId.startsWith('resource_');
+            });
+            
+            // Find current column index in the displayed order
+            const currentColId = params.column.getColId();
+            const currentIndex = editableColumns.findIndex(col => col.getColId() === currentColId);
             
             let nextIndex;
             if (params.event.shiftKey) {
@@ -586,18 +823,19 @@ const buildColumnDefs = () => {
             }
             
             const nextColumn = editableColumns[nextIndex];
+            const nextColId = nextColumn.getColId();
             
             // Start editing the next/previous cell
             setTimeout(() => {
               gridApi.value.startEditingCell({
                 rowIndex: 0,
-                colKey: nextColumn.field
+                colKey: nextColId
               });
-              gridApi.value.setFocusedCell(0, nextColumn.field);
+              gridApi.value.setFocusedCell(0, nextColId);
               
               // Focus the input
               setTimeout(() => {
-                const nextInput = document.querySelector(`[row-index="0"][col-id="${nextColumn.field}"] .ag-cell-edit-input`);
+                const nextInput = document.querySelector(`[row-index="0"][col-id="${nextColId}"] .ag-cell-edit-input`);
                 if (nextInput) {
                   nextInput.focus();
                   nextInput.select();
@@ -615,8 +853,20 @@ const buildColumnDefs = () => {
         return false;
       },
       // Cell editor parameters to auto-select text
-      cellEditorParams: {
-        selectAllOnFocusIn: true
+      cellEditorParams: (params) => {
+        // Time or camp as text input
+        if (resource.format === 'time' || resource.format === 'camp') {
+          return { selectAllOnFocusIn: true, maxLength: 6, value: params.value || '' };
+        }
+        // For oo-accum and lr-ticks, show suffix input
+        if (resource.id === 'oo-accum' || resource.id === 'lr-ticks') {
+          return { selectAllOnFocusIn: true, value: formatSuffixInput(params.value || 0) };
+        }
+        // Numeric default
+        if (resource.id !== 'notes') {
+          return { selectAllOnFocusIn: true, maxLength: 12 };
+        }
+        return { selectAllOnFocusIn: true };
       }
     });
   });
@@ -842,7 +1092,6 @@ const initializeDraggableResources = () => {
   }
 };
 
-// LocalStorage functions for column order
 const getColumnOrderStorageKey = () => {
   // Use track name as fallback if no ID available yet
   const identifier = props.track?.id || props.track?.name || 'default';
@@ -949,6 +1198,7 @@ watch(() => trTrackingStore.selectedResources, () => {
   }
 }, { deep: true });
 
+
 // Reset state when modal is opened/closed
 watch(() => props.show, (newShow) => {
   if (newShow) {
@@ -1027,6 +1277,323 @@ function formatDate(dateString) {
   });
 }
 
+// Format date for editing (DD.MM.YYYY HH:MM)
+function formatDateForEditing(dateString) {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
+// Get localized date/time format based on user's locale
+function getLocaleDateTimeFormat() {
+  const locale = navigator.language || 'de-DE';
+  
+  // Common formats by locale
+  const formats = {
+    'de-DE': 'DD.MM.YYYY HH:MM',
+    'de-AT': 'DD.MM.YYYY HH:MM',
+    'de-CH': 'DD.MM.YYYY HH:MM',
+    'en-US': 'MM/DD/YYYY HH:MM AM/PM',
+    'en-GB': 'DD/MM/YYYY HH:MM',
+    'en-CA': 'DD/MM/YYYY HH:MM',
+    'fr-FR': 'DD/MM/YYYY HH:MM',
+    'es-ES': 'DD/MM/YYYY HH:MM',
+    'it-IT': 'DD/MM/YYYY HH:MM',
+    'nl-NL': 'DD-MM-YYYY HH:MM',
+    'sv-SE': 'YYYY-MM-DD HH:MM',
+    'da-DK': 'DD-MM-YYYY HH:MM',
+    'no-NO': 'DD.MM.YYYY HH:MM',
+    'fi-FI': 'DD.MM.YYYY HH:MM'
+  };
+  
+  return formats[locale] || formats['de-DE']; // Default to German format
+}
+
+// Format date/time for the user's locale when editing
+function formatDateTimeForLocale(dateString) {
+  const date = new Date(dateString);
+  const locale = navigator.language || 'de-DE';
+  
+  console.log('formatDateTimeForLocale called with:', dateString, 'locale:', locale);
+  
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  
+  // Format based on locale
+  let result;
+  switch (locale) {
+    case 'en-US':
+      // US format with 12-hour time and AM/PM
+      const hours12 = date.getHours() % 12 || 12;
+      const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      result = `${month}/${day}/${year} ${hours12}:${minutes} ${ampm}`;
+      break;
+    case 'en-GB':
+    case 'en-CA':
+    case 'fr-FR':
+    case 'es-ES':
+    case 'it-IT':
+      // 24-hour format for other locales
+      const hours24_1 = String(date.getHours()).padStart(2, '0');
+      const minutes24_1 = String(date.getMinutes()).padStart(2, '0');
+      result = `${day}/${month}/${year} ${hours24_1}:${minutes24_1}`;
+      break;
+    case 'nl-NL':
+    case 'da-DK':
+      const hours24_2 = String(date.getHours()).padStart(2, '0');
+      const minutes24_2 = String(date.getMinutes()).padStart(2, '0');
+      result = `${day}-${month}-${year} ${hours24_2}:${minutes24_2}`;
+      break;
+    case 'sv-SE':
+      const hours24_3 = String(date.getHours()).padStart(2, '0');
+      const minutes24_3 = String(date.getMinutes()).padStart(2, '0');
+      result = `${year}-${month}-${day} ${hours24_3}:${minutes24_3}`;
+      break;
+    case 'de-DE':
+    case 'de-AT':
+    case 'de-CH':
+    case 'no-NO':
+    case 'fi-FI':
+    default:
+      const hours24_4 = String(date.getHours()).padStart(2, '0');
+      const minutes24_4 = String(date.getMinutes()).padStart(2, '0');
+      result = `${day}.${month}.${year} ${hours24_4}:${minutes24_4}`;
+      break;
+  }
+  
+  console.log('formatDateTimeForLocale result:', result);
+  return result;
+}
+
+// Parse localized date/time input back to Date object
+function parseLocalizedDateTime(inputValue) {
+  if (!inputValue || typeof inputValue !== 'string') return null;
+  
+  const trimmedInput = inputValue.trim();
+  if (!trimmedInput) return null;
+  
+  console.log('parseLocalizedDateTime - Processing:', trimmedInput);
+  
+  const locale = navigator.language || 'de-DE';
+  console.log('parseLocalizedDateTime - Locale:', locale);
+  
+  // Try ISO format first (already valid Date format)
+  if (trimmedInput.includes('T') || trimmedInput.match(/^\d{4}-\d{2}-\d{2}/)) {
+    const isoDate = new Date(trimmedInput);
+    if (!isNaN(isoDate.getTime())) {
+      console.log('parseLocalizedDateTime - ISO format success:', isoDate);
+      return isoDate;
+    }
+  }
+  
+  // Parse based on locale-specific patterns with multiple variations
+  let regexPatterns = [];
+  let dateOrder;
+  
+  switch (locale) {
+    case 'en-US':
+      // MM/DD/YYYY formats with various separators and 12-hour time
+      regexPatterns = [
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})\s+(AM|PM)$/i, order: ['month', 'day', 'year', 'hour', 'minute', 'ampm'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})\s+(AM|PM)$/i, order: ['month', 'day', 'year', 'hour', 'minute', 'ampm'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})\s+(AM|PM)$/i, order: ['month', 'day', 'year', 'hour', 'minute', 'ampm'] },
+        // 24-hour variants
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['month', 'day', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'en-GB':
+    case 'en-AU':
+    case 'en-NZ':
+    case 'en-ZA':
+      // DD/MM/YYYY formats for British English and variants
+      regexPatterns = [
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'en-CA':
+      // Canadian format can be DD/MM/YYYY or MM/DD/YYYY, try both
+      regexPatterns = [
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'fr-FR':
+    case 'fr-BE':
+    case 'fr-CH':
+    case 'fr-CA':
+      // French formats DD/MM/YYYY with various separators
+      regexPatterns = [
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2})[h:](\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'es-ES':
+    case 'es-MX':
+    case 'es-AR':
+    case 'es-CO':
+      // Spanish formats DD/MM/YYYY
+      regexPatterns = [
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'it-IT':
+    case 'pt-PT':
+    case 'pt-BR':
+      // Italian and Portuguese formats DD/MM/YYYY
+      regexPatterns = [
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'nl-NL':
+    case 'nl-BE':
+      // Dutch formats DD-MM-YYYY
+      regexPatterns = [
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'da-DK':
+    case 'nb-NO':
+    case 'nn-NO':
+      // Danish and Norwegian formats DD-MM-YYYY
+      regexPatterns = [
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'sv-SE':
+    case 'fi-FI':
+      // Swedish and Finnish formats YYYY-MM-DD
+      regexPatterns = [
+        { regex: /^(\d{4})-(\d{1,2})-(\d{1,2})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'pl-PL':
+    case 'cs-CZ':
+    case 'sk-SK':
+      // Polish, Czech, Slovak formats DD.MM.YYYY
+      regexPatterns = [
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'ru-RU':
+      // Russian format DD.MM.YYYY
+      regexPatterns = [
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'zh-CN':
+    case 'zh-TW':
+    case 'ja-JP':
+    case 'ko-KR':
+      // Asian formats YYYY/MM/DD or YYYY-MM-DD
+      regexPatterns = [
+        { regex: /^(\d{4})\/(\d{1,2})\/(\d{1,2})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{4})-(\d{1,2})-(\d{1,2})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+    case 'de':
+    case 'de-DE':
+    case 'de-AT':
+    case 'de-CH':
+    case 'de-LU':
+    default:
+      // German formats DD.MM.YYYY with various separators
+      regexPatterns = [
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+      ];
+      break;
+  }
+  
+  // Try each pattern until one matches
+  for (const pattern of regexPatterns) {
+    console.log('parseLocalizedDateTime - Trying regex:', pattern.regex);
+    const match = trimmedInput.match(pattern.regex);
+    console.log('parseLocalizedDateTime - Regex match:', match);
+    
+    if (match) {
+      const [, first, second, third, hour, minute, ampm] = match;
+      dateOrder = pattern.order;
+      
+      let day, month, year, hour24;
+      if (dateOrder[0] === 'year') {
+        year = parseInt(first);
+        month = parseInt(second);
+        day = parseInt(third);
+      } else if (dateOrder[0] === 'month') {
+        month = parseInt(first);
+        day = parseInt(second);
+        year = parseInt(third);
+      } else {
+        day = parseInt(first);
+        month = parseInt(second);
+        year = parseInt(third);
+      }
+      
+      // Handle 12-hour to 24-hour conversion for formats with AM/PM
+      if (ampm) {
+        let hour12 = parseInt(hour);
+        if (ampm.toUpperCase() === 'PM' && hour12 !== 12) {
+          hour24 = hour12 + 12;
+        } else if (ampm.toUpperCase() === 'AM' && hour12 === 12) {
+          hour24 = 0;
+        } else {
+          hour24 = hour12;
+        }
+      } else {
+        hour24 = parseInt(hour);
+      }
+      
+      console.log('parseLocalizedDateTime - Parsed components:', { year, month, day, hour24, minute: parseInt(minute) });
+      
+      // Validate components before creating Date
+      if (year < 2020 || year > 2050 || month < 1 || month > 12 || day < 1 || day > 31 || hour24 < 0 || hour24 > 23 || parseInt(minute) < 0 || parseInt(minute) > 59) {
+        console.warn('parseLocalizedDateTime - Invalid date components for pattern:', pattern.regex);
+        continue; // Try next pattern
+      }
+      
+      const parsedDate = new Date(year, month - 1, day, hour24, parseInt(minute));
+      console.log('parseLocalizedDateTime - Created date:', parsedDate);
+      
+      // Final validation
+      if (isNaN(parsedDate.getTime()) || parsedDate.getFullYear() < 2020) {
+        console.warn('parseLocalizedDateTime - Final validation failed for pattern:', pattern.regex);
+        continue; // Try next pattern
+      }
+      
+      console.log('parseLocalizedDateTime - Successfully parsed with pattern:', pattern.regex);
+      return parsedDate;
+    }
+  }
+  
+  console.log('parseLocalizedDateTime - No pattern matched, returning null');
+  return null;
+}
+
 function getTrackDuration() {
   if (!props.track) return 0;
   
@@ -1034,6 +1601,23 @@ function getTrackDuration() {
   const endDate = props.track.endDate ? new Date(props.track.endDate) : new Date();
   const diffTime = Math.abs(endDate - startDate);
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+// Calculate dynamic grid height based on number of entries
+function getGridHeight() {
+  if (!props.track || !props.track.entries) return 200; // Minimum height
+  
+  const entryCount = props.track.entries.length;
+  const headerHeight = 80; // Header height from gridOptions
+  const rowHeight = 40; // Row height from gridOptions
+  const minHeight = 200; // Minimum grid height
+  const maxHeight = 800; // Maximum grid height to prevent excessive scrolling
+  
+  // Calculate height: header + (number of rows * row height) + some padding
+  const calculatedHeight = headerHeight + (entryCount * rowHeight) + 20;
+  
+  // Apply min/max constraints
+  return Math.min(Math.max(calculatedHeight, minHeight), maxHeight);
 }
 
 // Get latest entry values
@@ -1126,6 +1710,126 @@ function formatOoProgress() {
   }
 }
 
+// Time Drift Calculation
+function getTimeDriftStats() {
+  if (!props.track || !props.track.entries || props.track.entries.length < 2) {
+    return { driftDescription: 'Not enough data' };
+  }
+  
+  // Sort entries chronologically (oldest first)
+  const sortedEntries = [...props.track.entries].sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  // Get first and last entry
+  const firstEntry = sortedEntries[0];
+  const lastEntry = sortedEntries[sortedEntries.length - 1];
+  
+  // Get hours-in-tr resource
+  const hoursInTrResource = draggableResources.value.find(r => r.id === 'hours-in-tr');
+  if (!hoursInTrResource) {
+    return { driftDescription: 'Hours-in-TR not tracked' };
+  }
+  
+  // Calculate real time difference in hours from first entry timestamp to last entry timestamp
+  const realTimeStart = new Date(firstEntry.date);
+  const realTimeEnd = new Date(lastEntry.date);
+  const realTimeDiffMs = realTimeEnd - realTimeStart;
+  const realTimeHours = realTimeDiffMs / (1000 * 60 * 60);
+  
+  // Get game time from first and last entry to calculate the DIFFERENCE
+  const gameTimeStart = firstEntry.values?.['hours-in-tr'] || '0:00';
+  const gameTimeEnd = lastEntry.values?.['hours-in-tr'] || '0:00';
+  
+  // Parse time format "HHH:MM" to total hours
+  const parseTimeToHours = (timeStr) => {
+    if (!timeStr || timeStr === '') return 0;
+    const parts = String(timeStr).split(':');
+    if (parts.length !== 2) return 0;
+    const hours = parseInt(parts[0], 10) || 0;
+    const minutes = parseInt(parts[1], 10) || 0;
+    return hours + (minutes / 60);
+  };
+  
+  const gameHoursStart = parseTimeToHours(gameTimeStart);
+  const gameHoursEnd = parseTimeToHours(gameTimeEnd);
+  const gameTimeDiff = gameHoursEnd - gameHoursStart; // This is the actual game time that passed
+  
+  // Avoid division by zero
+  if (realTimeHours <= 0 || gameTimeDiff <= 0) {
+    return { driftDescription: 'Invalid time data' };
+  }
+  
+  // Calculate total drift in hours (positive = lost game time, negative = gained game time)
+  const totalDriftHours = realTimeHours - gameTimeDiff;
+  
+  // Calculate daily drift
+  const trackDuration = getTrackDuration(); // Duration in days
+  const dailyDriftHours = trackDuration > 0 ? totalDriftHours / trackDuration : 0;
+  
+  // Format drift description
+  let driftDescription;
+  if (Math.abs(totalDriftHours) < 0.1) {
+    driftDescription = 'No drift';
+  } else if (totalDriftHours > 0) {
+    const totalHours = Math.floor(Math.abs(totalDriftHours));
+    const totalMinutes = Math.round((Math.abs(totalDriftHours) - totalHours) * 60);
+    const dailyHours = Math.floor(Math.abs(dailyDriftHours));
+    const dailyMinutes = Math.round((Math.abs(dailyDriftHours) - dailyHours) * 60);
+    
+    let totalText = '';
+    if (totalHours > 0 && totalMinutes > 0) {
+      totalText = `${totalHours}h ${totalMinutes}m lost`;
+    } else if (totalHours > 0) {
+      totalText = `${totalHours}h lost`;
+    } else {
+      totalText = `${totalMinutes}m lost`;
+    }
+    
+    let dailyText = '';
+    if (dailyHours > 0 && dailyMinutes > 0) {
+      dailyText = `${dailyHours}h ${dailyMinutes}m/day`;
+    } else if (dailyHours > 0) {
+      dailyText = `${dailyHours}h/day`;
+    } else {
+      dailyText = `${dailyMinutes}m/day`;
+    }
+    
+    driftDescription = `${totalText} (${dailyText})`;
+  } else {
+    const totalHours = Math.floor(Math.abs(totalDriftHours));
+    const totalMinutes = Math.round((Math.abs(totalDriftHours) - totalHours) * 60);
+    const dailyHours = Math.floor(Math.abs(dailyDriftHours));
+    const dailyMinutes = Math.round((Math.abs(dailyDriftHours) - dailyHours) * 60);
+    
+    let totalText = '';
+    if (totalHours > 0 && totalMinutes > 0) {
+      totalText = `${totalHours}h ${totalMinutes}m gained`;
+    } else if (totalHours > 0) {
+      totalText = `${totalHours}h gained`;
+    } else {
+      totalText = `${totalMinutes}m gained`;
+    }
+    
+    let dailyText = '';
+    if (dailyHours > 0 && dailyMinutes > 0) {
+      dailyText = `${dailyHours}h ${dailyMinutes}m/day`;
+    } else if (dailyHours > 0) {
+      dailyText = `${dailyHours}h/day`;
+    } else {
+      dailyText = `${dailyMinutes}m/day`;
+    }
+    
+    driftDescription = `${totalText} (${dailyText})`;
+  }
+  
+  return { 
+    driftDescription,
+    totalDriftHours: totalDriftHours.toFixed(1),
+    dailyDriftHours: dailyDriftHours.toFixed(1),
+    realTimeHours: realTimeHours.toFixed(1),
+    gameTimeHours: gameTimeDiff.toFixed(1)
+  };
+}
+
 function getDaysDiff(date1, date2) {
   const d1 = new Date(date1);
   const d2 = new Date(date2);
@@ -1168,21 +1872,25 @@ function addNewEntry() {
     // Start editing only the first resource column, keep focus there
     nextTick(() => {
       setTimeout(() => {
-        // Get the first resource column
-        const firstResourceColumn = columnDefs.value.find(col => col.field.startsWith('resource_'));
+        // Get the first resource column from the current displayed order
+        const displayedColumns = gridApi.value.getAllDisplayedColumns();
+        const firstResourceColumn = displayedColumns.find(col => col.getColId().startsWith('resource_'));
+        
         if (firstResourceColumn) {
+          const firstColId = firstResourceColumn.getColId();
+          
           // Only start editing the first cell - don't edit all cells simultaneously
           gridApi.value.startEditingCell({
             rowIndex: 0,
-            colKey: firstResourceColumn.field
+            colKey: firstColId
           });
           
           // Set focus explicitly to the first cell
-          gridApi.value.setFocusedCell(0, firstResourceColumn.field);
+          gridApi.value.setFocusedCell(0, firstColId);
           
           // Focus the actual input element after a short delay
           setTimeout(() => {
-            const firstInput = document.querySelector(`[row-index="0"][col-id="${firstResourceColumn.field}"] .ag-cell-edit-input`);
+            const firstInput = document.querySelector(`[row-index="0"][col-id="${firstColId}"] .ag-cell-edit-input`);
             if (firstInput) {
               firstInput.focus();
               firstInput.select();
@@ -1351,6 +2059,40 @@ function onGridReady(params) {
   };
 }
 
+// Speichere Wert auch beim Verlassen der Zelle (z.B. Klick daneben)
+function onCellEditingStopped(event) {
+  // Für neue Einträge: nicht automatisch speichern, nur Wert übernehmen
+  if (event.data.isNew && event.data.isEditing) {
+    return;
+  }
+  // Für bestehende Einträge: wie onCellValueChanged behandeln
+  const entry = event.data;
+  saveEntry(entry);
+  
+  // If date column was changed, refresh all difference calculations since chronological order might have changed
+  if (event.column.getColId() === 'date') {
+    setTimeout(() => {
+      // Refresh all cells that show differences to recalculate based on new chronological order
+      const columnsToRefresh = [];
+      const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum'];
+      
+      showDifferenceFor.forEach(resourceId => {
+        columnsToRefresh.push(`resource_${resourceId}`);
+      });
+      
+      if (columnsToRefresh.length > 0) {
+        gridApi.value.refreshCells({
+          columns: columnsToRefresh,
+          force: true
+        });
+      }
+    }, 100);
+  } else {
+    // Update difference values in chronologically next entries for resource changes
+    updateDifferenceValues(event);
+  }
+}
+
 function onColumnMoved(event) {
   // Only process if it's actually finished moving
   if (!event.finished) return;
@@ -1411,6 +2153,77 @@ function onCellValueChanged(event) {
     setTimeout(() => {
       gridApi.value.autoSizeColumns([event.column.getColId()], false);
     }, 50);
+  }
+  
+  // If date column was changed, refresh all difference calculations since chronological order might have changed
+  if (event.column.getColId() === 'date') {
+    setTimeout(() => {
+      // Refresh all cells that show differences to recalculate based on new chronological order
+      const columnsToRefresh = [];
+      const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum'];
+      
+      showDifferenceFor.forEach(resourceId => {
+        columnsToRefresh.push(`resource_${resourceId}`);
+      });
+      
+      if (columnsToRefresh.length > 0) {
+        gridApi.value.refreshCells({
+          columns: columnsToRefresh,
+          force: true
+        });
+      }
+    }, 100);
+  } else {
+    // Update difference values in chronologically next entries for resource changes
+    updateDifferenceValues(event);
+  }
+}
+
+// Function to update difference values when a cell value changes
+function updateDifferenceValues(event) {
+  const changedResourceId = event.column.getColId().replace('resource_', '');
+  
+  // Only update differences for resources that show differences
+  const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum'];
+  if (!showDifferenceFor.includes(changedResourceId)) {
+    return;
+  }
+  
+  // Get all entries sorted chronologically
+  const allEntries = [];
+  gridApi.value.forEachNode(node => {
+    // Skip temporary entries
+    if (!node.data.id?.toString().startsWith('temp_')) {
+      allEntries.push(node.data);
+    }
+  });
+  
+  // Sort chronologically (oldest first) by date
+  const chronologicalEntries = allEntries.sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateA - dateB; // Oldest first
+  });
+  
+  // Find the changed entry
+  const changedEntryId = event.data.id;
+  const changedIndex = chronologicalEntries.findIndex(entry => entry.id === changedEntryId);
+  
+  if (changedIndex === -1) return;
+  
+  // Update all entries that come after the changed entry chronologically
+  for (let i = changedIndex + 1; i < chronologicalEntries.length; i++) {
+    const entryToUpdate = chronologicalEntries[i];
+    const rowNode = gridApi.value.getRowNode(entryToUpdate.id);
+    
+    if (rowNode) {
+      // Force re-render of the affected cell by refreshing it
+      gridApi.value.refreshCells({
+        rowNodes: [rowNode],
+        columns: [event.column.getColId()],
+        force: true
+      });
+    }
   }
 }
 
@@ -1811,4 +2624,78 @@ input[type="number"] {
   margin-right: 0 !important;
 }
 
+/* AG Grid Grip Icon fett und mit Hover-Effekt */
+:deep(.ag-header-cell-label .ag-grip-icon) {
+  font-weight: bold;
+  font-size: 18px;
+  display: block;
+  text-align: center;
+  transition: color 0.2s;
+  color: #b5b5b5;
+  cursor: grab;
+}
+:deep(.ag-header-cell-label:hover .ag-grip-icon) {
+  color: #38bdf8;
+}
+
+/* Header Hover-Effekt für alle Header-Zellen */
+:deep(.ag-grid-container) .ag-header-cell {
+  transition: background-color 0.2s ease;
+}
+:deep(.ag-grid-container) .ag-header-cell:hover {
+  background-color: rgba(55, 65, 81, 0.6) !important;
+}
+
+/* Spezieller Hover-Effekt für drag-header Spalten */
+:deep(.ag-grid-container) .ag-header-cell.drag-header:hover {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+</style>
+<style scoped>
+/* Nur das Grip-Symbol (erste Zeile) fett, Label normal */
+:deep(.ag-grid-container) .ag-header-cell.drag-header .ag-header-cell-text {
+  white-space: pre-line;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 2px;
+}
+:deep(.ag-grid-container) .ag-header-cell.drag-header .ag-header-cell-text:first-line {
+  font-weight: bold;
+  font-size: 1.3em;
+  color: #e0e0e0;
+  margin-top: 0;
+}
+
+/* Custom Drag Header Component Styling */
+.drag-header-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 4px;
+  text-align: center;
+}
+
+.drag-icon {
+  color: #e0e0e0;
+  margin-bottom: 4px;
+  transition: color 0.2s;
+  cursor: grab;
+}
+
+.drag-header-container:hover .drag-icon {
+  color: #60a5fa;
+}
+
+.drag-label {
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: pre-line;
+  color: inherit;
+}
 </style>

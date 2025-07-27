@@ -198,6 +198,20 @@
                       <IconChartLine size="16" />
                     </button>
                     <button
+                      @click="editTrack(track)"
+                      class="p-1.5 text-gray-400 hover:text-yellow-400 hover:bg-yellow-900/20 rounded transition-colors"
+                      title="Edit Track Settings"
+                    >
+                      <IconEdit size="16" />
+                    </button>
+                    <button
+                      @click="copyTrack(track)"
+                      class="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-900/20 rounded transition-colors"
+                      title="Copy Track"
+                    >
+                      <IconCopy size="16" />
+                    </button>
+                    <button
                       @click="deleteTrack(track)"
                       class="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded transition-colors"
                       title="Delete Track"
@@ -237,6 +251,14 @@
       @save="handleNewTRSave"
     />
 
+    <NewTRModal
+      :show="showEditTRModal"
+      :edit-mode="true"
+      :track-data="currentTrack"
+      @close="showEditTRModal = false"
+      @save="handleEditTRSave"
+    />
+
     <TrackDetailsModal
       :show="showTrackDetailsModal"
       :track="currentTrack"
@@ -259,6 +281,18 @@
       @close="showImportExportModal = false"
       @import="handleImportExport"
     />
+
+    <AlertDialog
+      :is-visible="alertDialog.isVisible"
+      :title="alertDialog.title"
+      :message="alertDialog.message"
+      :type="alertDialog.type"
+      :show-cancel="alertDialog.showCancel"
+      :confirm-text="alertDialog.confirmText"
+      :cancel-text="alertDialog.cancelText"
+      @confirm="confirmDialog"
+      @cancel="cancelDialog"
+    />
   </div>
 </template>
 
@@ -273,7 +307,9 @@ import {
   IconChevronDown,
   IconDatabase,
   IconTrash,
-  IconShare
+  IconShare,
+  IconCopy,
+  IconEdit
 } from '@tabler/icons-vue';
 
 // Components
@@ -282,6 +318,7 @@ import NewTRModal from '@/components/tr-tracking/NewTRModal.vue';
 import TrackDetailsModal from '@/components/tr-tracking/TrackDetailsModal.vue';
 import ProgressModal from '@/components/tr-tracking/ProgressModal.vue';
 import ImportExportModal from '@/components/tr-tracking/ImportExportModal.vue';
+import AlertDialog from '@/components/common/AlertDialog.vue';
 
 // Store
 const trTrackingStore = useTRTrackingStore();
@@ -289,10 +326,23 @@ const trTrackingStore = useTRTrackingStore();
 // Reactive data
 const showResourceSettingsModal = ref(false);
 const showNewTRModal = ref(false);
+const showEditTRModal = ref(false);
 const showTrackDetailsModal = ref(false);
 const showProgressModal = ref(false);
 const showImportExportModal = ref(false);
 const currentTrack = ref(null);
+
+// AlertDialog state
+const alertDialog = ref({
+  isVisible: false,
+  title: '',
+  message: '',
+  type: 'info',
+  showCancel: true,
+  confirmText: 'OK',
+  cancelText: 'Cancel',
+  onConfirm: null
+});
 
 // Computed
 const selectedResources = computed(() => trTrackingStore.selectedResources);
@@ -406,6 +456,18 @@ function handleNewTRSave(trackData) {
   showNewTRModal.value = false;
 }
 
+function handleEditTRSave(trackData) {
+  // Update the existing track with new data
+  trTrackingStore.updateTRTrackSettings(currentTrack.value.id, trackData);
+  showEditTRModal.value = false;
+  currentTrack.value = null;
+}
+
+function editTrack(track) {
+  currentTrack.value = track;
+  showEditTRModal.value = true;
+}
+
 function handleTrackUpdate(updateData) {
   const { action, trackId, entryId, entry } = updateData;
   
@@ -459,9 +521,73 @@ function handleTrackUpdate(updateData) {
   }
 }
 
+// Dialog functions
+function showDialog(options) {
+  alertDialog.value = {
+    isVisible: true,
+    title: options.title || 'Alert',
+    message: options.message || '',
+    type: options.type || 'info',
+    showCancel: options.showCancel !== undefined ? options.showCancel : true,
+    confirmText: options.confirmText || 'OK',
+    cancelText: options.cancelText || 'Cancel',
+    onConfirm: options.onConfirm || null
+  };
+}
+
+function confirmDialog() {
+  if (alertDialog.value.onConfirm) {
+    alertDialog.value.onConfirm();
+  }
+  alertDialog.value.isVisible = false;
+}
+
+function cancelDialog() {
+  alertDialog.value.isVisible = false;
+}
+
 function deleteTrack(track) {
-  if (confirm(`Are you sure you want to delete "${track.name}"? This action cannot be undone.`)) {
-    trTrackingStore.deleteTRTrack(track.id);
+  showDialog({
+    title: 'Delete TR Track',
+    message: `Are you sure you want to delete "${track.name}"? This action cannot be undone.`,
+    type: 'error',
+    confirmText: 'Yes, Delete',
+    cancelText: 'Cancel',
+    onConfirm: () => {
+      trTrackingStore.deleteTRTrack(track.id);
+    }
+  });
+}
+
+function copyTrack(track) {
+  // Create a copy of the track with a new name and reset some properties
+  const copiedTrack = {
+    ...track,
+    id: undefined, // Will be generated by the store
+    name: `${track.name} (Copy)`,
+    isActive: true, // New copy should be active
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    // Copy all entries from the original track
+    entries: track.entries.map(entry => ({
+      ...entry,
+      id: undefined // Will be generated by the store for each entry
+    })),
+    // Keep the same resources and settings
+    selectedResources: track.selectedResources,
+    resourceOrder: track.resourceOrder,
+    targetGoals: track.targetGoals
+  };
+  
+  try {
+    const newTrack = trTrackingStore.createTRTrack(copiedTrack);
+    console.log('Track copied successfully:', newTrack.name);
+    
+    // Optional: Show success message to user
+    // You could add a toast notification here if you have one
+  } catch (error) {
+    console.error('Failed to copy track:', error);
+    alert('Failed to copy track. Please try again.');
   }
 }
 

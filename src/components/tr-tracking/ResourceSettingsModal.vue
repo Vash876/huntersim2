@@ -221,21 +221,17 @@ const enabledCustomResourcesCount = computed(() => {
 // Watch for prop changes
 watch(() => props.show, (newVal) => {
   if (newVal) {
+    // Ensure store is initialized first
+    trTrackingStore.init();
     // Initialize with current store state when modal opens
     localSelectedResources.value = [...trTrackingStore.selectedResources];
+    console.log('Modal opened, local resources set to:', localSelectedResources.value.map(r => r.id));
   }
 });
 
 // Keep props.selectedResources for backward compatibility
 watch(() => props.selectedResources, (newVal) => {
-  if (newVal && newVal.length > 0) {
-    localSelectedResources.value = [...newVal];
-  }
-}, { immediate: true });
-
-// Also watch store changes to keep in sync
-watch(() => trTrackingStore.selectedResources, (newVal) => {
-  if (props.show && newVal) {
+  if (newVal && newVal.length > 0 && !props.show) {
     localSelectedResources.value = [...newVal];
   }
 }, { immediate: true });

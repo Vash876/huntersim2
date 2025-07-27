@@ -515,14 +515,14 @@ export const allBoosts = [
   {
     id: 21,
     key: 'research',
-    label: 'Research Points',
+    label: 'Current Research Points',
     category: 'research',
     unlock: 'innovation',
     unlock_level: 2,
     type: 'number',
     orbcalc: true,
     permanent: false,
-    tooltip: 'Enter your Research Points...',
+    tooltip: '0',
     normalControl: 100,
     fastControl: 1000,
     multiplier: (value, allValues) => {

@@ -167,6 +167,7 @@ const discordCode = computed(() => {
     const hunterId = props.build.hunter || props.build.hunterId;
     const hunterInfo = getHunterById(hunterId);
     const hunterName = hunterInfo.name;
+    const hunterLevelEmoji = hunterInfo.discord_level_image || '⭐';
     
     // Build basic info
     const buildName = props.build.name || 'Unnamed Build';
@@ -182,7 +183,7 @@ const discordCode = computed(() => {
     }
     
     // Create Discord format with build stats
-    return `🏹 **${hunterName}** • Level ${buildLevel} • 💰 ${lootScore} Loot Score
+    return `**${hunterName}** • ${hunterLevelEmoji} Level ${buildLevel} • 💰 ${lootScore} Loot Score
 \`\`\`
 ${rawBuildCode}
 \`\`\``;

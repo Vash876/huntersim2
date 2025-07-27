@@ -21,6 +21,7 @@ export const HUNTERS = [
     color: 'red',
     icon: IconTool,
     image: iconBorge,
+    discord_level_image: ':CIFI_EXPHuntBorge:',
     statsModule: () => import('./borge'),
   },
   {
@@ -29,6 +30,7 @@ export const HUNTERS = [
     color: 'green',
     icon: IconProng,
     image: iconOzzy,
+    discord_level_image: ':CIFI_EXPHuntOzzy:',
     statsModule: () => import('./ozzy'),
   },
   {
@@ -37,6 +39,7 @@ export const HUNTERS = [
     color: 'blue',
     icon: IconAnchor,
     image: iconKnox,
+    discord_level_image: ':CIFI_EXPHuntKnox:',
     statsModule: () => import('./knox'),
   }
 ];

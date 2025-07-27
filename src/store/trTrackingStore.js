@@ -4,26 +4,26 @@ import { generateId } from '@/utils/base58';
 
 // Default available resources that users can choose from
 const DEFAULT_AVAILABLE_RESOURCES = [
-  { id: 'hours-in-tr', name: 'Hours in TR', color: '#ffffff', category: 'main' },
-  { id: 'oo-accum', name: 'OO (Accum)', color: '#a200ff', category: 'main' },
-  { id: 'lr-ticks', name: 'LR Ticks', color: '#ffffff', category: 'main' },
-  { id: 'lr-count', name: 'LR Count', color: '#ffffff', category: 'main' },
-  { id: 'loops-filled', name: 'Loops Filled', color: '#ffffff', category: 'main' },
-  { id: 'loop-mods-purchased', name: 'Loop Mods Purchased', color: '#ff0000', category: 'main' },
-  { id: 'attgn3-buff', name: 'AttGN3 Buff', color: '#00d9ff', category: 'main' },
-  { id: 'cells', name: 'Cells', color: '#00b90f', category: 'resources' },
-  { id: 'mp', name: 'MP', color: '#ff0000', category: 'resources' },
-  { id: 'mp-accum', name: 'MP (Accum)', color: '#ff0000', category: 'resources' },
-  { id: 'shards', name: 'Shards', color: '#00d9ff', category: 'resources' },
-  { id: 'rp', name: 'RP', color: '#ffa600', category: 'resources' },
-  { id: 'ap', name: 'AP', color: '#464cff', category: 'resources' },
-  { id: 'blueprints', name: 'Blueprints', color: '#ffffff', category: 'zeus' },
-  { id: 'f1-1-difar', name: 'F1-1 Difar', color: '#ffffff', category: 'zeus' },
-  { id: 'inno-cores', name: 'Inno Cores', color: '#ffffff', category: 'zeus' },
-  { id: 'daily-farm-frags', name: 'Daily Farm Frags', color: '#ffffff', category: 'zeus' },
-  { id: 'current-camp', name: 'Current Camp', color: '#ffffff', category: 'camp' },
-  { id: 'camp-timer', name: 'Camp Timer', color: '#ffffff', category: 'camp' },
-  { id: 'notes', name: 'Notes', color: '#ffffff', category: 'other' },
+  { id: 'hours-in-tr', name: 'Time in TR', color: '#ffffff', category: 'main', format: 'time' },
+  { id: 'oo-accum', name: 'OO (Accum)', color: '#a200ff', category: 'main', format: 'number' },
+  { id: 'lr-ticks', name: 'LR Ticks', color: '#ffffff', category: 'main', format: 'number' },
+  { id: 'lr-count', name: 'LR Count', color: '#ffffff', category: 'main', format: 'number' },
+  { id: 'loops-filled', name: 'Loops Filled', color: '#ffffff', category: 'main', format: 'number' },
+  { id: 'loop-mods-purchased', name: 'Loop Mods Purchased', color: '#ff0000', category: 'main', format: 'number' },
+  { id: 'attgn3-buff', name: 'AttGN3 Buff', color: '#00d9ff', category: 'main', format: 'number' },
+  { id: 'cells', name: 'Cells', color: '#00b90f', category: 'resources', format: 'number' },
+  { id: 'mp', name: 'MP', color: '#ff0000', category: 'resources', format: 'number' },
+  { id: 'mp-accum', name: 'MP (Accum)', color: '#ff0000', category: 'resources', format: 'number' },
+  { id: 'shards', name: 'Shards', color: '#00d9ff', category: 'resources', format: 'number' },
+  { id: 'rp', name: 'RP', color: '#ffa600ff', category: 'resources', format: 'number' },
+  { id: 'ap', name: 'AP', color: '#464cff', category: 'resources', format: 'number' },
+  { id: 'blueprints', name: 'Blueprints', color: '#ffffff', category: 'zeus', format: 'number' },
+  { id: 'f1-1-difar', name: 'F1-1 Difar', color: '#ffffff', category: 'zeus', format: 'number' },
+  { id: 'inno-cores', name: 'Inno Cores', color: '#ffffff', category: 'zeus', format: 'number' },
+  { id: 'ulti-badge', name: 'Ultima Badges', color: '#FFDE21', category: 'zeus', format: 'number' },
+  { id: 'current-camp', name: 'Current Camp', color: '#ffffff', category: 'camp', format: 'camp' },
+  { id: 'camp-timer', name: 'Camp Timer', color: '#ffffff', category: 'camp', format: 'time' },
+  { id: 'notes', name: 'Notes', color: '#ffffff', category: 'other', format: 'text' },
 ];
 
 // Default selected resources for new users
@@ -68,14 +68,29 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
 
   function loadFromStorage() {
     try {
+
       // Load selected resources
       const savedSelectedResources = localStorage.getItem('tr_tracking_selected_resources');
       if (savedSelectedResources) {
-        selectedResources.value = JSON.parse(savedSelectedResources);
+        let loaded = JSON.parse(savedSelectedResources);
+        // Falls es ein Array von IDs ist, umwandeln in Resource-Objekte
+        if (Array.isArray(loaded) && typeof loaded[0] === 'string') {
+          selectedResources.value = DEFAULT_AVAILABLE_RESOURCES.filter(res => loaded.includes(res.id));
+        } else if (Array.isArray(loaded) && typeof loaded[0] === 'object') {
+          // Falls es schon Objekte sind, aber evtl. aus älteren Versionen, immer auf aktuelle Resource-Objekte mappen
+          selectedResources.value = loaded.map(sel => {
+            const match = DEFAULT_AVAILABLE_RESOURCES.find(res => res.id === sel.id);
+            return match ? match : sel;
+          });
+        } else {
+          selectedResources.value = getDefaultSelectedResources();
+        }
       } else {
         // Set default selected resources for new users
         selectedResources.value = getDefaultSelectedResources();
         console.log('Setting default selected resources for new user:', selectedResources.value.map(r => r.id));
+        // Save defaults immediately so they persist
+        saveToStorage();
       }
 
       // Load custom resources and merge with defaults
@@ -183,17 +198,25 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       id: generateId(),
       name: trackData.name,
       startDate: trackData.startDate || new Date().toISOString().split('T')[0],
-      endDate: null,
-      isActive: true,
-      entries: [],
+      endDate: trackData.endDate || null,
+      isActive: trackData.isActive !== undefined ? trackData.isActive : true,
+      entries: trackData.entries || [], // Use provided entries or empty array
       notes: trackData.notes || '',
-      resourceOrder: generateDefaultResourceOrder(), // Set default resource order based on store order
+      resourceOrder: trackData.resourceOrder || generateDefaultResourceOrder(), // Use provided order or generate default
       trCount: trackData.trCount || null,
       initialValues: trackData.initialValues || null,
       targetGoals: trackData.targetGoals || null,
-      createdAt: new Date().toISOString(),
+      createdAt: trackData.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
+
+    // If entries were provided, ensure each entry has an ID
+    if (newTrack.entries && newTrack.entries.length > 0) {
+      newTrack.entries = newTrack.entries.map(entry => ({
+        ...entry,
+        id: entry.id || generateId() // Generate ID if not present
+      }));
+    }
 
     trTracks.value.push(newTrack);
     saveToStorage();
@@ -236,6 +259,40 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       updatedAt: new Date().toISOString()
     };
     
+    saveToStorage();
+    return true;
+  }
+
+  function updateTRTrackSettings(trackId, settingsData) {
+    const track = trTracks.value.find(track => track.id === trackId);
+    if (!track) {
+      console.warn('Track not found for settings update:', trackId);
+      return false;
+    }
+
+    // Update basic track information
+    if (settingsData.name) track.name = settingsData.name;
+    if (settingsData.startDate) track.startDate = settingsData.startDate;
+    if (settingsData.notes) track.notes = settingsData.notes;
+    if (settingsData.trCount !== undefined) track.trCount = settingsData.trCount;
+    
+    // Update target goals
+    if (settingsData.targetGoals) {
+      track.targetGoals = {
+        ...track.targetGoals,
+        ...settingsData.targetGoals
+      };
+    }
+
+    // Update initial values (stored in track metadata)
+    if (settingsData.initialValues) {
+      track.initialValues = {
+        ...track.initialValues,
+        ...settingsData.initialValues
+      };
+    }
+
+    track.updatedAt = new Date().toISOString();
     saveToStorage();
     return true;
   }
@@ -498,6 +555,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     removeCustomResource,
     createTRTrack,
     updateTRTrack,
+    updateTRTrackSettings,
     updateResourceOrder,
     deleteTRTrack,
     completeTRTrack,

@@ -12,8 +12,9 @@
       <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-2.5 border-b border-gray-600 flex justify-between items-center">
         <div>
           <h3 class="text-base font-bold text-white flex items-center">
-            <IconPlus size="16" class="mr-2 text-green-400" />
-            TR Tracking - New Plan
+            <IconPlus v-if="!editMode" size="16" class="mr-2 text-green-400" />
+            <IconEdit v-else size="16" class="mr-2 text-yellow-400" />
+            {{ editMode ? 'Edit TR Track Settings' : 'TR Tracking - Starting Values' }}
           </h3>
         </div>
         <div class="flex gap-2">
@@ -28,7 +29,9 @@
 
       <!-- Description -->
       <div class="px-3 py-2 border-b border-gray-700">
-        <p class="text-xs text-gray-300">Create a new TR tracking plan. Enter your current values and goals for this Traversal Reset.</p>
+        <p class="text-xs text-gray-300">
+          {{ editMode ? 'Edit the basic settings and goals for this TR tracking plan.' : 'Create a new TR tracking plan. Enter your current values and goals for this Traversal Reset.' }}
+        </p>
       </div>
 
       <!-- Content -->
@@ -102,7 +105,16 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             <!-- Row 1 -->
             <div class="border border-gray-700 rounded-md p-2 bg-gray-700/30 flex items-center justify-between">
-              <label class="text-xs font-medium text-gray-200">OO Lifetime</label>
+              <label class="text-xs font-medium text-gray-200 flex items-center">
+                OO Lifetime
+                <InfoTooltip 
+                  class="ml-1"
+                  content="<b>Supported formats:</b><br/>
+                  • Suffixes: <code>1k</code>, <code>2.5m</code>, <code>100b</code>, <code>5t</code><br/>
+                  • Available suffixes: k, m, b, t, qa, qu, sx, sp, oc, n, d<br/>"
+                  placement="top"
+                />
+              </label>
               <SuffixInput
                 v-model="formData.currentValues.ooLifetime"
                 placeholder="0.00"
@@ -111,7 +123,16 @@
               />
             </div>
             <div class="border border-gray-700 rounded-md p-2 bg-gray-700/30 flex items-center justify-between">
-              <label class="text-xs font-medium text-gray-200">Frags Lifetime</label>
+              <label class="text-xs font-medium text-gray-200 flex items-center">
+                Frags Lifetime
+                <InfoTooltip 
+                  class="ml-1"
+                  content="<b>Supported formats:</b><br/>
+                  • Suffixes: <code>1k</code>, <code>2.5m</code>, <code>100b</code>, <code>5t</code><br/>
+                  • Available suffixes: k, m, b, t, qa, qu, sx, sp, oc, n, d<br/>"
+                  placement="top"
+                />
+              </label>
               <SuffixInput
                 v-model="formData.currentValues.fragsLifetime"
                 placeholder="0.00"
@@ -215,7 +236,16 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             <!-- Row 1 -->
             <div class="border border-gray-700 rounded-md p-2 bg-gray-700/30 flex items-center justify-between">
-              <label class="text-xs font-medium text-gray-200">OO Goal</label>
+              <label class="text-xs font-medium text-gray-200 flex items-center">
+                OO Goal
+                <InfoTooltip 
+                  class="ml-1"
+                  content="<b>Supported formats:</b><br/>
+                  • Suffixes: <code>1k</code>, <code>2.5m</code>, <code>100b</code>, <code>5t</code><br/>
+                  • Available suffixes: k, m, b, t, qa, qu, sx, sp, oc, n, d<br/>"
+                  placement="top"
+                />
+              </label>
               <SuffixInput
                 v-model="formData.targetGoals.ooGoal"
                 placeholder="0.00"
@@ -296,8 +326,9 @@
           :disabled="!formData.planName.trim()"
           class="px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs flex items-center gap-1"
         >
-          <IconPlus size="12" />
-          Create Plan
+          <IconPlus v-if="!editMode" size="12" />
+          <IconEdit v-else size="12" />
+          {{ editMode ? 'Update Plan' : 'Create Plan' }}
         </button>
       </div>
     </div>
@@ -307,13 +338,22 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
-import { IconX, IconPlus } from '@tabler/icons-vue';
+import { IconX, IconPlus, IconEdit } from '@tabler/icons-vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
 import { generateId } from '@/utils/base58';
 
 const props = defineProps({
-  show: Boolean
+  show: Boolean,
+  editMode: {
+    type: Boolean,
+    default: false
+  },
+  trackData: {
+    type: Object,
+    default: null
+  }
 });
 
 const emit = defineEmits(['close', 'save']);
@@ -356,33 +396,65 @@ watch(() => props.show, (newVal) => {
 
 // Methods
 function resetForm() {
-  const now = new Date();
-  
-  formData.value = {
-    trCount: 1,
-    startDate: now.toISOString().split('T')[0],
-    startTime: now.toTimeString().slice(0, 5),
-    planName: 'TR Plan',
-    currentValues: {
-      ooLifetime: 0,
-      fragsLifetime: 0,
-      tsMilestones: {
-        level1: 0,
-        level2: 0,
-        level3: 0
+  if (props.editMode && props.trackData) {
+    // Edit mode: Load existing track data
+    const startDateTime = new Date(props.trackData.startDate);
+    
+    formData.value = {
+      trCount: props.trackData.trCount || 1,
+      startDate: startDateTime.toISOString().split('T')[0],
+      startTime: startDateTime.toTimeString().slice(0, 5),
+      planName: props.trackData.name || '',
+      currentValues: {
+        ooLifetime: props.trackData.initialValues?.ooLifetime || 0,
+        fragsLifetime: props.trackData.initialValues?.fragsLifetime || 0,
+        tsMilestones: {
+          level1: props.trackData.initialValues?.tsMilestones?.level1 || 0,
+          level2: props.trackData.initialValues?.tsMilestones?.level2 || 0,
+          level3: props.trackData.initialValues?.tsMilestones?.level3 || 0
+        },
+        borgeLevel: props.trackData.initialValues?.borgeLevel || 0,
+        ozzyLevel: props.trackData.initialValues?.ozzyLevel || 0,
+        knoxLevel: props.trackData.initialValues?.knoxLevel || 0
       },
-      borgeLevel: 0,
-      ozzyLevel: 0,
-      knoxLevel: 0
-    },
-    targetGoals: {
-      ooGoal: 0,
-      m0Goal: 0,
-      cellsGoal: 0,
-      mpGoal: 0,
-      rpGoal: 0
-    }
-  };
+      targetGoals: {
+        ooGoal: props.trackData.targetGoals?.ooGoal || 0,
+        m0Goal: props.trackData.targetGoals?.m0Goal || 0,
+        cellsGoal: props.trackData.targetGoals?.cellsGoal || 0,
+        mpGoal: props.trackData.targetGoals?.mpGoal || 0,
+        rpGoal: props.trackData.targetGoals?.rpGoal || 0
+      }
+    };
+  } else {
+    // Create mode: Use default values
+    const now = new Date();
+    
+    formData.value = {
+      trCount: 1,
+      startDate: now.toISOString().split('T')[0],
+      startTime: now.toTimeString().slice(0, 5),
+      planName: 'TR Plan',
+      currentValues: {
+        ooLifetime: 0,
+        fragsLifetime: 0,
+        tsMilestones: {
+          level1: 0,
+          level2: 0,
+          level3: 0
+        },
+        borgeLevel: 0,
+        ozzyLevel: 0,
+        knoxLevel: 0
+      },
+      targetGoals: {
+        ooGoal: 0,
+        m0Goal: 0,
+        cellsGoal: 0,
+        mpGoal: 0,
+        rpGoal: 0
+      }
+    };
+  }
 }
 
 function createPlan() {
@@ -391,7 +463,7 @@ function createPlan() {
   const trackData = {
     name: formData.value.planName.trim(),
     startDate: `${formData.value.startDate}T${formData.value.startTime}:00.000Z`,
-    notes: `TR ${formData.value.trCount} - Started with goals: OO ${formData.value.targetGoals.ooGoal}, Cells ${formData.value.targetGoals.cellsGoal}e, MP ${formData.value.targetGoals.mpGoal}e, RP ${formData.value.targetGoals.rpGoal}e`,
+    notes: `TR ${formData.value.trCount} - ${props.editMode ? 'Updated' : 'Started'} with goals: OO ${formData.value.targetGoals.ooGoal}, Cells ${formData.value.targetGoals.cellsGoal}e, MP ${formData.value.targetGoals.mpGoal}e, RP ${formData.value.targetGoals.rpGoal}e`,
     trCount: formData.value.trCount,
     initialValues: {
       ooLifetime: formData.value.currentValues.ooLifetime,
