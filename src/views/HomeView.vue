@@ -3,7 +3,7 @@ const changelog =
 [
   {
     version: '2.7.0',
-    date: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    date: '2025-07-27',
     changes: [
       {
         text: '<b class="text-yellow-400">NEW:</b> Cloud Sync System',

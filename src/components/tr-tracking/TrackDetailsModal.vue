@@ -2265,7 +2265,7 @@ function deleteEntry(entry) {
 function completeTR() {
   showDialog({
     title: 'Complete TR Track',
-    message: 'Mark this TR as completed? You can still view the data but no longer add entries.',
+    message: 'Mark this TR as completed?',
     type: 'warning',
     confirmText: 'Yes, Complete',
     cancelText: 'Cancel',

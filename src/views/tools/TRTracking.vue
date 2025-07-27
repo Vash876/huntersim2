@@ -25,11 +25,11 @@
             </button>
             
             <button
-              @click="openImportExportModal"
+              @click="openImportModal"
               class="flex items-center justify-between px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors shadow-sm"
             >
-              <span>Import / Export</span>
-              <IconShare size="16" />
+              <span>Import</span>
+              <IconDownload size="16" />
             </button>
             
             <button
@@ -53,11 +53,11 @@
             </button>
             
             <button
-              @click="openImportExportModal"
+              @click="openImportModal"
               class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white border-r border-purple-700 flex items-center gap-2 transition-colors shadow-sm"
             >
-              <IconShare size="16" />
-              <span>Import / Export</span>
+              <IconDownload size="16" />
+              <span>Import</span>
             </button>
             
             <button
@@ -198,6 +198,13 @@
                       <IconChartLine size="16" />
                     </button>
                     <button
+                      @click="shareTrack(track)"
+                      class="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-900/20 rounded transition-colors"
+                      title="Share Track Code"
+                    >
+                      <IconShare size="16" />
+                    </button>
+                    <button
                       @click="editTrack(track)"
                       class="p-1.5 text-gray-400 hover:text-yellow-400 hover:bg-yellow-900/20 rounded transition-colors"
                       title="Edit Track Settings"
@@ -206,7 +213,7 @@
                     </button>
                     <button
                       @click="copyTrack(track)"
-                      class="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-900/20 rounded transition-colors"
+                      class="p-1.5 text-gray-400 hover:text-cyan-400 hover:bg-cyan-900/20 rounded transition-colors"
                       title="Copy Track"
                     >
                       <IconCopy size="16" />
@@ -274,12 +281,16 @@
       @close="showProgressModal = false"
     />
 
-    <ImportExportModal
-      :show="showImportExportModal"
-      :tracks="trTracks"
-      :selectedResources="selectedResources"
-      @close="showImportExportModal = false"
-      @import="handleImportExport"
+    <ImportModal
+      :show="showImportModal"
+      @close="showImportModal = false"
+      @import="handleImport"
+    />
+
+    <ShareTrackModal
+      :show="showShareTrackModal"
+      :track="currentTrack"
+      @close="showShareTrackModal = false"
     />
 
     <AlertDialog
@@ -309,7 +320,8 @@ import {
   IconTrash,
   IconShare,
   IconCopy,
-  IconEdit
+  IconEdit,
+  IconDownload
 } from '@tabler/icons-vue';
 
 // Components
@@ -317,7 +329,8 @@ import ResourceSettingsModal from '@/components/tr-tracking/ResourceSettingsModa
 import NewTRModal from '@/components/tr-tracking/NewTRModal.vue';
 import TrackDetailsModal from '@/components/tr-tracking/TrackDetailsModal.vue';
 import ProgressModal from '@/components/tr-tracking/ProgressModal.vue';
-import ImportExportModal from '@/components/tr-tracking/ImportExportModal.vue';
+import ImportModal from '@/components/tr-tracking/ImportModal.vue';
+import ShareTrackModal from '@/components/tr-tracking/ShareTrackModal.vue';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 
 // Store
@@ -329,7 +342,8 @@ const showNewTRModal = ref(false);
 const showEditTRModal = ref(false);
 const showTrackDetailsModal = ref(false);
 const showProgressModal = ref(false);
-const showImportExportModal = ref(false);
+const showImportModal = ref(false);
+const showShareTrackModal = ref(false);
 const currentTrack = ref(null);
 
 // AlertDialog state
@@ -356,8 +370,13 @@ function openResourceSettingsModal() {
   showResourceSettingsModal.value = true;
 }
 
-function openImportExportModal() {
-  showImportExportModal.value = true;
+function openImportModal() {
+  showImportModal.value = true;
+}
+
+function shareTrack(track) {
+  currentTrack.value = track;
+  showShareTrackModal.value = true;
 }
 
 function openNewTRModal() {
@@ -591,28 +610,11 @@ function copyTrack(track) {
   }
 }
 
-// Handle import/export
-function handleImportExport(data) {
-  try {
-    if (data.type === 'single') {
-      // Import single track
-      const importedTrack = trTrackingStore.importTrackData(data.track);
-      console.log('Imported track:', importedTrack.name);
-    } else if (data.type === 'multiple') {
-      // Import multiple tracks
-      const importedTracks = trTrackingStore.importMultipleTracksData(
-        data.tracks, 
-        data.resources, 
-        { replaceResources: data.replaceResources }
-      );
-      console.log('Imported tracks:', importedTracks.length);
-    }
-    
-    showImportExportModal.value = false;
-  } catch (error) {
-    console.error('Import failed:', error);
-    // Error handling is done in the modal
-  }
+// Handle import
+function handleImport(trackData) {
+  // Add the imported track to the store
+  trTrackingStore.createTRTrack(trackData);
+  showImportModal.value = false;
 }
 
 // Lifecycle
