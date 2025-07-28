@@ -242,9 +242,11 @@ import {
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  TimeScale
 } from 'chart.js';
 import { Line, Bar } from 'vue-chartjs';
+import 'chartjs-adapter-date-fns';
 
 // Register Chart.js components
 ChartJS.register(
@@ -256,7 +258,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  TimeScale
 );
 
 const props = defineProps({
@@ -347,37 +350,19 @@ const chartLabels = computed(() => {
     const hasTimeInTR = sortedEntries.value.some(entry => entry.values && entry.values['hours-in-tr']);
     
     if (!hasTimeInTR) {
-      // Fallback to timestamp if Time in TR is not available
+      // Fallback to timestamp if Time in TR is not available - use Date objects for time axis
       console.warn('Time in TR data not available, falling back to timestamps');
-      return sortedEntries.value.map(entry => {
-        const date = new Date(entry.date);
-        return date.toLocaleString(undefined, {
-          year: 'numeric',
-          month: '2-digit', 
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-      });
+      return sortedEntries.value.map(entry => new Date(entry.date));
     }
     
-    // Use "Time in TR" values for X-axis
+    // Use "Time in TR" values for X-axis - keep as strings for category axis
     return sortedEntries.value.map(entry => {
       const timeInTR = entry.values['hours-in-tr'] || '0:00';
       return timeInTR;
     });
   } else {
-    // Use log timestamps for X-axis (default) - use native browser localization like TrackDetailsModal
-    return sortedEntries.value.map(entry => {
-      const date = new Date(entry.date);
-      return date.toLocaleString(undefined, {
-        year: 'numeric',
-        month: '2-digit', 
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    });
+    // Use Date objects for proper time axis formatting
+    return sortedEntries.value.map(entry => new Date(entry.date));
   }
 });
 
@@ -437,10 +422,11 @@ const darkThemeOptions = computed(() => ({
   },
   scales: {
     x: {
+      type: xAxisType.value === 'timeInTR' ? 'category' : 'time',
       display: true,
       title: {
         display: true,
-        text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Timestamp',
+        text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
         color: '#e5e7eb',
         font: {
           size: 12,
@@ -459,8 +445,19 @@ const darkThemeOptions = computed(() => ({
           size: 11
         },
         maxTicksLimit: 8,
-        display: true
-      }
+        display: true,
+        autoSkip: true
+      },
+      ...(xAxisType.value !== 'timeInTR' && {
+        time: {
+          tooltipFormat: 'Pp',
+          displayFormats: {
+            minute: 'HH:mm',
+            hour: 'dd.MM HH:mm',
+            day: 'dd.MM.yyyy'
+          }
+        }
+      })
     },
     y: {
       display: true,
@@ -601,6 +598,7 @@ const chartOptions = computed(() => {
       ...darkThemeOptions.value.scales,
       x: {
         ...darkThemeOptions.value.scales.x,
+        type: xAxisType.value === 'timeInTR' ? 'category' : 'time',
         title: {
           display: true,
           text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
@@ -608,7 +606,17 @@ const chartOptions = computed(() => {
           font: {
             size: 12
           }
-        }
+        },
+        ...(xAxisType.value !== 'timeInTR' && {
+          time: {
+            tooltipFormat: 'Pp',
+            displayFormats: {
+              minute: 'HH:mm',
+              hour: 'dd.MM HH:mm',
+              day: 'dd.MM.yyyy'
+            }
+          }
+        })
       },
       y: yAxisConfig
     },
@@ -706,6 +714,7 @@ const gainsChartOptions = computed(() => {
       ...darkThemeOptions.value.scales,
       x: {
         ...darkThemeOptions.value.scales.x,
+        type: xAxisType.value === 'timeInTR' ? 'category' : 'time',
         title: {
           display: true,
           text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
@@ -713,7 +722,17 @@ const gainsChartOptions = computed(() => {
           font: {
             size: 12
           }
-        }
+        },
+        ...(xAxisType.value !== 'timeInTR' && {
+          time: {
+            tooltipFormat: 'Pp',
+            displayFormats: {
+              minute: 'HH:mm',
+              hour: 'dd.MM HH:mm',
+              day: 'dd.MM.yyyy'
+            }
+          }
+        })
       },
       y: yAxisConfig
     },
