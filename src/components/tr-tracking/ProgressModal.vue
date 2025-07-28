@@ -301,7 +301,12 @@ watch(() => props.show, (newShow) => {
         .filter(r => !defaultResources.includes(r.id))
         .slice(0, 4 - availableDefaults.length)
         .map(r => r.id);
-      chartSelectedResources.value = [...availableDefaults, ...otherResources];
+      
+      // Explicitly block forbidden resources from charts
+      const forbidden = ['hours-in-tr', 'notes', 'daily-farm-frags', 'current-camp', 'camp-timer'];
+      chartSelectedResources.value = [...new Set(
+        [...availableDefaults, ...otherResources].filter(id => !forbidden.includes(id))
+      )];
     } else {
       chartSelectedResources.value = availableDefaults;
     }
@@ -764,6 +769,8 @@ const gainsChartOptions = computed(() => {
 
 // Robust data sanitization function
 const parseChartValue = (val) => {
+  // Block time-like strings that contain colons
+  if (typeof val === 'string' && val.includes(':')) return NaN;
   const num = parseFloat(val);
   return isFinite(num) ? num : 0;
 };
@@ -812,8 +819,10 @@ const chartData = computed(() => {
   // Debug log for chart data validation
   console.log('Chart dataset data:', datasets.map(d => ({ 
     label: d.label, 
+    resourceId: d.resourceId,
     sampleData: d.data.slice(0, 3) 
   })));
+  console.log('All chartSelectedResources:', chartSelectedResources.value);
   
   // Only add labels for category axis (Time in TR)
   if (xAxisType.value === 'timeInTR') {
@@ -931,6 +940,10 @@ const gainsChartData = computed(() => {
 
 // Methods
 function toggleResourceInChart(resourceId) {
+  // Block forbidden resources from being added to charts
+  const forbidden = ['hours-in-tr', 'notes', 'daily-farm-frags', 'current-camp', 'camp-timer'];
+  if (forbidden.includes(resourceId)) return;
+  
   const index = chartSelectedResources.value.indexOf(resourceId);
   if (index > -1) {
     chartSelectedResources.value.splice(index, 1);
