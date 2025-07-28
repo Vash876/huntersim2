@@ -438,6 +438,15 @@ const darkThemeOptions = {
   scales: {
     x: {
       display: true,
+      title: {
+        display: true,
+        text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Timestamp',
+        color: '#e5e7eb',
+        font: {
+          size: 12,
+          weight: 'bold'
+        }
+      },
       grid: {
         color: 'rgba(75, 85, 99, 0.3)',
         borderColor: 'rgba(75, 85, 99, 0.5)',
@@ -695,6 +704,17 @@ const gainsChartOptions = computed(() => {
     },
     scales: {
       ...darkThemeOptions.scales,
+      x: {
+        ...darkThemeOptions.scales.x,
+        title: {
+          display: true,
+          text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
+          color: '#9ca3af',
+          font: {
+            size: 12
+          }
+        }
+      },
       y: yAxisConfig
     },
     // Force chart destruction and recreation
