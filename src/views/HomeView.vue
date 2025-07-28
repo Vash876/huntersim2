@@ -2,6 +2,30 @@
 const changelog = 
 [
   {
+    version: '2.7.1',
+    date: '2025-07-28',
+    changes: [
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Fixed various bugs affecting plan calculations and data persistence',
+        ]
+      },
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Modernized charts implementation',
+        ]
+      },
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Various bug fixes and improvements',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.0',
     date: '2025-07-27',
     changes: [

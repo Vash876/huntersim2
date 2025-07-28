@@ -9,17 +9,20 @@
     </div>
     <!-- Chart Container -->
     <div class="bg-gray-700/30 border border-gray-600 p-4 rounded-md">
-      <div class="relative h-[250px]" ref="chartContainer">
-        <!-- Canvas - immer rendern, aber unsichtbar bis bereit -->
-        <canvas 
-          ref="chartRef"
-          :key="canvasKey"
-          :style="{ opacity: isChartReady ? 1 : 0, transition: 'opacity 0.2s ease-in-out' }"
-        ></canvas>
+      <div class="h-[250px] relative bg-transparent" :key="`revive-chart-container-${chartRenderKey}`">
+        <!-- Bar Chart -->
+        <div v-if="chartData && props.isVisible" class="w-full h-full">
+          <Bar
+            :data="chartData"
+            :options="chartOptions"
+            :key="`revive-bar-${chartRenderKey}`"
+            class="w-full h-full"
+          />
+        </div>
         
         <!-- Loading overlay - nur sichtbar wenn nicht bereit -->
         <div 
-          v-if="!isChartReady"
+          v-if="!chartData || !props.isVisible"
           class="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-700/30"
         >
           <div class="text-center">
@@ -33,11 +36,30 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { getColorRGB } from '../builds/utils/BuildComparisonUtils';
+import { formatNumber } from '@/composables/format.js';
 import { IconBulb } from '@tabler/icons-vue';
-import Chart from 'chart.js/auto';
-import debounce from 'lodash/debounce';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+import { Bar } from 'vue-chartjs';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const props = defineProps({
   deathDistribution: {
@@ -58,12 +80,18 @@ const props = defineProps({
   }
 });
 
-const chartRef = ref(null);
-const chartContainer = ref(null);
-const chart = ref(null);
-const canvasKey = ref(0);
-const isChartReady = ref(false);
-const isInitializing = ref(false);
+// Chart state
+const chartRenderKey = ref(0);
+
+// Force chart update function
+function forceChartUpdate() {
+  chartRenderKey.value += 1;
+}
+
+// Watch for changes that should trigger chart re-render
+watch([() => props.deathDistribution, () => props.color, () => props.isVisible], () => {
+  forceChartUpdate();
+}, { deep: true });
 
 // Dynamische Farben für verschiedene Revive-Typen (HSL für bessere Variation)
 const reviveColors = [
@@ -144,6 +172,235 @@ const totalDeaths = computed(() => {
   return props.deathDistribution.reduce((sum, item) => sum + item.count, 0);
 });
 
+// Chart data - exakt wie ProgressModal
+const chartData = computed(() => {
+  if (!processedData.value.stages.length) return null;
+  
+  // Erstelle Datasets für alle verfügbaren Revives
+  const datasets = availableRevives.value.map(revive => {
+    const colorRGB = reviveColors[Math.min(revive - 1, reviveColors.length - 1)];
+    const borderColor = `rgba(${colorRGB}, 1)`;
+    const backgroundColor = `rgba(${colorRGB}, 0.25)`; // 0.25 für transparente Füllung
+    
+    return {
+      label: getReviveLabel(revive),
+      data: processedData.value.reviveData[revive],
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
+      borderWidth: 2,
+      fill: false
+    };
+  });
+  
+  return {
+    labels: processedData.value.stages,
+    datasets: datasets
+  };
+});
+
+// Dark theme options - exakt wie ProgressModal
+const darkThemeOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  layout: {
+    padding: {
+      top: 10,
+      bottom: 10,
+      left: 10,
+      right: 10
+    }
+  },
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top',
+      labels: {
+        color: '#e5e7eb',
+        usePointStyle: true,
+        padding: 20,
+        font: {
+          size: 12
+        }
+      }
+    },
+    tooltip: {
+      backgroundColor: 'rgba(31, 41, 55, 0.95)',
+      titleColor: '#f9fafb',
+      bodyColor: '#e5e7eb',
+      borderColor: '#6b7280',
+      borderWidth: 1,
+      cornerRadius: 8,
+      displayColors: true,
+      callbacks: {
+        title: function(context) {
+          return `Stage ${context[0].label}`;
+        },
+        label: function(context) {
+          const count = context.parsed.y;
+          const datasetLabel = context.dataset.label;
+          
+          // Berechne Total für diese Stage
+          const stageTotal = availableRevives.value.reduce((sum, revive) => {
+            return sum + (processedData.value.reviveData[revive][context.dataIndex] || 0);
+          }, 0);
+          
+          const percentage = stageTotal > 0 ? ((count / stageTotal) * 100).toFixed(1) : 0;
+          return `${datasetLabel}: ${formatNumber(count)} (${percentage}%)`;
+        },
+        footer: function(context) {
+          const index = context[0].dataIndex;
+          const total = availableRevives.value.reduce((sum, revive) => {
+            return sum + (processedData.value.reviveData[revive][index] || 0);
+          }, 0);
+          return `Total Deaths: ${formatNumber(total)}`;
+        }
+      }
+    }
+  },
+  scales: {
+    x: {
+      display: true,
+      stacked: true,
+      grid: {
+        color: 'rgba(75, 85, 99, 0.3)',
+        borderColor: 'rgba(75, 85, 99, 0.5)',
+        drawOnChartArea: true,
+        drawTicks: true
+      },
+      ticks: {
+        color: '#9ca3af',
+        font: {
+          size: 11
+        },
+        maxTicksLimit: 8,
+        display: true,
+        callback: function(value, index) {
+          const labels = this.chart.data.labels;
+          const step = Math.ceil(labels.length / 8);
+          return index % step === 0 ? labels[index] : '';
+        }
+      }
+    },
+    y: {
+      display: true,
+      position: 'left',
+      stacked: true,
+      grid: {
+        color: 'rgba(75, 85, 99, 0.3)',
+        borderColor: 'rgba(75, 85, 99, 0.5)',
+        drawOnChartArea: true,
+        drawTicks: true
+      },
+      ticks: {
+        color: '#9ca3af',
+        font: {
+          size: 11
+        },
+        maxTicksLimit: 8,
+        display: true,
+        callback: function(value) {
+          return formatNumber(value);
+        }
+      },
+      suggestedMin: 0
+    }
+  },
+  elements: {
+    line: {
+      tension: 0.4
+    },
+    point: {
+      radius: 3,
+      hoverRadius: 6
+    }
+  },
+  interaction: {
+    intersect: false,
+    mode: 'index'
+  },
+  // Isolate this chart instance
+  animation: {
+    duration: 0
+  },
+  datasets: {
+    line: {
+      pointBackgroundColor: 'rgba(255, 255, 255, 0.8)'
+    },
+    bar: {
+      backgroundColor: 'rgba(255, 255, 255, 0.8)'
+    }
+  }
+};
+
+const chartOptions = computed(() => ({
+  ...darkThemeOptions,
+  // Add unique ID to prevent data sharing between charts
+  chartId: `revive-distribution-chart-${chartRenderKey.value}-${Date.now()}`,
+  plugins: {
+    ...darkThemeOptions.plugins,
+    tooltip: {
+      ...darkThemeOptions.plugins.tooltip,
+      callbacks: {
+        title: function(context) {
+          return `Stage ${context[0].label}`;
+        },
+        label: function(context) {
+          const count = context.parsed.y;
+          const datasetLabel = context.dataset.label;
+          
+          // Berechne Total für diese Stage
+          const stageTotal = availableRevives.value.reduce((sum, revive) => {
+            return sum + (processedData.value.reviveData[revive][context.dataIndex] || 0);
+          }, 0);
+          
+          const percentage = stageTotal > 0 ? ((count / stageTotal) * 100).toFixed(1) : 0;
+          return `${datasetLabel}: ${formatNumber(count)} (${percentage}%)`;
+        },
+        footer: function(context) {
+          const index = context[0].dataIndex;
+          const total = availableRevives.value.reduce((sum, revive) => {
+            return sum + (processedData.value.reviveData[revive][index] || 0);
+          }, 0);
+          return `Total Deaths: ${formatNumber(total)}`;
+        }
+      }
+    }
+  },
+  scales: {
+    ...darkThemeOptions.scales,
+    x: {
+      ...darkThemeOptions.scales.x,
+      ticks: {
+        ...darkThemeOptions.scales.x.ticks,
+        callback: function(value, index) {
+          const labels = this.chart.data.labels;
+          const step = Math.ceil(labels.length / 8);
+          return index % step === 0 ? labels[index] : '';
+        }
+      }
+    },
+    y: {
+      ...darkThemeOptions.scales.y,
+      beginAtZero: true,
+      ticks: {
+        ...darkThemeOptions.scales.y.ticks,
+        maxTicksLimit: 8,
+        stepSize: undefined,
+        callback: function(value) {
+          return formatNumber(value);
+        }
+      }
+    }
+  },
+  // Force chart destruction and recreation
+  animation: {
+    duration: 0
+  },
+  // Unique responsive setting to force reflow
+  responsive: true,
+  maintainAspectRatio: false
+}));
+
 // Funktionen für Revive-Handling
 function getReviveColor(revive, opacity = 1) {
   const colorIndex = Math.min(revive - 1, reviveColors.length - 1);
@@ -192,274 +449,6 @@ const dangerZoneStages = computed(() => {
   });
   
   return dangerStages.length > 0 ? dangerStages.join(', ') : 'None';
-});
-
-// ROBUSTE Chart-Initialisierung mit Chart.js Registry-Cleanup
-function destroyChart() {
-  if (chart.value) {
-    try {
-      console.log('Destroying revive chart with ID:', chart.value.id);
-      chart.value.destroy();
-      
-      // Chart aus Chart.js Registry entfernen
-      if (chartRef.value) {
-        Chart.getChart(chartRef.value)?.destroy();
-      }
-      
-    } catch (e) {
-      console.warn('Revive chart destroy error (ignored):', e);
-    }
-    chart.value = null;
-  }
-  isChartReady.value = false;
-}
-
-// ROBUSTE Chart-Initialisierung
-async function initChart() {
-  if (isInitializing.value) {
-    console.log('Revive Chart init skipped: already initializing');
-    return;
-  }
-  
-  isInitializing.value = true;
-  
-  try {
-    isChartReady.value = false;
-    destroyChart();
-    
-    // Zusätzliche Canvas-Reinigung
-    if (chartRef.value) {
-      const existingChart = Chart.getChart(chartRef.value);
-      if (existingChart) {
-        console.log('Found existing revive chart, destroying it first');
-        existingChart.destroy();
-      }
-    }
-    
-    await nextTick();
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    if (!chartRef.value || !props.isVisible || !processedData.value.stages.length) {
-      console.log('Revive Chart init aborted: requirements not met');
-      return;
-    }
-    
-    const ctx = chartRef.value.getContext('2d');
-    if (!ctx) {
-      console.log('Revive Chart init aborted: no context');
-      return;
-    }
-    
-    // Nochmal prüfen ob Canvas frei ist
-    const stillExistingChart = Chart.getChart(chartRef.value);
-    if (stillExistingChart) {
-      console.warn('Revive Canvas still occupied, forcing destroy');
-      stillExistingChart.destroy();
-      await new Promise(resolve => setTimeout(resolve, 50));
-    }
-    
-    // Erstelle Datasets für alle verfügbaren Revives
-    const datasets = availableRevives.value.map(revive => ({
-      label: getReviveLabel(revive),
-      data: processedData.value.reviveData[revive],
-      backgroundColor: getReviveColor(revive, 0.7), // Transparent für Überlappung
-      borderColor: getReviveColor(revive, 1),
-      borderWidth: 1,
-      borderRadius: 3
-    }));
-    
-    chart.value = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: processedData.value.stages,
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        
-        onHover: null,
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
-        
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
-            labels: {
-              color: 'rgba(255, 255, 255, 0.8)',
-              usePointStyle: true,
-              pointStyle: 'rect'
-            }
-          },
-          tooltip: {
-            enabled: true,
-            backgroundColor: 'rgba(17, 24, 39, 0.9)',
-            mode: 'index',
-            intersect: false,
-            filter: function(tooltipItem) {
-              return tooltipItem.chart && tooltipItem.chart.canvas;
-            },
-            callbacks: {
-              title: function(context) {
-                try {
-                  return `Stage ${context[0].label}`;
-                } catch (e) {
-                  return 'Stage';
-                }
-              },
-              label: function(context) {
-                try {
-                  const count = context.raw;
-                  const datasetLabel = context.dataset.label;
-                  
-                  // Berechne Total für diese Stage
-                  const stageTotal = availableRevives.value.reduce((sum, revive) => {
-                    return sum + (processedData.value.reviveData[revive][context.dataIndex] || 0);
-                  }, 0);
-                  
-                  const percentage = stageTotal > 0 ? ((count / stageTotal) * 100).toFixed(1) : 0;
-                  return `${datasetLabel}: ${count} (${percentage}%)`;
-                } catch (e) {
-                  return 'Data not available';
-                }
-              },
-              footer: function(context) {
-                try {
-                  const index = context[0].dataIndex;
-                  const total = availableRevives.value.reduce((sum, revive) => {
-                    return sum + (processedData.value.reviveData[revive][index] || 0);
-                  }, 0);
-                  return `Total Deaths: ${total}`;
-                } catch (e) {
-                  return '';
-                }
-              }
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            stacked: true, // Gestapelt für bessere Übersicht
-            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-            ticks: { 
-              color: 'rgba(255, 255, 255, 0.7)',
-              callback: function(value) {
-                try {
-                  return value;
-                } catch (e) {
-                  return '';
-                }
-              }
-            }
-          },
-          x: {
-            stacked: true,
-            grid: { display: false },
-            ticks: {
-              color: 'rgba(255, 255, 255, 0.7)',
-              callback: function(value, index) {
-                try {
-                  const labels = this.chart.data.labels;
-                  const step = Math.ceil(labels.length / 15);
-                  return index % step === 0 ? labels[index] : '';
-                } catch (e) {
-                  return '';
-                }
-              }
-            }
-          }
-        }
-      },
-      
-      plugins: [{
-        id: 'errorHandler',
-        beforeRender: function(chart) {
-          try {
-            if (!chart.canvas || !chart.canvas.getContext) {
-              console.warn('Revive Canvas not available, skipping render');
-              return false;
-            }
-            return true;
-          } catch (e) {
-            console.warn('Revive Chart render prevented due to error:', e);
-            return false;
-          }
-        }
-      }]
-    });
-    
-    console.log('Revive Chart initialized successfully with ID:', chart.value.id);
-    
-    setTimeout(() => {
-      isChartReady.value = true;
-    }, 50);
-    
-  } catch (error) {
-    console.error('Revive Chart initialization failed:', error);
-    
-    isChartReady.value = false;
-    destroyChart();
-    canvasKey.value++;
-    
-    setTimeout(() => {
-      if (props.isVisible) {
-        initChart();
-      }
-    }, 500);
-    
-  } finally {
-    isInitializing.value = false;
-  }
-}
-
-// DEBOUNCED Watchers
-const debouncedInit = debounce(() => {
-  if (props.isVisible && !isInitializing.value) {
-    initChart();
-  }
-}, 300);
-
-// Visibility Watcher
-watch(() => props.isVisible, (visible) => {
-  if (visible && processedData.value.stages.length > 0) {
-    setTimeout(() => {
-      if (props.isVisible && !isInitializing.value) {
-        initChart();
-      }
-    }, 150);
-  } else {
-    destroyChart();
-  }
-}, { immediate: true });
-
-// Daten-Watcher
-watch([
-  () => props.deathDistribution,
-  () => props.color,
-  () => props.sampleSize
-], () => {
-  if (props.isVisible) {
-    debouncedInit();
-  }
-}, { deep: true });
-
-onMounted(() => {
-  if (props.isVisible && processedData.value.stages.length > 0) {
-    setTimeout(() => {
-      if (props.isVisible && !isInitializing.value) {
-        initChart();
-      }
-    }, 200);
-  }
-});
-
-onUnmounted(() => {
-  destroyChart();
 });
 
 // NEU: Debug-Tabellen-Daten

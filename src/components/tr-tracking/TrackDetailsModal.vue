@@ -179,9 +179,15 @@
 
             <!-- AttGN3 Days to 1e333 -->
             <div class="bg-gray-700/30 rounded-md p-2">
-              <div class="text-xs text-gray-400">AttGN3 to 1e333</div>
+              <div class="text-xs text-gray-400 flex items-center gap-1">
+                AttGN3 to 1e333
+                <InfoTooltip 
+                  content="Uses current LR Ticks, RP, and AttGN3 Buff from tracking data, other settings taken from AttGN3 Calculator"
+                  placement="top" 
+                />
+              </div>
               <div class="text-sm font-semibold text-cyan-400">
-                {{ formatAttGN3Days(getAttGN3DaysToMax()) }} left
+                {{ getAttGN3CompletionDetails() }}
               </div>
             </div>
 
@@ -368,6 +374,7 @@ import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { exportTrack } from '@/utils/trImportExport';
 import { getM0Cost } from '@/constants/m0Costs';
 import { formatNumber, formatSuffixInput, parseSuffixInput } from '@/composables/format.js';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
 import Decimal from 'break_infinity.js';
 
 // Register AG Grid modules
@@ -790,12 +797,14 @@ const buildColumnDefs = () => {
                 const exponentialDecimal = new Decimal(params.newValue);
                 const maxValue = new Decimal('1e333');
                 
-                if (exponentialDecimal.isNaN() || exponentialDecimal.lt(0) || exponentialDecimal.gt(maxValue)) {
-                  console.warn(`Invalid attgn3-buff exponential value rejected:`, params.newValue, 'parsed to:', exponentialDecimal.toString());
+                // Simple validation: check if toString() works and compare against max
+                const decimalString = exponentialDecimal.toString();
+                if (decimalString === 'NaN' || decimalString === 'Infinity' || exponentialDecimal.lt(0) || exponentialDecimal.gt(maxValue)) {
+                  console.warn(`Invalid attgn3-buff exponential value rejected:`, params.newValue, 'parsed to:', decimalString);
                   return false;
                 }
                 
-                // Store as number for compatibility, but limit to safe range
+                // Store as string for very large numbers, number for smaller ones
                 if (exponentialDecimal.gt(Number.MAX_SAFE_INTEGER)) {
                   params.data.values[resource.id] = exponentialDecimal.toString();
                 } else {
@@ -875,7 +884,7 @@ const buildColumnDefs = () => {
             try {
               const decimal = new Decimal(currentValue);
               if (decimal.gte('1e15')) {
-                displayValue = decimal.toExponential(2);
+                displayValue = decimal.toExponential(2).replace('e+', 'e');
               } else {
                 displayValue = formatSuffixInput(currentValue);
               }
@@ -929,7 +938,7 @@ const buildColumnDefs = () => {
             try {
               const diffDecimal = new Decimal(Math.abs(difference));
               if (diffDecimal.gte('1e15')) {
-                diffText = (difference > 0 ? '+' : '-') + diffDecimal.toExponential(2);
+                diffText = (difference > 0 ? '+' : '-') + diffDecimal.toExponential(2).replace('e+', 'e');
               } else {
                 diffText = difference > 0 ? `+${formatSuffixInput(difference)}` : `-${formatSuffixInput(Math.abs(difference))}`;
               }
@@ -1090,7 +1099,7 @@ const buildColumnDefs = () => {
             try {
               const decimal = new Decimal(params.value || 0);
               if (decimal.gte('1e15')) {
-                displayValue = decimal.toExponential(2);
+                displayValue = decimal.toExponential(2).replace('e+', 'e');
               } else {
                 displayValue = formatSuffixInput(params.value || 0);
               }
@@ -1717,6 +1726,53 @@ function formatAttGN3Days(days) {
     const hours = Math.ceil(numDays * 24);
     return `${hours} hours`;
   }
+}
+
+// Get AttGN3 completion details with date/time and remaining time
+function getAttGN3CompletionDetails() {
+  const daysToMax = getAttGN3DaysToMax();
+  
+  if (daysToMax === '∞' || daysToMax === Infinity) {
+    return 'Never';
+  }
+  
+  if (daysToMax === '0' || daysToMax === 0) {
+    return 'Complete!';
+  }
+  
+  const numDays = parseFloat(daysToMax);
+  if (isNaN(numDays)) return 'Never';
+  
+  // Calculate completion date/time
+  const now = new Date();
+  const completionDate = new Date(now.getTime() + (numDays * 24 * 60 * 60 * 1000));
+  
+  // Format completion date/time
+  const formattedDateTime = completionDate.toLocaleString(undefined, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  // Calculate remaining days and hours
+  const wholeDays = Math.floor(numDays);
+  const remainingHours = Math.round((numDays - wholeDays) * 24);
+  
+  let remainingText;
+  if (numDays >= 1) {
+    if (remainingHours > 0) {
+      remainingText = `${wholeDays}d ${remainingHours}h`;
+    } else {
+      remainingText = `${wholeDays}d`;
+    }
+  } else {
+    const hours = Math.ceil(numDays * 24);
+    remainingText = `${hours}h`;
+  }
+  
+  return `${formattedDateTime} (${remainingText})`;
 }
 
 // Get latest values from the most recent entry

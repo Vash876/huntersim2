@@ -1648,9 +1648,39 @@ function getStepOrbGains(step) {
 
   /* Wichtig: Erst target levels/bools setzen, dann maxed boosts (mit Overrides) anwenden */
   
-  /* numerische Ziele einblenden */
+  /* ========== GENERISCHE BOOST INHERITANCE CHECK ========== */
+  // Prüfe, ob dieser Schritt ein Folge-TR ist
+  const stepIndex = trSteps.findIndex(s => s.id === step.id);
+  const isFollowUpTR = stepIndex > 0;
+  
+  /* numerische Ziele einblenden - mit Inheritance-Prüfung */
   Object.entries(step.targetLevels).forEach(([k, v]) => { 
-    planStats[k] = v; 
+    if (isFollowUpTR) {
+      // Prüfe, ob dieser Boost in IRGENDEINEM vorherigen TR für die Vererbung markiert wurde
+      let isBoostSelected = false;
+      for (let i = 0; i < stepIndex; i++) {
+        if (trSteps[i].selectedForNextTR && trSteps[i].selectedForNextTR.includes(k)) {
+          isBoostSelected = true;
+          break;
+        }
+      }
+      
+      if (!isBoostSelected) {
+        // Boost ist NICHT ausgewählt -> verwende Wert vom ersten TR
+        const firstStep = trSteps[0];
+        const firstTRValue = firstStep.targetLevels?.[k] !== undefined 
+          ? firstStep.targetLevels[k] 
+          : (firstStep.stats?.[k] || 0);
+        
+        planStats[k] = firstTRValue;
+      } else {
+        // Boost ist ausgewählt -> verwende neuen Wert
+        planStats[k] = v;
+      }
+    } else {
+      // Erster TR -> verwende immer den neuen Wert
+      planStats[k] = v;
+    }
   });
 
   /* Boolean‑Ziele verarbeiten */
@@ -1741,9 +1771,39 @@ function getStepFragGains(step) {
   
   // Erst target levels/bools setzen
   
-  // Numerische Boosts aus targetLevels
+  /* ========== GENERISCHE BOOST INHERITANCE CHECK ========== */
+  // Prüfe, ob dieser Schritt ein Folge-TR ist
+  const stepIndex = trSteps.findIndex(s => s.id === step.id);
+  const isFollowUpTR = stepIndex > 0;
+  
+  // Numerische Boosts aus targetLevels - mit Inheritance-Prüfung
   Object.keys(step.targetLevels).forEach(key => {
-    planStats[key] = step.targetLevels[key];
+    if (isFollowUpTR) {
+      // Prüfe, ob dieser Boost in IRGENDEINEM vorherigen TR für die Vererbung markiert wurde
+      let isBoostSelected = false;
+      for (let i = 0; i < stepIndex; i++) {
+        if (trSteps[i].selectedForNextTR && trSteps[i].selectedForNextTR.includes(key)) {
+          isBoostSelected = true;
+          break;
+        }
+      }
+      
+      if (!isBoostSelected) {
+        // Boost ist NICHT ausgewählt -> verwende Wert vom ersten TR
+        const firstStep = trSteps[0];
+        const firstTRValue = firstStep.targetLevels?.[key] !== undefined 
+          ? firstStep.targetLevels[key] 
+          : (firstStep.stats?.[key] || 0);
+        
+        planStats[key] = firstTRValue;
+      } else {
+        // Boost ist ausgewählt -> verwende neuen Wert
+        planStats[key] = step.targetLevels[key];
+      }
+    } else {
+      // Erster TR -> verwende immer den neuen Wert
+      planStats[key] = step.targetLevels[key];
+    }
   });
   
   // Boolean Boosts aus targetBools
@@ -2156,12 +2216,8 @@ function initData() {
         stats: statsWithOrbCalcFlags,
         targetLevels:      {},
         targetBools:       {},
-        selectedForNextTR: Array.isArray(plan.selectedForNextTR)
-                           ? [...plan.selectedForNextTR]
-                           : ['hoursInTR']
+        selectedForNextTR: ['hoursInTR'] // Starte nur mit hoursInTR
       };
-      if (!firstStep.selectedForNextTR.includes('hoursInTR'))
-        firstStep.selectedForNextTR.push('hoursInTR');
 
       // Boosts aus plan.boosts übernehmen
       if (Array.isArray(plan.boosts)) {
@@ -2190,8 +2246,22 @@ function initData() {
               firstStep.targetBools[key] = state;
               firstStep.stats[key] = state ? 1 : (boostDef?.permanent ? firstStep.stats[key] || 0 : 0);
             }
+            
+            // selectedForNextTR Information aus Boost-Daten extrahieren
+            if (boostData.selectedForNextTR && !firstStep.selectedForNextTR.includes(key)) {
+              firstStep.selectedForNextTR.push(key);
+            }
           }
         });
+        
+        // Zusätzlich das globale plan.selectedForNextTR Array berücksichtigen
+        if (Array.isArray(plan.selectedForNextTR)) {
+          plan.selectedForNextTR.forEach(key => {
+            if (!firstStep.selectedForNextTR.includes(key)) {
+              firstStep.selectedForNextTR.push(key);
+            }
+          });
+        }
       }
       
       trSteps.push(firstStep);
@@ -2297,12 +2367,8 @@ function initData() {
         stats: statsWithOrbCalcFlags,
         targetLevels:      {},
         targetBools:       {},
-        selectedForNextTR: Array.isArray(plan.selectedForNextTR)
-                           ? [...plan.selectedForNextTR]
-                           : ['hoursInTR']
+        selectedForNextTR: ['hoursInTR'] // Starte nur mit hoursInTR
       };
-      if (!firstStep.selectedForNextTR.includes('hoursInTR'))
-        firstStep.selectedForNextTR.push('hoursInTR');
 
       // Boosts aus plan.boosts übernehmen
       if (Array.isArray(plan.boosts)) {
@@ -2331,8 +2397,22 @@ function initData() {
               firstStep.targetBools[key] = state;
               firstStep.stats[key] = state ? 1 : (boostDef?.permanent ? firstStep.stats[key] || 0 : 0);
             }
+            
+            // selectedForNextTR Information aus Boost-Daten extrahieren
+            if (boostData.selectedForNextTR && !firstStep.selectedForNextTR.includes(key)) {
+              firstStep.selectedForNextTR.push(key);
+            }
           }
         });
+        
+        // Zusätzlich das globale plan.selectedForNextTR Array berücksichtigen
+        if (Array.isArray(plan.selectedForNextTR)) {
+          plan.selectedForNextTR.forEach(key => {
+            if (!firstStep.selectedForNextTR.includes(key)) {
+              firstStep.selectedForNextTR.push(key);
+            }
+          });
+        }
       }
     } else {
       // Neuer Plan
@@ -3125,22 +3205,49 @@ function initializeWithCopyData(copyData) {
         }
       }
 
-      copyData.boosts.forEach(b => {
-        const def = allBoosts.find(x => x.key === b.key);
-        if (!def) return;
-        
-        if (b.type === 'number') {
-          firstStep.targetLevels[b.key] = b.targetLevel;
-          firstStep.stats[b.key] = b.targetLevel;
-        } else if (b.type === 'boolean') {
-          const state = Boolean(b.targetState);
-          firstStep.targetBools[b.key] = state;
+      // Boosts laden - sowohl Array- als auch Objekt-Format unterstützen
+      if (Array.isArray(copyData.boosts)) {
+        // Array-Format (altes Format)
+        copyData.boosts.forEach(b => {
+          const def = allBoosts.find(x => x.key === b.key);
+          if (!def) return;
           
-          firstStep.stats[b.key] = def.permanent
-            ? (state ? 1 : (firstStep.stats[b.key] || 0))
-            : (state ? 1 : 0);
-        }
-      });
+          if (b.type === 'number') {
+            firstStep.targetLevels[b.key] = b.targetLevel;
+            firstStep.stats[b.key] = b.targetLevel;
+          } else if (b.type === 'boolean') {
+            const state = Boolean(b.targetState);
+            firstStep.targetBools[b.key] = state;
+            
+            firstStep.stats[b.key] = def.permanent
+              ? (state ? 1 : (firstStep.stats[b.key] || 0))
+              : (state ? 1 : 0);
+          }
+        });
+      } else if (copyData.boosts && typeof copyData.boosts === 'object') {
+        // Objekt-Format (neues Format)
+        Object.entries(copyData.boosts).forEach(([key, boostData]) => {
+          const def = allBoosts.find(x => x.key === key);
+          if (!def) return;
+          
+          if (def.type === 'number') {
+            firstStep.targetLevels[key] = boostData.targetLevel;
+            firstStep.stats[key] = boostData.targetLevel;
+          } else if (def.type === 'boolean') {
+            const state = Boolean(boostData.targetState);
+            firstStep.targetBools[key] = state;
+            
+            firstStep.stats[key] = def.permanent
+              ? (state ? 1 : (firstStep.stats[key] || 0))
+              : (state ? 1 : 0);
+          }
+          
+          // selectedForNextTR Information aus Boost-Daten extrahieren
+          if (boostData.selectedForNextTR && !firstStep.selectedForNextTR.includes(key)) {
+            firstStep.selectedForNextTR.push(key);
+          }
+        });
+      }
     }
 
     trSteps.push(firstStep);
@@ -3170,6 +3277,11 @@ function initializeWithCopyData(copyData) {
                   step.targetBools[key] = boostData.targetState;
                 } else if (boostDef.type === 'number') {
                   step.targetLevels[key] = boostData.targetLevel;
+                }
+                
+                // selectedForNextTR Information aus Chain-Step Boost-Daten extrahieren
+                if (boostData.selectedForNextTR && !step.selectedForNextTR.includes(key)) {
+                  step.selectedForNextTR.push(key);
                 }
               }
             });

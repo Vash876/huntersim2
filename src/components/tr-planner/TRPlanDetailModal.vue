@@ -308,7 +308,19 @@
             
             <!-- Chart.js Graph Container -->
             <div class="h-60 w-full">
-              <canvas ref="chartRef" height="240"></canvas>
+              <div v-if="!chartData" class="flex items-center justify-center h-full text-gray-400">
+                <div class="text-center">
+                  <div class="animate-spin w-8 h-8 border-2 border-gray-600 border-t-gray-400 rounded-full mx-auto mb-2"></div>
+                  <div class="text-sm">Loading chart...</div>
+                </div>
+              </div>
+              <Bar
+                v-if="chartData"
+                :key="chartRenderKey"
+                :data="chartData"
+                :options="chartOptions"
+                class="w-full h-full"
+              />
             </div>
           </div>
         </div>
@@ -355,7 +367,19 @@ import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCo
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import { getM0Cost, formatM0Cost, calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
 import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe } from '@/utils/loopModCostUtils';
-import { Chart, registerables } from 'chart.js';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  LogarithmicScale
+} from 'chart.js';
+import { Bar } from 'vue-chartjs';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { allBoosts } from '@/constants/tr-planner';
 import { formatNumber } from '@/composables/format';
@@ -372,6 +396,19 @@ import {
   IconCircle
 } from '@tabler/icons-vue';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  LogarithmicScale
+);
 
 const props = defineProps({
   isVisible: {
@@ -1012,11 +1049,29 @@ function handleDelete(planId) {
 
 
 // Chart.js registrieren
-Chart.register(...registerables);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  LogarithmicScale
+);
 
 // Chart-Referenz
 const chartRef = ref(null);
 let trRequirementsChart = null;
+
+// Chart state for Vue-chartjs
+const chartRenderKey = ref(0);
+
+// Force chart update function
+function forceChartUpdate() {
+  chartRenderKey.value += 1;
+}
 
 // Anzahl der zukünftigen TRs, die projiziert werden sollen
 const futureTRsToProject = ref(10);
@@ -1065,102 +1120,154 @@ const futureTRProjections = computed(() => {
   return projections;
 });
 
-// Funktion zum Rendern des Charts
-function renderTRProjectionsChart() {
-  if (!chartRef.value || !futureTRProjections.value.length) return;
+// Chart Data für Vue-chartjs
+const chartData = computed(() => {
+  if (!futureTRProjections.value.length) return null;
   
-  // Alte Chart-Instanz zerstören, wenn vorhanden
-  if (trRequirementsChart) {
-    trRequirementsChart.destroy();
-  }
-  
-  // Chart-Daten vorbereiten
   const labels = futureTRProjections.value.map(proj => `TR${proj.trCount}`);
   const requirementData = futureTRProjections.value.map(proj => proj.requirement);
   const availableData = futureTRProjections.value.map(proj => proj.orbsAvailable);
   
-  // Chart erstellen
-  const ctx = chartRef.value.getContext('2d');
-  trRequirementsChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [
-        {
-          label: 'TR Requirement',
-          data: requirementData,
-          backgroundColor: 'rgba(239, 68, 68, 0.7)',
-          borderColor: 'rgba(239, 68, 68, 1)',
-          borderWidth: 1
-        },
-        {
-          label: 'All-Time Orbs',
-          data: availableData,
-          backgroundColor: 'rgba(74, 222, 128, 0.7)',
-          borderColor: 'rgba(74, 222, 128, 1)',
-          borderWidth: 1,
-          // Typ auf 'line' ändern, damit die All-Time-Orbs als Linie dargestellt werden
-          type: 'line',
-          fill: false,
-          tension: 0.1,
-          pointBackgroundColor: 'rgba(74, 222, 128, 1)',
-          pointRadius: 3
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          type: 'logarithmic',
-          grid: {
-            color: 'rgba(107, 114, 128, 0.2)'
-          },
-          ticks: {
-            color: 'rgba(156, 163, 175, 1)',
-            callback: function(value) {
-              return formatNumber(value);
-            }
-          }
-        },
-        x: {
-          grid: {
-            color: 'rgba(107, 114, 128, 0.2)'
-          },
-          ticks: {
-            color: 'rgba(156, 163, 175, 1)'
-          }
-        }
+  return {
+    labels: labels,
+    datasets: [
+      {
+        label: 'TR Requirement',
+        data: requirementData,
+        backgroundColor: 'rgba(239, 68, 68, 0.25)',
+        borderColor: 'rgba(239, 68, 68, 1)',
+        borderWidth: 2
       },
-      plugins: {
-        legend: {
-          display: true,
-          position: 'top',
-          labels: {
-            color: 'rgba(156, 163, 175, 1)'
+      {
+        label: 'All-Time Orbs',
+        data: availableData,
+        backgroundColor: 'rgba(74, 222, 128, 0.25)',
+        borderColor: 'rgba(74, 222, 128, 1)',
+        borderWidth: 2,
+        type: 'line',
+        fill: false,
+        tension: 0.1,
+        pointBackgroundColor: 'rgba(74, 222, 128, 1)',
+        pointRadius: 3
+      }
+    ]
+  };
+});
+
+// Chart Options im ProgressModal Stil
+const chartOptions = computed(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: {
+    duration: 0
+  },
+  layout: {
+    padding: {
+      top: 10,
+      bottom: 10,
+      left: 10,
+      right: 10
+    }
+  },
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top',
+      labels: {
+        color: '#9ca3af',
+        font: {
+          size: 11
+        }
+      }
+    },
+    tooltip: {
+      backgroundColor: 'rgba(31, 41, 55, 0.95)',
+      titleColor: '#f9fafb',
+      bodyColor: '#e5e7eb',
+      borderColor: '#6b7280',
+      borderWidth: 1,
+      cornerRadius: 8,
+      displayColors: true,
+      mode: 'index',
+      intersect: false,
+      callbacks: {
+        label: function(context) {
+          let label = context.dataset.label || '';
+          if (label) {
+            label += ': ';
           }
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false,
-          callbacks: {
-            label: function(context) {
-              let label = context.dataset.label || '';
-              if (label) {
-                label += ': ';
-              }
-              if (context.parsed.y !== null) {
-                label += formatNumber(context.parsed.y);
-              }
-              return label;
-            }
+          if (context.parsed.y !== null) {
+            label += formatNumber(context.parsed.y);
           }
+          return label;
         }
       }
     }
-  });
-}
+  },
+  scales: {
+    x: {
+      display: true,
+      grid: {
+        color: 'rgba(75, 85, 99, 0.3)',
+        borderColor: 'rgba(75, 85, 99, 0.5)',
+        drawOnChartArea: true,
+        drawTicks: true
+      },
+      ticks: {
+        color: '#9ca3af',
+        font: {
+          size: 11
+        },
+        maxTicksLimit: 8,
+        display: true
+      }
+    },
+    y: {
+      type: 'logarithmic',
+      display: true,
+      position: 'left',
+      grid: {
+        color: 'rgba(75, 85, 99, 0.3)',
+        borderColor: 'rgba(75, 85, 99, 0.5)',
+        drawOnChartArea: true,
+        drawTicks: true
+      },
+      ticks: {
+        color: '#9ca3af',
+        font: {
+          size: 11
+        },
+        maxTicksLimit: 8,
+        display: true,
+        callback: function(value) {
+          return formatNumber(value);
+        }
+      }
+    }
+  },
+  interaction: {
+    intersect: false,
+    mode: 'index'
+  },
+  elements: {
+    line: {
+      tension: 0.1
+    },
+    point: {
+      radius: 3,
+      hoverRadius: 6
+    },
+    bar: {
+      borderRadius: 4,
+      borderSkipped: false
+    }
+  }
+}));
+
+// Watch for changes that should trigger chart re-render
+watch([futureTRProjections, futureTRsToProject], () => {
+  forceChartUpdate();
+}, { deep: true });
 
 // Berechne die Upgrade-Kosten für alle verbesserten Boosts
 const upgradeCosts = computed(() => {
@@ -1385,34 +1492,6 @@ function getBoostListHtml(trIndex) {
   html += '</div>';
   return html;
 }
-
-// Chart neu rendern, wenn sich die Projektionsdaten ändern
-watch(futureTRProjections, () => {
-  nextTick(() => {
-    renderTRProjectionsChart();
-  });
-}, { deep: true });
-
-// Chart neu rendern, wenn sich die Anzahl der zu projizierenden TRs ändert
-watch(futureTRsToProject, () => {
-  nextTick(() => {
-    renderTRProjectionsChart();
-  });
-});
-
-// Chart rendern, wenn die Komponente gemountet wird
-onMounted(() => {
-  nextTick(() => {
-    renderTRProjectionsChart();
-  });
-});
-
-// Chart neu rendern, wenn das Fenster die Größe ändert
-window.addEventListener('resize', () => {
-  nextTick(() => {
-    renderTRProjectionsChart();
-  });
-});
 </script>
 
 <style scoped>
