@@ -503,125 +503,209 @@ const darkThemeOptions = {
   }
 };
 
-const chartOptions = computed(() => ({
-  ...darkThemeOptions,
-  // Add unique ID to prevent data sharing between charts
-  chartId: `chart-${chartRenderKey.value}-${Date.now()}`,
-  plugins: {
-    ...darkThemeOptions.plugins,
-    tooltip: {
-      ...darkThemeOptions.plugins.tooltip,
-      callbacks: {
-        title: function(context) {
-          if (xAxisType.value === 'timeInTR') {
-            return `Time in TR: ${context[0].label}`;
-          } else {
-            return context[0].label;
-          }
-        },
-        label: function(context) {
-          const value = context.parsed.y;
-          const resourceId = context.dataset.resourceId;
-          
-          // Special formatting for oo-accum
-          if (resourceId === 'oo-accum') {
-            return `${context.dataset.label}: ${formatSuffixInput(value)}`;
-          }
-          
-          return `${context.dataset.label}: ${formatNumber(value)}`;
+const chartOptions = computed(() => {
+  // Calculate dynamic Y-axis range based on selected data
+  let yAxisConfig = {
+    display: true,
+    position: 'left',
+    grid: {
+      color: 'rgba(75, 85, 99, 0.3)',
+      borderColor: 'rgba(75, 85, 99, 0.5)',
+      drawOnChartArea: true,
+      drawTicks: true
+    },
+    ticks: {
+      color: '#9ca3af',
+      font: {
+        size: 11
+      },
+      maxTicksLimit: 8,
+      display: true,
+      callback: function(value) {
+        return formatNumber(value);
+      }
+    }
+  };
+
+  // Dynamic Y-axis range calculation when we have data
+  if (chartData.value && chartData.value.datasets.length > 0) {
+    let allValues = [];
+    chartData.value.datasets.forEach(dataset => {
+      allValues = allValues.concat(dataset.data.filter(val => val !== null && val !== undefined));
+    });
+
+    if (allValues.length > 0) {
+      const minValue = Math.min(...allValues);
+      const maxValue = Math.max(...allValues);
+      const range = maxValue - minValue;
+      
+      // Only apply dynamic scaling if we have actual variation in the data
+      if (range > 0) {
+        // Add 10% padding to top and bottom for better visualization
+        const padding = range * 0.1;
+        const suggestedMin = Math.max(0, minValue - padding);
+        const suggestedMax = maxValue + padding;
+        
+        // Only apply custom range if it's significantly different from starting at 0
+        if (minValue > range * 0.3) {
+          yAxisConfig.suggestedMin = suggestedMin;
+          yAxisConfig.suggestedMax = suggestedMax;
+        } else {
+          yAxisConfig.suggestedMin = 0;
+          yAxisConfig.suggestedMax = suggestedMax;
         }
       }
     }
-  },
-  scales: {
-    ...darkThemeOptions.scales,
-    x: {
-      ...darkThemeOptions.scales.x,
-      title: {
-        display: true,
-        text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
-        color: '#9ca3af',
-        font: {
-          size: 12
+  }
+
+  return {
+    ...darkThemeOptions,
+    // Add unique ID to prevent data sharing between charts
+    chartId: `chart-${chartRenderKey.value}-${Date.now()}`,
+    plugins: {
+      ...darkThemeOptions.plugins,
+      tooltip: {
+        ...darkThemeOptions.plugins.tooltip,
+        callbacks: {
+          title: function(context) {
+            if (xAxisType.value === 'timeInTR') {
+              return `Time in TR: ${context[0].label}`;
+            } else {
+              return context[0].label;
+            }
+          },
+          label: function(context) {
+            const value = context.parsed.y;
+            const resourceId = context.dataset.resourceId;
+            
+            // Special formatting for oo-accum
+            if (resourceId === 'oo-accum') {
+              return `${context.dataset.label}: ${formatSuffixInput(value)}`;
+            }
+            
+            return `${context.dataset.label}: ${formatNumber(value)}`;
+          }
         }
       }
     },
-    y: {
-      ...darkThemeOptions.scales.y,
-      beginAtZero: true,
-      ticks: {
-        ...darkThemeOptions.scales.y.ticks,
-        maxTicksLimit: 8,
-        stepSize: undefined,
-        callback: function(value) {
-          return formatNumber(value);
+    scales: {
+      ...darkThemeOptions.scales,
+      x: {
+        ...darkThemeOptions.scales.x,
+        title: {
+          display: true,
+          text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
+          color: '#9ca3af',
+          font: {
+            size: 12
+          }
         }
-      }
-    }
-  },
-  // Force chart destruction and recreation
-  animation: {
-    duration: 0
-  },
-  // Unique responsive setting to force reflow
-  responsive: true,
-  maintainAspectRatio: false
-}));
+      },
+      y: yAxisConfig
+    },
+    // Force chart destruction and recreation
+    animation: {
+      duration: 0
+    },
+    // Unique responsive setting to force reflow
+    responsive: true,
+    maintainAspectRatio: false
+  };
+});
 
-const gainsChartOptions = computed(() => ({
-  ...darkThemeOptions,
-  // Add unique ID to prevent data sharing between charts
-  chartId: `gains-chart-${chartRenderKey.value}-${Date.now()}`,
-  plugins: {
-    ...darkThemeOptions.plugins,
-    tooltip: {
-      ...darkThemeOptions.plugins.tooltip,
-      callbacks: {
-        title: function(context) {
-          if (xAxisType.value === 'timeInTR') {
-            return `Time in TR: ${context[0].label}`;
-          } else {
-            return context[0].label;
-          }
-        },
-        label: function(context) {
-          const value = context.parsed.y;
-          const resourceId = context.dataset.resourceId;
-          const prefix = value >= 0 ? '+' : '';
-          
-          if (resourceId === 'oo-accum') {
-            return `${context.dataset.label}: ${prefix}${formatSuffixInput(Math.abs(value))}`;
-          }
-          
-          return `${context.dataset.label}: ${prefix}${formatNumber(value)}`;
-        }
+const gainsChartOptions = computed(() => {
+  // Calculate dynamic Y-axis range for gains chart
+  let yAxisConfig = {
+    display: true,
+    position: 'left',
+    grid: {
+      color: 'rgba(75, 85, 99, 0.3)',
+      borderColor: 'rgba(75, 85, 99, 0.5)',
+      drawOnChartArea: true,
+      drawTicks: true
+    },
+    ticks: {
+      color: '#9ca3af',
+      font: {
+        size: 11
+      },
+      maxTicksLimit: 8,
+      display: true,
+      callback: function(value) {
+        const prefix = value >= 0 ? '+' : '';
+        return prefix + formatNumber(Math.abs(value));
       }
     }
-  },
-  scales: {
-    ...darkThemeOptions.scales,
-    y: {
-      ...darkThemeOptions.scales.y,
-      beginAtZero: true,
-      ticks: {
-        ...darkThemeOptions.scales.y.ticks,
-        maxTicksLimit: 8,
-        stepSize: undefined,
-        callback: function(value) {
-          const prefix = value >= 0 ? '+' : '';
-          return prefix + formatNumber(Math.abs(value));
-        }
+  };
+
+  // Dynamic Y-axis range calculation for gains chart
+  if (gainsChartData.value && gainsChartData.value.datasets.length > 0) {
+    let allValues = [];
+    gainsChartData.value.datasets.forEach(dataset => {
+      allValues = allValues.concat(dataset.data.filter(val => val !== null && val !== undefined));
+    });
+
+    if (allValues.length > 0) {
+      const minValue = Math.min(...allValues);
+      const maxValue = Math.max(...allValues);
+      const range = Math.max(Math.abs(minValue), Math.abs(maxValue));
+      
+      // For gains charts, center around 0 but adjust range based on data
+      if (range > 0) {
+        // Add 10% padding for better visualization
+        const padding = range * 0.1;
+        const suggestedMin = minValue - padding;
+        const suggestedMax = maxValue + padding;
+        
+        yAxisConfig.suggestedMin = suggestedMin;
+        yAxisConfig.suggestedMax = suggestedMax;
       }
     }
-  },
-  // Force chart destruction and recreation
-  animation: {
-    duration: 0
-  },
-  // Unique responsive setting to force reflow
-  responsive: true,
-  maintainAspectRatio: false
-}));
+  }
+
+  return {
+    ...darkThemeOptions,
+    // Add unique ID to prevent data sharing between charts
+    chartId: `gains-chart-${chartRenderKey.value}-${Date.now()}`,
+    plugins: {
+      ...darkThemeOptions.plugins,
+      tooltip: {
+        ...darkThemeOptions.plugins.tooltip,
+        callbacks: {
+          title: function(context) {
+            if (xAxisType.value === 'timeInTR') {
+              return `Time in TR: ${context[0].label}`;
+            } else {
+              return context[0].label;
+            }
+          },
+          label: function(context) {
+            const value = context.parsed.y;
+            const resourceId = context.dataset.resourceId;
+            const prefix = value >= 0 ? '+' : '';
+            
+            if (resourceId === 'oo-accum') {
+              return `${context.dataset.label}: ${prefix}${formatSuffixInput(Math.abs(value))}`;
+            }
+            
+            return `${context.dataset.label}: ${prefix}${formatNumber(value)}`;
+          }
+        }
+      }
+    },
+    scales: {
+      ...darkThemeOptions.scales,
+      y: yAxisConfig
+    },
+    // Force chart destruction and recreation
+    animation: {
+      duration: 0
+    },
+    // Unique responsive setting to force reflow
+    responsive: true,
+    maintainAspectRatio: false
+  };
+});
 
 // Chart data generators
 const chartData = computed(() => {
