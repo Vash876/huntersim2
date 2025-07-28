@@ -1690,10 +1690,19 @@ function getAttGN3DaysToMax() {
     // Use the same logic as AttrGN3Calculator's daysLeftTo1e333
     // Calculate total days needed from current position
     const ratio = target.dividedBy(current);
-    const logRatio = Math.log(ratio.toNumber());
-    const logDaily = Math.log(dailyMulti.toNumber());
+    
+    // Use Decimal logarithms for large numbers
+    const logRatio = ratio.ln();
+    const logDaily = dailyMulti.ln();
+    
+    if (logDaily <= 0) return '∞'; // No progress possible
     
     const totalDaysNeeded = logRatio / logDaily;
+    
+    // Check if the result is valid
+    if (!isFinite(totalDaysNeeded) || isNaN(totalDaysNeeded) || totalDaysNeeded <= 0) {
+      return '∞';
+    }
     
     // Subtract the days already spent in current LR
     const remainingDays = totalDaysNeeded - daysInLR;
