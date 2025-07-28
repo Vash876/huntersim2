@@ -7,6 +7,37 @@ import './assets/css/main.css'
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 
+// Chart.js Date Adapter - MUST be imported before Chart.js usage
+import 'chartjs-adapter-date-fns'
+
+// Register global Chart.js components
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  TimeScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  TimeScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 

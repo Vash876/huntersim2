@@ -232,35 +232,7 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import { formatNumber, formatSuffixInput } from '@/composables/format.js';
 import { IconX, IconChartLine, IconTrendingUp, IconClockHour2, IconCalendarEvent } from '@tabler/icons-vue';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  TimeScale
-} from 'chart.js';
 import { Line, Bar } from 'vue-chartjs';
-import 'chartjs-adapter-date-fns';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  TimeScale
-);
 
 const props = defineProps({
   show: Boolean,
