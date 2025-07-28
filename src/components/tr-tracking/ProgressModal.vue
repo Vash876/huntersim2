@@ -465,26 +465,20 @@ const darkThemeOptions = computed(() => ({
       })
     },
     y: {
+      type: 'linear',     
       display: true,
       position: 'left',
+      suggestedMin: 0,
+      ticks: {
+        callback: v => formatNumber(v),
+        maxTicksLimit: 8,
+        color: '#9ca3af',
+        font: { size: 11 }
+      },
       grid: {
         color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
-        drawOnChartArea: true,
-        drawTicks: true
-      },
-      ticks: {
-        color: '#9ca3af',
-        font: {
-          size: 11
-        },
-        maxTicksLimit: 8,
-        display: true,
-        callback: function(value) {
-          return formatNumber(value);
-        }
-      },
-      suggestedMin: 0
+        borderColor: 'rgba(75, 85, 99, 0.5)'
+      }
     }
   },
   elements: {
