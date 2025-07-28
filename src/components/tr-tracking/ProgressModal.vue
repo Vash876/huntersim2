@@ -381,8 +381,8 @@ const chartLabels = computed(() => {
   }
 });
 
-// Dark theme colors
-const darkThemeOptions = {
+// Dark theme colors - make reactive to xAxisType changes
+const darkThemeOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   layout: {
@@ -510,7 +510,7 @@ const darkThemeOptions = {
       backgroundColor: 'rgba(255, 255, 255, 0.8)'
     }
   }
-};
+}));
 
 const chartOptions = computed(() => {
   // Calculate dynamic Y-axis range based on selected data
@@ -568,13 +568,13 @@ const chartOptions = computed(() => {
   }
 
   return {
-    ...darkThemeOptions,
+    ...darkThemeOptions.value,
     // Add unique ID to prevent data sharing between charts
     chartId: `chart-${chartRenderKey.value}-${Date.now()}`,
     plugins: {
-      ...darkThemeOptions.plugins,
+      ...darkThemeOptions.value.plugins,
       tooltip: {
-        ...darkThemeOptions.plugins.tooltip,
+        ...darkThemeOptions.value.plugins.tooltip,
         callbacks: {
           title: function(context) {
             if (xAxisType.value === 'timeInTR') {
@@ -598,9 +598,9 @@ const chartOptions = computed(() => {
       }
     },
     scales: {
-      ...darkThemeOptions.scales,
+      ...darkThemeOptions.value.scales,
       x: {
-        ...darkThemeOptions.scales.x,
+        ...darkThemeOptions.value.scales.x,
         title: {
           display: true,
           text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
@@ -673,13 +673,13 @@ const gainsChartOptions = computed(() => {
   }
 
   return {
-    ...darkThemeOptions,
+    ...darkThemeOptions.value,
     // Add unique ID to prevent data sharing between charts
     chartId: `gains-chart-${chartRenderKey.value}-${Date.now()}`,
     plugins: {
-      ...darkThemeOptions.plugins,
+      ...darkThemeOptions.value.plugins,
       tooltip: {
-        ...darkThemeOptions.plugins.tooltip,
+        ...darkThemeOptions.value.plugins.tooltip,
         callbacks: {
           title: function(context) {
             if (xAxisType.value === 'timeInTR') {
@@ -703,9 +703,9 @@ const gainsChartOptions = computed(() => {
       }
     },
     scales: {
-      ...darkThemeOptions.scales,
+      ...darkThemeOptions.value.scales,
       x: {
-        ...darkThemeOptions.scales.x,
+        ...darkThemeOptions.value.scales.x,
         title: {
           display: true,
           text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
