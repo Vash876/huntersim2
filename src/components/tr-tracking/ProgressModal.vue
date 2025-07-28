@@ -537,7 +537,16 @@ const chartOptions = computed(() => {
   if (chartData.value && chartData.value.datasets.length > 0) {
     let allValues = [];
     chartData.value.datasets.forEach(dataset => {
-      allValues = allValues.concat(dataset.data.filter(val => val !== null && val !== undefined));
+      const values = dataset.data
+        .filter(val => val !== null && val !== undefined)
+        .map(val => {
+          // Handle both simple numbers and x/y objects
+          if (typeof val === 'object' && val.y !== undefined) {
+            return Number(val.y) || 0;
+          }
+          return Number(val) || 0;
+        });
+      allValues = allValues.concat(values);
     });
 
     if (allValues.length > 0) {
@@ -659,7 +668,16 @@ const gainsChartOptions = computed(() => {
   if (gainsChartData.value && gainsChartData.value.datasets.length > 0) {
     let allValues = [];
     gainsChartData.value.datasets.forEach(dataset => {
-      allValues = allValues.concat(dataset.data.filter(val => val !== null && val !== undefined));
+      const values = dataset.data
+        .filter(val => val !== null && val !== undefined)
+        .map(val => {
+          // Handle both simple numbers and x/y objects
+          if (typeof val === 'object' && val.y !== undefined) {
+            return Number(val.y) || 0;
+          }
+          return Number(val) || 0;
+        });
+      allValues = allValues.concat(values);
     });
 
     if (allValues.length > 0) {
@@ -757,12 +775,12 @@ const chartData = computed(() => {
     let data;
     if (xAxisType.value === 'timeInTR') {
       // For Time in TR, use traditional labels + data array structure
-      data = sortedEntries.value.map(entry => entry.values[resourceId] || 0);
+      data = sortedEntries.value.map(entry => Number(entry.values?.[resourceId]) || 0);
     } else {
       // For timestamp axis, use x/y object structure for proper time axis
       data = sortedEntries.value.map(entry => ({
         x: new Date(entry.date),
-        y: entry.values[resourceId] || 0
+        y: Number(entry.values?.[resourceId]) || 0
       }));
     }
     
@@ -805,12 +823,12 @@ const areaChartData = computed(() => {
     let data;
     if (xAxisType.value === 'timeInTR') {
       // For Time in TR, use traditional labels + data array structure
-      data = sortedEntries.value.map(entry => entry.values[resourceId] || 0);
+      data = sortedEntries.value.map(entry => Number(entry.values?.[resourceId]) || 0);
     } else {
       // For timestamp axis, use x/y object structure for proper time axis
       data = sortedEntries.value.map(entry => ({
         x: new Date(entry.date),
-        y: entry.values[resourceId] || 0
+        y: Number(entry.values?.[resourceId]) || 0
       }));
     }
     
@@ -855,8 +873,8 @@ const gainsChartData = computed(() => {
       // For Time in TR, use traditional labels + data array structure
       const gains = [];
       for (let i = 1; i < sortedEntries.value.length; i++) {
-        const current = sortedEntries.value[i].values[resourceId] || 0;
-        const previous = sortedEntries.value[i - 1].values[resourceId] || 0;
+        const current = Number(sortedEntries.value[i].values?.[resourceId]) || 0;
+        const previous = Number(sortedEntries.value[i - 1].values?.[resourceId]) || 0;
         gains.push(current - previous);
       }
       data = gains;
@@ -864,8 +882,8 @@ const gainsChartData = computed(() => {
       // For timestamp axis, use x/y object structure for proper time axis
       data = [];
       for (let i = 1; i < sortedEntries.value.length; i++) {
-        const current = sortedEntries.value[i].values[resourceId] || 0;
-        const previous = sortedEntries.value[i - 1].values[resourceId] || 0;
+        const current = Number(sortedEntries.value[i].values?.[resourceId]) || 0;
+        const previous = Number(sortedEntries.value[i - 1].values?.[resourceId]) || 0;
         data.push({
           x: new Date(sortedEntries.value[i].date),
           y: current - previous
