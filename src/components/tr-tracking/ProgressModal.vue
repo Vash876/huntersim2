@@ -754,7 +754,17 @@ const chartData = computed(() => {
     const resource = chartableResources.value.find(r => r.id === resourceId);
     if (!resource) return null;
     
-    const data = sortedEntries.value.map(entry => entry.values[resourceId] || 0);
+    let data;
+    if (xAxisType.value === 'timeInTR') {
+      // For Time in TR, use traditional labels + data array structure
+      data = sortedEntries.value.map(entry => entry.values[resourceId] || 0);
+    } else {
+      // For timestamp axis, use x/y object structure for proper time axis
+      data = sortedEntries.value.map(entry => ({
+        x: new Date(entry.date),
+        y: entry.values[resourceId] || 0
+      }));
+    }
     
     // Use the exact color from settings, ensuring it includes opacity for background
     const borderColor = resource.color;
@@ -773,10 +783,16 @@ const chartData = computed(() => {
     };
   }).filter(Boolean);
   
-  return {
-    labels: chartLabels.value,
+  const result = {
     datasets: datasets
   };
+  
+  // Only add labels for category axis (Time in TR)
+  if (xAxisType.value === 'timeInTR') {
+    result.labels = chartLabels.value;
+  }
+  
+  return result;
 });
 
 const areaChartData = computed(() => {
@@ -786,7 +802,17 @@ const areaChartData = computed(() => {
     const resource = chartableResources.value.find(r => r.id === resourceId);
     if (!resource) return null;
     
-    const data = sortedEntries.value.map(entry => entry.values[resourceId] || 0);
+    let data;
+    if (xAxisType.value === 'timeInTR') {
+      // For Time in TR, use traditional labels + data array structure
+      data = sortedEntries.value.map(entry => entry.values[resourceId] || 0);
+    } else {
+      // For timestamp axis, use x/y object structure for proper time axis
+      data = sortedEntries.value.map(entry => ({
+        x: new Date(entry.date),
+        y: entry.values[resourceId] || 0
+      }));
+    }
     
     // Use the exact color from settings
     const borderColor = resource.color;
@@ -805,10 +831,16 @@ const areaChartData = computed(() => {
     };
   }).filter(Boolean);
   
-  return {
-    labels: chartLabels.value,
+  const result = {
     datasets: datasets
   };
+  
+  // Only add labels for category axis (Time in TR)
+  if (xAxisType.value === 'timeInTR') {
+    result.labels = chartLabels.value;
+  }
+  
+  return result;
 });
 
 const gainsChartData = computed(() => {
@@ -818,11 +850,27 @@ const gainsChartData = computed(() => {
     const resource = chartableResources.value.find(r => r.id === resourceId);
     if (!resource) return null;
     
-    const gains = [];
-    for (let i = 1; i < sortedEntries.value.length; i++) {
-      const current = sortedEntries.value[i].values[resourceId] || 0;
-      const previous = sortedEntries.value[i - 1].values[resourceId] || 0;
-      gains.push(current - previous);
+    let data;
+    if (xAxisType.value === 'timeInTR') {
+      // For Time in TR, use traditional labels + data array structure
+      const gains = [];
+      for (let i = 1; i < sortedEntries.value.length; i++) {
+        const current = sortedEntries.value[i].values[resourceId] || 0;
+        const previous = sortedEntries.value[i - 1].values[resourceId] || 0;
+        gains.push(current - previous);
+      }
+      data = gains;
+    } else {
+      // For timestamp axis, use x/y object structure for proper time axis
+      data = [];
+      for (let i = 1; i < sortedEntries.value.length; i++) {
+        const current = sortedEntries.value[i].values[resourceId] || 0;
+        const previous = sortedEntries.value[i - 1].values[resourceId] || 0;
+        data.push({
+          x: new Date(sortedEntries.value[i].date),
+          y: current - previous
+        });
+      }
     }
     
     // Use the exact color from settings
@@ -833,7 +881,7 @@ const gainsChartData = computed(() => {
     
     return {
       label: resource.name,
-      data: gains,
+      data: data,
       backgroundColor: backgroundColor,
       borderColor: borderColor,
       borderWidth: 1,
@@ -841,10 +889,16 @@ const gainsChartData = computed(() => {
     };
   }).filter(Boolean);
   
-  return {
-    labels: chartLabels.value.slice(1), // Skip first label since we start from index 1
+  const result = {
     datasets: datasets
   };
+  
+  // Only add labels for category axis (Time in TR)
+  if (xAxisType.value === 'timeInTR') {
+    result.labels = chartLabels.value.slice(1); // Skip first label since we start from index 1
+  }
+  
+  return result;
 });
 
 // Methods
