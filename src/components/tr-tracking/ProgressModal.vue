@@ -540,11 +540,10 @@ const chartOptions = computed(() => {
       const values = dataset.data
         .filter(val => val !== null && val !== undefined)
         .map(val => {
-          // Handle both simple numbers and x/y objects
-          if (typeof val === 'object' && val.y !== undefined) {
-            return Number(val.y) || 0;
-          }
-          return Number(val) || 0;
+          // Handle both simple numbers and x/y objects with robust parsing
+          const raw = typeof val === 'object' && val?.y !== undefined ? val.y : val;
+          const num = parseFloat(raw);
+          return isFinite(num) ? num : 0;
         });
       allValues = allValues.concat(values);
     });
@@ -671,11 +670,10 @@ const gainsChartOptions = computed(() => {
       const values = dataset.data
         .filter(val => val !== null && val !== undefined)
         .map(val => {
-          // Handle both simple numbers and x/y objects
-          if (typeof val === 'object' && val.y !== undefined) {
-            return Number(val.y) || 0;
-          }
-          return Number(val) || 0;
+          // Handle both simple numbers and x/y objects with robust parsing
+          const raw = typeof val === 'object' && val?.y !== undefined ? val.y : val;
+          const num = parseFloat(raw);
+          return isFinite(num) ? num : 0;
         });
       allValues = allValues.concat(values);
     });
@@ -764,6 +762,12 @@ const gainsChartOptions = computed(() => {
   };
 });
 
+// Robust data sanitization function
+const parseChartValue = (val) => {
+  const num = parseFloat(val);
+  return isFinite(num) ? num : 0;
+};
+
 // Chart data generators
 const chartData = computed(() => {
   if (!chartSelectedResources.value.length || !sortedEntries.value.length) return null;
@@ -775,12 +779,12 @@ const chartData = computed(() => {
     let data;
     if (xAxisType.value === 'timeInTR') {
       // For Time in TR, use traditional labels + data array structure
-      data = sortedEntries.value.map(entry => Number(entry.values?.[resourceId]) || 0);
+      data = sortedEntries.value.map(entry => parseChartValue(entry.values?.[resourceId]));
     } else {
       // For timestamp axis, use x/y object structure for proper time axis
       data = sortedEntries.value.map(entry => ({
         x: new Date(entry.date),
-        y: Number(entry.values?.[resourceId]) || 0
+        y: parseChartValue(entry.values?.[resourceId])
       }));
     }
     
@@ -805,6 +809,12 @@ const chartData = computed(() => {
     datasets: datasets
   };
   
+  // Debug log for chart data validation
+  console.log('Chart dataset data:', datasets.map(d => ({ 
+    label: d.label, 
+    sampleData: d.data.slice(0, 3) 
+  })));
+  
   // Only add labels for category axis (Time in TR)
   if (xAxisType.value === 'timeInTR') {
     result.labels = chartLabels.value;
@@ -823,12 +833,12 @@ const areaChartData = computed(() => {
     let data;
     if (xAxisType.value === 'timeInTR') {
       // For Time in TR, use traditional labels + data array structure
-      data = sortedEntries.value.map(entry => Number(entry.values?.[resourceId]) || 0);
+      data = sortedEntries.value.map(entry => parseChartValue(entry.values?.[resourceId]));
     } else {
       // For timestamp axis, use x/y object structure for proper time axis
       data = sortedEntries.value.map(entry => ({
         x: new Date(entry.date),
-        y: Number(entry.values?.[resourceId]) || 0
+        y: parseChartValue(entry.values?.[resourceId])
       }));
     }
     
@@ -873,8 +883,8 @@ const gainsChartData = computed(() => {
       // For Time in TR, use traditional labels + data array structure
       const gains = [];
       for (let i = 1; i < sortedEntries.value.length; i++) {
-        const current = Number(sortedEntries.value[i].values?.[resourceId]) || 0;
-        const previous = Number(sortedEntries.value[i - 1].values?.[resourceId]) || 0;
+        const current = parseChartValue(sortedEntries.value[i].values?.[resourceId]);
+        const previous = parseChartValue(sortedEntries.value[i - 1].values?.[resourceId]);
         gains.push(current - previous);
       }
       data = gains;
@@ -882,8 +892,8 @@ const gainsChartData = computed(() => {
       // For timestamp axis, use x/y object structure for proper time axis
       data = [];
       for (let i = 1; i < sortedEntries.value.length; i++) {
-        const current = Number(sortedEntries.value[i].values?.[resourceId]) || 0;
-        const previous = Number(sortedEntries.value[i - 1].values?.[resourceId]) || 0;
+        const current = parseChartValue(sortedEntries.value[i].values?.[resourceId]);
+        const previous = parseChartValue(sortedEntries.value[i - 1].values?.[resourceId]);
         data.push({
           x: new Date(sortedEntries.value[i].date),
           y: current - previous
