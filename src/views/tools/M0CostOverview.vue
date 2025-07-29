@@ -114,7 +114,9 @@
                         <div class="text-xs text-gray-400 mb-1 text-center">Levels {{ getColumnStartLevel(column) }}-{{ getColumnEndLevel(column) }}</div>
                         <div class="grid grid-cols-2 gap-1 text-xs">
                           <span class="text-left">Level</span>
-                          <span class="text-left">Cost (e)</span>
+                          <span class="text-left flex items-center">
+                            Cost (e)
+                          </span>
                         </div>
                       </div>
                     </th>
@@ -122,7 +124,7 @@
                 </thead>
                 <tbody>
                   <tr v-for="row in maxRowsPerColumn" :key="row" class="border-b border-gray-700/30 hover:bg-gray-750/50 transition-all duration-200">
-                    <td v-for="column in columnCount" :key="column" class="px-3 py-2 border-r border-gray-700 last:border-r-0">
+                    <td v-for="column in columnCount" :key="column" class="px-1 py-2 border-r border-gray-700 last:border-r-0">
                       <div v-if="getCostForPosition(column, row)" 
                            :class="[
                              'grid grid-cols-2 gap-1 text-sm rounded px-2 py-1 transition-colors',
@@ -130,7 +132,10 @@
                            ]">
                         <span class="text-white font-medium text-left">{{ getCostForPosition(column, row).level }}</span>
                         <div class="text-left">
-                          <span class="text-yellow-400">{{ getCostForPosition(column, row).exponent }}</span>
+                          <span class="text-yellow-400">
+                            <img :src="shardsIcon" alt="Shards" :class="`${desktopIconSize} inline mr-0.5 mb-1`" />
+                            {{ getCostForPosition(column, row).exponent }}
+                          </span>
                           <span v-if="getCostForPosition(column, row).difference !== null" class="text-gray-400 text-xs ml-1">
                             (+{{ getCostForPosition(column, row).difference }})
                           </span>
@@ -148,7 +153,9 @@
                 <thead>
                   <tr class="bg-gray-800 border-b border-gray-700">
                     <th class="px-4 py-2 w-[30%]">Level</th>
-                    <th class="px-4 py-2">Cost (e)</th>
+                    <th class="px-4 py-2 flex items-center">
+                      Cost (e)
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -166,6 +173,7 @@
                       {{ cost.level }}
                     </td>
                     <td class="px-4 py-3">
+                      <img :src="shardsIcon" alt="Shards" class="w-4 h-4 inline mr-2" />
                       <span class="text-yellow-400">{{ cost.exponent }}</span>
                       <span v-if="cost.difference !== null" class="text-gray-400 text-xs ml-2">
                         (+{{ cost.difference }})
@@ -196,6 +204,7 @@ import {
 } from '@tabler/icons-vue';
 import { M0_COSTS, getM0Cost, getTotalM0Cost } from '@/constants/m0Costs.js';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
+import shardsIcon from '@/assets/general/shards.png';
 
 // Filter States
 const currentM0Level = ref(1);
@@ -288,6 +297,10 @@ const columnCount = computed(() => {
 
 const maxRowsPerColumn = computed(() => {
   return 10; // Immer 10 Zeilen pro Spalte
+});
+
+const desktopIconSize = computed(() => {
+  return levelRange.value > 70 ? 'w-0 h-0' : 'w-4 h-4';
 });
 
 // Methods
