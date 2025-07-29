@@ -2,6 +2,32 @@
 const changelog = 
 [
   {
+    version: '2.7.3',
+    date: '2025-07-30',
+    changes: [
+      {
+        text: '<b class="text-yellow-400">NEW:</b> m0 Cost Overview Tool',
+        subItems: [
+          'Added comprehensive m0 Cost Overview tool for viewing m0 upgrade costs from level 1 to 1000',
+          'Features desktop multi-column layout and mobile single-column view with visual 10-level grouping',
+        ]
+      },
+      {
+        text: 'General',
+        subItems: [
+          'Slightly changed button styles across the app'
+        ]
+      },
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Added cross TR charts',
+          'Added interactive chart zooming and panning with mouse controls (scroll to zoom Y-axis, drag to pan, Ctrl+drag for box zoom)',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.2',
     date: '2025-07-29',
     changes: [

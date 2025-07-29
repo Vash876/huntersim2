@@ -24,28 +24,30 @@
             </div>
           </div>
           
-          <div class="flex">
-            <button 
-              @click="openStatsModal"
-              class="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-l-md border-r border-blue-700 transition-colors shadow-sm"
-            >
-              <IconChartBar size="16" class="mr-2" />
-              <span>Stats</span>
-            </button>
-            
-            <!-- New Build (mittlerer Button) -->
+          <!-- Buttons -->
+          <div class="flex flex-row flex-wrap justify-end gap-2">
+            <!-- Stats -->
             <button
-              class="px-3 py-2 bg-gray-600 hover:bg-gray-500 flex items-center gap-2 transition-colors shadow-sm border-r border-blue-700"
+              @click="openStatsModal"
+              class="flex items-center space-x-1 px-3 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
+            >
+              <IconChartArrowsVertical size="16" />
+              <span>{{ currentHunter.name }} Stats</span>
+            </button>
+
+            <!-- New Build -->
+            <button
               @click="openBuildModal"
+              class="flex items-center space-x-1 px-3 py-2 rounded-full bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
             >
               <IconPlus size="16" />
               <span>New Build</span>
             </button>
 
-            <!-- Build Code (Import) - rechter Button mit abgerundeter rechter Ecke -->
+            <!-- Import -->
             <button
-              class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-r-md flex items-center gap-2 transition-colors shadow-sm"
               @click="openBuildCodeModal"
+              class="flex items-center space-x-1 px-3 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
             >
               <IconDownload size="16" />
               <span>Import</span>
@@ -94,27 +96,27 @@
         <!-- Build Filter Switch -->
         <div class="flex items-center gap-2">
           <span class="text-sm text-gray-400">View:</span>
-          <div class="flex bg-gray-700 rounded-md overflow-hidden">
+          <div class="flex gap-2">
             <button 
               @click="buildFilterMode = 'active'"
-              class="px-3 py-1 text-sm transition-colors"
-              :class="buildFilterMode === 'active' ? 'bg-blue-600 text-white' : 'hover:bg-gray-650 text-gray-300'"
+              class="flex items-center space-x-1 px-3 py-1.5 rounded-full transition-colors duration-200 text-xs sm:text-sm"
+              :class="buildFilterMode === 'active' ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'"
             >
               <span>Active</span>
-              <span class="ml-1 text-xs opacity-75">({{ activeBuildsCount }})</span>
+              <span class="text-xs opacity-75">({{ activeBuildsCount }})</span>
             </button>
             <button 
               @click="buildFilterMode = 'archived'"
-              class="px-3 py-1 text-sm transition-colors"
-              :class="buildFilterMode === 'archived' ? 'bg-blue-600 text-white' : 'hover:bg-gray-650 text-gray-300'"
+              class="flex items-center space-x-1 px-3 py-1.5 rounded-full transition-colors duration-200 text-xs sm:text-sm"
+              :class="buildFilterMode === 'archived' ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'"
             >
               <span>Archived</span>
-              <span class="ml-1 text-xs opacity-75">({{ archivedBuildsCount }})</span>
+              <span class="text-xs opacity-75">({{ archivedBuildsCount }})</span>
             </button>
           </div>
           <button 
             @click="showLootFilterModal = true"
-            class="md:hidden flex items-center gap-1 px-3 py-1 bg-gray-700 hover:bg-gray-650 rounded-md text-sm transition-colors"
+            class="md:hidden flex items-center space-x-1 px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors duration-200 text-xs sm:text-sm"
           >
             <IconFilter size="14" class="text-blue-400" />
             <span>Loot Filter</span>
@@ -405,6 +407,7 @@ import {
   IconFolderOff,
   IconDownload,
   IconRobot,
+  IconChartArrowsVertical,
   // Neue Icons für die Toast-Nachrichten
   IconCircleCheck,
   IconAlertCircle,

@@ -513,6 +513,9 @@ function resetAllData() {
     // Loop Mod Overview
     localStorage.removeItem('loopModOverview_filters');
     
+    // M0 Cost Overview
+    localStorage.removeItem('m0CostOverview_filters');
+    
     // TR Planner
     localStorage.removeItem('trPlanOrderIds');
     localStorage.removeItem('tr-planner-data'); // Falls genutzt

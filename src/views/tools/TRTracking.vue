@@ -13,60 +13,46 @@
             </div>
             <p class="text-sm text-gray-300">Track your progress across Traversal Resets</p>
           </div>
-          
-          <!-- Mobile: Die Buttons untereinander in einer Button-Gruppe mit Icons -->
-          <div class="flex flex-col sm:hidden w-full gap-2">
-            <button 
+
+          <!-- Buttons -->
+          <div class="flex flex-col sm:flex-row sm:flex-wrap justify-end gap-3">
+            <!-- Resource Settings -->
+            <button
               @click="openResourceSettingsModal"
-              class="flex items-center justify-between px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
             >
-              <span>Resource Settings</span>
-              <IconSettings size="16" />
+              <IconSettings size="18" class="" />
+              <span>Settings</span>
             </button>
-            
+
+            <!-- Import -->
             <button
               @click="openImportModal"
-              class="flex items-center justify-between px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors shadow-sm"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
             >
+              <IconDownload size="18" />
               <span>Import</span>
-              <IconDownload size="16" />
             </button>
-            
+
+            <!-- Multi-TR Comparison -->
+            <button
+              @click="openMultiTRComparisonModal"
+              :disabled="trTracks.length < 2"
+              class="relative flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 text-white font-semibold shadow-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
+            >
+              <IconTrendingUp size="18" />
+              <span>Compare</span>
+              <span v-if="trTracks.length < 2" class="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-500 text-xs rounded-full">!</span>
+            </button>
+
+            <!-- New TR Plan -->
             <button
               @click="openNewTRModal"
               :disabled="!hasSelectedResources"
-              class="flex items-center justify-between px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-md transition-colors shadow-sm"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-semibold shadow-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
             >
-              <span>New TR Track</span>
-              <IconPlus size="16" />
-            </button>
-          </div>
-          
-          <!-- Desktop: Die Buttons nebeneinander -->
-          <div class="hidden sm:flex">
-            <button 
-              @click="openResourceSettingsModal"
-              class="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-l-md border-r border-blue-700 transition-colors shadow-sm"
-            >
-              <IconSettings size="16" class="mr-2" />
-              <span>Resource Settings</span>
-            </button>
-            
-            <button
-              @click="openImportModal"
-              class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white border-r border-purple-700 flex items-center gap-2 transition-colors shadow-sm"
-            >
-              <IconDownload size="16" />
-              <span>Import</span>
-            </button>
-            
-            <button
-              @click="openNewTRModal"
-              :disabled="!hasSelectedResources"
-              class="px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-r-md flex items-center gap-2 transition-colors shadow-sm"
-            >
-              <IconPlus size="16" />
-              <span>New TR Track</span>
+              <IconPlus size="18" />
+              <span>New Plan</span>
             </button>
           </div>
         </div>
@@ -154,7 +140,7 @@
                 <!-- TR Name -->
                 <td class="py-4 px-4">
                   <div>
-                    <div class="text-white font-medium">{{ track.name }}</div>
+                    <div class="text-white font-medium">TR#{{ track.trCount || 0 }} - {{ track.name }}</div>
                     <div class="text-xs text-gray-400">Started: {{ formatDate(track.startDate) }}</div>
                   </div>
                 </td>
@@ -293,6 +279,13 @@
       @close="showShareTrackModal = false"
     />
 
+    <MultiTRComparisonModal
+      :show="showMultiTRComparisonModal"
+      :tracks="trTracks"
+      :selectedResources="selectedResources"
+      @close="showMultiTRComparisonModal = false"
+    />
+
     <AlertDialog
       :is-visible="alertDialog.isVisible"
       :title="alertDialog.title"
@@ -321,7 +314,8 @@ import {
   IconShare,
   IconCopy,
   IconEdit,
-  IconDownload
+  IconDownload,
+  IconTrendingUp
 } from '@tabler/icons-vue';
 
 // Components
@@ -331,6 +325,7 @@ import TrackDetailsModal from '@/components/tr-tracking/TrackDetailsModal.vue';
 import ProgressModal from '@/components/tr-tracking/ProgressModal.vue';
 import ImportModal from '@/components/tr-tracking/ImportModal.vue';
 import ShareTrackModal from '@/components/tr-tracking/ShareTrackModal.vue';
+import MultiTRComparisonModal from '@/components/tr-tracking/MultiTRComparisonModal.vue';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 
 // Store
@@ -344,6 +339,7 @@ const showTrackDetailsModal = ref(false);
 const showProgressModal = ref(false);
 const showImportModal = ref(false);
 const showShareTrackModal = ref(false);
+const showMultiTRComparisonModal = ref(false);
 const currentTrack = ref(null);
 
 // AlertDialog state
@@ -372,6 +368,13 @@ function openResourceSettingsModal() {
 
 function openImportModal() {
   showImportModal.value = true;
+}
+
+function openMultiTRComparisonModal() {
+  if (trTracks.value.length < 2) {
+    return; // Button should be disabled, but just in case
+  }
+  showMultiTRComparisonModal.value = true;
 }
 
 function shareTrack(track) {

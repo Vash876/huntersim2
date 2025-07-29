@@ -13,7 +13,7 @@
         <div v-if="track">
           <h3 class="text-base font-bold text-white flex items-center">
             <IconChartLine size="16" class="mr-2 text-green-400" />
-            {{ track.name }}
+            TR#{{ track.trCount || 0 }} - {{ track.name }}
           </h3>
         </div>
         <button

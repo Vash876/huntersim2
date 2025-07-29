@@ -133,6 +133,11 @@ const routes = [
     component: () => import('../views/tools/ResearchOverview.vue'),
   },
   {
+    path: '/tools/m0cost-overview',
+    name: 'M0 Cost Overview',
+    component: () => import('../views/tools/M0CostOverview.vue'),
+  },
+  {
     path: '/tools/attrgn3-calculator',
     name: 'Attr. GN#3 Calculator',
     component: () => import('../views/tools/AttrGN3Calculator.vue'),

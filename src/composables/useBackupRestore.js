@@ -59,10 +59,13 @@ export function useBackupRestore() {
       // 9. Loop Mod Overview Daten aus localStorage
       const loopModOverviewSettings = localStorage.getItem('loopModOverview_filters');
       
-      // 10. TR Tracking Daten
+      // 10. M0 Cost Overview Daten aus localStorage
+      const m0CostOverviewSettings = localStorage.getItem('m0CostOverview_filters');
+      
+      // 11. TR Tracking Daten
       const trTrackingData = trTrackingStore.exportData();
       
-      // 11. Weitere relevante localStorage-Einträge sammeln
+      // 12. Weitere relevante localStorage-Einträge sammeln
       const trPlanOrderIds = localStorage.getItem('trPlanOrderIds');
       const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
       
@@ -82,6 +85,7 @@ export function useBackupRestore() {
             traitSpherePlanner_settings: tsPlannerSettings ? JSON.parse(tsPlannerSettings) : {},
             researchOverview_filters: researchOverviewSettings ? JSON.parse(researchOverviewSettings) : {},
             loopModOverview_filters: loopModOverviewSettings ? JSON.parse(loopModOverviewSettings) : {},
+            m0CostOverview_filters: m0CostOverviewSettings ? JSON.parse(m0CostOverviewSettings) : {},
             trPlanOrderIds: trPlanOrderIds ? JSON.parse(trPlanOrderIds) : [],
             huntersim_high_iterations_mode: highIterationsMode
           }
@@ -232,6 +236,11 @@ export function useBackupRestore() {
         // Loop Mod Overview
         if (localStorageData.loopModOverview_filters) {
           localStorage.setItem('loopModOverview_filters', JSON.stringify(localStorageData.loopModOverview_filters));
+        }
+        
+        // M0 Cost Overview
+        if (localStorageData.m0CostOverview_filters) {
+          localStorage.setItem('m0CostOverview_filters', JSON.stringify(localStorageData.m0CostOverview_filters));
         }
         
         // Other settings

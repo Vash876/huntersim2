@@ -100,6 +100,20 @@
           
           <!-- Chart Container -->
           <div class="bg-gray-700/30 rounded-md p-4">
+            <!-- Chart Help & Controls -->
+            <div class="mb-3 flex justify-between items-center">
+              <div class="text-xs text-gray-400">
+                <span class="font-medium">Mouse Controls:</span> 
+                Scroll to zoom Y-axis • Drag to pan • Ctrl+drag for box zoom
+              </div>
+              <button
+                @click="resetChartZoom"
+                class="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors"
+              >
+                Reset Zoom
+              </button>
+            </div>
+            
             <!-- Resource Selection for Charts -->
             <div class="mb-4 flex flex-wrap gap-2">
               <button
@@ -126,6 +140,7 @@
               <!-- Line Chart -->
               <div v-if="activeChartType === 'line' && chartData" class="w-full h-full">
                 <Line
+                  ref="chartRef"
                   :data="chartData"
                   :options="chartOptions"
                   :key="`line-${chartRenderKey}`"
@@ -136,6 +151,7 @@
               <!-- Bar Chart -->
               <div v-if="activeChartType === 'bar' && chartData" class="w-full h-full">
                 <Bar
+                  ref="chartRef"
                   :data="chartData"
                   :options="chartOptions"
                   :key="`bar-${chartRenderKey}`"
@@ -146,6 +162,7 @@
               <!-- Area Chart -->
               <div v-if="activeChartType === 'area' && areaChartData" class="w-full h-full">
                 <Line
+                  ref="chartRef"
                   :data="areaChartData"
                   :options="chartOptions"
                   :key="`area-${chartRenderKey}`"
@@ -156,6 +173,7 @@
               <!-- Gains Chart -->
               <div v-if="activeChartType === 'gains' && gainsChartData" class="w-full h-full">
                 <Bar
+                  ref="chartRef"
                   :data="gainsChartData"
                   :options="gainsChartOptions"
                   :key="`gains-${chartRenderKey}`"
@@ -233,6 +251,33 @@ import { ref, computed, watch, nextTick } from 'vue';
 import { formatNumber, formatSuffixInput } from '@/composables/format.js';
 import { IconX, IconChartLine, IconTrendingUp, IconClockHour2, IconCalendarEvent } from '@tabler/icons-vue';
 import { Line, Bar } from 'vue-chartjs';
+import zoomPlugin from 'chartjs-plugin-zoom';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  TimeScale
+} from 'chart.js';
+
+// Register Chart.js plugins
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  TimeScale,
+  zoomPlugin
+);
 
 const props = defineProps({
   show: Boolean,
@@ -250,6 +295,7 @@ const activeChartType = ref('line');
 const chartSelectedResources = ref([]);
 const xAxisType = ref('timestamp'); // 'timestamp' or 'timeInTR'
 const chartRenderKey = ref(0); // Force chart re-render
+const chartRef = ref(null); // Reference to chart instance
 
 const chartTypes = [
   { id: 'line', name: 'Progress' },
@@ -296,6 +342,13 @@ watch([activeChartType, chartSelectedResources, xAxisType], () => {
 // Force chart update function
 function forceChartUpdate() {
   chartRenderKey.value += 1;
+}
+
+// Reset chart zoom function
+function resetChartZoom() {
+  if (chartRef.value && chartRef.value.chart) {
+    chartRef.value.chart.resetZoom();
+  }
 }
 
 // Filter out notes and other non-relevant resources from chartable resources
@@ -395,6 +448,33 @@ const darkThemeOptions = computed(() => ({
           return `${context.dataset.label}: ${formatNumber(value)}`;
         }
       }
+    },
+    zoom: {
+      pan: {
+        enabled: true,
+        mode: 'xy',
+        modifierKey: null,
+      },
+      zoom: {
+        wheel: {
+          enabled: true,
+          speed: 0.1,
+          mode: 'y', // Default: zoom Y-axis with normal scroll
+        },
+        pinch: {
+          enabled: true,
+          mode: 'xy' // Allow both axes for touch devices
+        },
+        drag: {
+          enabled: true,
+          mode: 'xy', // Allow both x and y selection for box zoom
+          modifierKey: 'ctrl', // Ctrl+drag for box zoom on both axes
+        },
+      },
+      limits: {
+        y: {min: 'original', max: 'original'},
+        x: {min: 'original', max: 'original'}
+      }
     }
   },
   scales: {
@@ -475,13 +555,16 @@ const darkThemeOptions = computed(() => ({
       pointBackgroundColor: 'rgba(255, 255, 255, 0.8)'
     },
     bar: {
-      backgroundColor: 'rgba(255, 255, 255, 0.8)'
+      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+      borderWidth: 1,
+      barThickness: 'flex',
+      maxBarThickness: 50
     }
   }
 }));
 
 const chartOptions = computed(() => {
-  // Calculate dynamic Y-axis range based on selected data
+  // Calculate dynamic Y-axis range based on selected data (auto scaling)
   let yAxisConfig = {
     display: true,
     position: 'left',
@@ -504,7 +587,7 @@ const chartOptions = computed(() => {
     }
   };
 
-  // Dynamic Y-axis range calculation when we have data
+  // Apply automatic Y-axis scaling based on data
   if (chartData.value && chartData.value.datasets.length > 0) {
     let allValues = [];
     chartData.value.datasets.forEach(dataset => {
@@ -524,20 +607,16 @@ const chartOptions = computed(() => {
       const maxValue = Math.max(...allValues);
       const range = maxValue - minValue;
       
-      // Only apply dynamic scaling if we have actual variation in the data
       if (range > 0) {
-        // Add 10% padding to top and bottom for better visualization
         const padding = range * 0.1;
-        const suggestedMin = Math.max(0, minValue - padding);
-        const suggestedMax = maxValue + padding;
         
-        // Only apply custom range if it's significantly different from starting at 0
+        // Smart scaling: start from 0 if data is close to 0, otherwise fit to data
         if (minValue > range * 0.3) {
-          yAxisConfig.suggestedMin = suggestedMin;
-          yAxisConfig.suggestedMax = suggestedMax;
+          yAxisConfig.suggestedMin = Math.max(0, minValue - padding);
+          yAxisConfig.suggestedMax = maxValue + padding;
         } else {
           yAxisConfig.suggestedMin = 0;
-          yAxisConfig.suggestedMax = suggestedMax;
+          yAxisConfig.suggestedMax = maxValue + padding;
         }
       }
     }
@@ -610,7 +689,7 @@ const chartOptions = computed(() => {
 });
 
 const gainsChartOptions = computed(() => {
-  // Calculate dynamic Y-axis range for gains chart
+  // Calculate dynamic Y-axis range for gains chart (auto scaling)
   let yAxisConfig = {
     display: true,
     position: 'left',
@@ -634,7 +713,7 @@ const gainsChartOptions = computed(() => {
     }
   };
 
-  // Dynamic Y-axis range calculation for gains chart
+  // Apply automatic Y-axis scaling for gains chart
   if (gainsChartData.value && gainsChartData.value.datasets.length > 0) {
     let allValues = [];
     gainsChartData.value.datasets.forEach(dataset => {
@@ -654,15 +733,12 @@ const gainsChartOptions = computed(() => {
       const maxValue = Math.max(...allValues);
       const range = Math.max(Math.abs(minValue), Math.abs(maxValue));
       
-      // For gains charts, center around 0 but adjust range based on data
       if (range > 0) {
-        // Add 10% padding for better visualization
         const padding = range * 0.1;
-        const suggestedMin = minValue - padding;
-        const suggestedMax = maxValue + padding;
         
-        yAxisConfig.suggestedMin = suggestedMin;
-        yAxisConfig.suggestedMax = suggestedMax;
+        // Auto mode: center around 0 with smart padding
+        yAxisConfig.suggestedMin = minValue - padding;
+        yAxisConfig.suggestedMax = maxValue + padding;
       }
     }
   }
@@ -772,7 +848,7 @@ const chartData = computed(() => {
       data: data,
       borderColor: borderColor,
       backgroundColor: backgroundColor,
-      borderWidth: 2,
+      borderWidth: activeChartType.value === 'bar' ? 1 : 2,
       fill: false,
       resourceId: resourceId
     };
@@ -888,6 +964,8 @@ const gainsChartData = computed(() => {
       backgroundColor: backgroundColor,
       borderColor: borderColor,
       borderWidth: 1,
+      barThickness: 'flex', // Make bars more visible
+      maxBarThickness: 50, // Limit maximum bar width
       resourceId: resourceId
     };
   }).filter(Boolean);

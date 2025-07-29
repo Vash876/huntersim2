@@ -14,110 +14,54 @@
             <p class="text-sm text-gray-300">Plan and optimize your Traversal Resets</p>
           </div>
           
-          <!-- Mobile: Die Buttons untereinander in einer Button-Gruppe mit Icons -->
-          <div class="flex flex-col sm:hidden w-full gap-2">
-            <button 
+          <!-- Buttons -->
+          <div class="flex flex-col sm:flex-row sm:flex-wrap justify-end gap-3">
+            <!-- Gem Overview -->
+            <button
               @click="openGemOverviewModal"
-              class="flex items-center justify-between px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors shadow-sm"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
             >
+              <IconZodiacGemini size="18" />
               <span>Gem Overview</span>
-              <IconZodiacGemini size="16" />
             </button>
-            
-            <button 
+
+            <!-- Maxed Boosts -->
+            <button
               @click="openStatsModal"
-              class="flex items-center justify-between px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors shadow-sm"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
             >
+              <IconChartBar size="18" />
               <span>Maxed Boosts</span>
-              <IconChartBar size="16" />
             </button>
-            
-            <button 
+
+            <!-- Orb Calculator -->
+            <button
               @click="openOrbCalculatorModal"
-              class="flex items-center justify-between px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors shadow-sm"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-gray-500 to-gray-700 hover:from-gray-600 hover:to-gray-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
             >
+              <IconCalculator size="18" />
               <span>Orb Calculator</span>
-              <IconCalculator size="16" />
             </button>
-            
-            <button 
+
+            <!-- Import Plan -->
+            <button
               @click="openImportModal"
-              class="flex items-center justify-between px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors shadow-sm"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
             >
+              <IconDownload size="18" />
               <span>Import Plan</span>
-              <IconDownload size="16" />
             </button>
-            
+
+            <!-- New Plan -->
             <button
               @click="openTRPlanModal"
-              class="flex items-center justify-between px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
             >
-              <span>New Plan</span>
-              <IconPlus size="16" />
-            </button>
-          </div>
-          
-          <!-- Desktop: Die Buttons nebeneinander wie bisher -->
-          <div class="hidden sm:flex">
-            <button 
-              @click="openGemOverviewModal"
-              class="flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-l-md border-r border-purple-700 transition-colors shadow-sm"
-            >
-              <IconZodiacGemini size="16" class="mr-2" />
-              <span>Gem Overview</span>
-            </button>
-            
-            <button 
-              @click="openStatsModal"
-              class="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white border-r border-blue-700 transition-colors shadow-sm"
-            >
-              <IconChartBar size="16" class="mr-2" />
-              <span>Maxed Boosts</span>
-            </button>
-            
-            <button 
-              @click="openOrbCalculatorModal"
-              class="flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white border-r border-gray-700 transition-colors shadow-sm"
-            >
-              <IconCalculator size="16" class="mr-2" />
-              <span>Orb Calculator</span>
-            </button>
-            
-            <!-- Import Button -->
-            <button 
-              @click="openImportModal"
-              class="flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white border-r border-green-700 transition-colors shadow-sm"
-            >
-              <IconDownload size="16" class="mr-2" />
-              <span>Import</span>
-            </button>
-            
-            <button
-              class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-r-md flex items-center gap-2 transition-colors shadow-sm"
-              @click="openTRPlanModal"
-            >
-              <IconPlus size="16" />
+              <IconPlus size="18" />
               <span>New Plan</span>
             </button>
           </div>
         </div>
-      </div>
-      
-      <!-- Settings Bar -->
-      <div class="bg-gray-800 py-3 px-4 flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-2">
-         <!--  <span class="text-sm text-gray-400">Plans:</span>
-          <span class="text-sm text-blue-400 font-semibold">{{ trPlannerStore.trPlanCount }}</span>-->
-        </div>
-        
-        <!-- Reset Button -->
-        <button 
-          @click="resetPlanner"
-          class="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-gray-700 transition-colors"
-        >
-          <IconRefresh size="16" class="text-blue-400" />
-          <span>Reset Planner</span>
-        </button>
       </div>
     </div>
 
