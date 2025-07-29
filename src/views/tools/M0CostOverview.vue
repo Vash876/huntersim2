@@ -180,7 +180,7 @@
       </div>
       
       <div class="text-center text-xs text-gray-400 mt-2">
-        <span class="text-gray-500">Credits to RatBoy and DarthSW</span>
+        <span class="text-gray-500">Cost data provided by RatBoy and DarthSW</span>
       </div>
     </div>
   </div>
