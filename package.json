@@ -36,6 +36,7 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "comlink": "^4.4.2",
     "lodash": "^4.17.21",
+    "pako": "^2.1.0",
     "pinia": "^3.0.1",
     "pinia-plugin-persistedstate": "^4.2.0",
     "randombytes": "^2.1.0",

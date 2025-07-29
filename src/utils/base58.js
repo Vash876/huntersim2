@@ -88,6 +88,49 @@ export const Base58 = {
     }
     
     return new TextDecoder().decode(new Uint8Array(bytes.reverse()));
+  },
+  
+  // New function to decode to raw bytes for compression
+  decodeBytes(string) {
+    if (typeof string !== 'string') {
+      throw new Error('Base58.decodeBytes input is not a string');
+    }
+    
+    if (string.length === 0) return new Uint8Array(0);
+    
+    let i, j, bytes = [0];
+    
+    for (i = 0; i < string.length; i++) {
+      const c = string[i];
+      if (!(c in ALPHABET_MAP)) {
+        throw new Error(`Base58.decodeBytes invalid character: ${c}`);
+      }
+      
+      for (j = 0; j < bytes.length; j++) {
+        bytes[j] *= BASE;
+      }
+      
+      bytes[0] += ALPHABET_MAP[c];
+      let carry = 0;
+      
+      for (j = 0; j < bytes.length; j++) {
+        bytes[j] += carry;
+        carry = bytes[j] >> 8;
+        bytes[j] &= 0xff;
+      }
+      
+      while (carry) {
+        bytes.push(carry & 0xff);
+        carry >>= 8;
+      }
+    }
+    
+    // Deal with leading zeros
+    for (i = 0; string[i] === '1' && i < string.length - 1; i++) {
+      bytes.push(0);
+    }
+    
+    return new Uint8Array(bytes.reverse());
   }
 };
 

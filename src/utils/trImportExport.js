@@ -6,6 +6,7 @@
 import { Base58 } from '@/utils/base58';
 import { getGemDataFromLocalStorage } from '@/utils/gemDataUtils';
 import { convertBoostDataToIds, convertBoostDataFromIds, allBoosts } from '@/constants/tr-planner';
+import pako from 'pako';
 
 // Version for future compatibility
 const EXPORT_VERSION = 1;
@@ -682,95 +683,39 @@ function compressMaxedBoosts(maxedBoosts) {
   
   // Map boost keys to short codes for better compression
   const boostCodes = {
+    // time 
+    'hoursInTR': 'htr',
+    'loopMods': 'lm',
+    'lmConsistency': 'lmc',
     // Milestones
     'ms0': 'm0',
     // Relics
-    'r1': 'r1',
-    'r2': 'r2',
-    'r3': 'r3',
-    'r4': 'r4',
-    'r5': 'r5',
     'r6': 'r6',
-    'r7': 'r7',
-    'r8': 'r8',
     'r9': 'r9',
-    'r10': 'r10',
-    'r11': 'r11',
-    'r12': 'r12',
-    'r13': 'r13',
-    'r14': 'r14',
-    'r15': 'r15',
-    'r16': 'r16',
-    'r17': 'r17',
-    'r18': 'r18',
-    'r19': 'r19',
-    'r20': 'r20',
     // Boolean boosts
-    'campfragdet': 'cfd',
-    'research_alltime': 'r89',
+    'research_alltime': 'r_at',
     'ouroinstalls': 'oi',
-    'vb1': 'vb1',
-    'vb2': 'vb2',
-    'vb3': 'vb3',
-    'vb4': 'vb4',
-    'vb5': 'vb5',
-    'vb6': 'vb6',
-    'vb7': 'vb7',
-    'vb8': 'vb8',
-    'vb9': 'vb9',
-    'vb10': 'vb10',
-    'vb11': 'vb11',
-    'vb12': 'vb12',
-    'vb13': 'vb13',
-    'vb14': 'vb14',
-    'vb15': 'vb15',
-    'vb16': 'vb16',
-    'vb17': 'vb17',
-    'vb18': 'vb18',
-    'vb19': 'vb19',
-    'vb20': 'vb20',
+    'vb1': 'v1',
+    'vb2': 'v2',
+    'vb3': 'v3',
+    'vb4': 'v4',
+    'vb5': 'v5',
     // Inscryptions
-    'i1': 'i1',
-    'i2': 'i2',
-    'i3': 'i3',
-    'i4': 'i4',
-    'i5': 'i5',
-    'i6': 'i6',
-    'i7': 'i7',
-    'i8': 'i8',
-    'i9': 'i9',
-    'i10': 'i10',
-    'i11': 'i11',
-    'i12': 'i12',
-    'i13': 'i13',
-    'i14': 'i14',
-    'i15': 'i15',
-    'i16': 'i16',
-    'i17': 'i17',
-    'i18': 'i18',
-    'i19': 'i19',
-    'i20': 'i20',
+    'i52': 'i52',
+    'i78': 'i78',
+    'i101': 'i101',
+    // Campaign/Special boosts  
+    'cm47': 'cm47',
+    'cm49': 'cm49',
+    'cm50': 'cm50',
+    'cm51': 'cm51',
+    'tr5Special': 'tr5s',
+    'iap': 'iap',
+    'hera': 'her',
+    'jaxis': 'jax',
     // Gadgets
-    'gadgetCloningVats': 'gcv',
-    'gadgetTimelord': 'gtl',
-    'gadgetAttackedBadges': 'gab',
-    'gadgetFragmentFormulas': 'gff',
-    'gadgetLootProcessors': 'glp',
-    'gadgetDeathsight': 'gds',
-    'gadgetLoopOrders': 'glo',
-    'gadgetUpgrades': 'gup',
-    'gadgetCampaignTokens': 'gct',
-    'gadgetTechTreeMemory': 'gtt',
-    'gadgetOrbChambers': 'goc',
-    'gadgetFragmentDatabase': 'gfd',
-    'gadgetBoomHarvesting': 'gbh',
-    'gadgetMapProjector': 'gmp',
-    'gadgetEventualOrbs': 'geo',
-    'gadgetPermenantCounting': 'gpc',
-    'gadgetSlaying': 'gsl',
-    'gadgetMapFilter': 'gmf',
-    'gadgetLoopBuddies': 'glb',
-    'gadgetBeacons': 'gbe',
+    'oogadget': 'ogd',
+    'campfragdet': 'cfd',
     // Boons
     'boonELevel': 'bel',
     'boonHLevel': 'bhl'
@@ -797,107 +742,39 @@ function decompressMaxedBoosts(compressedMaxed) {
   
   // Reverse mapping from codes to boost keys
   const codeToBoost = {
+    // time
+    'htr': 'hoursInTR',
+    'lm': 'loopMods',
+    'lmc': 'lmConsistency',
     // Milestones
     'm0': 'ms0',
-    'm1': 'ms1',
-    'm2': 'ms2',
-    'm3': 'ms3',
-    'm4': 'ms4',
-    'm5': 'ms5',
-    'm6': 'ms6',
-    'm7': 'ms7',
-    'm8': 'ms8',
-    'm9': 'ms9',
-    'm10': 'ms10',
-    'm11': 'ms11',
-    'm12': 'ms12',
     // Relics
-    'r1': 'r1',
-    'r2': 'r2',
-    'r3': 'r3',
-    'r4': 'r4',
-    'r5': 'r5',
     'r6': 'r6',
-    'r7': 'r7',
-    'r8': 'r8',
     'r9': 'r9',
-    'r10': 'r10',
-    'r11': 'r11',
-    'r12': 'r12',
-    'r13': 'r13',
-    'r14': 'r14',
-    'r15': 'r15',
-    'r16': 'r16',
-    'r17': 'r17',
-    'r18': 'r18',
-    'r19': 'r19',
-    'r20': 'r20',
     // Boolean boosts
-    'cfd': 'campfragdet',
-    'r89': 'research89',
+    'r_at': 'research_alltime',
     'oi': 'ouroinstalls',
-    'vb1': 'vb1',
-    'vb2': 'vb2',
-    'vb3': 'vb3',
-    'vb4': 'vb4',
-    'vb5': 'vb5',
-    'vb6': 'vb6',
-    'vb7': 'vb7',
-    'vb8': 'vb8',
-    'vb9': 'vb9',
-    'vb10': 'vb10',
-    'vb11': 'vb11',
-    'vb12': 'vb12',
-    'vb13': 'vb13',
-    'vb14': 'vb14',
-    'vb15': 'vb15',
-    'vb16': 'vb16',
-    'vb17': 'vb17',
-    'vb18': 'vb18',
-    'vb19': 'vb19',
-    'vb20': 'vb20',
+    'v1': 'vb1',
+    'v2': 'vb2',
+    'v3': 'vb3',
+    'v4': 'vb4',
+    'v5': 'vb5',
     // Inscryptions
-    'i1': 'i1',
-    'i2': 'i2',
-    'i3': 'i3',
-    'i4': 'i4',
-    'i5': 'i5',
-    'i6': 'i6',
-    'i7': 'i7',
-    'i8': 'i8',
-    'i9': 'i9',
-    'i10': 'i10',
-    'i11': 'i11',
-    'i12': 'i12',
-    'i13': 'i13',
-    'i14': 'i14',
-    'i15': 'i15',
-    'i16': 'i16',
-    'i17': 'i17',
-    'i18': 'i18',
-    'i19': 'i19',
-    'i20': 'i20',
+    'i52': 'i52',
+    'i78': 'i78',
+    'i101': 'i101',
+    // Campaign/Special boosts  
+    'cm47': 'cm47',
+    'cm49': 'cm49',
+    'cm50': 'cm50',
+    'cm51': 'cm51',
+    'tr5s': 'tr5Special',
+    'iap': 'iap',
+    'her': 'hera',
+    'jax': 'jaxis',
     // Gadgets
-    'gcv': 'gadgetCloningVats',
-    'gtl': 'gadgetTimelord',
-    'gab': 'gadgetAttackedBadges',
-    'gff': 'gadgetFragmentFormulas',
-    'glp': 'gadgetLootProcessors',
-    'gds': 'gadgetDeathsight',
-    'glo': 'gadgetLoopOrders',
-    'gup': 'gadgetUpgrades',
-    'gct': 'gadgetCampaignTokens',
-    'gtt': 'gadgetTechTreeMemory',
-    'goc': 'gadgetOrbChambers',
-    'gfd': 'gadgetFragmentDatabase',
-    'gbh': 'gadgetBoomHarvesting',
-    'gmp': 'gadgetMapProjector',
-    'geo': 'gadgetEventualOrbs',
-    'gpc': 'gadgetPermenantCounting',
-    'gsl': 'gadgetSlaying',
-    'gmf': 'gadgetMapFilter',
-    'glb': 'gadgetLoopBuddies',
-    'gbe': 'gadgetBeacons',
+    'cfd': 'campfragdet',
+    'ogd': 'oogadget',
     // Boons
     'bel': 'boonELevel',
     'bhl': 'boonHLevel'
@@ -989,12 +866,37 @@ function compressTRPlanData(plan, gemContext = null) {
   console.log('Exporting gem context:', gemContext);
   console.log('Compressed gems for export:', compressedGems);
   
-  // Compress maxed boosts (_orbCalcMaxedBoosts)
+  // Compress maxed boosts (only from maxLevelStats - StatsInputModal)
   let compressedMaxedBoosts = null;
-  if (plan.updatedStats?._orbCalcMaxedBoosts) {
-    compressedMaxedBoosts = compressMaxedBoosts(plan.updatedStats._orbCalcMaxedBoosts);
-    console.log('Exporting maxed boosts:', plan.updatedStats._orbCalcMaxedBoosts);
-    console.log('Compressed maxed boosts for export:', compressedMaxedBoosts);
+  
+  // Sammle maxed boosts nur aus maxLevelStats (im StatsInputModal gesetzt)
+  try {
+    const maxLevelStatsJSON = localStorage.getItem('trplanner_userstats');
+    if (maxLevelStatsJSON) {
+      const maxLevelStats = JSON.parse(maxLevelStatsJSON);
+      if (maxLevelStats && typeof maxLevelStats === 'object') {
+        const maxedBoosts = {};
+        
+        // Filtere nur boolean boosts mit true und numeric boosts mit Maximalwerten
+        for (const [key, value] of Object.entries(maxLevelStats)) {
+          // Überspringe interne Felder
+          if (key === '_orbCalcMaxedBoosts') continue;
+          
+          // Sammle nur tatsächlich maxed boosts
+          if (value === true || (typeof value === 'number' && value > 0)) {
+            maxedBoosts[key] = true; // Normalisiere zu boolean für Kompression
+          }
+        }
+        
+        if (Object.keys(maxedBoosts).length > 0) {
+          compressedMaxedBoosts = compressMaxedBoosts(maxedBoosts);
+          console.log('Exporting maxed boosts from StatsInputModal:', maxedBoosts);
+          console.log('Compressed maxed boosts for export:', compressedMaxedBoosts);
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('Error reading maxLevelStats for export:', error);
   }
   
   const compressed = {
@@ -1147,32 +1049,45 @@ function decompressTRPlanData(compressed) {
   console.log('Compressed maxed boosts in import data:', compressed.m);
   console.log('Decompressed maxed boosts:', importedMaxedBoosts);
   
-  // Create maxed boosts overrides - similar to gem overrides logic
+  // Create maxed boosts overrides - compare with current StatsInputModal state
   let maxedBoostsOverrides = null;
   if (Object.keys(importedMaxedBoosts).length > 0) {
     try {
-      // Get current global maxed boosts from localStorage
+      // Get current maxed boosts only from StatsInputModal (maxLevelStats)
       const currentStatsJSON = localStorage.getItem('trplanner_userstats');
       const currentStats = currentStatsJSON ? JSON.parse(currentStatsJSON) : {};
-      const currentGlobalMaxedBoosts = currentStats._orbCalcMaxedBoosts || {};
+      
+      // Sammle aktuell maxed boosts nur aus StatsInputModal
+      const currentMaxedBoosts = {};
+      for (const [key, value] of Object.entries(currentStats)) {
+        // Überspringe interne Felder
+        if (key === '_orbCalcMaxedBoosts') continue;
+        
+        // Sammle nur tatsächlich maxed boosts
+        if (value === true || (typeof value === 'number' && value > 0)) {
+          currentMaxedBoosts[key] = true;
+        }
+      }
+      
+      console.log('Current maxed boosts from StatsInputModal:', currentMaxedBoosts);
       
       const overrides = {};
       
-      // Compare each imported maxed boost with current global state
+      // Compare each imported maxed boost with current StatsInputModal state
       Object.keys(importedMaxedBoosts).forEach(boostKey => {
         const isImportedMaxed = importedMaxedBoosts[boostKey] === true;
-        const isGloballyMaxed = currentGlobalMaxedBoosts[boostKey] === true;
+        const isCurrentlyMaxed = currentMaxedBoosts[boostKey] === true;
         
-        // If there's a difference between imported and global, create an override
-        if (isImportedMaxed !== isGloballyMaxed) {
+        // If there's a difference between imported and current, create an override
+        if (isImportedMaxed !== isCurrentlyMaxed) {
           overrides[boostKey] = isImportedMaxed;
-          console.log(`Creating maxed boost override for ${boostKey}: imported=${isImportedMaxed}, current=${isGloballyMaxed}`);
+          console.log(`Creating maxed boost override for ${boostKey}: imported=${isImportedMaxed}, current=${isCurrentlyMaxed}`);
         }
       });
       
-      // Also check for boosts that are globally maxed but not in import
-      Object.keys(currentGlobalMaxedBoosts).forEach(boostKey => {
-        if (currentGlobalMaxedBoosts[boostKey] === true && !importedMaxedBoosts.hasOwnProperty(boostKey)) {
+      // Also check for boosts that are currently maxed but not in import
+      Object.keys(currentMaxedBoosts).forEach(boostKey => {
+        if (currentMaxedBoosts[boostKey] === true && !importedMaxedBoosts.hasOwnProperty(boostKey)) {
           overrides[boostKey] = false; // Override to not maxed
           console.log(`Creating maxed boost override for ${boostKey}: imported=false, current=true`);
         }
@@ -1252,7 +1167,7 @@ function decompressTRPlanData(compressed) {
     updatedStats: {
       trCount: compressed.tc || 0, // Use imported TR count
       allTimeOrbs: compressed.ato || 0, // Use imported all time orbs
-      _orbCalcMaxedBoosts: importedMaxedBoosts, // Include imported maxed boosts for calculations
+      // Note: _orbCalcMaxedBoosts is internal to OrbCalculator and not relevant for import
     },
     selectedForNextTR: compressed.s && Array.isArray(compressed.s) ? compressed.s : ['hoursInTR'], // Restore selectedForNextTR
     gemOverrides: gemOverrides, // Include gem overrides if needed
@@ -1289,8 +1204,11 @@ export function exportTRPlan(plan, currentGemData = null) {
     const compressed = compressTRPlanData(plan, currentGemData);
     const jsonString = JSON.stringify(compressed);
     
-    // Encode to Base58
-    const encoded = Base58.encode(jsonString);
+    // Apply LZ77/LZ78 compression using pako
+    const compressedBytes = pako.deflate(jsonString);
+    
+    // Encode compressed bytes to Base58
+    const encoded = Base58.encode(compressedBytes);
     
     return encoded;
   } catch (error) {
@@ -1306,9 +1224,24 @@ export function exportTRPlan(plan, currentGemData = null) {
  */
 export function importTRPlan(encodedData) {
   try {
-    // Decode from Base58
-    const jsonString = Base58.decode(encodedData);
-    const compressed = JSON.parse(jsonString);
+    let jsonString;
+    let compressed;
+    
+    // Try decoding as compressed bytes first (new format with pako compression)
+    try {
+      const compressedBytes = Base58.decodeBytes(encodedData);
+      const decompressedBytes = pako.inflate(compressedBytes);
+      jsonString = new TextDecoder().decode(decompressedBytes);
+      compressed = JSON.parse(jsonString);
+    } catch (pakoError) {
+      // Fallback to old format (direct JSON string without compression)
+      try {
+        jsonString = Base58.decode(encodedData);
+        compressed = JSON.parse(jsonString);
+      } catch (legacyError) {
+        throw new Error(`Failed to decode import data. Pako error: ${pakoError.message}, Legacy error: ${legacyError.message}`);
+      }
+    }
     
     // Validate version
     if (!compressed.v || compressed.v > TR_PLAN_EXPORT_VERSION) {

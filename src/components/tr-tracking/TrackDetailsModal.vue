@@ -200,13 +200,22 @@
             </div>
 
             <!-- Time Drift -->
-            <div class="bg-gray-700/30 rounded-md p-2">
-              <div class="text-xs text-gray-400">Time Drift</div>
+            <div 
+              class="bg-gray-700/30 rounded-md p-2 cursor-pointer hover:bg-gray-600/40 hover:border-blue-400 border border-transparent transition-all duration-200 relative"
+              @click="showTimeDriftModal = true"
+              title="Click for detailed time drift statistics"
+            >
+              <div class="text-xs text-gray-400 flex items-center justify-between">
+                <span>Time Drift</span>
+                <div class="flex items-center gap-1">
+                  <IconChartLine size="12" class="text-blue-400" />
+                  <span class="text-xs text-blue-400">Details</span>
+                </div>
+              </div>
               <div class="text-sm font-semibold" :class="{
-                'text-red-400': getTimeDriftStats().totalDriftHours > 0 && Math.abs(parseFloat(getTimeDriftStats().totalDriftHours)) > 5,
-                'text-yellow-400': getTimeDriftStats().totalDriftHours > 0 && Math.abs(parseFloat(getTimeDriftStats().totalDriftHours)) > 1 && Math.abs(parseFloat(getTimeDriftStats().totalDriftHours)) <= 5,
-                'text-green-400': Math.abs(parseFloat(getTimeDriftStats().totalDriftHours || 0)) <= 1,
-                'text-blue-400': getTimeDriftStats().totalDriftHours < 0
+                'text-green-400': getTimeDriftStats().driftDescription.includes('gained'),
+                'text-red-400': getTimeDriftStats().driftDescription.includes('lost'),
+                'text-gray-400': getTimeDriftStats().driftDescription === 'No drift' || getTimeDriftStats().driftDescription === 'Not enough data' || getTimeDriftStats().driftDescription === 'Hours-in-TR not tracked' || getTimeDriftStats().driftDescription === 'Invalid time data'
               }">
                 {{ getTimeDriftStats().driftDescription }}
               </div>
@@ -361,6 +370,14 @@
       @confirm="confirmDialog"
       @cancel="cancelDialog"
     />
+
+    <!-- Time Drift Statistics Modal -->
+    <TimeDriftStatsModal
+      :show="showTimeDriftModal"
+      :track="track"
+      :selected-resources="draggableResources"
+      @close="showTimeDriftModal = false"
+    />
   </div>
 </template>
 
@@ -370,6 +387,7 @@ import { IconX, IconDatabase, IconTrash, IconChartLine, IconPlus, IconGripVertic
 import { AgGridVue } from 'ag-grid-vue3';
 import { ModuleRegistry, AllCommunityModule, themeQuartz, colorSchemeDark } from 'ag-grid-community';
 import AlertDialog from '@/components/common/AlertDialog.vue';
+import TimeDriftStatsModal from '@/components/tr-tracking/TimeDriftStatsModal.vue';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { exportTrack } from '@/utils/trImportExport';
 import { getM0Cost } from '@/constants/m0Costs';
@@ -396,6 +414,9 @@ const draggableResources = ref([]);
 const gridApi = ref(null);
 const resourceOrder = ref([]); // Track current column order
 const initialColumnDefs = ref([]); // Store initial column definitions
+
+// Modals state
+const showTimeDriftModal = ref(false); // Time Drift Statistics Modal
 
 // Help Guide state
 const isHelpGuideExpanded = ref(true); // Default to expanded
@@ -2360,16 +2381,7 @@ function getTimeDriftStats() {
       totalText = `${totalMinutes}m lost`;
     }
     
-    let dailyText = '';
-    if (dailyHours > 0 && dailyMinutes > 0) {
-      dailyText = `${dailyHours}h ${dailyMinutes}m/day`;
-    } else if (dailyHours > 0) {
-      dailyText = `${dailyHours}h/day`;
-    } else {
-      dailyText = `${dailyMinutes}m/day`;
-    }
-    
-    driftDescription = `${totalText} (${dailyText})`;
+    driftDescription = `${totalText}`;
   } else {
     const totalHours = Math.floor(Math.abs(totalDriftHours));
     const totalMinutes = Math.round((Math.abs(totalDriftHours) - totalHours) * 60);
@@ -2385,16 +2397,7 @@ function getTimeDriftStats() {
       totalText = `${totalMinutes}m gained`;
     }
     
-    let dailyText = '';
-    if (dailyHours > 0 && dailyMinutes > 0) {
-      dailyText = `${dailyHours}h ${dailyMinutes}m/day`;
-    } else if (dailyHours > 0) {
-      dailyText = `${dailyHours}h/day`;
-    } else {
-      dailyText = `${dailyMinutes}m/day`;
-    }
-    
-    driftDescription = `${totalText} (${dailyText})`;
+    driftDescription = `${totalText}`;
   }
   
   return { 

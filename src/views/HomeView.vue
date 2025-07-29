@@ -2,6 +2,25 @@
 const changelog = 
 [
   {
+    version: '2.7.2',
+    date: '2025-07-29',
+    changes: [
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Fixed boost progression display',
+          'Share Code further compressed'
+        ]
+      },
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Added comprehensive time drift analysis',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.1',
     date: '2025-07-28',
     changes: [
