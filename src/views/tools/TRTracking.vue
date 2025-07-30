@@ -38,6 +38,7 @@
             <button
               @click="openMultiTRComparisonModal"
               :disabled="trTracks.length < 2"
+              :title="trTracks.length < 2 ? 'At least 2 TR plans are required for comparison' : 'Compare progress across multiple TR tracks'"
               class="relative flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-600 hover:to-orange-800 text-white font-semibold shadow-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
             >
               <IconTrendingUp size="18" />
