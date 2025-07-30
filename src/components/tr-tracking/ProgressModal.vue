@@ -104,7 +104,7 @@
             <div class="mb-3 flex justify-between items-center">
               <div class="text-xs text-gray-400">
                 <span class="font-medium">Mouse Controls:</span> 
-                Scroll to zoom Y-axis • Drag to pan • Ctrl+drag for box zoom
+                Scroll to zoom • Ctrl+scroll to zoom • Drag to pan • Ctrl+drag for box zoom
               </div>
               <button
                 @click="resetChartZoom"
@@ -247,7 +247,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { formatNumber, formatSuffixInput } from '@/composables/format.js';
 import { IconX, IconChartLine, IconTrendingUp, IconClockHour2, IconCalendarEvent } from '@tabler/icons-vue';
 import { Line, Bar } from 'vue-chartjs';
@@ -304,6 +304,62 @@ const chartTypes = [
   { id: 'gains', name: 'Gains' }
 ];
 
+// Custom wheel event listener for Ctrl+Scroll X-axis zoom
+let wheelEventListener = null;
+
+// Setup custom wheel listener when chart is ready
+function setupCustomWheelListener() {
+  if (chartRef.value && chartRef.value.chart && chartRef.value.chart.canvas) {
+    const canvas = chartRef.value.chart.canvas;
+    
+    // Remove existing listener
+    if (wheelEventListener) {
+      canvas.removeEventListener('wheel', wheelEventListener);
+    }
+    
+    wheelEventListener = (event) => {
+      if (event.ctrlKey) {
+        // Ctrl+Scroll: Y-axis zoom (let Chart.js plugin handle this)
+        return;
+      } else {
+        // Normal scroll: X-axis zoom (custom implementation)
+        event.preventDefault();
+        
+        const chart = chartRef.value.chart;
+        if (!chart) return;
+        
+        const xAxis = chart.scales.x;
+        if (!xAxis) return;
+        
+        // Get zoom factor
+        const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+        
+        // Calculate new min/max for X-axis
+        const range = xAxis.max - xAxis.min;
+        const center = (xAxis.max + xAxis.min) / 2;
+        const newRange = range * zoomFactor;
+        
+        const newMin = center - newRange / 2;
+        const newMax = center + newRange / 2;
+        
+        // Apply zoom to X-axis
+        chart.zoomScale('x', { min: newMin, max: newMax }, 'none');
+        chart.update('none');
+      }
+    };
+    
+    canvas.addEventListener('wheel', wheelEventListener, { passive: false });
+  }
+}
+
+// Cleanup wheel listener
+function cleanupWheelListener() {
+  if (wheelEventListener && chartRef.value?.chart?.canvas) {
+    chartRef.value.chart.canvas.removeEventListener('wheel', wheelEventListener);
+    wheelEventListener = null;
+  }
+}
+
 // Initialize chart resources when modal opens
 watch(() => props.show, (newShow) => {
   if (newShow && chartableResources.value.length > 0) {
@@ -339,9 +395,29 @@ watch([activeChartType, chartSelectedResources, xAxisType], () => {
   forceChartUpdate();
 }, { deep: true });
 
+// Watch for chart reference changes to setup wheel listener
+watch(chartRef, (newRef) => {
+  if (newRef && newRef.chart) {
+    nextTick(() => {
+      setupCustomWheelListener();
+    });
+  }
+}, { immediate: true });
+
+// Cleanup on unmount
+onUnmounted(() => {
+  cleanupWheelListener();
+});
+
 // Force chart update function
 function forceChartUpdate() {
   chartRenderKey.value += 1;
+  // Setup wheel listener after chart re-render
+  nextTick(() => {
+    setTimeout(() => {
+      setupCustomWheelListener();
+    }, 100);
+  });
 }
 
 // Reset chart zoom function
@@ -459,7 +535,7 @@ const darkThemeOptions = computed(() => ({
         wheel: {
           enabled: true,
           speed: 0.1,
-          mode: 'y', // Default: zoom Y-axis with normal scroll
+          modifierKey: 'ctrl', // Ctrl+wheel for Y-axis zoom
         },
         pinch: {
           enabled: true,

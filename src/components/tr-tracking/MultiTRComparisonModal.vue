@@ -36,6 +36,41 @@
         <!-- Chart Controls -->
         <div class="bg-gray-700/30 rounded-lg p-3">
           <div class="flex flex-col gap-3">
+            <!-- X-Axis Selection -->
+            <div>
+              <div class="text-xs text-gray-400 mb-2">X-Axis:</div>
+              <div class="flex gap-1 bg-gray-800 rounded-md p-1">
+                <button
+                  @click="xAxisType = 'timestamp'"
+                  :class="[
+                    'px-3 py-1.5 text-xs rounded transition-all duration-200 font-medium flex items-center gap-1.5',
+                    xAxisType === 'timestamp'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                  ]"
+                >
+                  <IconCalendarEvent size="14" />
+                  Log Time
+                </button>
+                <button
+                  @click="xAxisType = 'timeInTR'"
+                  :disabled="!hasTimeInTRData"
+                  :class="[
+                    'px-3 py-1.5 text-xs rounded transition-all duration-200 font-medium flex items-center gap-1.5',
+                    !hasTimeInTRData 
+                      ? 'text-gray-600 cursor-not-allowed opacity-40'
+                      : xAxisType === 'timeInTR'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                  ]"
+                  :title="!hasTimeInTRData ? 'Time in TR data not available in tracked entries' : ''"
+                >
+                  <IconClockHour2 size="14" />
+                  Time in TR
+                </button>
+              </div>
+            </div>
+
             <!-- Resource Selection -->
             <div>
               <div class="text-xs text-gray-400 mb-2">Resource:</div>
@@ -86,7 +121,7 @@
           <div class="mb-3 flex justify-between items-center">
             <div class="text-xs text-gray-400">
               <span class="font-medium">Mouse Controls:</span> 
-              Scroll to zoom Y-axis • Drag to pan • Ctrl+drag for box zoom
+              Scroll to zoom X-axis • Ctrl+scroll to zoom • Drag to pan • Ctrl+drag for box zoom
             </div>
             <button
               @click="resetChartZoom"
@@ -162,9 +197,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onUnmounted } from 'vue';
 import { formatNumber, formatSuffixInput } from '@/composables/format.js';
-import { IconX, IconTrendingUp, IconChartLine } from '@tabler/icons-vue';
+import { IconX, IconTrendingUp, IconChartLine, IconClockHour2, IconCalendarEvent } from '@tabler/icons-vue';
 import { Line } from 'vue-chartjs';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import {
@@ -175,7 +210,8 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  TimeScale
 } from 'chart.js';
 
 // Register Chart.js plugins
@@ -187,6 +223,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
+  TimeScale,
   zoomPlugin
 );
 
@@ -207,8 +244,65 @@ defineEmits(['close']);
 // Chart state
 const chartSelectedResources = ref([]);
 const enabledTracks = ref([]);
+const xAxisType = ref('timeInTR'); // 'timestamp' or 'timeInTR'
 const chartRenderKey = ref(0);
 const chartRef = ref(null); // Reference to chart instance
+
+// Custom wheel event listener for normal scroll X-axis zoom
+let wheelEventListener = null;
+
+// Setup custom wheel listener when chart is ready
+function setupCustomWheelListener() {
+  if (chartRef.value && chartRef.value.chart && chartRef.value.chart.canvas) {
+    const canvas = chartRef.value.chart.canvas;
+    
+    // Remove existing listener
+    if (wheelEventListener) {
+      canvas.removeEventListener('wheel', wheelEventListener);
+    }
+    
+    wheelEventListener = (event) => {
+      if (event.ctrlKey) {
+        // Ctrl+Scroll: Y-axis zoom (let Chart.js plugin handle this)
+        return;
+      } else {
+        // Normal scroll: X-axis zoom (custom implementation)
+        event.preventDefault();
+        
+        const chart = chartRef.value.chart;
+        if (!chart) return;
+        
+        const xAxis = chart.scales.x;
+        if (!xAxis) return;
+        
+        // Get zoom factor
+        const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+        
+        // Calculate new min/max for X-axis
+        const range = xAxis.max - xAxis.min;
+        const center = (xAxis.max + xAxis.min) / 2;
+        const newRange = range * zoomFactor;
+        
+        const newMin = center - newRange / 2;
+        const newMax = center + newRange / 2;
+        
+        // Apply zoom to X-axis
+        chart.zoomScale('x', { min: newMin, max: newMax }, 'none');
+        chart.update('none');
+      }
+    };
+    
+    canvas.addEventListener('wheel', wheelEventListener, { passive: false });
+  }
+}
+
+// Cleanup wheel listener
+function cleanupWheelListener() {
+  if (wheelEventListener && chartRef.value?.chart?.canvas) {
+    chartRef.value.chart.canvas.removeEventListener('wheel', wheelEventListener);
+    wheelEventListener = null;
+  }
+}
 
 // Initialize chart resources when modal opens
 watch(() => props.show, (newShow) => {
@@ -234,13 +328,33 @@ watch(() => props.show, (newShow) => {
 }, { immediate: true });
 
 // Watch for changes that should trigger chart re-render
-watch([chartSelectedResources, enabledTracks], () => {
+watch([chartSelectedResources, enabledTracks, xAxisType], () => {
   forceChartUpdate();
 }, { deep: true });
+
+// Watch for chart reference changes to setup wheel listener
+watch(chartRef, (newRef) => {
+  if (newRef && newRef.chart) {
+    nextTick(() => {
+      setupCustomWheelListener();
+    });
+  }
+}, { immediate: true });
+
+// Cleanup on unmount
+onUnmounted(() => {
+  cleanupWheelListener();
+});
 
 // Force chart update function
 function forceChartUpdate() {
   chartRenderKey.value += 1;
+  // Setup wheel listener after chart re-render
+  nextTick(() => {
+    setTimeout(() => {
+      setupCustomWheelListener();
+    }, 100);
+  });
 }
 
 // Reset chart zoom function
@@ -266,6 +380,13 @@ const availableTracks = computed(() => {
       const trCountB = b.trCount || 0;
       return trCountA - trCountB;
     });
+});
+
+// Check if Time in TR data is available across all tracks
+const hasTimeInTRData = computed(() => {
+  return availableTracks.value.some(track => 
+    track.entries && track.entries.some(entry => entry.values && entry.values['hours-in-tr'])
+  );
 });
 
 // Get top 4 resources for statistics
@@ -308,8 +429,12 @@ const darkThemeOptions = computed(() => ({
       displayColors: true,
       callbacks: {
         title: function(context) {
-          const timeInTR = context[0].parsed.x;
-          return `Time in TR: ${timeInTR}h`;
+          if (xAxisType.value === 'timeInTR') {
+            const timeInTR = context[0].parsed.x;
+            return `Time in TR: ${timeInTR}h`;
+          } else {
+            return context[0].label;
+          }
         },
         label: function(context) {
           const resourceId = context.dataset.resourceId;
@@ -328,7 +453,7 @@ const darkThemeOptions = computed(() => ({
         wheel: {
           enabled: true,
           speed: 0.1,
-          mode: 'y', // Default: zoom Y-axis with normal scroll
+          modifierKey: 'ctrl', // Ctrl+wheel for Y-axis zoom
         },
         pinch: {
           enabled: true,
@@ -348,11 +473,11 @@ const darkThemeOptions = computed(() => ({
   },
   scales: {
     x: {
-      type: 'linear',
+      type: xAxisType.value === 'timeInTR' ? 'linear' : 'time',
       display: true,
       title: {
         display: true,
-        text: 'Time in TR (hours)',
+        text: xAxisType.value === 'timeInTR' ? 'Time in TR (hours)' : 'Log Time',
         color: '#e5e7eb',
         font: {
           size: 12
@@ -369,11 +494,27 @@ const darkThemeOptions = computed(() => ({
         font: {
           size: 11
         },
-        stepSize: 24, // Show every 24 hours
-        callback: function(value) {
-          return `${value}h`;
+        ...(xAxisType.value === 'timeInTR' && {
+          stepSize: 24, // Show every 24 hours
+          callback: function(value) {
+            return `${Math.round(value)}h`;
+          }
+        }),
+        ...(xAxisType.value !== 'timeInTR' && {
+          maxTicksLimit: 8,
+          autoSkip: true
+        })
+      },
+      ...(xAxisType.value !== 'timeInTR' && {
+        time: {
+          tooltipFormat: 'Pp',
+          displayFormats: {
+            minute: 'HH:mm',
+            hour: 'dd.MM HH:mm',
+            day: 'dd.MM.yyyy'
+          }
         }
-      }
+      })
     },
     y: {
       type: 'linear',
@@ -429,12 +570,25 @@ const chartData = computed(() => {
       const sortedEntries = [...track.entries].sort((a, b) => new Date(a.date) - new Date(b.date));
       
       const data = sortedEntries.map((entry) => {
-        const timeInTR = parseFloat(entry.values?.['hours-in-tr']) || 0;
-        return {
-          x: timeInTR, // Use time in TR as X coordinate
-          y: parseChartValue(entry.values?.[resourceId])
-        };
-      }).filter(point => point.x >= 0); // Filter out invalid time values
+        if (xAxisType.value === 'timeInTR') {
+          const timeInTR = parseFloat(entry.values?.['hours-in-tr']) || 0;
+          return {
+            x: timeInTR, // Use time in TR as X coordinate
+            y: parseChartValue(entry.values?.[resourceId])
+          };
+        } else {
+          return {
+            x: new Date(entry.date), // Use timestamp as X coordinate
+            y: parseChartValue(entry.values?.[resourceId])
+          };
+        }
+      }).filter(point => {
+        if (xAxisType.value === 'timeInTR') {
+          return point.x >= 0; // Filter out invalid time values
+        } else {
+          return point.x && point.y !== undefined; // Filter out invalid dates
+        }
+      });
       
       // Use solid lines for all tracks with different colors
       const trackColors = [

@@ -22,7 +22,7 @@ const changelog =
         text: 'TR Tracking',
         subItems: [
           'Added cross TR charts',
-          'Added interactive chart zooming and panning with mouse controls (scroll to zoom Y-axis, drag to pan, Ctrl+drag for box zoom)',
+          'Added interactive chart zooming and panning with mouse controls',
         ]
       }
     ]
