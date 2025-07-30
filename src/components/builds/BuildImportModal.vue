@@ -102,7 +102,12 @@
             <IconPackage class="mr-2" size="20" />
             <span>Import with Upgrades</span>
           </button>
-          <div class="text-xs text-gray-400 pl-1">Imports all parameters including upgrades and stats</div>
+          <div class="text-xs text-gray-400 pl-1">
+              Imports all parameters including upgrades and stats <br />
+              <span class="text-yellow-400">
+                (except pure loot upgrades as they don't affect loot score)
+              </span>
+          </div>
         </div>
       </div>
     </div>
