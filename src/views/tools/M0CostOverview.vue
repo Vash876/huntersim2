@@ -204,9 +204,9 @@ import shardsIcon from '@/assets/general/shards.png';
 
 // Filter States
 const currentM0Level = ref(1);
-const levelRange = ref(10);
+const levelRange = ref(20);
 const currentM0LevelRaw = ref(1);
-const levelRangeRaw = ref(10);
+const levelRangeRaw = ref(20);
 
 // Handler functions
 function handleCurrentM0LevelUpdate(newVal) {
