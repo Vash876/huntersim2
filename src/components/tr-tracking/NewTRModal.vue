@@ -44,7 +44,7 @@
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <!-- TR Count -->
+            <!-- Row 1: TR Count (left) and Status (right) -->
             <div class="border border-gray-700 rounded-md p-2 bg-gray-700/30 flex items-center justify-between">
               <label class="text-xs font-medium text-gray-200">
                 TR Count
@@ -60,8 +60,26 @@
                 value-class="text-white"
               />
             </div>
+            <!-- Status Selection (only in edit mode) -->
+            <div 
+              v-if="editMode" 
+              class="border border-gray-700 rounded-md p-2 bg-gray-700/30 flex items-center justify-between"
+            >
+              <label class="text-xs font-medium text-gray-200">
+                Status
+              </label>
+              <select
+                v-model="formData.isActive"
+                class="text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+              >
+                <option :value="true">Active</option>
+                <option :value="false">Completed</option>
+              </select>
+            </div>
+            <!-- Empty space for create mode -->
+            <div v-else></div>
 
-            <!-- TR Start Date -->
+            <!-- Row 2: TR Start Date and TR End Date (side by side) -->
             <div class="border border-gray-700 rounded-md p-2 bg-gray-700/30 flex items-center justify-between">
               <label class="text-xs font-medium text-gray-200">
                 TR Start Date
@@ -70,17 +88,39 @@
                 <input
                   v-model="formData.startDate"
                   type="date"
-                  class="text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  class="text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
                 <input
                   v-model="formData.startTime"
                   type="time"
-                  class="text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  class="text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>
 
-            <!-- Plan Name -->
+            <!-- TR End Date (only for completed TRs in edit mode) -->
+            <div 
+              v-if="editMode && !formData.isActive" 
+              class="border border-gray-700 rounded-md p-2 bg-gray-700/30 flex items-center justify-between"
+            >
+              <label class="text-xs font-medium text-gray-200">
+                TR End Date
+              </label>
+              <div class="flex gap-1">
+                <input
+                  v-model="formData.endDate"
+                  type="date"
+                  class="text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <input
+                  v-model="formData.endTime"
+                  type="time"
+                  class="text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <!-- Row 3: Plan Name (spans full width) -->
             <div class="md:col-span-2 border border-gray-700 rounded-md p-2 bg-gray-700/30 flex items-center justify-between">
               <label class="text-xs font-medium text-gray-200">
                 Plan Name
@@ -353,6 +393,10 @@ const props = defineProps({
   trackData: {
     type: Object,
     default: null
+  },
+  autoComplete: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -365,6 +409,9 @@ const formData = ref({
   trCount: 1,
   startDate: '',
   startTime: '',
+  endDate: '',
+  endTime: '',
+  isActive: true,
   planName: '',
   currentValues: {
     ooLifetime: 0,
@@ -394,16 +441,51 @@ watch(() => props.show, (newVal) => {
   }
 });
 
+// Watch for status changes to automatically set end date
+watch(() => formData.value.isActive, (newIsActive, oldIsActive) => {
+  // If changing from active to completed, set current date/time
+  if (oldIsActive === true && newIsActive === false) {
+    const now = new Date();
+    formData.value.endDate = now.getFullYear() + '-' + 
+                             String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                             String(now.getDate()).padStart(2, '0');
+    formData.value.endTime = String(now.getHours()).padStart(2, '0') + ':' + 
+                             String(now.getMinutes()).padStart(2, '0');
+  }
+  // If changing from completed to active, clear end date
+  else if (oldIsActive === false && newIsActive === true) {
+    formData.value.endDate = '';
+    formData.value.endTime = '';
+  }
+});
+
 // Methods
 function resetForm() {
   if (props.editMode && props.trackData) {
     // Edit mode: Load existing track data
     const startDateTime = new Date(props.trackData.startDate);
+    let endDateTime = null;
+    
+    // Parse end date if it exists (for completed TRs)
+    if (props.trackData.endDate) {
+      endDateTime = new Date(props.trackData.endDate);
+    }
     
     formData.value = {
       trCount: props.trackData.trCount || 1,
-      startDate: startDateTime.toISOString().split('T')[0],
-      startTime: startDateTime.toTimeString().slice(0, 5),
+      startDate: startDateTime.getFullYear() + '-' + 
+                 String(startDateTime.getMonth() + 1).padStart(2, '0') + '-' + 
+                 String(startDateTime.getDate()).padStart(2, '0'),
+      startTime: String(startDateTime.getHours()).padStart(2, '0') + ':' + 
+                 String(startDateTime.getMinutes()).padStart(2, '0'),
+      endDate: endDateTime ? 
+               endDateTime.getFullYear() + '-' + 
+               String(endDateTime.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(endDateTime.getDate()).padStart(2, '0') : '',
+      endTime: endDateTime ? 
+               String(endDateTime.getHours()).padStart(2, '0') + ':' + 
+               String(endDateTime.getMinutes()).padStart(2, '0') : '',
+      isActive: props.autoComplete ? false : (props.trackData.isActive !== undefined ? props.trackData.isActive : true),
       planName: props.trackData.name || '',
       currentValues: {
         ooLifetime: props.trackData.initialValues?.ooLifetime || 0,
@@ -431,8 +513,14 @@ function resetForm() {
     
     formData.value = {
       trCount: 1,
-      startDate: now.toISOString().split('T')[0],
-      startTime: now.toTimeString().slice(0, 5),
+      startDate: now.getFullYear() + '-' + 
+                 String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                 String(now.getDate()).padStart(2, '0'),
+      startTime: String(now.getHours()).padStart(2, '0') + ':' + 
+                 String(now.getMinutes()).padStart(2, '0'),
+      endDate: '',
+      endTime: '',
+      isActive: true,
       planName: 'TR Plan',
       currentValues: {
         ooLifetime: 0,
@@ -460,11 +548,19 @@ function resetForm() {
 function createPlan() {
   if (!formData.value.planName.trim()) return;
 
+  // Helper function to create proper ISO string with local timezone
+  const createLocalISOString = (dateStr, timeStr) => {
+    // Create date in local timezone, not UTC
+    const localDate = new Date(dateStr + 'T' + timeStr);
+    return localDate.toISOString();
+  };
+
   const trackData = {
     name: formData.value.planName.trim(),
-    startDate: `${formData.value.startDate}T${formData.value.startTime}:00.000Z`,
+    startDate: createLocalISOString(formData.value.startDate, formData.value.startTime),
     notes: `TR ${formData.value.trCount} - ${props.editMode ? 'Updated' : 'Started'} with goals: OO ${formData.value.targetGoals.ooGoal}, Cells ${formData.value.targetGoals.cellsGoal}e, MP ${formData.value.targetGoals.mpGoal}e, RP ${formData.value.targetGoals.rpGoal}e`,
     trCount: formData.value.trCount,
+    isActive: formData.value.isActive,
     initialValues: {
       ooLifetime: formData.value.currentValues.ooLifetime,
       fragsLifetime: formData.value.currentValues.fragsLifetime,
@@ -485,6 +581,15 @@ function createPlan() {
       rpGoal: formData.value.targetGoals.rpGoal
     }
   };
+
+  // Add end date if it's completed or if end date is provided
+  if (!formData.value.isActive && formData.value.endDate && formData.value.endTime) {
+    trackData.endDate = createLocalISOString(formData.value.endDate, formData.value.endTime);
+  } else if (!formData.value.isActive && (!formData.value.endDate || !formData.value.endTime)) {
+    // If marking as completed but no end date provided, use current date/time
+    const now = new Date();
+    trackData.endDate = now.toISOString();
+  }
 
   emit('save', trackData);
 }

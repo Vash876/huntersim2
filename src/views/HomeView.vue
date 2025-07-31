@@ -2,6 +2,26 @@
 const changelog = 
 [
   {
+    version: '2.7.4',
+    date: '2025-07-31',
+    changes: [
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Added Pending Multiplier for AttrGN#3 Buff calculation',
+          'Added ability to set end time for TR tracking plans',
+          'Small optimizations for chart rendering',
+        ]
+      },
+      {
+        text: 'm0 Cost Overview',
+        subItems: [
+          'Minor UI adjustments',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.3',
     date: '2025-07-30',
     changes: [

@@ -283,6 +283,21 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     if (settingsData.notes) track.notes = settingsData.notes;
     if (settingsData.trCount !== undefined) track.trCount = settingsData.trCount;
     
+    // Update status and end date
+    if (settingsData.isActive !== undefined) {
+      track.isActive = settingsData.isActive;
+      
+      // If setting to active, remove end date
+      if (settingsData.isActive) {
+        delete track.endDate;
+      }
+    }
+    
+    // Update end date if provided
+    if (settingsData.endDate) {
+      track.endDate = settingsData.endDate;
+    }
+    
     // Update target goals
     if (settingsData.targetGoals) {
       track.targetGoals = {
@@ -334,7 +349,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     if (!track) return false;
 
     track.isActive = false;
-    track.endDate = new Date().toISOString().split('T')[0];
+    track.endDate = new Date().toISOString(); // Komplette ISO-Zeit statt nur .split('T')[0]
     track.updatedAt = new Date().toISOString();
     
     saveToStorage();

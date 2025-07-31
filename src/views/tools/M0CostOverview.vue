@@ -40,8 +40,8 @@
                   :value="currentM0Level"
                   :minValue="1"
                   :maxValue="1000"
-                  :step="1"
-                  :fastStep="10"
+                  :step="10"
+                  :fastStep="50"
                   :validateOnFinalOnly="true"
                   @update:value="handleCurrentM0LevelUpdate"
                   @update:raw-value="(val) => currentM0LevelRaw = val"
@@ -58,7 +58,7 @@
                 <div class="flex items-center">
                   <ToolValueControls
                     :value="levelRange"
-                    :minValue="10"
+                    :minValue="20"
                     :maxValue="100"
                     :step="10"
                     :fastStep="20"
@@ -126,10 +126,7 @@
                   <tr v-for="row in maxRowsPerColumn" :key="row" class="border-b border-gray-700/30 hover:bg-gray-750/50 transition-all duration-200">
                     <td v-for="column in columnCount" :key="column" class="px-1 py-2 border-r border-gray-700 last:border-r-0">
                       <div v-if="getCostForPosition(column, row)" 
-                           :class="[
-                             'grid grid-cols-2 gap-1 text-sm rounded px-2 py-1 transition-colors',
-                             getCostForPosition(column, row).isCurrentLevel ? 'bg-blue-900/40 border border-blue-700/50' : ''
-                           ]">
+                           class="grid grid-cols-2 gap-1 text-sm rounded px-2 py-1 transition-colors">
                         <span class="text-white font-medium text-left">{{ getCostForPosition(column, row).level }}</span>
                         <div class="text-left">
                           <span class="text-yellow-400">
@@ -163,8 +160,7 @@
                     v-for="cost in filteredCosts" 
                     :key="cost.level"
                     :class="[
-                      'border-b transition-all duration-200',
-                      cost.isCurrentLevel ? 'bg-blue-900/40' : 'hover:bg-gray-750/50',
+                      'border-b transition-all duration-200 hover:bg-gray-750/50',
                       // Dickere Linie nach jedem 10er-Schritt (Level endet mit 0)
                       cost.level % 10 === 0 ? 'border-gray-500 border-b-2' : 'border-gray-700/30'
                     ]"
@@ -228,7 +224,10 @@ function handleLevelRangeUpdate(newVal) {
 function finalizeCurrentM0Level() {
   const numValue = Number(currentM0LevelRaw.value);
   if (!isNaN(numValue)) {
-    currentM0Level.value = Math.max(1, Math.min(1000, numValue));
+    // Level muss durch 10 teilbar sein, mindestens 1
+    const adjustedValue = Math.max(1, Math.round(numValue / 10) * 10);
+    // Wenn der berechnete Wert 0 wäre, setze auf 1
+    currentM0Level.value = adjustedValue === 0 ? 1 : Math.min(1000, adjustedValue);
     currentM0LevelRaw.value = currentM0Level.value;
     saveFilters();
   }
@@ -239,7 +238,7 @@ function finalizeLevelRange() {
   if (!isNaN(numValue)) {
     // Range muss durch 10 teilbar sein
     const adjustedValue = Math.round(numValue / 10) * 10;
-    levelRange.value = Math.max(10, Math.min(100, adjustedValue));
+    levelRange.value = Math.max(20, Math.min(100, adjustedValue));
     levelRangeRaw.value = levelRange.value;
     saveFilters();
   }
@@ -261,8 +260,7 @@ const filteredCosts = computed(() => {
     result.push({
       level,
       exponent,
-      difference,
-      isCurrentLevel: level === currentM0Level.value
+      difference
     });
   }
   
@@ -332,16 +330,15 @@ function getCostForPosition(column, row) {
   return {
     level,
     exponent,
-    difference,
-    isCurrentLevel: level === currentM0Level.value
+    difference
   };
 }
 
 function resetFilters() {
   currentM0Level.value = 1;
-  levelRange.value = 10;
+  levelRange.value = 20;
   currentM0LevelRaw.value = 1;
-  levelRangeRaw.value = 10;
+  levelRangeRaw.value = 20;
   saveFilters();
 }
 

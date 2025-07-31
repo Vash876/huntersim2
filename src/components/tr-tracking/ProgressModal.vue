@@ -5,7 +5,7 @@
     @click.self="$emit('close')"
   >
     <div 
-      class="bg-gray-800 rounded-xl shadow-2xl w-[95%] max-h-[95vh] overflow-y-auto animate-fade-in border border-gray-700"
+      class="bg-gray-800 rounded-xl shadow-2xl w-[85%] max-w-6xl max-h-[95vh] overflow-y-auto animate-fade-in border border-gray-700"
       @click.stop
     >
       <!-- Header -->
@@ -46,18 +46,6 @@
                 <label class="text-xs text-gray-400 font-medium">X-Axis:</label>
                 <div class="flex gap-1 bg-gray-800 rounded-md p-1">
                   <button
-                    @click="xAxisType = 'timestamp'"
-                    :class="[
-                      'px-3 py-1.5 text-xs rounded transition-all duration-200 font-medium flex items-center gap-1.5',
-                      xAxisType === 'timestamp'
-                        ? 'bg-blue-600 text-white shadow-md'
-                        : 'text-gray-300 hover:text-white hover:bg-gray-700'
-                    ]"
-                  >
-                    <IconCalendarEvent size="14" />
-                    Log Time
-                  </button>
-                  <button
                     @click="xAxisType = 'timeInTR'"
                     :disabled="!hasTimeInTRData"
                     :class="[
@@ -72,6 +60,18 @@
                   >
                     <IconClockHour2 size="14" />
                     Time in TR
+                  </button>
+                  <button
+                    @click="xAxisType = 'timestamp'"
+                    :class="[
+                      'px-3 py-1.5 text-xs rounded transition-all duration-200 font-medium flex items-center gap-1.5',
+                      xAxisType === 'timestamp'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                    ]"
+                  >
+                    <IconCalendarEvent size="14" />
+                    Log Time
                   </button>
                 </div>
               </div>
@@ -104,7 +104,7 @@
             <div class="mb-3 flex justify-between items-center">
               <div class="text-xs text-gray-400">
                 <span class="font-medium">Mouse Controls:</span> 
-                Scroll to zoom • Ctrl+scroll to zoom • Drag to pan • Ctrl+drag for box zoom
+                Drag to pan X & Y • Scroll for X-zoom • Ctrl+scroll for zoom • Ctrl+drag for box zoom
               </div>
               <button
                 @click="resetChartZoom"
@@ -136,7 +136,7 @@
             </div>
             
             <!-- Chart Display -->
-            <div class="h-96 relative bg-transparent" :key="`chart-container-${chartRenderKey}`">
+            <div class="h-[500px] relative bg-transparent" :key="`chart-container-${chartRenderKey}`">
               <!-- Line Chart -->
               <div v-if="activeChartType === 'line' && chartData" class="w-full h-full">
                 <Line
@@ -293,7 +293,7 @@ defineEmits(['close']);
 // Chart state
 const activeChartType = ref('line');
 const chartSelectedResources = ref([]);
-const xAxisType = ref('timestamp'); // 'timestamp' or 'timeInTR'
+const xAxisType = ref('timeInTR'); // 'timestamp' or 'timeInTR' - Default: Time in TR
 const chartRenderKey = ref(0); // Force chart re-render
 const chartRef = ref(null); // Reference to chart instance
 
@@ -363,26 +363,24 @@ function cleanupWheelListener() {
 // Initialize chart resources when modal opens
 watch(() => props.show, (newShow) => {
   if (newShow && chartableResources.value.length > 0) {
-    // Select MP, MP(Accum), Shards, and RP by default
-    const defaultResources = ['mp', 'mp-accum', 'shards', 'rp'];
-    const availableDefaults = defaultResources.filter(id => 
-      chartableResources.value.some(r => r.id === id)
-    );
+    // Load saved chart resources from localStorage
+    const savedResources = loadChartResourcesFromStorage();
     
-    // If not all defaults are available, add other resources to reach 4
-    if (availableDefaults.length < 4) {
-      const otherResources = chartableResources.value
-        .filter(r => !defaultResources.includes(r.id))
-        .slice(0, 4 - availableDefaults.length)
-        .map(r => r.id);
+    if (savedResources && savedResources.length > 0) {
+      // Filter saved resources to only include available ones
+      const availableSavedResources = savedResources.filter(id => 
+        chartableResources.value.some(r => r.id === id)
+      );
       
-      // Explicitly block forbidden resources from charts
-      const forbidden = ['hours-in-tr', 'notes', 'daily-farm-frags', 'current-camp', 'camp-timer'];
-      chartSelectedResources.value = [...new Set(
-        [...availableDefaults, ...otherResources].filter(id => !forbidden.includes(id))
-      )];
+      if (availableSavedResources.length > 0) {
+        chartSelectedResources.value = availableSavedResources;
+      } else {
+        // Fallback to defaults if saved resources are not available
+        setDefaultChartResources();
+      }
     } else {
-      chartSelectedResources.value = availableDefaults;
+      // No saved resources, use defaults
+      setDefaultChartResources();
     }
     
     // Force chart re-render when modal opens
@@ -393,6 +391,11 @@ watch(() => props.show, (newShow) => {
 // Watch for changes that should trigger chart re-render
 watch([activeChartType, chartSelectedResources, xAxisType], () => {
   forceChartUpdate();
+}, { deep: true });
+
+// Watch for chartSelectedResources changes to save to localStorage
+watch(chartSelectedResources, (newResources) => {
+  saveChartResourcesToStorage(newResources);
 }, { deep: true });
 
 // Watch for chart reference changes to setup wheel listener
@@ -450,25 +453,30 @@ const sortedEntries = computed(() => {
   return [...props.track.entries].sort((a, b) => new Date(a.date) - new Date(b.date));
 });
 
+// All entries sorted by date - no filtering needed
+const filteredEntries = computed(() => {
+  return sortedEntries.value;
+});
+
 const chartLabels = computed(() => {
   if (xAxisType.value === 'timeInTR') {
     // Check if Time in TR is available
-    const hasTimeInTR = sortedEntries.value.some(entry => entry.values && entry.values['hours-in-tr']);
+    const hasTimeInTR = filteredEntries.value.some(entry => entry.values && entry.values['hours-in-tr']);
     
     if (!hasTimeInTR) {
       // Fallback to timestamp if Time in TR is not available - use Date objects for time axis
       console.warn('Time in TR data not available, falling back to timestamps');
-      return sortedEntries.value.map(entry => new Date(entry.date));
+      return filteredEntries.value.map(entry => new Date(entry.date));
     }
     
     // Use "Time in TR" values for X-axis - keep as strings for category axis
-    return sortedEntries.value.map(entry => {
+    return filteredEntries.value.map(entry => {
       const timeInTR = entry.values['hours-in-tr'] || '0:00';
       return timeInTR;
     });
   } else {
     // Use Date objects for proper time axis formatting
-    return sortedEntries.value.map(entry => new Date(entry.date));
+    return filteredEntries.value.map(entry => new Date(entry.date));
   }
 });
 
@@ -528,8 +536,9 @@ const darkThemeOptions = computed(() => ({
     zoom: {
       pan: {
         enabled: true,
-        mode: 'xy',
-        modifierKey: null,
+        mode: 'xy', // Enable panning on both X and Y axes
+        modifierKey: null, // No modifier key needed for panning
+        scaleMode: 'xy', // Allow scaling on both axes during pan
       },
       zoom: {
         wheel: {
@@ -547,10 +556,8 @@ const darkThemeOptions = computed(() => ({
           modifierKey: 'ctrl', // Ctrl+drag for box zoom on both axes
         },
       },
-      limits: {
-        y: {min: 'original', max: 'original'},
-        x: {min: 'original', max: 'original'}
-      }
+      // Remove limits to allow free panning/zooming within filtered data
+      limits: {}
     }
   },
   scales: {
@@ -663,6 +670,45 @@ const chartOptions = computed(() => {
     }
   };
 
+  // X-Axis configuration
+  let xAxisConfig = {
+    type: xAxisType.value === 'timeInTR' ? 'category' : 'time',
+    display: true,
+    title: {
+      display: true,
+      text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
+      color: '#9ca3af',
+      font: {
+        size: 12
+      }
+    },
+    grid: {
+      color: 'rgba(75, 85, 99, 0.3)',
+      borderColor: 'rgba(75, 85, 99, 0.5)',
+      drawOnChartArea: true,
+      drawTicks: true
+    },
+    ticks: {
+      color: '#9ca3af',
+      font: {
+        size: 11
+      },
+      maxTicksLimit: 8,
+      display: true,
+      autoSkip: true
+    },
+    ...(xAxisType.value !== 'timeInTR' && {
+      time: {
+        tooltipFormat: 'Pp',
+        displayFormats: {
+          minute: 'HH:mm',
+          hour: 'dd.MM HH:mm',
+          day: 'dd.MM.yyyy'
+        }
+      }
+    })
+  };
+
   // Apply automatic Y-axis scaling based on data
   if (chartData.value && chartData.value.datasets.length > 0) {
     let allValues = [];
@@ -729,29 +775,7 @@ const chartOptions = computed(() => {
       }
     },
     scales: {
-      ...darkThemeOptions.value.scales,
-      x: {
-        ...darkThemeOptions.value.scales.x,
-        type: xAxisType.value === 'timeInTR' ? 'category' : 'time',
-        title: {
-          display: true,
-          text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
-          color: '#9ca3af',
-          font: {
-            size: 12
-          }
-        },
-        ...(xAxisType.value !== 'timeInTR' && {
-          time: {
-            tooltipFormat: 'Pp',
-            displayFormats: {
-              minute: 'HH:mm',
-              hour: 'dd.MM HH:mm',
-              day: 'dd.MM.yyyy'
-            }
-          }
-        })
-      },
+      x: xAxisConfig,
       y: yAxisConfig
     },
     // Force chart destruction and recreation
@@ -895,7 +919,7 @@ const parseChartValue = (val) => {
 
 // Chart data generators
 const chartData = computed(() => {
-  if (!chartSelectedResources.value.length || !sortedEntries.value.length) return null;
+  if (!chartSelectedResources.value.length || !filteredEntries.value.length) return null;
   
   const datasets = chartSelectedResources.value.map(resourceId => {
     const resource = chartableResources.value.find(r => r.id === resourceId);
@@ -904,10 +928,10 @@ const chartData = computed(() => {
     let data;
     if (xAxisType.value === 'timeInTR') {
       // For Time in TR, use traditional labels + data array structure
-      data = sortedEntries.value.map(entry => parseChartValue(entry.values?.[resourceId]));
+      data = filteredEntries.value.map(entry => parseChartValue(entry.values?.[resourceId]));
     } else {
       // For timestamp axis, use x/y object structure for proper time axis
-      data = sortedEntries.value.map(entry => ({
+      data = filteredEntries.value.map(entry => ({
         x: new Date(entry.date),
         y: parseChartValue(entry.values?.[resourceId])
       }));
@@ -951,7 +975,7 @@ const chartData = computed(() => {
 });
 
 const areaChartData = computed(() => {
-  if (!chartSelectedResources.value.length || !sortedEntries.value.length) return null;
+  if (!chartSelectedResources.value.length || !filteredEntries.value.length) return null;
   
   const datasets = chartSelectedResources.value.map(resourceId => {
     const resource = chartableResources.value.find(r => r.id === resourceId);
@@ -960,10 +984,10 @@ const areaChartData = computed(() => {
     let data;
     if (xAxisType.value === 'timeInTR') {
       // For Time in TR, use traditional labels + data array structure
-      data = sortedEntries.value.map(entry => parseChartValue(entry.values?.[resourceId]));
+      data = filteredEntries.value.map(entry => parseChartValue(entry.values?.[resourceId]));
     } else {
       // For timestamp axis, use x/y object structure for proper time axis
-      data = sortedEntries.value.map(entry => ({
+      data = filteredEntries.value.map(entry => ({
         x: new Date(entry.date),
         y: parseChartValue(entry.values?.[resourceId])
       }));
@@ -999,7 +1023,7 @@ const areaChartData = computed(() => {
 });
 
 const gainsChartData = computed(() => {
-  if (!chartSelectedResources.value.length || sortedEntries.value.length < 2) return null;
+  if (!chartSelectedResources.value.length || filteredEntries.value.length < 2) return null;
   
   const datasets = chartSelectedResources.value.map(resourceId => {
     const resource = chartableResources.value.find(r => r.id === resourceId);
@@ -1009,20 +1033,20 @@ const gainsChartData = computed(() => {
     if (xAxisType.value === 'timeInTR') {
       // For Time in TR, use traditional labels + data array structure
       const gains = [];
-      for (let i = 1; i < sortedEntries.value.length; i++) {
-        const current = parseChartValue(sortedEntries.value[i].values?.[resourceId]);
-        const previous = parseChartValue(sortedEntries.value[i - 1].values?.[resourceId]);
+      for (let i = 1; i < filteredEntries.value.length; i++) {
+        const current = parseChartValue(filteredEntries.value[i].values?.[resourceId]);
+        const previous = parseChartValue(filteredEntries.value[i - 1].values?.[resourceId]);
         gains.push(current - previous);
       }
       data = gains;
     } else {
       // For timestamp axis, use x/y object structure for proper time axis
       data = [];
-      for (let i = 1; i < sortedEntries.value.length; i++) {
-        const current = parseChartValue(sortedEntries.value[i].values?.[resourceId]);
-        const previous = parseChartValue(sortedEntries.value[i - 1].values?.[resourceId]);
+      for (let i = 1; i < filteredEntries.value.length; i++) {
+        const current = parseChartValue(filteredEntries.value[i].values?.[resourceId]);
+        const previous = parseChartValue(filteredEntries.value[i - 1].values?.[resourceId]);
         data.push({
-          x: new Date(sortedEntries.value[i].date),
+          x: new Date(filteredEntries.value[i].date),
           y: current - previous
         });
       }
@@ -1077,6 +1101,49 @@ function toggleResourceInChart(resourceId) {
   nextTick(() => {
     forceChartUpdate();
   });
+}
+
+// Local Storage functions for chart resources
+function saveChartResourcesToStorage(resources) {
+  try {
+    localStorage.setItem('tr-progress-chart-selected-resources', JSON.stringify(resources));
+  } catch (error) {
+    console.warn('Failed to save chart resources to localStorage:', error);
+  }
+}
+
+function loadChartResourcesFromStorage() {
+  try {
+    const saved = localStorage.getItem('tr-progress-chart-selected-resources');
+    return saved ? JSON.parse(saved) : null;
+  } catch (error) {
+    console.warn('Failed to load chart resources from localStorage:', error);
+    return null;
+  }
+}
+
+function setDefaultChartResources() {
+  // Select MP, MP(Accum), Shards, and RP by default
+  const defaultResources = ['mp', 'mp-accum', 'shards', 'rp'];
+  const availableDefaults = defaultResources.filter(id => 
+    chartableResources.value.some(r => r.id === id)
+  );
+  
+  // If not all defaults are available, add other resources to reach 4
+  if (availableDefaults.length < 4) {
+    const otherResources = chartableResources.value
+      .filter(r => !defaultResources.includes(r.id))
+      .slice(0, 4 - availableDefaults.length)
+      .map(r => r.id);
+    
+    // Explicitly block forbidden resources from charts
+    const forbidden = ['hours-in-tr', 'notes', 'daily-farm-frags', 'current-camp', 'camp-timer'];
+    chartSelectedResources.value = [...new Set(
+      [...availableDefaults, ...otherResources].filter(id => !forbidden.includes(id))
+    )];
+  } else {
+    chartSelectedResources.value = availableDefaults;
+  }
 }
 
 // Methods

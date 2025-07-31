@@ -142,7 +142,10 @@
                 <td class="py-4 px-4">
                   <div>
                     <div class="text-white font-medium">TR#{{ track.trCount || 0 }} - {{ track.name }}</div>
-                    <div class="text-xs text-gray-400">Started: {{ formatDate(track.startDate) }}</div>
+                    <div class="text-xs text-gray-400">
+                      Started: {{ formatDate(track.startDate) }}
+                      <span v-if="!track.isActive && track.endDate"> • Ended: {{ formatDate(track.endDate) }}</span>
+                    </div>
                   </div>
                 </td>
 

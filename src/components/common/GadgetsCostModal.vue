@@ -57,7 +57,7 @@
         <div class="mb-3 bg-gray-750/80 rounded-lg p-2 border border-gray-700">
           <div class="flex items-center mb-1">
             <div class="w-1.5 h-4 bg-blue-500 rounded-r mr-1.5"></div>
-            <h3 class="font-medium text-xs text-blue-200">Tessarect Production</h3>
+            <h3 class="font-medium text-xs text-blue-200">Tesserect Production</h3>
           </div>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -82,7 +82,7 @@
             <!-- Daily Tessarect Rate -->
             <div class="bg-gray-750/60 rounded-md p-1.5 border border-transparent">
               <div class="flex justify-between items-center mb-0.5">
-                <span class="text-xs font-medium text-gray-300">Tessarects per Day</span>
+                <span class="text-xs font-medium text-gray-300">Tesserects per Day</span>
               </div>
               
               <div class="flex items-center bg-gray-800 py-1 px-2 rounded border border-gray-600">
@@ -100,7 +100,7 @@
         <div class="mb-3 bg-gray-900/70 p-2 rounded-lg border border-gray-700">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
-              <div class="text-xs text-gray-400 mb-0.5">Total Tessarects</div>
+              <div class="text-xs text-gray-400 mb-0.5">Total Tesserects</div>
               <div class="text-white font-bold text-sm">{{ formatGadgetCost(totalCost) }}</div>
             </div>
             <div>

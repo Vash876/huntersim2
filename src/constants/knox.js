@@ -342,7 +342,7 @@ export const UPGRADES_BY_CURRENCY = {
 export const CURRENCY_LABELS = {
   [CURRENCY_TYPES.GLACIUM]: 'Glacium',
   [CURRENCY_TYPES.QUARTZ]: 'Aquarius Quartz',
-  [CURRENCY_TYPES.TESSARECTS]: 'Tessarects',
+  [CURRENCY_TYPES.TESSARECTS]: 'Tesserects',
 };
 
 export const CURRENCY_LABELS_SHORT = {

@@ -18,7 +18,7 @@ import {
   IconHexagon,
   IconAbacus,
   IconRobot,
-  IconChartLine
+  IconChartLine,
 } from '@tabler/icons-vue';
 
 const IconMP = {
@@ -178,6 +178,12 @@ export const NAVIGATION = {
           path: '/tools/tr-tracking',
           icon: IconChartLine
         },
+        // {
+        //   id: 'gemplanner',
+        //   name: 'Gem Planner',
+        //   path: '/tools/gem-planner',
+        //   icon: IconZodiacGemini
+        // },
         {
           id: 'gadgetcalculator',
           name: 'Gadget Planner',

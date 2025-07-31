@@ -14,6 +14,12 @@
           <h3 class="text-base font-bold text-white flex items-center">
             <IconChartLine size="16" class="mr-2 text-green-400" />
             TR#{{ track.trCount || 0 }} - {{ track.name }}
+            <span 
+              v-if="!track.isActive" 
+              class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-900/50 text-blue-300 border border-blue-700/50"
+            >
+              Completed
+            </span>
           </h3>
         </div>
         <button
@@ -42,9 +48,13 @@
             </button>
             <div class="flex items-center">
               <p class="text-xs text-gray-300">
-                Started: {{ formatDate(track.startDate) }} • 
-                {{ track.entries.length }} entries • 
-                {{ track.isActive ? 'Active' : 'Completed' }}
+                <span v-if="track.isActive">
+                  Started: {{ formatDate(track.startDate) }}
+                </span>
+                <span v-else>
+                  Started: {{ formatDate(track.startDate) }} • 
+                  Completed: {{ track.endDate ? formatDate(track.endDate) : 'No end date' }} 
+                </span>
               </p>
             </div>
           </div>
@@ -161,19 +171,11 @@
           </div>
           
           <div :class="getCampTimerValue() > 0 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2'">
-            <!-- Duration -->
+            <!-- Duration & Total Entries -->
             <div class="bg-gray-700/30 rounded-md p-2">
               <div class="text-xs text-gray-400">Duration</div>
               <div class="text-sm font-semibold text-white">
-                {{ getTrackDuration() }} days
-              </div>
-            </div>
-            
-            <!-- Total Entries -->
-            <div class="bg-gray-700/30 rounded-md p-2">
-              <div class="text-xs text-gray-400">Total Entries</div>
-              <div class="text-sm font-semibold text-white">
-                {{ track.entries.length }}
+                {{ getTrackDuration() }} days <span class="text-xs text-gray-400">({{ track.entries.length }} entries)</span>
               </div>
             </div>
 
@@ -188,6 +190,14 @@
               </div>
               <div class="text-sm font-semibold text-cyan-400">
                 {{ getAttGN3CompletionDetails() }}
+              </div>
+            </div>
+
+            <!-- AttGN3 Pending Multiplier -->
+            <div class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400">AttGN3 Pending Multiplier</div>
+              <div class="text-sm font-semibold text-green-400">
+                {{ getAttGN3PendingMultiplier() }}
               </div>
             </div>
 
@@ -337,7 +347,7 @@
           <button
             v-if="track && track.isActive"
             @click="completeTR"
-            class="px-3 py-1.5 bg-orange-600 text-white rounded-md hover:bg-orange-500 transition-colors text-xs"
+            class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition-colors text-xs"
           >
             Complete TR
           </button>
@@ -378,6 +388,16 @@
       :selected-resources="draggableResources"
       @close="showTimeDriftModal = false"
     />
+
+    <!-- New TR Modal for editing/completing -->
+    <NewTRModal
+      :show="showNewTRModal"
+      :edit-mode="newTRModalEditMode"
+      :auto-complete="newTRModalCompleteMode"
+      :track-data="currentTrackForModal"
+      @close="closeNewTRModal"
+      @save="handleNewTRModalSave"
+    />
   </div>
 </template>
 
@@ -388,6 +408,7 @@ import { AgGridVue } from 'ag-grid-vue3';
 import { ModuleRegistry, AllCommunityModule, themeQuartz, colorSchemeDark } from 'ag-grid-community';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 import TimeDriftStatsModal from '@/components/tr-tracking/TimeDriftStatsModal.vue';
+import NewTRModal from '@/components/tr-tracking/NewTRModal.vue';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { exportTrack } from '@/utils/trImportExport';
 import { getM0Cost } from '@/constants/m0Costs';
@@ -417,6 +438,10 @@ const initialColumnDefs = ref([]); // Store initial column definitions
 
 // Modals state
 const showTimeDriftModal = ref(false); // Time Drift Statistics Modal
+const showNewTRModal = ref(false); // New TR Modal for editing/completing
+const newTRModalEditMode = ref(false); // Whether NewTRModal is in edit mode
+const newTRModalCompleteMode = ref(false); // Whether NewTRModal is opened for completing
+const currentTrackForModal = ref(null); // Track data reactive ref to pass to NewTRModal
 
 // Help Guide state
 const isHelpGuideExpanded = ref(true); // Default to expanded
@@ -1805,6 +1830,83 @@ function getAttGN3CompletionDetails() {
   return `${formattedDateTime} (${remainingText})`;
 }
 
+// Get AttGN3 pending multiplier
+function getAttGN3PendingMultiplier() {
+  const latestValues = getLatestValues();
+  
+  // Get values from tracking data
+  const currentTicksInLR = latestValues['lr-ticks'] || 0;
+  const researchPoints = latestValues.rp || 0;
+  
+  // Get saved calculator settings
+  let savedSettings = {};
+  try {
+    savedSettings = JSON.parse(localStorage.getItem('attrGN3Calculator_settings') || '{}');
+  } catch (error) {
+    console.warn('Failed to load AttGN3 calculator settings:', error);
+  }
+  
+  // Use saved settings or defaults
+  const tickSpeed = savedSettings.tickSpeed || 1.5;
+  const ticksPerTick = savedSettings.ticksPerTick || 1;
+  const efficiencyBadge = savedSettings.efficiencyBadge || false;
+  const ts5 = savedSettings.ts5 || false;
+  const relic14 = savedSettings.relic14 || 0;
+  
+  // Calculate ticks per operation
+  const ticksPerOperation = 29 - relic14;
+  if (ticksPerOperation <= 0) return '∞';
+  
+  // Calculate operations per operation
+  let operationsPerOperation = 1;
+  if (efficiencyBadge) operationsPerOperation *= 3;
+  if (ts5) operationsPerOperation *= 2;
+  
+  // Calculate current operations
+  const currentOperations = (currentTicksInLR / ticksPerOperation) * operationsPerOperation;
+  
+  // Research data for retention calculation
+  const researchData = [
+    { bonus: 0.2, cost: 115 },
+    { bonus: 0.3, cost: 165 },
+    { bonus: 0.5, cost: 219 },
+    { bonus: 0.4, cost: 302 },
+    { bonus: 0.6, cost: 405 },
+    { bonus: 1, cost: 507 },
+    { bonus: 2, cost: 363 },
+    { bonus: 4, cost: 495 },
+    { bonus: 6, cost: 627 },
+    { bonus: 3, cost: 822 },
+    { bonus: 5, cost: 1165 },
+    { bonus: 7, cost: 1509 },
+    { bonus: 0.2, cost: 4500 },
+    { bonus: 0.6, cost: 5200 },
+    { bonus: 1, cost: 5900 }
+  ];
+  
+  // Calculate affordable research and retention rate
+  const affordableResearch = researchData.filter(r => r.cost <= researchPoints);
+  const retainedOperations = affordableResearch.reduce((sum, r) => sum + r.bonus, 0);
+  
+  // Calculate retained operations
+  const currentRetained = currentOperations * (retainedOperations / 100);
+  
+  if (currentRetained <= 0) return '1.00';
+  
+  // Calculate multiplier using attribution rate of 0.10%
+  const attributionRate = 0.001;
+  const multiplier = Math.pow(1 + attributionRate, currentRetained);
+  
+  // Format the multiplier
+  if (multiplier >= 1000) {
+    const exponent = Math.floor(Math.log10(multiplier));
+    const mantisse = multiplier / Math.pow(10, exponent);
+    return mantisse.toFixed(2) + 'e' + exponent;
+  }
+  
+  return multiplier.toFixed(2);
+}
+
 // Get latest values from the most recent entry
 function getLatestValues() {
   if (!props.track || !props.track.entries || props.track.entries.length === 0) {
@@ -2253,7 +2355,7 @@ function formatMpProgress() {
   
   const difference = goalMp - referenceMp;
   if (difference <= 0) {
-    return `✓ Goal Reached! (${referenceType})`;
+    return `✓ Goal Reached!`;
   } else {
     return `e${difference} missing`;
   }
@@ -2850,19 +2952,45 @@ function deleteEntry(entry) {
 }
 
 function completeTR() {
-  showDialog({
-    title: 'Complete TR Track',
-    message: 'Mark this TR as completed?',
-    type: 'warning',
-    confirmText: 'Yes, Complete',
-    cancelText: 'Cancel',
-    onConfirm: () => {
-      emit('update', {
-        action: 'complete',
-        trackId: props.track.id
-      });
-    }
-  });
+  // Set currentTrackForModal to the props.track data - EXACTLY like TRTracking.vue does
+  currentTrackForModal.value = props.track;
+  
+  // Open NewTRModal in edit mode with auto-complete enabled
+  newTRModalEditMode.value = true;
+  newTRModalCompleteMode.value = true; // This will auto-set status to completed
+  showNewTRModal.value = true;
+}
+
+function closeNewTRModal() {
+  showNewTRModal.value = false;
+  newTRModalCompleteMode.value = false; // Reset complete mode
+  currentTrackForModal.value = null; // Clear the reactive reference
+}
+
+function handleNewTRModalSave(trackData) {
+  if (props.track && trackData) {
+    console.log('handleNewTRModalSave - Track data:', trackData);
+    
+    // Update the track with all the new data from NewTRModal
+    trTrackingStore.updateTRTrackSettings(props.track.id, {
+      name: trackData.name,
+      trCount: trackData.trCount,
+      isActive: trackData.isActive,
+      startDate: trackData.startDate,
+      endDate: trackData.endDate, // This will be set if track is completed
+      initialValues: trackData.initialValues,
+      targetGoals: trackData.targetGoals,
+      notes: trackData.notes
+    });
+    
+    // Emit update with proper action structure
+    emit('update', {
+      action: trackData.isActive ? 'update' : 'complete',
+      trackId: props.track.id
+    });
+    
+    showNewTRModal.value = false;
+  }
 }
 
 function deleteTRTrack() {
