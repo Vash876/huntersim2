@@ -203,9 +203,9 @@ import ToolValueControls from '@/composables/ToolValueControls.vue';
 import shardsIcon from '@/assets/general/shards.png';
 
 // Filter States
-const currentM0Level = ref(1);
+const currentM0Level = ref(0);
 const levelRange = ref(20);
-const currentM0LevelRaw = ref(1);
+const currentM0LevelRaw = ref(0);
 const levelRangeRaw = ref(20);
 
 // Handler functions
