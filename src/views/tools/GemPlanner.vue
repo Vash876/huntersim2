@@ -2,261 +2,161 @@
   <div class="container mx-auto px-4 py-8">
     <!-- Header Section -->
     <div class="mb-6 rounded-lg overflow-hidden shadow-lg">
-      <!-- Header mit Farb-Gradient -->
       <div class="bg-gradient-to-r from-purple-900 to-blue-800 p-4 sm:p-5 border-b border-gray-600">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <IconZodiacGemini size="32" class="text-purple-300" />
-            <div>
-              <h1 class="text-2xl font-bold text-white">Gem Planner</h1>
-              <p class="text-purple-200 text-sm">Plan your Ouroboros Orb investments</p>
+          <div>
+            <!-- Image and Title in one line -->
+            <div class="flex items-center mb-1">
+              <img src="@/assets/general/orbs.png" class="w-6 h-6 mr-2" alt="Orbs" />
+              <h1 class="text-2xl font-bold">Gem Planner</h1>
             </div>
+            <p class="text-sm text-purple-200">Plan and optimize your Ouroboros Orb investments</p>
           </div>
           
-          <div class="flex items-center gap-2">
-            <!-- Available OO Display -->
-            <div class="bg-black/20 rounded-lg px-3 py-2">
-              <div class="text-xs text-purple-200">Available OO</div>
-              <div class="text-lg font-bold text-white">{{ formatNumber(currentStats.availableOO || 0) }}</div>
-            </div>
-            
-            <!-- Actions -->
+          <!-- Action Buttons -->
+          <div class="flex flex-col sm:flex-row sm:flex-wrap justify-end gap-3">
+            <!-- Stats Button -->
             <button
               @click="openStatsModal"
-              class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
             >
-              <IconSettings size="16" />
-              Stats
+              <IconSettings size="18" />
+              <span>Stats</span>
             </button>
             
-            <div class="relative">
-              <button
-                @click="showActionsDropdown = !showActionsDropdown"
-                class="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors flex items-center gap-2"
-              >
-                <IconDots size="16" />
-                <IconChevronDown size="14" :class="{ 'transform rotate-180': showActionsDropdown }" />
-              </button>
-              
-              <!-- Dropdown Menu -->
-              <div v-if="showActionsDropdown" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg border border-gray-700 z-10">
-                <button
-                  @click="importPlan"
-                  class="w-full px-4 py-2 text-left text-white hover:bg-gray-700 rounded-t-lg flex items-center gap-2"
-                >
-                  <IconFileImport size="16" />
-                  Import Plan
-                </button>
-                <button
-                  @click="exportPlan"
-                  class="w-full px-4 py-2 text-left text-white hover:bg-gray-700 flex items-center gap-2"
-                >
-                  <IconDownload size="16" />
-                  Export Plan
-                </button>
-                <div class="border-t border-gray-700"></div>
-                <button
-                  @click="resetPlanner"
-                  class="w-full px-4 py-2 text-left text-red-400 hover:bg-gray-700 rounded-b-lg flex items-center gap-2"
-                >
-                  <IconRefresh size="16" />
-                  Reset All
-                </button>
-              </div>
-            </div>
+            <!-- Import Plan -->
+            <button
+              @click="importPlan"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
+            >
+              <IconFileImport size="18" />
+              <span>Import Plan</span>
+            </button>
+
+            <!-- Export Plan -->
+            <button
+              @click="exportPlan"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
+            >
+              <IconDownload size="18" />
+              <span>Export Plan</span>
+            </button>
+
+            <!-- Reset Button -->
+            <button
+              @click="resetPlanner"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
+            >
+              <IconRefresh size="18" />
+              <span>Reset</span>
+            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Main Content Area -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Left Column - Gem Overview -->
-      <div class="lg:col-span-1">
-        <div class="bg-gray-850 rounded-lg p-4 border border-gray-700">
-          <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <IconZodiacGemini size="20" />
-            Gems Overview
-          </h2>
-          
-          <div class="space-y-3">
-            <div
-              v-for="gem in gemList"
-              :key="gem.id"
-              @click="selectGem(gem.id)"
-              class="p-3 rounded-lg cursor-pointer transition-all border"
-              :class="[
-                selectedGemId === gem.id 
-                  ? 'border-purple-500 bg-purple-900/20' 
-                  : 'border-gray-600 bg-gray-800 hover:bg-gray-750 hover:border-gray-500'
-              ]"
-            >
-              <!-- Gem Header -->
-              <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-2">
-                  <div 
-                    class="w-4 h-4 rounded-full"
-                    :style="{ background: gem.color.gradient }"
-                  ></div>
-                  <span class="font-medium text-white">{{ gem.name }}</span>
-                </div>
-                <div class="text-sm text-gray-400">
-                  Level {{ getCurrentGemLevel(gem.id) }}
-                </div>
-              </div>
-              
-              <!-- Gem Stats -->
-              <div class="grid grid-cols-2 gap-2 text-xs">
-                <div class="text-gray-400">
-                  Nodes: {{ getCurrentGemNodes(gem.id) }}/3
-                </div>
-                <div class="text-gray-400">
-                  Upgrades: {{ getActiveUpgradeCount(gem.id) }}
-                </div>
-              </div>
-              
-              <!-- Progress Bar -->
-              <div class="mt-2 bg-gray-700 rounded-full h-1">
+    <!-- Main Content - Ultra Compact Grid -->
+    <div class="space-y-3">
+      <!-- Gem Cards Grid - Super Compact -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+        <div
+          v-for="gem in gemList"
+          :key="gem.id"
+          class="bg-gray-900/80 border border-gray-700/50 rounded-md hover:border-purple-500/50 transition-colors"
+        >
+          <!-- Gem Header - Dynamic padding based on nodes -->
+          <div 
+            class="bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600/50"
+            :class="[
+              gem.gemNodes && gem.gemNodes.length > 0 ? 'p-2' : 'p-2 pb-10'
+            ]"
+          >
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2">
                 <div 
-                  class="h-1 rounded-full transition-all"
-                  :style="{ 
-                    width: `${getGemProgress(gem.id)}%`,
-                    background: gem.color.gradient
-                  }"
+                  class="w-4 h-4 rounded-full border border-gray-500"
+                  :style="{ background: gem.color.gradient }"
                 ></div>
+                <h3 class="text-sm font-semibold text-white truncate">{{ gem.name }}</h3>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column - Gem Details & Planning -->
-      <div class="lg:col-span-2">
-        <div v-if="selectedGem" class="space-y-6">
-          <!-- Selected Gem Header -->
-          <div class="bg-gray-850 rounded-lg p-4 border border-gray-700">
-            <div class="flex items-center gap-3 mb-4">
-              <div 
-                class="w-8 h-8 rounded-full"
-                :style="{ background: selectedGem.color.gradient }"
-              ></div>
-              <div>
-                <h2 class="text-xl font-bold text-white">{{ selectedGem.name }} Gem</h2>
-                <p class="text-gray-400 text-sm">Current Level: {{ getCurrentGemLevel(selectedGem.id) }}</p>
+              <div class="text-xs text-purple-300 font-mono">
+                {{ getCurrentGemLevel(gem.id) }}/{{ gem.maxLevel }}
               </div>
             </div>
             
-            <!-- Gem Level Controls -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="bg-gray-800 rounded-lg p-3">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Gem Level</label>
+            <!-- Level & Cost in single row -->
+            <div class="flex items-center gap-2">
+              <div class="flex-1">
                 <ToolValueControls
-                  :value="getCurrentGemLevel(selectedGem.id)"
+                  :value="getCurrentGemLevel(gem.id)"
                   :min-value="0"
-                  :max-value="selectedGem.maxLevel"
-                  @update:value="updateGemLevel(selectedGem.id, $event)"
+                  :max-value="gem.maxLevel"
+                  @update:value="updateGemLevel(gem.id, $event)"
+                  :show-fast-controls="false"
                 />
-                <div class="mt-2 text-xs text-gray-400">
-                  Next Level Cost: {{ formatNumber(getNextLevelCost(selectedGem.id)) }} OO
+              </div>
+              <div class="text-xs font-mono text-yellow-400 min-w-0">
+                {{ formatNumber(getNextLevelCost(gem.id)) }}
+              </div>
+            </div>
+            
+            <!-- Gem Nodes - Only show if gem has nodes -->
+            <div v-if="gem.gemNodes && gem.gemNodes.length > 0" class="flex gap-1 mt-2">
+              <button
+                v-for="(node, index) in gem.gemNodes"
+                :key="index"
+                @click="toggleGemNode(gem.id, index)"
+                class="flex-1 py-1 text-xs rounded transition-colors font-mono"
+                :class="[
+                  hasGemNode(gem.id, index)
+                    ? 'bg-green-600/80 text-white'
+                    : 'bg-gray-600/60 text-gray-300 hover:bg-gray-500/60'
+                ]"
+                :title="`Node ${index + 1}: ${formatNumber(node.cost)}`"
+              >
+                {{ index + 1 }}
+              </button>
+            </div>
+          </div>
+          
+          <!-- Upgrades - Minimal Layout -->
+          <div class="p-2 space-y-1">
+            <div
+              v-for="upgrade in getAvailableUpgrades(gem.id)"
+              :key="upgrade.id"
+              class="bg-gray-800/60 rounded-sm p-2 hover:bg-gray-700/60 transition-colors"
+            >
+              <!-- Upgrade Header -->
+              <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center gap-1 min-w-0">
+                  <div 
+                    class="w-2 h-2 rounded-full flex-shrink-0"
+                    :style="{ backgroundColor: upgrade.color }"
+                  ></div>
+                  <span class="text-xs font-medium text-white truncate">{{ upgrade.name }}</span>
                 </div>
+                <span class="text-xs text-gray-400 font-mono">
+                  {{ getCurrentUpgradeLevel(gem.id, upgrade.id) }}/{{ upgrade.maxLevel }}
+                </span>
               </div>
               
-              <div class="bg-gray-800 rounded-lg p-3">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Gem Nodes</label>
-                <div class="grid grid-cols-3 gap-2">
-                  <div
-                    v-for="(node, index) in selectedGem.gemNodes"
-                    :key="index"
-                    class="text-center"
-                  >
-                    <button
-                      @click="toggleGemNode(selectedGem.id, index)"
-                      class="w-full p-2 rounded text-xs transition-colors"
-                      :class="[
-                        hasGemNode(selectedGem.id, index)
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      ]"
-                    >
-                      Node {{ index + 1 }}
-                    </button>
-                    <div class="text-xs text-gray-400 mt-1">
-                      {{ formatNumber(node.cost) }} OO
-                    </div>
-                  </div>
+              <!-- Controls & Info Row -->
+              <div class="flex items-center gap-2">
+                <div class="flex-1">
+                  <ToolValueControls
+                    :value="getCurrentUpgradeLevel(gem.id, upgrade.id)"
+                    :min-value="0"
+                    :max-value="upgrade.maxLevel"
+                    @update:value="updateUpgradeLevel(gem.id, upgrade.id, $event)"
+                    size="small"
+                  />
+                </div>
+                <div class="text-xs font-mono text-yellow-400 min-w-0">
+                  {{ formatNumber(getUpgradeNextLevelCost(gem.id, upgrade.id)) }}
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- Upgrades Section -->
-          <div class="bg-gray-850 rounded-lg p-4 border border-gray-700">
-            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <IconTrendingUp size="20" />
-              Upgrades
-            </h3>
-            
-            <div class="space-y-3">
-              <div
-                v-for="upgrade in getAvailableUpgrades(selectedGem.id)"
-                :key="upgrade.id"
-                class="bg-gray-800 rounded-lg p-4"
-              >
-                <div class="flex items-center justify-between mb-3">
-                  <div class="flex items-center gap-3">
-                    <div 
-                      class="w-3 h-3 rounded-full"
-                      :style="{ backgroundColor: upgrade.color }"
-                    ></div>
-                    <div>
-                      <div class="font-medium text-white">{{ upgrade.name }}</div>
-                      <div class="text-sm text-gray-400">{{ upgrade.resource }}</div>
-                    </div>
-                  </div>
-                  <div class="text-sm text-gray-400">
-                    Level {{ getCurrentUpgradeLevel(selectedGem.id, upgrade.id) }}/{{ upgrade.maxLevel }}
-                  </div>
-                </div>
-                
-                <!-- Upgrade Level Control -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-xs text-gray-400 mb-1">Current Level</label>
-                    <ToolValueControls
-                      :value="getCurrentUpgradeLevel(selectedGem.id, upgrade.id)"
-                      :min-value="0"
-                      :max-value="upgrade.maxLevel"
-                      @update:value="updateUpgradeLevel(selectedGem.id, upgrade.id, $event)"
-                    />
-                  </div>
-                  
-                  <div class="flex flex-col justify-end">
-                    <div class="text-xs text-gray-400 mb-1">Next Level Cost</div>
-                    <div class="text-sm text-white">
-                      {{ formatNumber(getUpgradeNextLevelCost(selectedGem.id, upgrade.id)) }} OO
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Current Multiplier Display -->
-                <div class="mt-3 pt-3 border-t border-gray-700">
-                  <div class="flex justify-between items-center">
-                    <span class="text-xs text-gray-400">Current Multiplier:</span>
-                    <span class="text-sm font-mono text-green-400">
-                      {{ formatMultiplier(getCurrentMultiplier(selectedGem.id, upgrade.id)) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- No Gem Selected State -->
-        <div v-else class="bg-gray-850 rounded-lg p-8 text-center border border-gray-700">
-          <IconZodiacGemini size="48" class="text-gray-600 mx-auto mb-4" />
-          <h3 class="text-xl font-bold text-gray-300 mb-2">Select a Gem</h3>
-          <p class="text-gray-400">Choose a gem from the left panel to view and plan your upgrades.</p>
         </div>
       </div>
     </div>
@@ -315,22 +215,16 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { 
-  IconZodiacGemini, 
   IconSettings, 
-  IconDots, 
-  IconChevronDown,
   IconFileImport,
   IconDownload,
-  IconRefresh,
-  IconTrendingUp
+  IconRefresh
 } from '@tabler/icons-vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import { GEMS, GEM_LIST } from '@/constants/gem-planner';
 
 // State
-const selectedGemId = ref(null);
 const showStatsModal = ref(false);
-const showActionsDropdown = ref(false);
 const currentStats = ref({
   availableOO: 0
 });
@@ -344,7 +238,6 @@ const toast = ref({ show: false, message: '', type: 'info' });
 
 // Computed
 const gemList = computed(() => GEM_LIST);
-const selectedGem = computed(() => selectedGemId.value ? GEMS[selectedGemId.value] : null);
 
 // Initialize gem states
 function initializeGemStates() {
@@ -365,36 +258,8 @@ function initializeGemStates() {
 }
 
 // Gem Functions
-function selectGem(gemId) {
-  selectedGemId.value = gemId;
-  showActionsDropdown.value = false;
-}
-
 function getCurrentGemLevel(gemId) {
   return gemStates.value[gemId]?.level || 0;
-}
-
-function getCurrentGemNodes(gemId) {
-  const nodes = gemStates.value[gemId]?.nodes || [false, false, false];
-  return nodes.filter(Boolean).length;
-}
-
-function getActiveUpgradeCount(gemId) {
-  const upgrades = gemStates.value[gemId]?.upgrades || {};
-  return Object.values(upgrades).filter(level => level > 0).length;
-}
-
-function getGemProgress(gemId) {
-  const gem = GEMS[gemId];
-  if (!gem) return 0;
-  
-  const currentLevel = getCurrentGemLevel(gemId);
-  const maxLevel = gem.maxLevel;
-  const nodeProgress = getCurrentGemNodes(gemId) / 3;
-  const upgradeProgress = getActiveUpgradeCount(gemId) / gem.upgrades.length;
-  
-  // Weighted average: 40% level, 30% nodes, 30% upgrades
-  return ((currentLevel / maxLevel) * 40 + nodeProgress * 30 + upgradeProgress * 30);
 }
 
 function updateGemLevel(gemId, newLevel) {
@@ -483,7 +348,6 @@ function getCurrentMultiplier(gemId, upgradeId) {
 function openStatsModal() {
   tempStats.value = { ...currentStats.value };
   showStatsModal.value = true;
-  showActionsDropdown.value = false;
 }
 
 function closeStatsModal() {
@@ -499,12 +363,10 @@ function saveStats() {
 
 // Import/Export Functions
 function importPlan() {
-  showActionsDropdown.value = false;
   showToastMessage('Import functionality coming soon', 'info');
 }
 
 function exportPlan() {
-  showActionsDropdown.value = false;
   showToastMessage('Export functionality coming soon', 'info');
 }
 
@@ -516,7 +378,6 @@ function resetPlanner() {
     saveToLocalStorage();
     showToastMessage('Planner reset successfully', 'info');
   }
-  showActionsDropdown.value = false;
 }
 
 // Utility Functions
@@ -567,11 +428,6 @@ function loadFromLocalStorage() {
 onMounted(() => {
   loadFromLocalStorage();
   initializeGemStates();
-  
-  // Select first gem by default
-  if (GEM_LIST.length > 0) {
-    selectedGemId.value = GEM_LIST[0].id;
-  }
 });
 </script>
 

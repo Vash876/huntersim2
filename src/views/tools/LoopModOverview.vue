@@ -406,8 +406,8 @@
             </button>
           </div>
           
-          <!-- Results table -->
-          <div v-else class="overflow-x-auto">
+          <!-- Results - Desktop Table -->
+          <div v-else-if="enhancedFilteredLoopMods.length > 0" class="hidden lg:block overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-gray-800 border-b border-gray-700">
@@ -513,6 +513,100 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Results - Mobile Cards -->
+          <div v-if="enhancedFilteredLoopMods.length > 0" class="lg:hidden space-y-2">
+            <!-- Mobile Sort Controls -->
+            <div class="flex items-center justify-between mb-3 px-1">
+              <div class="flex items-center gap-2 bg-gray-800 rounded-lg p-2">
+                <span class="text-xs text-gray-300">Sort:</span>
+                <select 
+                  v-model="sortBy" 
+                  class="bg-gray-700 text-white text-xs rounded px-2 py-1 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="cost">Cost</option>
+                  <option value="tier">Tier</option>
+                  <option value="name">Name</option>
+                  <option value="level">Level</option>
+                </select>
+                <button 
+                  @click="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'" 
+                  class="bg-gray-700 hover:bg-gray-600 text-white p-1 rounded transition-colors"
+                >
+                  <IconSortAscending v-if="sortDirection === 'asc'" size="14" />
+                  <IconSortDescending v-else size="14" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div 
+              v-for="mod in sortedLoopMods" 
+              :key="`${mod.name}-${mod.level}`"
+              class="bg-gray-800/70 rounded-lg border border-gray-700 p-3 transition-colors"
+              :class="{
+                'bg-green-900/30 border-green-700': mod.isNewlyAvailable
+              }"
+            >
+              <!-- Header Row: Name and Cost -->
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex-1 min-w-0 mr-3">
+                  <h4 class="font-medium text-sm truncate mb-1" :class="mod.isNewlyAvailable ? 'text-green-300' : 'text-white'">
+                    {{ mod.name }} <span class="text-xs text-gray-400 font-normal">({{ mod.level }})</span>
+                  </h4>
+                </div>
+                
+                <!-- Cost moved to top right -->
+                <div class="flex items-center bg-gray-900/50 rounded-lg px-2 py-1 flex-shrink-0">
+                  <img src="@/assets/general/mp.png" class="w-3 h-3 mr-1" alt="MP" />
+                  <span class="text-amber-400 font-medium text-xs">{{ mod.cost }}</span>
+                </div>
+              </div>
+              
+              <!-- Buffs - Condensed -->
+              <div class="mb-2">
+                <div class="flex flex-wrap gap-1">
+                  <span 
+                    v-for="(buff, index) in mod.buffs" 
+                    :key="index" 
+                    class="px-1.5 py-0.5 text-xs bg-gray-700 text-blue-300 rounded"
+                  >
+                    {{ buff }}
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Requirements - Condensed -->
+              <div v-if="mod.requiresTemp3 || mod.requiresI61Level > 0 || mod.requiresI75Level > 0 || mod.requiresUltimaCap > 0">
+                <div class="flex flex-wrap gap-1">
+                  <span 
+                    v-if="mod.requiresTemp3" 
+                    class="px-1.5 py-0.5 text-xs bg-red-900/50 text-red-300 border border-red-700 rounded"
+                  >
+                    Temp3
+                  </span>
+                  <span 
+                    v-if="mod.requiresI61Level > 0" 
+                    class="px-1.5 py-0.5 text-xs bg-purple-900/50 text-purple-300 border border-purple-700 rounded"
+                  >
+                    i61-{{ mod.requiresI61Level }}
+                  </span>
+                  <span 
+                    v-if="mod.requiresI75Level > 0" 
+                    class="px-1.5 py-0.5 text-xs bg-amber-900/50 text-amber-300 border border-amber-700 rounded"
+                  >
+                    i75-{{ mod.requiresI75Level }}
+                  </span>
+                  <span 
+                    v-if="mod.requiresUltimaCap > 0" 
+                    class="px-1.5 py-0.5 text-xs bg-blue-900/50 text-blue-300 border border-blue-700 rounded"
+                  >
+                    +{{ mod.requiresUltimaCap }} Ultima Cap
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

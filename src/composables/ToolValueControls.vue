@@ -43,7 +43,7 @@
       <IconChevronLeft size="14" />
     </button>
     
-    <!-- Current Value - mit zusätzlicher Info -->
+    <!-- Current Value -->
     <div 
       class="min-w-[45px] text-center bg-gray-800 py-[1px] h-6 border-y border-gray-600 flex items-center justify-center"
       :class="{ 'text-gray-400': disabled }"
@@ -75,7 +75,7 @@
           class="cursor-pointer select-none w-full text-center px-2 hover:bg-gray-700 flex flex-col items-center justify-center"
           :title="disabled ? '' : 'Click to edit'"
         >
-          <!-- Zeige nur Zeit oder nur Level, je nach showOnlyAdditionalInfo -->
+          <!-- Show only time or only level, depending on showOnlyAdditionalInfo -->
           <span v-if="!showOnlyAdditionalInfo" :class="valueClass">{{ value }}</span>
           <span v-if="additionalInfo" :class="additionalInfoClass || 'text-gray-400 text-xs'">
             {{ additionalInfo }}
@@ -206,37 +206,37 @@ const props = defineProps({
 
 const emit = defineEmits(['update:value', 'update:raw-value', 'finalize:value', 'blur']);
 
-// Intervall-Referenz
+// Interval reference
 const buttonInterval = ref(null);
 const buttonTimeout = ref(null);
 
-// Input-Referenz und Zustand
+// Input reference and state
 const inputField = ref(null);
 const isEditing = ref(false);
 const inputValue = ref(props.value);
 
 const isIncrementing = ref(false);
 
-// Wenn sich der externe Wert ändert, aktualisiere auch den inputValue
+// When external value changes, update inputValue as well
 watchEffect(() => {
   inputValue.value = props.value;
 });
 
-// Funktion für den Focus-Handler, der automatisch in den Bearbeitungsmodus wechselt
+// Function for focus handler that automatically switches to edit mode
 function onSpanFocus(event) {
   if (props.autoEdit && !props.disabled) {
     startEditing();
   }
 }
 
-// Startet den Bearbeitungsmodus
+// Starts edit mode
 function startEditing() {
   if (props.disabled) return;
   
   isEditing.value = true;
   inputValue.value = props.value;
   
-  // Fokus auf das Input-Feld setzen und alles auswählen
+  // Focus input field and select all
   nextTick(() => {
     if (inputField.value) {
       inputField.value.focus();
@@ -245,21 +245,21 @@ function startEditing() {
   });
 }
 
-// Validiert den Input während der Eingabe
+// Validates input during typing
 function validateInput(event) {
-  // Entferne ungültige Zeichen
+  // Remove invalid characters
   if (event.target.value === '') return;
   
-  // Konvertieren in eine Zahl
+  // Convert to number
   const numValue = Number(event.target.value);
   
   if (props.validateOnFinalOnly) {
-    // Bei validateOnFinalOnly wird der Rohwert direkt emittiert, ohne min/max Validierung
+    // With validateOnFinalOnly, raw value is emitted directly without min/max validation
     if (!isNaN(numValue)) {
       emit('update:raw-value', numValue);
     }
   } else {
-    // Standard-Validierung
+    // Standard validation
     if (!isNaN(numValue)) {
       if (numValue < props.minValue) {
         inputValue.value = props.minValue;
@@ -274,61 +274,61 @@ function validateInput(event) {
   }
 }
 
-// Beendet die Bearbeitung und übernimmt den Wert
+// Ends editing and applies the value
 function finishEditing() {
   isEditing.value = false;
   
-  // Konvertieren in eine Zahl und Validieren
+  // Convert to number and validate
   let numValue = Number(inputValue.value);
   
-  // Wenn es keine gültige Zahl ist, behalte den alten Wert bei
+  // If it's not a valid number, keep the old value
   if (isNaN(numValue)) {
     inputValue.value = props.value;
-    emit('blur'); // Informiere den Parent über das Blur-Event
+    emit('blur'); // Inform parent about blur event
     return;
   }
   
   if (props.validateOnFinalOnly) {
-    // Bei validateOnFinalOnly wird die Finalisierung signalisiert MIT DEM WERT
-    emit('finalize:value', numValue);  // Hier den numValue mitgeben!
+    // With validateOnFinalOnly, finalization is signaled WITH THE VALUE
+    emit('finalize:value', numValue);  // Pass the numValue here!
     emit('blur');
   } else {
-    // Standard-Validierung und Emittieren
+    // Standard validation and emission
     numValue = Math.max(props.minValue, Math.min(props.maxValue, numValue));
     
-    // Nur emittieren, wenn sich der Wert tatsächlich geändert hat
+    // Only emit if value actually changed
     if (numValue !== props.value) {
       emit('update:value', numValue);
     }
     
-    // In jedem Fall inputValue synchronisieren
+    // Synchronize inputValue in any case
     inputValue.value = numValue;
     emit('blur');
   }
 }
 
-// Bricht die Bearbeitung ab und stellt den ursprünglichen Wert wieder her
+// Cancels editing and restores original value
 function cancelEditing() {
   isEditing.value = false;
   inputValue.value = props.value;
 }
 
-// Aktionen
+// Actions
 function increment() {
   if (props.value < props.maxValue && !props.disabled) {
-    // Neue Logik: Setze isIncrementing auf true, bevor wir erhöhen
+    // New logic: Set isIncrementing to true before incrementing
     isIncrementing.value = true;
     
     const newValue = Math.min(props.maxValue, props.value + props.step);
     
-    // WICHTIG: Immer beide Events auslösen, egal ob validateOnFinalOnly true ist oder nicht
+    // IMPORTANT: Always trigger both events, regardless of validateOnFinalOnly
     emit('update:value', newValue);
     
     if (props.validateOnFinalOnly) {
       emit('update:raw-value', newValue);
     }
     
-    // Nach kurzer Zeit zurücksetzen
+    // Reset after short time
     setTimeout(() => {
       isIncrementing.value = false;
     }, 300);
@@ -339,7 +339,7 @@ function decrement() {
   if (props.value > props.minValue && !props.disabled && !props.disableDecrement) {
     const newValue = Math.max(props.minValue, props.value - props.step);
     
-    // WICHTIG: Immer beide Events auslösen
+    // IMPORTANT: Always trigger both events
     emit('update:value', newValue);
     
     if (props.validateOnFinalOnly) {
@@ -354,7 +354,7 @@ function incrementFast() {
     
     const newValue = Math.min(props.maxValue, props.value + props.fastStep);
     
-    // WICHTIG: Immer beide Events auslösen
+    // IMPORTANT: Always trigger both events
     emit('update:value', newValue);
     
     if (props.validateOnFinalOnly) {
@@ -371,7 +371,7 @@ function decrementFast() {
   if (props.value > props.minValue && !props.disabled && !props.disableDecrement) {
     const newValue = Math.max(props.minValue, props.value - props.fastStep);
     
-    // WICHTIG: Immer beide Events auslösen
+    // IMPORTANT: Always trigger both events
     emit('update:value', newValue);
     
     if (props.validateOnFinalOnly) {
@@ -380,22 +380,22 @@ function decrementFast() {
   }
 }
 
-// Button-Handling
+// Button handling
 function onButtonDown(action) {
   if (props.disabled) return;
   
-  // Wenn wir gerade im Bearbeitungsmodus sind, diesen abbrechen
+  // If we're currently in edit mode, cancel it
   if (isEditing.value) {
     finishEditing();
   }
   
-  // Sofort auslösen
+  // Execute immediately
   action();
   
-  // Nach 200ms beginnt die Wiederholung
+  // After 200ms, repetition begins
   buttonTimeout.value = setTimeout(() => {
-    // Prüfe vor dem Setzen des Intervalls, ob die Aktion noch ausführbar ist
-    // (d.h. ob der Wert nicht an den Grenzen liegt)
+    // Check before setting interval if action is still executable
+    // (i.e., if value is not at limits)
     const isIncrementAction = action === increment || action === incrementFast;
     const isDecrementAction = action === decrement || action === decrementFast;
     
@@ -404,10 +404,10 @@ function onButtonDown(action) {
     
     if (canExecuteIncrement || canExecuteDecrement) {
       buttonInterval.value = setInterval(() => {
-        // Nochmal prüfen, bevor die Aktion im Intervall ausgeführt wird
+        // Check again before executing action in interval
         if ((isIncrementAction && props.value >= props.maxValue) || 
             (isDecrementAction && props.value <= props.minValue)) {
-          // Stoppen, wenn ein Grenzwert erreicht wurde
+          // Stop when limit is reached
           clearInterval(buttonInterval.value);
           return;
         }
@@ -416,7 +416,7 @@ function onButtonDown(action) {
     }
   }, 200);
   
-  // Event-Listener für mouseup hinzufügen
+  // Add event listener for mouseup
   document.addEventListener('mouseup', onButtonUp);
   document.addEventListener('mouseleave', onButtonUp);
   window.addEventListener('blur', onButtonUp);
@@ -434,25 +434,25 @@ function removeListeners() {
   window.removeEventListener('blur', onButtonUp);
 }
 
-// Touch-Handling
+// Touch handling
 let touchAction = null;
 
 function onTouchStart(action) {
   if (props.disabled) return;
   
-  // Wenn wir gerade im Bearbeitungsmodus sind, diesen abbrechen
+  // If we're currently in edit mode, cancel it
   if (isEditing.value) {
     finishEditing();
   }
   
   touchAction = action;
   
-  // Sofort auslösen
+  // Execute immediately
   action();
   
-  // Nach 500ms beginnt die Wiederholung
+  // After 500ms, repetition begins
   buttonTimeout.value = setTimeout(() => {
-    // Prüfe vor dem Setzen des Intervalls, ob die Aktion noch ausführbar ist
+    // Check before setting interval if action is still executable
     const isIncrementAction = action === increment || action === incrementFast;
     const isDecrementAction = action === decrement || action === decrementFast;
     
@@ -461,10 +461,10 @@ function onTouchStart(action) {
     
     if (canExecuteIncrement || canExecuteDecrement) {
       buttonInterval.value = setInterval(() => {
-        // Nochmal prüfen, bevor die Aktion im Intervall ausgeführt wird
+        // Check again before executing action in interval
         if ((isIncrementAction && props.value >= props.maxValue) || 
             (isDecrementAction && props.value <= props.minValue)) {
-          // Stoppen, wenn ein Grenzwert erreicht wurde
+          // Stop when limit is reached
           clearInterval(buttonInterval.value);
           return;
         }
@@ -475,7 +475,7 @@ function onTouchStart(action) {
 }
 
 function onTouchMove(event) {
-  // Optional: Berührung wurde außerhalb verschoben, abbrechen
+  // Optional: Touch moved outside, cancel
   const touch = event.touches[0];
   const target = document.elementFromPoint(touch.clientX, touch.clientY);
   
@@ -499,14 +499,14 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Chrome, Safari, Edge, Opera - verstecken der Pfeile bei Zahl-Inputs */
+/* Chrome, Safari, Edge, Opera - hide arrows on number inputs */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* Firefox - verstecken der Pfeile bei Zahl-Inputs */
+/* Firefox - hide arrows on number inputs */
 input[type=number] {
   -moz-appearance: textfield;
   appearance: textfield;

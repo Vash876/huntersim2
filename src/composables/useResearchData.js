@@ -40,8 +40,11 @@ export function useResearchData() {
         if (!isNaN(cost) && cost > 0) {
           const parsedRequirements = parseRequirements(requirement || '');
           
+          // Handle Temporal Research (string) vs numbered research (integer)
+          const researchValue = research === 'Temporal Research' ? research : parseInt(research);
+          
           researches.push({
-            research: parseInt(research) || 0,
+            research: researchValue,
             rank: parseInt(rank) || 1,
             cost: cost,
             effect: effect?.trim() || '',

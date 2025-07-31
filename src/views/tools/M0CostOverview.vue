@@ -40,8 +40,8 @@
                   :value="currentM0Level"
                   :minValue="1"
                   :maxValue="1000"
-                  :step="10"
-                  :fastStep="50"
+                  :step="1"
+                  :fastStep="10"
                   :validateOnFinalOnly="true"
                   @update:value="handleCurrentM0LevelUpdate"
                   @update:raw-value="(val) => currentM0LevelRaw = val"
@@ -58,7 +58,7 @@
                 <div class="flex items-center">
                   <ToolValueControls
                     :value="levelRange"
-                    :minValue="20"
+                    :minValue="10"
                     :maxValue="100"
                     :step="10"
                     :fastStep="20"
@@ -123,7 +123,13 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="row in maxRowsPerColumn" :key="row" class="border-b border-gray-700/30 hover:bg-gray-750/50 transition-all duration-200">
+                  <tr v-for="row in maxRowsPerColumn" :key="row" 
+                      :class="[
+                        'border-b hover:bg-gray-750/50 transition-all duration-200',
+                        // Prüfe ob es Level gibt die auf 0 enden in dieser Reihe
+                        hasLevelEndingInZero(row) ? 'border-gray-500 border-b-1' : 'border-gray-700/30'
+                      ]"
+                  >
                     <td v-for="column in columnCount" :key="column" class="px-1 py-2 border-r border-gray-700 last:border-r-0">
                       <div v-if="getCostForPosition(column, row)" 
                            class="grid grid-cols-2 gap-1 text-sm rounded px-2 py-1 transition-colors">
@@ -161,7 +167,7 @@
                     :key="cost.level"
                     :class="[
                       'border-b transition-all duration-200 hover:bg-gray-750/50',
-                      // Dickere Linie nach jedem 10er-Schritt (Level endet mit 0)
+                      // Dickere Linie nach Leveln die auf 0 enden (xx0)
                       cost.level % 10 === 0 ? 'border-gray-500 border-b-2' : 'border-gray-700/30'
                     ]"
                   >
@@ -203,10 +209,10 @@ import ToolValueControls from '@/composables/ToolValueControls.vue';
 import shardsIcon from '@/assets/general/shards.png';
 
 // Filter States
-const currentM0Level = ref(0);
-const levelRange = ref(20);
-const currentM0LevelRaw = ref(0);
-const levelRangeRaw = ref(20);
+const currentM0Level = ref(1);
+const levelRange = ref(10);
+const currentM0LevelRaw = ref(1);
+const levelRangeRaw = ref(10);
 
 // Handler functions
 function handleCurrentM0LevelUpdate(newVal) {
@@ -224,10 +230,8 @@ function handleLevelRangeUpdate(newVal) {
 function finalizeCurrentM0Level() {
   const numValue = Number(currentM0LevelRaw.value);
   if (!isNaN(numValue)) {
-    // Level muss durch 10 teilbar sein, mindestens 1
-    const adjustedValue = Math.max(1, Math.round(numValue / 10) * 10);
-    // Wenn der berechnete Wert 0 wäre, setze auf 1
-    currentM0Level.value = adjustedValue === 0 ? 1 : Math.min(1000, adjustedValue);
+    // Jeder Level zwischen 1 und 1000 ist erlaubt
+    currentM0Level.value = Math.max(1, Math.min(1000, Math.round(numValue)));
     currentM0LevelRaw.value = currentM0Level.value;
     saveFilters();
   }
@@ -236,9 +240,9 @@ function finalizeCurrentM0Level() {
 function finalizeLevelRange() {
   const numValue = Number(levelRangeRaw.value);
   if (!isNaN(numValue)) {
-    // Range muss durch 10 teilbar sein
+    // Range muss durch 10 teilbar sein, mindestens 10
     const adjustedValue = Math.round(numValue / 10) * 10;
-    levelRange.value = Math.max(20, Math.min(100, adjustedValue));
+    levelRange.value = Math.max(10, Math.min(100, adjustedValue));
     levelRangeRaw.value = levelRange.value;
     saveFilters();
   }
@@ -247,9 +251,8 @@ function finalizeLevelRange() {
 // Computed
 const filteredCosts = computed(() => {
   const result = [];
-  // Berechne den Start-Level (immer mit 1 am Ende: 1, 11, 21, 31, usw.)
-  const adjustedStartLevel = Math.floor((currentM0Level.value - 1) / 10) * 10 + 1;
-  const startLevel = adjustedStartLevel;
+  // Tabelle beginnt mit dem exakten current m0 Level
+  const startLevel = currentM0Level.value;
   const endLevel = Math.min(startLevel + levelRange.value - 1, 1000);
   
   for (let level = startLevel; level <= endLevel; level++) {
@@ -303,23 +306,21 @@ const desktopIconSize = computed(() => {
 
 // Methods
 function getColumnStartLevel(column) {
-  const adjustedStartLevel = Math.floor((currentM0Level.value - 1) / 10) * 10 + 1;
-  const startLevel = adjustedStartLevel;
+  // Jede Spalte beginnt mit Start + (column-1)*10
+  const startLevel = currentM0Level.value;
   return startLevel + (column - 1) * 10;
 }
 
 function getColumnEndLevel(column) {
   const start = getColumnStartLevel(column);
-  const adjustedStartLevel = Math.floor((currentM0Level.value - 1) / 10) * 10 + 1;
-  const baseStartLevel = adjustedStartLevel;
-  return Math.min(start + 9, baseStartLevel + levelRange.value - 1, 1000);
+  const startLevel = currentM0Level.value;
+  return Math.min(start + 9, startLevel + levelRange.value - 1, 1000);
 }
 
 function getCostForPosition(column, row) {
-  const adjustedStartLevel = Math.floor((currentM0Level.value - 1) / 10) * 10 + 1;
-  const baseStartLevel = adjustedStartLevel;
-  const level = baseStartLevel + (column - 1) * 10 + (row - 1);
-  const maxLevel = Math.min(baseStartLevel + levelRange.value - 1, 1000);
+  const startLevel = currentM0Level.value;
+  const level = startLevel + (column - 1) * 10 + (row - 1);
+  const maxLevel = Math.min(startLevel + levelRange.value - 1, 1000);
   
   if (level > maxLevel) return null;
   
@@ -334,11 +335,22 @@ function getCostForPosition(column, row) {
   };
 }
 
+function hasLevelEndingInZero(row) {
+  // Prüfe ob in dieser Reihe ein Level existiert das auf 0 endet
+  for (let column = 1; column <= columnCount.value; column++) {
+    const cost = getCostForPosition(column, row);
+    if (cost && cost.level % 10 === 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function resetFilters() {
   currentM0Level.value = 1;
-  levelRange.value = 20;
+  levelRange.value = 10;
   currentM0LevelRaw.value = 1;
-  levelRangeRaw.value = 20;
+  levelRangeRaw.value = 10;
   saveFilters();
 }
 

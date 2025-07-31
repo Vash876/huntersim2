@@ -168,15 +168,15 @@
             </button>
           </div>
           
-          <!-- Results table -->
-          <div v-else class="overflow-x-auto">
+          <!-- Results - Desktop Table -->
+          <div v-else-if="filteredResearches.length > 0" class="hidden lg:block overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-gray-800 border-b border-gray-700">
                   <!-- Research - sortierbar -->
                   <th 
                     @click="updateSort('research')" 
-                    class="px-4 py-2 cursor-pointer transition-colors w-[10%]"
+                    class="px-4 py-2 cursor-pointer transition-colors w-[15%]"
                     :class="sortBy === 'research' ? 'bg-blue-800/50 hover:bg-blue-700/50' : 'hover:bg-gray-750'"
                   >
                     <div class="flex items-center">
@@ -222,7 +222,7 @@
                     ]"
                   >
                     <td class="px-4 py-3 font-medium text-white">
-                      {{ research.research }}
+                      {{ research.research === 'Temporal Research' ? research.research : research.research }}
                     </td>
                     <td class="px-4 py-3 text-gray-300">
                       {{ research.rank }}
@@ -250,6 +250,88 @@
                   </tr>
                 </tbody>
             </table>
+          </div>
+
+          <!-- Results - Mobile Cards -->
+          <div v-if="filteredResearches.length > 0" class="lg:hidden space-y-2">
+            <!-- Mobile Sort Controls -->
+            <div class="flex items-center justify-between mb-3 px-1">
+              <div class="flex items-center gap-2 bg-gray-800 rounded-lg p-2">
+                <span class="text-xs text-gray-300">Sort:</span>
+                <select 
+                  v-model="sortBy" 
+                  class="bg-gray-700 text-white text-xs rounded px-2 py-1 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="cost">Cost</option>
+                  <option value="research">Research</option>
+                </select>
+                <button 
+                  @click="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'" 
+                  class="bg-gray-700 hover:bg-gray-600 text-white p-1 rounded transition-colors"
+                >
+                  <IconSortAscending v-if="sortDirection === 'asc'" size="14" />
+                  <IconSortDescending v-else size="14" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div 
+              v-for="(research, index) in sortedResearches" 
+              :key="`${research.research}-${research.rank}`"
+              class="rounded-lg border p-3 transition-colors relative research-card"
+              :class="[
+                getTypeBackgroundClass(research.type),
+                'border-gray-700'
+              ]"
+            >
+              <!-- Header Row: Research Number, Rank, Cost -->
+              <div class="flex items-start justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <div class="text-white font-bold text-sm">
+                    {{ research.research === 'Temporal Research' ? research.research : `#${research.research}` }}
+                  </div>
+                  <div class="bg-gray-900/50 rounded-lg px-2 py-1">
+                    <span class="text-xs text-gray-300">Rank {{ research.rank }}</span>
+                  </div>
+                </div>
+                
+                <!-- Cost -->
+                <div class="flex items-center bg-gray-900/50 rounded-lg px-2 py-1 flex-shrink-0">
+                  <img src="@/assets/general/rp.png" class="w-3 h-3 mr-1" alt="RP" />
+                  <span class="text-amber-400 font-medium text-xs">{{ research.cost }}</span>
+                </div>
+              </div>
+              
+              <!-- Effect -->
+              <div class="mb-2">
+                <div class="text-gray-300 text-xs leading-relaxed">
+                  {{ research.effect }}
+                </div>
+              </div>
+              
+              <!-- Requirements -->
+              <div v-if="research.requiresInnovation > 0">
+                <div class="flex flex-wrap gap-1">
+                  <span 
+                    class="px-1.5 py-0.5 text-xs border rounded"
+                    :class="getInnovationClass(research.requiresInnovation)"
+                  >
+                    Innovation {{ research.requiresInnovation }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Type Indicator (visual left border) -->
+              <div 
+                class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
+                :class="{
+                  'bg-gradient-to-b from-indigo-500 to-purple-600': research.type === 'Dark',
+                  'bg-gradient-to-b from-red-500 to-red-600': research.type === 'Ultima',
+                  'bg-gradient-to-b from-yellow-500 to-orange-500': research.type === 'Standard'
+                }"
+              ></div>
+            </div>
           </div>
         </div>
       </div>
@@ -399,6 +481,18 @@ const sortedResearches = computed(() => {
   
   const sortFunctions = {
     research: (a, b) => {
+      // Handle mixed types: numbers vs strings
+      if (typeof a.research === 'string' && typeof b.research === 'number') {
+        return 1; // String researches come after numbered ones
+      }
+      if (typeof a.research === 'number' && typeof b.research === 'string') {
+        return -1; // Numbered researches come before string ones
+      }
+      if (typeof a.research === 'string' && typeof b.research === 'string') {
+        const nameResult = a.research.localeCompare(b.research);
+        return nameResult !== 0 ? nameResult : a.rank - b.rank;
+      }
+      // Both are numbers
       const researchResult = a.research - b.research;
       return researchResult !== 0 ? researchResult : a.rank - b.rank;
     },
@@ -442,11 +536,11 @@ function getBorderClass(research, index) {
     return 'border-gray-700/30';
   }
   
-  // Prüfe ob nächste Zeile eine andere Research-Nummer hat
+  // Prüfe ob nächste Zeile eine andere Research-Nummer/Name hat
   const nextResearch = sortedResearches.value[index + 1];
   
   if (nextResearch && research.research !== nextResearch.research) {
-    // Dicke Linie zwischen verschiedenen Research-Nummern
+    // Dicke Linie zwischen verschiedenen Research-Nummern/Namen
     return 'border-gray-500 border-b-2';
   }
   
@@ -455,9 +549,13 @@ function getBorderClass(research, index) {
 }
 
 function getTypeBackgroundClass(type) {
-  return type === 'Dark' 
-    ? 'research-dark' 
-    : 'research-standard';
+  if (type === 'Dark') {
+    return 'research-dark';
+  } else if (type === 'Ultima') {
+    return 'research-ultima';
+  } else {
+    return 'research-standard';
+  }
 }
 
 function getInnovationClass(innovationLevel) {
@@ -566,8 +664,34 @@ onMounted(async () => {
   background: linear-gradient(180deg, #d69e2e 0%, #f6ad55 100%);
 }
 
+.research-ultima {
+  background: linear-gradient(90deg, rgba(33, 16, 16, 0.6) 0%, rgba(31, 41, 55, 0.1) 100%);
+}
+
+.research-ultima::before {
+  background: linear-gradient(180deg, #dc2626 0%, #ef4444 100%);
+}
+
 .research-row:hover::before {
   width: 6px;
+}
+
+/* Mobile Cards */
+.research-card {
+  position: relative;
+  background: rgba(31, 41, 55, 0.4);
+}
+
+.research-card.research-dark {
+  background: linear-gradient(90deg, rgba(16, 20, 33, 0.6) 0%, rgba(31, 41, 55, 0.4) 100%);
+}
+
+.research-card.research-standard {
+  background: linear-gradient(90deg, rgba(41, 24, 0, 0.6) 0%, rgba(31, 41, 55, 0.4) 100%);
+}
+
+.research-card.research-ultima {
+  background: linear-gradient(90deg, rgba(33, 16, 16, 0.6) 0%, rgba(31, 41, 55, 0.4) 100%);
 }
 
 /* GEÄNDERT: Besserer Mobile Style ohne Tabellen-Layout zu zerstören */

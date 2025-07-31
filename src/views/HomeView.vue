@@ -2,6 +2,36 @@
 const changelog = 
 [
   {
+    version: '2.7.5',
+    date: '2025-08-01',
+    changes: [
+      {
+        text: 'Data Overview Tools',
+        subItems: [
+          'Improved mobile interface for Loop Mod Overview and Research Overview with responsive card layout instead of horizontal scrolling table',
+        ]
+      },
+      {
+        text: 'Research Overview',
+        subItems: [
+          'Ultima Research integrated',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Fixed costs for Ultima Research',
+        ]
+      },
+      {
+        text: 'm0 Cost Overview',
+        subItems: [
+          'Table now starts with your actual level instead of rounded 10-level groups',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.7.4',
     date: '2025-07-31',
     changes: [
