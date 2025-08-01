@@ -517,28 +517,6 @@
 
           <!-- Results - Mobile Cards -->
           <div v-if="enhancedFilteredLoopMods.length > 0" class="lg:hidden space-y-2">
-            <!-- Mobile Sort Controls -->
-            <div class="flex items-center justify-between mb-3 px-1">
-              <div class="flex items-center gap-2 bg-gray-800 rounded-lg p-2">
-                <span class="text-xs text-gray-300">Sort:</span>
-                <select 
-                  v-model="sortBy" 
-                  class="bg-gray-700 text-white text-xs rounded px-2 py-1 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="cost">Cost</option>
-                  <option value="tier">Tier</option>
-                  <option value="name">Name</option>
-                  <option value="level">Level</option>
-                </select>
-                <button 
-                  @click="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'" 
-                  class="bg-gray-700 hover:bg-gray-600 text-white p-1 rounded transition-colors"
-                >
-                  <IconSortAscending v-if="sortDirection === 'asc'" size="14" />
-                  <IconSortDescending v-else size="14" />
-                </button>
-              </div>
-            </div>
 
             <!-- Mobile Cards -->
             <div 
