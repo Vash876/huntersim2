@@ -1,6 +1,7 @@
 /**
  * Temporal Gem Constants for Gem Planner
  */
+import Decimal from 'break_infinity.js';
 
 export const TEMPORAL_GEM = {
   id: 'temporal',
@@ -8,8 +9,8 @@ export const TEMPORAL_GEM = {
   maxLevel: 3,
   color: {
     primary: '#dc2626', // Red
-    secondary: '#ef4444', // Light Red
-    gradient: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)'
+    secondary: '#e67b7bff', // Light Red
+    gradient: 'linear-gradient(135deg, #dc2626 0%, #e67b7bff 100%)'
   },
   
   // Gem Quality costs (level up costs)
@@ -36,12 +37,26 @@ export const TEMPORAL_GEM = {
       costMultiplier: 1.5,
       maxLevel: 50,
       color: '#ff0000',
-      unlock: 1, 
+      unlock: 1,
+      costBumps: [
+        { startLevel: 14, multiplier: 1.01 },
+        { startLevel: 29, multiplier: 1.02 },
+        { startLevel: 39, multiplier: 1.03 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, temporalLevel, gameStats = {}) => {
-          const loopResets = gameStats.loopResets || 0;
-          return Math.pow(1 + (0.01 * level) * loopResets, 1 + (temporalLevel * 0.1) - 0.1);
+          const loopMods = gameStats.loopMods || 0;
+          const levelDecimal = new Decimal(level);
+          const temporalLevelDecimal = new Decimal(temporalLevel);
+          const loopModsDecimal = new Decimal(loopMods);
+
+          // 1 + (0.01 * level) * loopMods
+          const base = new Decimal(1).add(levelDecimal.mul(0.01).mul(loopModsDecimal));
+          // 1 + (temporalLevel * 0.1) - 0.1
+          const exponent = new Decimal(1).add(temporalLevelDecimal.mul(0.1)).sub(0.1);
+          
+          return base.pow(exponent);
         }
       }
     },
@@ -53,7 +68,12 @@ export const TEMPORAL_GEM = {
       costMultiplier: 4,
       maxLevel: 50,
       color: '#ff0000',
-      unlock: 2, 
+      unlock: 2,
+      costBumps: [
+        { startLevel: 14, multiplier: 1.01 },
+        { startLevel: 29, multiplier: 1.02 },
+        { startLevel: 39, multiplier: 1.03 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, temporalLevel, gameStats = {}) => {
@@ -70,11 +90,12 @@ export const TEMPORAL_GEM = {
       costMultiplier: 100,
       maxLevel: 10,
       color: '#ff0000',
-      unlock: 3, 
+      unlock: 3,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1,
         calculate: (level, temporalLevel, gameStats = {}) => {
-          const zagRank = gameStats.zagRank || 0;
+          const zagRank = gameStats.zagreusRank || 0;
           return Math.pow(Math.pow(1 + (0.35 * level), zagRank), 1 + (temporalLevel * 0.1) - 0.1);
         }
       }
@@ -87,7 +108,8 @@ export const TEMPORAL_GEM = {
       costMultiplier: 3,
       maxLevel: 100,
       color: '#fc846a',
-      unlock: 3, 
+      unlock: 3,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 5,
         calculate: (level, temporalLevel) => {
@@ -103,11 +125,12 @@ export const TEMPORAL_GEM = {
       costMultiplier: 3,
       maxLevel: 30,
       color: '#ff0000',
-      unlock: 3, 
+      unlock: 3,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1,
         calculate: (level, temporalLevel, gameStats = {}) => {
-          const zagCrew = gameStats.zagCrew || 0;
+          const zagCrew = gameStats.zagreusCrew || 0;
           return Math.pow(Math.pow(1 + (0.003 * level), zagCrew), 1 + (temporalLevel * 0.1) - 0.1);
         }
       }
@@ -120,11 +143,12 @@ export const TEMPORAL_GEM = {
       costMultiplier: 7,
       maxLevel: 30,
       color: '#ff0000',
-      unlock: 3, 
+      unlock: 3,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1,
         calculate: (level, temporalLevel, gameStats = {}) => {
-          const loopResets = gameStats.loopResets || 0;
+          const loopResets = gameStats.loopResets - 100 || 0;
           return Math.pow(Math.pow(1 + (0.005 * level), loopResets), 1 + (temporalLevel * 0.1) - 0.1);
         }
       }

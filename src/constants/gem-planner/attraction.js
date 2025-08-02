@@ -1,6 +1,7 @@
 /**
  * Attraction Gem Constants for Gem Planner
  */
+import Decimal from 'break_infinity.js';
 
 export const ATTRACTION_GEM = {
   id: 'attraction',
@@ -35,12 +36,22 @@ export const ATTRACTION_GEM = {
       baseCost: 5,
       costMultiplier: 2.5,
       maxLevel: 50,
-      color: '#10b981',
+      color: '#a3f15e',
       unlock: 1,
+      costBumps: [
+        { startLevel: 9, multiplier: 1.2 },
+        { startLevel: 19, multiplier: 1.3 },
+        { startLevel: 29, multiplier: 1.4 },
+        { startLevel: 39, multiplier: 2 }
+      ],
       multiplier: {
         base: 1.07,
         calculate: (level, attractionLevel) => {
-          return Math.pow(Math.pow(1.07, level), 1 + (attractionLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const attractionLevelDecimal = new Decimal(attractionLevel);
+          const innerBase = new Decimal(1.07).pow(levelDecimal); // Math.pow(1.07, level)
+          const outerExponent = new Decimal(1).add(attractionLevelDecimal.mul(0.1)).sub(0.1); // 1 + (attractionLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
         }
       }
     },
@@ -51,12 +62,22 @@ export const ATTRACTION_GEM = {
       baseCost: 20,
       costMultiplier: 2.5,
       maxLevel: 50,
-      color: '#f59e0b',
+      color: '#a3f15e',
       unlock: 2,
+      costBumps: [
+        { startLevel: 9, multiplier: 1.3 },
+        { startLevel: 19, multiplier: 1.4 },
+        { startLevel: 29, multiplier: 1.5 },
+        { startLevel: 39, multiplier: 1.5 }
+      ],
       multiplier: {
         base: 1.04,
         calculate: (level, attractionLevel) => {
-          return Math.pow(Math.pow(1.04, level), 1 + (attractionLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const attractionLevelDecimal = new Decimal(attractionLevel);
+          const innerBase = new Decimal(1.04).pow(levelDecimal); // Math.pow(1.04, level)
+          const outerExponent = new Decimal(1).add(attractionLevelDecimal.mul(0.1)).sub(0.1); // 1 + (attractionLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
         }
       }
     },
@@ -67,12 +88,17 @@ export const ATTRACTION_GEM = {
       baseCost: 1,
       costMultiplier: 100,
       maxLevel: 5,
-      color: '#ef4444',
+      color: '#5afff7',
       unlock: 3,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1.08,
         calculate: (level, attractionLevel) => {
-          return Math.pow(Math.pow(1.08, level), 1 + (attractionLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const attractionLevelDecimal = new Decimal(attractionLevel);
+          const innerBase = new Decimal(1.08).pow(levelDecimal); // Math.pow(1.08, level)
+          const outerExponent = new Decimal(1).add(attractionLevelDecimal.mul(0.1)).sub(0.1); // 1 + (attractionLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
         }
       }
     }

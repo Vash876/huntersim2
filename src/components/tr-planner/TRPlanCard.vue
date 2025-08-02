@@ -48,19 +48,19 @@
           >
             <IconCopy size="16" />
           </button>
-          <!-- <button 
-            @click.stop="$emit('adjustments')" 
-            class="icon-button"
-            title="Gem overrides"
-          >
-            <IconAdjustments size="16" />
-          </button> -->
           <button 
             @click.stop="$emit('share')" 
             class="icon-button"
             title="Share plan"
           >
             <IconShare size="16" />
+          </button>
+          <button 
+            @click.stop="$emit('planOrbs')" 
+            class="icon-button text-purple-400/80 hover:text-purple-300"
+            title="Plan orb spending"
+          >
+            <IconGem size="16" />
           </button>
           
           <!-- Delete Button mit Dropdown-Bestätigung -->
@@ -186,6 +186,7 @@ import {
   IconGripVertical,
   IconAdjustments
 } from '@tabler/icons-vue';
+import { IconGem } from '@/constants/navigation';
 import { formatNumber } from '@/composables/format';
 
 const props = defineProps({
@@ -199,7 +200,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['click', 'edit', 'copy', 'share', 'adjustments', 'delete']);
+const emit = defineEmits(['click', 'edit', 'copy', 'share', 'adjustments', 'delete', 'planOrbs']);
 
 // Debug-Update für die Plan-Änderungen
 watch(() => props.plan, (newPlan) => {

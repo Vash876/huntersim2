@@ -1,15 +1,16 @@
 /**
  * Innovation Gem Constants for Gem Planner
  */
+import Decimal from 'break_infinity.js';
 
 export const INNOVATION_GEM = {
   id: 'innovation',
   name: 'Innovation',
   maxLevel: 3,
   color: {
-    primary: '#eab308', // Yellow
-    secondary: '#fbbf24', // Light Yellow
-    gradient: 'linear-gradient(135deg, #eab308 0%, #fbbf24 100%)'
+    primary: '#ffa600', // Yellow
+    secondary: '#f1ac6d', // Light Yellow
+    gradient: 'linear-gradient(135deg, #ff9900ff 0%, #eeb077ff 100%)'
   },
   
   // Gem Quality costs (level up costs)
@@ -35,12 +36,22 @@ export const INNOVATION_GEM = {
       baseCost: 3,
       costMultiplier: 2,
       maxLevel: 50,
-      color: '#fbbf24',
-      unlock: 1, 
+      color: '#f9b16e',
+      unlock: 1,
+      costBumps: [
+        { startLevel: 9, multiplier: 1.1 },
+        { startLevel: 19, multiplier: 1.2 },
+        { startLevel: 29, multiplier: 1.3 },
+        { startLevel: 39, multiplier: 1.4 }
+      ],
       multiplier: {
         base: 2,
         calculate: (level, innovationLevel) => {
-          return Math.floor(Math.pow(2 * level, 1 + (innovationLevel * 0.1) - 0.1));
+          const levelDecimal = new Decimal(level);
+          const innovationLevelDecimal = new Decimal(innovationLevel);
+          const base = new Decimal(2).mul(levelDecimal); // 2 * level
+          const exponent = new Decimal(1).add(innovationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (innovationLevel * 0.1) - 0.1
+          return base.pow(exponent).floor();
         }
       }
     },
@@ -53,11 +64,20 @@ export const INNOVATION_GEM = {
       maxLevel: 50,
       color: '#00b90f',
       unlock: 2,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1,
         calculate: (level, innovationLevel, gameStats = {}) => {
           const researchLevel = gameStats.researchLevel || 0;
-          return Math.pow(Math.pow(1 + (0.06 * level), researchLevel), 1 + (innovationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const innovationLevelDecimal = new Decimal(innovationLevel);
+          const researchLevelDecimal = new Decimal(researchLevel);
+          
+          const innerBase = new Decimal(1).add(levelDecimal.mul(0.06)); // 1 + (0.06 * level)
+          const innerPower = innerBase.pow(researchLevelDecimal); // Math.pow(1 + (0.06 * level), researchLevel)
+          const outerExponent = new Decimal(1).add(innovationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (innovationLevel * 0.1) - 0.1
+          
+          return innerPower.pow(outerExponent);
         }
       }
     },
@@ -70,11 +90,20 @@ export const INNOVATION_GEM = {
       maxLevel: 50,
       color: '#ff0000',
       unlock: 2,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1,
         calculate: (level, innovationLevel, gameStats = {}) => {
           const researchLevel = gameStats.researchLevel || 0;
-          return Math.pow(Math.pow(1 + (0.04 * level), researchLevel), 1 + (innovationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const innovationLevelDecimal = new Decimal(innovationLevel);
+          const researchLevelDecimal = new Decimal(researchLevel);
+          
+          const innerBase = new Decimal(1).add(levelDecimal.mul(0.04)); // 1 + (0.04 * level)
+          const innerPower = innerBase.pow(researchLevelDecimal); // Math.pow(1 + (0.04 * level), researchLevel)
+          const outerExponent = new Decimal(1).add(innovationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (innovationLevel * 0.1) - 0.1
+          
+          return innerPower.pow(outerExponent);
         }
       }
     },
@@ -87,11 +116,20 @@ export const INNOVATION_GEM = {
       maxLevel: 50,
       color: '#00d9ff',
       unlock: 2,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1,
         calculate: (level, innovationLevel, gameStats = {}) => {
           const researchLevel = gameStats.researchLevel || 0;
-          return Math.pow(Math.pow(1 + (0.04 * level), researchLevel), 1 + (innovationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const innovationLevelDecimal = new Decimal(innovationLevel);
+          const researchLevelDecimal = new Decimal(researchLevel);
+          
+          const innerBase = new Decimal(1).add(levelDecimal.mul(0.04)); // 1 + (0.04 * level)
+          const innerPower = innerBase.pow(researchLevelDecimal); // Math.pow(1 + (0.04 * level), researchLevel)
+          const outerExponent = new Decimal(1).add(innovationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (innovationLevel * 0.1) - 0.1
+          
+          return innerPower.pow(outerExponent);
         }
       }
     },
@@ -104,11 +142,20 @@ export const INNOVATION_GEM = {
       maxLevel: 50,
       color: '#ffa600',
       unlock: 2,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1,
         calculate: (level, innovationLevel, gameStats = {}) => {
           const researchLevel = gameStats.researchLevel || 0;
-          return Math.pow(Math.pow(1 + (0.04 * level), researchLevel), 1 + (innovationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const innovationLevelDecimal = new Decimal(innovationLevel);
+          const researchLevelDecimal = new Decimal(researchLevel);
+          
+          const innerBase = new Decimal(1).add(levelDecimal.mul(0.04)); // 1 + (0.04 * level)
+          const innerPower = innerBase.pow(researchLevelDecimal); // Math.pow(1 + (0.04 * level), researchLevel)
+          const outerExponent = new Decimal(1).add(innovationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (innovationLevel * 0.1) - 0.1
+          
+          return innerPower.pow(outerExponent);
         }
       }
     },
@@ -121,11 +168,20 @@ export const INNOVATION_GEM = {
       maxLevel: 50,
       color: '#2600ff',
       unlock: 2,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1,
         calculate: (level, innovationLevel, gameStats = {}) => {
           const researchLevel = gameStats.researchLevel || 0;
-          return Math.pow(Math.pow(1 + (0.04 * level), researchLevel), 1 + (innovationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const innovationLevelDecimal = new Decimal(innovationLevel);
+          const researchLevelDecimal = new Decimal(researchLevel);
+          
+          const innerBase = new Decimal(1).add(levelDecimal.mul(0.04)); // 1 + (0.04 * level)
+          const innerPower = innerBase.pow(researchLevelDecimal); // Math.pow(1 + (0.04 * level), researchLevel)
+          const outerExponent = new Decimal(1).add(innovationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (innovationLevel * 0.1) - 0.1
+          
+          return innerPower.pow(outerExponent);
         }
       }
     },
@@ -138,11 +194,20 @@ export const INNOVATION_GEM = {
       maxLevel: 50,
       color: '#8b5a3c',
       unlock: 3,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1,
         calculate: (level, innovationLevel, gameStats = {}) => {
           const researchLevel = gameStats.researchLevel || 0;
-          return Math.pow(Math.pow(1 + (0.01 * level), researchLevel), 1 + (innovationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const innovationLevelDecimal = new Decimal(innovationLevel);
+          const researchLevelDecimal = new Decimal(researchLevel);
+          
+          const innerBase = new Decimal(1).add(levelDecimal.mul(0.01)); // 1 + (0.01 * level)
+          const innerPower = innerBase.pow(researchLevelDecimal); // Math.pow(1 + (0.01 * level), researchLevel)
+          const outerExponent = new Decimal(1).add(innovationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (innovationLevel * 0.1) - 0.1
+          
+          return innerPower.pow(outerExponent);
         }
       }
     },
@@ -153,8 +218,10 @@ export const INNOVATION_GEM = {
       baseCost: 1e8,
       costMultiplier: 1e5,
       maxLevel: 50,
-      color: '#06b6d4',
-      unlock: 3, 
+      color: '#0c4b53',
+      type: 'additive',
+      unlock: 3,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1,
         calculate: (level, innovationLevel, gameStats = {}) => {
@@ -170,8 +237,10 @@ export const INNOVATION_GEM = {
       baseCost: 1e8,
       costMultiplier: 1e7,
       maxLevel: 50,
-      color: '#a855f7',
-      unlock: 3, 
+      color: '#ffdf39',
+      type: 'additive',
+      unlock: 3,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 1,
         calculate: (level, innovationLevel, gameStats = {}) => {

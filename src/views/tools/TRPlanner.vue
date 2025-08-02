@@ -107,6 +107,7 @@
                 @share="handleSharePlan(element.id)"
                 @adjustments="handleGemAdjustments(element.id)"
                 @delete="handleDeletePlan(element.id)"
+                @planOrbs="handlePlanOrbs(element.id)"
               />
             </div>
           </template>
@@ -236,6 +237,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import StatsInputModal from '@/components/tr-planner/StatsInputModal.vue';
 import TRPlanModal from '@/components/tr-planner/TRPlanModal.vue';
 import TRResultsSidePanel from '@/components/tr-planner/TRResultsSidePanel.vue';
@@ -267,6 +269,7 @@ import {
 
 // Pinia Store einbinden
 const trPlannerStore = useTRPlannerStore();
+const router = useRouter();
 
 // Modal state
 const showStatsModal = ref(false);
@@ -392,6 +395,30 @@ function handleSelectPlan(planId) {
 function handleEditPlan(planId) {
   editingPlanId.value = planId;
   showTRPlanModal.value = true;
+}
+
+// Plan Orbs - Navigate to Gem Planner with TR Plan data
+function handlePlanOrbs(planId) {
+  // Get the plan data
+  const plan = trPlannerStore.getTRPlanById(planId);
+  if (!plan) {
+    console.error('Plan not found:', planId);
+    return;
+  }
+
+  // Store the TR plan data in the gem planner store instead of URL params
+  import('@/store/gemPlannerStore').then(({ useGemPlannerStore }) => {
+    const gemPlannerStore = useGemPlannerStore();
+    gemPlannerStore.setActiveTRPlan({
+      plan: plan,
+      trIndex: 0
+    });
+    
+    // Navigate to gem planner without query params
+    router.push('/tools/gem-planner');
+    
+    showToastMessage(`Opening Gem Planner for "${plan.name}"`, 'info');
+  });
 }
 
 // Handle new plan created/updated

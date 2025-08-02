@@ -21,7 +21,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen bg-slate-900 text-white">
+  <div class="flex flex-col min-h-screen bg-slate-900 text-white app-container">
     <AppNavbar class="hidden md:block" />
     <main class="flex-1">
       <router-view v-slot="{ Component, route }">
@@ -38,6 +38,12 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* CSS-Variablen für Mobile Navbar Höhe - global verfügbar für alle Modals */
+.app-container {
+  --mobile-navbar-height: 60px;
+  --mobile-safe-bottom: 70px; /* Navbar + padding */
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

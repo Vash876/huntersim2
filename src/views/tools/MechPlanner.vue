@@ -819,7 +819,6 @@ const getMaxCapacity = (mechKey) => {
 };
 
 // Calculate time to cap
-// Calculate time to cap
 const getTimeToCap = (mechKey) => {
   const currentOutput = getCurrentOutputMultiplierDecimal(mechKey);
   const maxCapacity = getMaxCapacity(mechKey);

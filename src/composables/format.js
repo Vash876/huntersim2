@@ -25,16 +25,16 @@ export function formatNumber(value) {
   // Berechne die Größenordnung korrekt
   let tier = Math.max(0, Math.min(Math.floor(Math.log10(absValue) / 3), suffixes.length - 1));
   
-  // Für Werte < 1000, zeige ohne Suffix
+  // Ab 1e36 (größer als "d" = 1e33) verwende wissenschaftliche Notation
+  if (absValue >= 1e36) {
+    const exponent = Math.floor(Math.log10(absValue));
+    const mantissa = value / Math.pow(10, exponent);
+    return `${mantissa.toFixed(2)}e${exponent}`;
+  }
+  
+  // Für Werte < 1000, zeige ohne Suffix - immer 2 Dezimalstellen
   if (tier === 0) {
-    // Verwende weniger Dezimalstellen für größere Zahlen
-    if (absValue >= 100) {
-      return value.toFixed(0);
-    } else if (absValue >= 10) {
-      return value.toFixed(1);
-    } else {
-      return value.toFixed(2);
-    }
+    return value.toFixed(2);
   }
   
   const suffix = suffixes[tier];
@@ -42,6 +42,101 @@ export function formatNumber(value) {
   
   // Formatiere die skalierte Zahl mit 2 Dezimalstellen + Suffix
   return `${scaledValue.toFixed(2)}${suffix}`;
+}
+
+/**
+ * Formatiert eine Decimal-Zahl in eine lesbare Form mit Suffixen (k, m, b, etc.)
+ * Speziell für break_infinity.js Decimal-Objekte
+ * 
+ * @param {Decimal} value - Die zu formatierende Decimal-Zahl
+ * @returns {string} - Die formatierte Zahl als String
+ */
+export function formatNumberDecimal(value) {
+  // Check if value is a Decimal-like object with mantissa/exponent
+  if (value && typeof value === 'object' && 
+      value.mantissa !== undefined && value.exponent !== undefined) {
+    // Handle our custom Decimal-like objects
+    const realValue = value.mantissa * Math.pow(10, value.exponent);
+    
+    // Sonderbehandlung für Werte sehr nahe bei Null
+    if (Math.abs(realValue) < 0.01) {
+      return '0';
+    }
+    
+    // Behandlung für kleine Werte zwischen 0.01 und 1
+    if (Math.abs(realValue) < 1) {
+      return realValue.toFixed(2);
+    }
+    
+    const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d'];
+    
+    // Berechne die Größenordnung korrekt
+    const log10Value = Math.log10(Math.abs(realValue));
+    let tier = Math.max(0, Math.min(Math.floor(log10Value / 3), suffixes.length - 1));
+    
+    // Ab 1e36 (größer als "d" = 1e33) verwende wissenschaftliche Notation
+    if (Math.abs(realValue) >= 1e36) {
+      // Use scientific notation directly from mantissa/exponent
+      return `${value.mantissa.toFixed(2)}e${value.exponent}`;
+    }
+    
+    // Für Werte < 1000, zeige ohne Suffix - immer 2 Dezimalstellen
+    if (tier === 0) {
+      return realValue.toFixed(2);
+    }
+    
+    const suffix = suffixes[tier];
+    const scaledValue = realValue / Math.pow(10, tier * 3);
+    
+    // Formatiere die skalierte Zahl mit 2 Dezimalstellen + Suffix
+    return `${scaledValue.toFixed(2)}${suffix}`;
+  }
+  
+  // Check if value is a Decimal instance
+  if (value && typeof value.abs === 'function') {
+    // Sonderbehandlung für Werte sehr nahe bei Null
+    if (value.abs().lt(0.01)) {
+      return '0';
+    }
+    
+    // Behandlung für kleine Werte zwischen 0.01 und 1
+    if (value.abs().lt(1)) {
+      return value.toFixed(2);
+    }
+    
+    const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d'];
+    
+    // Berechne die Größenordnung korrekt mit Decimal
+    const log10Value = value.abs().log10();
+    let tier = Math.max(0, Math.min(Math.floor(log10Value / 3), suffixes.length - 1));
+    
+    // Ab 1e36 (größer als "d" = 1e33) verwende wissenschaftliche Notation
+    if (value.abs().gte('1e36')) {
+      // Remove the + sign from positive exponents
+      return value.toExponential(2).replace('e+', 'e');
+    }
+    
+    // Für Werte < 1000, zeige ohne Suffix - immer 2 Dezimalstellen
+    if (tier === 0) {
+      return value.toFixed(2);
+    }
+    
+    const suffix = suffixes[tier];
+    // Create divisor using Decimal constructor
+    const Decimal = value.constructor; // Get the Decimal constructor from the value instance
+    const divisor = new Decimal(10).pow(tier * 3);
+    const scaledValue = value.div(divisor);
+    
+    // Formatiere die skalierte Zahl mit 2 Dezimalstellen + Suffix
+    return `${scaledValue.toFixed(2)}${suffix}`;
+  }
+  
+  // Fallback for regular numbers
+  if (typeof value === 'number') {
+    return formatNumber(value);
+  }
+  
+  return '0';
 }
 
 /**

@@ -316,12 +316,12 @@ function cancelEditing() {
 // Actions
 function increment() {
   if (props.value < props.maxValue && !props.disabled) {
-    // New logic: Set isIncrementing to true before incrementing
+    // Set isIncrementing to true before incrementing
     isIncrementing.value = true;
     
     const newValue = Math.min(props.maxValue, props.value + props.step);
     
-    // IMPORTANT: Always trigger both events, regardless of validateOnFinalOnly
+    // Always trigger both events, regardless of validateOnFinalOnly
     emit('update:value', newValue);
     
     if (props.validateOnFinalOnly) {
@@ -339,7 +339,7 @@ function decrement() {
   if (props.value > props.minValue && !props.disabled && !props.disableDecrement) {
     const newValue = Math.max(props.minValue, props.value - props.step);
     
-    // IMPORTANT: Always trigger both events
+    // Always trigger both events
     emit('update:value', newValue);
     
     if (props.validateOnFinalOnly) {
@@ -354,7 +354,7 @@ function incrementFast() {
     
     const newValue = Math.min(props.maxValue, props.value + props.fastStep);
     
-    // IMPORTANT: Always trigger both events
+    // Always trigger both events
     emit('update:value', newValue);
     
     if (props.validateOnFinalOnly) {
@@ -371,7 +371,7 @@ function decrementFast() {
   if (props.value > props.minValue && !props.disabled && !props.disableDecrement) {
     const newValue = Math.max(props.minValue, props.value - props.fastStep);
     
-    // IMPORTANT: Always trigger both events
+    // Always trigger both events
     emit('update:value', newValue);
     
     if (props.validateOnFinalOnly) {
@@ -475,7 +475,7 @@ function onTouchStart(action) {
 }
 
 function onTouchMove(event) {
-  // Optional: Touch moved outside, cancel
+  // Touch moved outside, cancel
   const touch = event.touches[0];
   const target = document.elementFromPoint(touch.clientX, touch.clientY);
   

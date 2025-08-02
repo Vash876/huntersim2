@@ -1,6 +1,7 @@
 /**
  * Exodus Gem Constants for Gem Planner
  */
+import Decimal from 'break_infinity.js';
 
 export const EXODUS_GEM = {
   id: 'exodus',
@@ -31,9 +32,20 @@ export const EXODUS_GEM = {
       costMultiplier: 1.2,
       maxLevel: 999,
       color: '#00b90f',
-      unlock: 1, 
+      unlock: 1,
+      costBumps: [
+        { startLevel: 14, multiplier: 1.05 },
+        { startLevel: 29, multiplier: 1.1 },
+        { startLevel: 39, multiplier: 1.2 }
+      ],
       multiplier: {
-        calculate: (level, exodusLevel) => Math.pow(Math.pow(4, level), 1 + (exodusLevel * 0.1) - 0.1)
+        calculate: (level, exodusLevel) => {
+          const levelDecimal = new Decimal(level);
+          const exodusLevelDecimal = new Decimal(exodusLevel);
+          const innerBase = new Decimal(4).pow(levelDecimal); // Math.pow(4, level)
+          const outerExponent = new Decimal(1).add(exodusLevelDecimal.mul(0.1)).sub(0.1); // 1 + (exodusLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
+        }
       }
     },
     {
@@ -44,9 +56,20 @@ export const EXODUS_GEM = {
       costMultiplier: 1.8,
       maxLevel: 999,
       color: '#00d9ff',
-      unlock: 2, 
+      unlock: 2,
+      costBumps: [
+        { startLevel: 14, multiplier: 1.1 },
+        { startLevel: 29, multiplier: 1.2 },
+        { startLevel: 39, multiplier: 1.3 }
+      ],
       multiplier: {
-        calculate: (level, exodusLevel) => Math.pow(Math.pow(5, level), 1 + (exodusLevel * 0.1) - 0.1)
+        calculate: (level, exodusLevel) => {
+          const levelDecimal = new Decimal(level);
+          const exodusLevelDecimal = new Decimal(exodusLevel);
+          const innerBase = new Decimal(5).pow(levelDecimal); // Math.pow(5, level)
+          const outerExponent = new Decimal(1).add(exodusLevelDecimal.mul(0.1)).sub(0.1); // 1 + (exodusLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
+        }
       }
     },
     {
@@ -57,9 +80,20 @@ export const EXODUS_GEM = {
       costMultiplier: 1.9,
       maxLevel: 999,
       color: '#ffa600',
-      unlock: 3, 
+      unlock: 3,
+      costBumps: [
+        { startLevel: 14, multiplier: 1.1 },
+        { startLevel: 29, multiplier: 1.2 },
+        { startLevel: 39, multiplier: 1.3 }
+      ],
       multiplier: {
-        calculate: (level, exodusLevel) => Math.pow(Math.pow(8, level), 1 + (exodusLevel * 0.1) - 0.1)
+        calculate: (level, exodusLevel) => {
+          const levelDecimal = new Decimal(level);
+          const exodusLevelDecimal = new Decimal(exodusLevel);
+          const innerBase = new Decimal(8).pow(levelDecimal); // Math.pow(8, level)
+          const outerExponent = new Decimal(1).add(exodusLevelDecimal.mul(0.1)).sub(0.1); // 1 + (exodusLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
+        }
       }
     },
     {
@@ -70,9 +104,21 @@ export const EXODUS_GEM = {
       costMultiplier: 2,
       maxLevel: 999,
       color: '#ff0000',
-      unlock: 4, 
+      unlock: 4,
+      costBumps: [
+        { startLevel: 14, multiplier: 1.1 },
+        { startLevel: 29, multiplier: 1.2 },
+        { startLevel: 39, multiplier: 1.3 }
+
+      ],
       multiplier: {
-        calculate: (level, exodusLevel) => Math.pow(Math.pow(4, level), 1 + (exodusLevel * 0.1) - 0.1)
+        calculate: (level, exodusLevel) => {
+          const levelDecimal = new Decimal(level);
+          const exodusLevelDecimal = new Decimal(exodusLevel);
+          const innerBase = new Decimal(4).pow(levelDecimal); // Math.pow(4, level)
+          const outerExponent = new Decimal(1).add(exodusLevelDecimal.mul(0.1)).sub(0.1); // 1 + (exodusLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
+        }
       }
     },
     {
@@ -83,9 +129,20 @@ export const EXODUS_GEM = {
       costMultiplier: 2.1,
       maxLevel: 999,
       color: '#2600ff',
-      unlock: 4, 
+      unlock: 4,
+      costBumps: [
+        { startLevel: 14, multiplier: 1.1 },
+        { startLevel: 29, multiplier: 1.2 },
+        { startLevel: 39, multiplier: 1.3 }
+      ], 
       multiplier: {
-        calculate: (level, exodusLevel) => Math.pow(Math.pow(1.6, level), 1 + (exodusLevel * 0.1) - 0.1)
+        calculate: (level, exodusLevel) => {
+          const levelDecimal = new Decimal(level);
+          const exodusLevelDecimal = new Decimal(exodusLevel);
+          const innerBase = new Decimal(1.6).pow(levelDecimal); // Math.pow(1.6, level)
+          const outerExponent = new Decimal(1).add(exodusLevelDecimal.mul(0.1)).sub(0.1); // 1 + (exodusLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
+        }
       }
     }
   ]

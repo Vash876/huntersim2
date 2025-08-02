@@ -1,6 +1,7 @@
 /**
  * Creation Gem Constants for Gem Planner
  */
+import Decimal from 'break_infinity.js';
 
 export const CREATION_GEM = {
   id: 'creation',
@@ -9,7 +10,7 @@ export const CREATION_GEM = {
   color: {
     primary: '#f97316', // Orange
     secondary: '#fb923c', // Light Orange
-    gradient: 'linear-gradient(135deg, #f97316 0%, #fb923c 100%)'
+    gradient: 'linear-gradient(135deg, #bd5a14ff 0%, #f5994dff 100%)'
   },
   
   // Gem Quality costs (level up costs)
@@ -36,12 +37,17 @@ export const CREATION_GEM = {
       baseCost: 1,
       costMultiplier: 10,
       maxLevel: 999,
-      color: '#f97316',
+      color: '#fede63',
       unlock: 1,
+      costBumps: [], // No cost bumps
       multiplier: {
         base: 100000000,
         calculate: (level, creationLevel) => {
-          return Math.pow(Math.pow(100000000, level), 1 + (creationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const creationLevelDecimal = new Decimal(creationLevel);
+          const innerBase = new Decimal(100000000).pow(levelDecimal); // Math.pow(100000000, level)
+          const outerExponent = new Decimal(1).add(creationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (creationLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
         }
       }
     },
@@ -52,12 +58,19 @@ export const CREATION_GEM = {
       baseCost: 1e3,
       costMultiplier: 3,
       maxLevel: 20,
-      color: '#6b7280',
+      color: '#f7c980',
       unlock: 2,
+      costBumps: [
+        { startLevel: 14, multiplier: 1.05 }
+      ],
       multiplier: {
         base: 10,
         calculate: (level, creationLevel) => {
-          return Math.pow(Math.pow(10, level), 1 + (creationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const creationLevelDecimal = new Decimal(creationLevel);
+          const innerBase = new Decimal(10).pow(levelDecimal); // Math.pow(10, level)
+          const outerExponent = new Decimal(1).add(creationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (creationLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
         }
       }
     },
@@ -68,12 +81,19 @@ export const CREATION_GEM = {
       baseCost: 1e4,
       costMultiplier: 4,
       maxLevel: 20,
-      color: '#3b82f6',
+      color: '#f7c980',
       unlock: 2,
+      costBumps: [
+        { startLevel: 14, multiplier: 1.05 }
+      ],
       multiplier: {
         base: 50,
         calculate: (level, creationLevel) => {
-          return Math.pow(Math.pow(50, level), 1 + (creationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const creationLevelDecimal = new Decimal(creationLevel);
+          const innerBase = new Decimal(50).pow(levelDecimal); // Math.pow(50, level)
+          const outerExponent = new Decimal(1).add(creationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (creationLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
         }
       }
     },
@@ -84,13 +104,24 @@ export const CREATION_GEM = {
       baseCost: 5e4,
       costMultiplier: 1.8,
       maxLevel: 15,
-      color: '#00b90f',
+      color: '#39fd93',
       unlock: 3,
+      costBumps: [
+        { startLevel: 7, multiplier: 100 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, creationLevel, gameStats = {}) => {
           const techUpgrades = gameStats.techUpgrades || 0;
-          return Math.pow(Math.pow(1 + (0.005 * level), techUpgrades), 1 + (creationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const creationLevelDecimal = new Decimal(creationLevel);
+          const techUpgradesDecimal = new Decimal(techUpgrades);
+          
+          const innerBase = new Decimal(1).add(levelDecimal.mul(0.005)); // 1 + (0.005 * level)
+          const innerPower = innerBase.pow(techUpgradesDecimal); // Math.pow(1 + (0.005 * level), techUpgrades)
+          const outerExponent = new Decimal(1).add(creationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (creationLevel * 0.1) - 0.1
+          
+          return innerPower.pow(outerExponent);
         }
       }
     },
@@ -101,13 +132,24 @@ export const CREATION_GEM = {
       baseCost: 6e4,
       costMultiplier: 2.2,
       maxLevel: 15,
-      color: '#ff0000',
+      color: '#fe4138',
       unlock: 3,
+      costBumps: [
+        { startLevel: 7, multiplier: 100 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, creationLevel, gameStats = {}) => {
           const techUpgrades = gameStats.techUpgrades || 0;
-          return Math.pow(Math.pow(1 + (0.001 * level), techUpgrades), 1 + (creationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const creationLevelDecimal = new Decimal(creationLevel);
+          const techUpgradesDecimal = new Decimal(techUpgrades);
+          
+          const innerBase = new Decimal(1).add(levelDecimal.mul(0.001)); // 1 + (0.001 * level)
+          const innerPower = innerBase.pow(techUpgradesDecimal); // Math.pow(1 + (0.001 * level), techUpgrades)
+          const outerExponent = new Decimal(1).add(creationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (creationLevel * 0.1) - 0.1
+          
+          return innerPower.pow(outerExponent);
         }
       }
     },
@@ -118,13 +160,24 @@ export const CREATION_GEM = {
       baseCost: 7e4,
       costMultiplier: 2.8,
       maxLevel: 15,
-      color: '#00d9ff',
+      color: '#38b1fe',
       unlock: 3,
+      costBumps: [
+        { startLevel: 7, multiplier: 100 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, creationLevel, gameStats = {}) => {
           const techUpgrades = gameStats.techUpgrades || 0;
-          return Math.pow(Math.pow(1 + (0.001 * level), techUpgrades), 1 + (creationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const creationLevelDecimal = new Decimal(creationLevel);
+          const techUpgradesDecimal = new Decimal(techUpgrades);
+          
+          const innerBase = new Decimal(1).add(levelDecimal.mul(0.001)); // 1 + (0.001 * level)
+          const innerPower = innerBase.pow(techUpgradesDecimal); // Math.pow(1 + (0.001 * level), techUpgrades)
+          const outerExponent = new Decimal(1).add(creationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (creationLevel * 0.1) - 0.1
+          
+          return innerPower.pow(outerExponent);
         }
       }
     },
@@ -137,11 +190,22 @@ export const CREATION_GEM = {
       maxLevel: 15,
       color: '#ffa600',
       unlock: 3,
+      costBumps: [
+        { startLevel: 7, multiplier: 100 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, creationLevel, gameStats = {}) => {
           const techUpgrades = gameStats.techUpgrades || 0;
-          return Math.pow(Math.pow(1 + (0.0007 * level), techUpgrades), 1 + (creationLevel * 0.1) - 0.1);
+          const levelDecimal = new Decimal(level);
+          const creationLevelDecimal = new Decimal(creationLevel);
+          const techUpgradesDecimal = new Decimal(techUpgrades);
+          
+          const innerBase = new Decimal(1).add(levelDecimal.mul(0.0007)); // 1 + (0.0007 * level)
+          const innerPower = innerBase.pow(techUpgradesDecimal); // Math.pow(1 + (0.0007 * level), techUpgrades)
+          const outerExponent = new Decimal(1).add(creationLevelDecimal.mul(0.1)).sub(0.1); // 1 + (creationLevel * 0.1) - 0.1
+          
+          return innerPower.pow(outerExponent);
         }
       }
     },
@@ -152,8 +216,12 @@ export const CREATION_GEM = {
       baseCost: 7e7,
       costMultiplier: 3.8,
       maxLevel: 80,
-      color: '#8b5cf6',
+      color: '#39ff94',
+      type: 'additive',
       unlock: 4,
+      costBumps: [
+        { startLevel: 7, multiplier: 100 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, creationLevel) => {
@@ -168,12 +236,15 @@ export const CREATION_GEM = {
       baseCost: 1e11,
       costMultiplier: 10,
       maxLevel: 50,
-      color: '#10b981',
+      color: '#db6579 ',
       unlock: 4,
+      costBumps: [
+        { startLevel: 7, multiplier: 100 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, creationLevel) => {
-          return 1 * (0.01 + (creationLevel - 4) * 0.001);
+          return level * (0.01 + (creationLevel - 4) * 0.001) + 1;
         }
       }
     },
@@ -184,12 +255,15 @@ export const CREATION_GEM = {
       baseCost: 1e6,
       costMultiplier: 10,
       maxLevel: 50,
-      color: '#f59e0b',
+      color: '#fffb8c',
       unlock: 4,
+      costBumps: [
+        { startLevel: 7, multiplier: 100 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, creationLevel) => {
-          return 1 * (0.01 + (creationLevel - 4) * 0.001);
+          return level * (0.01 + (creationLevel - 4) * 0.001) + 1;
         }
       }
     },
@@ -200,12 +274,15 @@ export const CREATION_GEM = {
       baseCost: 1e11,
       costMultiplier: 10,
       maxLevel: 50,
-      color: '#6366f1',
+      color: '#7bf7ff',
       unlock: 4,
+      costBumps: [
+        { startLevel: 7, multiplier: 100 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, creationLevel) => {
-          return 1 * (0.01 + (creationLevel - 4) * 0.001);
+          return level * (0.01 + (creationLevel - 4) * 0.001) + 1;
         }
       }
     }

@@ -143,8 +143,8 @@ const routes = [
     component: () => import('../views/tools/M0CostOverview.vue'),
   },
   {
-    path: '/tools/attrgn3-calculator',
-    name: 'Attr. GN#3 Calculator',
+    path: '/tools/attgn3-calculator',
+    name: 'AttGN#3 Calculator',
     component: () => import('../views/tools/AttrGN3Calculator.vue'),
   },
   {
