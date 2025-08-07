@@ -180,35 +180,18 @@ class TRDataMigrationService {
   }
 
   /**
-   * Create a backup of localStorage data as a downloadable file
+   * Create a backup of localStorage data (logging only)
    */
   async createLocalStorageBackup(data) {
     try {
-      const backup = {
-        version: '1.0',
-        timestamp: new Date().toISOString(),
-        data: data,
-        source: 'localStorage_migration'
-      };
-
-      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      
-      // Create hidden download link
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `tr-tracking-backup-${new Date().toISOString().split('T')[0]}.json`;
-      link.style.display = 'none';
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      URL.revokeObjectURL(url);
-      
-      console.log('📦 Created localStorage backup file');
+      console.log('📦 localStorage backup data available:', {
+        selectedResources: !!data.selectedResources,
+        tracks: data.tracks?.length || 0,
+        customResources: data.customResources?.length || 0,
+        timestamp: new Date().toISOString()
+      });
     } catch (error) {
-      console.warn('Failed to create backup file:', error);
+      console.warn('Failed to log backup data:', error);
     }
   }
 

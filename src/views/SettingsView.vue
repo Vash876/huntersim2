@@ -286,6 +286,7 @@ import { useHunterStore } from '@/store/hunterStore';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { useUltimaStore } from '@/store/ultimaStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 import { 
@@ -311,6 +312,7 @@ const hunterStore = useHunterStore();
 const trPlannerStore = useTRPlannerStore();
 const trTrackingStore = useTRTrackingStore();
 const ultimaStore = useUltimaStore();
+const gemPlannerStore = useGemPlannerStore();
 const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBackupRestore();
 
 // UI State
@@ -492,7 +494,10 @@ function resetAllData() {
       }
     });
     
-    // 5. Tool-spezifische localStorage-Einträge löschen
+    // 5. Gem Planner Store zurücksetzen
+    gemPlannerStore.resetToDefaults();
+    
+    // 6. Tool-spezifische localStorage-Einträge löschen
     // Gadget Calculator
     localStorage.removeItem('gadgetCalculator_currentLevels');
     localStorage.removeItem('gadgetCalculator_targetLevels');
@@ -516,11 +521,14 @@ function resetAllData() {
     // M0 Cost Overview
     localStorage.removeItem('m0CostOverview_filters');
     
+    // Gem Planner
+    localStorage.removeItem('gems_showOnlySimRelevant');
+    
     // TR Planner
     localStorage.removeItem('trPlanOrderIds');
     localStorage.removeItem('tr-planner-data'); // Falls genutzt
     
-    // 6. Alle anderen gespeicherten TR-Planner-Pläne suchen und löschen
+    // 7. Alle anderen gespeicherten TR-Planner-Pläne suchen und löschen
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('tr-plan-')) {
         localStorage.removeItem(key);

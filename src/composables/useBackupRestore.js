@@ -7,12 +7,14 @@ import { useHunterStore } from '@/store/hunterStore';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { useUltimaStore } from '@/store/ultimaStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 
 export function useBackupRestore() {
   const hunterStore = useHunterStore();
   const trPlannerStore = useTRPlannerStore();
   const trTrackingStore = useTRTrackingStore();
   const ultimaStore = useUltimaStore();
+  const gemPlannerStore = useGemPlannerStore();
 
   const isCreatingBackup = ref(false);
   const isRestoring = ref(false);
@@ -47,31 +49,34 @@ export function useBackupRestore() {
       // 5. Ultima Calculator Daten (Pinia Store)
       const ultimaStoreData = JSON.parse(JSON.stringify(ultimaStore.$state));
       
-      // 6. AttrGN3 Calculator Daten aus localStorage
+      // 6. Gem Planner Daten (Pinia Store)
+      const gemPlannerData = gemPlannerStore.exportData();
+      
+      // 7. AttrGN3 Calculator Daten aus localStorage
       const attrGN3Settings = localStorage.getItem('attrGN3Calculator_settings');
       
-      // 7. TS Planner Daten aus localStorage
+      // 8. TS Planner Daten aus localStorage
       const tsPlannerSettings = localStorage.getItem('traitSpherePlanner_settings');
       
-      // 8. Research Overview Daten aus localStorage
+      // 9. Research Overview Daten aus localStorage
       const researchOverviewSettings = localStorage.getItem('researchOverview_filters');
       
-      // 9. Loop Mod Overview Daten aus localStorage
+      // 10. Loop Mod Overview Daten aus localStorage
       const loopModOverviewSettings = localStorage.getItem('loopModOverview_filters');
       
-      // 10. M0 Cost Overview Daten aus localStorage
+      // 11. M0 Cost Overview Daten aus localStorage
       const m0CostOverviewSettings = localStorage.getItem('m0CostOverview_filters');
       
-      // 11. TR Tracking Daten (diese Funktion holt automatisch aus dem aktuellen Storage-System)
+      // 12. TR Tracking Daten (diese Funktion holt automatisch aus dem aktuellen Storage-System)
       const trTrackingData = trTrackingStore.exportData();
       
-      // 12. Storage-System-Informationen für bessere Backup-Kompatibilität
+      // 13. Storage-System-Informationen für bessere Backup-Kompatibilität
       const storageInfo = {
         trTrackingUsesIndexedDB: trTrackingStore.useIndexedDB,
         backupCreatedWith: 'indexedDB-migration-v1'
       };
       
-      // 12. Weitere relevante localStorage-Einträge sammeln
+      // 14. Weitere relevante localStorage-Einträge sammeln
       const trPlanOrderIds = localStorage.getItem('trPlanOrderIds');
       const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
       
@@ -82,6 +87,7 @@ export function useBackupRestore() {
           trPlannerStore: trPlannerData,
           trTrackingStore: trTrackingData,
           ultimaStore: ultimaStoreData,
+          gemPlannerStore: gemPlannerData,
           localStorage: {
             gadgetCalculator_currentLevels: gadgetCurrentLevels ? JSON.parse(gadgetCurrentLevels) : {},
             gadgetCalculator_targetLevels: gadgetTargetLevels ? JSON.parse(gadgetTargetLevels) : {},
@@ -217,7 +223,16 @@ export function useBackupRestore() {
         });
       }
       
-      // 5. Restore localStorage data
+      // 5. Restore Gem Planner Store
+      if (backupData.data.gemPlannerStore) {
+        console.log('📥 Restoring Gem Planner data from backup...');
+        const importSuccess = gemPlannerStore.importData(backupData.data.gemPlannerStore);
+        if (!importSuccess) {
+          console.warn('⚠️ Failed to import Gem Planner data, but continuing with other data...');
+        }
+      }
+      
+      // 6. Restore localStorage data
       if (backupData.data.localStorage) {
         const localStorageData = backupData.data.localStorage;
         
