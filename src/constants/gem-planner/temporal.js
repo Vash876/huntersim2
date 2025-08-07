@@ -32,11 +32,11 @@ export const TEMPORAL_GEM = {
     {
       id: 'mp-bonus-lms',
       name: 'MP Bonus (LMs)',
-      resource: 'MP',
+      weight: 'MP',
       baseCost: 1.5,
       costMultiplier: 1.5,
       maxLevel: 50,
-      color: '#ff0000',
+      color: '#ff3842',
       unlock: 1,
       costBumps: [
         { startLevel: 14, multiplier: 1.01 },
@@ -63,11 +63,11 @@ export const TEMPORAL_GEM = {
     {
       id: 'mp-bonus-ticks',
       name: 'MP Bonus (Ticks)',
-      resource: 'MP',
+      weight: 'MP',
       baseCost: 1.5,
       costMultiplier: 4,
       maxLevel: 50,
-      color: '#ff0000',
+      color: '#ff3842',
       unlock: 2,
       costBumps: [
         { startLevel: 14, multiplier: 1.01 },
@@ -85,11 +85,11 @@ export const TEMPORAL_GEM = {
     {
       id: 'mp-bonus-zag-rank',
       name: 'MP Bonus (Zag Rank)',
-      resource: 'MP',
+      weight: 'MP',
       baseCost: 1e3,
       costMultiplier: 100,
       maxLevel: 10,
-      color: '#ff0000',
+      color: '#ff3842',
       unlock: 3,
       costBumps: [], // No cost bumps
       multiplier: {
@@ -103,11 +103,12 @@ export const TEMPORAL_GEM = {
     {
       id: 'lm-max-levels-low-tier',
       name: 'LM Max Levels (Low Tier)',
-      resource: 'LM Levels',
+      weight: 'LM Levels',
       baseCost: 2e7,
       costMultiplier: 3,
       maxLevel: 100,
       color: '#fc846a',
+      type: 'additive',
       unlock: 3,
       costBumps: [], // No cost bumps
       multiplier: {
@@ -120,11 +121,11 @@ export const TEMPORAL_GEM = {
     {
       id: 'mp-bonus-zag-crew',
       name: 'MP Bonus (Zag Crew)',
-      resource: 'MP',
+      weight: 'MP',
       baseCost: 1e5,
       costMultiplier: 3,
       maxLevel: 30,
-      color: '#ff0000',
+      color: '#ff3842',
       unlock: 3,
       costBumps: [], // No cost bumps
       multiplier: {
@@ -138,11 +139,11 @@ export const TEMPORAL_GEM = {
     {
       id: 'mp-bonus-loop-resets',
       name: 'MP Bonus (Loop Resets)',
-      resource: 'MP',
+      weight: 'MP',
       baseCost: 1e10,
       costMultiplier: 7,
       maxLevel: 30,
-      color: '#ff0000',
+      color: '#ff3842',
       unlock: 3,
       costBumps: [], // No cost bumps
       multiplier: {

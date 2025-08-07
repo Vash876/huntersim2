@@ -1,12 +1,70 @@
 // src/composables/useBuildEvaluation.js
 import { ref, computed, watch, inject, nextTick } from 'vue';
 import { useHunterStore } from '../store/hunterStore';
+import { useGemPlannerStore } from '../store/gemPlannerStore';
 import { evaluateBuildWithWorker } from '../services/workerService';
 import { getHunterById } from '../constants/hunters';
 import * as EvaluationCacheService from '../services/evaluationCacheService';
 
+/**
+ * Konvertiert gemPlannerStore-Daten in das upgrades.gems_nodes Format
+ * @param {Object} gemStates - Die gemStates aus dem gemPlannerStore
+ * @param {Object} upgrades - Das upgrades-Objekt wo die konvertierten Daten eingefügt werden
+ */
+function convertGemStatesToUpgrades(gemStates, upgrades) {
+  if (!gemStates) return;
+  
+  // Stelle sicher dass gems_nodes existiert und leere es komplett
+  upgrades.gems_nodes = {};
+  
+  // Mapping von gemPlannerStore upgrade IDs zu upgrades.gems_nodes keys
+  const upgradeMapping = {
+    // Attraction Gem Upgrades
+    'borge-loot-bonus': 'attraction_lootBorge',
+    'ozzy-loot-bonus': 'attraction_lootOzzy', 
+    'catch-up-power': 'attraction_catchUp',
+    
+    // Creation Gem Upgrades
+    'borge-stat-bonus': 'creation_borgeGU',
+    'ozzy-stat-bonus': 'creation_ozzyGU',
+    'knox-stat-bonus': 'creation_knoxGU',
+  };
+  
+  // Konvertiere alle Gem-Daten
+  Object.entries(gemStates).forEach(([gemId, gemState]) => {
+    if (!gemState) return;
+    
+    // Konvertiere Gem Level
+    if (gemState.level > 0) {
+      upgrades.gems_nodes[`${gemId}_level`] = gemState.level;
+    } else {
+      upgrades.gems_nodes[`${gemId}_level`] = 0;
+    }
+    
+    // Konvertiere Gem Nodes (boolean array zu gem1, gem2, gem3)
+    if (Array.isArray(gemState.nodes)) {
+      gemState.nodes.forEach((hasNode, index) => {
+        upgrades.gems_nodes[`${gemId}_gem${index + 1}`] = hasNode ? 1 : 0;
+      });
+    }
+    
+    // Konvertiere Gem Upgrades
+    if (gemState.upgrades) {
+      Object.entries(gemState.upgrades).forEach(([upgradeId, level]) => {
+        const mappedKey = upgradeMapping[upgradeId];
+        if (mappedKey) {
+          upgrades.gems_nodes[mappedKey] = level;
+        } else {
+          upgrades.gems_nodes[`${gemId}_${upgradeId}`] = level;
+        }
+      });
+    }
+  });
+}
+
 export function useBuildEvaluation(props, emit) {
   const hunterStore = useHunterStore();
+  const gemPlannerStore = useGemPlannerStore();
   
   // State
   const isLoading = ref(false);
@@ -114,7 +172,8 @@ export function useBuildEvaluation(props, emit) {
         const cacheResult = await EvaluationCacheService.shouldEvaluate({
           hunterId: props.hunterId,
           buildData: props.buildData,
-          hunterStore
+          hunterStore,
+          gemPlannerStore
         });
         
         shouldEvaluate = cacheResult.shouldEvaluate;
@@ -126,7 +185,8 @@ export function useBuildEvaluation(props, emit) {
         const newCacheKey = await EvaluationCacheService.generateCacheKey({
           hunterId: props.hunterId,
           buildData: props.buildData,
-          hunterStore
+          hunterStore,
+          gemPlannerStore
         });
         currentCacheKey.value = newCacheKey;
         shouldEvaluate = true;
@@ -151,19 +211,46 @@ export function useBuildEvaluation(props, emit) {
         return cachedResult;
       }
       
+      // Debug-Logging für gemPlannerStore vor der Übertragung
+      console.log('🔧 [GemData] Store initialization check:');
+      console.log('  -> GemStates found:', Object.keys(gemPlannerStore.gemStates || {}).length, 'gems');
+      
+      // Sicherstellen, dass der Store initialisiert ist
+      if (gemPlannerStore.init && typeof gemPlannerStore.init === 'function') {
+        gemPlannerStore.init();
+        console.log('🔧 [GemData] After init - GemStates:', Object.keys(gemPlannerStore.gemStates || {}).length, 'gems');
+      }
+      
       let store = {
         hunterStats: { ...hunterStore.hunterStats },
         upgrades: { ...hunterStore.upgrades },
         hunterIterations: hunterStore.hunterIterations,
-        hunterSeedSettings: hunterStore.hunterSeedSettings
+        hunterSeedSettings: hunterStore.hunterSeedSettings,
+        gemPlannerStore: {
+          gameStats: gemPlannerStore.gameStats?.value || {},
+          weights: gemPlannerStore.weights?.value || {},
+          gemStates: JSON.parse(JSON.stringify(gemPlannerStore.gemStates || {})),  // Proxy zu normalem Objekt konvertieren
+          currentStats: gemPlannerStore.currentStats?.value || {}
+        }
       };
       
+      // Konvertiere gemPlannerStore-Daten in das upgrades.gems_nodes Format
+      convertGemStatesToUpgrades(store.gemPlannerStore.gemStates, store.upgrades);
+      
       if (props.buildData.overrides && Object.keys(props.buildData.overrides).length > 0) {
+        console.log('🔧 [Override] Applying overrides, filtering old gem data');
+        
         store = {
           hunterStats: JSON.parse(JSON.stringify(store.hunterStats)),
           upgrades: JSON.parse(JSON.stringify(store.upgrades)),
           hunterIterations: store.hunterIterations,
-          hunterSeedSettings: hunterStore.hunterSeedSettings
+          hunterSeedSettings: hunterStore.hunterSeedSettings,
+          gemPlannerStore: {
+            gameStats: gemPlannerStore.gameStats?.value || {},
+            weights: gemPlannerStore.weights?.value || {},
+            gemStates: JSON.parse(JSON.stringify(gemPlannerStore.gemStates || {})),
+            currentStats: gemPlannerStore.currentStats?.value || {}
+          }
         };
         
         if (!store.hunterStats[props.hunterId]) {
@@ -171,6 +258,18 @@ export function useBuildEvaluation(props, emit) {
         }
         
         for (const [key, value] of Object.entries(props.buildData.overrides)) {
+          // Filtere alte Gem-Overrides heraus
+          if (key.includes('gems_nodes') && (
+            key.includes('temporal_') || 
+            key.includes('innovation_') || 
+            key.includes('power_') || 
+            key.includes('evolution_') ||
+            key.includes('_gem') && !key.match(/^upgrades\.gems_nodes\.(creation|attraction|innovation)_gem[1-3]$/)
+          )) {
+            console.log('🚫 [Override] Skipping old gem override:', key);
+            continue;
+          }
+          
           if (key.includes('.')) {
             const parts = key.split('.');
             
@@ -204,6 +303,10 @@ export function useBuildEvaluation(props, emit) {
             store.hunterStats[props.hunterId][key] = value;
           }
         }
+        
+        // Gem-Konvertierung NACH den Overrides anwenden
+        convertGemStatesToUpgrades(store.gemPlannerStore.gemStates, store.upgrades);
+        console.log('🔧 [Override] Gem data converted after overrides applied');
       }
       
       totalIterations.value = store.hunterIterations?.[props.hunterId] || 1000;
@@ -229,6 +332,7 @@ export function useBuildEvaluation(props, emit) {
           hunterId: props.hunterId,
           buildData: props.buildData,
           hunterStore,
+          gemPlannerStore,
           result: evalResult,
           cacheKey: currentCacheKey.value
         });
@@ -308,6 +412,22 @@ export function useBuildEvaluation(props, emit) {
   });
 
   
+  // Watch für gem-Änderungen - triggert automatische Re-Evaluation
+  watch(
+    () => gemPlannerStore.gemStates,
+    (newGemStates, oldGemStates) => {
+      // Nur evaluieren wenn es sich um echte Änderungen handelt
+      if (oldGemStates && JSON.stringify(newGemStates) !== JSON.stringify(oldGemStates)) {
+        console.log('🔄 [GemData] Gem changes detected - triggering re-evaluation');
+        evaluateBuild(true); // Force re-evaluation
+      }
+    },
+    { 
+      deep: true,
+      immediate: false  // Nicht bei der ersten Initialisierung
+    }
+  );
+
   // Hilfsfunktion für Toasts
   function showToastMessage(message, type = 'success') {
     if (window.toast && typeof window.toast === 'function') {
@@ -345,18 +465,71 @@ export function useBuildEvaluation(props, emit) {
     // Watch für Upgrade-Änderungen
     watch(
       () => hunterStore.upgrades,
-      async () => {
-        const shouldUpdate = await EvaluationCacheService.shouldUpdateOnUpgradesChange({
-          hunterId: props.hunterId,
-          buildData: props.buildData,
-          hunterStore
-        });
+      async (newUpgrades, oldUpgrades) => {
+        console.log('🔧 UPGRADE WATCH TRIGGERED for hunter:', props.buildData?.hunterId);
         
-        if (shouldUpdate) {
+        if (!props.buildData?.hunterId) {
+          console.warn('🔧 No hunterId in buildData!');
+          return;
+        }
+        
+        try {
+          const needsUpdate = await EvaluationCacheService.shouldUpdateOnUpgradesChange(
+            props.buildData.hunterId,
+            oldUpgrades, // OLD values first
+            newUpgrades, // NEW values second
+            hunterStore
+          );
+          
+          console.log('🔧 shouldUpdateOnUpgradesChange result:', needsUpdate);
+          
+          if (needsUpdate) {
+            console.log('🔧 UPGRADE CHANGE DETECTED - TRIGGERING EVALUATION');
+            evaluateBuild();
+          } else {
+            console.log('🔧 No relevant upgrade changes detected');
+          }
+        } catch (error) {
+          console.error('🔧 Error in upgrade change detection:', error);
           evaluateBuild();
         }
       },
       { deep: true }
+    );
+
+    // Watch für Gem-Änderungen
+    watch(
+      () => gemPlannerStore.gemStates,
+      async (newGemStates, oldGemStates) => {
+        console.log('💎 GEM WATCH TRIGGERED for hunter:', props.buildData?.hunterId);
+        
+        if (!props.buildData?.hunterId) {
+          console.warn('💎 No hunterId in buildData!');
+          return;
+        }
+        
+        try {
+          const needsUpdate = await EvaluationCacheService.shouldUpdateOnGemChange(
+            props.buildData.hunterId,
+            oldGemStates, // OLD states first
+            newGemStates, // NEW states second
+            hunterStore
+          );
+          
+          console.log('💎 shouldUpdateOnGemChange result:', needsUpdate);
+          
+          if (needsUpdate) {
+            console.log('💎 GEM CHANGE DETECTED - TRIGGERING EVALUATION');
+            evaluateBuild();
+          } else {
+            console.log('💎 No relevant gem changes detected');
+          }
+        } catch (error) {
+          console.error('💎 Error in gem change detection:', error);
+          evaluateBuild();
+        }
+      },
+      { deep: true, immediate: true }
     );
     
     // Watch für Iterationen
@@ -574,7 +747,7 @@ async function compareScenarios(scenarioIncrementsData, getGlobalValueFn, calcul
   function getCurrentResults() {
     return results.value;
   }
-  
+
   return {
     // State
     isLoading,
@@ -597,13 +770,12 @@ async function compareScenarios(scenarioIncrementsData, getGlobalValueFn, calcul
     
     // Methods
     loadHunterStatsLabels,
+    loadHunterLabels,
     evaluateBuild,
     handleReevaluate,
-    loadHunterLabels,
     setupWatches,
-    showToastMessage,
     evaluateBuildWithParams,
     compareScenarios,
-    getCurrentResults
+    getCurrentResults,
   };
 }

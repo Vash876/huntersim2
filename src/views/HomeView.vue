@@ -2,6 +2,33 @@
 const changelog = 
 [
   {
+    version: '2.7.6',
+    date: '2025-08-07',
+    changes: [
+      {
+        text: '<b class="text-yellow-400">NEW:</b> Centralized Gem Management System',
+        subItems: [
+          'Redesigned Gems page as the central hub of the application',
+          'Gems page now serves as the unified source for all gem levels, gem nodes, and gem upgrades across all tools',
+          'All tools that require gem information now pull data from the centralized Gems page for consistency',
+        ]
+      },
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added the two new Innovation Level 3 Research buffs',
+          'Added Evolution GN#3 buff',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added Evolution GN#1 Buff',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.5',
     date: '2025-08-01',
     changes: [

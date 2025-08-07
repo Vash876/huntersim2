@@ -90,9 +90,100 @@ function extractParamValue(storeData, hunterId, buildData, param) {
     return storeData.hunterStats[hunterId][param];
   }
 
+  // Neue Gem-Parameter direkt behandeln (ohne upgrades. Präfix)
+  if (param.startsWith('gems.')) {
+    const parts = param.split('.');
+    
+    if (parts.length === 3) {
+      const [_, gemType, property] = parts;
+      
+      if (property === 'level') {
+        return storeData.gemPlannerStore?.gemStates?.[gemType]?.level || 0;
+      }
+    }
+    
+    if (parts.length === 4) {
+      const [_, gemType, category, key] = parts;
+      
+      if (category === 'nodes') {
+        // gems.creation.nodes.gem1 -> gemStates.creation.nodes[0]
+        const nodeMap = {
+          gem1: 0,
+          gem2: 1, 
+          gem3: 2
+        };
+        const nodeIndex = nodeMap[key];
+        if (nodeIndex !== undefined) {
+          return storeData.gemPlannerStore?.gemStates?.[gemType]?.nodes?.[nodeIndex] ? 1 : 0;
+        }
+      } else if (category === 'upgrades') {
+        // gems.creation.upgrades.borgeGU -> gemStates.creation.upgrades['borge-stat-bonus']
+        const upgradeMap = {
+          borgeGU: 'borge-stat-bonus',
+          ozzyGU: 'ozzy-stat-bonus', 
+          knoxGU: 'knox-stat-bonus',
+          catchUp: 'catch-up-power',
+          lootBorge: 'borge-loot-bonus',
+          lootOzzy: 'ozzy-loot-bonus',
+          lootKnox: 'knox-loot-bonus'
+        };
+        const upgradeKey = upgradeMap[key] || key;
+        return storeData.gemPlannerStore?.gemStates?.[gemType]?.upgrades?.[upgradeKey] || 0;
+      }
+    }
+    
+    return 0;
+  }
+
   // Verbesserte Upgrades-Extraktion mit Mappings für verschiedene Formate
   if (param.startsWith('upgrades.')) {
     const parts = param.split('.');
+    
+    // Spezielle Behandlung für gems_nodes Format: upgrades.gems_nodes.attraction_level
+    if (parts.length === 4 && parts[1] === 'gems_nodes') {
+      const [_, __, gemNodeParam] = parts;
+      const underscoreIndex = gemNodeParam.indexOf('_');
+      
+      if (underscoreIndex > 0) {
+        const gemType = gemNodeParam.substring(0, underscoreIndex); // attraction, creation, etc.
+        const gemProperty = gemNodeParam.substring(underscoreIndex + 1); // level, lootBorge, etc.
+        
+        // Reduziertes Logging nur bei fehlenden Daten
+        if (!storeData.gemPlannerStore?.gemStates?.[gemType]) {
+          console.log(`⚠️ [Worker] Missing gem data for: ${gemType}`);
+          return 0;
+        }
+        
+        // Level
+        if (gemProperty === 'level') {
+          const levelValue = storeData.gemPlannerStore?.gemStates?.[gemType]?.level || 0;
+          return levelValue;
+        }
+        // Nodes (gem1, gem2, gem3)
+        else if (gemProperty.startsWith('gem')) {
+          const nodeIndex = parseInt(gemProperty.replace('gem', '')) - 1;
+          const nodes = storeData.gemPlannerStore?.gemStates?.[gemType]?.nodes || [];
+          const nodeValue = nodes[nodeIndex] ? 1 : 0;
+          return nodeValue;
+        }
+        // Upgrades (lootBorge, catchUp, borgeGU etc.)
+        else {
+          const upgradeMapping = {
+            'lootBorge': 'borge-loot-bonus',
+            'lootOzzy': 'ozzy-loot-bonus', 
+            'catchUp': 'catch-up-power',
+            'borgeGU': 'borge-stat-bonus'
+          };
+          
+          const storeUpgradeKey = upgradeMapping[gemProperty] || gemProperty;
+          const upgrades = storeData.gemPlannerStore?.gemStates?.[gemType]?.upgrades || {};
+          const upgradeValue = upgrades[storeUpgradeKey] || 0;
+          return upgradeValue;
+        }
+      }
+      
+      return 0;
+    }
     
     // Unterschiedliche Formate für Upgrade-Pfade abdecken
     let value;
@@ -125,15 +216,6 @@ function extractParamValue(storeData, hunterId, buildData, param) {
           // Oder möglicherweise als "inscryp31"
           if (value === undefined) {
             value = storeData.upgrades?.inscryptions?.[`inscryp${key.substring(1)}`]; // "i31" -> "inscryp31"
-          }
-        }
-        
-        // Format für gems_nodes
-        if (category === 'gems_nodes') {
-          // Beispiel: "attraction_gem3" -> "attraction.nodes.gem3"
-          const nodeParts = key.split('_');
-          if (nodeParts.length === 2) {
-            value = storeData.upgrades?.gems?.[nodeParts[0]]?.nodes?.[nodeParts[1]];
           }
         }
       }
@@ -292,13 +374,23 @@ async function evaluate(hunterId, buildData, storeData) {
     throw new Error(`Parameter-Konfiguration für ${hunterId} nicht gefunden`);
   }
   
-  // Debugging: Ausführliche Parameter-Details
+  // Debugging: Kurze Parameter-Übersicht
+  console.log(`🎯 [Worker] Evaluating ${hunterId}: extracting ${paramConfig.length} parameters`);
   
-  // Parameter extrahieren mit ausführlichen Logs
+  // Parameter extrahieren mit reduziertem Logging
   const params = paramConfig.map((param, index) => {
     const value = extractParamValue(storeData, hunterId, buildData, param);
+    
+    // Nur wichtige gem-Parameter loggen
+    if (param.includes('gems_nodes') && value > 0) {
+      console.log(`� [Worker] ${param} = ${value}`);
+    }
+    
     return value;
   });
+  
+  console.log(`✅ [Worker] Parameter extraction complete`);
+  console.log(`🎯 [Worker] Final parameter array:`, params);
   
   // Prüfen, ob die Parameter-Anzahl korrekt ist
   if (params.length !== paramConfig.length) {

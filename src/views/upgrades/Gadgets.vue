@@ -43,8 +43,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useHunterStore } from '@/store/hunterStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { 
   getUpgrades, 
   getUpgradeColor, 
@@ -56,18 +57,38 @@ import UpgradeCard from '@/components/upgrades/UpgradeCard.vue';
 
 // Store für Upgrades
 const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Gadgets aus den Konstanten laden
-const gadgets = ref([]);
+const allGadgets = ref([]);
 const loading = ref(true);
 const category = 'gadgets'; // Die Kategorie dieser View
+
+// Computed für verfügbare Gadgets basierend auf Gem-Leveln
+const gadgets = computed(() => {
+  return allGadgets.value.filter(gadget => {
+    // Prüfe ob das Gadget Gem-Anforderungen hat
+    if (gadget.unlock_gem && gadget.unlock_lvl) {
+      const gemState = gemPlannerStore.getGemState(gadget.unlock_gem);
+      const currentGemLevel = gemState?.level || 0;
+      
+      // Verstecke das Gadget wenn das erforderliche Gem-Level nicht erreicht ist
+      if (currentGemLevel < gadget.unlock_lvl) {
+        return false;
+      }
+    }
+    
+    // Zeige das Gadget an, wenn keine Gem-Anforderungen oder Anforderungen erfüllt sind
+    return true;
+  });
+});
 
 // Beim Mounten die Gadgets laden
 onMounted(async () => {
   loading.value = true;
   try {
-    // Alle Gadgets laden
-    gadgets.value = getUpgrades(category);
+    // Alle Gadgets laden (ungefiltert)
+    allGadgets.value = getUpgrades(category);
   } catch (error) {
     console.error(`Fehler beim Laden der ${category}:`, error);
   } finally {

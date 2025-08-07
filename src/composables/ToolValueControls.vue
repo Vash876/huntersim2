@@ -76,7 +76,11 @@
           :title="disabled ? '' : 'Click to edit'"
         >
           <!-- Show only time or only level, depending on showOnlyAdditionalInfo -->
-          <span v-if="!showOnlyAdditionalInfo" :class="valueClass">{{ value }}</span>
+          <span v-if="!showOnlyAdditionalInfo" :class="valueClass">{{ 
+            formatValue ? formatValue(value) : 
+            decimalPlaces !== null ? value.toFixed(decimalPlaces) : 
+            value 
+          }}</span>
           <span v-if="additionalInfo" :class="additionalInfoClass || 'text-gray-400 text-xs'">
             {{ additionalInfo }}
           </span>
@@ -147,7 +151,7 @@ const props = defineProps({
     default: 0
   },
   step: {
-    type: Number,
+    type: [Number, Array],
     default: 1
   },
   fastStep: {
@@ -201,6 +205,14 @@ const props = defineProps({
   showOnlyAdditionalInfo: {
     type: Boolean,
     default: false
+  },
+  formatValue: {
+    type: Function,
+    default: null
+  },
+  decimalPlaces: {
+    type: Number,
+    default: null
   }
 });
 
@@ -319,7 +331,22 @@ function increment() {
     // Set isIncrementing to true before incrementing
     isIncrementing.value = true;
     
-    const newValue = Math.min(props.maxValue, props.value + props.step);
+    let newValue;
+    
+    // Check if step is an array (step values)
+    if (Array.isArray(props.step)) {
+      // Find next higher value in the step array
+      const currentIndex = props.step.findIndex(stepValue => stepValue > props.value);
+      if (currentIndex !== -1) {
+        newValue = Math.min(props.maxValue, props.step[currentIndex]);
+      } else {
+        // If no higher value found, stay at current value
+        newValue = props.value;
+      }
+    } else {
+      // Normal step increment
+      newValue = Math.min(props.maxValue, props.value + props.step);
+    }
     
     // Always trigger both events, regardless of validateOnFinalOnly
     emit('update:value', newValue);
@@ -337,7 +364,23 @@ function increment() {
 
 function decrement() {
   if (props.value > props.minValue && !props.disabled && !props.disableDecrement) {
-    const newValue = Math.max(props.minValue, props.value - props.step);
+    let newValue;
+    
+    // Check if step is an array (step values)
+    if (Array.isArray(props.step)) {
+      // Find next lower value in the step array
+      const reversedSteps = [...props.step].reverse();
+      const currentIndex = reversedSteps.findIndex(stepValue => stepValue < props.value);
+      if (currentIndex !== -1) {
+        newValue = Math.max(props.minValue, reversedSteps[currentIndex]);
+      } else {
+        // If no lower value found, stay at current value
+        newValue = props.value;
+      }
+    } else {
+      // Normal step decrement
+      newValue = Math.max(props.minValue, props.value - props.step);
+    }
     
     // Always trigger both events
     emit('update:value', newValue);
@@ -352,7 +395,16 @@ function incrementFast() {
   if (props.value < props.maxValue && !props.disabled) {
     isIncrementing.value = true;
     
-    const newValue = Math.min(props.maxValue, props.value + props.fastStep);
+    let newValue;
+    
+    // Check if step is an array (step values) - for fast increment, jump to highest value
+    if (Array.isArray(props.step)) {
+      // Jump directly to the highest value in the array (last element since array is sorted)
+      newValue = Math.min(props.maxValue, props.step[props.step.length - 1]);
+    } else {
+      // Normal fast step increment
+      newValue = Math.min(props.maxValue, props.value + props.fastStep);
+    }
     
     // Always trigger both events
     emit('update:value', newValue);
@@ -369,7 +421,16 @@ function incrementFast() {
 
 function decrementFast() {
   if (props.value > props.minValue && !props.disabled && !props.disableDecrement) {
-    const newValue = Math.max(props.minValue, props.value - props.fastStep);
+    let newValue;
+    
+    // Check if step is an array (step values) - for fast decrement, jump to lowest value
+    if (Array.isArray(props.step)) {
+      // Jump directly to the lowest value in the array (first element since array is sorted)
+      newValue = Math.max(props.minValue, props.step[0]);
+    } else {
+      // Normal fast step decrement
+      newValue = Math.max(props.minValue, props.value - props.fastStep);
+    }
     
     // Always trigger both events
     emit('update:value', newValue);

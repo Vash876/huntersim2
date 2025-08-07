@@ -16,15 +16,6 @@
           
           <!-- Buttons -->
           <div class="flex flex-col sm:flex-row sm:flex-wrap justify-end gap-3">
-            <!-- Gem Overview -->
-            <button
-              @click="openGemOverviewModal"
-              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
-            >
-              <IconZodiacGemini size="18" />
-              <span>Gem Overview</span>
-            </button>
-
             <!-- Maxed Boosts -->
             <button
               @click="openStatsModal"
@@ -168,13 +159,6 @@
       @close="showOrbCalculatorModal = false"
       @openNewPlan="handleOpenNewPlan"
     />
-
-    <!-- Gem Overview Modal -->
-    <GemOverviewModal
-      v-if="showGemOverviewModal"
-      :isVisible="showGemOverviewModal"
-      @close="showGemOverviewModal = false"
-    />
     
     <!-- Gem Override Modal -->
     <GemOverrideModal
@@ -244,7 +228,6 @@ import TRResultsSidePanel from '@/components/tr-planner/TRResultsSidePanel.vue';
 import TRPlanCard from '@/components/tr-planner/TRPlanCard.vue';
 import TRPlanDetailModal from '@/components/tr-planner/TRPlanDetailModal.vue';
 import OrbCalculatorModal from '@/components/tr-planner/OrbCalculatorModal.vue';
-import GemOverviewModal from '@/components/tr-planner/GemOverviewModal.vue';
 import GemWelcomeModal from '@/components/tr-planner/GemWelcomeModal.vue';
 import GemOverrideModal from '@/components/tr-planner/GemOverrideModal.vue';
 import TRPlanImportModal from '@/components/tr-planner/TRPlanImportModal.vue';
@@ -260,12 +243,12 @@ import {
   IconInfoCircle,
   IconFile,
   IconCalculator,
-  IconZodiacGemini,
   IconFileImport,
   IconDownload,
   IconUpload,
   IconChevronDown
 } from '@tabler/icons-vue';
+import { ensureGemDataSync } from '@/constants/tr-planner/index.js';
 
 // Pinia Store einbinden
 const trPlannerStore = useTRPlannerStore();
@@ -274,7 +257,6 @@ const router = useRouter();
 // Modal state
 const showStatsModal = ref(false);
 const showTRPlanModal = ref(false);
-const showGemOverviewModal = ref(false);
 const showGemWelcomeModal = ref(false);
 const showGemOverrideModal = ref(false);
 const selectedPlanForGemOverrides = ref(null);
@@ -302,10 +284,6 @@ const forceUpdateCounter = ref(0);
 const currentStats = computed(() => {
   return trPlannerStore.userStats || {};
 });
-
-function openGemOverviewModal() {
-  showGemOverviewModal.value = true;
-}
 
 // Open stats modal
 function openStatsModal() {
@@ -659,9 +637,12 @@ function getStepRequirementMet(step, index) {
 }
 
 // Load data when component is mounted
-onMounted(() => {
+onMounted(async () => {
   // Lade die Pläne
   trPlannerStore.loadTRPlans();
+  
+  // WICHTIG: Lade Gem-Daten aus gemPlannerStore und sync mit TR Planner localStorage
+  ensureGemDataSync();
   
   // Initialisiere filteredPlans mit tiefer Kopie aus dem Store
   updatePlans();
@@ -705,10 +686,8 @@ function openGemOverviewFromWelcome() {
   // Schließe Welcome Modal
   closeGemWelcomeModal();
   
-  // Öffne Gem Overview
-  setTimeout(() => {
-    openGemOverviewModal();
-  }, 200);
+  // Navigiere zum Gem Planner statt Gem Overview zu öffnen
+  router.push('/tools/gem-planner');
 }
 
 // Prüfe ob Welcome Modal gezeigt werden soll

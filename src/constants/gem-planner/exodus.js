@@ -6,11 +6,11 @@ import Decimal from 'break_infinity.js';
 export const EXODUS_GEM = {
   id: 'exodus',
   name: 'Exodus',
-  maxLevel: 5,
+  maxLevel: 4,
   color: {
     primary: '#8b5cf6', // Purple
     secondary: '#ec4899', // Pink
-    gradient: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)'
+    gradient: 'linear-gradient(135deg, #5a95f5ff 0%, #6326f1ff 40%, #ec4899 100%)'
   },
   
   // Gem Quality costs (level up costs)
@@ -27,11 +27,11 @@ export const EXODUS_GEM = {
     {
       id: 'cells-bonus',
       name: 'Cells Bonus',
-      resource: 'Cells',
+      weight: 'Cells',
       baseCost: 1,
       costMultiplier: 1.2,
       maxLevel: 999,
-      color: '#00b90f',
+      color: '#39ff94',
       unlock: 1,
       costBumps: [
         { startLevel: 14, multiplier: 1.05 },
@@ -51,11 +51,11 @@ export const EXODUS_GEM = {
     {
       id: 'shards-bonus',
       name: 'Shards Bonus',
-      resource: 'Shards',
+      weight: 'Shards',
       baseCost: 2,
       costMultiplier: 1.8,
       maxLevel: 999,
-      color: '#00d9ff',
+      color: '#39d3ff',
       unlock: 2,
       costBumps: [
         { startLevel: 14, multiplier: 1.1 },
@@ -75,11 +75,11 @@ export const EXODUS_GEM = {
     {
       id: 'rp-bonus',
       name: 'RP Bonus',
-      resource: 'RP',
+      weight: 'RP',
       baseCost: 500,
       costMultiplier: 1.9,
       maxLevel: 999,
-      color: '#ffa600',
+      color: '#ec8e34',
       unlock: 3,
       costBumps: [
         { startLevel: 14, multiplier: 1.1 },
@@ -99,11 +99,11 @@ export const EXODUS_GEM = {
     {
       id: 'mp-bonus',
       name: 'MP Bonus',
-      resource: 'MP',
+      weight: 'MP',
       baseCost: 1e4,
       costMultiplier: 2,
       maxLevel: 999,
-      color: '#ff0000',
+      color: '#ff3842',
       unlock: 4,
       costBumps: [
         { startLevel: 14, multiplier: 1.1 },
@@ -124,11 +124,11 @@ export const EXODUS_GEM = {
     {
       id: 'ap-bonus',
       name: 'AP Bonus',
-      resource: 'AP',
+      weight: 'AP',
       baseCost: 1e6,
       costMultiplier: 2.1,
       maxLevel: 999,
-      color: '#2600ff',
+      color: '#2a47cc',
       unlock: 4,
       costBumps: [
         { startLevel: 14, multiplier: 1.1 },

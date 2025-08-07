@@ -105,24 +105,21 @@
                 <span class="font-medium text-white text-sm">Requirements</span>
               </div>
               
+              <!-- Temporal Gem Level 3 Info -->
               <div class="flex items-center justify-between mb-2">
-                <label for="temp3Toggle" class="text-sm text-gray-300">Temp3 Available</label>
-                <button 
-                  @click="toggleTemp3"
-                  class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
-                  :class="{
-                    'bg-red-600': showTemp3,
-                    'bg-gray-600': !showTemp3
-                  }"
-                >
-                  <span 
-                    class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                    :class="{
-                      'translate-x-5': showTemp3,
-                      'translate-x-1': !showTemp3
-                    }"
-                  ></span>
-                </button>
+                <div class="flex items-center">
+                  <span class="text-sm text-gray-300">Temporal Gem Level 3</span>
+                  <InfoTooltip 
+                    class="ml-1"
+                    content="Temporal Gem Level 3 is automatically retrieved from your Gem Overview Page."
+                    placement="top"
+                  />
+                </div>
+                <div class="flex items-center">
+                  <span class="px-2 py-1 rounded text-xs font-medium" :class="temporalGemLevel >= 3 ? 'bg-red-900/50 text-red-300 border border-red-700' : 'bg-gray-700 text-gray-400'">
+                    {{ temporalGemLevel >= 3 ? 'Available' : 'Not Available' }}
+                  </span>
+                </div>
               </div>
               
               <div class="flex items-center justify-between mb-2">
@@ -258,12 +255,12 @@
                   <label class="text-sm text-gray-300">Temp3 Available</label>
                   <button 
                     @click="toggleNewTemp3"
-                    :disabled="showTemp3 && newTemp3"
+                    :disabled="temporalGemLevel >= 3 && newTemp3"
                     class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
                     :class="{
                       'bg-red-600': newTemp3,
                       'bg-gray-600': !newTemp3,
-                      'opacity-50 cursor-not-allowed': showTemp3 && newTemp3
+                      'opacity-50 cursor-not-allowed': temporalGemLevel >= 3 && newTemp3
                     }"
                   >
                     <span 
@@ -613,7 +610,17 @@ import { ULTIMA_CAP_UPGRADES } from '@/constants/loopMods.js';
 import { useLoopModData } from '@/composables/useLoopModData.js';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import { vAutoAnimate } from '@formkit/auto-animate/vue';
-import InfoTooltip from '@/composables/InfoTooltip.vue'; 
+import InfoTooltip from '@/composables/InfoTooltip.vue';
+import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
+
+// Initialize gem planner store
+const gemPlannerStore = useGemPlannerStore();
+
+// Temporal Gem Level für Temp3 Requirements
+const temporalGemLevel = computed(() => {
+  const temporalGem = gemPlannerStore.getGemState('temporal');
+  return temporalGem?.level || 0;
+}); 
 
 // State
 const isLoading = ref(true);
@@ -625,7 +632,6 @@ const error = ref(null);
 const mpValue = ref(0);
 const mpRange = ref(50);
 const mpRangeEnabled = ref(true);
-const showTemp3 = ref(false);
 const i75Level = ref(0); // Level statt Boolean
 const i61Level = ref(0); // Level statt Boolean
 const selectedUltimaCapUpgrades = ref([]);
@@ -670,11 +676,7 @@ const allLoopMods = computed(() => {
   });
 });
 
-// Toggles für die Filter
-function toggleTemp3() {
-  showTemp3.value = !showTemp3.value;
-  saveFilters();
-}
+// Toggles für die Filter - toggleTemp3 entfernt
 
 //////////////
 
@@ -764,7 +766,7 @@ function toggleRequirementsPanel() {
 }
 
 function initializeNewRequirements() {
-  newTemp3.value = showTemp3.value;
+  newTemp3.value = temporalGemLevel.value >= 3;
   newI61Level.value = i61Level.value;
   newI75Level.value = i75Level.value;
   newSelectedUltimaCapUpgrades.value = [...selectedUltimaCapUpgrades.value];
@@ -786,7 +788,7 @@ function checkNewlyAvailableMods() {
   
   console.log('=== DEBUG: checkNewlyAvailableMods ===');
   console.log('Old requirements:', {
-    temp3: showTemp3.value,
+    temp3: temporalGemLevel.value >= 3,
     i61: i61Level.value,
     i75: i75Level.value,
     ultimaCap: totalUltimaCap.value
@@ -804,7 +806,7 @@ function checkNewlyAvailableMods() {
   
   // Finde Mods die mit alten Requirements NICHT verfügbar waren
   const oldAvailableMods = allLoopMods.value.filter(mod => {
-    if (mod.requiresTemp3 && !showTemp3.value) return false;
+    if (mod.requiresTemp3 && temporalGemLevel.value < 3) return false;
     if (mod.requiresI61Level && mod.requiresI61Level > i61Level.value) return false;
     if (mod.requiresI75Level && mod.requiresI75Level > i75Level.value) return false;
     if (mod.requiresUltimaCap && mod.requiresUltimaCap > totalUltimaCap.value) return false;
@@ -843,8 +845,8 @@ function toggleNewTemp3() {
     newTemp3.value = true;
     checkNewlyAvailableMods();
   } 
-  // Kann nur deaktiviert werden wenn Filter & Settings NICHT aktiviert ist
-  else if (!showTemp3.value) {
+  // Kann nur deaktiviert werden wenn Temporal Gem Level < 3
+  else if (temporalGemLevel.value < 3) {
     newTemp3.value = false;
     checkNewlyAvailableMods();
   }
@@ -956,8 +958,8 @@ const filteredLoopMods = computed(() => {
     }
   }
   
-  // Temp3 Filter bleibt gleich...
-  if (!showTemp3.value) {
+  // Temp3 Filter - jetzt basierend auf Temporal Gem Level
+  if (temporalGemLevel.value < 3) {
     result = result.filter(mod => !mod.requiresTemp3);
   }
   
@@ -1100,7 +1102,6 @@ function resetFilters() {
   mpRange.value = 50;
   allTimeHighestMP.value = 0;
   mpRangeEnabled.value = true;
-  showTemp3.value = false;
   i75Level.value = 0; // Angepasst
   i61Level.value = 0; // Angepasst
   selectedUltimaCapUpgrades.value = [];
@@ -1141,7 +1142,6 @@ function loadFilters() {
       mpRange.value = Number(savedFilters.mpRange);
     }
     if (savedFilters.mpRangeEnabled !== undefined) mpRangeEnabled.value = savedFilters.mpRangeEnabled;
-    if (savedFilters.showTemp3 !== undefined) showTemp3.value = savedFilters.showTemp3;
     if (savedFilters.i75Level !== undefined) i75Level.value = Number(savedFilters.i75Level); // Angepasst
     if (savedFilters.i61Level !== undefined) i61Level.value = Number(savedFilters.i61Level); // Angepasst
     if (savedFilters.selectedUltimaCapUpgrades !== undefined) {
@@ -1162,7 +1162,6 @@ function saveFilters() {
       mpRange: mpRange.value,
       allTimeHighestMP: allTimeHighestMP.value,
       mpRangeEnabled: mpRangeEnabled.value,
-      showTemp3: showTemp3.value,
       i75Level: i75Level.value, // Angepasst
       i61Level: i61Level.value, // Angepasst
       selectedUltimaCapUpgrades: selectedUltimaCapUpgrades.value,

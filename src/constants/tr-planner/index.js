@@ -1,8 +1,113 @@
 import { useTRPlannerStore } from '@/store/orbStore';
 import { getGemDataFromLocalStorage, getDefaultGemData } from '@/utils/gemDataUtils.js';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 
 // Context-aware gem data loading for plan calculations
 let currentPlanContext = null;
+
+/**
+ * Mapping functions for gemPlannerStore <-> TR Planner localStorage format conversion
+ */
+
+// Convert from gemPlannerStore format to TR Planner localStorage format
+export function convertFromGemPlannerStore(gemStates) {
+  if (!gemStates || typeof gemStates !== 'object') {
+    return getDefaultGemData();
+  }
+
+  const trPlannerData = {
+    levels: {},
+    upgrades: {},
+    activeNodes: {}
+  };
+
+  // Map gem levels, nodes, and upgrades
+  for (const [gemKey, gemState] of Object.entries(gemStates)) {
+    if (!gemState) continue;
+
+    // Map gem level
+    if (typeof gemState.level === 'number') {
+      trPlannerData.levels[gemKey] = gemState.level;
+    }
+
+    // Map gem nodes (from boolean array to array of active node indices)
+    if (Array.isArray(gemState.nodes)) {
+      const activeNodeIndices = [];
+      gemState.nodes.forEach((isActive, index) => {
+        if (isActive) {
+          activeNodeIndices.push(index);
+        }
+      });
+      if (activeNodeIndices.length > 0) {
+        trPlannerData.activeNodes[gemKey] = activeNodeIndices;
+      }
+    }
+
+    // Map upgrades (from gemPlannerStore object format {upgradeId: level} to TR Planner object format {upgradeId: boolean})
+    if (gemState.upgrades && typeof gemState.upgrades === 'object') {
+      trPlannerData.upgrades[gemKey] = {};
+      Object.entries(gemState.upgrades).forEach(([upgradeKey, level]) => {
+        // Convert level > 0 to boolean true for TR Planner
+        trPlannerData.upgrades[gemKey][upgradeKey] = level > 0;
+      });
+    }
+  }
+
+  return trPlannerData;
+}
+
+/**
+ * Syncs gemPlannerStore data to TR Planner localStorage
+ * This ensures that all TR Planner components can access gem data without timing issues
+ */
+export function ensureGemDataSync() {
+  try {
+    const gemPlannerStore = useGemPlannerStore();
+    
+    // Check if gemPlannerStore has data
+    if (gemPlannerStore && gemPlannerStore.gemStates && Object.keys(gemPlannerStore.gemStates).length > 0) {
+      console.log('🔄 Syncing gemPlannerStore data to TR Planner localStorage');
+      
+      // Convert gemPlannerStore format to TR Planner format
+      const trPlannerGemData = convertFromGemPlannerStore(gemPlannerStore.gemStates);
+      
+      // Load current TR Planner userStats
+      let userStats = {};
+      try {
+        const stored = localStorage.getItem('trplanner_userstats');
+        if (stored) {
+          userStats = JSON.parse(stored);
+        }
+      } catch (e) {
+        console.warn('Could not load existing userStats:', e);
+      }
+      
+      // Update gemData in userStats
+      userStats.gemData = trPlannerGemData;
+      
+      // Save back to localStorage
+      localStorage.setItem('trplanner_userstats', JSON.stringify(userStats));
+      
+      // Also save to individual gem data storage for backwards compatibility
+      localStorage.setItem('gemData', JSON.stringify(trPlannerGemData));
+      
+      console.log('✅ Gem data synced successfully:', trPlannerGemData);
+      
+      // Dispatch event for other components
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('gemDataChanged'));
+      }
+      
+      return trPlannerGemData;
+    } else {
+      console.log('⚠️ gemPlannerStore ist leer oder nicht verfügbar, verwende bestehende localStorage-Daten');
+      return getGemDataFromLocalStorage();
+    }
+  } catch (error) {
+    console.warn('Error syncing gem data:', error);
+    return getGemDataFromLocalStorage();
+  }
+}
 
 /**
  * Sets the current plan context for gem-dependent calculations

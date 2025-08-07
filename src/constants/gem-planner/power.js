@@ -32,6 +32,15 @@ export const POWER_GEM = {
       id: 'cradle-bonus',
       name: 'Cradle Bonus',
       resource: 'Cradle',
+      weight: {
+        calculate: (weights) => {
+          const cells = weights.cells || 0;
+          const shards = weights.shards || 0;
+          const rp = weights.rp || 0;
+          const meltdown = weights.meltdown || 0;
+          return 14 * meltdown * cells + 2 * cells + shards + rp;
+        }
+      },
       baseCost: 1e6,
       costMultiplier: 3,
       maxLevel: 50,
@@ -39,6 +48,9 @@ export const POWER_GEM = {
       unlock: 1,
       costBumps: [
         { startLevel: 9, multiplier: 1.5 },
+        { startLevel: 19, multiplier: 2 },
+        { startLevel: 29, multiplier: 2.5 },
+        { startLevel: 39, multiplier: 3 }
       ],
       multiplier: {
         base: 1,
@@ -72,6 +84,15 @@ export const POWER_GEM = {
       id: 'auxesia-bonus',
       name: 'Auxesia Bonus',
       resource: 'Auxesia',
+      weight: {
+        calculate: (weights) => {
+          const cells = weights.cells || 0;
+          const shards = weights.shards || 0;
+          const rp = weights.rp || 0;
+          const meltdown = weights.meltdown || 0;
+          return 28 * meltdown * cells + 2 * cells + shards + rp;
+        }
+      },
       baseCost: 2e6,
       costMultiplier: 4,
       maxLevel: 50,
@@ -79,6 +100,9 @@ export const POWER_GEM = {
       unlock: 1,
       costBumps: [
         { startLevel: 9, multiplier: 2 },
+        { startLevel: 19, multiplier: 2.5 },
+        { startLevel: 29, multiplier: 3 },
+        { startLevel: 39, multiplier: 3.5 }
       ],
       multiplier: {
         base: 1,
@@ -112,6 +136,16 @@ export const POWER_GEM = {
       id: 'zagreus-bonus',
       name: 'Zagreus Bonus',
       resource: 'Zagreus',
+      weight: {
+        calculate: (weights) => {
+          const cells = weights.cells || 0;
+          const shards = weights.shards || 0;
+          const rp = weights.rp || 0;
+          const mp = weights.mp || 0;
+          const meltdown = weights.meltdown || 0;
+          return 15 * meltdown * cells + 2 * cells + shards + rp + mp;
+        }
+      },
       baseCost: 3e6,
       costMultiplier: 5,
       maxLevel: 50,
@@ -119,6 +153,9 @@ export const POWER_GEM = {
       unlock: 1,
       costBumps: [
         { startLevel: 9, multiplier: 2.5 },
+        { startLevel: 19, multiplier: 3 },
+        { startLevel: 29, multiplier: 3.5 },
+        { startLevel: 39, multiplier: 4 }
       ],
       multiplier: {
         base: 1,
@@ -152,11 +189,27 @@ export const POWER_GEM = {
       id: 'hephaestus-bonus',
       name: 'Hephaestus Bonus',
       resource: 'Hephaestus',
+      weight: {
+        calculate: (weights) => {
+          const cells = weights.cells || 0;
+          const shards = weights.shards || 0;
+          const rp = weights.rp || 0;
+          const mp = weights.mp || 0;
+          const meltdown = weights.meltdown || 0;
+          return 29 * meltdown * cells + 2 * cells + shards + rp + 2 * mp;
+        }
+      },
       baseCost: 4e7,
       costMultiplier: 6,
       maxLevel: 50,
       color: '#8bfe4a',
       unlock: 1,
+      costBumps: [
+        { startLevel: 9, multiplier: 3 },
+        { startLevel: 19, multiplier: 3.5 },
+        { startLevel: 29, multiplier: 4 },
+        { startLevel: 39, multiplier: 4.5 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, powerLevel, gameStats = {}) => {
@@ -189,11 +242,27 @@ export const POWER_GEM = {
       id: 'demeter-bonus',
       name: 'Demeter Bonus',
       resource: 'Demeter',
+      weight: {
+        calculate: (weights) => {
+          const cells = weights.cells || 0;
+          const shards = weights.shards || 0;
+          const rp = weights.rp || 0;
+          const mp = weights.mp || 0;
+          const meltdown = weights.meltdown || 0;
+          return 14 * meltdown * cells + 2 * cells + 2 * shards + rp + mp;
+        }
+      },
       baseCost: 5e7,
-      costMultiplier: 8,
+      costMultiplier: 7,
       maxLevel: 50,
       color: '#39cbff',
       unlock: 1,
+      costBumps: [
+        { startLevel: 9, multiplier: 3.5 },
+        { startLevel: 19, multiplier: 4 },
+        { startLevel: 29, multiplier: 4.5 },
+        { startLevel: 39, multiplier: 5 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, powerLevel, gameStats = {}) => {
@@ -226,11 +295,27 @@ export const POWER_GEM = {
       id: 'koios-bonus',
       name: 'Koios Bonus',
       resource: 'Koios',
+      weight: {
+        calculate: (weights) => {
+          const cells = weights.cells || 0;
+          const shards = weights.shards || 0;
+          const rp = weights.rp || 0;
+          const mp = weights.mp || 0;
+          const meltdown = weights.meltdown || 0;
+          return 16 * meltdown * cells + 2 * cells + 3 * shards + 2 * rp + 2 * mp;
+        }
+      },
       baseCost: 6e8,
       costMultiplier: 8,
       maxLevel: 50,
       color: '#4b643f',
       unlock: 1,
+      costBumps: [
+        { startLevel: 9, multiplier: 4 },
+        { startLevel: 19, multiplier: 4.5 },
+        { startLevel: 29, multiplier: 5 },
+        { startLevel: 39, multiplier: 5.5 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, powerLevel, gameStats = {}) => {
@@ -263,11 +348,29 @@ export const POWER_GEM = {
       id: 'zeus-bonus',
       name: 'Zeus Bonus',
       resource: 'Zeus',
+      weight: {
+        calculate: (weights) => {
+          const cells = weights.cells || 0;
+          const shards = weights.shards || 0;
+          const rp = weights.rp || 0;
+          const mp = weights.mp || 0;
+          const ap = weights.ap || 0;
+          const mats = weights.mats || 0;
+          const meltdown = weights.meltdown || 0;
+          return 16 * meltdown * cells + 4 * cells + 2 * shards + 2 * rp + mp + 2 * ap + 2 * mats;
+        }
+      },
       baseCost: 7e8,
       costMultiplier: 9,
       maxLevel: 50,
       color: '#1d4491',
       unlock: 1,
+      costBumps: [
+        { startLevel: 9, multiplier: 4.5 },
+        { startLevel: 19, multiplier: 5 },
+        { startLevel: 29, multiplier: 5.5 },
+        { startLevel: 39, multiplier: 6 }
+      ],
       multiplier: {
         base: 1,
         calculate: (level, powerLevel, gameStats = {}) => {
@@ -299,13 +402,16 @@ export const POWER_GEM = {
     {
       id: 'blueprints',
       name: 'Blueprints',
-      resource: 'Blueprints',
+      weight: null,
       baseCost: 1,
       costMultiplier: 10,
       maxLevel: 50,
       color: '#0c4b53',
       type: 'additive',
       unlock: 1,
+      costBumps: [
+        { startLevel: 19, multiplier: 10 },
+      ],
       multiplier: {
         base: 8,
         calculate: (level, powerLevel) => {
@@ -316,13 +422,16 @@ export const POWER_GEM = {
     {
       id: 'innovation-cores',
       name: 'Innovation Cores',
-      resource: 'Innovation Cores',
+      weight: null,
       baseCost: 1,
       costMultiplier: 10,
       maxLevel: 50,
       color: '#ffdf39',
       type: 'additive',
       unlock: 1,
+      costBumps: [
+        { startLevel: 19, multiplier: 10 },
+      ],
       multiplier: {
         base: 8,
         calculate: (level, powerLevel) => {

@@ -65,6 +65,36 @@
               </div>
             </div>
 
+            <!-- Meltdown Weights -->
+            <div class="bg-gradient-to-r from-red-900/30 to-orange-900/30 rounded-lg p-2 sm:p-3 border border-red-800/50">
+              <h3 class="text-sm font-semibold text-white mb-2 sm:mb-3 flex items-center">
+                <IconFlame size="20" class="mr-2 text-red-400" />
+                Meltdown
+              </h3>
+              <div class="grid grid-cols-1 gap-2">
+                <div 
+                  v-for="weight in meltdownWeight" 
+                  :key="weight.id"
+                  class="bg-gray-700/60 rounded p-1 sm:p-1.5"
+                >
+                  <label :for="weight.id" class="block text-xs font-medium text-gray-300 mb-1">
+                    {{ weight.name }}
+                  </label>
+                  <ToolValueControls
+                    :value="weights[weight.id] || 0"
+                    :min-value="0"
+                    :max-value="1"
+                    :step="0.01"
+                    :fast-step="0.1"
+                    @update:value="updateWeight(weight.id, $event)"
+                    :show-fast-controls="true"
+                    :autoEdit="true"
+                    :decimal-places="2"
+                  />
+                </div>
+              </div>
+            </div>
+
             <!-- Hunter Weights -->
             <div class="bg-gradient-to-r from-blue-900/30 to-indigo-900/30 rounded-lg p-2 sm:p-3 border border-blue-800/50">
               <h3 class="text-sm font-semibold text-white mb-2 sm:mb-3 flex items-center">
@@ -121,7 +151,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { IconScale, IconX, IconCoins, IconBow, IconRotateClockwise } from '@tabler/icons-vue'
+import { IconScale, IconX, IconCoins, IconBow, IconRotateClockwise, IconFlame } from '@tabler/icons-vue'
 import ToolValueControls from '@/composables/ToolValueControls.vue'
 
 // Define emits and props
@@ -145,7 +175,11 @@ const resourceWeights = [
   { id: 'shards', name: 'Shards' },
   { id: 'rp', name: 'RP' },
   { id: 'ap', name: 'AP' },
-  { id: 'mats', name: 'Mats' }
+  { id: 'mats', name: 'Mats' },
+]
+
+const meltdownWeight = [
+  { id: 'meltdown', name: 'Meltdown' }
 ]
 
 const hunterWeights = [
@@ -167,6 +201,7 @@ function getDefaultWeights() {
     rp: 1.0,
     ap: 1.0,
     mats: 1.0,
+    meltdown: 0.0,
     borge: 1.0,
     ozzy: 1.0,
     knox: 1.0

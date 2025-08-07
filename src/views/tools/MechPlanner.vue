@@ -28,115 +28,6 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <!-- Left Column -->
               <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-                <!-- Creation Gem Level -->
-                <div class="flex items-center justify-between mb-3">
-                  <div class="flex items-center">
-                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
-                      <IconDiamond size="16" class="text-purple-400" />
-                    </div>
-                    <span class="text-sm text-gray-300">Creation Gem Level</span>
-                    <span class="ml-1 text-xs text-gray-500">(max: 4)</span>
-                  </div>
-                  <ToolValueControls
-                    :value="creationGemLevel"
-                    @update:value="creationGemLevel = $event"
-                    :minValue="0"
-                    :maxValue="4"
-                    :step="1"
-                    :fastStep="5"
-                    value-class="text-purple-400 font-medium"
-                    :autoEdit="true"
-                    class="ml-2"
-                  />
-                </div>
-
-                <!-- Creation Gem Node #1 -->
-                <div class="flex items-center justify-between mb-3">
-                  <div class="flex items-center">
-                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
-                      <IconClock size="16" class="text-blue-400" />
-                    </div>
-                    <span class="text-sm text-gray-300">Creation Gem Node #1</span>
-                  </div>
-                  <div class="flex items-center">
-                    <!-- Toggle Switch -->
-                    <div 
-                      @click="creationGemNode1 = !creationGemNode1" 
-                      class="relative inline-flex h-6 w-11 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                      :class="{
-                        'bg-blue-600': creationGemNode1,
-                        'bg-gray-600': !creationGemNode1
-                      }"
-                      role="switch"
-                      :aria-checked="creationGemNode1"
-                    >
-                      <span 
-                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
-                        :class="{
-                          'translate-x-5': creationGemNode1,
-                          'translate-x-0': !creationGemNode1
-                        }"
-                      ></span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Creation Gem Node #2 -->
-                <div class="flex items-center justify-between mb-3">
-                  <div class="flex items-center">
-                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
-                      <IconAssembly size="16" class="text-green-400" />
-                    </div>
-                    <span class="text-sm text-gray-300">Creation Gem Node #2</span>
-                  </div>
-                  <div class="flex items-center">
-                    <!-- Toggle Switch -->
-                    <div 
-                      @click="creationGemNode2 = !creationGemNode2" 
-                      class="relative inline-flex h-6 w-11 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
-                      :class="{
-                        'bg-green-600': creationGemNode2,
-                        'bg-gray-600': !creationGemNode2
-                      }"
-                      role="switch"
-                      :aria-checked="creationGemNode2"
-                    >
-                      <span 
-                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
-                        :class="{
-                          'translate-x-5': creationGemNode2,
-                          'translate-x-0': !creationGemNode2
-                        }"
-                      ></span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Creation Mech Bonus Cap -->
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
-                      <IconTarget size="16" class="text-cyan-400" />
-                    </div>
-                    <span class="text-sm text-gray-300">Creation Mech Bonus Cap (GU)</span>
-                    <span class="ml-1 text-xs text-gray-500">(max: 999)</span>
-                  </div>
-                  <ToolValueControls
-                    :value="creationMechBonusCap"
-                    @update:value="creationMechBonusCap = $event"
-                    :minValue="0"
-                    :maxValue="999"
-                    :step="1"
-                    :fastStep="10"
-                    value-class="text-cyan-400 font-medium"
-                    :autoEdit="true"
-                    class="ml-2"
-                  />
-                </div>
-              </div>
-              
-              <!-- Right Column -->
-              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
                 <!-- The C.O.O.R.S (Relic #8) -->
                 <div class="flex items-center justify-between mb-3">
                   <div class="flex items-center">
@@ -182,7 +73,7 @@
                 </div>
 
                 <!-- Mech Engineer Tool-Pants -->
-                <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
                       <IconTool size="16" class="text-yellow-400" />
@@ -202,7 +93,10 @@
                     class="ml-2"
                   />
                 </div>
-
+              </div>
+              
+              <!-- Right Column -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
                 <!-- The Transmission Amplifier - nur wenn Creation Gem Level >= 4 -->
                 <div v-if="creationGemLevel >= 4" class="space-y-3">
                   <!-- Transmission Amplifier Tier -->
@@ -248,6 +142,14 @@
                       class="ml-2"
                     />
                   </div>
+                </div>
+                
+                <!-- Placeholder wenn Transmission Amplifier nicht verfügbar -->
+                <div v-else class="text-center text-gray-400 text-sm py-8">
+                  <IconLock size="32" class="mx-auto mb-2 text-gray-500" />
+                  <p class="text-xs text-gray-500">
+                    Requires Creation Gem Level 4
+                  </p>
                 </div>
               </div>
             </div>
@@ -599,12 +501,12 @@ import {
   getTimeCostMultiplier
 } from '@/constants/mech-planner/index.js';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
+import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
 
-// Global Settings
-const creationGemLevel = ref(0);
-const creationGemNode1 = ref(false);
-const creationGemNode2 = ref(false);
-const creationMechBonusCap = ref(0);
+// Initialize gem planner store
+const gemPlannerStore = useGemPlannerStore();
+
+// Global Settings (ohne Creation Gem Werte)
 const coorsRelic = ref(0);
 const tulsandstofKit = ref(0);
 const mechEngineerToolPants = ref(0);
@@ -620,6 +522,27 @@ const inputWasFocused = ref({});
 const mechSettings = ref({});
 
 const mechImages = ref({});
+
+// Computed Properties für Creation Gem Werte (aus Gem Store)
+const creationGemLevel = computed(() => {
+  const creationGem = gemPlannerStore.getGemState('creation');
+  return creationGem?.level || 0;
+});
+
+const creationGemNode1 = computed(() => {
+  const creationGem = gemPlannerStore.getGemState('creation');
+  return creationGem?.nodes?.[0] || false;
+});
+
+const creationGemNode2 = computed(() => {
+  const creationGem = gemPlannerStore.getGemState('creation');
+  return creationGem?.nodes?.[1] || false;
+});
+
+const creationMechBonusCap = computed(() => {
+  const creationGem = gemPlannerStore.getGemState('creation');
+  return creationGem?.upgrades?.['mech-bonus-cap'] || 0;
+});
 
 // Computed Properties für Unlock-System
 const visibleMechs = computed(() => {
@@ -672,16 +595,13 @@ const initializeCurrentOutputMultiplier = () => {
   });
 };
 
-// Watch für Creation Gem Level Änderungen
+// Watch für Creation Gem Level Änderungen (nur für Initialisierung)
 watch(creationGemLevel, (newLevel, oldLevel) => {
   // Wenn das Level steigt, initialisiere neue Mechs
   if (newLevel > oldLevel) {
     initializeMechSettings();
     initializeCurrentOutputMultiplier();
   }
-  
-  // Speichere die Einstellungen
-  saveSettings();
 });
 
 // Update mech setting helper
@@ -1349,10 +1269,8 @@ const getCyclesPerDay = (mechKey) => {
 
 // Settings management
 const resetSettings = () => {
-  creationGemLevel.value = 0;
-  creationGemNode1.value = false; // NEU
-  creationGemNode2.value = false;
-  creationMechBonusCap.value = 0;
+  // Nur noch die lokalen Einstellungen zurücksetzen
+  // Creation Gem Werte werden auf der Gem-Seite verwaltet  
   coorsRelic.value = 0;
   tulsandstofKit.value = 0;
   mechEngineerToolPants.value = 0;
@@ -1365,7 +1283,8 @@ const resetSettings = () => {
       timeUpgrades: 0,
       multiUpgrades: 1
     };
-    currentOutputMultiplier.value[mech.key] = 0;
+    currentOutputMultiplier.value[mech.key] = new Decimal(1);
+    currentOutputMultiplierInput.value[mech.key] = '1';
   });
   
   saveSettings();
@@ -1820,10 +1739,7 @@ const saveSettings = () => {
     });
     
     localStorage.setItem('mechPlanner_settings', JSON.stringify({
-      creationGemLevel: creationGemLevel.value,
-      creationGemNode1: creationGemNode1.value, // NEU
-      creationGemNode2: creationGemNode2.value,
-      creationMechBonusCap: creationMechBonusCap.value,
+      // Creation Gem Werte werden nicht mehr gespeichert - kommen von der Gem-Seite
       coorsRelic: coorsRelic.value,
       tulsandstofKit: tulsandstofKit.value,
       mechEngineerToolPants: mechEngineerToolPants.value,
@@ -1843,10 +1759,7 @@ const loadSettings = () => {
   try {
     const savedSettings = JSON.parse(localStorage.getItem('mechPlanner_settings') || '{}');
     
-    if (savedSettings.creationGemLevel !== undefined) creationGemLevel.value = savedSettings.creationGemLevel;
-    if (savedSettings.creationGemNode1 !== undefined) creationGemNode1.value = savedSettings.creationGemNode1; // NEU
-    if (savedSettings.creationGemNode2 !== undefined) creationGemNode2.value = savedSettings.creationGemNode2;
-    if (savedSettings.creationMechBonusCap !== undefined) creationMechBonusCap.value = savedSettings.creationMechBonusCap;
+    // Creation Gem Werte werden nicht mehr geladen - kommen von der Gem-Seite
     if (savedSettings.coorsRelic !== undefined) coorsRelic.value = savedSettings.coorsRelic;
     if (savedSettings.tulsandstofKit !== undefined) tulsandstofKit.value = savedSettings.tulsandstofKit;
     if (savedSettings.mechEngineerToolPants !== undefined) mechEngineerToolPants.value = savedSettings.mechEngineerToolPants;
@@ -1875,12 +1788,8 @@ const loadSettings = () => {
   }
 };
 
-// KORRIGIERTE Watch für neue Settings
+// Watch nur für lokale Settings (Creation Gem Werte kommen vom Store)
 watch([
-  creationGemLevel, 
-  creationGemNode1,
-  creationGemNode2, 
-  creationMechBonusCap, 
   coorsRelic, 
   tulsandstofKit, 
   mechEngineerToolPants,
@@ -1916,6 +1825,9 @@ watch(currentOutputMultiplier, (newValue) => {
 
 // Initialize on mount
 onMounted(async () => {
+  // Initialize gem planner store
+  gemPlannerStore.init();
+  
   // Lade Mech Images zuerst
   await loadMechImages();
   

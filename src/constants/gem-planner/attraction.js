@@ -32,7 +32,8 @@ export const ATTRACTION_GEM = {
     {
       id: 'borge-loot-bonus',
       name: 'Borge Loot Bonus',
-      resource: 'Borge Loot',
+      hunter: true,
+      resource: 'Borge',
       baseCost: 5,
       costMultiplier: 2.5,
       maxLevel: 50,
@@ -58,7 +59,8 @@ export const ATTRACTION_GEM = {
     {
       id: 'ozzy-loot-bonus',
       name: 'Ozzy Loot Bonus',
-      resource: 'Ozzy Loot',
+      hunter: true,
+      resource: 'Ozzy',
       baseCost: 20,
       costMultiplier: 2.5,
       maxLevel: 50,
@@ -84,7 +86,8 @@ export const ATTRACTION_GEM = {
     {
       id: 'catch-up-power',
       name: 'Catch Up Power',
-      resource: 'Catch Up',
+      hunter: true,
+      resource: 'Hunter',
       baseCost: 1,
       costMultiplier: 100,
       maxLevel: 5,

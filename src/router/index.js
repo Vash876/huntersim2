@@ -4,7 +4,7 @@ import HunterView from '../views/HunterView.vue';
 const routes = [
   {
     path: '/',
-    redirect: '/home'
+    redirect: '/upgrades/gems'
   },
   {
     path: '/home',
@@ -107,11 +107,11 @@ const routes = [
     name: 'TR Tracking',
     component: () => import('../views/tools/TRTracking.vue'),
   },
-  {
-    path: '/tools/gem-planner',
-    name: 'Gem Planner',
-    component: () => import('../views/tools/GemPlanner.vue'),
-  },
+  // {
+  //   path: '/tools/gem-planner',
+  //   name: 'Gem Planner',
+  //   component: () => import('../views/tools/GemPlanner.vue'),
+  // },
   {
     path: '/tools/gadget-calculator',
     name: 'Gadget Calculator',    

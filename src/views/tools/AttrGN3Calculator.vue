@@ -77,15 +77,14 @@
                       <img src="@/assets/general/rp.png" alt="RP" class="w-4 h-4" />
                     </div>
                     <span class="text-sm text-gray-300">Research Points (e)</span>
-                    <span class ="ml-1 text-xs text-gray-500">(max: 5900)</span>
+                    <span class="ml-1 text-xs text-gray-500">(max: {{ maxResearchPoints }})</span>
                   </div>
                   <ToolValueControls
                     :value="researchPoints"
                     @update:value="researchPoints = $event"
                     :minValue="0"
-                    :maxValue="5900"
-                    :step="1"
-                    :fastStep="100"
+                    :maxValue="maxResearchPoints"
+                    :step="researchSteps"
                     value-class="text-orange-400 font-medium"
                     :autoEdit="true"
                     class="ml-2"
@@ -351,6 +350,41 @@ import {
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import InfoTooltip from '@/composables/InfoTooltip.vue';  
 import { formatNumber } from '@/composables/format.js';
+import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
+
+// Initialize gem planner store
+const gemPlannerStore = useGemPlannerStore();
+
+// Innovation Gem Level für Research91 Unlock
+const innovationGemLevel = computed(() => {
+  const innovationGem = gemPlannerStore.getGemState('innovation');
+  return innovationGem?.level || 0;
+});
+
+// Max Research Points basierend auf Innovation Gem Level
+const maxResearchPoints = computed(() => {
+  return innovationGemLevel.value >= 3 ? 5900 : 1509;
+});
+
+// Research Steps für ToolValueControls - alle möglichen Research-Kosten
+const researchSteps = computed(() => {
+  // Verfügbare Research basierend auf Innovation Gem Level
+  let availableResearch = [...researchData];
+  if (innovationGemLevel.value < 3) {
+    availableResearch = availableResearch.filter(research => research.id !== 'research91');
+  }
+  
+  // Extrahiere alle Kosten und sortiere sie
+  const costs = availableResearch.map(research => parseInt(research.cost));
+  const uniqueCosts = [...new Set(costs)].sort((a, b) => a - b);
+  
+  // Füge 0 am Anfang hinzu falls nicht vorhanden
+  if (!uniqueCosts.includes(0)) {
+    uniqueCosts.unshift(0);
+  }
+  
+  return uniqueCosts;
+});
 
 // Input values
 const tickSpeed = ref(1.5);
@@ -393,6 +427,11 @@ const operationsPerDay = computed(() => {
 const affordableResearch = computed(() => {
   // Combine all research options
   let allResearch = [...researchData];
+  
+  // Filter out research91 if Innovation Gem level < 4
+  if (innovationGemLevel.value < 4) {
+    allResearch = allResearch.filter(research => research.id !== 'research91');
+  }
   
   // Sort by bonus/cost efficiency (most efficient first)
   allResearch.sort((a, b) => {
@@ -746,6 +785,15 @@ watch(currentAttrMultiplier, (newValue) => {
     } else {
       attrMultiplierInput.value = newValue.toString();
     }
+  }
+});
+
+// Watch für Innovation Gem Level Änderungen - Research Points begrenzen
+watch(innovationGemLevel, (newLevel) => {
+  // Wenn Innovation Gem Level unter 4 fällt, begrenze Research Points auf 1509
+  if (newLevel < 4 && researchPoints.value > 1509) {
+    researchPoints.value = 1509;
+    saveSettings();
   }
 });
 

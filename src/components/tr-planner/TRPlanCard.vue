@@ -60,7 +60,7 @@
             class="icon-button text-purple-400/80 hover:text-purple-300"
             title="Plan orb spending"
           >
-            <IconGem size="16" />
+            <IconDiamond size="16" />
           </button>
           
           <!-- Delete Button mit Dropdown-Bestätigung -->
@@ -184,9 +184,9 @@ import {
   IconCopy,
   IconShare,
   IconGripVertical,
-  IconAdjustments
+  IconAdjustments,
+  IconDiamond,
 } from '@tabler/icons-vue';
-import { IconGem } from '@/constants/navigation';
 import { formatNumber } from '@/composables/format';
 
 const props = defineProps({

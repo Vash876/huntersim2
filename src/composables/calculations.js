@@ -53,6 +53,32 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
   let effectiveHours = hoursInTR || 0; // Auch bei 0 Stunden weiterrechnen für Research-Boni
   const researchAlltimeValue = allValues.research_alltime || 0;
   
+  // Evolution GN #1 prüfen
+  let evolutionGN1Active = false;
+  try {
+    // Plan-Context prüfen (für TR-Plan Overrides)
+    if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+      const gemData = window.__PLAN_CONTEXT__.gemData;
+      const evolutionLevel = gemData.levels?.evolution || 0;
+      const evolutionNodes = gemData.activeNodes?.evolution || [];
+      evolutionGN1Active = evolutionLevel >= 1 && evolutionNodes.includes(0);
+    } else {
+      // Fallback: localStorage
+      const userStatsJSON = localStorage.getItem('trplanner_userstats');
+      if (userStatsJSON) {
+        const userStats = JSON.parse(userStatsJSON);
+        const gemData = userStats.gemData;
+        if (gemData) {
+          const evolutionLevel = gemData.levels?.evolution || 0;
+          const evolutionNodes = gemData.activeNodes?.evolution || [];
+          evolutionGN1Active = evolutionLevel >= 1 && evolutionNodes.includes(0);
+        }
+      }
+    }
+  } catch (e) {
+    evolutionGN1Active = false;
+  }
+  
   // Research 110 & 109 Boni berechnen
   let totalBonusHours = 0;
   let totalSpeedBonus = 0;
@@ -78,14 +104,20 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
   // Effektive Stunden mit Research 110 Bonus
   effectiveHours += totalBonusHours;
   
-  // Speed-Multiplikator mit Research 109 Bonus
-  const speedMultiplier = 1 + totalSpeedBonus;
+  // Speed-Multiplikator mit Research 109 Bonus und Evolution GN #1
+  let speedMultiplier = 1 + totalSpeedBonus;
+  if (evolutionGN1Active) {
+    speedMultiplier *= 1.66; // Evolution GN #1: 1.66x schnellerer Catch-Up
+  }
+  
+  // Maximum-Wert basierend auf Evolution GN #1
+  const maxCatchUp = evolutionGN1Active ? 4 : 2;
   
   // KORRIGIERTE Catch-Up Formel: 
   // Original: Math.min(2, Math.max(1, (hoursInTR * 0.00024) / 0.25 + 1))
-  // Mit Research-Boni: 
+  // Mit Research-Boni und Evolution GN #1: 
   const enhancedRate = 0.00024 * speedMultiplier;
-  const result = Math.min(2, Math.max(1, (effectiveHours * enhancedRate) / 0.25 + 1));
+  const result = Math.min(maxCatchUp, Math.max(1, (effectiveHours * enhancedRate) / 0.25 + 1));
   
   // Rückgabe: Mindestens 1.0, auch wenn keine Stunden vorhanden sind
   return Math.max(1, result);

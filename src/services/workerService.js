@@ -137,7 +137,8 @@ export async function evaluateBuildWithWorker(hunterId, buildData, store, progre
       hunterStats: sanitizeForWorker(store?.hunterStats || {}),
       upgrades: sanitizeForWorker(store?.upgrades || {}),
       hunterIterations: sanitizeForWorker(store?.hunterIterations || {}),
-      hunterSeedSettings: sanitizeForWorker(store?.hunterSeedSettings || {})
+      hunterSeedSettings: sanitizeForWorker(store?.hunterSeedSettings || {}),
+      gemPlannerStore: sanitizeForWorker(store?.gemPlannerStore || {})
     };
 
     // Die Iterations-Informationen

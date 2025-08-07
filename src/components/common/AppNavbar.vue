@@ -1,12 +1,29 @@
 <template>
   <header class="bg-gradient-to-r from-gray-900 to-gray-800 text-white shadow-lg relative z-50">
+    <!-- Gem Level Warning -->
+    <div 
+      v-if="showGemLevelWarning" 
+      class="bg-amber-600/90 text-white text-center py-2 px-4 text-sm font-medium"
+    >
+      <div class="flex items-center justify-center space-x-2">
+        <IconInfoCircle size="16" />
+        <span>Please set your gem levels first.</span>
+        <router-link 
+          to="/upgrades/gems" 
+          class="underline hover:text-amber-200 font-semibold ml-2"
+        >
+          Go to Gems →
+        </router-link>
+      </div>
+    </div>
+    
     <!-- Dekorativer Farbverlauf an der Oberseite -->
     <div class="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
     
     <!-- Desktop Navigation -->
     <div class="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
       <!-- Logo & Branding -->
-      <router-link to="/" class="flex items-center group no-underline hover:opacity-90 transition-opacity">
+      <router-link to="/home" class="flex items-center group no-underline hover:opacity-90 transition-opacity">
         <div class="mr-3 bg-gradient-to-br from-blue-400 to-purple-600 p-2 rounded-lg shadow-glow transition-all duration-300">
           <IconTargetArrow size="24" class="text-white" />
         </div>
@@ -18,6 +35,18 @@
       
       <!-- Navigation Links -->
       <nav class="flex items-center">
+        <!-- Gems Link - Prominent an erster Stelle -->
+        <div class="bg-gray-800/90 rounded-xl p-1 mr-2">
+          <router-link 
+            to="/upgrades/gems"
+            class="px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center mx-0.5 hover:bg-gray-750"
+            :class="[$route.path === '/upgrades/gems' ? 'bg-purple-700 text-white shadow-sm' : 'text-gray-300 hover:text-white']"
+          >
+            <IconDiamond class="w-5 h-5 mr-1.5" />
+            <span class="font-semibold">Gems</span>
+          </router-link>
+        </div>
+
         <!-- Hunters Gruppe -->
         <div class="bg-gray-800/90 rounded-xl p-1 flex mr-2">
           <router-link 
@@ -373,6 +402,7 @@ import { NAVIGATION } from '../../constants/navigation';
 import { useRoute } from 'vue-router';
 import { neonAuthService } from '@/services/neonAuthService';
 import { useSyncStore } from '@/store/syncStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
 import NeonAuthModal from '@/components/common/NeonAuthModal.vue';
 import AccountSettingsModal from '@/components/common/AccountSettingsModal.vue';
@@ -390,13 +420,69 @@ import {
   IconLoader2,
   IconCircleCheck,
   IconAlertCircle,
-  IconInfoCircle
+  IconInfoCircle,
+  IconDiamond
 } from '@tabler/icons-vue';
 
-const navigation = NAVIGATION;
 const route = useRoute();
 const syncStore = useSyncStore();
+const gemPlannerStore = useGemPlannerStore();
 const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBackupRestore();
+
+// Computed für gefilterte Navigation basierend auf Gem-Leveln
+const navigation = computed(() => {
+  const filteredNavigation = { ...NAVIGATION };
+  
+  // Filter upgradeCategories
+  filteredNavigation.upgradeCategories = NAVIGATION.upgradeCategories.map(category => ({
+    ...category,
+    links: category.links.filter(link => {
+      // Prüfe ob das Link Gem-Anforderungen hat
+      if (link.unlock_gem && link.unlock_lvl) {
+        const gemState = gemPlannerStore.getGemState(link.unlock_gem);
+        const currentGemLevel = gemState?.level || 0;
+        
+        // Verstecke das Link wenn das erforderliche Gem-Level nicht erreicht ist
+        if (currentGemLevel < link.unlock_lvl) {
+          return false;
+        }
+      }
+      
+      // Zeige das Link an, wenn keine Gem-Anforderungen oder Anforderungen erfüllt sind
+      return true;
+    })
+  }));
+  
+  return filteredNavigation;
+});
+
+// Computed für Gem-Level-Warnung
+const showGemLevelWarning = computed(() => {
+  // Prüfe ob alle Gems auf Level 0 sind
+  const allGems = gemPlannerStore.gemStates;
+  
+  if (!allGems || typeof allGems !== 'object') {
+    console.log('Store nicht initialisiert - verstecke Warnung');
+    return false; // Verstecke Warnung wenn Store nicht initialisiert ist
+  }
+  
+  // Wenn keine Gems vorhanden sind, zeige Warnung
+  const gemKeys = Object.keys(allGems);
+  if (gemKeys.length === 0) {
+    console.log('Keine Gems vorhanden - zeige Warnung');
+    return true;
+  }
+  
+  // Prüfe ob alle Gems auf Level 0 sind
+  const allGemsAtZero = Object.values(allGems).every(gem => (gem?.level || 0) === 0);
+  console.log('Alle Gems auf Level 0:', allGemsAtZero, 'Gem States:', allGems);
+  return allGemsAtZero;
+});
+
+// Watch für Store-Änderungen um Reaktivität sicherzustellen
+watch(() => gemPlannerStore.gemStates, (newGems) => {
+  console.log('Gem Store changed:', newGems);
+}, { deep: true });
 
 // Desktop menu state
 const activeCategory = ref(null);

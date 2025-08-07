@@ -523,8 +523,7 @@ function knoxAtk(skipAtkReset: boolean = false): void {
 // Simulation-Funktion
 function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64, 
                  reviveCd: i32, special: f64, iap: boolean, ultima: f64, 
-                 research81: i32, research95: i32, research105: i32, evoGN3: boolean, cm46: i32, 
-                 cm47: i32, cm48: i32, cm51: i32, iters: i32): void {
+                 research81: i32, cm46: i32, cm47: i32, cm48: i32, cm51: i32, iters: i32): void {
   // Globale Variablen setzen
   currentKnox = knox;
   currentKnoxEnem = 0;
@@ -612,14 +611,7 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
   let enemiesInSection: i32 = 1010;
   let excludedXpMultis: f64 = 1; 
   let includedMultis = (1 + knox.timeless * 0.13) * gadgetLootMulti;
-  
-  // Research95: Kumulativer Multiplier (level 1: 1.02, level 2: 1.02*1.03, etc.)
-  let research95Multi: f64 = 1;
-  for (let i = 1; i <= research95; i++) {
-    research95Multi *= (1 + (i + 1) * 0.01);
-  }
-  
-  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * (research81 >= 3 ? 1.1 : 1) * (research81 >= 6 ? 1.2 : 1) * research95Multi * (research105 >= 3 ? 1.2 : 1) * (research105 >= 6 ? 1.3 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1);
+  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * (research81 >= 3 ? 1.1 : 1) * (research81 >= 6 ? 1.2 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1);
   
   let loopLoot = normalized * ((Math.pow(stageGrowth, Math.floor(Math.min(currentKnoxEnem, enemiesInSection - 10) / 10) as f64) - 1) / (stageGrowth - 1) * 10 + (Math.min(currentKnoxEnem, enemiesInSection - 10) - Math.floor(Math.min(currentKnoxEnem, enemiesInSection - 10) / 10) * 10) * Math.pow(stageGrowth, Math.floor(Math.min(currentKnoxEnem, enemiesInSection - 10) / 10) as f64)) * includedMultis * (1 + knox.ll * 0.2 * knox.effect);
   
@@ -686,8 +678,8 @@ export function EVALKNOX_WASM(
   quartzRate1: i32, tessRate1: i32, xpRate1: i32, hp1: i32, atk1: i32,
   regen1: i32, dr1: i32, block1: i32, effect1: i32, charge1: i32,
   chargeGain1: i32, reload1: i32, proj1: i32, gadget1: i32, lvl1: i32,
-  time1: i32, research81: i32, research95: i32, research105: i32, cm46: i32, 
-  cm47: i32, cm48: i32, cm51: i32, creastat: i32, evoGN3: i32
+  time1: i32, research81: i32, cm46: i32, cm47: i32, cm48: i32,
+  cm51: i32, creastat: i32
 ): f64 {
   
   // Enemies initialisieren
@@ -705,11 +697,11 @@ export function EVALKNOX_WASM(
   knox.maxStage = maxStage;
   
   // Base Stats 
-  knox.maxHp = (20 + (2 + Math.floor(hp / 5) * 0.1) * hp) * gadgetMulti * crea4GUMulti * (evoGN3 ? 1.0777 : 1);
+  knox.maxHp = (20 + (2 + Math.floor(hp / 5) * 0.1) * hp) * gadgetMulti * crea4GUMulti;
   knox.hp = knox.maxHp;
   knox.atk = (1.2 + (0.06 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * crea4GUMulti;
   knox.salvo = 3 + proj * 1;
-  knox.regen = (0.05 + (0.03 + Math.floor(regen / 30) * 0.02) * regen) * gadgetMulti * crea4GUMulti * (evoGN3 ? 1.0777 : 1);
+  knox.regen = (0.05 + (0.03 + Math.floor(regen / 30) * 0.02) * regen) * gadgetMulti * crea4GUMulti;
   knox.dr = 0.0032 * dr;
   knox.block = 0.0055 * block + 0.08;
   knox.effect = 0.0036 * effect + 0.05;
@@ -768,7 +760,7 @@ export function EVALKNOX_WASM(
   
   // Simulation laufen lassen
   for (let i = 0; i < iters; i++) {
-    knoxSim(knox, maxStage, respec, gadgetLootMulti, reviveCd, special, iap > 0, ultima, research81, research95, research105, evoGN3 > 0, cm46, cm47, cm48, cm51, iters);
+    knoxSim(knox, maxStage, respec, gadgetLootMulti, reviveCd, special, iap > 0, ultima, research81, cm46, cm47, cm48, cm51, iters);
   }
   
   // lastKnox für Export-Funktionen setzen

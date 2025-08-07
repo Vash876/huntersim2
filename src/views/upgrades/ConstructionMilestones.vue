@@ -45,8 +45,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useHunterStore } from '@/store/hunterStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { 
   getUpgrades, 
   getUpgradeColor 
@@ -56,18 +57,38 @@ import UpgradeCard from '@/components/upgrades/UpgradeCard.vue';
 
 // Store für Upgrades
 const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Construction Milestones aus den Konstanten laden
-const constructionMilestones = ref([]);
+const allConstructionMilestones = ref([]);
 const loading = ref(true);
 const category = 'cms'; // Die Kategorie dieser View
+
+// Computed für verfügbare Construction Milestones basierend auf Gem-Leveln
+const constructionMilestones = computed(() => {
+  return allConstructionMilestones.value.filter(milestone => {
+    // Prüfe ob das Milestone Gem-Anforderungen hat
+    if (milestone.unlock_gem && milestone.unlock_lvl) {
+      const gemState = gemPlannerStore.getGemState(milestone.unlock_gem);
+      const currentGemLevel = gemState?.level || 0;
+      
+      // Verstecke das Milestone wenn das erforderliche Gem-Level nicht erreicht ist
+      if (currentGemLevel < milestone.unlock_lvl) {
+        return false;
+      }
+    }
+    
+    // Zeige das Milestone an, wenn keine Gem-Anforderungen oder Anforderungen erfüllt sind
+    return true;
+  });
+});
 
 // Beim Mounten die Construction Milestones laden
 onMounted(async () => {
   loading.value = true;
   try {
-    // Alle Construction Milestones laden
-    constructionMilestones.value = getUpgrades(category);
+    // Alle Construction Milestones laden (ungefiltert)
+    allConstructionMilestones.value = getUpgrades(category);
   } catch (error) {
     console.error(`Fehler beim Laden der ${category}:`, error);
   } finally {

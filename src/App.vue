@@ -6,16 +6,19 @@ import AppFooter from './components/common/AppFooter.vue';
 import { useRoute } from 'vue-router';
 import { onMounted } from 'vue';
 import { useSyncStore } from './store/syncStore';
+import { useGemPlannerStore } from './store/gemPlannerStore';
 
 const route = useRoute();
 const syncStore = useSyncStore();
+const gemPlannerStore = useGemPlannerStore();
 
-// Initialize sync on app start
+// Initialize stores on app start
 onMounted(() => {
   try {
     syncStore.init();
+    gemPlannerStore.init();
   } catch (error) {
-    console.error('Sync initialization failed:', error);
+    console.error('Store initialization failed:', error);
   }
 });
 </script>

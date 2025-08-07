@@ -74,6 +74,8 @@ export const UPGRADES = {
       type: "level",
       maxLevel: 6,
       multitext: "Loot Reward",
+      unlock_gem: "innovation",
+      unlock_lvl: 2,
       tiers: [
         { level: 0, multipliers: { borge: 1.0, ozzy: 1.0, knox: 1.0 } },
         { level: 1, multipliers: { borge: 1.1, ozzy: 1.0, knox: 1.0 } },
@@ -84,6 +86,44 @@ export const UPGRADES = {
         { level: 6, multipliers: { borge: 1.32, ozzy: 1.32, knox: 1.32 } }, // 1.1 * 1.2
       ]
     },
+    {
+      id: "res95",
+      name: "Research #95",
+      hunter: "all",
+      type: "level",
+      maxLevel: 6,
+      multitext: "Loot Reward",
+      unlock_gem: "innovation",
+      unlock_lvl: 3,
+      tiers: [
+        { level: 0, multipliers: { borge: 1.0, ozzy: 1.0, knox: 1.0 } },
+        { level: 1, multipliers: { borge: 1.02, ozzy: 1.02, knox: 1.02 } },
+        { level: 2, multipliers: { borge: 1.05, ozzy: 1.05, knox: 1.05 } },
+        { level: 3, multipliers: { borge: 1.09, ozzy: 1.09, knox: 1.09 } },
+        { level: 4, multipliers: { borge: 1.15, ozzy: 1.15, knox: 1.15 } },  
+        { level: 5, multipliers: { borge: 1.21, ozzy: 1.21, knox: 1.21 } },  
+        { level: 6, multipliers: { borge: 1.30, ozzy: 1.30, knox: 1.30 } }, 
+      ]
+    },
+    {
+      id: "res105",
+      name: "Research #105",
+      hunter: "all",
+      type: "level",
+      maxLevel: 6,
+      multitext: "Loot Reward",
+      unlock_gem: "innovation",
+      unlock_lvl: 3,
+      tiers: [
+        { level: 0, multipliers: { borge: 1.0, ozzy: 1.0, knox: 1.0 } },
+        { level: 1, multipliers: { borge: 1.2, ozzy: 1.0, knox: 1.0 } },
+        { level: 2, multipliers: { borge: 1.2, ozzy: 1.2, knox: 1.0 } },
+        { level: 3, multipliers: { borge: 1.2, ozzy: 1.2, knox: 1.2 } },
+        { level: 4, multipliers: { borge: 1.56, ozzy: 1.2, knox: 1.2 } },  
+        { level: 5, multipliers: { borge: 1.56, ozzy: 1.56, knox: 1.2 } },  
+        { level: 6, multipliers: { borge: 1.56, ozzy: 1.56, knox: 1.56 } }, 
+      ]
+    }
   ],
 
   ///////////////GADGETS////////////////
@@ -94,6 +134,8 @@ export const UPGRADES = {
       name: "The Wrench of Gore",
       type: "level",
       maxLevel: Infinity,
+      unlock_gem: "exodus",
+      unlock_lvl: 4,
       stats: {
         loot: {
           name: "Loot Rewards",
@@ -130,6 +172,8 @@ export const UPGRADES = {
       name: "Zaptron-533 Bio-Repair Tool",
       type: "level",
       maxLevel: Infinity,
+      unlock_gem: "exodus",
+      unlock_lvl: 4,
       stats: {
         loot: {
           name: "Loot Rewards",
@@ -166,6 +210,8 @@ export const UPGRADES = {
       name: "The Anchor of Ages",
       type: "level", 
       maxLevel: Infinity,
+      unlock_gem: "exodus",
+      unlock_lvl: 4,
       stats: {
         loot: {
           name: "Loot Rewards",
@@ -534,6 +580,16 @@ export const UPGRADES = {
         { id: 'gem2', name: 'Attraction Gem Node #2', type: 'boolean' },
         { id: 'gem3', name: 'Attraction Gem Node #3', type: 'boolean' }
       ]
+    },
+    {
+      id: 'evolution',
+      name: 'Evolution Gem',
+      type: 'level',
+      maxLevel: 1,
+      color: "darkgreen",
+      nodes: [
+        { id: 'gem3', name: 'Evolution Gem Node #3', type: 'boolean' }
+      ]
     }
   ],
 
@@ -579,6 +635,8 @@ export const UPGRADES = {
       type: "boolean",
       value: 1.03,
       multitext: "Hunter Loot Rewards",
+      unlock_gem: "power",
+      unlock_lvl: 2,
     },
     {
       id: "cm47",
@@ -586,6 +644,8 @@ export const UPGRADES = {
       type: "boolean",
       value: 1.02,
       multitext: "Hunter Loot Rewards",
+      unlock_gem: "power",
+      unlock_lvl: 2,
     },
     {
       id: "cm48",
@@ -593,6 +653,8 @@ export const UPGRADES = {
       type: "boolean",
       value: 1.07,
       multitext: "Hunter Loot Rewards",
+      unlock_gem: "power",
+      unlock_lvl: 2,
     },
     {
       id: "cm51",
@@ -600,6 +662,8 @@ export const UPGRADES = {
       type: "boolean",
       value: 1.05,
       multitext: "Hunter Loot Rewards",
+      unlock_gem: "power",
+      unlock_lvl: 2,
     },
   ],
 

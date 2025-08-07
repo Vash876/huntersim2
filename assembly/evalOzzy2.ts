@@ -486,9 +486,9 @@ function ozzyAtk(skipAtkReset: boolean = false, dmgMod: f64 = 1, isMultistrike: 
 // Simulation-Funktion
 function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd: i32, 
                  special: f64, iap: boolean, ultima: f64, scavengers: i32, m0: i32, r7: i32, 
-                 attrGN3: boolean, lootgu: i32, i32_: i32, i81: i32, research81: i32, research95: i32, research105: i32,
+                 attrGN3: boolean, lootgu: i32, i32_: i32, i81: i32, research81: i32, 
                  cm46: i32, cm47: i32, cm48: i32, cm51: i32, gadgetLootMulti: f64, 
-                 card: boolean, i33: i32, evoGN3: boolean): void {
+                 card: boolean, i33: i32): void {
   entryRevivesForRun = -1;
   lastTrackedBossStage = -1;
 
@@ -627,14 +627,7 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
   let enemiesInSection: i32 = 1010;
   let excludedXpMultis = Math.pow(1.75, i33 as f64) * Math.pow(2, Math.floor((maxStage - 1) / 100) as f64);
   let includedMultis = (1 + ozzy.timeless * 0.16) * (1 + 0.05 * ozzy.scarab) * gadgetLootMulti * (card ? 1.05 : 1);
-  
-  // Research95: Kumulativer Multiplier (level 1: 1.02, level 2: 1.02*1.03, etc.)
-  let research95Multi: f64 = 1;
-  for (let i = 1; i <= research95; i++) {
-    research95Multi *= (1 + (i + 1) * 0.01);
-  }
-  
-  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * Math.pow(1.05, scavengers as f64) * Math.pow(1.02, m0 as f64) * Math.pow(1.05, r7 as f64) * (attrGN3 ? 1.25 : 1) * (Math.pow(Math.pow(1.04, lootgu as f64), 1 + attr * 0.1 - 0.1)) * Math.pow(1.5, i32_ as f64) * Math.pow(1.1, i81 as f64) * (research81 >= 2 ? 1.1 : 1) * (research81 >= 5 ? 1.2 : 1) * research95Multi * (research105 >= 2 ? 1.2 : 1) * (research105 >= 5 ? 1.3 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1);
+  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * Math.pow(1.05, scavengers as f64) * Math.pow(1.02, m0 as f64) * Math.pow(1.05, r7 as f64) * (attrGN3 ? 1.25 : 1) * (Math.pow(Math.pow(1.04, lootgu as f64), 1 + attr * 0.1 - 0.1)) * Math.pow(1.5, i32_ as f64) * Math.pow(1.1, i81 as f64) * (research81 >= 2 ? 1.1 : 1) * (research81 >= 5 ? 1.2 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1);
   
   let loopLoot = normalized * ((Math.pow(stageGrowth, Math.floor(Math.min(currentOzzyEnem, enemiesInSection - 10) / 10) as f64) - 1) / (stageGrowth - 1) * 10 + (Math.min(currentOzzyEnem, enemiesInSection - 10) - Math.floor(Math.min(currentOzzyEnem, enemiesInSection - 10) / 10) * 10) * Math.pow(stageGrowth, Math.floor(Math.min(currentOzzyEnem, enemiesInSection - 10) / 10) as f64)) * includedMultis * (1 + ozzy.ll * 0.2 * ozzy.effect);
   
@@ -697,8 +690,8 @@ export function EVALOZZY_WASM(
   i31: i32, i32_: i32, i33: i32, i36: i32, i37: i32,
   i40: i32, i81: i32, i86: i32, i92: i32, innoGN2: i32,
   innoGN3: i32, attrGN3: i32, attr: i32, catchup99gu: i32,
-  lootgu: i32, card: i32, research81: i32, research95: i32, research105: i32, iters: i32,
-  cm46: i32, cm47: i32, cm48: i32, cm51: i32, creaOzzyStat: i32, evoGN3: i32
+  lootgu: i32, card: i32, research81: i32, iters: i32,
+  cm46: i32, cm47: i32, cm48: i32, cm51: i32, creastat: i32
 ): f64 {
   
   // Enemies initialisieren
@@ -708,7 +701,7 @@ export function EVALOZZY_WASM(
   // Gadget/Creature Multipliers 
   const gadgetMulti = Math.pow(1.001, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const gadgetLootMulti = Math.pow(1.005, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
-  const crea4GUMulti = 1.0 + (creaOzzyStat as f64) * 0.01;
+  const crea4GUMulti = 1.0 + (creastat as f64) * 0.01;
   
   // Ozzy erstellen und konfigurieren 
   const ozzy = new Ozzy();
@@ -717,9 +710,9 @@ export function EVALOZZY_WASM(
   ozzy.maxStage = maxStage;
   
   // Base Stats
-  ozzy.maxHp = (16 + (2 + Math.floor(hp / 5) * 0.03) * hp) * gadgetMulti * (1 + 0.03 * r4) * (card ? 1.03 : 1) * crea4GUMulti * (evoGN3 ? 1.0777 : 1);
+  ozzy.maxHp = (16 + (2 + Math.floor(hp / 5) * 0.03) * hp) * gadgetMulti * (1 + 0.03 * r4) * (card ? 1.03 : 1) * crea4GUMulti;
   ozzy.atk = (2 + (0.3 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r17) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * crea4GUMulti;
-  ozzy.regen = (0.1 + (0.05 + Math.floor(regen / 30) * 0.01) * regen) * gadgetMulti * (innoGN2 ? 1.25 : 1) * (card ? 1.03 : 1) * crea4GUMulti * (evoGN3 ? 1.0777 : 1);
+  ozzy.regen = (0.1 + (0.05 + Math.floor(regen / 30) * 0.01) * regen) * gadgetMulti * (innoGN2 ? 1.25 : 1) * (card ? 1.03 : 1) * crea4GUMulti;
   ozzy.dr = 0.0035 * dr + 0.0111 * i37 + 0.002 * i86;
   ozzy.evade = 0.0062 * evade + 0.05;
   ozzy.effect = 0.0035 * effect + 0.04 + 0.006 * i31 + 0.002 * i92;
@@ -782,7 +775,7 @@ export function EVALOZZY_WASM(
   
   // Simulation laufen lassen
   for (let i = 0; i < iters; i++) {
-    ozzySim(ozzy, maxStage, attr, catchup99gu, reviveCd, special, iap > 0, ultima, scavengers, m0, r7, attrGN3 > 0, lootgu, i32_, i81, research81, research95, research105, cm46, cm47, cm48, cm51, gadgetLootMulti, card > 0, i33, evoGN3 > 0);
+    ozzySim(ozzy, maxStage, attr, catchup99gu, reviveCd, special, iap > 0, ultima, scavengers, m0, r7, attrGN3 > 0, lootgu, i32_, i81, research81, cm46, cm47, cm48, cm51, gadgetLootMulti, card > 0, i33);
   }
   
   // lastOzzy für Export-Funktionen setzen

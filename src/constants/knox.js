@@ -67,7 +67,7 @@ export const ATTRIBUTE_MIN_VALUE = {
 // Liste aller für Knox relevanten Upgrades
 export const HUNTER_UPGRADES = {
   gadgets: ["anchor"],
-  researches: ["res81"],
+  researches: ["res81", "res95", "res105"],
   cms: ["cm46", "cm47", "cm48", "cm51"],
   diamondspecials: ["hunterloot", "reviveboost"],
   iap: ["travpack"],
@@ -149,11 +149,14 @@ export const EVAL_PARAMS = [
   "time1",                        // Alternativer Time-Wert
   
   "upgrades.researches.res81",      // Research#81
+  "upgrades.researches.res95",      // Research#95
+  "upgrades.researches.res105",     // Research#105
   "upgrades.cms.cm46",              // Construction Milestone 46
   "upgrades.cms.cm47",              // Construction Milestone 47
   "upgrades.cms.cm48",              // Construction Milestone 48
   "upgrades.cms.cm51",              // Construction Milestone 51
   "upgrades.gems_nodes.creation_knoxGU", // Creation Node (Knox Gem Upgrade)
+  "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -205,6 +208,8 @@ export const OVERRIDES = {
   // Research
   researches: [
     "upgrades.researches.res81",     // Research#81
+    "upgrades.researches.res95",     // Research#95
+    "upgrades.researches.res105",    // Research#105
   ],
 
   // Construction Milestones
@@ -217,6 +222,10 @@ export const OVERRIDES = {
 
   gemUpgrades: [
     "upgrades.gems_nodes.creation_knoxGU", // Knox Gem Upgrade
+  ],
+
+  gemNodes: [
+    "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
   ],
 
   diamondSpecials: [
@@ -279,6 +288,7 @@ export const BUILD_CODE_PARAMS = [
   "stage",          // Highest Stage Reached
   "upgrades.gadgets.anchor",  // Gadget (The Anchor of Ages)
   "upgrades.gems_nodes.creation_knoxGU", // Knox Gem Upgrade
+  "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
 ];
 
 export const STATS_RESULT_LABELS = [

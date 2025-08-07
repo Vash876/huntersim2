@@ -32,11 +32,11 @@ export const INNOVATION_GEM = {
     {
       id: 'studies-per-study',
       name: 'Studies per Study',
-      resource: 'Studies',
+      weight: null,
       baseCost: 3,
       costMultiplier: 2,
       maxLevel: 50,
-      color: '#f9b16e',
+      color: '#fdb471',
       unlock: 1,
       costBumps: [
         { startLevel: 9, multiplier: 1.1 },
@@ -58,11 +58,11 @@ export const INNOVATION_GEM = {
     {
       id: 'cells-bonus',
       name: 'Cells Bonus',
-      resource: 'Cells',
+      weight: 'Cells',
       baseCost: 1e3,
       costMultiplier: 10,
       maxLevel: 50,
-      color: '#00b90f',
+      color: '#39ff94',
       unlock: 2,
       costBumps: [], // No cost bumps
       multiplier: {
@@ -84,11 +84,11 @@ export const INNOVATION_GEM = {
     {
       id: 'mp-bonus',
       name: 'MP Bonus',
-      resource: 'MP',
+      weight: 'MP',
       baseCost: 2e5,
       costMultiplier: 10,
       maxLevel: 50,
-      color: '#ff0000',
+      color: '#ff3c39',
       unlock: 2,
       costBumps: [], // No cost bumps
       multiplier: {
@@ -110,11 +110,11 @@ export const INNOVATION_GEM = {
     {
       id: 'shards-bonus',
       name: 'Shards Bonus',
-      resource: 'Shards',
+      weight: 'Shards',
       baseCost: 3e6,
       costMultiplier: 10,
       maxLevel: 50,
-      color: '#00d9ff',
+      color: '#5ac3ff',
       unlock: 2,
       costBumps: [], // No cost bumps
       multiplier: {
@@ -136,11 +136,11 @@ export const INNOVATION_GEM = {
     {
       id: 'rp-bonus',
       name: 'RP Bonus',
-      resource: 'RP',
+      weight: 'RP',
       baseCost: 4e7,
       costMultiplier: 10,
       maxLevel: 50,
-      color: '#ffa600',
+      color: '#ff9a39',
       unlock: 2,
       costBumps: [], // No cost bumps
       multiplier: {
@@ -162,11 +162,11 @@ export const INNOVATION_GEM = {
     {
       id: 'ap-bonus',
       name: 'AP Bonus',
-      resource: 'AP',
+      weight: 'AP',
       baseCost: 5e8,
       costMultiplier: 10,
       maxLevel: 50,
-      color: '#2600ff',
+      color: '#2a47cc',
       unlock: 2,
       costBumps: [], // No cost bumps
       multiplier: {
@@ -188,7 +188,7 @@ export const INNOVATION_GEM = {
     {
       id: 'mats-bonus',
       name: 'Mats Bonus',
-      resource: 'Mats',
+      weight: 'Mats',
       baseCost: 1e11,
       costMultiplier: 100,
       maxLevel: 50,
@@ -214,7 +214,7 @@ export const INNOVATION_GEM = {
     {
       id: 'bonus-blueprints',
       name: 'Bonus Blueprints',
-      resource: 'Blueprints',
+      weight: null,
       baseCost: 1e8,
       costMultiplier: 1e5,
       maxLevel: 50,
@@ -233,7 +233,7 @@ export const INNOVATION_GEM = {
     {
       id: 'bonus-innovation-cores',
       name: 'Bonus Innovation Cores',
-      resource: 'Innovation Cores',
+      weight: null,
       baseCost: 1e8,
       costMultiplier: 1e7,
       maxLevel: 50,

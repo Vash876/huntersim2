@@ -105,22 +105,21 @@
                 <span class="font-medium text-white text-sm">Requirements</span>
               </div>
               
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-sm text-gray-300">Innovation Gem Level</label>
-                <ToolValueControls
-                  :value="innovationLevel"
-                  :minValue="0"
-                  :maxValue="3"
-                  :step="1"
-                  :showFastControls="false"
-                  :validateOnFinalOnly="true"
-                  @update:value="handleInnovationLevelUpdate"
-                  @update:raw-value="(val) => innovationLevelRaw = val"
-                  @finalize:value="finalizeInnovationLevel"
-                  value-class="text-purple-400 font-medium"
-                  :autoEdit="true"
-                  class="ml-2"
-                />
+              <!-- Innovation Gem Level Info -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="text-sm text-gray-300">Innovation Gem</span>
+                  <InfoTooltip 
+                    class="ml-1"
+                    content="Innovation Gem Level is automatically retrieved from your Gem Overview Page."
+                    placement="top"
+                  />
+                </div>
+                <div class="flex items-center">
+                  <span class="px-2 py-1 rounded text-xs font-medium bg-orange-900/50 text-orange-300 border border-orange-700">
+                    Level {{ innovationGemLevel }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -358,7 +357,17 @@ import {
 } from '@tabler/icons-vue';
 import { useResearchData } from '@/composables/useResearchData.js';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
-import InfoTooltip from '@/composables/InfoTooltip.vue'; 
+import InfoTooltip from '@/composables/InfoTooltip.vue';
+import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
+
+// Initialize gem planner store
+const gemPlannerStore = useGemPlannerStore();
+
+// Innovation Gem Level für Research Requirements
+const innovationGemLevel = computed(() => {
+  const innovationGem = gemPlannerStore.getGemState('innovation');
+  return innovationGem?.level || 0;
+}); 
 
 // State
 const isLoading = ref(true);
@@ -369,13 +378,11 @@ const error = ref(null);
 const rpValue = ref(0);
 const rpRange = ref(50);
 const allTimeHighestRP = ref(0);
-const innovationLevel = ref(0);
 const sortBy = ref('cost');
 const sortDirection = ref('asc');
 const rpValueRaw = ref(rpValue.value);
 const rpRangeRaw = ref(rpRange.value);
 const allTimeHighestRPRaw = ref(0);
-const innovationLevelRaw = ref(0);
 
 // Google Sheets Integration
 const { fetchResearchData } = useResearchData();
@@ -426,21 +433,6 @@ function finalizeAllTimeHighestRP() {
   }
 }
 
-function handleInnovationLevelUpdate(newVal) {
-  innovationLevel.value = newVal;
-  innovationLevelRaw.value = newVal;
-  saveFilters();
-}
-
-function finalizeInnovationLevel() {
-  const numValue = Number(innovationLevelRaw.value);
-  if (!isNaN(numValue)) {
-    innovationLevel.value = Math.max(0, Math.min(3, numValue));
-    innovationLevelRaw.value = innovationLevel.value;
-    saveFilters();
-  }
-}
-
 // Computed
 const filteredResearches = computed(() => {
   let result = researchData.value;
@@ -470,7 +462,7 @@ const filteredResearches = computed(() => {
   // Innovation Level Filter
   result = result.filter(research => {
     if (!research.requiresInnovation) return true;
-    return research.requiresInnovation <= innovationLevel.value;
+    return research.requiresInnovation <= innovationGemLevel.value;
   });
   
   return result;
@@ -523,7 +515,6 @@ function resetFilters() {
   rpValue.value = 0;
   rpRange.value = 50;
   allTimeHighestRP.value = 0;
-  innovationLevel.value = 0;
   sortBy.value = 'cost';
   sortDirection.value = 'asc';
   saveFilters();
@@ -583,9 +574,6 @@ function loadFilters() {
     if (savedFilters.rpRange !== undefined && savedFilters.rpRange !== null) {
       rpRange.value = Number(savedFilters.rpRange);
     }
-    if (savedFilters.innovationLevel !== undefined) {
-      innovationLevel.value = Number(savedFilters.innovationLevel);
-    }
     if (savedFilters.sortBy !== undefined) sortBy.value = savedFilters.sortBy;
     if (savedFilters.sortDirection !== undefined) sortDirection.value = savedFilters.sortDirection;
   } catch (error) {
@@ -599,7 +587,6 @@ function saveFilters() {
       rpValue: rpValue.value,
       rpRange: rpRange.value,
       allTimeHighestRP: allTimeHighestRP.value,
-      innovationLevel: innovationLevel.value,
       sortBy: sortBy.value,
       sortDirection: sortDirection.value
     }));

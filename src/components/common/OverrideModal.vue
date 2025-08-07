@@ -215,6 +215,7 @@ import {
   IconX, IconChevronLeft, IconChevronRight, IconAlertCircle 
 } from '@tabler/icons-vue';
 import { useHunterStore } from '../../store/hunterStore';
+import { useGemPlannerStore } from '../../store/gemPlannerStore';
 import { HUNTERS } from '../../constants/hunters';
 import { UPGRADES } from '../../constants/upgrades';
 import { calcCostDifference, formatCost } from '../../utils/statCostUtils';
@@ -238,6 +239,7 @@ const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', '
 
 // Store
 const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Local state
 const isLoading = ref(true);
@@ -345,6 +347,92 @@ function truncateName(name) {
   return name.length > 22 ? name.substring(0, 22) + '...' : name;
 }
 
+// Convert gemPlannerStore format to upgrades.gems_nodes format
+function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
+  if (!gemPlannerStore?.gemStates) {
+    return upgradesData;
+  }
+  
+  // Create a copy of upgradesData
+  const convertedData = { ...upgradesData };
+  
+  // Initialize gems_nodes if not exists
+  if (!convertedData.gems_nodes) {
+    convertedData.gems_nodes = {};
+  }
+  
+  // Conversion mappings
+  const gemMappings = {
+    attraction: {
+      level: 'attraction_level',
+      nodes: {
+        gem1: 'attraction_gem1',
+        gem2: 'attraction_gem2', 
+        gem3: 'attraction_gem3'
+      },
+      upgrades: {
+        'borge-loot-bonus': 'attraction_lootBorge',
+        'ozzy-loot-bonus': 'attraction_lootOzzy',
+        'catch-up-power': 'attraction_catchUp'
+      }
+    },
+    creation: {
+      level: 'creation_level',
+      nodes: {
+        gem1: 'creation_gem1',
+        gem2: 'creation_gem2',
+        gem3: 'creation_gem3'  
+      },
+      upgrades: {
+        'borge-stat-bonus': 'creation_borgeGU',
+        'ozzy-stat-bonus': 'creation_ozzyGU',
+        'knox-stat-bonus': 'creation_knoxGU'
+      }
+    },
+    evolution: {
+      level: 'evolution_level',
+      nodes: {
+        gem3: 'evolution_gem3'
+      },
+      upgrades: {
+        'gem3': 'evolution_gem3'
+      }
+    }
+  };
+  
+  // Convert each gem type
+  Object.entries(gemPlannerStore.gemStates).forEach(([gemType, gemData]) => {
+    const mapping = gemMappings[gemType];
+    if (!mapping) return;
+    
+    // Convert level
+    if (gemData.level !== undefined) {
+      convertedData.gems_nodes[mapping.level] = gemData.level;
+    }
+    
+    // Convert nodes
+    if (gemData.nodes && Array.isArray(gemData.nodes)) {
+      gemData.nodes.forEach((nodeActive, index) => {
+        const nodeKey = `gem${index + 1}`;
+        if (mapping.nodes[nodeKey]) {
+          convertedData.gems_nodes[mapping.nodes[nodeKey]] = nodeActive ? 1 : 0;
+        }
+      });
+    }
+    
+    // Convert upgrades
+    if (gemData.upgrades) {
+      Object.entries(gemData.upgrades).forEach(([upgradeKey, upgradeValue]) => {
+        if (mapping.upgrades[upgradeKey]) {
+          convertedData.gems_nodes[mapping.upgrades[upgradeKey]] = upgradeValue;
+        }
+      });
+    }
+  });
+  
+  return convertedData;
+}
+
 // Load parameter data for the current hunter
 async function loadOverrideData() {
   try {
@@ -369,7 +457,12 @@ async function loadOverrideData() {
     
     // Get global values from the hunter store
     const hunterData = hunterStore.hunterStats?.[props.hunterType] || {};
-    const upgradesData = hunterStore.upgrades || {};
+    const baseUpgradesData = hunterStore.upgrades || {};
+    
+    // Convert gemPlannerStore format to upgrades.gems_nodes format
+    const upgradesData = convertGemStatesToUpgrades(baseUpgradesData, gemPlannerStore);
+    
+    console.log('🔧 [OverrideModal] Gem data converted for modal display');
     
     // Process all parameters from OVERRIDES
     const processedCategories = [];
@@ -407,21 +500,65 @@ async function loadOverrideData() {
             
             // Special handling for gem_nodes
             if (upgradeType === 'gems_nodes') {
-              // Format is "gemname_nodeid" (e.g. "creation_gem1")
+              // Format is "gemname_property" (e.g. "creation_level", "attraction_lootBorge")
               const gemNodeParts = upgradeId.split('_');
               if (gemNodeParts.length >= 2) {
-                const gemName = gemNodeParts[0]; // e.g. "creation"
-                const nodeId = gemNodeParts.slice(1).join('_'); // e.g. "gem1"
+                const gemName = gemNodeParts[0]; // e.g. "creation", "attraction"
+                const property = gemNodeParts.slice(1).join('_'); // e.g. "level", "lootBorge", "gem1"
                 
                 // Find the gem in UPGRADES.gems
                 const gem = UPGRADES.gems.find(g => g.id === gemName);
                 if (gem) {
-                  // Find the node in gem.nodes
-                  const node = gem.nodes.find(n => n.id === nodeId);
-                  if (node) {
-                    paramName = node.name;
-                    maxValue = node.maxLevel || (node.type === 'boolean' ? 1 : null);
-                    type = node.type || "numeric";
+                  // Handle level parameter
+                  if (property === 'level') {
+                    paramName = `${gem.name} Level`;
+                    maxValue = gem.maxLevel || null;
+                    type = "numeric";
+                  }
+                  // Handle gem nodes (gem1, gem2, gem3)
+                  else if (property.startsWith('gem')) {
+                    const node = gem.nodes.find(n => n.id === property);
+                    if (node) {
+                      paramName = node.name;
+                      maxValue = node.maxLevel || (node.type === 'boolean' ? 1 : null);
+                      type = node.type || "numeric";
+                    }
+                  }
+                  // Handle upgrades (lootBorge, catchUp, borgeGU etc.)
+                  else {
+                    // Find the upgrade in gem.nodes
+                    const upgradeNode = gem.nodes.find(n => {
+                      // Map the property name to the node id
+                      const propertyToNodeMap = {
+                        'lootBorge': 'lootBorge',
+                        'lootOzzy': 'lootOzzy',
+                        'catchUp': 'catchUp',
+                        'borgeGU': 'borgeGU',
+                        'ozzyGU': 'ozzyGU',
+                        'knoxGU': 'knoxGU'
+                      };
+                      return n.id === propertyToNodeMap[property];
+                    });
+                    
+                    if (upgradeNode) {
+                      paramName = upgradeNode.name;
+                      maxValue = upgradeNode.maxLevel || null;
+                      type = upgradeNode.type || "numeric";
+                    } else {
+                      // Fallback if not found in nodes
+                      const upgradeNameMap = {
+                        'lootBorge': 'Loot (Borge)',
+                        'lootOzzy': 'Loot (Ozzy)',
+                        'catchUp': 'Catch-Up Power',
+                        'borgeGU': 'Borge Stat Bonus',
+                        'ozzyGU': 'Ozzy Stat Bonus',
+                        'knoxGU': 'Knox Stat Bonus'
+                      };
+                      
+                      paramName = upgradeNameMap[property] || property;
+                      maxValue = 50; // Fallback max
+                      type = "numeric";
+                    }
                   }
                 }
               }

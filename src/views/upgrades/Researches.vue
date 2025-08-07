@@ -53,8 +53,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useHunterStore } from '@/store/hunterStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { 
   getUpgrades, 
   getUpgradeColor 
@@ -66,18 +67,38 @@ import UpgradeCard from '@/components/upgrades/UpgradeCard.vue';
 
 // Store für Upgrades
 const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Researches aus den Konstanten laden
-const researches = ref([]);
+const allResearches = ref([]);
 const loading = ref(true);
 const category = 'researches'; // Die Kategorie dieser View
+
+// Computed für verfügbare Researches basierend auf Gem-Leveln
+const researches = computed(() => {
+  return allResearches.value.filter(research => {
+    // Prüfe ob das Research Gem-Anforderungen hat
+    if (research.unlock_gem && research.unlock_lvl) {
+      const gemState = gemPlannerStore.getGemState(research.unlock_gem);
+      const currentGemLevel = gemState?.level || 0;
+      
+      // Verstecke das Research wenn das erforderliche Gem-Level nicht erreicht ist
+      if (currentGemLevel < research.unlock_lvl) {
+        return false;
+      }
+    }
+    
+    // Zeige das Research an, wenn keine Gem-Anforderungen oder Anforderungen erfüllt sind
+    return true;
+  });
+});
 
 // Beim Mounten die Researches laden
 onMounted(async () => {
   loading.value = true;
   try {
-    // Alle Researches laden
-    researches.value = getUpgrades(category);
+    // Alle Researches laden (ungefiltert)
+    allResearches.value = getUpgrades(category);
   } catch (error) {
     console.error(`Fehler beim Laden der ${category}:`, error);
   } finally {
@@ -93,7 +114,7 @@ function getResearchLevel(item) {
 // Research aktualisieren
 function updateResearchLevel(item, newLevel) {
   // Finde das Research-Objekt um Limits zu prüfen
-  const research = researches.value.find(r => r.id === item.id);
+  const research = allResearches.value.find(r => r.id === item.id);
   if (!research) return;
   
   // Stelle sicher, dass der neue Wert innerhalb der Grenzen liegt

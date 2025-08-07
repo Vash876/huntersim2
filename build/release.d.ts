@@ -101,15 +101,18 @@ export declare function getWasmBuildTimestamp(): number;
  * @param lootgu `i32`
  * @param card `i32`
  * @param research81 `i32`
+ * @param research95 `i32`
+ * @param research105 `i32`
  * @param iters `i32`
  * @param cm46 `i32`
  * @param cm47 `i32`
  * @param cm48 `i32`
  * @param cm51 `i32`
- * @param creastat `i32`
+ * @param creaBorgeStat `i32`
+ * @param evoGN3 `i32`
  * @returns `f64`
  */
-export declare function EVALBORGE_WASM(lvl: number, maxStage: number, hp: number, atk: number, regen: number, dr: number, evade: number, effect: number, critRate: number, critPower: number, aspd: number, revival: number, life: number, ua: number, impacts: number, omen: number, ll: number, pog: number, ultimaTalent: number, fow: number, ares: number, ylith: number, spartan: number, timeless: number, bfb: number, athena: number, baal: number, sensors: number, atlas: number, mino: number, helltouch: number, punches: number, weakspot: number, hermes: number, inhaler: number, gadget: number, iap: number, special: number, ultima: number, reviveCd: number, trample: number, scavengers: number, m0: number, r4: number, r7: number, r16: number, r19: number, i3: number, i4: number, i11: number, i13: number, i14: number, i23: number, i24: number, i27: number, i44: number, i60: number, i80: number, i84: number, i87: number, i88: number, i89: number, i91: number, creaGN1: number, creaGN2: number, creaGN3: number, innoGN3: number, attrGN2: number, attrGN3: number, attr: number, catchup99gu: number, lootgu: number, card: number, research81: number, iters: number, cm46: number, cm47: number, cm48: number, cm51: number, creastat: number): number;
+export declare function EVALBORGE_WASM(lvl: number, maxStage: number, hp: number, atk: number, regen: number, dr: number, evade: number, effect: number, critRate: number, critPower: number, aspd: number, revival: number, life: number, ua: number, impacts: number, omen: number, ll: number, pog: number, ultimaTalent: number, fow: number, ares: number, ylith: number, spartan: number, timeless: number, bfb: number, athena: number, baal: number, sensors: number, atlas: number, mino: number, helltouch: number, punches: number, weakspot: number, hermes: number, inhaler: number, gadget: number, iap: number, special: number, ultima: number, reviveCd: number, trample: number, scavengers: number, m0: number, r4: number, r7: number, r16: number, r19: number, i3: number, i4: number, i11: number, i13: number, i14: number, i23: number, i24: number, i27: number, i44: number, i60: number, i80: number, i84: number, i87: number, i88: number, i89: number, i91: number, creaGN1: number, creaGN2: number, creaGN3: number, innoGN3: number, attrGN2: number, attrGN3: number, attr: number, catchup99gu: number, lootgu: number, card: number, research81: number, research95: number, research105: number, iters: number, cm46: number, cm47: number, cm48: number, cm51: number, creaBorgeStat: number, evoGN3: number): number;
 /**
  * assembly/evalBorge/testEnemyCreation
  * @returns `f64`
@@ -332,22 +335,25 @@ export declare function getDeathsByStageAndReviveString(): string;
  * @param creaGN1 `i32`
  * @param creaGN2 `i32`
  * @param creaGN3 `i32`
+ * @param creaBorgeStat `i32`
  * @param innoGN3 `i32`
  * @param attrGN2 `i32`
  * @param attrGN3 `i32`
  * @param attr `i32`
  * @param catchup99gu `i32`
  * @param lootgu `i32`
+ * @param evoGN3 `i32`
  * @param card `i32`
  * @param research81 `i32`
+ * @param research95 `i32`
+ * @param research105 `i32`
  * @param iters `i32`
  * @param cm46 `i32`
  * @param cm47 `i32`
  * @param cm48 `i32`
  * @param cm51 `i32`
- * @param creastat `i32`
  */
-export declare function initLiveSimulation(lvl: number, maxStage: number, hp: number, atk: number, regen: number, dr: number, evade: number, effect: number, critRate: number, critPower: number, aspd: number, revival: number, life: number, ua: number, impacts: number, omen: number, ll: number, pog: number, ultimaTalent: number, fow: number, ares: number, ylith: number, spartan: number, timeless: number, bfb: number, athena: number, baal: number, sensors: number, atlas: number, mino: number, helltouch: number, punches: number, weakspot: number, hermes: number, inhaler: number, gadget: number, iap: number, special: number, ultima: number, reviveCd: number, trample: number, scavengers: number, m0: number, r4: number, r7: number, r16: number, r19: number, i3: number, i4: number, i11: number, i13: number, i14: number, i23: number, i24: number, i27: number, i44: number, i60: number, i80: number, i84: number, i87: number, i88: number, i89: number, i91: number, creaGN1: number, creaGN2: number, creaGN3: number, innoGN3: number, attrGN2: number, attrGN3: number, attr: number, catchup99gu: number, lootgu: number, card: number, research81: number, iters: number, cm46: number, cm47: number, cm48: number, cm51: number, creastat: number): void;
+export declare function initLiveSimulation(lvl: number, maxStage: number, hp: number, atk: number, regen: number, dr: number, evade: number, effect: number, critRate: number, critPower: number, aspd: number, revival: number, life: number, ua: number, impacts: number, omen: number, ll: number, pog: number, ultimaTalent: number, fow: number, ares: number, ylith: number, spartan: number, timeless: number, bfb: number, athena: number, baal: number, sensors: number, atlas: number, mino: number, helltouch: number, punches: number, weakspot: number, hermes: number, inhaler: number, gadget: number, iap: number, special: number, ultima: number, reviveCd: number, trample: number, scavengers: number, m0: number, r4: number, r7: number, r16: number, r19: number, i3: number, i4: number, i11: number, i13: number, i14: number, i23: number, i24: number, i27: number, i44: number, i60: number, i80: number, i84: number, i87: number, i88: number, i89: number, i91: number, creaGN1: number, creaGN2: number, creaGN3: number, creaBorgeStat: number, innoGN3: number, attrGN2: number, attrGN3: number, attr: number, catchup99gu: number, lootgu: number, evoGN3: number, card: number, research81: number, research95: number, research105: number, iters: number, cm46: number, cm47: number, cm48: number, cm51: number): void;
 /**
  * assembly/evalBorge/liveSimulationStep
  * @returns `bool`
@@ -622,15 +628,18 @@ export declare function getLiveEnemyEnrageSpeedReduction(): number;
  * @param lootgu `i32`
  * @param card `i32`
  * @param research81 `i32`
+ * @param research95 `i32`
+ * @param research105 `i32`
  * @param iters `i32`
  * @param cm46 `i32`
  * @param cm47 `i32`
  * @param cm48 `i32`
  * @param cm51 `i32`
- * @param creastat `i32`
+ * @param creaOzzyStat `i32`
+ * @param evoGN3 `i32`
  * @returns `f64`
  */
-export declare function EVALOZZY_WASM(lvl: number, maxStage: number, hp: number, atk: number, regen: number, dr: number, evade: number, effect: number, multistrike: number, multistrikePower: number, aspd: number, revival: number, trickster: number, ua: number, thousandNeedles: number, omen: number, ll: number, crippling: number, ultimaTalent: number, echoBullets: number, lotl: number, exo: number, scorp: number, dod: number, cat: number, timeless: number, wings: number, exterm: number, medusa: number, scarab: number, vectid: number, snek: number, cod: number, dwd: number, sisters: number, gadget: number, iap: number, special: number, ultima: number, reviveCd: number, scavengers: number, m0: number, r4: number, r7: number, r17: number, i31: number, i32_: number, i33: number, i36: number, i37: number, i40: number, i81: number, i86: number, i92: number, innoGN2: number, innoGN3: number, attrGN3: number, attr: number, catchup99gu: number, lootgu: number, card: number, research81: number, iters: number, cm46: number, cm47: number, cm48: number, cm51: number, creastat: number): number;
+export declare function EVALOZZY_WASM(lvl: number, maxStage: number, hp: number, atk: number, regen: number, dr: number, evade: number, effect: number, multistrike: number, multistrikePower: number, aspd: number, revival: number, trickster: number, ua: number, thousandNeedles: number, omen: number, ll: number, crippling: number, ultimaTalent: number, echoBullets: number, lotl: number, exo: number, scorp: number, dod: number, cat: number, timeless: number, wings: number, exterm: number, medusa: number, scarab: number, vectid: number, snek: number, cod: number, dwd: number, sisters: number, gadget: number, iap: number, special: number, ultima: number, reviveCd: number, scavengers: number, m0: number, r4: number, r7: number, r17: number, i31: number, i32_: number, i33: number, i36: number, i37: number, i40: number, i81: number, i86: number, i92: number, innoGN2: number, innoGN3: number, attrGN3: number, attr: number, catchup99gu: number, lootgu: number, card: number, research81: number, research95: number, research105: number, iters: number, cm46: number, cm47: number, cm48: number, cm51: number, creaOzzyStat: number, evoGN3: number): number;
 /**
  * assembly/evalOzzy/getLastOzzyAvgStage
  * @returns `f64`
@@ -851,14 +860,17 @@ export declare function getOzzyBossAttemptCountAt(index: number): number;
  * @param lvl1 `i32`
  * @param time1 `i32`
  * @param research81 `i32`
+ * @param research95 `i32`
+ * @param research105 `i32`
  * @param cm46 `i32`
  * @param cm47 `i32`
  * @param cm48 `i32`
  * @param cm51 `i32`
  * @param creastat `i32`
+ * @param evoGN3 `i32`
  * @returns `f64`
  */
-export declare function EVALKNOX_WASM(lvl: number, maxStage: number, hp: number, atk: number, regen: number, dr: number, block: number, effect: number, charge: number, chargeGain: number, reload: number, proj: number, revival: number, calyp: number, ua: number, ghost: number, omen: number, ll: number, pog: number, finish: number, kraken: number, amp: number, dead: number, sear: number, pirate: number, timeless: number, torpedos: number, charger: number, armory: number, elixer: number, reflect: number, gadget: number, iters: number, iap: number, special: number, ultima: number, glac: number, quartz: number, tess: number, reviveCd: number, respec: number, bossLootRate: number, iterative: number, glacRate1: number, quartzRate1: number, tessRate1: number, xpRate1: number, hp1: number, atk1: number, regen1: number, dr1: number, block1: number, effect1: number, charge1: number, chargeGain1: number, reload1: number, proj1: number, gadget1: number, lvl1: number, time1: number, research81: number, cm46: number, cm47: number, cm48: number, cm51: number, creastat: number): number;
+export declare function EVALKNOX_WASM(lvl: number, maxStage: number, hp: number, atk: number, regen: number, dr: number, block: number, effect: number, charge: number, chargeGain: number, reload: number, proj: number, revival: number, calyp: number, ua: number, ghost: number, omen: number, ll: number, pog: number, finish: number, kraken: number, amp: number, dead: number, sear: number, pirate: number, timeless: number, torpedos: number, charger: number, armory: number, elixer: number, reflect: number, gadget: number, iters: number, iap: number, special: number, ultima: number, glac: number, quartz: number, tess: number, reviveCd: number, respec: number, bossLootRate: number, iterative: number, glacRate1: number, quartzRate1: number, tessRate1: number, xpRate1: number, hp1: number, atk1: number, regen1: number, dr1: number, block1: number, effect1: number, charge1: number, chargeGain1: number, reload1: number, proj1: number, gadget1: number, lvl1: number, time1: number, research81: number, research95: number, research105: number, cm46: number, cm47: number, cm48: number, cm51: number, creastat: number, evoGN3: number): number;
 /**
  * assembly/evalKnox/getLastKnoxAvgStage
  * @returns `f64`

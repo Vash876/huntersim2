@@ -396,6 +396,7 @@ import { ref, computed, watch, onMounted, provide, watchEffect } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { NAVIGATION } from '../constants/navigation';
 import { useHunterStore } from '../store/hunterStore';
+import { useGemPlannerStore } from '../store/gemPlannerStore';
 import { getHunterById } from '../constants/hunters'; 
 import { 
   IconChartBar, 
@@ -438,6 +439,7 @@ const route = useRoute();
 const importCodeFromUrl = ref('');
 
 const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Hunter-spezifische Daten
 const hunterIdMap = {
@@ -799,6 +801,8 @@ watch(
 // Lifecycle hooks
 onMounted(async () => {
   await hunterStore.initHunterConfig(route.params.hunterId);
+  // Initialisiere auch den gemPlannerStore
+  gemPlannerStore.init();
 });
 
 // Bei Wechsel des Hunters die Konfiguration initialisieren

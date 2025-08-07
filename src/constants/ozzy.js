@@ -83,7 +83,7 @@ export const HUNTER_UPGRADES = {
   gadgets: ["zaptron"],
   loopmods: ["scavenger2"],
   shardmilestones: ["m0"],
-  researches: ["res81"],
+  researches: ["res810", "res95", "res105"],
   cms: ["cm46", "cm47", "cm48", "cm51"],
   diamondspecials: ["hunterloot", "reviveboost"],
   diamondcards: ["iridian"],	
@@ -161,17 +161,21 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.innovation_gem2", // Innovation Gem Node 2
   "upgrades.gems_nodes.innovation_gem3", // Innovation Gem Node 3
   "upgrades.gems_nodes.attraction_gem3", // Attraction Gem Node 3
-  "upgrades.gems.attraction",            // Attraction Gem Level
+  "upgrades.gems_nodes.attraction_level",            // Attraction Gem Level
   "upgrades.gems_nodes.attraction_catchUp", // Catchup Power
   "upgrades.gems_nodes.attraction_lootOzzy", // Loot (Ozzy)
   "upgrades.diamondcards.iridian",       // Diamond Card (Iridian)
   "upgrades.researches.res81",           // Research#81
+  "upgrades.researches.res95",           // Research#95
+  "upgrades.researches.res105",          // Research#105
   "iterations",                          // Anzahl der Iterationen
   "upgrades.cms.cm46",              // Construction Milestone 46
   "upgrades.cms.cm47",              // Construction Milestone 47
   "upgrades.cms.cm48",              // Construction Milestone 48
   "upgrades.cms.cm51",              // Construction Milestone 51
   "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
+  "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
+
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -243,6 +247,8 @@ export const OVERRIDES = {
   // Research
   researches: [
     "upgrades.researches.res81",     // Research#81
+    "upgrades.researches.res95",     // Research#95
+    "upgrades.researches.res105",    // Research#105
   ],
 
   // Construction Milestones
@@ -270,20 +276,21 @@ export const OVERRIDES = {
 
   // Gem Nodes
   gemNodes: [
-    "upgrades.gems_nodes.innovation_gem2",  // Innovation Gem Node 2
-    "upgrades.gems_nodes.innovation_gem3",  // Innovation Gem Node 3
-    "upgrades.gems_nodes.attraction_gem3",  // Attraction Gem Node 3
+    "upgrades.gems_nodes.innovation_gem2",         // Innovation Gem Node 2
+    "upgrades.gems_nodes.innovation_gem3",         // Innovation Gem Node 3
+    "upgrades.gems_nodes.attraction_gem3",         // Attraction Gem Node 3
+    "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
   ],
 
   gemUpgrades: [
-    "upgrades.gems_nodes.attraction_catchUp", // Catchup Power
+    "upgrades.gems_nodes.attraction_gem3", // Catchup Power
     "upgrades.gems_nodes.attraction_lootOzzy", // Loot (Ozzy)
     "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
   ],
 
   // Gem Levels
   gemLevels: [
-    "upgrades.gems.attraction",             // Attraction Gem Level
+    "upgrades.gems_nodes.attraction_level",             // Attraction Gem Level
   ],
 
   // Diamond Cards
@@ -364,20 +371,21 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.inscryptions.i36",  // Inscription #36
   "upgrades.inscryptions.i37",  // Inscription #37
   "upgrades.inscryptions.i40",  // Inscription #40
-  "upgrades.gems_nodes.innovation_gem2", // Innovation Gem Node 2
-  "upgrades.gems_nodes.innovation_gem3", // Innovation Gem Node 3
-  "upgrades.gems.attraction",    // Attraction Gem Level
-  "upgrades.gems_nodes.attraction_catchUp", // Catchup Power (99)
+  "gems.innovation.nodes.gem2", // Innovation Gem Node 2
+  "gems.innovation.nodes.gem3", // Innovation Gem Node 3
+  "gems.attraction.level",    // Attraction Gem Level
+  "gems.attraction.nodes.catchUp", // Catchup Power (99)
   "upgrades.inscryptions.i86",  // Inscription #86
   "upgrades.inscryptions.i92",  // Inscription #92
   "ultima",        // The Legacy of Ultima (Talent)
   "sisters",       // Blessing of the Sisters
   "scarab",        // Blessing of the Scarab
   "cat",           // Blessing of the Cat
-  "upgrades.gadgets.zaptron",  // Gadget (KORRIGIERT: von "hatch" zu "zaptron")
-  "upgrades.diamondcards.iridian", // Diamond Card (KORRIGIERT: von "gaiden" zu "iridian")
+  "upgrades.gadgets.zaptron",  // Gadget 
+  "upgrades.diamondcards.iridian", // Diamond Card 
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
-  "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
+  "gems.creation.nodes.ozzyGU", // Creation Gem Node (Ozzy)
+  "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
 ];
 
 export const STATS_RESULT_LABELS = [

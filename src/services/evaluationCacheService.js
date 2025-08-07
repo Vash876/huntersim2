@@ -7,11 +7,48 @@
 
 import { getHunterById } from '../constants/hunters';
 
-// In-Memory Cache
+// In-Memory Cache mit LRU (Least Recently Used) System
 let memoryCache = {};
+let cacheAccessOrder = []; // Tracks access order for LRU
+const MAX_CACHE_ENTRIES = 50;
 
 // Speichere eine Liste von ungültigen Cache-Keys
 const invalidCacheKeys = {};
+
+/**
+ * Manages LRU cache by removing oldest entries when limit is exceeded
+ */
+function manageCacheSize() {
+  if (cacheAccessOrder.length > MAX_CACHE_ENTRIES) {
+    // Remove oldest entries
+    const entriesToRemove = cacheAccessOrder.length - MAX_CACHE_ENTRIES;
+    const keysToRemove = cacheAccessOrder.splice(0, entriesToRemove);
+    
+    // Remove from memory cache
+    keysToRemove.forEach(key => {
+      delete memoryCache[key];
+    });
+    
+    console.log(`[Cache] Removed ${entriesToRemove} old cache entries. Current size: ${cacheAccessOrder.length}`);
+  }
+}
+
+/**
+ * Updates access order for LRU management
+ */
+function updateCacheAccess(cacheKey) {
+  // Remove from current position if exists
+  const existingIndex = cacheAccessOrder.indexOf(cacheKey);
+  if (existingIndex !== -1) {
+    cacheAccessOrder.splice(existingIndex, 1);
+  }
+  
+  // Add to end (most recently used)
+  cacheAccessOrder.push(cacheKey);
+  
+  // Manage cache size
+  manageCacheSize();
+}
 
 /**
  * Generiert einen eindeutigen Hash für einen String
@@ -127,7 +164,17 @@ export function getCurrentUpgradeValues(upgradeParams, hunterStore) {
  * @param {Object} params.hunterStore - Verweis auf den Hunter Store 
  * @returns {Promise<number>} Der generierte Cache-Schlüssel
  */
-export async function generateCacheKey({ hunterId, buildData, hunterStore }) {
+/**
+ * Generiert einen Cache-Schlüssel für einen Build und seine Parameter
+ * 
+ * @param {Object} params - Die Parameter für den Cache-Key
+ * @param {string} params.hunterId - Hunter-ID
+ * @param {Object} params.buildData - Build-Daten (level, talents, attributes, overrides)
+ * @param {Object} params.hunterStore - Verweis auf den Hunter Store 
+ * @param {Object} params.gemPlannerStore - Verweis auf den Gem Planner Store (optional)
+ * @returns {Promise<number>} Der generierte Cache-Schlüssel
+ */
+export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPlannerStore = null }) {
   try {
     // Hunter-Modul laden
     const module = await loadHunterModule(hunterId);
@@ -141,6 +188,92 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore }) {
     
     // Aktuelle Werte für Upgrades holen
     const upgradeValues = getCurrentUpgradeValues(upgradeParams, hunterStore);
+    
+    // Gem-Parameter aus dem Modul extrahieren
+    const gemParams = module.EVAL_PARAMS && module.EVAL_PARAMS.filter(param => 
+      typeof param === 'string' && (param.startsWith('gems.') || param.startsWith('upgrades.gems_nodes.'))
+    );
+    
+    // Aktuelle Gem-Werte holen (falls Gem-Parameter vorhanden)
+    let gemValues = {};
+    if (gemParams && gemParams.length > 0 && gemPlannerStore) {
+      
+      // Nur relevante Gem-Daten basierend auf den Hunter-spezifischen Parametern einbeziehen
+      const gemStates = gemPlannerStore.gemStates || {};
+      
+      for (const param of gemParams) {
+        const parts = param.split('.');
+        
+        // Neues Format: upgrades.gems_nodes.attraction_lootBorge
+        if (parts[0] === 'upgrades' && parts[1] === 'gems_nodes' && parts.length >= 3) {
+          const gemNodeParam = parts[2]; // z.B. "attraction_lootBorge", "creation_gem1"
+          const underscoreIndex = gemNodeParam.indexOf('_');
+          
+          if (underscoreIndex > 0) {
+            const gemType = gemNodeParam.substring(0, underscoreIndex); // attraction, creation, etc.
+            const gemProperty = gemNodeParam.substring(underscoreIndex + 1); // lootBorge, gem1, etc.
+            
+            // Gem-Typ in Result initialisieren
+            if (!gemValues[gemType]) gemValues[gemType] = {};
+            
+            const gemState = gemStates[gemType] || {};
+            
+            // Level
+            if (gemProperty === 'level') {
+              gemValues[gemType].level = gemState.level || 0;
+            }
+            // Nodes (gem1, gem2, gem3)
+            else if (gemProperty.startsWith('gem')) {
+              const nodeIndex = parseInt(gemProperty.replace('gem', '')) - 1;
+              if (!gemValues[gemType].nodes) gemValues[gemType].nodes = {};
+              const nodes = gemState.nodes || [];
+              gemValues[gemType].nodes[gemProperty] = nodes[nodeIndex] || false;
+            }
+            // Upgrades (lootBorge, catchUp, etc.)
+            else {
+              const upgrades = gemState.upgrades || {};
+              
+              // Map die Parameter-Namen auf die Store-Namen
+              const upgradeMapping = {
+                'lootBorge': 'borge-loot-bonus',
+                'lootOzzy': 'ozzy-loot-bonus', 
+                'catchUp': 'catch-up-power',
+                'borgeGU': 'borge-stat-bonus'
+              };
+              
+              const storeUpgradeKey = upgradeMapping[gemProperty] || gemProperty;
+              if (!gemValues[gemType].upgrades) gemValues[gemType].upgrades = {};
+              gemValues[gemType].upgrades[gemProperty] = upgrades[storeUpgradeKey] || 0;
+            }
+          }
+        }
+        // Altes Format: gems.attraction.upgrades.lootBorge (für Rückwärtskompatibilität)
+        else if (parts.length >= 3 && parts[0] === 'gems') {
+          const gemType = parts[1]; // attraction, creation, innovation
+          const category = parts[2]; // level, nodes, upgrades
+          
+          // Gem-Typ in Result initialisieren
+          if (!gemValues[gemType]) gemValues[gemType] = {};
+          
+          if (category === 'level') {
+            // Gem Level einbeziehen
+            gemValues[gemType].level = gemStates[gemType]?.level || 0;
+          } else if (category === 'nodes' && parts.length >= 4) {
+            // Spezifische Gem Node einbeziehen
+            const nodeId = parts[3];
+            if (!gemValues[gemType].nodes) gemValues[gemType].nodes = {};
+            gemValues[gemType].nodes[nodeId] = gemStates[gemType]?.nodes?.[nodeId] || 0;
+          } else if (category === 'upgrades' && parts.length >= 4) {
+            // Spezifisches Gem Upgrade einbeziehen
+            const upgradeId = parts[3];
+            if (!gemValues[gemType].upgrades) gemValues[gemType].upgrades = {};
+            gemValues[gemType].upgrades[upgradeId] = gemStates[gemType]?.upgrades?.[upgradeId] || 0;
+          }
+        }
+      }
+      
+      gemValues = sortObjectProperties(gemValues);
+    }
     
     // Relevante Build-Daten extrahieren
     const relevantBuildData = {
@@ -161,7 +294,8 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore }) {
       hunterId,
       buildData: relevantBuildData,
       storeData: relevantStoreData,
-      upgrades: upgradeValues // Explizit die Upgrade-Werte einbeziehen
+      upgrades: upgradeValues, // Upgrade-Werte
+      gems: gemValues // Gem-Werte hinzufügen
     };
     
     // Hash des JSON-Strings als Cache-Key
@@ -225,12 +359,13 @@ export function simplifyResultForStorage(result) {
  * @param {string} params.hunterId - Hunter-ID
  * @param {Object} params.buildData - Build-Daten
  * @param {Object} params.hunterStore - Verweis auf den Hunter Store
+ * @param {Object} params.gemPlannerStore - Verweis auf den Gem Planner Store
  * @returns {Promise<{shouldEvaluate: boolean, cachedResult: Object|null, cacheKey: number}>} 
  */
-export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
+export async function shouldEvaluate({ hunterId, buildData, hunterStore, gemPlannerStore = null }) {
   try {
     // Generiere den Cache-Schlüssel
-    const cacheKey = await generateCacheKey({ hunterId, buildData, hunterStore });
+    const cacheKey = await generateCacheKey({ hunterId, buildData, hunterStore, gemPlannerStore });
     
     // Prüfe, ob der Key als ungültig markiert wurde
     if (invalidCacheKeys[hunterId] && invalidCacheKeys[hunterId].has(cacheKey)) {
@@ -243,6 +378,9 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
     
     // Prüfe den In-Memory-Cache
     if (memoryCache[cacheKey]) {
+      // Update access order for LRU
+      updateCacheAccess(cacheKey);
+      
       return { 
         shouldEvaluate: false, 
         cachedResult: memoryCache[cacheKey],
@@ -257,8 +395,9 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
       
       const cachedResult = hunterStore.evaluationCache[hunterId][cacheKey];
       
-      // Auch in In-Memory-Cache speichern
+      // Auch in In-Memory-Cache speichern und Access Order aktualisieren
       memoryCache[cacheKey] = cachedResult;
+      updateCacheAccess(cacheKey);
       
       return { 
         shouldEvaluate: false, 
@@ -278,8 +417,9 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
         const MAX_CACHE_AGE = 24 * 60 * 60 * 1000; // 24 Stunden
         
         if (cacheAge < MAX_CACHE_AGE) {
-          // In Memory-Cache speichern
+          // In Memory-Cache speichern und Access Order aktualisieren
           memoryCache[cacheKey] = parsedData.result;
+          updateCacheAccess(cacheKey);
           
           // Optional: In Store-Cache speichern
           if (hunterStore.cacheEvaluationResult) {
@@ -320,16 +460,17 @@ export async function shouldEvaluate({ hunterId, buildData, hunterStore }) {
  * @param {string} params.hunterId - Hunter-ID
  * @param {Object} params.buildData - Build-Daten
  * @param {Object} params.hunterStore - Verweis auf den Hunter Store
+ * @param {Object} params.gemPlannerStore - Verweis auf den Gem Planner Store
  * @param {number} params.cacheKey - Bereits generierter Cache-Key (optional)
  * @param {Object} params.result - Das zu speichernde Ergebnis
  * @returns {Promise<void>}
  */
-export async function cacheResult({ hunterId, buildData, hunterStore, result, cacheKey = null }) {
+export async function cacheResult({ hunterId, buildData, hunterStore, gemPlannerStore = null, result, cacheKey = null }) {
   if (!result) return;
   
   try {
     // Cache-Key generieren, wenn nicht vorhanden
-    const key = cacheKey || await generateCacheKey({ hunterId, buildData, hunterStore });
+    const key = cacheKey || await generateCacheKey({ hunterId, buildData, hunterStore, gemPlannerStore });
     
     // NEU: Sample Size sicherstellen BEVOR wir cachen
     if (!result.sampleSize) {
@@ -337,8 +478,9 @@ export async function cacheResult({ hunterId, buildData, hunterStore, result, ca
       result.sampleSize = sampleSize;
     }
     
-    // In Memory-Cache speichern
+    // In Memory-Cache speichern und Access Order aktualisieren
     memoryCache[key] = result;
+    updateCacheAccess(key);
     
     // Im Store-Cache speichern
     if (hunterStore.cacheEvaluationResult) {
@@ -377,15 +519,22 @@ export async function cacheResult({ hunterId, buildData, hunterStore, result, ca
  * @param {string} params.hunterId - Hunter-ID
  * @param {Object} params.buildData - Build-Daten
  * @param {Object} params.hunterStore - Verweis auf den Hunter Store
+ * @param {Object} params.gemPlannerStore - Verweis auf den Gem Planner Store
  * @returns {Promise<void>}
  */
-export async function invalidateCache({ hunterId, buildData, hunterStore }) {
+export async function invalidateCache({ hunterId, buildData, hunterStore, gemPlannerStore = null }) {
   try {
-    const cacheKey = await generateCacheKey({ hunterId, buildData, hunterStore });
+    const cacheKey = await generateCacheKey({ hunterId, buildData, hunterStore, gemPlannerStore });
     
     // Aus Memory-Cache löschen
     if (memoryCache[cacheKey]) {
       delete memoryCache[cacheKey];
+      
+      // Auch aus Access Order entfernen
+      const accessIndex = cacheAccessOrder.indexOf(cacheKey);
+      if (accessIndex !== -1) {
+        cacheAccessOrder.splice(accessIndex, 1);
+      }
     }
     
     // Aus Store-Cache löschen
@@ -425,6 +574,12 @@ export async function clearCache(hunterId, cacheKey) {
     // In-Memory-Cache löschen (direkt nach Schlüssel)
     if (memoryCache[cacheKey]) {
       delete memoryCache[cacheKey];
+      
+      // Auch aus Access Order entfernen
+      const accessIndex = cacheAccessOrder.indexOf(cacheKey);
+      if (accessIndex !== -1) {
+        cacheAccessOrder.splice(accessIndex, 1);
+      }
     }
     
     // Auch im hunter-spezifischen Memory-Cache nachsehen
@@ -496,6 +651,7 @@ export async function clearAllCacheForHunter(hunterId) {
 export function clearAllCache(hunterStore) {
   // Memory-Cache leeren
   memoryCache = {};
+  cacheAccessOrder = []; // Access Order auch zurücksetzen
   
   // Store-Cache leeren, wenn möglich
   if (hunterStore.clearEvaluationCache) {
@@ -537,5 +693,298 @@ export async function invalidateCacheKey(hunterId, cacheKey) {
   } catch (error) {
     console.error('Error invalidating cache key:', error);
     return false;
+  }
+}
+
+/**
+ * Prüft ob sich Upgrade-Werte geändert haben und eine Re-Evaluation notwendig ist
+ * Diese Funktion wird von den Watch-Systemen verwendet
+ * 
+ * @param {string} hunterId - Die ID des Hunters
+ * @param {Object} oldUpgrades - Die alten Upgrade-Werte
+ * @param {Object} newUpgrades - Die neuen Upgrade-Werte  
+ * @param {Object} hunterStore - Verweis auf den Hunter Store
+ * @returns {Promise<boolean>} - True, wenn eine Re-Evaluation notwendig ist
+ */
+export async function shouldUpdateOnUpgradesChange(hunterId, oldUpgrades, newUpgrades, hunterStore) {
+  try {
+    // Wenn keine alten Werte vorhanden sind, keine Re-Evaluation notwendig
+    if (!oldUpgrades) return false;
+    
+    // Hunter-Modul laden um relevante Parameter zu bekommen
+    const module = await loadHunterModule(hunterId);
+    if (!module) return false;
+    
+    // Relevante Upgrade-Parameter extrahieren
+    const upgradeParams = extractUpgradeParams(module);
+    if (upgradeParams.length === 0) return false;
+    
+    // Prüfen ob sich relevante Upgrade-Werte geändert haben
+    for (const fullParam of upgradeParams) {
+      const parts = fullParam.split('.');
+      if (parts.length >= 3) {
+        const category = parts[1];
+        const upgradeId = parts[2];
+        
+        const oldValue = oldUpgrades?.[category]?.[upgradeId] || 0;
+        const newValue = newUpgrades?.[category]?.[upgradeId] || 0;
+        
+        if (oldValue !== newValue) {
+          console.log(`🔧 Relevant upgrade changed: ${category}.${upgradeId} (${oldValue} -> ${newValue})`);
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('[Cache] Error checking upgrade changes:', error);
+    return true; // Im Fehlerfall Re-Evaluation auslösen
+  }
+}
+
+/**
+ * Prüft ob sich Gem-Werte geändert haben und eine Re-Evaluation notwendig ist
+ * Diese Funktion wird von den Watch-Systemen verwendet
+ * 
+ * @param {string} hunterId - Die ID des Hunters
+ * @param {Object} oldGemStates - Die alten Gem-Werte
+ * @param {Object} newGemStates - Die neuen Gem-Werte
+ * @param {Object} hunterStore - Verweis auf den Hunter Store
+ * @returns {Promise<boolean>} - True, wenn eine Re-Evaluation notwendig ist
+ */
+export async function shouldUpdateOnGemChange(hunterId, oldGemStates, newGemStates, hunterStore) {
+  console.log(`💎 === STARTING shouldUpdateOnGemChange for ${hunterId} ===`);
+  console.log(`💎 oldGemStates:`, oldGemStates);
+  console.log(`💎 newGemStates:`, newGemStates);
+  
+  try {
+    // Hunter-Modul laden um relevante Parameter zu bekommen
+    const module = await loadHunterModule(hunterId);
+    if (!module) {
+      console.log(`💎 No module found for hunter ${hunterId}`);
+      return false;
+    }
+    
+    // Prüfen ob das Hunter-Modul Gem-Parameter verwendet
+    const gemParams = module.EVAL_PARAMS && module.EVAL_PARAMS.filter(param => 
+      typeof param === 'string' && (param.startsWith('gems.') || param.startsWith('upgrades.gems_nodes.'))
+    );
+    
+    if (!gemParams || gemParams.length === 0) {
+      console.log(`💎 No gem parameters found for hunter ${hunterId}`);
+      return false;
+    }
+    
+    console.log(`💎 Found ${gemParams.length} gem parameters for ${hunterId}:`, gemParams);
+    
+    // Wenn keine alten Werte vorhanden sind, prüfen ob die aktuellen Gem-Werte nicht leer sind
+    // Das passiert beim ersten Laden der Seite - wenn Gems bereits gesetzt sind, evaluieren
+    if (!oldGemStates) {
+      console.log(`💎 No old gem states - checking if current gems have values for ${hunterId}`);
+      
+      // Prüfe ob irgendwelche relevanten Gem-Werte > 0 sind
+      for (const param of gemParams) {
+        const parts = param.split('.');
+        
+        // Neues Format: upgrades.gems_nodes.attraction_lootBorge
+        if (parts[0] === 'upgrades' && parts[1] === 'gems_nodes' && parts.length >= 3) {
+          const gemNodeParam = parts[2]; // z.B. "attraction_lootBorge", "creation_gem1"
+          const underscoreIndex = gemNodeParam.indexOf('_');
+          
+          if (underscoreIndex > 0) {
+            const gemType = gemNodeParam.substring(0, underscoreIndex); // attraction, creation, etc.
+            const gemProperty = gemNodeParam.substring(underscoreIndex + 1); // lootBorge, gem1, etc.
+            
+            const currentGemState = newGemStates?.[gemType] || {};
+            
+            // Level check
+            if (gemProperty === 'level') {
+              const currentLevel = currentGemState.level || 0;
+              if (currentLevel > 0) {
+                console.log(`💎 Found gem level ${currentLevel} for ${gemType} - triggering evaluation`);
+                return true;
+              }
+            }
+            // Node check (gem1, gem2, gem3)
+            else if (gemProperty.startsWith('gem')) {
+              const nodeIndex = parseInt(gemProperty.replace('gem', '')) - 1;
+              const currentNodes = currentGemState.nodes || [];
+              const currentNodeValue = currentNodes[nodeIndex] || false;
+              
+              if (currentNodeValue) {
+                console.log(`💎 Found gem node ${gemProperty} = ${currentNodeValue} for ${gemType} - triggering evaluation`);
+                return true;
+              }
+            }
+            // Upgrade check (lootBorge, catchUp, etc.)
+            else {
+              const currentUpgrades = currentGemState.upgrades || {};
+              
+              // Map die Parameter-Namen auf die Store-Namen
+              const upgradeMapping = {
+                'lootBorge': 'borge-loot-bonus',
+                'lootOzzy': 'ozzy-loot-bonus', 
+                'catchUp': 'catch-up-power',
+                'borgeGU': 'borge-gem-upgrade' // Falls nötig
+              };
+              
+              const storeUpgradeKey = upgradeMapping[gemProperty] || gemProperty;
+              const currentUpgradeValue = currentUpgrades[storeUpgradeKey] || 0;
+              
+              if (currentUpgradeValue > 0) {
+                console.log(`💎 Found gem upgrade ${gemProperty} (${storeUpgradeKey}) = ${currentUpgradeValue} for ${gemType} - triggering evaluation`);
+                return true;
+              }
+            }
+          }
+        }
+        // Altes Format: gems.attraction.upgrades.lootBorge (für Rückwärtskompatibilität)
+        else if (parts.length >= 3 && parts[0] === 'gems') {
+          const gemType = parts[1]; // attraction, creation, innovation
+          const category = parts[2]; // level, nodes, upgrades
+          
+          const currentGemState = newGemStates?.[gemType] || {};
+          
+          if (category === 'level') {
+            const currentLevel = currentGemState.level || 0;
+            if (currentLevel > 0) {
+              console.log(`💎 Found gem level ${currentLevel} for ${gemType} - triggering evaluation`);
+              return true;
+            }
+          } else if (category === 'nodes' && parts.length >= 4) {
+            const nodeId = parts[3];
+            const currentNodes = currentGemState.nodes || {};
+            
+            let currentNodeValue;
+            if (nodeId.startsWith('gem')) {
+              const nodeIndex = parseInt(nodeId.replace('gem', '')) - 1;
+              currentNodeValue = currentNodes[nodeIndex] || false;
+            } else {
+              currentNodeValue = currentNodes[nodeId] || false;
+            }
+            
+            if (currentNodeValue) {
+              console.log(`💎 Found gem node ${nodeId} = ${currentNodeValue} for ${gemType} - triggering evaluation`);
+              return true;
+            }
+          } else if (category === 'upgrades' && parts.length >= 4) {
+            const upgradeId = parts[3];
+            const currentUpgrades = currentGemState.upgrades || {};
+            const currentUpgradeValue = currentUpgrades[upgradeId] || 0;
+            
+            if (currentUpgradeValue > 0) {
+              console.log(`💎 Found gem upgrade ${upgradeId} = ${currentUpgradeValue} for ${gemType} - triggering evaluation`);
+              return true;
+            }
+          }
+        }
+      }
+      
+      console.log(`💎 No relevant gem values found for ${hunterId} - no evaluation needed`);
+      return false;
+    }
+    
+    // Normale Vergleichslogik wenn alte Werte vorhanden sind
+    console.log(`💎 Old gem states:`, oldGemStates);
+    console.log(`💎 New gem states:`, newGemStates);
+    
+    // Parse die relevanten Gem-Parameter um zu erfahren, welche spezifischen Werte zu prüfen sind
+    const relevantGemChecks = new Set();
+    
+    for (const param of gemParams) {
+      // Beispiel: "gems.attraction.level" -> prüfe attraction.level
+      // Beispiel: "gems.creation.nodes.gem1" -> prüfe creation.nodes.gem1
+      // Beispiel: "gems.attraction.upgrades.catchUp" -> prüfe attraction.upgrades.catchUp
+      
+      const parts = param.split('.');
+      if (parts.length >= 3) {
+        const gemType = parts[1]; // attraction, creation, innovation
+        const category = parts[2]; // level, nodes, upgrades
+        
+        if (category === 'level') {
+          relevantGemChecks.add(`${gemType}.level`);
+        } else if (category === 'nodes' && parts.length >= 4) {
+          const nodeId = parts[3]; // gem1, gem2, gem3, etc.
+          relevantGemChecks.add(`${gemType}.nodes.${nodeId}`);
+        } else if (category === 'upgrades' && parts.length >= 4) {
+          const upgradeId = parts[3]; // catchUp, lootBorge, etc.
+          relevantGemChecks.add(`${gemType}.upgrades.${upgradeId}`);
+        }
+      }
+    }
+    
+    console.log(`💎 Relevant gem checks for ${hunterId}:`, Array.from(relevantGemChecks));
+    
+    // Prüfe nur die relevanten Gem-Parameter
+    for (const checkPath of relevantGemChecks) {
+      const pathParts = checkPath.split('.');
+      const gemType = pathParts[0]; // attraction, creation, innovation
+      
+      const oldGemState = oldGemStates?.[gemType] || {};
+      const newGemState = newGemStates?.[gemType] || {};
+      
+      console.log(`💎 Checking ${checkPath}: old=${JSON.stringify(oldGemState)}, new=${JSON.stringify(newGemState)}`);
+      
+      if (pathParts[1] === 'level') {
+        // Prüfe Gem Level: gems.attraction.level
+        const oldLevel = oldGemState.level || 0;
+        const newLevel = newGemState.level || 0;
+        
+        console.log(`💎 Comparing level for ${gemType}: ${oldLevel} vs ${newLevel}`);
+        
+        if (oldLevel !== newLevel) {
+          console.log(`💎 Relevant gem level changed: ${checkPath} (${oldLevel} -> ${newLevel})`);
+          return true;
+        }
+      } else if (pathParts[1] === 'nodes' && pathParts.length >= 3) {
+        // Prüfe Gem Node: gems.creation.nodes.gem1
+        const nodeId = pathParts[2];
+        const oldNodes = oldGemState.nodes || {};
+        const newNodes = newGemState.nodes || {};
+        
+        // Nodes sind boolean oder können als index-basierte Arrays gespeichert sein
+        // Prüfe beide Möglichkeiten: nodes[nodeId] oder nodes[nodeIndex]
+        let oldNodeValue, newNodeValue;
+        
+        if (nodeId.startsWith('gem')) {
+          // gem1, gem2, gem3 -> Index 0, 1, 2
+          const nodeIndex = parseInt(nodeId.replace('gem', '')) - 1;
+          oldNodeValue = oldNodes[nodeIndex] || false;
+          newNodeValue = newNodes[nodeIndex] || false;
+        } else {
+          oldNodeValue = oldNodes[nodeId] || false;
+          newNodeValue = newNodes[nodeId] || false;
+        }
+        
+        console.log(`💎 Comparing node ${nodeId} for ${gemType}: ${oldNodeValue} vs ${newNodeValue}`);
+        
+        if (oldNodeValue !== newNodeValue) {
+          console.log(`💎 Relevant gem node changed: ${checkPath} (${oldNodeValue} -> ${newNodeValue})`);
+          return true;
+        }
+      } else if (pathParts[1] === 'upgrades' && pathParts.length >= 3) {
+        // Prüfe Gem Upgrade: gems.attraction.upgrades.catchUp
+        const upgradeId = pathParts[2];
+        const oldUpgrades = oldGemState.upgrades || {};
+        const newUpgrades = newGemState.upgrades || {};
+        
+        const oldUpgradeValue = oldUpgrades[upgradeId] || 0;
+        const newUpgradeValue = newUpgrades[upgradeId] || 0;
+        
+        console.log(`💎 Comparing upgrade ${upgradeId} for ${gemType}: ${oldUpgradeValue} vs ${newUpgradeValue}`);
+        
+        if (oldUpgradeValue !== newUpgradeValue) {
+          console.log(`💎 Relevant gem upgrade changed: ${checkPath} (${oldUpgradeValue} -> ${newUpgradeValue})`);
+          return true;
+        }
+      }
+    }
+    
+    console.log(`💎 No relevant gem changes detected for ${hunterId}`);
+    return false;
+  } catch (error) {
+    console.error('[Cache] Error checking gem changes:', error);
+    return true; // Im Fehlerfall Re-Evaluation auslösen
   }
 }

@@ -188,6 +188,7 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     
     gemStates.value[gemId].level = level;
     saveToStorage();
+    
     return true;
   }
 
@@ -204,6 +205,7 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     
     gemStates.value[gemId].nodes[nodeIndex] = !gemStates.value[gemId].nodes[nodeIndex];
     saveToStorage();
+    
     return gemStates.value[gemId].nodes[nodeIndex];
   }
 
@@ -212,6 +214,7 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     
     gemStates.value[gemId].upgrades[upgradeId] = level;
     saveToStorage();
+    
     return true;
   }
 
@@ -329,6 +332,158 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
 
   function getOrbSpendingPlanById(planId) {
     return orbSpendingPlans.value.find(p => p.id === planId) || null;
+  }
+
+  // Plan-specific Gem Functions
+  function initializePlanGemState(planId, trIndex, gemId, maxLevel, upgrades) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    if (!plan.trSteps[trIndex].gemStates[gemId]) {
+      plan.trSteps[trIndex].gemStates[gemId] = {
+        level: 0,
+        upgrades: {},
+        nodes: [false, false, false] // Initialize as array like global gem states
+      };
+      
+      // Initialize upgrade levels
+      if (upgrades && Array.isArray(upgrades)) {
+        upgrades.forEach(upgrade => {
+          plan.trSteps[trIndex].gemStates[gemId].upgrades[upgrade.id] = 0;
+        });
+      }
+    }
+    
+    saveToStorage();
+    return true;
+  }
+
+  function getPlanGemState(planId, trIndex, gemId) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return null;
+    
+    return plan.trSteps[trIndex].gemStates[gemId] || null;
+  }
+
+  function updatePlanGemLevel(planId, trIndex, gemId, level) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    // Auto-initialize if gem state doesn't exist
+    if (!plan.trSteps[trIndex].gemStates[gemId]) {
+      plan.trSteps[trIndex].gemStates[gemId] = {
+        level: 0,
+        upgrades: {},
+        nodes: [false, false, false]
+      };
+    }
+    
+    plan.trSteps[trIndex].gemStates[gemId].level = level;
+    plan.updatedAt = new Date().toISOString();
+    saveToStorage();
+    
+    return true;
+  }
+
+  function updatePlanUpgradeLevel(planId, trIndex, gemId, upgradeId, level) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    // Auto-initialize if gem state doesn't exist
+    if (!plan.trSteps[trIndex].gemStates[gemId]) {
+      plan.trSteps[trIndex].gemStates[gemId] = {
+        level: 0,
+        upgrades: {},
+        nodes: [false, false, false]
+      };
+    }
+    
+    plan.trSteps[trIndex].gemStates[gemId].upgrades[upgradeId] = level;
+    plan.updatedAt = new Date().toISOString();
+    saveToStorage();
+    
+    return true;
+  }
+
+  function togglePlanGemNode(planId, trIndex, gemId, nodeIndex) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    // Auto-initialize if gem state doesn't exist
+    if (!plan.trSteps[trIndex].gemStates[gemId]) {
+      plan.trSteps[trIndex].gemStates[gemId] = {
+        level: 0,
+        upgrades: {},
+        nodes: [false, false, false]
+      };
+    }
+    
+    plan.trSteps[trIndex].gemStates[gemId].nodes[nodeIndex] = !plan.trSteps[trIndex].gemStates[gemId].nodes[nodeIndex];
+    plan.updatedAt = new Date().toISOString();
+    saveToStorage();
+    
+    return plan.trSteps[trIndex].gemStates[gemId].nodes[nodeIndex];
+  }
+
+  function updatePlanOrbSpending(planId, trIndex, gemId, upgradeId, cost) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    if (!plan.trSteps[trIndex].orbSpending) {
+      plan.trSteps[trIndex].orbSpending = {};
+    }
+    if (!plan.trSteps[trIndex].orbSpending[gemId]) {
+      plan.trSteps[trIndex].orbSpending[gemId] = {};
+    }
+    if (!plan.trSteps[trIndex].orbSpending[gemId][upgradeId]) {
+      plan.trSteps[trIndex].orbSpending[gemId][upgradeId] = 0;
+    }
+    
+    plan.trSteps[trIndex].orbSpending[gemId][upgradeId] += cost;
+    
+    // Ensure spending can't go below 0 (for refunds)
+    plan.trSteps[trIndex].orbSpending[gemId][upgradeId] = Math.max(0, 
+      plan.trSteps[trIndex].orbSpending[gemId][upgradeId]);
+    
+    // Update spent orbs for this TR
+    let totalSpent = 0;
+    Object.values(plan.trSteps[trIndex].orbSpending).forEach(gemSpending => {
+      Object.values(gemSpending).forEach(upgradeSpent => {
+        totalSpent += Math.max(0, upgradeSpent); // Ensure no negative values
+      });
+    });
+    plan.trSteps[trIndex].spentOrbs = totalSpent;
+    
+    plan.updatedAt = new Date().toISOString();
+    saveToStorage();
+    
+    return true;
+  }
+
+  function clearPlanTRSpending(planId, trIndex) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    plan.trSteps[trIndex].orbSpending = {};
+    plan.trSteps[trIndex].spentOrbs = 0;
+    plan.updatedAt = new Date().toISOString();
+    saveToStorage();
+    
+    return true;
+  }
+
+  function calculatePlanSpentOrbs(planId, trIndex) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex] || !plan.trSteps[trIndex].orbSpending) return 0;
+    
+    let total = 0;
+    Object.values(plan.trSteps[trIndex].orbSpending).forEach(gemSpending => {
+      Object.values(gemSpending).forEach(upgradeSpent => {
+        total += Math.max(0, upgradeSpent); // Ensure no negative values
+      });
+    });
+    
+    return total;
   }
 
   function updateOrbSpendingPlanTRStep(planId, trIndex, updates) {
@@ -548,6 +703,16 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     updateGemNode,
     toggleGemNode,
     updateUpgradeLevel,
+
+    // Plan-specific Gem Functions
+    initializePlanGemState,
+    getPlanGemState,
+    updatePlanGemLevel,
+    updatePlanUpgradeLevel,
+    togglePlanGemNode,
+    updatePlanOrbSpending,
+    clearPlanTRSpending,
+    calculatePlanSpentOrbs,
 
     // Base Gem States (never reset)
     updateBaseGemLevel,

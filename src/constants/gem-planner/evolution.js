@@ -15,7 +15,7 @@ export const EVOLUTION_GEM = {
   
   // Gem Quality costs (level up costs)
   qualityCosts: [
-    { level: 1, cost: null },
+    { level: 1, cost: 5e13 },
     { level: 2, cost: null },
     { level: 3, cost: null }
   ],
@@ -23,20 +23,56 @@ export const EVOLUTION_GEM = {
   // Gem Nodes (no effects, just costs)
   gemNodes: [
     { node: 1, cost: null },
-    { node: 2, cost: null },
-    { node: 3, cost: null }
+    { node: 2, cost: 1e14 },
+    { node: 3, cost: 3e14 }
   ],
   
   // Upgrades available in this gem
   upgrades: [
     {
-      id: 'test',
-      name: 'Test Upgrade',
-      resource: 'Test Resource',
-      baseCost: 5,
-      costMultiplier: 2.5,
+      id: 'all-gens-output',
+      name: 'All Gens Output',
+      resource: 'allgens',
+      baseCost: 1e9,
+      costMultiplier: 5,
       maxLevel: 50,
-      color: '#a3f15e',
+      color: '#fdfdfd',
+      unlock: 1,
+      costBumps: [
+        { startLevel: 14, multiplier: 3 },
+      ],
+      multiplier: {
+        base: 3,
+        calculate: (level) => {
+          return new Decimal(3).pow(level);
+        }
+      }
+    },
+    {
+      id: 'mk9-core-stability',
+      name: 'MK9 Core Stability',
+      resource: 'MK9',
+      baseCost: 9e9,
+      costMultiplier: 10,
+      maxLevel: 36,
+      color: '#fd548a',
+      unlock: 1,
+      type: 'additive',
+      multiplier: {
+        base: 0.025,
+        calculate: (level) => {
+          return new Decimal(level).mul(0.025);
+        }
+      }
+    },
+    {
+      id: 'mk9-core-resonance',
+      name: 'MK9 Core Resonance',
+      resource: 'MK9',
+      baseCost: 1e11,
+      costMultiplier: 50,
+      maxLevel: 32,
+      color: '#52ffff',
       unlock: 1,
       multiplier: {
         base: 1.07,
@@ -46,6 +82,23 @@ export const EVOLUTION_GEM = {
           const innerBase = new Decimal(1.07).pow(levelDecimal); // Math.pow(1.07, level)
           const outerExponent = new Decimal(1).add(attractionLevelDecimal.mul(0.1)).sub(0.1); // 1 + (attractionLevel * 0.1) - 0.1
           return innerBase.pow(outerExponent);
+        }
+      }
+    },
+    {
+      id: 'lp-bonus',
+      name: 'LP Bonus',
+      resource: 'LP',
+      baseCost: 1e9,
+      costMultiplier: 4,
+      maxLevel: 250,
+      color: '#9c55ff',
+      type: 'additive',
+      unlock: 1,
+      multiplier: {
+        base: 50,
+        calculate: (level) => {
+          return new Decimal(level).mul(50);
         }
       }
     },

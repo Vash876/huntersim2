@@ -62,8 +62,14 @@ export function useBackupRestore() {
       // 10. M0 Cost Overview Daten aus localStorage
       const m0CostOverviewSettings = localStorage.getItem('m0CostOverview_filters');
       
-      // 11. TR Tracking Daten
+      // 11. TR Tracking Daten (diese Funktion holt automatisch aus dem aktuellen Storage-System)
       const trTrackingData = trTrackingStore.exportData();
+      
+      // 12. Storage-System-Informationen für bessere Backup-Kompatibilität
+      const storageInfo = {
+        trTrackingUsesIndexedDB: trTrackingStore.useIndexedDB,
+        backupCreatedWith: 'indexedDB-migration-v1'
+      };
       
       // 12. Weitere relevante localStorage-Einträge sammeln
       const trPlanOrderIds = localStorage.getItem('trPlanOrderIds');
@@ -88,9 +94,10 @@ export function useBackupRestore() {
             m0CostOverview_filters: m0CostOverviewSettings ? JSON.parse(m0CostOverviewSettings) : {},
             trPlanOrderIds: trPlanOrderIds ? JSON.parse(trPlanOrderIds) : [],
             huntersim_high_iterations_mode: highIterationsMode
-          }
+          },
+          storageInfo: storageInfo
         },
-        version: '2.0.0',
+        version: '2.1.0', // Version erhöht für IndexedDB-Kompatibilität
         timestamp: new Date().toISOString(),
         type: 'hunter-simulator-backup'
       };
@@ -140,8 +147,15 @@ export function useBackupRestore() {
       
       console.log('Restoring from backup:', {
         version: backupData.version,
-        timestamp: backupData.timestamp
+        timestamp: backupData.timestamp,
+        hasStorageInfo: !!backupData.data.storageInfo,
+        trTrackingDataPresent: !!backupData.data.trTrackingStore
       });
+      
+      // Backward compatibility check for IndexedDB migration
+      if (!backupData.data.storageInfo) {
+        console.log('📋 This backup was created before IndexedDB migration. TR Tracking data will be automatically migrated during import.');
+      }
       
       // 1. Restore Hunter Store
       if (backupData.data.hunterStore) {
@@ -184,9 +198,14 @@ export function useBackupRestore() {
         });
       }
       
-      // 3. Restore TR Tracking Store
+      // 3. Restore TR Tracking Store 
+      // Important: This handles both old localStorage-based backups and new IndexedDB-based backups
       if (backupData.data.trTrackingStore) {
-        trTrackingStore.importData(backupData.data.trTrackingStore);
+        console.log('📥 Restoring TR Tracking data from backup...');
+        const importSuccess = await trTrackingStore.importData(backupData.data.trTrackingStore);
+        if (!importSuccess) {
+          console.warn('⚠️ Failed to import TR Tracking data, but continuing with other data...');
+        }
       }
       
       // 4. Restore Ultima Store

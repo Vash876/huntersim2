@@ -1,10 +1,28 @@
-<<template>
+<template>
   <!-- Backdrop außerhalb der nav - nur für den Hauptinhalt -->
   <div 
     v-if="activeSection" 
     class="fixed top-0 left-0 right-0 bottom-[70px] z-30 bg-slate-900/30 backdrop-blur-[1px] transition-opacity duration-300"
     @click="activeSection = null"
   ></div>
+  
+  <!-- Gem Level Warning - Mobile -->
+  <div 
+    v-if="showGemLevelWarning" 
+    class="fixed bottom-[70px] left-0 right-0 bg-amber-600/90 text-white text-center py-2 px-4 text-sm font-medium z-40"
+  >
+    <div class="flex items-center justify-center space-x-2">
+      <IconInfoCircle size="16" />
+      <span>Please set your gem levels first.</span>
+      <router-link 
+        to="/upgrades/gems" 
+        class="underline hover:text-amber-200 font-semibold ml-2"
+        @click="activeSection = null"
+      >
+        Go to Gems →
+      </router-link>
+    </div>
+  </div>
   
   <nav class="fixed bottom-0 left-0 right-0 z-50">
     <!-- Dropdown-Menüs ÜBER der Navbar -->
@@ -322,6 +340,20 @@
     <div class="bg-slate-900/95 backdrop-blur-sm border-t border-indigo-500/30 shadow-lg">
       <!-- Haupt-Navigations-Icons -->
       <div class="flex justify-between items-center px-3 py-1">
+        <!-- Gems Link - An erster Stelle -->
+        <router-link 
+          to="/upgrades/gems"
+          class="nav-button relative"
+          :class="{'active': $route.path === '/upgrades/gems'}"
+          @click="activeSection = null"
+        >
+          <div class="nav-button-inner">
+            <IconDiamond size="22" class="mx-auto text-indigo-200" />
+            <span class="text-xs mt-1 font-medium text-slate-300">Gems</span>
+          </div>
+          <span v-if="$route.path === '/upgrades/gems'" class="active-indicator"></span>
+        </router-link>
+        
         <!-- Hunter Bereich -->
         <button 
           class="nav-button relative"
@@ -465,6 +497,7 @@ import { getAllHunters } from '../../constants/hunters';
 import { useRoute } from 'vue-router';
 import { neonAuthService } from '@/services/neonAuthService';
 import { useSyncStore } from '@/store/syncStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
 import NeonAuthModal from '@/components/common/NeonAuthModal.vue';
 import AccountSettingsModal from '@/components/common/AccountSettingsModal.vue';
@@ -483,15 +516,71 @@ import {
   IconLoader2,
   IconCircleCheck,
   IconAlertCircle,
-  IconInfoCircle
+  IconInfoCircle,
+  IconDiamond
 } from '@tabler/icons-vue';
 
-const navigation = NAVIGATION;
 const hunters = getAllHunters();
 const route = useRoute();
 const activeSection = ref(null);
 const syncStore = useSyncStore();
+const gemPlannerStore = useGemPlannerStore();
 const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBackupRestore();
+
+const navigation = computed(() => {
+  const filteredNavigation = { ...NAVIGATION };
+  
+  // Filter upgradeCategories basierend auf Gem-Leveln
+  filteredNavigation.upgradeCategories = NAVIGATION.upgradeCategories.map(category => ({
+    ...category,
+    links: category.links.filter(link => {
+      // Prüfe ob das Link Gem-Anforderungen hat
+      if (link.unlock_gem && link.unlock_lvl) {
+        const gemState = gemPlannerStore.getGemState(link.unlock_gem);
+        const currentGemLevel = gemState?.level || 0;
+        
+        // Verstecke das Link wenn das erforderliche Gem-Level nicht erreicht ist
+        if (currentGemLevel < link.unlock_lvl) {
+          return false;
+        }
+      }
+      
+      // Zeige das Link an, wenn keine Gem-Anforderungen oder Anforderungen erfüllt sind
+      return true;
+    })
+  }));
+  
+  return filteredNavigation;
+});
+
+// Computed für Gem-Level-Warnung - Mobile
+const showGemLevelWarning = computed(() => {
+  // Prüfe ob alle Gems auf Level 0 sind
+  const allGems = gemPlannerStore.gemStates;
+  
+  if (!allGems || typeof allGems !== 'object') {
+    console.log('Mobile: Store nicht initialisiert - verstecke Warnung');
+    return false; // Verstecke Warnung wenn Store nicht initialisiert ist
+  }
+  
+  // Wenn keine Gems vorhanden sind, zeige Warnung
+  const gemKeys = Object.keys(allGems);
+  if (gemKeys.length === 0) {
+    console.log('Mobile: Keine Gems vorhanden - zeige Warnung');
+    return true;
+  }
+  
+  // Prüfe ob alle Gems auf Level 0 sind
+  const allGemsAtZero = Object.values(allGems).every(gem => (gem?.level || 0) === 0);
+  console.log('Mobile: Alle Gems auf Level 0:', allGemsAtZero, 'Gem States:', allGems);
+  return allGemsAtZero;
+});
+
+// Watch für Store-Änderungen um Reaktivität sicherzustellen - Mobile
+watch(() => gemPlannerStore.gemStates, (newGems) => {
+  console.log('Mobile: Gem Store changed:', newGems);
+}, { deep: true });
+
 const showAuthModal = ref(false);
 const showAccountSettings = ref(false);
 const syncAction = ref(null);
@@ -685,7 +774,7 @@ function getToolLabelClass(categoryColor, tool) {
 /* Moderne UI-Anpassungen */
 /* Navigation Buttons */
 .nav-button {
-  width: 20%; /* Geändert von 25% auf 20% für 5 Buttons */
+  width: 16.666667%; /* 100% / 6 für 6 Buttons */
   padding: 0.35rem 0.25rem;
   position: relative;
   display: flex;

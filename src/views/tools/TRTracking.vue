@@ -625,8 +625,8 @@ function handleImport(trackData) {
 }
 
 // Lifecycle
-onMounted(() => {
-  trTrackingStore.init();
+onMounted(async () => {
+  await trTrackingStore.init();
 });
 </script>
 

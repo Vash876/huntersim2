@@ -18,14 +18,14 @@ export const M0_COSTS = {
   13: 14, // 155.01t ≈ e14
   14: 15, // 6.74qa (quadrillion = 15)
   15: 17, // 335.73qa ≈ e17
-  16: 18, // 19.02qu (quintillion = 18)
-  17: 19, // 1.22sx (sextillion = 21, aber 1.22sx ≈ e19)
+  16: 19, // 19.02qu (quintillion = 18)
+  17: 21, // 1.22sx (sextillion = 21, aber 1.22sx ≈ e19)
   18: 22, // 87.23sx ≈ e22
   19: 24, // 6.97sp (septillion = 24)
   20: 26, // 617.88sp ≈ e26
-  21: 27, // 2.42n (nonillion = 30, aber 2.42n ≈ e27) - hier fehlt octillion (oc)
-  22: 30, // 519.09n ≈ e30
-  23: 32, // 121.98d (decillion = 33, aber ≈ e32)
+  21: 30, // 2.42n (nonillion = 30, aber 2.42n ≈ e27) - hier fehlt octillion (oc)
+  22: 32, // 519.09n ≈ e30
+  23: 35, // 121.98d (decillion = 33, aber ≈ e32)
   24: 37,
   25: 39,
   26: 42,

@@ -30,6 +30,14 @@ export function getDefaultGemData() {
       power: [],
       creation: [],
       evolution: []
+    },
+    upgrades: {
+      temporal: {},
+      innovation: {},
+      attraction: {},
+      power: {},
+      creation: {},
+      evolution: {}
     }
   };
 }
