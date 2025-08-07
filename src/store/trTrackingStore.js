@@ -117,10 +117,9 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         useIndexedDB.value = false;
         await loadFromLocalStorage();
       }
-      
-      hasAttemptedMigration.value = true;
     }
     
+    hasAttemptedMigration.value = true;
     isInitialized.value = true;
   }
 
@@ -273,13 +272,12 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       const shouldMigrate = await migrationService.shouldMigrate();
       
       if (shouldMigrate) {
-        console.log('🔄 Starting TR tracking data migration...');
+        console.log('🔄 Starting TR tracking data migration (backup restore context)...');
         const migrationResult = await migrationService.migrateData();
         
         if (migrationResult.success) {
           console.log('✅ Migration successful!');
-          useIndexedDB.value = true;
-          await loadFromIndexedDB();
+          // Don't reload data here as we're about to import new data
         } else {
           console.warn('⚠️ Migration failed, keeping current storage:', migrationResult.error);
         }
