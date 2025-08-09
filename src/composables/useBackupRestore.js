@@ -206,13 +206,30 @@ export function useBackupRestore() {
         });
       }
       
-      // 3. Restore TR Tracking Store (raw state transfer - simple and reliable)
+      // 3. Restore TR Tracking Store with automatic migration
       if (backupData.data.trTrackingStore) {
+        console.log('📥 Restoring TR Tracking data from backup...');
+        
+        // First, restore the data to the store
         Object.keys(backupData.data.trTrackingStore).forEach(key => {
           if (key in trTrackingStore.$state) {
             trTrackingStore.$state[key] = backupData.data.trTrackingStore[key];
           }
         });
+        
+        // Reset migration status to force re-migration with the restored data
+        const migrationKey = 'tr_tracking_migration_completed';
+        localStorage.removeItem(migrationKey);
+        console.log('🔄 Reset TR Tracking migration status to force migration with restored data');
+        
+        // Initialize TR Tracking store to trigger migration
+        try {
+          await trTrackingStore.init();
+          console.log('✅ TR Tracking store initialized and data migrated successfully');
+        } catch (error) {
+          console.error('❌ Error initializing TR Tracking store after restore:', error);
+          console.log('💡 Data is available in the store but may not persist until TR Tracking page is visited');
+        }
       }
       
       // 4. Restore Ultima Store

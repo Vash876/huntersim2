@@ -65,39 +65,68 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
 
   // Methods
   async function init() {
-    if (isInitialized.value) return;
+    if (isInitialized.value) {
+      console.log('TR Tracking store already initialized');
+      return;
+    }
+    
+    console.log('🚀 Initializing TR Tracking store...');
+    
+    // Check if we already have data in store (from backup restore)
+    const hasStoreData = selectedResources.value.length > 0 || trTracks.value.length > 0 || 
+                        availableResources.value.some(resource => 
+                          !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
+                        );
+    
+    console.log('🔍 Store data check:', {
+      selectedResourcesCount: selectedResources.value.length,
+      tracksCount: trTracks.value.length,
+      customResourcesCount: availableResources.value.filter(resource => 
+        !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
+      ).length,
+      hasStoreData
+    });
+    
+    if (hasStoreData) {
+      console.log('🔝 Found existing data in store (likely from backup restore) - skipping IndexedDB load');
+      useIndexedDB.value = true; // Still use IndexedDB for future saves
+      isInitialized.value = true;
+      
+      // Save the current store data to IndexedDB to persist the restored data
+      try {
+        await idbService.init();
+        await saveToIndexedDB();
+        
+        // Mark migration as completed to prevent future overwrites
+        migrationService.markMigrationCompleted();
+        
+        console.log('✅ Saved restored data to IndexedDB and marked migration as completed');
+      } catch (error) {
+        console.error('❌ Failed to save restored data to IndexedDB:', error);
+      }
+      
+      console.log('✅ TR Tracking store initialization completed (using restored data)');
+      return;
+    }
     
     // Check if IndexedDB is available
     const idbAvailable = await IndexedDBService.isAvailable();
     if (!idbAvailable) {
+      console.error('IndexedDB is not available. This application requires IndexedDB support.');
       throw new Error('IndexedDB is not available. This application requires IndexedDB support.');
     }
     
-    // Check if we should migrate to IndexedDB
     try {
+      // Initialize IndexedDB service first
+      await idbService.init();
+      
+      // Check if we should migrate to IndexedDB
       const shouldMigrate = await migrationService.shouldMigrate();
       
       if (shouldMigrate) {
-        console.log('🔄 Starting TR tracking data migration...');
+        console.log('� Starting TR tracking data migration...');
         
-        // Prepare current store data for migration (in case of backup restore)
-        const currentStoreData = {
-          selectedResources: selectedResources.value.length > 0 ? selectedResources.value : null,
-          tracks: trTracks.value.length > 0 ? trTracks.value : null,
-          customResources: availableResources.value.filter(
-            resource => !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
-          )
-        };
-        
-        // Check if we have data in store (from backup restore)
-        const hasStoreData = currentStoreData.selectedResources || currentStoreData.tracks || 
-                            (currentStoreData.customResources && currentStoreData.customResources.length > 0);
-        
-        if (hasStoreData) {
-          console.log('🔝 Found existing data in store - prioritizing over localStorage');
-        }
-        
-        const migrationResult = await migrationService.migrateData(hasStoreData ? currentStoreData : null);
+        const migrationResult = await migrationService.migrateData();
         
         if (migrationResult.success) {
           console.log('✅ Migration successful!', migrationResult.results);
@@ -106,7 +135,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
           }
           useIndexedDB.value = true;
           
-          // Reload from IndexedDB to ensure consistency
+          // Load from IndexedDB after migration
           await loadFromIndexedDB();
         } else {
           throw new Error(`Migration failed: ${migrationResult.error}`);
@@ -118,11 +147,19 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         await loadFromIndexedDB();
       }
     } catch (error) {
-      console.error('Initialization failed:', error);
-      throw error;
+      console.error('❌ TR Tracking store initialization failed:', error);
+      // Don't throw - allow app to continue, but log the error
+      console.log('💡 TR Tracking store will use defaults. Data may be lost until manually visited.');
+      
+      // Set defaults if initialization failed
+      selectedResources.value = getDefaultSelectedResources();
+      availableResources.value = [...DEFAULT_AVAILABLE_RESOURCES];
+      trTracks.value = [];
+      useIndexedDB.value = false;
     }
     
     isInitialized.value = true;
+    console.log('✅ TR Tracking store initialization completed');
   }
 
   async function loadFromIndexedDB() {
@@ -162,6 +199,31 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
 
     } catch (error) {
       console.error('Failed to load from IndexedDB:', error);
+      throw error;
+    }
+  }
+
+  async function saveToIndexedDB() {
+    try {
+      console.log('💾 Saving all TR tracking data to IndexedDB...');
+      
+      // Save settings
+      await idbService.saveTRSettings('selectedResources', selectedResources.value);
+      
+      // Save only custom resources (not the defaults)
+      const customResources = availableResources.value.filter(
+        resource => !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
+      );
+      await idbService.saveTRSettings('customResources', customResources);
+      
+      // Save all tracks
+      for (const track of trTracks.value) {
+        await idbService.saveTRTrack(track);
+      }
+      
+      console.log('✅ Saved all TR tracking data to IndexedDB');
+    } catch (error) {
+      console.error('Error saving TR tracking data to IndexedDB:', error);
       throw error;
     }
   }

@@ -22,7 +22,9 @@ class TRDataMigrationService {
    * Mark migration as completed
    */
   markMigrationCompleted() {
+    console.log('🔒 Marking TR tracking migration as completed...');
     localStorage.setItem(this.migrationKey, 'true');
+    console.log('✅ Migration marked as completed in localStorage');
   }
 
   /**

@@ -3,7 +3,7 @@ const changelog =
 [
   {
     version: '2.7.6',
-    date: '2025-08-07',
+    date: '2025-08-09',
     changes: [
       {
         text: '<b class="text-yellow-400">NEW:</b> Centralized Gem Management System',

@@ -7,16 +7,24 @@ import { useRoute } from 'vue-router';
 import { onMounted } from 'vue';
 import { useSyncStore } from './store/syncStore';
 import { useGemPlannerStore } from './store/gemPlannerStore';
+import { useTRTrackingStore } from './store/trTrackingStore';
 
 const route = useRoute();
 const syncStore = useSyncStore();
 const gemPlannerStore = useGemPlannerStore();
+const trTrackingStore = useTRTrackingStore();
 
 // Initialize stores on app start
-onMounted(() => {
+onMounted(async () => {
   try {
     syncStore.init();
     gemPlannerStore.init();
+    
+    // Note: TR Tracking store is NOT initialized here on purpose
+    // It will be initialized when the TR Tracking page is visited
+    // This allows backup restore to work properly by setting store data first
+    
+    console.log('✅ Core stores initialized successfully');
   } catch (error) {
     console.error('Store initialization failed:', error);
   }
