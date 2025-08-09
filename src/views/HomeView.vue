@@ -9,8 +9,7 @@ const changelog =
         text: '<b class="text-yellow-400">NEW:</b> Centralized Gem Management System',
         subItems: [
           'Redesigned Gems page as the central hub of the application',
-          'Gems page now serves as the unified source for all gem levels, gem nodes, and gem upgrades across all tools',
-          'All tools that require gem information now pull data from the centralized Gems page for consistency',
+          'All tools that require gem information now pull data from the centralized Gems page',
           'Mid-/Endgame Hunter upgrades are now automatically hidden when the corresponding gem is not unlocked, preventing confusion for new players',
         ]
       },
@@ -25,6 +24,7 @@ const changelog =
         text: 'TR Planner',
         subItems: [
           'Added Evolution GN#1 buff',
+          'Added toggle for Live Results side panel and improved responsive positioning for widescreen displays',
         ]
       },
       {

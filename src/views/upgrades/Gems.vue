@@ -68,11 +68,11 @@
         <div
           v-for="gem in gemList"
           :key="gem.id"
-          class="bg-gray-900/80 border border-gray-700/50 rounded-md hover:border-purple-500/50 transition-colors"
+          class="bg-gray-900/80 border border-gray-700/50 rounded-xl hover:border-purple-500/50 transition-colors"
         >
           <!-- Gem Header - Dynamic padding based on nodes -->
           <div 
-            class="bg-gradient-to-r from-gray-800 to-gray-700 border-b border-gray-600/50"
+            class="border-b border-gray-600/50 rounded-t-xl"
             :class="[
               gem.gemNodes && gem.gemNodes.length > 0 ? 'p-2' : 'p-2 pb-10'
             ]"

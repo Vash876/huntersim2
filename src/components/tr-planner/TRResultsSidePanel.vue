@@ -1,8 +1,17 @@
 <template>
   <div 
     v-if="isVisible && trSteps.length > 0" 
-    class="fixed left-[calc(50%+400px)] top-[48px] w-72 z-60 hidden md:block"
-    :class="{ 'animate-slide-in-right': isVisible }"
+    class="fixed top-[48px] w-72 z-60 transition-all duration-300"
+    :class="[
+      'hidden md:block',
+      // Responsive positioning based on screen size
+      '2xl:right-8',  // For ultrawide screens: safe distance from right edge
+      'xl:right-4',   // For very large screens: smaller distance from right edge
+      'lg:left-[calc(50%+420px)]',  // For large screens: position relative to center
+      'md:left-[calc(50%+380px)]',  // For medium screens: closer to center
+      { 'animate-slide-in-right': isVisible }
+    ]"
+    style="max-width: calc(100vw - 32px);" 
   >
     <div class="bg-gray-800 rounded-lg shadow-2xl border border-gray-700 flex flex-col">
       <!-- Header - sticky -->

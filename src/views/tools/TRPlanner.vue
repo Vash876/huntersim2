@@ -54,6 +54,39 @@
           </div>
         </div>
       </div>
+      
+      <!-- Settings Bar -->
+      <div class="bg-gray-800 py-3 px-4 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-4">
+          <!-- Placeholder for future settings -->
+          <span class="text-gray-400 text-sm">Settings</span>
+        </div>
+        
+        <!-- Right side controls -->
+        <div class="flex items-center gap-4">
+          <!-- Live Results Toggle -->
+          <div class="flex items-center gap-2">
+            <span class="text-gray-300 text-sm">Live Results:</span>
+            <button 
+              @click="showSidePanel = !showSidePanel" 
+              class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+              :class="{
+                'bg-green-600': showSidePanel,
+                'bg-gray-600': !showSidePanel
+              }"
+              :title="showSidePanel ? 'Hide Live Results Panel' : 'Show Live Results Panel'"
+            >
+              <span 
+                class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                :class="{
+                  'translate-x-6': showSidePanel,
+                  'translate-x-1': !showSidePanel
+                }"
+              ></span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Main Content - Plan Grid -->
@@ -130,7 +163,7 @@
     />
 
     <TRResultsSidePanel
-      :isVisible="showTRPlanModal"
+      :isVisible="showTRPlanModal && showSidePanel"
       :trSteps="planSteps"
       :trCount="trCount"
       :trEndDate="formatTREndDate"
@@ -264,6 +297,9 @@ const trPlanModalRef = ref(null);
 const selectedPlanId = ref(null);
 const editingPlanId = ref(null);
 const showOrbCalculatorModal = ref(false);
+
+// Side panel state
+const showSidePanel = ref(true);
 
 // Import state
 const showImportModal = ref(false);
@@ -649,6 +685,12 @@ onMounted(async () => {
   
   // Prüfe Welcome Modal
   checkShowGemWelcome();
+  
+  // Load side panel preference
+  const savedPanelState = localStorage.getItem('trplanner_sidepanel_visible');
+  if (savedPanelState !== null) {
+    showSidePanel.value = JSON.parse(savedPanelState);
+  }
 });
 
 // Cleanup on unmount
@@ -673,6 +715,11 @@ watch(() => trPlannerStore.planModalShouldOpen, (newValue) => {
     // Flag zurücksetzen 
     trPlannerStore.planModalShouldOpen = null;
   }
+});
+
+// Watch for side panel toggle changes to save preference
+watch(showSidePanel, (newValue) => {
+  localStorage.setItem('trplanner_sidepanel_visible', JSON.stringify(newValue));
 });
 
 function closeGemWelcomeModal() {
