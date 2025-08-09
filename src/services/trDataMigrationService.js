@@ -156,8 +156,9 @@ class TRDataMigrationService {
 
   /**
    * Migrate data from localStorage to IndexedDB
+   * Also handles data already present in Pinia store (from backup restore)
    */
-  async migrateData() {
+  async migrateData(existingStoreData = null) {
     console.log('🔄 Starting TR tracking data migration to IndexedDB...');
     
     try {
@@ -165,10 +166,20 @@ class TRDataMigrationService {
       await this.idbService.init();
       console.log('✅ IndexedDB initialized successfully');
       
-      // Load data from localStorage
-      const localData = this.loadLocalStorageData();
-      if (!localData) {
-        throw new Error('Failed to load localStorage data');
+      let dataToMigrate = null;
+      
+      // Priority 1: Use data from Pinia store if provided (from backup restore)
+      if (existingStoreData) {
+        console.log('🔝 Using existing store data (from backup restore) - higher priority than localStorage');
+        dataToMigrate = existingStoreData;
+      } else {
+        // Priority 2: Load data from localStorage
+        console.log('📖 Loading data from localStorage...');
+        dataToMigrate = this.loadLocalStorageData();
+      }
+      
+      if (!dataToMigrate) {
+        throw new Error('No data available to migrate');
       }
 
       const migrationResults = {
@@ -176,14 +187,17 @@ class TRDataMigrationService {
         customResources: false,
         tracks: 0,
         entries: 0,
-        errors: []
+        errors: [],
+        source: existingStoreData ? 'pinia-store' : 'localStorage'
       };
 
+      console.log(`🔄 Migrating data from ${migrationResults.source}...`);
+
       // Migrate selected resources
-      if (localData.selectedResources) {
+      if (dataToMigrate.selectedResources) {
         try {
-          console.log(`🔄 Migrating ${localData.selectedResources.length} selected resources...`);
-          await this.idbService.saveTRSettings('selectedResources', localData.selectedResources);
+          console.log(`🔄 Migrating ${dataToMigrate.selectedResources.length} selected resources...`);
+          await this.idbService.saveTRSettings('selectedResources', dataToMigrate.selectedResources);
           migrationResults.selectedResources = true;
           console.log('✅ Migrated selected resources');
         } catch (error) {
@@ -195,10 +209,10 @@ class TRDataMigrationService {
       }
 
       // Migrate custom resources
-      if (localData.customResources) {
+      if (dataToMigrate.customResources) {
         try {
-          console.log(`🔄 Migrating ${localData.customResources.length} custom resources...`);
-          await this.idbService.saveTRSettings('customResources', localData.customResources);
+          console.log(`🔄 Migrating ${dataToMigrate.customResources.length} custom resources...`);
+          await this.idbService.saveTRSettings('customResources', dataToMigrate.customResources);
           migrationResults.customResources = true;
           console.log('✅ Migrated custom resources');
         } catch (error) {
@@ -210,10 +224,10 @@ class TRDataMigrationService {
       }
 
       // Migrate tracks and entries
-      if (localData.tracks && Array.isArray(localData.tracks)) {
-        console.log(`🔄 Starting migration of ${localData.tracks.length} tracks...`);
+      if (dataToMigrate.tracks && Array.isArray(dataToMigrate.tracks)) {
+        console.log(`🔄 Starting migration of ${dataToMigrate.tracks.length} tracks...`);
         
-        for (const track of localData.tracks) {
+        for (const track of dataToMigrate.tracks) {
           try {
             console.log(`🔄 Migrating track: "${track.name}" with ${track.entries?.length || 0} entries`);
             
@@ -236,7 +250,7 @@ class TRDataMigrationService {
           }
         }
       } else {
-        console.log('⚠️ No tracks found in localStorage data');
+        console.log('⚠️ No tracks found to migrate');
       }
 
       // Log migration results
@@ -249,8 +263,8 @@ class TRDataMigrationService {
       // Mark migration as completed
       this.markMigrationCompleted();
       
-      // Create backup of localStorage data before cleanup
-      await this.createLocalStorageBackup(localData);
+      // Create backup of data before cleanup
+      await this.createDataBackup(dataToMigrate, migrationResults.source);
       
       return {
         success: true,
@@ -268,19 +282,27 @@ class TRDataMigrationService {
   }
 
   /**
-   * Create a backup of localStorage data (logging only)
+   * Create a backup of data (logging only)
    */
-  async createLocalStorageBackup(data) {
+  async createDataBackup(data, source) {
     try {
-      console.log('📦 localStorage backup data available:', {
+      console.log(`📦 ${source} backup data available:`, {
         selectedResources: !!data.selectedResources,
         tracks: data.tracks?.length || 0,
         customResources: data.customResources?.length || 0,
+        source: source,
         timestamp: new Date().toISOString()
       });
     } catch (error) {
       console.warn('Failed to log backup data:', error);
     }
+  }
+
+  /**
+   * Create a backup of localStorage data (logging only) - DEPRECATED
+   */
+  async createLocalStorageBackup(data) {
+    return this.createDataBackup(data, 'localStorage');
   }
 
   /**

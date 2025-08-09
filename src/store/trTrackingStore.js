@@ -79,7 +79,25 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       
       if (shouldMigrate) {
         console.log('🔄 Starting TR tracking data migration...');
-        const migrationResult = await migrationService.migrateData();
+        
+        // Prepare current store data for migration (in case of backup restore)
+        const currentStoreData = {
+          selectedResources: selectedResources.value.length > 0 ? selectedResources.value : null,
+          tracks: trTracks.value.length > 0 ? trTracks.value : null,
+          customResources: availableResources.value.filter(
+            resource => !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
+          )
+        };
+        
+        // Check if we have data in store (from backup restore)
+        const hasStoreData = currentStoreData.selectedResources || currentStoreData.tracks || 
+                            (currentStoreData.customResources && currentStoreData.customResources.length > 0);
+        
+        if (hasStoreData) {
+          console.log('🔝 Found existing data in store - prioritizing over localStorage');
+        }
+        
+        const migrationResult = await migrationService.migrateData(hasStoreData ? currentStoreData : null);
         
         if (migrationResult.success) {
           console.log('✅ Migration successful!', migrationResult.results);
@@ -87,6 +105,8 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
             console.log('🔍 Migration verification:', migrationResult.verification);
           }
           useIndexedDB.value = true;
+          
+          // Reload from IndexedDB to ensure consistency
           await loadFromIndexedDB();
         } else {
           throw new Error(`Migration failed: ${migrationResult.error}`);
@@ -534,21 +554,38 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       
       if (data.selectedResources) {
         selectedResources.value = data.selectedResources;
+        console.log(`📥 Imported ${data.selectedResources.length} selected resources`);
       }
       
       if (data.customResources) {
         const allResources = [...DEFAULT_AVAILABLE_RESOURCES, ...data.customResources];
         availableResources.value = allResources;
+        console.log(`📥 Imported ${data.customResources.length} custom resources`);
       }
       
       if (data.trTracks) {
         trTracks.value = data.trTracks;
+        const totalEntries = data.trTracks.reduce((sum, track) => sum + (track.entries?.length || 0), 0);
+        console.log(`📥 Imported ${data.trTracks.length} tracks with ${totalEntries} total entries`);
       }
       
-      // Save to IndexedDB
+      // Save to IndexedDB - this is crucial for persistence!
       await saveToStorage();
       
-      console.log('✅ TR tracking data imported successfully');
+      // Also save each track individually to ensure entries are persisted
+      if (data.trTracks && data.trTracks.length > 0) {
+        console.log('💾 Saving individual tracks to ensure entries are persisted...');
+        for (const track of data.trTracks) {
+          try {
+            await idbService.saveTRTrack(track);
+            console.log(`💾 Saved track: ${track.name} (${track.entries?.length || 0} entries)`);
+          } catch (error) {
+            console.warn(`Failed to save track ${track.name}:`, error);
+          }
+        }
+      }
+      
+      console.log('✅ TR tracking data imported and saved to IndexedDB successfully');
       return true;
     } catch (error) {
       console.error('❌ Error importing TR tracking data:', error);
