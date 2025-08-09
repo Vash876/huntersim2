@@ -24,7 +24,7 @@ const changelog =
       {
         text: 'TR Planner',
         subItems: [
-          'Added Evolution GN#1 Buff',
+          'Added Evolution GN#1 buff',
         ]
       },
       {

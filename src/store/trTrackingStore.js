@@ -679,16 +679,6 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     try {
       console.log('📥 Importing TR tracking data...');
       
-      // Ensure migration has been attempted before importing
-      // This is important for backup restoration scenarios
-      if (!migrationService.isMigrationCompleted()) {
-        console.log('🔄 Running migration check before import...');
-        const shouldMigrate = await migrationService.shouldMigrate();
-        if (shouldMigrate) {
-          await migrationService.migrateData();
-        }
-      }
-      
       if (data.selectedResources) {
         selectedResources.value = data.selectedResources;
       }
