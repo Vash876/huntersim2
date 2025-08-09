@@ -4,7 +4,7 @@ import HunterView from '../views/HunterView.vue';
 const routes = [
   {
     path: '/',
-    redirect: '/upgrades/gems'
+    redirect: '/home'
   },
   {
     path: '/home',
