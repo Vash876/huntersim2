@@ -67,6 +67,12 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
   async function init() {
     if (isInitialized.value) return;
     
+    // Check if IndexedDB is available
+    const idbAvailable = await IndexedDBService.isAvailable();
+    if (!idbAvailable) {
+      throw new Error('IndexedDB is not available. This application requires IndexedDB support.');
+    }
+    
     // Check if we should migrate to IndexedDB
     try {
       const shouldMigrate = await migrationService.shouldMigrate();
@@ -76,46 +82,24 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         const migrationResult = await migrationService.migrateData();
         
         if (migrationResult.success) {
-          console.log('✅ Migration successful!');
+          console.log('✅ Migration successful!', migrationResult.results);
+          if (migrationResult.verification) {
+            console.log('🔍 Migration verification:', migrationResult.verification);
+          }
           useIndexedDB.value = true;
           await loadFromIndexedDB();
         } else {
-          console.warn('⚠️ Migration failed, falling back to localStorage:', migrationResult.error);
-          useIndexedDB.value = false;
-          loadFromLocalStorage();
+          throw new Error(`Migration failed: ${migrationResult.error}`);
         }
       } else {
-        // Check if we should use IndexedDB (migration already completed)
-        const idbAvailable = await IndexedDBService.isAvailable();
-        const migrationCompleted = migrationService.isMigrationCompleted();
-        
-        if (idbAvailable && migrationCompleted) {
-          console.log('📖 Using IndexedDB (migration already completed)');
-          useIndexedDB.value = true;
-          await loadFromIndexedDB();
-        } else if (idbAvailable) {
-          console.log('📖 Using IndexedDB (fresh start)');
-          useIndexedDB.value = true;
-          await loadFromIndexedDB();
-        } else {
-          console.log('📖 Using localStorage fallback');
-          useIndexedDB.value = false;
-          await loadFromLocalStorage();
-        }
+        // Migration already completed or fresh start - use IndexedDB
+        console.log('📖 Using IndexedDB (migration already completed or no localStorage data)');
+        useIndexedDB.value = true;
+        await loadFromIndexedDB();
       }
     } catch (error) {
       console.error('Initialization failed:', error);
-      // Only fall back to localStorage if IndexedDB is truly unavailable
-      const idbAvailable = await IndexedDBService.isAvailable();
-      if (idbAvailable) {
-        console.log('🔧 IndexedDB available, starting fresh');
-        useIndexedDB.value = true;
-        await loadFromIndexedDB();
-      } else {
-        console.log('📖 Using localStorage fallback');
-        useIndexedDB.value = false;
-        await loadFromLocalStorage();
-      }
+      throw error;
     }
     
     isInitialized.value = true;
@@ -157,106 +141,25 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       }
 
     } catch (error) {
-      console.error('Failed to load from IndexedDB, falling back to localStorage:', error);
-      useIndexedDB.value = false;
-      await loadFromLocalStorage();
-    }
-  }
-
-  async function loadFromLocalStorage() {
-    console.log('📖 Loading TR tracking data from localStorage...');
-    await loadFromStorage();
-  }
-
-  async function loadFromStorage() {
-    try {
-
-      // Load selected resources
-      const savedSelectedResources = localStorage.getItem('tr_tracking_selected_resources');
-      if (savedSelectedResources) {
-        let loaded = JSON.parse(savedSelectedResources);
-        // Falls es ein Array von IDs ist, umwandeln in Resource-Objekte
-        if (Array.isArray(loaded) && typeof loaded[0] === 'string') {
-          selectedResources.value = DEFAULT_AVAILABLE_RESOURCES.filter(res => loaded.includes(res.id));
-        } else if (Array.isArray(loaded) && typeof loaded[0] === 'object') {
-          // Falls es schon Objekte sind, aber evtl. aus älteren Versionen, immer auf aktuelle Resource-Objekte mappen
-          selectedResources.value = loaded.map(sel => {
-            const match = DEFAULT_AVAILABLE_RESOURCES.find(res => res.id === sel.id);
-            return match ? match : sel;
-          });
-        } else {
-          selectedResources.value = getDefaultSelectedResources();
-        }
-      } else {
-        // Set default selected resources for new users
-        selectedResources.value = getDefaultSelectedResources();
-        console.log('Setting default selected resources for new user:', selectedResources.value.map(r => r.id));
-        // Save defaults immediately so they persist
-        await saveToStorage();
-      }
-
-      // Load custom resources and merge with defaults
-      const savedCustomResources = localStorage.getItem('tr_tracking_custom_resources');
-      if (savedCustomResources) {
-        const customResources = JSON.parse(savedCustomResources);
-        // Merge custom resources with defaults, avoiding duplicates
-        const allResources = [...DEFAULT_AVAILABLE_RESOURCES];
-        customResources.forEach(custom => {
-          if (!allResources.find(res => res.id === custom.id)) {
-            allResources.push(custom);
-          }
-        });
-        availableResources.value = allResources;
-      }
-
-      // Load TR tracks
-      const savedTracks = localStorage.getItem('tr_tracking_tracks');
-      if (savedTracks) {
-        trTracks.value = JSON.parse(savedTracks);
-        console.log(`Loaded ${trTracks.value.length} TR tracks from storage`);
-      } else {
-        console.log('No TR tracks found in storage');
-      }
-    } catch (error) {
-      console.error('Error loading TR tracking data from storage:', error);
-      // Fallback to defaults on error, but preserve any existing tracks!
-      if (selectedResources.value.length === 0) {
-        selectedResources.value = getDefaultSelectedResources();
-        console.warn('Restored default selected resources due to storage error');
-      }
-      // Don't clear tracks on storage errors - they might still be in memory
+      console.error('Failed to load from IndexedDB:', error);
+      throw error;
     }
   }
 
   async function saveToStorage() {
     try {
-      if (useIndexedDB.value) {
-        // Save to IndexedDB ONLY
-        await idbService.saveTRSettings('selectedResources', selectedResources.value);
-        
-        // Save only custom resources (not the defaults)
-        const customResources = availableResources.value.filter(
-          resource => !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
-        );
-        await idbService.saveTRSettings('customResources', customResources);
-        
-        console.log('💾 Saved TR settings to IndexedDB');
-      } else {
-        // Save to localStorage (fallback ONLY)
-        localStorage.setItem('tr_tracking_selected_resources', JSON.stringify(selectedResources.value));
-        localStorage.setItem('tr_tracking_tracks', JSON.stringify(trTracks.value));
-        
-        // Save only custom resources (not the defaults)
-        const customResources = availableResources.value.filter(
-          resource => !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
-        );
-        localStorage.setItem('tr_tracking_custom_resources', JSON.stringify(customResources));
-        console.log('💾 Saved TR settings to localStorage (fallback)');
-      }
+      // Always use IndexedDB after migration
+      await idbService.saveTRSettings('selectedResources', selectedResources.value);
+      
+      // Save only custom resources (not the defaults)
+      const customResources = availableResources.value.filter(
+        resource => !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
+      );
+      await idbService.saveTRSettings('customResources', customResources);
+      
+      console.log('💾 Saved TR settings to IndexedDB');
     } catch (error) {
-      console.error('Error saving TR tracking data:', error);
-      // If IndexedDB save fails, DO NOT fall back to localStorage
-      // This prevents dual storage after migration
+      console.error('Error saving TR tracking data to IndexedDB:', error);
       throw error;
     }
   }
@@ -346,31 +249,17 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     }
 
     try {
-      if (useIndexedDB.value) {
-        // Save to IndexedDB
-        await idbService.saveTRTrack(newTrack);
-        console.log(`💾 Saved track "${newTrack.name}" to IndexedDB`);
-      } else {
-        // Add to local array and save to localStorage
-        trTracks.value.push(newTrack);
-        await saveToStorage();
-      }
+      // Always use IndexedDB after migration
+      await idbService.saveTRTrack(newTrack);
+      console.log(`💾 Saved track "${newTrack.name}" to IndexedDB`);
       
-      // Always update local array for immediate UI updates
-      if (useIndexedDB.value) {
-        trTracks.value.push(newTrack);
-      }
+      // Update local array for immediate UI updates
+      trTracks.value.push(newTrack);
       
       return newTrack;
     } catch (error) {
-      console.error('Failed to save track:', error);
-      // Fallback: add to local array and try localStorage
-      trTracks.value.push(newTrack);
-      if (useIndexedDB.value) {
-        console.warn('Falling back to localStorage for track save');
-        localStorage.setItem('tr_tracking_tracks', JSON.stringify(trTracks.value));
-      }
-      return newTrack;
+      console.error('Failed to save track to IndexedDB:', error);
+      throw error;
     }
   }
 
@@ -411,11 +300,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     };
     
     try {
-      if (useIndexedDB.value) {
-        await idbService.saveTRTrack(trTracks.value[index]);
-      } else {
-        await saveToStorage();
-      }
+      await idbService.saveTRTrack(trTracks.value[index]);
       return true;
     } catch (error) {
       console.error('Failed to update track:', error);
@@ -470,11 +355,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     track.updatedAt = new Date().toISOString();
     
     try {
-      if (useIndexedDB.value) {
-        await idbService.saveTRTrack(track);
-      } else {
-        await saveToStorage();
-      }
+      await idbService.saveTRTrack(track);
       return true;
     } catch (error) {
       console.error('Failed to update track settings:', error);
@@ -494,11 +375,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     track.updatedAt = new Date().toISOString();
     
     try {
-      if (useIndexedDB.value) {
-        await idbService.saveTRTrack(track);
-      } else {
-        await saveToStorage();
-      }
+      await idbService.saveTRTrack(track);
       console.log('Resource order updated and saved to storage');
       return true;
     } catch (error) {
@@ -512,16 +389,8 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     if (index === -1) return false;
 
     try {
-      if (useIndexedDB.value) {
-        await idbService.deleteTRTrack(trackId);
-      }
-      
+      await idbService.deleteTRTrack(trackId);
       trTracks.value.splice(index, 1);
-      
-      if (!useIndexedDB.value) {
-        await saveToStorage();
-      }
-      
       return true;
     } catch (error) {
       console.error('Failed to delete track:', error);
@@ -538,11 +407,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     track.updatedAt = new Date().toISOString();
     
     try {
-      if (useIndexedDB.value) {
-        await idbService.saveTRTrack(track);
-      } else {
-        await saveToStorage();
-      }
+      await idbService.saveTRTrack(track);
       return true;
     } catch (error) {
       console.error('Failed to complete track:', error);
@@ -569,11 +434,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     track.entries.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     try {
-      if (useIndexedDB.value) {
-        await idbService.saveTrackEntry(trackId, newEntry);
-      } else {
-        await saveToStorage();
-      }
+      await idbService.saveTrackEntry(trackId, newEntry);
       return newEntry;
     } catch (error) {
       console.error('Failed to add entry:', error);
@@ -600,11 +461,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     track.entries.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     try {
-      if (useIndexedDB.value) {
-        await idbService.saveTrackEntry(trackId, track.entries[entryIndex]);
-      } else {
-        await saveToStorage();
-      }
+      await idbService.saveTrackEntry(trackId, track.entries[entryIndex]);
       return true;
     } catch (error) {
       console.error('Failed to update entry:', error);
@@ -623,11 +480,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     track.updatedAt = new Date().toISOString();
     
     try {
-      if (useIndexedDB.value) {
-        await idbService.deleteTrackEntry(entryId);
-      } else {
-        await saveToStorage();
-      }
+      await idbService.deleteTrackEntry(entryId);
       return true;
     } catch (error) {
       console.error('Failed to delete entry:', error);
@@ -692,7 +545,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         trTracks.value = data.trTracks;
       }
       
-      // Save using the current storage system (IndexedDB if available, localStorage as fallback)
+      // Save to IndexedDB
       await saveToStorage();
       
       console.log('✅ TR tracking data imported successfully');
@@ -708,21 +561,12 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     trTracks.value = [];
     availableResources.value = [...DEFAULT_AVAILABLE_RESOURCES];
     
-    if (useIndexedDB.value) {
-      // Clear IndexedDB ONLY
-      try {
-        await idbService.clearAllTRData();
-        console.log('🗑️ Cleared all TR data from IndexedDB');
-      } catch (error) {
-        console.error('Error clearing IndexedDB:', error);
-        throw error;
-      }
-    } else {
-      // Clear localStorage (fallback only)
-      localStorage.removeItem('tr_tracking_selected_resources');
-      localStorage.removeItem('tr_tracking_tracks');
-      localStorage.removeItem('tr_tracking_custom_resources');
-      console.log('🗑️ Cleared all TR data from localStorage (fallback)');
+    try {
+      await idbService.clearAllTRData();
+      console.log('🗑️ Cleared all TR data from IndexedDB');
+    } catch (error) {
+      console.error('Error clearing IndexedDB:', error);
+      throw error;
     }
   }
 
@@ -803,7 +647,6 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     selectedResources,
     trTracks,
     isInitialized,
-    useIndexedDB, // Export for backup system
 
     // Computed
     activeTracks,
@@ -811,7 +654,6 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
 
     // Methods
     init,
-    loadFromStorage,
     saveToStorage,
     updateSelectedResources,
     addCustomResource,
@@ -834,6 +676,17 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     importTrackData,
     importMultipleTracksData,
     updateStandardResourceColor,
-    updateCustomResource
+    updateCustomResource,
+
+    // Debug methods for migration
+    forceMigration: async () => {
+      console.log('🔄 Forcing migration reset...');
+      migrationService.resetMigrationStatus();
+      isInitialized.value = false;
+      await init();
+    },
+    
+    getMigrationStatus: () => migrationService.getMigrationStatus(),
+    verifyMigrationData: () => migrationService.verifyMigrationData()
   };
 });

@@ -26,11 +26,20 @@ class TRDataMigrationService {
   }
 
   /**
+   * Reset migration status (for testing)
+   */
+  resetMigrationStatus() {
+    localStorage.removeItem(this.migrationKey);
+    console.log('🔄 Migration status reset - will trigger migration on next init');
+  }
+
+  /**
    * Check if IndexedDB is available and localStorage has TR data
    */
   async shouldMigrate() {
     // Don't migrate if already completed
     if (this.isMigrationCompleted()) {
+      console.log('⏭️ Migration already completed, skipping...');
       return false;
     }
 
@@ -43,6 +52,7 @@ class TRDataMigrationService {
 
     // Check if there's TR data in localStorage to migrate
     const hasLocalStorageData = this.hasLocalStorageData();
+    console.log('🔍 Should migrate?', { hasLocalStorageData, idbAvailable, migrationCompleted: this.isMigrationCompleted() });
     
     return hasLocalStorageData;
   }
@@ -51,13 +61,25 @@ class TRDataMigrationService {
    * Check if localStorage contains TR tracking data
    */
   hasLocalStorageData() {
+    // Debug: Log all localStorage keys to see what's available
+    console.log('🔍 Available localStorage keys:', Object.keys(localStorage));
+    
     const keys = [
       'tr_tracking_selected_resources',
       'tr_tracking_tracks',
-      'tr_tracking_custom_resources'
+      'tr_tracking_custom_resources',
+      // Additional possible keys from older versions
+      'tr_tracker_resources',
+      'tr_tracker_tracks',
+      'trTracking_selectedResources',
+      'trTracking_tracks',
+      'trTracking_customResources'
     ];
 
-    return keys.some(key => localStorage.getItem(key) !== null);
+    const foundKeys = keys.filter(key => localStorage.getItem(key) !== null);
+    console.log('🔍 Found TR tracking keys:', foundKeys);
+    
+    return foundKeys.length > 0;
   }
 
   /**
@@ -71,23 +93,59 @@ class TRDataMigrationService {
         customResources: null
       };
 
-      // Load selected resources
-      const savedSelectedResources = localStorage.getItem('tr_tracking_selected_resources');
-      if (savedSelectedResources) {
-        data.selectedResources = JSON.parse(savedSelectedResources);
+      // Try multiple possible keys for selected resources
+      const resourceKeys = [
+        'tr_tracking_selected_resources',
+        'tr_tracker_resources', 
+        'trTracking_selectedResources'
+      ];
+      
+      for (const key of resourceKeys) {
+        const savedSelectedResources = localStorage.getItem(key);
+        if (savedSelectedResources) {
+          console.log(`📖 Found selected resources in ${key}`);
+          data.selectedResources = JSON.parse(savedSelectedResources);
+          break;
+        }
       }
 
-      // Load tracks
-      const savedTracks = localStorage.getItem('tr_tracking_tracks');
-      if (savedTracks) {
-        data.tracks = JSON.parse(savedTracks);
+      // Try multiple possible keys for tracks
+      const trackKeys = [
+        'tr_tracking_tracks',
+        'tr_tracker_tracks',
+        'trTracking_tracks'
+      ];
+      
+      for (const key of trackKeys) {
+        const savedTracks = localStorage.getItem(key);
+        if (savedTracks) {
+          console.log(`📖 Found tracks in ${key}`);
+          data.tracks = JSON.parse(savedTracks);
+          break;
+        }
       }
 
-      // Load custom resources
-      const savedCustomResources = localStorage.getItem('tr_tracking_custom_resources');
-      if (savedCustomResources) {
-        data.customResources = JSON.parse(savedCustomResources);
+      // Try multiple possible keys for custom resources
+      const customResourceKeys = [
+        'tr_tracking_custom_resources',
+        'tr_tracker_custom_resources',
+        'trTracking_customResources'
+      ];
+      
+      for (const key of customResourceKeys) {
+        const savedCustomResources = localStorage.getItem(key);
+        if (savedCustomResources) {
+          console.log(`📖 Found custom resources in ${key}`);
+          data.customResources = JSON.parse(savedCustomResources);
+          break;
+        }
       }
+
+      console.log('📖 Loaded localStorage data summary:', {
+        selectedResources: !!data.selectedResources,
+        tracks: data.tracks?.length || 0,
+        customResources: data.customResources?.length || 0
+      });
 
       return data;
     } catch (error) {
@@ -100,11 +158,12 @@ class TRDataMigrationService {
    * Migrate data from localStorage to IndexedDB
    */
   async migrateData() {
-    console.log('Starting TR tracking data migration to IndexedDB...');
+    console.log('🔄 Starting TR tracking data migration to IndexedDB...');
     
     try {
       // Initialize IndexedDB
       await this.idbService.init();
+      console.log('✅ IndexedDB initialized successfully');
       
       // Load data from localStorage
       const localData = this.loadLocalStorageData();
@@ -123,41 +182,69 @@ class TRDataMigrationService {
       // Migrate selected resources
       if (localData.selectedResources) {
         try {
+          console.log(`🔄 Migrating ${localData.selectedResources.length} selected resources...`);
           await this.idbService.saveTRSettings('selectedResources', localData.selectedResources);
           migrationResults.selectedResources = true;
           console.log('✅ Migrated selected resources');
         } catch (error) {
+          console.error('❌ Failed to migrate selected resources:', error);
           migrationResults.errors.push(`Selected resources: ${error.message}`);
         }
+      } else {
+        console.log('⚠️ No selected resources found to migrate');
       }
 
       // Migrate custom resources
       if (localData.customResources) {
         try {
+          console.log(`🔄 Migrating ${localData.customResources.length} custom resources...`);
           await this.idbService.saveTRSettings('customResources', localData.customResources);
           migrationResults.customResources = true;
           console.log('✅ Migrated custom resources');
         } catch (error) {
+          console.error('❌ Failed to migrate custom resources:', error);
           migrationResults.errors.push(`Custom resources: ${error.message}`);
         }
+      } else {
+        console.log('⚠️ No custom resources found to migrate');
       }
 
       // Migrate tracks and entries
       if (localData.tracks && Array.isArray(localData.tracks)) {
+        console.log(`🔄 Starting migration of ${localData.tracks.length} tracks...`);
+        
         for (const track of localData.tracks) {
           try {
+            console.log(`🔄 Migrating track: "${track.name}" with ${track.entries?.length || 0} entries`);
+            
+            // Log track structure for debugging
+            console.log('Track structure:', {
+              id: track.id,
+              name: track.name,
+              entriesCount: track.entries?.length || 0,
+              hasResourceOrder: !!track.resourceOrder,
+              hasInitialValues: !!track.initialValues
+            });
+            
             await this.idbService.saveTRTrack(track);
             migrationResults.tracks++;
             migrationResults.entries += track.entries ? track.entries.length : 0;
-            console.log(`✅ Migrated track: ${track.name} (${track.entries?.length || 0} entries)`);
+            console.log(`✅ Successfully migrated track: ${track.name} (${track.entries?.length || 0} entries)`);
           } catch (error) {
+            console.error(`❌ Failed to migrate track "${track.name}":`, error);
             migrationResults.errors.push(`Track "${track.name}": ${error.message}`);
           }
         }
+      } else {
+        console.log('⚠️ No tracks found in localStorage data');
       }
 
       // Log migration results
-      console.log('Migration completed:', migrationResults);
+      console.log('🎉 Migration completed with results:', migrationResults);
+      
+      // Verify the migration by checking if data exists in IndexedDB
+      const verificationResults = await this.verifyMigrationData();
+      console.log('🔍 Migration verification:', verificationResults);
       
       // Mark migration as completed
       this.markMigrationCompleted();
@@ -167,11 +254,12 @@ class TRDataMigrationService {
       
       return {
         success: true,
-        results: migrationResults
+        results: migrationResults,
+        verification: verificationResults
       };
 
     } catch (error) {
-      console.error('Migration failed:', error);
+      console.error('❌ Migration failed:', error);
       return {
         success: false,
         error: error.message
@@ -242,6 +330,32 @@ class TRDataMigrationService {
     } catch (error) {
       console.error('Migration verification failed:', error);
       return false;
+    }
+  }
+
+  /**
+   * Verify migration data exists in IndexedDB
+   */
+  async verifyMigrationData() {
+    try {
+      const selectedResources = await this.idbService.loadTRSettings('selectedResources');
+      const customResources = await this.idbService.loadTRSettings('customResources');
+      const tracks = await this.idbService.loadAllTRTracks();
+
+      const verification = {
+        selectedResourcesFound: !!selectedResources,
+        selectedResourcesCount: selectedResources?.length || 0,
+        customResourcesFound: !!customResources,
+        customResourcesCount: customResources?.length || 0,
+        tracksFound: !!tracks,
+        tracksCount: tracks?.length || 0,
+        entriesCount: tracks ? tracks.reduce((sum, track) => sum + (track.entries?.length || 0), 0) : 0
+      };
+
+      return verification;
+    } catch (error) {
+      console.error('❌ Failed to verify migration data:', error);
+      return { error: error.message };
     }
   }
 

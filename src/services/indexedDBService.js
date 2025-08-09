@@ -118,26 +118,19 @@ class IndexedDBService {
       updatedAt: new Date().toISOString()
     }));
     
-    return new Promise((resolve, reject) => {
-      // Save track metadata
+    // Save track metadata first
+    await new Promise((resolve, reject) => {
       const trackRequest = trackStore.put(serializedTrackData);
-      
-      trackRequest.onsuccess = async () => {
-        // Save entries separately for better performance
-        if (entries && entries.length > 0) {
-          try {
-            await this.saveTrackEntries(track.id, entries, entryStore);
-            resolve(trackRequest.result);
-          } catch (error) {
-            reject(error);
-          }
-        } else {
-          resolve(trackRequest.result);
-        }
-      };
-      
+      trackRequest.onsuccess = () => resolve(trackRequest.result);
       trackRequest.onerror = () => reject(new Error('Failed to save TR track'));
     });
+    
+    // Save entries separately for better performance
+    if (entries && entries.length > 0) {
+      await this.saveTrackEntries(track.id, entries, entryStore);
+    }
+    
+    return serializedTrackData;
   }
 
   /**
