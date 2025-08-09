@@ -49,23 +49,23 @@ export function useBackupRestore() {
       // 5. Ultima Calculator Daten (Pinia Store)
       const ultimaStoreData = JSON.parse(JSON.stringify(ultimaStore.$state));
       
-      // 6. Gem Planner Daten (Pinia Store)
-      const gemPlannerData = gemPlannerStore.exportData();
-      
-      // 7. AttrGN3 Calculator Daten aus localStorage
+      // 6. AttrGN3 Calculator Daten aus localStorage
       const attrGN3Settings = localStorage.getItem('attrGN3Calculator_settings');
       
-      // 8. TS Planner Daten aus localStorage
+      // 7. TS Planner Daten aus localStorage
       const tsPlannerSettings = localStorage.getItem('traitSpherePlanner_settings');
       
-      // 9. Research Overview Daten aus localStorage
+      // 8. Research Overview Daten aus localStorage
       const researchOverviewSettings = localStorage.getItem('researchOverview_filters');
       
-      // 10. Loop Mod Overview Daten aus localStorage
+      // 9. Loop Mod Overview Daten aus localStorage
       const loopModOverviewSettings = localStorage.getItem('loopModOverview_filters');
       
-      // 11. M0 Cost Overview Daten aus localStorage
+      // 10. M0 Cost Overview Daten aus localStorage
       const m0CostOverviewSettings = localStorage.getItem('m0CostOverview_filters');
+      
+      // 11. Gem Planner Daten (Pinia Store)
+      const gemPlannerData = gemPlannerStore.exportData();
       
       // 12. TR Tracking Daten (diese Funktion holt automatisch aus dem aktuellen Storage-System)
       const trTrackingData = trTrackingStore.exportData();
@@ -79,6 +79,7 @@ export function useBackupRestore() {
       // 14. Weitere relevante localStorage-Einträge sammeln
       const trPlanOrderIds = localStorage.getItem('trPlanOrderIds');
       const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
+      const gemsShowOnlySimRelevant = localStorage.getItem('gems_showOnlySimRelevant');
       
       // Backup-Datenpaket erstellen
       const backupData = {
@@ -99,7 +100,8 @@ export function useBackupRestore() {
             loopModOverview_filters: loopModOverviewSettings ? JSON.parse(loopModOverviewSettings) : {},
             m0CostOverview_filters: m0CostOverviewSettings ? JSON.parse(m0CostOverviewSettings) : {},
             trPlanOrderIds: trPlanOrderIds ? JSON.parse(trPlanOrderIds) : [],
-            huntersim_high_iterations_mode: highIterationsMode
+            huntersim_high_iterations_mode: highIterationsMode,
+            gems_showOnlySimRelevant: gemsShowOnlySimRelevant ? JSON.parse(gemsShowOnlySimRelevant) : false
           },
           storageInfo: storageInfo
         },
@@ -204,14 +206,13 @@ export function useBackupRestore() {
         });
       }
       
-      // 3. Restore TR Tracking Store 
-      // Important: This handles both old localStorage-based backups and new IndexedDB-based backups
+      // 3. Restore TR Tracking Store (raw state transfer - simple and reliable)
       if (backupData.data.trTrackingStore) {
-        console.log('📥 Restoring TR Tracking data from backup...');
-        const importSuccess = await trTrackingStore.importData(backupData.data.trTrackingStore);
-        if (!importSuccess) {
-          console.warn('⚠️ Failed to import TR Tracking data, but continuing with other data...');
-        }
+        Object.keys(backupData.data.trTrackingStore).forEach(key => {
+          if (key in trTrackingStore.$state) {
+            trTrackingStore.$state[key] = backupData.data.trTrackingStore[key];
+          }
+        });
       }
       
       // 4. Restore Ultima Store
@@ -283,6 +284,11 @@ export function useBackupRestore() {
         }
         if (localStorageData.huntersim_high_iterations_mode !== undefined) {
           localStorage.setItem('huntersim_high_iterations_mode', localStorageData.huntersim_high_iterations_mode);
+        }
+        
+        // Gem Planner settings
+        if (localStorageData.gems_showOnlySimRelevant !== undefined) {
+          localStorage.setItem('gems_showOnlySimRelevant', JSON.stringify(localStorageData.gems_showOnlySimRelevant));
         }
       }
       

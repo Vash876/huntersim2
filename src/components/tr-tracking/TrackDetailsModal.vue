@@ -2532,55 +2532,24 @@ function addNewEntry() {
   const now = new Date();
   const dateTimeISO = now.toISOString(); // Full ISO timestamp
   
-  const newEntryData = {
-    id: 'temp_' + Date.now(),
+  // Create the entry data for immediate saving
+  const entryToSave = {
     date: dateTimeISO,
     values: {},
-    notes: '',
-    isNew: true,
-    isEditing: true // Flag to indicate this entry is being edited
+    notes: ''
   };
   
-  // Initialize values for all resources
+  // Initialize values for all resources to 0
   draggableResources.value.forEach(resource => {
-    newEntryData.values[resource.id] = 0;
+    entryToSave.values[resource.id] = 0;
   });
   
-  // Add the new entry to the grid
-  if (gridApi.value) {
-    gridApi.value.applyTransaction({ add: [newEntryData], addIndex: 0 });
-    
-    // Start editing only the first resource column, keep focus there
-    nextTick(() => {
-      setTimeout(() => {
-        // Get the first resource column from the current displayed order
-        const displayedColumns = gridApi.value.getAllDisplayedColumns();
-        const firstResourceColumn = displayedColumns.find(col => col.getColId().startsWith('resource_'));
-        
-        if (firstResourceColumn) {
-          const firstColId = firstResourceColumn.getColId();
-          
-          // Only start editing the first cell - don't edit all cells simultaneously
-          gridApi.value.startEditingCell({
-            rowIndex: 0,
-            colKey: firstColId
-          });
-          
-          // Set focus explicitly to the first cell
-          gridApi.value.setFocusedCell(0, firstColId);
-          
-          // Focus the actual input element after a short delay
-          setTimeout(() => {
-            const firstInput = document.querySelector(`[row-index="0"][col-id="${firstColId}"] .ag-cell-edit-input`);
-            if (firstInput) {
-              firstInput.focus();
-              firstInput.select();
-            }
-          }, 100);
-        }
-      }, 150);
-    });
-  }
+  // Immediately save the entry to the store
+  emit('update', {
+    action: 'addEntry',
+    trackId: props.track.id,
+    entry: entryToSave
+  });
 }
 
 function saveNewEntry() {

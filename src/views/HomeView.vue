@@ -11,6 +11,7 @@ const changelog =
           'Redesigned Gems page as the central hub of the application',
           'Gems page now serves as the unified source for all gem levels, gem nodes, and gem upgrades across all tools',
           'All tools that require gem information now pull data from the centralized Gems page for consistency',
+          'Mid-/Endgame Hunter upgrades are now automatically hidden when the corresponding gem is not unlocked, preventing confusion for new players',
         ]
       },
       {
@@ -24,6 +25,12 @@ const changelog =
         text: 'TR Planner',
         subItems: [
           'Added Evolution GN#1 Buff',
+        ]
+      },
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Improved "Add New Entry" workflow - entries are now created immediately without requiring confirmation',
         ]
       }
     ]

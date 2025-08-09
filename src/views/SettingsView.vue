@@ -287,6 +287,7 @@ import { useTRPlannerStore } from '@/store/orbStore';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { useUltimaStore } from '@/store/ultimaStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
+import { useSyncStore } from '@/store/syncStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 import { 
@@ -313,6 +314,7 @@ const trPlannerStore = useTRPlannerStore();
 const trTrackingStore = useTRTrackingStore();
 const ultimaStore = useUltimaStore();
 const gemPlannerStore = useGemPlannerStore();
+const syncStore = useSyncStore();
 const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBackupRestore();
 
 // UI State
@@ -495,9 +497,28 @@ function resetAllData() {
     });
     
     // 5. Gem Planner Store zurücksetzen
-    gemPlannerStore.resetToDefaults();
+    Object.keys(gemPlannerStore.$state).forEach(key => {
+      if (Array.isArray(gemPlannerStore.$state[key])) {
+        gemPlannerStore.$state[key] = [];
+      } else if (typeof gemPlannerStore.$state[key] === 'object' && gemPlannerStore.$state[key] !== null) {
+        gemPlannerStore.$state[key] = {};
+      } else {
+        gemPlannerStore.$state[key] = null;
+      }
+    });
     
-    // 6. Tool-spezifische localStorage-Einträge löschen
+    // 6. Sync Store zurücksetzen
+    Object.keys(syncStore.$state).forEach(key => {
+      if (Array.isArray(syncStore.$state[key])) {
+        syncStore.$state[key] = [];
+      } else if (typeof syncStore.$state[key] === 'object' && syncStore.$state[key] !== null) {
+        syncStore.$state[key] = {};
+      } else {
+        syncStore.$state[key] = null;
+      }
+    });
+    
+    // 7. Tool-spezifische localStorage-Einträge löschen
     // Gadget Calculator
     localStorage.removeItem('gadgetCalculator_currentLevels');
     localStorage.removeItem('gadgetCalculator_targetLevels');
@@ -521,19 +542,45 @@ function resetAllData() {
     // M0 Cost Overview
     localStorage.removeItem('m0CostOverview_filters');
     
-    // Gem Planner
-    localStorage.removeItem('gems_showOnlySimRelevant');
-    
     // TR Planner
     localStorage.removeItem('trPlanOrderIds');
-    localStorage.removeItem('tr-planner-data'); // Falls genutzt
+    localStorage.removeItem('tr-planner-data');
+    localStorage.removeItem('trplanner_userstats');
+    localStorage.removeItem('gemData');
     
-    // 7. Alle anderen gespeicherten TR-Planner-Pläne suchen und löschen
+    // TR Tracking
+    localStorage.removeItem('tr_tracking_selected_resources');
+    localStorage.removeItem('tr_tracking_tracks');
+    localStorage.removeItem('tr_tracking_custom_resources');
+    localStorage.removeItem('tr_data_migration_completed');
+    
+    // Gems und andere UI-Einstellungen
+    localStorage.removeItem('gems_showOnlySimRelevant');
+    localStorage.removeItem('fragments_per_day');
+    localStorage.removeItem('huntersim_high_iterations_mode');
+    
+    // Override Modal Settings
+    localStorage.removeItem('hideMaxedUpgrades');
+    
+    // Alle TR-Planner-Pläne und Hunter-Filter löschen
     Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('tr-plan-')) {
+      if (key.startsWith('tr-plan-') || 
+          key.startsWith('lootFilters_') ||
+          key.startsWith('huntersim_cache_')) {
         localStorage.removeItem(key);
       }
     });
+    
+    // IndexedDB komplett löschen (falls vorhanden)
+    if ('indexedDB' in window) {
+      try {
+        // TR Tracking Database löschen
+        indexedDB.deleteDatabase('TRTrackingDB');
+        console.log('IndexedDB TRTrackingDB deleted');
+      } catch (error) {
+        console.warn('Could not delete IndexedDB:', error);
+      }
+    }
     
     showToast('All data has been reset successfully', 'success');
     showResetConfirmation.value = false;

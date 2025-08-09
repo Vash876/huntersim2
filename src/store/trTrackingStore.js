@@ -56,7 +56,6 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
   const trTracks = ref([]);
   const isInitialized = ref(false);
   const useIndexedDB = ref(false);
-  const hasAttemptedMigration = ref(false);
   const migrationService = new TRDataMigrationService();
   const idbService = new IndexedDBService();
 
@@ -119,7 +118,6 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       }
     }
     
-    hasAttemptedMigration.value = true;
     isInitialized.value = true;
   }
 
@@ -260,33 +258,6 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       // If IndexedDB save fails, DO NOT fall back to localStorage
       // This prevents dual storage after migration
       throw error;
-    }
-  }
-
-  async function runMigrationIfNeeded() {
-    if (hasAttemptedMigration.value) {
-      return; // Migration already checked/completed
-    }
-
-    try {
-      const shouldMigrate = await migrationService.shouldMigrate();
-      
-      if (shouldMigrate) {
-        console.log('🔄 Starting TR tracking data migration (backup restore context)...');
-        const migrationResult = await migrationService.migrateData();
-        
-        if (migrationResult.success) {
-          console.log('✅ Migration successful!');
-          // Don't reload data here as we're about to import new data
-        } else {
-          console.warn('⚠️ Migration failed, keeping current storage:', migrationResult.error);
-        }
-      }
-      
-      hasAttemptedMigration.value = true;
-    } catch (error) {
-      console.error('Migration check failed:', error);
-      hasAttemptedMigration.value = true; // Mark as attempted even if failed
     }
   }
 
@@ -710,9 +681,12 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       
       // Ensure migration has been attempted before importing
       // This is important for backup restoration scenarios
-      if (!hasAttemptedMigration.value) {
+      if (!migrationService.isMigrationCompleted()) {
         console.log('🔄 Running migration check before import...');
-        await runMigrationIfNeeded();
+        const shouldMigrate = await migrationService.shouldMigrate();
+        if (shouldMigrate) {
+          await migrationService.migrateData();
+        }
       }
       
       if (data.selectedResources) {
@@ -870,7 +844,6 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     importTrackData,
     importMultipleTracksData,
     updateStandardResourceColor,
-    updateCustomResource,
-    runMigrationIfNeeded
+    updateCustomResource
   };
 });
