@@ -254,6 +254,33 @@ export function useBackupRestore() {
       if (backupData.data.localStorage) {
         const localStorageData = backupData.data.localStorage;
         
+        // Check if this backup contains TR Tracking localStorage data
+        const hasTRTrackingLocalStorageData = 
+          localStorageData.tr_tracking_selected_resources ||
+          localStorageData.tr_tracking_tracks ||
+          localStorageData.tr_tracking_custom_resources;
+        
+        if (hasTRTrackingLocalStorageData) {
+          console.log('📋 Backup contains TR Tracking localStorage data - resetting migration status');
+          
+          // Reset migration status to allow migration of localStorage data
+          const migrationKey = 'tr_tracking_migration_completed';
+          localStorage.removeItem(migrationKey);
+          
+          // Set the localStorage data first
+          if (localStorageData.tr_tracking_selected_resources) {
+            localStorage.setItem('tr_tracking_selected_resources', JSON.stringify(localStorageData.tr_tracking_selected_resources));
+          }
+          if (localStorageData.tr_tracking_tracks) {
+            localStorage.setItem('tr_tracking_tracks', JSON.stringify(localStorageData.tr_tracking_tracks));
+          }
+          if (localStorageData.tr_tracking_custom_resources) {
+            localStorage.setItem('tr_tracking_custom_resources', JSON.stringify(localStorageData.tr_tracking_custom_resources));
+          }
+          
+          console.log('✅ TR Tracking localStorage data restored and migration reset');
+        }
+        
         // Gadget Calculator
         if (localStorageData.gadgetCalculator_currentLevels) {
           localStorage.setItem('gadgetCalculator_currentLevels', JSON.stringify(localStorageData.gadgetCalculator_currentLevels));
