@@ -3486,37 +3486,29 @@ function isBoostAvailable(boost, step) {
   // NEUE Logik: Gem-basierte Verfügbarkeitsprüfung (zusätzlich)
   if (boost.unlock) {
     try {
-      // KORRIGIERT: Verwende Plan-Context Gem-Daten wenn verfügbar
-      let gemData;
+      // Verwende dieselbe Gem-Data-Quelle wie die Anzeige-Logik
+      const gemLevel = mergedGemData.value.levels[boost.unlock] || 0;
       
-      // Zuerst prüfen, ob Plan-Context verfügbar ist (mit Overrides)
-      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
-        gemData = window.__PLAN_CONTEXT__.gemData;
-      } else {
-        // Fallback: Normale Store Gem-Daten
-        const trPlannerStore = useTRPlannerStore();
-        const userStats = trPlannerStore.userStats;
-        gemData = userStats?.gemData;
+      // Prüfe ob Gem-Level ausreicht
+      if (gemLevel < (boost.unlock_level || 1)) {
+        console.warn(`[TRPlanModal] Boost ${boost.key} not available: ${boost.unlock} level ${gemLevel} < required ${boost.unlock_level}`);
+        return false;
       }
       
-      if (gemData && gemData.levels) {
-        const gemLevel = gemData.levels[boost.unlock] || 0;
-        
-        // Prüfe ob Gem-Level ausreicht
-        if (gemLevel < (boost.unlock_level || 1)) {
+      // Prüfe zusätzliche Node-Anforderungen
+      if (boost.unlock_node && mergedGemData.value.activeNodes) {
+        const nodeKey = `${boost.unlock}_${boost.unlock_node}`;
+        if (!mergedGemData.value.activeNodes[nodeKey]) {
+          console.warn(`[TRPlanModal] Boost ${boost.key} not available: node ${nodeKey} not active`);
           return false;
         }
-        
-        // Prüfe zusätzliche Node-Anforderungen
-        if (boost.unlock_node && gemData.activeNodes) {
-          const nodeKey = `${boost.unlock}_${boost.unlock_node}`;
-          if (!gemData.activeNodes[nodeKey]) {
-            return false;
-          }
-        }
       }
+      
+      console.log(`[TRPlanModal] Boost ${boost.key} available: ${boost.unlock} level ${gemLevel} >= required ${boost.unlock_level}`);
     } catch (error) {
-      // Bei Fehlern: Fallback auf alte Logik (boost verfügbar)
+      // Bei Fehlern: Fallback auf verfügbar (wie die Anzeige-Logik)
+      console.warn(`[TRPlanModal] Error checking boost availability for ${boost.key}:`, error);
+      return true;
     }
   }
   
