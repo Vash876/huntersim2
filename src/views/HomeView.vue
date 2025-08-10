@@ -31,6 +31,7 @@ const changelog =
         text: 'TR Tracking',
         subItems: [
           'Improved "Add New Entry" workflow - entries are now created immediately without requiring confirmation',
+          'Added "Time in LR" information that calculates from Ticks in LR input in the tracker and AttrGN#3 Calculator settings',
         ]
       }
     ]

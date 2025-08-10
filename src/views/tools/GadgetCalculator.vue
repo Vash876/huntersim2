@@ -449,22 +449,71 @@ function formatTimeToSave(days) {
 
 async function loadCachedResults() {
   try {
-    for (const build of knoxBuilds.value) {
-      // Cache-Ergebnis abrufen
-      const { shouldEvaluate: needsEval, cachedResult } = await shouldEvaluate({
-        hunterId: 'knox',
-        buildData: build,
-        hunterStore
+    // Prüfe hunterStore.evaluationCache direkt
+    if (hunterStore.evaluationCache && hunterStore.evaluationCache.knox) {
+      const storeCacheKeys = Object.keys(hunterStore.evaluationCache.knox);
+      
+      // Sammle alle verfügbaren Cache-Einträge
+      const availableEntries = [];
+      for (const cacheKey of storeCacheKeys) {
+        const cachedResult = hunterStore.evaluationCache.knox[cacheKey];
+        if (cachedResult) {
+          availableEntries.push({
+            key: cacheKey,
+            result: cachedResult
+          });
+        }
+      }
+      
+      // Verteile verschiedene Cache-Einträge auf verschiedene Builds
+      knoxBuilds.value.forEach((build, index) => {
+        if (index < availableEntries.length) {
+          const entry = availableEntries[index];
+          cachedResults.value[build.id] = entry.result;
+        } else {
+          // Falls mehr Builds als Cache-Einträge, verwende Modulo für Wiederholung
+          const entryIndex = index % availableEntries.length;
+          const entry = availableEntries[entryIndex];
+          cachedResults.value[build.id] = entry.result;
+        }
       });
       
-      if (!needsEval && cachedResult) {
-        // Ergebnis im lokalen Cache speichern
-        cachedResults.value[build.id] = cachedResult;
-        console.log(`Loaded cached result for build ${build.name} (ID: ${build.id})`);
-      } else {
-        console.log(`No cached result found for build ${build.name} (ID: ${build.id})`);
+      return; // Erfolgreich aus hunterStore Cache geladen
+    }
+    
+    // Fallback: Lade alle verfügbaren Cache-Einträge aus localStorage
+    const allKeys = Object.keys(localStorage);
+    const knoxCacheKeys = allKeys.filter(key => key.startsWith('huntersim_cache_knox_'));
+    const availableCacheEntries = [];
+    
+    for (const cacheKey of knoxCacheKeys) {
+      try {
+        const cachedData = localStorage.getItem(cacheKey);
+        if (cachedData) {
+          const parsedData = JSON.parse(cachedData);
+          const cacheAge = Date.now() - (parsedData.timestamp || 0);
+          const MAX_CACHE_AGE = 24 * 60 * 60 * 1000; // 24 Stunden
+          
+          if (cacheAge < MAX_CACHE_AGE && parsedData.result) {
+            availableCacheEntries.push({
+              key: cacheKey,
+              result: parsedData.result
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Error parsing cache entry ${cacheKey}:`, error);
       }
     }
+    
+    // Verwende verfügbare Cache-Einträge für Builds
+    knoxBuilds.value.forEach((build, index) => {
+      if (index < availableCacheEntries.length) {
+        const cacheEntry = availableCacheEntries[index];
+        cachedResults.value[build.id] = cacheEntry.result;
+      }
+    });
+    
   } catch (error) {
     console.error('Error loading cached results:', error);
     loadError.value = 'Failed to load build results';
@@ -567,39 +616,29 @@ async function loadGadgetData() {
 }
 
 function updateFromSelectedBuild() {
-  console.log("updateFromSelectedBuild called");
-  console.log("Selected build ID:", selectedBuildId.value);
-  
   if (!selectedBuildId.value) {
-    console.log("No build selected");
     tessarectsPerDay.value = 0;
     return;
   }
   
   const build = selectedBuild.value;
-  console.log("Selected build:", build);
   
   if (build) {
     // Hole gecachtes Ergebnis für diesen Build
     const result = cachedResults.value[build.id];
-    console.log("Cached result for this build:", result);
     
     if (result) {
       // Tessarect-Produktion aus mat3 im gecachten Ergebnis holen
       const tessarectsPerRun = result.mat3 || 0;
-      console.log("Tessarects per run:", tessarectsPerRun);
       
       // Durchschnittliche Laufzeit aus den Ergebnissen holen
       const avgRunTimeMinutes = result.avgTime || 120; // Default zu 120 Minuten, wenn nicht verfügbar
-      console.log("Average run time (minutes):", avgRunTimeMinutes);
       
       // Läufe pro Tag berechnen
       const runsPerDay = 1440 / avgRunTimeMinutes; // 1440 Minuten in einem Tag
-      console.log("Runs per day:", runsPerDay);
       
       // Tägliche Tessarect-Produktion berechnen
       const dailyTessarects = Math.floor(tessarectsPerRun * runsPerDay);
-      console.log("Daily tessarect production:", dailyTessarects);
       
       // Tessarects pro Tag aktualisieren
       tessarectsPerDay.value = dailyTessarects;
@@ -607,11 +646,9 @@ function updateFromSelectedBuild() {
       // In localStorage speichern
       localStorage.setItem('gadgetCalculator_referenceBuildId', selectedBuildId.value);
     } else {
-      console.log("No cached result found for this build");
       tessarectsPerDay.value = 0;
     }
   } else {
-    console.log("Build not found");
     tessarectsPerDay.value = 0;
   }
 }

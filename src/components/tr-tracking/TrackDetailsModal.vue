@@ -170,12 +170,26 @@
             <h4 class="font-medium text-sm text-blue-200">Track Statistics</h4>
           </div>
           
-          <div :class="getCampTimerValue() > 0 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2'">
+          <div :class="getCampTimerValue() > 0 ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-2' : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2'">
             <!-- Duration & Total Entries -->
             <div class="bg-gray-700/30 rounded-md p-2">
               <div class="text-xs text-gray-400">Duration</div>
               <div class="text-sm font-semibold text-white">
                 {{ getTrackDuration() }} days <span class="text-xs text-gray-400">({{ track.entries.length }} entries)</span>
+              </div>
+            </div>
+
+            <!-- Time in LR -->
+            <div class="bg-gray-700/30 rounded-md p-2">
+              <div class="text-xs text-gray-400 flex items-center gap-1">
+                Time in LR
+                <InfoTooltip 
+                  content="Time spent in current LR run. Uses LR Ticks from tracking data and Tick Speed/Ticks per Tick from AttGN3 Calculator settings"
+                  placement="top" 
+                />
+              </div>
+              <div class="text-sm font-semibold text-red-400">
+                {{ getTimeInLR() }}
               </div>
             </div>
 
@@ -1905,6 +1919,56 @@ function getAttGN3PendingMultiplier() {
   }
   
   return multiplier.toFixed(2);
+}
+
+// Get Time in LR - calculates current time spent in this LR run
+function getTimeInLR() {
+  const latestValues = getLatestValues();
+  
+  // Get current LR Ticks from tracking data
+  const currentTicksInLR = latestValues['lr-ticks'] || 0;
+  
+  if (currentTicksInLR === 0) return '0d 0h';
+  
+  // Get calculator settings from localStorage
+  let savedSettings = {};
+  try {
+    savedSettings = JSON.parse(localStorage.getItem('attrGN3Calculator_settings') || '{}');
+  } catch (error) {
+    console.warn('Failed to load AttGN3 calculator settings:', error);
+  }
+  
+  // Use saved settings or defaults (same as AttGN3 Calculator)
+  const tickSpeed = savedSettings.tickSpeed || 1.5;
+  const ticksPerTick = savedSettings.ticksPerTick || 1;
+  
+  if (tickSpeed === 0 || ticksPerTick === 0) return '0d 0h';
+  
+  // Calculate time in LR (same logic as AttGN3 Calculator)
+  // Number of actual "tick events" = currentTicksInLR / ticksPerTick
+  const actualTickEvents = currentTicksInLR / ticksPerTick;
+  
+  // Each tick event lasts tickSpeed seconds
+  const secondsInLR = actualTickEvents * tickSpeed;
+  
+  // Convert seconds to days
+  const daysInLR = secondsInLR / 86400;
+  
+  // Format in days, hours and minutes (as requested)
+  if (daysInLR === 0) return '0d 0h 0m';
+  
+  const totalMinutes = Math.floor(daysInLR * 24 * 60);
+  const wholeDays = Math.floor(totalMinutes / (24 * 60));
+  const wholeHours = Math.floor((totalMinutes % (24 * 60)) / 60);
+  const remainingMinutes = totalMinutes % 60;
+  
+  if (wholeDays > 0) {
+    return `${wholeDays}d ${wholeHours}h ${remainingMinutes}m`;
+  } else if (wholeHours > 0) {
+    return `${wholeHours}h ${remainingMinutes}m`;
+  } else {
+    return `${remainingMinutes}m`;
+  }
 }
 
 // Get latest values from the most recent entry

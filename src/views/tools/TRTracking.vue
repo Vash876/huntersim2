@@ -60,8 +60,21 @@
       </div>
     </div>
 
-    <!-- Resource Settings Notice (wenn keine Ressourcen ausgewählt) -->
-    <div v-if="!hasSelectedResources" class="bg-yellow-900/30 border border-yellow-700/50 rounded-lg p-4 mb-6">
+    <!-- Loading State (während Store initialisiert wird) -->
+    <div v-if="!trTrackingStore.isInitialized" class="bg-blue-900/30 border border-blue-700/50 rounded-lg p-4 mb-6">
+      <div class="flex items-center">
+        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400 mr-3"></div>
+        <div>
+          <h3 class="text-blue-200 font-medium">Loading TR Tracking...</h3>
+          <p class="text-blue-300/80 text-sm mt-1">
+            Initializing your tracking data, please wait...
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resource Settings Notice (wenn Store geladen aber keine Ressourcen ausgewählt) -->
+    <div v-else-if="!hasSelectedResources" class="bg-yellow-900/30 border border-yellow-700/50 rounded-lg p-4 mb-6">
       <div class="flex items-center">
         <IconAlertTriangle size="20" class="text-yellow-400 mr-3" />
         <div>
@@ -74,7 +87,7 @@
     </div>
 
     <!-- TR Tracks List -->
-    <div v-if="hasSelectedResources" class="space-y-6">
+    <div v-if="trTrackingStore.isInitialized && hasSelectedResources" class="space-y-6">
       <!-- Empty State -->
       <div v-if="trTracks.length === 0" class="text-center py-12">
         <IconChartLine size="64" class="mx-auto text-gray-600 mb-4" />

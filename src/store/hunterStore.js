@@ -560,22 +560,15 @@ function saveBuildsOrder(hunterId, builds) {
 
   /**
    * Speichert ein Evaluierungsergebnis im Cache
+   * @param {string} hunterId - Die ID des Hunters
    * @param {string} cacheKey - Der Cache-Schlüssel
    * @param {Object} result - Das zu speichernde Ergebnis
    */
-  function cacheEvaluationResult(cacheKey, result) {
-    if (!cacheKey || !result) return;
+  function cacheEvaluationResult(hunterId, cacheKey, result) {
+    if (!hunterId || !cacheKey || !result) return;
     
     // Maximale Anzahl an Cache-Einträgen pro Hunter begrenzen
     const MAX_CACHE_ENTRIES_PER_HUNTER = 20;
-    
-    // Extrahiere Hunter-ID aus dem Ergebnis
-    const hunterId = result.hunterId || extractHunterIdFromResult(result);
-    
-    if (!hunterId) {
-      console.warn('Could not determine hunterId for cache entry');
-      return;
-    }
     
     // Initialisiere Hunter-spezifischen Cache, falls nicht vorhanden
     if (!evaluationCache.value[hunterId]) {
