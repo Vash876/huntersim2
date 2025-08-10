@@ -592,13 +592,22 @@ export function useBuildEvaluation(props, emit) {
   // Import der Evaluierungsfunktionalität
   async function evaluateBuildWithParams(buildParams) {
     try {
-      // Store-Daten vorbereiten
+      // Store-Daten vorbereiten (genau wie in evaluateBuild)
       const store = {
         hunterStats: { ...hunterStore.hunterStats },
         upgrades: { ...hunterStore.upgrades },
         hunterIterations: hunterStore.hunterIterations,
-        hunterSeedSettings: hunterStore.hunterSeedSettings
+        hunterSeedSettings: hunterStore.hunterSeedSettings,
+        gemPlannerStore: {
+          gameStats: gemPlannerStore.gameStats?.value || {},
+          weights: gemPlannerStore.weights?.value || {},
+          gemStates: JSON.parse(JSON.stringify(gemPlannerStore.gemStates || {})),
+          currentStats: gemPlannerStore.currentStats?.value || {}
+        }
       };
+      
+      // Konvertiere gemPlannerStore-Daten in das upgrades.gems_nodes Format
+      convertGemStatesToUpgrades(store.gemPlannerStore.gemStates, store.upgrades);
       
       // Debug-Log für den aktuellen Seed-Modus
       const useSeeded = hunterStore.getHunterSeedSetting(props.hunterId);
@@ -611,7 +620,13 @@ export function useBuildEvaluation(props, emit) {
           hunterStats: JSON.parse(JSON.stringify(store.hunterStats)),
           upgrades: JSON.parse(JSON.stringify(store.upgrades)),
           hunterIterations: store.hunterIterations,
-          hunterSeedSettings: hunterStore.hunterSeedSettings
+          hunterSeedSettings: hunterStore.hunterSeedSettings,
+          gemPlannerStore: {
+            gameStats: gemPlannerStore.gameStats?.value || {},
+            weights: gemPlannerStore.weights?.value || {},
+            gemStates: JSON.parse(JSON.stringify(gemPlannerStore.gemStates || {})),
+            currentStats: gemPlannerStore.currentStats?.value || {}
+          }
         };
         
         // Sicherstellen, dass der Hunter-Stats-Eintrag existiert

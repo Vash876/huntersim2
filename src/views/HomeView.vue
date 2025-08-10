@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.7.7',
+    date: '2025-08-10',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Fixed Upgrade Efficiency Modal Results',
+        ]
+      },
+      {
+        text: 'Gadget Planner',
+        subItems: [
+          'Fixed build assignment to tesseract output',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.6',
     date: '2025-08-09',
     changes: [

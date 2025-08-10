@@ -299,6 +299,7 @@ import {
   formatMultiplier 
 } from '@/constants/gadgets.js';
 import { useHunterStore } from '@/store/hunterStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { calcGadgetCostDifference, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import { shouldEvaluate } from '@/services/evaluationCacheService';
 import GadgetSummaryModal from '@/components/gadget-calculator/GadgetSummaryModal.vue';
@@ -306,6 +307,7 @@ import ToolValueControls from '@/composables/ToolValueControls.vue';
 
 // Stores
 const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Local state
 const isLoading = ref(true);
@@ -449,73 +451,83 @@ function formatTimeToSave(days) {
 
 async function loadCachedResults() {
   try {
-    // Prüfe hunterStore.evaluationCache direkt
-    if (hunterStore.evaluationCache && hunterStore.evaluationCache.knox) {
-      const storeCacheKeys = Object.keys(hunterStore.evaluationCache.knox);
+    console.log('[GadgetCalculator] Loading cached results for Knox builds...');
+    console.log('[GadgetCalculator] Available Knox builds:', knoxBuilds.value.map(b => ({ id: b.id, name: b.name })));
+    
+    // Cache für jeden Build einzeln prüfen
+    const allCachedResults = [];
+    
+    for (const build of knoxBuilds.value) {
+      console.log(`[GadgetCalculator] Prüfe Cache für Build "${build.name}" (ID: ${build.id})`);
       
-      // Sammle alle verfügbaren Cache-Einträge
-      const availableEntries = [];
-      for (const cacheKey of storeCacheKeys) {
-        const cachedResult = hunterStore.evaluationCache.knox[cacheKey];
-        if (cachedResult) {
-          availableEntries.push({
-            key: cacheKey,
-            result: cachedResult
-          });
-        }
-      }
-      
-      // Verteile verschiedene Cache-Einträge auf verschiedene Builds
-      knoxBuilds.value.forEach((build, index) => {
-        if (index < availableEntries.length) {
-          const entry = availableEntries[index];
-          cachedResults.value[build.id] = entry.result;
-        } else {
-          // Falls mehr Builds als Cache-Einträge, verwende Modulo für Wiederholung
-          const entryIndex = index % availableEntries.length;
-          const entry = availableEntries[entryIndex];
-          cachedResults.value[build.id] = entry.result;
-        }
+      const cache = await shouldEvaluate({
+        hunterId: 'knox',
+        buildData: build,
+        hunterStore,
+        gemPlannerStore
       });
       
-      return; // Erfolgreich aus hunterStore Cache geladen
+      console.log(`[GadgetCalculator] Cache-Status für Build "${build.name}":`, cache);
+      
+      if (cache?.cachedResult) {
+        console.log(`[GadgetCalculator] Cache gefunden für Build "${build.name}":`, {
+          buildId: cache.cachedResult.buildId || 'none',
+          avgStage: cache.cachedResult.avgStage
+        });
+        
+        allCachedResults.push({
+          build,
+          result: cache.cachedResult,
+          cacheKey: cache.cacheKey
+        });
+      }
     }
     
-    // Fallback: Lade alle verfügbaren Cache-Einträge aus localStorage
-    const allKeys = Object.keys(localStorage);
-    const knoxCacheKeys = allKeys.filter(key => key.startsWith('huntersim_cache_knox_'));
-    const availableCacheEntries = [];
+    console.log(`[GadgetCalculator] ${allCachedResults.length} von ${knoxBuilds.value.length} Builds haben Cache`);
     
-    for (const cacheKey of knoxCacheKeys) {
-      try {
-        const cachedData = localStorage.getItem(cacheKey);
-        if (cachedData) {
-          const parsedData = JSON.parse(cachedData);
-          const cacheAge = Date.now() - (parsedData.timestamp || 0);
-          const MAX_CACHE_AGE = 24 * 60 * 60 * 1000; // 24 Stunden
+    // Prüfe ob alle Cache-Einträge Build-IDs haben
+    const hasValidBuildIds = allCachedResults.every(entry => entry.result.buildId && entry.result.buildId !== 'none');
+    
+    if (hasValidBuildIds) {
+      // Ideal: Exakte Build-ID-Übereinstimmung
+      console.log('[GadgetCalculator] Verwende exakte Build-ID-Übereinstimmung');
+      for (const { build, result } of allCachedResults) {
+        if (result.buildId === build.id && result.avgStage && result.mat3) {
+          cachedResults.value[build.id] = result;
+          console.log(`[GadgetCalculator] ✓ Exakte Zuordnung für "${build.name}"`);
+        }
+      }
+    } else {
+      // Fallback: Intelligente Zuordnung für bestehende Cache-Einträge ohne Build-IDs
+      console.log('[GadgetCalculator] ⚠ Keine Build-IDs in Cache gefunden - verwende intelligente Zuordnung');
+      
+      if (allCachedResults.length === knoxBuilds.value.length) {
+        // Sortiere Builds nach ID (ascending) und Cache nach avgStage (ascending)
+        const sortedBuilds = allCachedResults.sort((a, b) => a.build.id.localeCompare(b.build.id));
+        const sortedByPerformance = [...allCachedResults].sort((a, b) => a.result.avgStage - b.result.avgStage);
+        
+        console.log('[GadgetCalculator] Build-Reihenfolge (nach ID):', sortedBuilds.map(b => b.build.name));
+        console.log('[GadgetCalculator] Cache-Reihenfolge (nach Performance):', sortedByPerformance.map(c => c.result.avgStage));
+        
+        // 1:1 Zuordnung: Schlechtester Build bekommt schlechteste Performance
+        for (let i = 0; i < sortedBuilds.length; i++) {
+          const buildEntry = sortedBuilds[i];
+          const cacheEntry = sortedByPerformance[i];
           
-          if (cacheAge < MAX_CACHE_AGE && parsedData.result) {
-            availableCacheEntries.push({
-              key: cacheKey,
-              result: parsedData.result
-            });
+          if (cacheEntry.result.avgStage && cacheEntry.result.mat3) {
+            cachedResults.value[buildEntry.build.id] = cacheEntry.result;
+            console.log(`[GadgetCalculator] Zuordnung: "${buildEntry.build.name}" (ID: ${buildEntry.build.id}) -> avgStage: ${cacheEntry.result.avgStage}`);
           }
         }
-      } catch (error) {
-        console.error(`Error parsing cache entry ${cacheKey}:`, error);
+      } else {
+        console.log('[GadgetCalculator] ⚠ Anzahl Build/Cache-Einträge stimmt nicht überein');
       }
     }
     
-    // Verwende verfügbare Cache-Einträge für Builds
-    knoxBuilds.value.forEach((build, index) => {
-      if (index < availableCacheEntries.length) {
-        const cacheEntry = availableCacheEntries[index];
-        cachedResults.value[build.id] = cacheEntry.result;
-      }
-    });
+    console.log('[GadgetCalculator] Final cachedResults:', Object.keys(cachedResults.value).length, 'results loaded');
     
   } catch (error) {
-    console.error('Error loading cached results:', error);
+    console.error('[GadgetCalculator] Error loading cached results:', error);
     loadError.value = 'Failed to load build results';
   }
 }
@@ -616,29 +628,39 @@ async function loadGadgetData() {
 }
 
 function updateFromSelectedBuild() {
+  console.log("updateFromSelectedBuild called");
+  console.log("Selected build ID:", selectedBuildId.value);
+  
   if (!selectedBuildId.value) {
+    console.log("No build selected");
     tessarectsPerDay.value = 0;
     return;
   }
   
   const build = selectedBuild.value;
+  console.log("Selected build:", build);
   
   if (build) {
     // Hole gecachtes Ergebnis für diesen Build
     const result = cachedResults.value[build.id];
+    console.log("Cached result for this build:", result);
     
     if (result) {
       // Tessarect-Produktion aus mat3 im gecachten Ergebnis holen
       const tessarectsPerRun = result.mat3 || 0;
+      console.log("Tessarects per run:", tessarectsPerRun);
       
       // Durchschnittliche Laufzeit aus den Ergebnissen holen
       const avgRunTimeMinutes = result.avgTime || 120; // Default zu 120 Minuten, wenn nicht verfügbar
+      console.log("Average run time (minutes):", avgRunTimeMinutes);
       
       // Läufe pro Tag berechnen
       const runsPerDay = 1440 / avgRunTimeMinutes; // 1440 Minuten in einem Tag
+      console.log("Runs per day:", runsPerDay);
       
       // Tägliche Tessarect-Produktion berechnen
       const dailyTessarects = Math.floor(tessarectsPerRun * runsPerDay);
+      console.log("Daily tessarect production:", dailyTessarects);
       
       // Tessarects pro Tag aktualisieren
       tessarectsPerDay.value = dailyTessarects;
@@ -646,9 +668,11 @@ function updateFromSelectedBuild() {
       // In localStorage speichern
       localStorage.setItem('gadgetCalculator_referenceBuildId', selectedBuildId.value);
     } else {
+      console.log("No cached result found for this build");
       tessarectsPerDay.value = 0;
     }
   } else {
+    console.log("Build not found");
     tessarectsPerDay.value = 0;
   }
 }

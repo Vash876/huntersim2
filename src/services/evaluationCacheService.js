@@ -478,6 +478,11 @@ export async function cacheResult({ hunterId, buildData, hunterStore, gemPlanner
       result.sampleSize = sampleSize;
     }
     
+    // NEU: Build-ID zum Ergebnis hinzufügen für korrekte Zuordnung
+    if (buildData?.id && !result.buildId) {
+      result.buildId = buildData.id;
+    }
+    
     // In Memory-Cache speichern und Access Order aktualisieren
     memoryCache[key] = result;
     updateCacheAccess(key);
@@ -501,7 +506,8 @@ export async function cacheResult({ hunterId, buildData, hunterStore, gemPlanner
       
       localStorage.setItem(storageKey, JSON.stringify({
         timestamp: Date.now(),
-        result: simplifiedResult
+        result: simplifiedResult,
+        buildId: buildData?.id // NEU: Build-ID auch in localStorage speichern
       }));
     } catch (e) {
       console.warn('[Cache] Could not save to localStorage:', e);
