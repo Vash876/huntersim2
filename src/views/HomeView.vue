@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.7.8',
+    date: '2025-08-12',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Fixed hunter build code import not correctly applying Gem Node values',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.7',
     date: '2025-08-10',
     changes: [

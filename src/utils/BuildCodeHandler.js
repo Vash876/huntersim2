@@ -258,9 +258,13 @@ export class BuildCodeHandler {
       const hunterTypeCode = this.getHunterTypeCode(hunterId);
       
       // Parameter in der definierten Reihenfolge extrahieren
-      const params = paramArrays[hunterId].map(paramKey => 
-        this.extractParamValue(paramKey, build, storeData)
-      );
+      const params = paramArrays[hunterId].map((paramKey, index) => {
+        const value = this.extractParamValue(paramKey, build, storeData);
+        if (paramKey.includes('gems_nodes')) {
+          console.log(`🔍 Extracting gem node ${index}: ${paramKey} = ${value}`);
+        }
+        return value;
+      });
 
       // Jetzt den Code erstellen mit alter Methode
       const codeHandler = new CodeHandler(hunterTypeCode, 0, params);
@@ -277,9 +281,23 @@ export class BuildCodeHandler {
   static extractParamValue(paramKey, build, storeData) {
     const hunterId = build.hunterId || build.hunter;
     
+    // Debug-Log für Gem Nodes
+    if (paramKey.includes('gems_nodes')) {
+      console.log(`🔍 Extracting ${paramKey}:`);
+      console.log(`  - build.overrides[${paramKey}]:`, build.overrides?.[paramKey]);
+      console.log(`  - storeData structure:`, Object.keys(storeData?.upgrades || {}));
+      if (storeData?.upgrades?.gems_nodes) {
+        console.log(`  - storeData.upgrades.gems_nodes:`, storeData.upgrades.gems_nodes);
+      }
+    }
+    
     // Override-Werte haben höchste Priorität
     if (build.overrides && paramKey in build.overrides) {
-      return build.overrides[paramKey] ?? 0; // Null-Koaleszenz: undefined wird zu 0
+      const value = build.overrides[paramKey] ?? 0;
+      if (paramKey.includes('gems_nodes')) {
+        console.log(`  ✅ Found in overrides: ${value}`);
+      }
+      return value;
     }
     
     // Talent-Parameter suchen
@@ -333,9 +351,16 @@ export class BuildCodeHandler {
         const [_, category, key] = parts;
         // Explizit prüfen und 0 zurückgeben, wenn nicht vorhanden
         if (!storeData?.upgrades?.[category] || !(key in storeData.upgrades[category])) {
+          if (paramKey.includes('gems_nodes')) {
+            console.log(`  ❌ Not found in storeData.upgrades.${category}.${key}`);
+          }
           return 0;
         }
-        return storeData.upgrades[category][key] ?? 0;
+        const value = storeData.upgrades[category][key] ?? 0;
+        if (paramKey.includes('gems_nodes')) {
+          console.log(`  ✅ Found in storeData.upgrades.${category}.${key}: ${value}`);
+        }
+        return value;
       }
       
       if (parts.length === 4) {
@@ -343,9 +368,16 @@ export class BuildCodeHandler {
         // Explizit prüfen und 0 zurückgeben, wenn nicht vorhanden
         if (!storeData?.upgrades?.[category]?.[subcategory] || 
             !(key in storeData.upgrades[category][subcategory])) {
+          if (paramKey.includes('gems_nodes')) {
+            console.log(`  ❌ Not found in storeData.upgrades.${category}.${subcategory}.${key}`);
+          }
           return 0;
         }
-        return storeData.upgrades[category][subcategory][key] ?? 0;
+        const value = storeData.upgrades[category][subcategory][key] ?? 0;
+        if (paramKey.includes('gems_nodes')) {
+          console.log(`  ✅ Found in storeData.upgrades.${category}.${subcategory}.${key}: ${value}`);
+        }
+        return value;
       }
       
       // Nicht-standard Upgrade-Format, aber trotzdem 0 zurückgeben
@@ -370,8 +402,10 @@ export class BuildCodeHandler {
 
   /**
    * Dekodiert einen Build-Code zurück in ein Build-Objekt
+   * @param {string} code - Der zu parsende Build-Code
+   * @param {Object} currentStoreData - Optional: Aktuelle Store-Daten für intelligente Override-Erkennung
    */
-  static parseCode(code) {
+  static parseCode(code, currentStoreData = null) {
     try {
       console.log('Parsing build code:', code);
       
@@ -422,7 +456,8 @@ export class BuildCodeHandler {
       data.levels.forEach((value, index) => {
         if (index < paramArray.length) {
           const paramKey = paramArray[index];
-          this.setParamValue(build, paramKey, value, hunterType);
+          console.log(`📥 Processing param ${index}: ${paramKey} = ${value}`);
+          this.setParamValue(build, paramKey, value, hunterType, currentStoreData);
         }
       });
       
@@ -436,8 +471,13 @@ export class BuildCodeHandler {
   
   /**
    * Setzt einen Parameterwert im Build-Objekt
+   * @param {Object} build - Das Build-Objekt
+   * @param {string} paramKey - Der Parameter-Schlüssel
+   * @param {*} value - Der zu setzende Wert
+   * @param {string} hunterType - Der Hunter-Typ
+   * @param {Object} currentStoreData - Optional: Aktuelle Store-Daten für intelligente Override-Erkennung
    */
-  static setParamValue(build, paramKey, value, hunterType) {
+  static setParamValue(build, paramKey, value, hunterType, currentStoreData = null) {
     // Ignoriere Nullwerte
     //if (value === 0 || value === null || value === undefined) return;
     
@@ -487,7 +527,42 @@ export class BuildCodeHandler {
     
     // Upgrade-Parameter
     if (paramKey.startsWith('upgrades.')) {
-      build.overrides[paramKey] = value;
+      console.log(`📦 Processing upgrade parameter: ${paramKey} = ${value}`);
+      
+      // Intelligente Override-Erkennung: Nur setzen wenn anders als aktueller Store-Wert
+      if (currentStoreData) {
+        const parts = paramKey.split('.');
+        let currentValue = 0;
+        
+        // Versuche den aktuellen Wert aus den Store-Daten zu lesen
+        try {
+          if (parts.length === 3) {
+            const [_, category, key] = parts;
+            currentValue = currentStoreData.upgrades?.[category]?.[key] ?? 0;
+          } else if (parts.length === 4) {
+            const [_, category, subcategory, key] = parts;
+            currentValue = currentStoreData.upgrades?.[category]?.[subcategory]?.[key] ?? 0;
+          }
+        } catch (e) {
+          console.warn(`Could not read current value for ${paramKey}:`, e);
+          currentValue = 0;
+        }
+        
+        console.log(`  📊 Comparing: imported=${value} vs current=${currentValue}`);
+        
+        // Nur Override setzen wenn Werte unterschiedlich sind
+        if (value !== currentValue) {
+          build.overrides[paramKey] = value;
+          console.log(`  ✅ Override set: ${paramKey} = ${value} (different from current ${currentValue})`);
+        } else {
+          console.log(`  ⚪ No override needed: ${paramKey} = ${value} (same as current)`);
+        }
+      } else {
+        // Fallback: Immer als Override setzen wenn keine Store-Daten verfügbar
+        build.overrides[paramKey] = value;
+        console.log(`  📦 Override set (no store data): ${paramKey} = ${value}`);
+      }
+      
       return;
     }
     

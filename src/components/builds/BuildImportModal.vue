@@ -119,6 +119,52 @@ import { ref, computed, watch } from 'vue';
 import { IconDownload, IconX, IconQuestionMark, IconAlertTriangle, IconUserCheck, IconPackage } from '@tabler/icons-vue';
 import { BuildCodeHandler } from '../../utils/BuildCodeHandler';
 import { getHunterById, HUNTERS } from '../../constants/hunters';
+import { useHunterStore } from '../../store/hunterStore';
+import { useGemPlannerStore } from '../../store/gemPlannerStore';
+
+// Importiere die Gem-Konvertierungsfunktion aus useBuildEvaluation
+// Erstelle eine vereinfachte Version hier
+function convertGemStatesToUpgrades(gemStates, upgrades) {
+  if (!gemStates) return;
+  
+  upgrades.gems_nodes = {};
+  
+  Object.entries(gemStates).forEach(([gemId, gemState]) => {
+    if (!gemState) return;
+    
+    // Gem Level
+    upgrades.gems_nodes[`${gemId}_level`] = gemState.level || 0;
+    
+    // Gem Nodes
+    if (Array.isArray(gemState.nodes)) {
+      gemState.nodes.forEach((hasNode, index) => {
+        upgrades.gems_nodes[`${gemId}_gem${index + 1}`] = hasNode ? 1 : 0;
+      });
+    }
+    
+    // Gem Upgrades (vereinfacht)
+    if (gemState.upgrades) {
+      Object.entries(gemState.upgrades).forEach(([upgradeId, level]) => {
+        // Mapping für bekannte Upgrades
+        const upgradeMapping = {
+          'borge-loot-bonus': 'attraction_lootBorge',
+          'ozzy-loot-bonus': 'attraction_lootOzzy', 
+          'catch-up-power': 'attraction_catchUp',
+          'borge-stat-bonus': 'creation_borgeGU',
+          'ozzy-stat-bonus': 'creation_ozzyGU',
+          'knox-stat-bonus': 'creation_knoxGU',
+        };
+        
+        const mappedKey = upgradeMapping[upgradeId];
+        if (mappedKey) {
+          upgrades.gems_nodes[mappedKey] = level;
+        } else {
+          upgrades.gems_nodes[`${gemId}_${upgradeId}`] = level;
+        }
+      });
+    }
+  });
+}
 
 // Props
 const props = defineProps({
@@ -128,6 +174,10 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits(['close', 'import-build']);
+
+// Stores
+const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Refs
 const importCode = ref('');
@@ -222,8 +272,17 @@ const validateBuildCode = async () => {
   isValidating.value = true;
   
   try {
-    // Parse build code
-    const build = BuildCodeHandler.parseCode(code);
+    // Erstelle aktuelle Store-Daten für intelligente Override-Erkennung
+    const currentStoreData = {
+      hunterStats: hunterStore.hunterStats,
+      upgrades: { ...hunterStore.upgrades }
+    };
+    
+    // Konvertiere Gem-Daten in das upgrades.gems_nodes Format
+    convertGemStatesToUpgrades(gemPlannerStore.gemStates, currentStoreData.upgrades);
+    
+    // Parse build code mit aktuellen Store-Daten
+    const build = BuildCodeHandler.parseCode(code, currentStoreData);
     
     if (!build) {
       errorMessage.value = 'Invalid build code. Please check the code and try again.';
