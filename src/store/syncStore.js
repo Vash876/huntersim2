@@ -87,11 +87,13 @@ export const useSyncStore = defineStore('sync', () => {
       const { useTRPlannerStore } = await import('@/store/orbStore');
       const { useTRTrackingStore } = await import('@/store/trTrackingStore');
       const { useUltimaStore } = await import('@/store/ultimaStore');
+      const { useGemPlannerStore } = await import('@/store/gemPlannerStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
       const trTrackingStore = useTRTrackingStore();
       const ultimaStore = useUltimaStore();
+      const gemPlannerStore = useGemPlannerStore();
 
       // Create backup data (same as Settings createBackup)
       const hunterStoreState = JSON.parse(JSON.stringify(hunterStore.$state));
@@ -105,6 +107,7 @@ export const useSyncStore = defineStore('sync', () => {
           trPlannerStore: JSON.parse(JSON.stringify(trPlannerStore.$state)),
           trTrackingStore: trTrackingStore.exportData(),
           ultimaStore: JSON.parse(JSON.stringify(ultimaStore.$state)),
+          gemPlannerStore: gemPlannerStore.exportData(),
           localStorage: {
             gadgetCalculator_currentLevels: JSON.parse(localStorage.getItem('gadgetCalculator_currentLevels') || '{}'),
             gadgetCalculator_targetLevels: JSON.parse(localStorage.getItem('gadgetCalculator_targetLevels') || '{}'),
@@ -115,10 +118,11 @@ export const useSyncStore = defineStore('sync', () => {
             researchOverview_filters: JSON.parse(localStorage.getItem('researchOverview_filters') || '{}'),
             loopModOverview_filters: JSON.parse(localStorage.getItem('loopModOverview_filters') || '{}'),
             trPlanOrderIds: JSON.parse(localStorage.getItem('trPlanOrderIds') || '[]'),
-            huntersim_high_iterations_mode: localStorage.getItem('huntersim_high_iterations_mode')
+            huntersim_high_iterations_mode: localStorage.getItem('huntersim_high_iterations_mode'),
+            gems_showOnlySimRelevant: JSON.parse(localStorage.getItem('gems_showOnlySimRelevant') || 'false')
           }
         },
-        version: '2.0.0',
+        version: '2.1.0',
         timestamp: new Date().toISOString(),
         type: 'hunter-simulator-backup'
       };
@@ -167,11 +171,13 @@ export const useSyncStore = defineStore('sync', () => {
       const { useTRPlannerStore } = await import('@/store/orbStore');
       const { useTRTrackingStore } = await import('@/store/trTrackingStore');
       const { useUltimaStore } = await import('@/store/ultimaStore');
+      const { useGemPlannerStore } = await import('@/store/gemPlannerStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
       const trTrackingStore = useTRTrackingStore();
       const ultimaStore = useUltimaStore();
+      const gemPlannerStore = useGemPlannerStore();
 
       // Restore stores (same as Settings restoreFromBackup)
       if (backupData.data.hunterStore) {
@@ -221,6 +227,15 @@ export const useSyncStore = defineStore('sync', () => {
         });
       }
 
+      // Restore Gem Planner Store
+      if (backupData.data.gemPlannerStore) {
+        console.log('📥 Restoring Gem Planner data from cloud backup...');
+        const importSuccess = gemPlannerStore.importData(backupData.data.gemPlannerStore);
+        if (!importSuccess) {
+          console.warn('⚠️ Failed to import Gem Planner data from cloud, but continuing with other data...');
+        }
+      }
+
       // Restore localStorage
       if (backupData.data.localStorage) {
         const localStorageData = backupData.data.localStorage;
@@ -254,6 +269,11 @@ export const useSyncStore = defineStore('sync', () => {
         }
         if (localStorageData.huntersim_high_iterations_mode !== undefined) {
           localStorage.setItem('huntersim_high_iterations_mode', localStorageData.huntersim_high_iterations_mode);
+        }
+        
+        // Gem Planner settings
+        if (localStorageData.gems_showOnlySimRelevant !== undefined) {
+          localStorage.setItem('gems_showOnlySimRelevant', JSON.stringify(localStorageData.gems_showOnlySimRelevant));
         }
       }
 

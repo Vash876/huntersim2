@@ -264,116 +264,6 @@
         </div>
       </div>
 
-      <!-- Debug Section -->
-      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mt-8">
-        <div class="header p-4 flex justify-between items-center">
-          <h3 class="text-lg font-semibold text-white flex items-center">
-            <IconBug size="20" class="mr-2 text-red-400" />
-            Debug Tools
-          </h3>
-        </div>
-        
-        <div class="p-6">
-          <div class="mb-6">
-            <h4 class="text-white text-md font-medium mb-2">Store Data Inspector</h4>
-            <p class="text-gray-300 text-sm mb-4">
-              After restoring a backup, use these tools to inspect the current store data and compare with working backups.
-            </p>
-            
-            <div class="flex flex-wrap gap-3 mb-4">
-              <button 
-                @click="exportStoreData('trTracking')"
-                class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg flex items-center transition-colors text-sm"
-              >
-                <IconDatabase size="16" class="mr-2" />
-                Export TR Tracking Store
-              </button>
-              
-              <button 
-                @click="exportStoreData('trPlanner')"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg flex items-center transition-colors text-sm"
-              >
-                <IconDatabase size="16" class="mr-2" />
-                Export TR Planner Store
-              </button>
-              
-              <button 
-                @click="exportStoreData('all')"
-                class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg flex items-center transition-colors text-sm"
-              >
-                <IconDatabaseExport size="16" class="mr-2" />
-                Export All Stores
-              </button>
-              
-              <button 
-                @click="exportLocalStorageData"
-                class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg flex items-center transition-colors text-sm"
-              >
-                Export LocalStorage Keys
-              </button>
-              
-              <button 
-                @click="checkMigrationStatus"
-                class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-2 rounded-lg flex items-center transition-colors text-sm"
-              >
-                <IconAlertTriangle size="16" class="mr-2" />
-                Check Migration Status
-              </button>
-              
-              <button 
-                @click="resetTRMigration"
-                class="bg-red-700 hover:bg-red-800 text-white px-3 py-2 rounded-lg flex items-center transition-colors text-sm"
-              >
-                <IconRefresh size="16" class="mr-2" />
-                Reset TR Migration
-              </button>
-            </div>
-            
-            <!-- Debug Output Textarea -->
-            <div v-if="debugOutput" class="w-full">
-              <div class="bg-gray-900 rounded-lg p-3 border border-gray-700 relative">
-                <div class="flex justify-between items-center mb-2">
-                  <div class="text-xs text-gray-400">Debug Output:</div>
-                  <div class="flex gap-2">
-                    <button 
-                      @click="copyDebugOutput" 
-                      class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300"
-                      :class="{ 'text-green-400 bg-green-800': debugCopied }"
-                    >
-                      <IconClipboard v-if="!debugCopied" size="12" class="inline mr-1" />
-                      <IconCheck v-else size="12" class="inline mr-1" />
-                      {{ debugCopied ? 'Copied!' : 'Copy' }}
-                    </button>
-                    <button 
-                      @click="downloadDebugOutput" 
-                      class="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded text-gray-300"
-                    >
-                      <IconDownload size="12" class="inline mr-1" />
-                      Download
-                    </button>
-                    <button 
-                      @click="debugOutput = ''" 
-                      class="text-xs px-2 py-1 bg-red-700 hover:bg-red-600 rounded text-gray-300"
-                    >
-                      <IconX size="12" class="inline mr-1" />
-                      Clear
-                    </button>
-                  </div>
-                </div>
-                <textarea 
-                  :value="debugOutput"
-                  readonly
-                  class="w-full h-64 bg-transparent border-none resize-none text-xs text-gray-200 font-mono focus:outline-none scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
-                  style="overflow-y: auto;"
-                ></textarea>
-              </div>
-              <div class="mt-2 text-xs text-gray-400">
-                Size: {{ debugOutput.length.toLocaleString() }} characters
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
 
     <AlertDialog
@@ -416,10 +306,7 @@ import {
   IconInfoCircle,
   IconCircleCheck,
   IconRefresh,
-  IconCode,
-  IconBug,
-  IconDatabase,
-
+  IconCode
 } from '@tabler/icons-vue';
 
 // Stores
@@ -439,10 +326,6 @@ const showResetConfirmation = ref(false);
 const fileInput = ref(null);
 const toast = ref({ show: false, message: '', type: 'info' });
 const highIterationsEnabled = ref(false); 
-
-// Debug state
-const debugOutput = ref('');
-const debugCopied = ref(false); 
 
 // AlertDialog-States
 const alertDialog = ref({
@@ -793,192 +676,6 @@ async function createBackupWrapper() {
   }
 }
 
-// Debug Functions
-function exportStoreData(storeType) {
-  let data = {};
-  let title = '';
-  
-  switch (storeType) {
-    case 'trTracking':
-      data = {
-        store: trTrackingStore.$state,
-        localStorage: {
-          tr_tracking_selected_resources: localStorage.getItem('tr_tracking_selected_resources'),
-          tr_tracking_tracks: localStorage.getItem('tr_tracking_tracks'),
-          tr_tracking_custom_resources: localStorage.getItem('tr_tracking_custom_resources'),
-          tr_data_migration_completed: localStorage.getItem('tr_data_migration_completed')
-        }
-      };
-      title = 'TR Tracking Store Data';
-      break;
-      
-    case 'trPlanner':
-      data = {
-        store: trPlannerStore.$state,
-        localStorage: {
-          trPlanOrderIds: localStorage.getItem('trPlanOrderIds'),
-          'tr-planner-data': localStorage.getItem('tr-planner-data'),
-          trplanner_userstats: localStorage.getItem('trplanner_userstats'),
-          gemData: localStorage.getItem('gemData')
-        }
-      };
-      title = 'TR Planner Store Data';
-      break;
-      
-    case 'all':
-      data = {
-        hunterStore: hunterStore.$state,
-        trPlannerStore: trPlannerStore.$state,
-        trTrackingStore: trTrackingStore.$state,
-        ultimaStore: ultimaStore.$state,
-        gemPlannerStore: gemPlannerStore.$state,
-        syncStore: syncStore.$state
-      };
-      title = 'All Store Data';
-      break;
-  }
-  
-  const output = {
-    timestamp: new Date().toISOString(),
-    title: title,
-    data: data
-  };
-  
-  debugOutput.value = JSON.stringify(output, null, 2);
-  showToast(`${title} exported to debug output`, 'info');
-}
-
-function exportLocalStorageData() {
-  const relevantKeys = [
-    'tr_tracking_selected_resources',
-    'tr_tracking_tracks', 
-    'tr_tracking_custom_resources',
-    'tr_data_migration_completed',
-    'trPlanOrderIds',
-    'tr-planner-data',
-    'trplanner_userstats',
-    'gemData'
-  ];
-  
-  const localStorageData = {};
-  relevantKeys.forEach(key => {
-    const value = localStorage.getItem(key);
-    if (value !== null) {
-      try {
-        localStorageData[key] = JSON.parse(value);
-      } catch (e) {
-        localStorageData[key] = value; // Keep as string if not JSON
-      }
-    } else {
-      localStorageData[key] = null;
-    }
-  });
-  
-  const output = {
-    timestamp: new Date().toISOString(),
-    title: 'LocalStorage Data (TR-related keys)',
-    data: localStorageData
-  };
-  
-  debugOutput.value = JSON.stringify(output, null, 2);
-  showToast('LocalStorage data exported to debug output', 'info');
-}
-
-function copyDebugOutput() {
-  if (!debugOutput.value) return;
-  
-  navigator.clipboard.writeText(debugOutput.value).then(() => {
-    debugCopied.value = true;
-    showToast('Debug output copied to clipboard!', 'success');
-    
-    setTimeout(() => {
-      debugCopied.value = false;
-    }, 2000);
-  }).catch(() => {
-    showToast('Failed to copy to clipboard', 'error');
-  });
-}
-
-function downloadDebugOutput() {
-  if (!debugOutput.value) return;
-  
-  const filename = `huntersim-debug-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
-  const blob = new Blob([debugOutput.value], { type: 'application/json' });
-  
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  showToast('Debug output downloaded!', 'info');
-}
-
-// Migration Debug Functions
-function checkMigrationStatus() {
-  const migrationCompleted = localStorage.getItem('tr_tracking_migration_completed') === 'true';
-  const trTrackingInitialized = trTrackingStore.isInitialized;
-  const useIndexedDB = trTrackingStore.useIndexedDB;
-  
-  const status = {
-    timestamp: new Date().toISOString(),
-    title: 'TR Tracking Migration Status',
-    data: {
-      migrationCompleted,
-      trTrackingInitialized,
-      useIndexedDB,
-      localStorage: {
-        tr_tracking_migration_completed: localStorage.getItem('tr_tracking_migration_completed'),
-        tr_tracking_selected_resources: localStorage.getItem('tr_tracking_selected_resources'),
-        tr_tracking_tracks: localStorage.getItem('tr_tracking_tracks'),
-        tr_tracking_custom_resources: localStorage.getItem('tr_tracking_custom_resources')
-      },
-      storeData: {
-        selectedResourcesCount: trTrackingStore.selectedResources?.length || 0,
-        tracksCount: trTrackingStore.trTracks?.length || 0,
-        availableResourcesCount: trTrackingStore.availableResources?.length || 0
-      }
-    }
-  };
-  
-  debugOutput.value = JSON.stringify(status, null, 2);
-  showToast('Migration status exported to debug output', 'info');
-}
-
-async function resetTRMigration() {
-  showDialog({
-    title: 'Reset TR Migration',
-    message: 'This will reset the TR Tracking migration status and force re-migration. Current IndexedDB data will be preserved but localStorage migration status will be cleared.',
-    type: 'warning',
-    confirmText: 'Reset Migration',
-    cancelText: 'Cancel',
-    onConfirm: async () => {
-      try {
-        // Reset migration status
-        localStorage.removeItem('tr_tracking_migration_completed');
-        
-        // Reset TR Tracking store initialization
-        trTrackingStore.isInitialized = false;
-        
-        // Force re-initialization
-        await trTrackingStore.init();
-        
-        showToast('TR Migration reset and re-initialized successfully', 'success');
-        
-        // Automatically check status after reset
-        setTimeout(() => {
-          checkMigrationStatus();
-        }, 1000);
-        
-      } catch (error) {
-        console.error('Error resetting TR migration:', error);
-        showToast('Failed to reset TR migration: ' + error.message, 'error');
-      }
-    }
-  });
-}
-
 // Restore from backup using composable
 async function restoreFromBackupWrapper() {
   if (!restoreCode.value) return;
@@ -998,12 +695,6 @@ async function restoreFromBackupWrapper() {
         // Update UI state after restore
         const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
         highIterationsEnabled.value = highIterationsMode === 'true';
-        
-        // Automatically export debug data after restore for analysis
-        setTimeout(() => {
-          exportStoreData('trTracking');
-          showToast('TR Tracking debug data automatically exported for analysis', 'info');
-        }, 1000);
         
       } catch (error) {
         console.error('Error restoring backup:', error);
