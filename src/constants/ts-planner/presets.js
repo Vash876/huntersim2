@@ -1,366 +1,453 @@
 import { getTraitSphereById } from './index.js';
 
 export const traitSpherePresets = [
-  // 4 AMC Presets
+  // 4 AM Cores - 2/0/0 Milestones
   {
+    cores: 4,
+    milestones: "2/0/0",
     category: 'short',
     spheres: [1, 2, 4],
   },
   {
-    category: 'short',
-    spheres: [1, 2, 3],
-  }, 
-  {
+    cores: 4,
+    milestones: "2/0/0", 
     category: 'long',
     spheres: [1, 5],
   },
 
-  // 6 AMC Presets
+  // 6 AM Cores - 2/1/0 Milestones
   {
+    cores: 6,
+    milestones: "2/1/0",
     category: 'short',
     spheres: [1, 2, 3, 4],
   },
   {
-    category: 'long',
+    cores: 6,
+    milestones: "2/1/0",
+    category: 'long', 
     spheres: [1, 2, 5],
   },
 
-  // 8 AMC Presets
+  // 8 AM Cores - 3/1/0 | 2/1/1 Milestones
   {
+    cores: 8,
+    milestones: "3/1/0 | 2/1/1",
     category: 'short',
     spheres: [1, 2, 4, 8],
   },
   {
+    cores: 8,
+    milestones: "3/1/0 | 2/1/1",
     category: 'long',
     spheres: [1, 2, 4, 5],
   },
 
-  // 10 AMC Presets
+  // 10 AM Cores - 3/1/1 Milestones
   {
+    cores: 10,
+    milestones: "3/1/1",
     category: 'short',
     spheres: [1, 2, 7],
   },
   {
+    cores: 10,
+    milestones: "3/1/1",
     category: 'long',
     spheres: [1, 2, 7],
   },
 
-  // 12 AMC Presets
+  // 12 AM Cores - 3/2/1 Milestones
   {
+    cores: 12,
+    milestones: "3/2/1",
     category: 'short',
     spheres: [1, 2, 4, 7],
   },
   {
+    cores: 12,
+    milestones: "3/2/1",
     category: 'long',
     spheres: [1, 5, 7],
   },
 
-  // 14 AMC Presets
+  // 14 AM Cores - 3/2/2 | 4/2/1 Milestones
   {
+    cores: 14,
+    milestones: "3/2/2 | 4/2/1",
     category: 'short',
     spheres: [1, 2, 3, 4, 7],
   },
   {
+    cores: 14,
+    milestones: "3/2/2 | 4/2/1",
     category: 'long',
     spheres: [1, 4, 5, 7],
   },
 
-  // 16 AMC Presets
+  // 16 AM Cores - 4/2/2 Milestones
   {
+    cores: 16,
+    milestones: "4/2/2",
     category: 'short',
     spheres: [1, 2, 4, 7, 8],
   },
   {
+    cores: 16,
+    milestones: "4/2/2",
     category: 'long',
     spheres: [1, 2, 4, 5, 7],
   },
 
-  // 18 AMC Presets
+  // 18 AM Cores - 5/2/2 | 4/2/3 Milestones
   {
+    cores: 18,
+    milestones: "5/2/2 | 4/2/3",
     category: 'short',
     spheres: [1, 2, 7, 12],
   },
   {
+    cores: 18,
+    milestones: "5/2/2 | 4/2/3",
     category: 'long',
     spheres: [1, 4, 5, 7, 8],
   },
-  {
-    description: '18 Cores for a Long TR with 6 Floated for TS9 (+1 Ultima).',
-    category: 'long',
-    spheres: [1, 5, 7, 9],
-  },
 
-  // 20 AMC Presets
+  // 20 AM Cores - 5/2/3 | 4/3/3 Milestones
   {
+    cores: 20,
+    milestones: "5/2/3 | 4/3/3",
     category: 'short',
     spheres: [1, 2, 4, 7, 12],
   },
   {
+    cores: 20,
+    milestones: "5/2/3 | 4/3/3",
     category: 'long',
     spheres: [1, 5, 7, 9],
   },
 
-  // 22 AMC Presets
+  // 22 AM Cores - 5/3/3 Milestones
   {
+    cores: 22,
+    milestones: "5/3/3",
     category: 'short',
     spheres: [1, 2, 3, 4, 7, 12],
   },
   {
+    cores: 22,
+    milestones: "5/3/3",
     category: 'long',
     spheres: [1, 4, 5, 7, 9],
   },
 
-  // 24 AMC Presets
+  // 24 AM Cores - 5/3/4 Milestones
   {
+    cores: 24,
+    milestones: "5/3/4",
     category: 'short',
     spheres: [1, 2, 4, 7, 8, 12],
   },
   {
+    cores: 24,
+    milestones: "5/3/4",
     category: 'long',
-    spheres: [1, 4, 5, 7, 8],
-  },
-  {
-    description: '24 Cores for a Long TR with 5 Floated for TS12 (+1 Ultima).',
-    category: 'long',
-    spheres: [1, 5, 7, 9, 12],
+    spheres: [1, 2, 4, 5, 7, 9],
   },
 
-  // 26 AMC Presets
+  // 26 AM Cores - 6/3/4 Milestones
   {
+    cores: 26,
+    milestones: "6/3/4",
     category: 'short',
     spheres: [1, 2, 4, 7, 9, 12],
   },
   {
+    cores: 26,
+    milestones: "6/3/4",
     category: 'long',
     spheres: [1, 5, 7, 9, 12],
   },
 
-  // 28 AMC Presets
+  // 28 AM Cores - 6/4/4 Milestones
   {
+    cores: 28,
+    milestones: "6/4/4",
     category: 'short',
     spheres: [1, 2, 3, 4, 7, 9, 12],
   },
   {
+    cores: 28,
+    milestones: "6/4/4",
     category: 'long',
     spheres: [1, 4, 5, 7, 9, 12],
   },
 
-  // 30 AMC Presets
+  // 30 AM Cores - 7/4/4 | 6/4/5 Milestones
   {
+    cores: 30,
+    milestones: "7/4/4 | 6/4/5",
     category: 'short',
-    spheres: [1, 2, 4, 7, 8, 9, 12],
+    spheres: [1, 2, 4, 7, 9, 8, 12],
   },
   {
+    cores: 30,
+    milestones: "7/4/4 | 6/4/5",
     category: 'long',
-    spheres: [1, 2, 4, 5, 7, 9, 12],
+    spheres: [1, 4, 5, 7, 9, 2, 12],
   },
 
-  // 32 AMC Presets
+  // 32 AM Cores - 7/4/5 Milestones
   {
+    cores: 32,
+    milestones: "7/4/5",
     category: 'short',
-    spheres: [1, 2, 3, 4, 7, 8, 9, 12],
+    spheres: [1, 2, 4, 7, 9, 3, 8, 12],
   },
   {
+    cores: 32,
+    milestones: "7/4/5",
     category: 'long',
-    spheres: [1, 4, 5, 7, 8, 9, 12],
+    spheres: [1, 4, 5, 7, 9, 8, 12],
   },
 
-  // 34 AMC Presets
+  // 34 AM Cores - 8/4/5 | 7/5/5 Milestones
   {
+    cores: 34,
+    milestones: "8/4/5 | 7/5/5",
     category: 'short',
-    spheres: [1, 2, 3, 4, 7, 9, 12, 16],
+    spheres: [1, 2, 4, 7, 9, 3, 12, 16],
   },
   {
+    cores: 34,
+    milestones: "8/4/5 | 7/5/5",
     category: 'long',
-    spheres: [1, 4, 5, 7, 8, 9, 12],
+    spheres: [1, 4, 5, 7, 9, 2, 8, 12],
   },
 
-  // 36 AMC Presets
+  // 36 AM Cores - 8/5/5 Milestones
   {
+    cores: 36,
+    milestones: "8/5/5",
     category: 'short',
-    spheres: [1, 2, 4, 7, 8, 9, 14],
+    spheres: [1, 2, 4, 7, 9, 8, 14],
   },
   {
+    cores: 36,
+    milestones: "8/5/5",
     category: 'long',
-    spheres: [1, 2, 4, 5, 7, 9, 12, 16],
-  },
-  {
-    description: '36 Cores for a Long TR with 11 floated for TS14 (+1 UML)',
-    category: 'long',
-    spheres: [1, 4, 5, 7, 8, 9, 14],
+    spheres: [1, 4, 5, 7, 9, 2, 12, 16],
   },
 
-  // 38 AMC Presets
+  // 38 AM Cores - 8/5/6 | 9/5/5 Milestones
   {
+    cores: 38,
+    milestones: "8/5/6 | 9/5/5",
     category: 'short',
-    spheres: [1, 2, 4, 6, 7, 9, 11, 12],
+    spheres: [1, 2, 4, 7, 9, 6, 11, 12],
   },
   {
+    cores: 38,
+    milestones: "8/5/6 | 9/5/5",
     category: 'long',
-    spheres: [1, 4, 5, 7, 8, 9, 12, 14],
-  },
-  {
-    description: '38 Cores for a Long TR with 4 floated for TS11 (+1 UML)',
-    category: 'long',
-    spheres: [1, 2, 4, 5, 6, 7, 9, 11, 12],
+    spheres: [1, 4, 5, 7, 9, 8, 14],
   },
 
-  // 40 AMC Presets
+  // 40 AM Cores - 8/6/6 | 9/5/6 Milestones
   {
+    cores: 40,
+    milestones: "8/6/6 | 9/5/6",
     category: 'short',
-    spheres: [1, 2, 3, 4, 6, 7, 9, 11, 12],
+    spheres: [1, 2, 4, 7, 9, 3, 6, 11, 12],
   },
   {
+    cores: 40,
+    milestones: "8/6/6 | 9/5/6",
     category: 'long',
-    spheres: [1, 2, 4, 5, 7, 8, 9, 14],
-  },
-  {
-    description: '40 Cores for a Long TR with 6 floated for TS11 (+1 UML)',
-    category: 'long',
-    spheres: [1, 2, 4, 5, 6, 7, 9, 11, 12],
+    spheres: [1, 4, 5, 7, 9, 2, 8, 14],
   },
 
-  // 42 AMC Presets
+  // 42 AM Cores - 9/6/6 Milestones
   {
+    cores: 42,
+    milestones: "9/6/6",
     category: 'short',
-    spheres: [1, 2, 4, 6, 7, 8, 9, 11, 12],
+    spheres: [1, 2, 4, 7, 9, 6, 8, 11, 12],
   },
   {
+    cores: 42,
+    milestones: "9/6/6",
     category: 'long',
-    spheres: [1, 2, 4, 5, 6, 7, 9, 11, 12],
-  },
-  {
-    description: '42 Cores for a Long TR with 10 floated for TS14 (+1 UML)',
-    category: 'long',
-    spheres: [1, 4, 5, 7, 8, 9, 12, 14],
+    spheres: [1, 4, 5, 7, 9, 2, 6, 11, 12],
   },
 
-  // 44 AMC Presets
+  // 44 AM Cores - 10/6/6 | 9/6/7 Milestones
   {
+    cores: 44,
+    milestones: "10/6/6 | 9/6/7",
     category: 'short',
-    spheres: [1, 2, 4, 7, 8, 9, 12, 14],
+    spheres: [1, 2, 4, 7, 9, 8, 12, 14],
   },
   {
+    cores: 44,
+    milestones: "10/6/6 | 9/6/7",
     category: 'long',
-    spheres: [1, 2, 3, 4, 5, 6, 7, 9, 11, 12],
-  },
-  {
-    description: '44 Cores for a Long TR with 12 floated for TS14 (+1 UML)',
-    category: 'long',
-    spheres: [1, 4, 5, 7, 8, 9, 12, 14],
+    spheres: [1, 4, 5, 7, 9, 2, 3, 6, 11, 12],
   },
 
-  // 46 AMC Presets
+  // 46 AM Cores - 10/6/7 | 9/7/7 Milestones
   {
+    cores: 46,
+    milestones: "10/6/7 | 9/7/7",
     category: 'short',
-    spheres: [1, 2, 3, 4, 7, 8, 9, 12, 14],
+    spheres: [1, 2, 4, 7, 9, 3, 8, 12, 14],
   },
   {
+    cores: 46,
+    milestones: "10/6/7 | 9/7/7",
     category: 'long',
-    spheres: [1, 4, 5, 7, 8, 9, 12, 14],
+    spheres: [1, 4, 5, 7, 9, 8, 12, 14],
   },
 
-  // 48 AMC Presets
+  // 48 AM Cores - 10/7/7 Milestones
   {
+    cores: 48,
+    milestones: "10/7/7",
     category: 'short',
-    spheres: [1, 2, 3, 4, 7, 8, 9, 12, 14],
+    spheres: [1, 2, 4, 7, 9, 3, 8, 12, 14],
   },
   {
+    cores: 48,
+    milestones: "10/7/7",
     category: 'long',
-    spheres: [1, 2, 4, 5, 7, 8, 9, 12, 14],
+    spheres: [1, 4, 5, 7, 9, 2, 8, 12, 14],
   },
 
-  // 50 AMC Presets
+  // 50 AM Cores - 11/7/7 | 10/7/8 Milestones
   {
+    cores: 50,
+    milestones: "11/7/7 | 10/7/8",
     category: 'short',
-    spheres: [1, 2, 3, 4, 6, 7, 8, 11, 14],
+    spheres: [1, 2, 4, 7, 9, 3, 6, 8, 11, 14],
   },
   {
+    cores: 50,
+    milestones: "11/7/7 | 10/7/8",
     category: 'long',
-    spheres: [1, 2, 3, 4, 5, 7, 8, 9, 12, 14],
+    spheres: [1, 4, 5, 7, 9, 2, 3, 8, 12, 14],
   },
 
-  // 52 AMC Presets
+  // 52 AM Cores
   {
+    cores: 52,
+    milestones: "11/7/8",
     category: 'short',
     spheres: [1, 2, 3, 4, 7, 8, 9, 12, 14, 16],
   },
   {
+    cores: 52,
+    milestones: "11/7/8",
     category: 'long',
     spheres: [1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 16],
   },
 
-  // 53 AMC Presets
+  // 53 AM Cores
   {
+    cores: 53,
+    milestones: "",
     category: 'short',
     spheres: [1, 2, 4, 5, 7, 8, 9, 12, 14, 16],
   },
   {
+    cores: 53,
+    milestones: "",
     category: 'long',
     spheres: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 16],
   },
 
-  // 55 AMC Presets
+  // 55 AM Cores
   {
+    cores: 55,
+    milestones: "",
     category: 'short',
     spheres: [1, 2, 3, 4, 5, 7, 8, 9, 12, 14, 16],
   },
   {
+    cores: 55,
+    milestones: "",
     category: 'long',
     spheres: [1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 14, 16],
   },
 
-  // 60 AMC Presets
+  // 60 AM Cores
   {
+    cores: 60,
+    milestones: "",
     category: 'short',
     spheres: [1, 2, 4, 6, 7, 8, 9, 11, 12, 14, 16],
   },
   {
+    cores: 60,
+    milestones: "",
     category: 'long',
     spheres: [1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 14, 16],
   },
 
-  // 62/64 AMC Presets
+  // 62/64 AM Cores
   {
+    cores: 62,
+    milestones: "",
     category: 'short',
     spheres: [1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 14, 16],
   },
   {
+    cores: 62,
+    milestones: "",
     category: 'long',
     spheres: [1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 14, 16],
   },
 
-  // 66 AMC Presets
+  // 66 AM Cores
   {
+    cores: 66,
+    milestones: "",
     category: 'short/long',
     spheres: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 16],
   },
 
-  // 69 AMC Presets
+  // 69 AM Cores
   {
+    cores: 69,
+    milestones: "",
     category: 'short/long',
     spheres: [1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15],
     description: '1 floated for TS3',
   },
 
-  // 71 AMC Presets
+  // 71 AM Cores
   {
+    cores: 71,
+    milestones: "",
     category: 'short/long',
     spheres: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15],
   },
 
-  // 75 AMC Presets
+  // 75 AM Cores
   {
+    cores: 75,
+    milestones: "",
     category: 'short/long',
     spheres: [1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15, 16],
-    description: '1 floated for TS3',
   },
 
-  // 77 AMC Presets
+  // 77 AM Cores
   {
+    cores: 77,
+    milestones: "",
     category: 'short/long',
     spheres: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15, 16],
   },
+
 ];
 
 /**

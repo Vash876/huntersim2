@@ -106,15 +106,15 @@
           <div 
             v-for="preset in filteredPresets" 
             :key="preset.id"
-            class="bg-gray-700/50 rounded-lg border border-gray-600 hover:border-purple-500 transition-colors cursor-pointer p-4"
+            class="bg-gray-700/50 rounded-lg border border-gray-600 hover:border-purple-500 transition-colors cursor-pointer p-3"
             @click="selectPreset(preset)"
           >
             <!-- Header -->
-            <div class="flex justify-between items-start mb-3">
+            <div class="flex justify-between items-start mb-2">
               <div class="flex items-center space-x-2">
                 <span 
                   :class="[
-                    'px-2 py-0.5 text-xs rounded-full',
+                    'px-1.5 py-0.5 text-xs rounded-full font-medium',
                     preset.category === 'short' 
                       ? 'bg-orange-600/30 text-orange-300 border border-orange-600/50' 
                       : preset.category === 'long'
@@ -124,7 +124,8 @@
                 >
                   {{ preset.category.toUpperCase() }}
                 </span>
-                <span class="text-sm text-gray-400">{{ preset.spheres.length }} spheres</span>
+                <span class="text-xs text-gray-400">{{ preset.cores }} AM Cores</span>
+                <span v-if="preset.milestones" class="text-xs text-gray-500">{{ preset.milestones }}</span>
               </div>
               <div class="text-right">
                 <div class="flex items-center">
@@ -138,28 +139,46 @@
                   >
                     {{ getPresetCost(preset) }}
                   </span>
-                  <IconHexagon size="12" class="text-purple-400" />
+                  <IconHexagon size="10" class="text-purple-400" />
                 </div>
               </div>
             </div>
 
             <!-- Optional Description -->
-            <div v-if="preset.description" class="mb-3">
+            <div v-if="preset.description" class="mb-2">
               <p class="text-xs text-gray-400 italic">{{ preset.description }}</p>
             </div>
             
-            <!-- Trait Spheres Preview -->
-            <div class="flex flex-wrap gap-1 mb-3">
-              <span 
-                v-for="sphereId in preset.spheres" 
-                :key="sphereId"
-                :class="[
-                  'px-2 py-1 text-xs rounded text-white font-medium',
-                  getSphereEffectClass(sphereId)
-                ]"
-              >
-                TS#{{ sphereId }}
-              </span>
+            <!-- Miniature Trait Sphere Grid (7x7 like original) -->
+            <div class="mb-2 flex justify-center">
+              <div class="grid grid-cols-7 gap-0.5" style="width: 140px; height: 140px;">
+                <template v-for="row in 7" :key="`preset-${preset.cores}-${preset.category}-row-${row}`">
+                  <template v-for="col in 7" :key="`preset-${preset.cores}-${preset.category}-cell-${row}-${col}`">
+                    <template v-if="getSphereAtPosition(col-1, row-1)">
+                      <div 
+                        v-if="getSphereAtPosition(col-1, row-1).id >= 0"
+                        :class="getPresetSphereClasses(getSphereAtPosition(col-1, row-1), preset)"
+                        class="aspect-square rounded-sm flex items-center justify-center"
+                      >
+                        <!-- Mini sphere icon -->
+                        <div 
+                          v-if="getSphereAtPosition(col-1, row-1).effect === 'locked'"
+                          class="w-2 h-2 bg-gray-600 rounded-full"
+                        ></div>
+                        <div 
+                          v-else
+                          :class="getPresetInnerSphereClasses(getSphereAtPosition(col-1, row-1), preset)"
+                          class="w-2 h-2 rounded-full"
+                        ></div>
+                      </div>
+                      <div v-else class="aspect-square"></div>
+                    </template>
+                    <template v-else>
+                      <div class="aspect-square"></div>
+                    </template>
+                  </template>
+                </template>
+              </div>
             </div>
             
             <!-- Affordability Status -->
@@ -217,7 +236,7 @@ import {
   traitSpherePresets, 
   calculatePresetCost 
 } from '@/constants/ts-planner/presets';
-import { getTraitSphereById } from '@/constants/ts-planner/index';
+import { getTraitSphereById, getTraitSphereAtPosition } from '@/constants/ts-planner/index';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 
 const props = defineProps({
@@ -302,6 +321,39 @@ function getSphereEffectClass(sphereId) {
     case 'ultima': return 'bg-green-600';
     case 'tick': return 'bg-yellow-600';
     default: return 'bg-gray-600';
+  }
+}
+
+function getSphereAtPosition(col, row) {
+  return getTraitSphereAtPosition(col, row);
+}
+
+function getPresetSphereClasses(sphere, preset) {
+  const isSelected = preset.spheres.includes(sphere.id);
+  
+  return [
+    'bg-gray-900/60 border transition-all duration-200',
+    isSelected ? 'border-purple-400 bg-purple-900/30' : 'border-gray-600/50',
+    sphere.effect === 'locked' ? 'opacity-50' : ''
+  ].filter(Boolean);
+}
+
+function getPresetInnerSphereClasses(sphere, preset) {
+  const isSelected = preset.spheres.includes(sphere.id);
+  
+  if (isSelected) {
+    // Selected: filled with effect color
+    switch (sphere.effect) {
+      case 'lp': return 'bg-purple-500';
+      case 'shards': return 'bg-blue-500';
+      case 'doubler': return 'bg-red-500';
+      case 'ultima': return 'bg-green-500';
+      case 'tick': return 'bg-yellow-500';
+      default: return 'bg-purple-500';
+    }
+  } else {
+    // Not selected: just border with effect color
+    return 'bg-transparent border border-gray-500';
   }
 }
 </script>

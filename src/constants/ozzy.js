@@ -384,7 +384,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gadgets.zaptron",  // Gadget 
   "upgrades.diamondcards.iridian", // Diamond Card 
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
-  "gems.creation.nodes.ozzyGU", // Creation Gem Node (Ozzy)
+  "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
 ];
 

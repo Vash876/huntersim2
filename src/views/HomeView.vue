@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.7.9',
+    date: '2025-08-13',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Fixed build code import issues for Ozzy builds',
+        ]
+      },
+      {
+        text: 'Trait Sphere Planner',
+        subItems: [
+          'Updated preset modal to display trait sphere grids in original game layout format',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.8',
     date: '2025-08-12',
     changes: [
