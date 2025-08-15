@@ -192,16 +192,17 @@ import GameStatsModal from '@/components/common/gem-planner/GameStatsModal.vue';
 import WeightsModal from '@/components/common/gem-planner/WeightsModal.vue';
 import { formatNumber } from '@/composables/format.js';
 import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
+import { useGemPlanningStore } from '@/store/gemPlanningStore.js';
 import { GEMS } from '@/constants/gem-planner';
 
-// Initialize store
-const gemPlannerStore = useGemPlannerStore();
+// Initialize stores
+const gemPlannerStore = useGemPlannerStore(); // For current gem data
+const gemPlanningStore = useGemPlanningStore(); // For planning data
 
 // State
 const showStatsModal = ref(false);
 const showWeightsModal = ref(false);
 const showGemPlannerModal = ref(false);
-const savedPlans = ref([]);
 const editingPlan = ref(null); // Track which plan is being edited
 
 // Toast notification
@@ -210,17 +211,7 @@ const toast = ref({ show: false, message: '', type: 'info' });
 // Store reactive references
 const gameStats = computed(() => gemPlannerStore.gameStats);
 const weights = computed(() => gemPlannerStore.weights);
-
-// Load saved plans from localStorage
-function loadSavedPlans() {
-  try {
-    const plans = JSON.parse(localStorage.getItem('gemPlans') || '[]');
-    savedPlans.value = plans.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
-  } catch (error) {
-    console.error('Error loading saved plans:', error);
-    savedPlans.value = [];
-  }
-}
+const savedPlans = computed(() => gemPlanningStore.orbSpendingPlans);
 
 // Modal Functions
 function openStatsModal() {
@@ -265,28 +256,26 @@ function onPlanCreated(plan) {
   showToastMessage(`Gem planning active: ${plan.name}`, 'success');
 }
 
-function onPlanSaved(plan) {
-  // Save the plan to store or localStorage
+async function onPlanSaved(plan) {
+  // Save the plan to the new planning store
   console.log('Saving plan:', plan);
   
-  // For now, save to localStorage - later can be moved to store
   try {
-    const plans = JSON.parse(localStorage.getItem('gemPlans') || '[]');
-    
-    // Check if plan already exists (by ID) and update, otherwise add new
-    const existingIndex = plans.findIndex(p => p.id === plan.id);
-    if (existingIndex !== -1) {
-      plans[existingIndex] = plan;
+    // Create or update plan in the planning store
+    if (plan.id && gemPlanningStore.getOrbSpendingPlanById(plan.id)) {
+      // Update existing plan
+      await gemPlanningStore.updateOrbSpendingPlan(plan.id, plan);
       showToastMessage(`Plan "${plan.name}" updated successfully!`, 'success');
     } else {
-      plans.push(plan);
+      // Create new plan
+      await gemPlanningStore.createOrbSpendingPlan(
+        plan.name, 
+        plan.trPlanId, 
+        plan.initialBudget || 0, 
+        plan.trCount || 1
+      );
       showToastMessage(`Plan "${plan.name}" saved successfully!`, 'success');
     }
-    
-    localStorage.setItem('gemPlans', JSON.stringify(plans));
-    
-    // Reload the saved plans to update UI
-    loadSavedPlans();
   } catch (error) {
     console.error('Error saving plan:', error);
     showToastMessage('Failed to save plan', 'error');
@@ -294,10 +283,14 @@ function onPlanSaved(plan) {
 }
 
 // Plan Management Functions
-function loadPlan(plan) {
-  // For now, just show the plan details
-  showToastMessage(`Loading plan: ${plan.name}`, 'info');
-  // TODO: Implement plan loading logic
+async function loadPlan(plan) {
+  try {
+    await gemPlanningStore.loadOrbSpendingPlan(plan.id);
+    showToastMessage(`Loaded plan: ${plan.name}`, 'success');
+  } catch (error) {
+    console.error('Error loading plan:', error);
+    showToastMessage('Failed to load plan', 'error');
+  }
 }
 
 function handleSelectPlan(plan) {
@@ -312,22 +305,12 @@ function editPlan(plan) {
   showGemPlannerModal.value = true;
 }
 
-function copyPlan(plan) {
-  // Create a copy of the plan
-  const planCopy = {
-    ...JSON.parse(JSON.stringify(plan)),
-    id: Date.now().toString(),
-    name: `${plan.name} (Copy)`,
-    savedAt: new Date().toISOString()
-  };
-  
+async function copyPlan(plan) {
   try {
-    const plans = JSON.parse(localStorage.getItem('gemPlans') || '[]');
-    plans.push(planCopy);
-    localStorage.setItem('gemPlans', JSON.stringify(plans));
-    
-    loadSavedPlans();
-    showToastMessage(`Plan "${plan.name}" copied successfully!`, 'success');
+    const copiedPlan = await gemPlanningStore.duplicateOrbSpendingPlan(plan.id);
+    if (copiedPlan) {
+      showToastMessage(`Plan "${plan.name}" copied successfully!`, 'success');
+    }
   } catch (error) {
     console.error('Error copying plan:', error);
     showToastMessage('Failed to copy plan', 'error');
@@ -340,15 +323,10 @@ function sharePlan(plan) {
   // For now, could copy to clipboard or open share dialog
 }
 
-function deletePlan(planId) {
+async function deletePlan(planId) {
   if (confirm('Are you sure you want to delete this plan? This cannot be undone.')) {
     try {
-      const plans = JSON.parse(localStorage.getItem('gemPlans') || '[]');
-      const filteredPlans = plans.filter(p => p.id !== planId);
-      localStorage.setItem('gemPlans', JSON.stringify(filteredPlans));
-      
-      // Reload the saved plans to update UI
-      loadSavedPlans();
+      await gemPlanningStore.deleteOrbSpendingPlan(planId);
       showToastMessage('Plan deleted successfully', 'success');
     } catch (error) {
       console.error('Error deleting plan:', error);
@@ -457,19 +435,24 @@ function formatMultiplierWithType(gemId, upgradeId, multiplier) {
 }
 
 // Import/Export Functions
-function importPlan() {
+async function importPlan() {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json';
-  input.onchange = (event) => {
+  input.onchange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = JSON.parse(e.target.result);
-        if (gemPlannerStore.importData(data)) {
+        
+        // Try importing to both stores
+        const gemPlannerSuccess = gemPlannerStore.importData(data);
+        const gemPlanningSuccess = await gemPlanningStore.importData(data);
+        
+        if (gemPlannerSuccess || gemPlanningSuccess) {
           showToastMessage('Plan imported successfully', 'success');
         } else {
           showToastMessage('Failed to import plan', 'error');
@@ -484,10 +467,20 @@ function importPlan() {
   input.click();
 }
 
-function exportPlan() {
+async function exportPlan() {
   try {
-    const data = gemPlannerStore.exportData();
-    const dataStr = JSON.stringify(data, null, 2);
+    // Export data from both stores
+    const gemPlannerData = gemPlannerStore.exportData();
+    const gemPlanningData = await gemPlanningStore.exportData();
+    
+    const combinedData = {
+      ...gemPlannerData,
+      ...gemPlanningData,
+      exportedAt: new Date().toISOString(),
+      version: '2.0' // New version with dual store support
+    };
+    
+    const dataStr = JSON.stringify(combinedData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     
@@ -506,10 +499,20 @@ function exportPlan() {
   }
 }
 
-function resetPlanner() {
+async function resetPlanner() {
   if (confirm('Are you sure you want to reset all gem data? This cannot be undone.')) {
-    gemPlannerStore.resetToDefaults();
-    showToastMessage('Planner reset successfully', 'info');
+    try {
+      // Reset current gem data (old store)
+      gemPlannerStore.resetToDefaults();
+      
+      // Clear all planning data (new store)
+      await gemPlanningStore.clearAllData();
+      
+      showToastMessage('Planner reset successfully', 'info');
+    } catch (error) {
+      console.error('Error resetting planner:', error);
+      showToastMessage('Failed to reset planner', 'error');
+    }
   }
 }
 
@@ -519,12 +522,6 @@ function showToastMessage(message, type = 'success', duration = 3000) {
     toast.value.show = false;
   }, duration);
 }
-
-// Initialize the store on mount
-onMounted(() => {
-  // Load saved plans when component mounts
-  loadSavedPlans();
-});
 </script>
 
 <style scoped>

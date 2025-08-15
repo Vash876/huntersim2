@@ -122,6 +122,7 @@ import {
   IconFileOff
 } from '@tabler/icons-vue';
 import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
+import { useGemPlanningStore } from '@/store/gemPlanningStore.js';
 import OrbPlanCard from './OrbPlanCard.vue';
 import OrbPlanEditModal from './OrbPlanEditModal.vue';
 import OrbPlanShareModal from './OrbPlanShareModal.vue';
@@ -143,6 +144,7 @@ const emit = defineEmits(['close', 'plan-loaded']);
 
 // Store
 const gemPlannerStore = useGemPlannerStore();
+const gemPlanningStore = useGemPlanningStore();
 
 // State
 const showEditModal = ref(false);
@@ -151,8 +153,8 @@ const editingPlan = ref(null);
 const sharingPlan = ref(null);
 
 // Computed
-const orbSpendingPlans = computed(() => gemPlannerStore.orbSpendingPlans);
-const activeOrbSpendingPlan = computed(() => gemPlannerStore.activeOrbSpendingPlan);
+const orbSpendingPlans = computed(() => gemPlanningStore.orbSpendingPlans);
+const activeOrbSpendingPlan = computed(() => gemPlanningStore.activeOrbSpendingPlan);
 
 const activePlanCount = computed(() => {
   return activeOrbSpendingPlan.value ? 1 : 0;
@@ -165,7 +167,10 @@ function handleCreateNewEvent(event) {
 }
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
+  // Initialize stores
+  await gemPlanningStore.init();
+  
   document.addEventListener('orbPlannerCreateNew', handleCreateNewEvent);
   console.log('OrbSpendingPlansModal mounted and event listener added');
 });
@@ -185,14 +190,18 @@ function closeEditModal() {
   editingPlan.value = null;
 }
 
-function loadPlan(planId) {
-  const plan = gemPlannerStore.loadOrbSpendingPlan(planId);
-  if (plan) {
-    emit('plan-loaded', plan);
-    // Only emit close if NOT in embedded mode
-    if (!props.isEmbedded) {
-      emit('close');
+async function loadPlan(planId) {
+  try {
+    const plan = await gemPlanningStore.loadOrbSpendingPlan(planId);
+    if (plan) {
+      emit('plan-loaded', plan);
+      // Only emit close if NOT in embedded mode
+      if (!props.isEmbedded) {
+        emit('close');
+      }
     }
+  } catch (error) {
+    console.error('Error loading plan:', error);
   }
 }
 
@@ -204,17 +213,25 @@ function editPlan(planId) {
   }
 }
 
-function copyPlan(planId) {
-  const newPlan = gemPlannerStore.duplicateOrbSpendingPlan(planId);
-  if (newPlan) {
-    console.log(`Plan "${newPlan.name}" copied successfully`);
+async function copyPlan(planId) {
+  try {
+    const newPlan = await gemPlanningStore.duplicateOrbSpendingPlan(planId);
+    if (newPlan) {
+      console.log(`Plan "${newPlan.name}" copied successfully`);
+    }
+  } catch (error) {
+    console.error('Error copying plan:', error);
   }
 }
 
-function deletePlan(planId) {
+async function deletePlan(planId) {
   const plan = orbSpendingPlans.value.find(p => p.id === planId);
   if (plan && confirm(`Are you sure you want to delete "${plan.name}"? This cannot be undone.`)) {
-    gemPlannerStore.deleteOrbSpendingPlan(planId);
+    try {
+      await gemPlanningStore.deleteOrbSpendingPlan(planId);
+    } catch (error) {
+      console.error('Error deleting plan:', error);
+    }
   }
 }
 
@@ -231,28 +248,32 @@ function closeShareModal() {
   sharingPlan.value = null;
 }
 
-function savePlan(planData) {
-  if (editingPlan.value) {
-    // Update existing plan
-    gemPlannerStore.updateOrbSpendingPlan(editingPlan.value.id, planData);
-  } else {
-    // Create new plan
-    const newPlan = gemPlannerStore.createOrbSpendingPlan(
-      planData.name,
-      planData.trPlanId || null,
-      planData.initialBudget,
-      planData.trCount
-    );
-    
-    // Update description if provided
-    if (planData.description) {
-      gemPlannerStore.updateOrbSpendingPlan(newPlan.id, { 
-        description: planData.description 
-      });
+async function savePlan(planData) {
+  try {
+    if (editingPlan.value) {
+      // Update existing plan
+      await gemPlanningStore.updateOrbSpendingPlan(editingPlan.value.id, planData);
+    } else {
+      // Create new plan
+      const newPlan = await gemPlanningStore.createOrbSpendingPlan(
+        planData.name,
+        planData.trPlanId || null,
+        planData.initialBudget,
+        planData.trCount
+      );
+      
+      // Update description if provided
+      if (planData.description) {
+        await gemPlanningStore.updateOrbSpendingPlan(newPlan.id, { 
+          description: planData.description 
+        });
+      }
     }
+    
+    closeEditModal();
+  } catch (error) {
+    console.error('Error saving plan:', error);
   }
-  
-  closeEditModal();
 }
 </script>
 

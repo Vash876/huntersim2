@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.7.10',
+    date: '2025-08-15',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Fixed Ozzy build code import issues',
+        ]
+      },
+      {
+        text: 'Attraction GN#3 Calculator',
+        subItems: [
+          'Fixed Innovation Level 3 Researches not being applied correctly',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.9',
     date: '2025-08-13',
     changes: [

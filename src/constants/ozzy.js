@@ -283,7 +283,7 @@ export const OVERRIDES = {
   ],
 
   gemUpgrades: [
-    "upgrades.gems_nodes.attraction_gem3", // Catchup Power
+    "upgrades.gems_nodes.attraction_catchUp", // Catchup Power 
     "upgrades.gems_nodes.attraction_lootOzzy", // Loot (Ozzy)
     "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
   ],
@@ -371,10 +371,10 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.inscryptions.i36",  // Inscription #36
   "upgrades.inscryptions.i37",  // Inscription #37
   "upgrades.inscryptions.i40",  // Inscription #40
-  "gems.innovation.nodes.gem2", // Innovation Gem Node 2
-  "gems.innovation.nodes.gem3", // Innovation Gem Node 3
-  "gems.attraction.level",    // Attraction Gem Level
-  "gems.attraction.nodes.catchUp", // Catchup Power (99)
+  "upgrades.gems_nodes.innovation_gem2", // Innovation Gem Node 2
+  "upgrades.gems_nodes.innovation_gem3", // Innovation Gem Node 3
+  "upgrades.gems_nodes.attraction_level",    // Attraction Gem Level
+  "upgrades.gems_nodes.attraction_catchUp", // Catchup Power (99)
   "upgrades.inscryptions.i86",  // Inscription #86
   "upgrades.inscryptions.i92",  // Inscription #92
   "ultima",        // The Legacy of Ultima (Talent)

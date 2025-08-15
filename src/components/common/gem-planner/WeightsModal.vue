@@ -153,6 +153,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { IconScale, IconX, IconCoins, IconBow, IconRotateClockwise, IconFlame } from '@tabler/icons-vue'
 import ToolValueControls from '@/composables/ToolValueControls.vue'
+import { useGemPlannerStore } from '@/store/gemPlannerStore.js'
 
 // Define emits and props
 const emit = defineEmits(['close', 'weights-updated'])
@@ -188,43 +189,29 @@ const hunterWeights = [
   { id: 'knox', name: 'Knox' }
 ]
 
-// Reactive data
-const weights = ref({})
-const lastUpdated = ref('')
+// Initialize store
+const gemPlannerStore = useGemPlannerStore()
 
-// Default weights
-function getDefaultWeights() {
-  return {
-    cells: 1.0,
-    mp: 1.0,
-    shards: 1.0,
-    rp: 1.0,
-    ap: 1.0,
-    mats: 1.0,
-    meltdown: 0.0,
-    borge: 1.0,
-    ozzy: 1.0,
-    knox: 1.0
-  }
-}
+// Reactive data - use store weights directly
+const weights = computed(() => gemPlannerStore.weights)
+const lastUpdated = ref('')
 
 // Initialize weights
 function initializeWeights() {
-  const defaults = getDefaultWeights()
-  weights.value = { ...defaults, ...props.initialWeights }
+  // Weights are automatically loaded from store
   updateLastUpdated()
 }
 
 // Update individual weight
 function updateWeight(weightId, value) {
-  weights.value[weightId] = value
+  gemPlannerStore.updateWeight(weightId, value)
   updateLastUpdated()
   emit('weights-updated', weights.value)
 }
 
 // Quick actions
 function resetToDefaults() {
-  weights.value = getDefaultWeights()
+  gemPlannerStore.resetWeights()
   updateLastUpdated()
   showNotification('Weights reset to default values')
 }
@@ -252,16 +239,8 @@ function showNotification(message, type = 'success') {
 
 // Modal functions
 function closeModal() {
-  // Auto-save before closing
-  try {
-    localStorage.setItem('gemPlannerWeights', JSON.stringify(weights.value))
-    localStorage.setItem('gemPlannerWeightsTimestamp', Date.now().toString())
-    updateLastUpdated()
-    console.log('Weights auto-saved on close')
-  } catch (error) {
-    console.error('Failed to auto-save weights:', error)
-  }
-  
+  // Weights are automatically saved via the store system
+  // No need for manual localStorage handling
   emit('close')
 }
 
@@ -273,14 +252,9 @@ watch(() => weights.value, () => {
 
 // Lifecycle
 onMounted(() => {
+  gemPlannerStore.init()
   initializeWeights()
-  
-  // Try to load last saved timestamp
-  const timestamp = localStorage.getItem('gemPlannerWeightsTimestamp')
-  if (timestamp) {
-    const date = new Date(parseInt(timestamp))
-    lastUpdated.value = date.toLocaleTimeString()
-  }
+  updateLastUpdated()
 })
 
 // Expose weights for parent component

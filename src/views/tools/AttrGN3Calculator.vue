@@ -428,8 +428,8 @@ const affordableResearch = computed(() => {
   // Combine all research options
   let allResearch = [...researchData];
   
-  // Filter out research91 if Innovation Gem level < 4
-  if (innovationGemLevel.value < 4) {
+  // Filter out research91 if Innovation Gem level < 3
+  if (innovationGemLevel.value < 3) {
     allResearch = allResearch.filter(research => research.id !== 'research91');
   }
   
@@ -790,8 +790,8 @@ watch(currentAttrMultiplier, (newValue) => {
 
 // Watch für Innovation Gem Level Änderungen - Research Points begrenzen
 watch(innovationGemLevel, (newLevel) => {
-  // Wenn Innovation Gem Level unter 4 fällt, begrenze Research Points auf 1509
-  if (newLevel < 4 && researchPoints.value > 1509) {
+  // Wenn Innovation Gem Level unter 3 fällt, begrenze Research Points auf 1509
+  if (newLevel < 3 && researchPoints.value > 1509) {
     researchPoints.value = 1509;
     saveSettings();
   }
