@@ -28,8 +28,12 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
   const currentStats = ref({
     availableOO: 0
   });
+  const gemPlans = ref([]); // For saving/loading different plans
+  const orbSpendingPlans = ref([]); // For saving/loading orb spending plans
+  const activeOrbSpendingPlan = ref(null);
   const baseGemStates = ref({}); // Base stats that never get reset
   const isInitialized = ref(false);
+  const activeTRPlanData = ref(null); // For TR Planner integration data
 
   // Computed
   const totalOOSpent = computed(() => {
@@ -85,6 +89,17 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
         // Load current stats
         currentStats.value = { availableOO: 0, ...(data.currentStats || {}) };
         
+        // Load saved plans
+        gemPlans.value = data.gemPlans || [];
+        
+        // Load orb spending plans
+        orbSpendingPlans.value = data.orbSpendingPlans || [];
+        
+        // Load active orb spending plan
+        if (data.activeOrbSpendingPlan) {
+          activeOrbSpendingPlan.value = data.activeOrbSpendingPlan;
+        }
+        
         // Load base gem states (never reset)
         baseGemStates.value = data.baseGemStates || {};
         
@@ -104,6 +119,9 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
         weights: weights.value,
         gemStates: gemStates.value,
         currentStats: currentStats.value,
+        gemPlans: gemPlans.value,
+        orbSpendingPlans: orbSpendingPlans.value,
+        activeOrbSpendingPlan: activeOrbSpendingPlan.value,
         baseGemStates: baseGemStates.value,
         lastSaved: new Date().toISOString()
       };
@@ -211,20 +229,275 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     saveToStorage();
   }
 
-  // TR Plan Integration Functions (kept for backward compatibility)
+  // TR Plan Integration Functions
   function setActiveTRPlan(trPlanData) {
-    // This is now handled by gemPlanningStore, but kept for compatibility
-    console.log('TR Plan integration moved to gemPlanningStore');
+    activeTRPlanData.value = {
+      plan: trPlanData.plan,
+      trIndex: trPlanData.trIndex || 0,
+      timestamp: Date.now()
+    };
+    console.log('TR Plan data set in gem planner store:', activeTRPlanData.value);
   }
 
   function getActiveTRPlan() {
-    // This is now handled by gemPlanningStore, but kept for compatibility
-    return null;
+    return activeTRPlanData.value;
   }
 
   function clearActiveTRPlan() {
-    // This is now handled by gemPlanningStore, but kept for compatibility
-    console.log('TR Plan integration moved to gemPlanningStore');
+    activeTRPlanData.value = null;
+  }
+
+  // Orb Spending Plans Functions
+  function createOrbSpendingPlan(name, trPlanId = null, initialBudget = 0, trCount = 1) {
+    const plan = {
+      id: generateId(),
+      name,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      trPlanId, // Associated TR plan (optional)
+      trCount, // Number of TRs in this plan
+      initialBudget, // Starting budget
+      trSteps: [] // Array of TR steps with gem states
+    };
+    
+    // Initialize TR steps
+    for (let i = 0; i < trCount; i++) {
+      plan.trSteps.push({
+        trIndex: i,
+        budget: initialBudget,
+        spentOrbs: 0,
+        gemStates: {}, // Gem states for this TR
+        orbSpending: {} // Spending tracking for this TR
+      });
+    }
+    
+    orbSpendingPlans.value.push(plan);
+    saveToStorage();
+    return plan;
+  }
+
+  function updateOrbSpendingPlan(planId, updates) {
+    const planIndex = orbSpendingPlans.value.findIndex(p => p.id === planId);
+    if (planIndex !== -1) {
+      orbSpendingPlans.value[planIndex] = {
+        ...orbSpendingPlans.value[planIndex],
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+      saveToStorage();
+      return orbSpendingPlans.value[planIndex];
+    }
+    return null;
+  }
+
+  function deleteOrbSpendingPlan(planId) {
+    const index = orbSpendingPlans.value.findIndex(p => p.id === planId);
+    if (index !== -1) {
+      orbSpendingPlans.value.splice(index, 1);
+      if (activeOrbSpendingPlan.value?.id === planId) {
+        activeOrbSpendingPlan.value = null;
+      }
+      saveToStorage();
+      return true;
+    }
+    return false;
+  }
+
+  function loadOrbSpendingPlan(planId) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (plan) {
+      activeOrbSpendingPlan.value = plan;
+      saveToStorage();
+      return plan;
+    }
+    return null;
+  }
+
+  function duplicateOrbSpendingPlan(planId) {
+    const originalPlan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (originalPlan) {
+      const newPlan = {
+        ...JSON.parse(JSON.stringify(originalPlan)),
+        id: generateId(),
+        name: `${originalPlan.name} (Copy)`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      orbSpendingPlans.value.push(newPlan);
+      saveToStorage();
+      return newPlan;
+    }
+    return null;
+  }
+
+  function getOrbSpendingPlanById(planId) {
+    return orbSpendingPlans.value.find(p => p.id === planId) || null;
+  }
+
+  // Plan-specific Gem Functions
+  function initializePlanGemState(planId, trIndex, gemId, maxLevel, upgrades) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    if (!plan.trSteps[trIndex].gemStates[gemId]) {
+      plan.trSteps[trIndex].gemStates[gemId] = {
+        level: 0,
+        upgrades: {},
+        nodes: [false, false, false] // Initialize as array like global gem states
+      };
+      
+      // Initialize upgrade levels
+      if (upgrades && Array.isArray(upgrades)) {
+        upgrades.forEach(upgrade => {
+          plan.trSteps[trIndex].gemStates[gemId].upgrades[upgrade.id] = 0;
+        });
+      }
+    }
+    
+    saveToStorage();
+    return true;
+  }
+
+  function getPlanGemState(planId, trIndex, gemId) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return null;
+    
+    return plan.trSteps[trIndex].gemStates[gemId] || null;
+  }
+
+  function updatePlanGemLevel(planId, trIndex, gemId, level) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    // Auto-initialize if gem state doesn't exist
+    if (!plan.trSteps[trIndex].gemStates[gemId]) {
+      plan.trSteps[trIndex].gemStates[gemId] = {
+        level: 0,
+        upgrades: {},
+        nodes: [false, false, false]
+      };
+    }
+    
+    plan.trSteps[trIndex].gemStates[gemId].level = level;
+    plan.updatedAt = new Date().toISOString();
+    saveToStorage();
+    
+    return true;
+  }
+
+  function updatePlanUpgradeLevel(planId, trIndex, gemId, upgradeId, level) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    // Auto-initialize if gem state doesn't exist
+    if (!plan.trSteps[trIndex].gemStates[gemId]) {
+      plan.trSteps[trIndex].gemStates[gemId] = {
+        level: 0,
+        upgrades: {},
+        nodes: [false, false, false]
+      };
+    }
+    
+    plan.trSteps[trIndex].gemStates[gemId].upgrades[upgradeId] = level;
+    plan.updatedAt = new Date().toISOString();
+    saveToStorage();
+    
+    return true;
+  }
+
+  function togglePlanGemNode(planId, trIndex, gemId, nodeIndex) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    // Auto-initialize if gem state doesn't exist
+    if (!plan.trSteps[trIndex].gemStates[gemId]) {
+      plan.trSteps[trIndex].gemStates[gemId] = {
+        level: 0,
+        upgrades: {},
+        nodes: [false, false, false]
+      };
+    }
+    
+    plan.trSteps[trIndex].gemStates[gemId].nodes[nodeIndex] = !plan.trSteps[trIndex].gemStates[gemId].nodes[nodeIndex];
+    plan.updatedAt = new Date().toISOString();
+    saveToStorage();
+    
+    return plan.trSteps[trIndex].gemStates[gemId].nodes[nodeIndex];
+  }
+
+  function updatePlanOrbSpending(planId, trIndex, gemId, upgradeId, cost) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    if (!plan.trSteps[trIndex].orbSpending) {
+      plan.trSteps[trIndex].orbSpending = {};
+    }
+    if (!plan.trSteps[trIndex].orbSpending[gemId]) {
+      plan.trSteps[trIndex].orbSpending[gemId] = {};
+    }
+    if (!plan.trSteps[trIndex].orbSpending[gemId][upgradeId]) {
+      plan.trSteps[trIndex].orbSpending[gemId][upgradeId] = 0;
+    }
+    
+    plan.trSteps[trIndex].orbSpending[gemId][upgradeId] += cost;
+    
+    // Ensure spending can't go below 0 (for refunds)
+    plan.trSteps[trIndex].orbSpending[gemId][upgradeId] = Math.max(0, 
+      plan.trSteps[trIndex].orbSpending[gemId][upgradeId]);
+    
+    // Update spent orbs for this TR
+    let totalSpent = 0;
+    Object.values(plan.trSteps[trIndex].orbSpending).forEach(gemSpending => {
+      Object.values(gemSpending).forEach(upgradeSpent => {
+        totalSpent += Math.max(0, upgradeSpent); // Ensure no negative values
+      });
+    });
+    plan.trSteps[trIndex].spentOrbs = totalSpent;
+    
+    plan.updatedAt = new Date().toISOString();
+    saveToStorage();
+    
+    return true;
+  }
+
+  function clearPlanTRSpending(planId, trIndex) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex]) return false;
+    
+    plan.trSteps[trIndex].orbSpending = {};
+    plan.trSteps[trIndex].spentOrbs = 0;
+    plan.updatedAt = new Date().toISOString();
+    saveToStorage();
+    
+    return true;
+  }
+
+  function calculatePlanSpentOrbs(planId, trIndex) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (!plan || !plan.trSteps[trIndex] || !plan.trSteps[trIndex].orbSpending) return 0;
+    
+    let total = 0;
+    Object.values(plan.trSteps[trIndex].orbSpending).forEach(gemSpending => {
+      Object.values(gemSpending).forEach(upgradeSpent => {
+        total += Math.max(0, upgradeSpent); // Ensure no negative values
+      });
+    });
+    
+    return total;
+  }
+
+  function updateOrbSpendingPlanTRStep(planId, trIndex, updates) {
+    const plan = orbSpendingPlans.value.find(p => p.id === planId);
+    if (plan && plan.trSteps[trIndex]) {
+      plan.trSteps[trIndex] = {
+        ...plan.trSteps[trIndex],
+        ...updates
+      };
+      plan.updatedAt = new Date().toISOString();
+      saveToStorage();
+      return plan.trSteps[trIndex];
+    }
+    return null;
   }
 
   // Base Gem States Functions (never reset)
@@ -269,54 +542,79 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     return baseGemStates.value[gemId] || { level: 0, upgrades: {}, nodes: {} };
   }
 
-  // Utility Methods
-  function resetToDefaults() {
-    gameStats.value = getDefaultStatsValues();
-    weights.value = { ...DEFAULT_WEIGHTS };
-    gemStates.value = {};
-    currentStats.value = { availableOO: 0 };
-    saveToStorage();
-  }
-
-  function resetGemStates() {
-    gemStates.value = {};
-    saveToStorage();
-  }
-
-  function getGemState(gemId) {
-    return gemStates.value[gemId] || null;
-  }
-
-  function hasGemState(gemId) {
-    return !!gemStates.value[gemId];
-  }
-
-  // Export/Import Methods (only for current gem data)
-  function exportData() {
-    return {
-      gameStats: gameStats.value,
-      weights: weights.value,
-      gemStates: gemStates.value,
-      currentStats: currentStats.value,
-      exportedAt: new Date().toISOString(),
-      version: '2.0'
+  // Gem Plans Methods (for save/load functionality)
+  function createGemPlan(planData) {
+    const newPlan = {
+      id: generateId(),
+      name: planData.name || `Plan ${gemPlans.value.length + 1}`,
+      description: planData.description || '',
+      gameStats: { ...gameStats.value },
+      weights: { ...weights.value },
+      gemStates: JSON.parse(JSON.stringify(gemStates.value)), // Deep copy
+      currentStats: { ...currentStats.value },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
+
+    gemPlans.value.push(newPlan);
+    saveToStorage();
+    return newPlan;
   }
 
-  function importData(data) {
-    try {
-      if (data.gameStats) gameStats.value = { ...getDefaultStatsValues(), ...data.gameStats };
-      if (data.weights) weights.value = { ...DEFAULT_WEIGHTS, ...data.weights };
-      if (data.gemStates) gemStates.value = data.gemStates;
-      if (data.currentStats) currentStats.value = { availableOO: 0, ...data.currentStats };
-      
-      saveToStorage();
-      return true;
-    } catch (error) {
-      console.error('Error importing Gem Planner data:', error);
-      return false;
-    }
+  function updateGemPlan(planId, planData) {
+    const planIndex = gemPlans.value.findIndex(plan => plan.id === planId);
+    if (planIndex === -1) return false;
+
+    gemPlans.value[planIndex] = {
+      ...gemPlans.value[planIndex],
+      ...planData,
+      updatedAt: new Date().toISOString()
+    };
+
+    saveToStorage();
+    return true;
   }
+
+  function deleteGemPlan(planId) {
+    const planIndex = gemPlans.value.findIndex(plan => plan.id === planId);
+    if (planIndex === -1) return false;
+
+    gemPlans.value.splice(planIndex, 1);
+    saveToStorage();
+    return true;
+  }
+
+  function loadGemPlan(planId) {
+    const plan = gemPlans.value.find(plan => plan.id === planId);
+    if (!plan) return false;
+
+    gameStats.value = { ...plan.gameStats };
+    weights.value = { ...plan.weights };
+    gemStates.value = JSON.parse(JSON.stringify(plan.gemStates)); // Deep copy
+    currentStats.value = { ...plan.currentStats };
+
+    saveToStorage();
+    return true;
+  }
+
+  function duplicateGemPlan(planId) {
+    const plan = gemPlans.value.find(plan => plan.id === planId);
+    if (!plan) return false;
+
+    const duplicatedPlan = {
+      ...plan,
+      id: generateId(),
+      name: `${plan.name} (Copy)`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    gemPlans.value.push(duplicatedPlan);
+    saveToStorage();
+    return duplicatedPlan;
+  }
+
+  // Utility Methods
   function resetToDefaults() {
     gameStats.value = getDefaultStatsValues();
     weights.value = { ...DEFAULT_WEIGHTS };
@@ -374,6 +672,9 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     weights,
     gemStates,
     currentStats,
+    gemPlans,
+    orbSpendingPlans,
+    activeOrbSpendingPlan,
     baseGemStates,
     isInitialized,
 
@@ -403,6 +704,16 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     toggleGemNode,
     updateUpgradeLevel,
 
+    // Plan-specific Gem Functions
+    initializePlanGemState,
+    getPlanGemState,
+    updatePlanGemLevel,
+    updatePlanUpgradeLevel,
+    togglePlanGemNode,
+    updatePlanOrbSpending,
+    clearPlanTRSpending,
+    calculatePlanSpentOrbs,
+
     // Base Gem States (never reset)
     updateBaseGemLevel,
     updateBaseUpgradeLevel,
@@ -413,10 +724,26 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     updateCurrentStats,
     updateAvailableOO,
 
-    // TR Plan Integration (for backward compatibility)
+    // TR Plan Integration
     setActiveTRPlan,
     getActiveTRPlan,
     clearActiveTRPlan,
+
+    // Gem Plans
+    createGemPlan,
+    updateGemPlan,
+    deleteGemPlan,
+    loadGemPlan,
+    duplicateGemPlan,
+
+    // Orb Spending Plans
+    createOrbSpendingPlan,
+    updateOrbSpendingPlan,
+    deleteOrbSpendingPlan,
+    loadOrbSpendingPlan,
+    duplicateOrbSpendingPlan,
+    getOrbSpendingPlanById,
+    updateOrbSpendingPlanTRStep,
 
     // Utilities
     resetToDefaults,
