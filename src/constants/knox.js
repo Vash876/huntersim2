@@ -67,8 +67,10 @@ export const ATTRIBUTE_MIN_VALUE = {
 // Liste aller für Knox relevanten Upgrades
 export const HUNTER_UPGRADES = {
   gadgets: ["anchor"],
+  inscryptions: ["i105"],
   researches: ["res81", "res95", "res105"],
   cms: ["cm46", "cm47", "cm48", "cm51"],
+  loopMods: ["stelzi"],
   diamondspecials: ["hunterloot", "reviveboost"],
   iap: ["travpack"],
   ultima: ["ulti"],
@@ -157,6 +159,8 @@ export const EVAL_PARAMS = [
   "upgrades.cms.cm51",              // Construction Milestone 51
   "upgrades.gems_nodes.creation_knoxGU", // Creation Node (Knox Gem Upgrade)
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
+  "upgrades.loopmods.stelzi",           // Stelzi
+  "upgrades.inscryptions.i105",        // Inscription #105
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -205,11 +209,21 @@ export const OVERRIDES = {
     "upgrades.gadgets.anchor",       // Gadget (The Wrench of Gore)
   ],
 
+  // Inscryptions
+  inscryptions: [
+    "upgrades.inscryptions.i105",     // Inscription #105
+  ],
+
   // Research
   researches: [
     "upgrades.researches.res81",     // Research#81
     "upgrades.researches.res95",     // Research#95
     "upgrades.researches.res105",    // Research#105
+  ],
+
+  // Loop Mods
+  loopMods: [
+    "upgrades.loopmods.stelzi",       // Stelzi
   ],
 
   // Construction Milestones

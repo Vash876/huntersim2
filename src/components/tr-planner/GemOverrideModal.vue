@@ -84,37 +84,37 @@
                   <!-- Boolean Global Value -->
                   <div v-if="param.type === 'boolean'" 
                        class="text-xs px-1.5 py-0.5 rounded"
-                       :class="param.globalValue ? 'bg-green-900/50 text-green-300' : 'bg-red-900/50 text-red-300'"
+                       :class="getCurrentGlobalValue(param) ? 'bg-green-900/50 text-green-300' : 'bg-red-900/50 text-red-300'"
                   >
-                    {{ param.globalValue ? 'ON' : 'OFF' }}
+                    {{ getCurrentGlobalValue(param) ? 'ON' : 'OFF' }}
                   </div>
                   
                   <!-- Numeric Global Value -->
                   <div v-else class="text-xs text-gray-300">
-                    {{ param.globalValue }}
+                    {{ getCurrentGlobalValue(param) }}
                   </div>
                 </div>
                 
                 <!-- Boolean Type Controls -->
                 <div v-if="param.type === 'boolean'" class="flex gap-1">
-                  <!-- Override Button: Shows opposite of global value, becomes active when override is set -->
+                  <!-- Override Button: Shows current effective value (override or global) -->
                   <button 
-                    @click="toggleBooleanOverride(param.key, !param.globalValue)"
+                    @click="toggleBooleanOverride(param.key, !getCurrentEffectiveValue(param))"
                     class="text-xs px-2 py-0.5 rounded"
                     :class="getOverrideButtonClass(param)"
                   >
-                    {{ !param.globalValue ? 'ON' : 'OFF' }}
+                    {{ getCurrentEffectiveValue(param) ? 'ON' : 'OFF' }}
                   </button>
                 </div>
                 
                 <!-- Numeric Type Controls -->
                 <div v-else class="flex items-center">
                   <ToolValueControls
-                    :value="localOverrides[param.key] === null ? param.globalValue : localOverrides[param.key]"
+                    :value="localOverrides[param.key] === null ? getCurrentGlobalValue(param) : localOverrides[param.key]"
                     :minValue="0"
                     :maxValue="param.maxValue || 999"
                     :step="1"
-                    :globalValue="param.globalValue"
+                    :globalValue="getCurrentGlobalValue(param)"
                     :showFastControls="false"
                     @update:value="(newVal) => updateOverrideValue(param.key, newVal, param)"
                   />
@@ -138,6 +138,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { IconX, IconAlertCircle } from '@tabler/icons-vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import { getAllGemData } from '@/constants/tr-planner/gems.js';
+import { getContextualGemData } from '@/constants/tr-planner/index.js';
 
 const props = defineProps({
   isVisible: {
@@ -187,10 +188,11 @@ async function loadGemData() {
       if (gem.nodes && Array.isArray(gem.nodes)) {
         gem.nodes.forEach((node, nodeIndex) => {
           const nodeKey = `${gem.id}Node${nodeIndex}`;
+          const globalValue = getGlobalNodeState(gem.id, nodeIndex);
           categoryParams.push({
             key: nodeKey,
             name: `${gem.name} Node #${nodeIndex + 1}`,
-            globalValue: getGlobalNodeState(gem.id, nodeIndex),
+            globalValue: globalValue,
             maxValue: null,
             type: 'boolean'
           });
@@ -220,13 +222,51 @@ async function loadGemData() {
   }
 }
 
-// Get global gem level from localStorage like TR Planner stores it
+// Get current global value for a parameter (reactive)
+function getCurrentGlobalValue(param) {
+  if (param.type === 'boolean') {
+    // Extract gemId and nodeIndex from the key
+    const match = param.key.match(/^(\w+)Node(\d+)$/);
+    if (match) {
+      const [, gemId, nodeIndex] = match;
+      return getGlobalNodeState(gemId, parseInt(nodeIndex));
+    }
+  } else {
+    // Extract gemId from level key
+    const match = param.key.match(/^(\w+)Level$/);
+    if (match) {
+      const [, gemId] = match;
+      return getGlobalGemLevel(gemId);
+    }
+  }
+  
+  // Fallback to stored value
+  return param.globalValue;
+}
+
+// Get current effective value (override if set, otherwise global)
+function getCurrentEffectiveValue(param) {
+  const overrideValue = localOverrides.value[param.key];
+  
+  if (overrideValue !== null) {
+    // Return override value (convert to boolean for boolean params)
+    if (param.type === 'boolean') {
+      return overrideValue === 1 || overrideValue === true;
+    }
+    return overrideValue;
+  }
+  
+  // Return global value
+  return getCurrentGlobalValue(param);
+}
+
+// Get global gem level from contextual gem data (considers imported plan context)
 function getGlobalGemLevel(gemId) {
   try {
-    const userStats = JSON.parse(localStorage.getItem('trplanner_userstats') || '{}');
+    const gemData = getContextualGemData();
     
-    if (userStats.gemData && userStats.gemData.levels && userStats.gemData.levels[gemId] !== undefined) {
-      return userStats.gemData.levels[gemId];
+    if (gemData && gemData.levels && gemData.levels[gemId] !== undefined) {
+      return gemData.levels[gemId];
     }
     
     return 0;
@@ -236,13 +276,13 @@ function getGlobalGemLevel(gemId) {
   }
 }
 
-// Get global node state from localStorage
+// Get global node state from contextual gem data (considers imported plan context)
 function getGlobalNodeState(gemId, nodeIndex) {
   try {
-    const userStats = JSON.parse(localStorage.getItem('trplanner_userstats') || '{}');
+    const gemData = getContextualGemData();
     
-    if (userStats.gemData && userStats.gemData.activeNodes && userStats.gemData.activeNodes[gemId]) {
-      return userStats.gemData.activeNodes[gemId].includes(nodeIndex);
+    if (gemData && gemData.activeNodes && gemData.activeNodes[gemId]) {
+      return gemData.activeNodes[gemId].includes(nodeIndex);
     }
     
     return false;
@@ -280,7 +320,7 @@ const activeOverrideCount = computed(() => {
 
 // Same as OverrideModal updateOverrideValue
 function updateOverrideValue(paramKey, newValue, param) {
-  const globalValue = param.globalValue;
+  const globalValue = getCurrentGlobalValue(param);
   
   // Round value for integers
   newValue = Math.floor(newValue);
@@ -308,41 +348,44 @@ function updateOverrideValue(paramKey, newValue, param) {
 // Get the CSS class for the override button based on global value and override state
 function getOverrideButtonClass(param) {
   const hasOverride = localOverrides.value[param.key] !== null;
-  const globalValue = param.globalValue;
+  const globalValue = getCurrentGlobalValue(param);
+  const effectiveValue = getCurrentEffectiveValue(param);
   
-  if (!hasOverride) {
-    // No override set - button is gray
+  // If no override is set OR override equals global value, show gray
+  if (!hasOverride || effectiveValue === globalValue) {
     return 'bg-gray-700 hover:bg-gray-600 text-white';
   }
   
-  // Override is set
-  if (!globalValue) {
-    // Global is OFF, override button shows ON and should be green when active
-    return 'bg-green-700 text-green-100';
+  // Override is set and differs from global - show override state color
+  if (effectiveValue) {
+    // Override value is ON (and different from global)
+    return 'bg-green-700 hover:bg-green-600 text-green-100';
   } else {
-    // Global is ON, override button shows OFF and should be red when active
-    return 'bg-red-700 text-red-100';
+    // Override value is OFF (and different from global)
+    return 'bg-red-700 hover:bg-red-600 text-red-100';
   }
 }
 
 // Toggle boolean parameters - updated logic
-function toggleBooleanOverride(param, value) {
-  // Find the parameter data to get the global value
+function toggleBooleanOverride(paramKey, newValue) {
+  const currentOverride = localOverrides.value[paramKey];
+  const targetValue = newValue ? 1 : 0;
+  
+  // Get the parameter data
   const paramData = gemCategories.value
     .flatMap(category => category.params)
-    .find(p => p.key === param);
+    .find(p => p.key === paramKey);
   
   if (!paramData) return;
   
-  const currentOverride = localOverrides.value[param];
-  const targetValue = value ? 1 : 0;
+  const globalValue = getCurrentGlobalValue(paramData);
   
-  // If we already have this override value, remove the override
-  if (currentOverride === targetValue) {
-    localOverrides.value[param] = null;
+  // If the target value equals the global value, remove override
+  if ((targetValue === 1) === globalValue) {
+    localOverrides.value[paramKey] = null;
   } else {
     // Set the override to the target value
-    localOverrides.value[param] = targetValue;
+    localOverrides.value[paramKey] = targetValue;
   }
   
   emitUpdate();

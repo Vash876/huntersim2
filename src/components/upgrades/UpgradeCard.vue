@@ -1,16 +1,16 @@
 <!-- filepath: /c:/Users/igorn/projects/huntersim2/src/components/upgrades/UpgradeCard.vue -->
 <template>
   <div
-    class="bg-gray-800/30 p-4 rounded-lg border border-gray-700 flex flex-col"
-    :class="{
-      'border-red-800/50': color === 'red',
-      'border-green-800/50': color === 'green',
-      'border-blue-800/50': color === 'blue',
-      'border-purple-800/50': color === 'purple',
-      'border-yellow-800/50': color === 'yellow',
-      'border-brown-800/50': color === 'brown',
-      'border-gray-800/50': !color || color === 'gray'
-    }"
+    class="bg-gray-800/30 p-4 rounded-lg border flex flex-col"
+    :class="[
+      color === 'red' ? 'border-red-800/50' : '',
+      color === 'green' ? 'border-green-800/50' : '',
+      color === 'blue' ? 'border-blue-800/50' : '',
+      color === 'purple' ? 'border-purple-800/50' : '',
+      color === 'yellow' ? 'border-yellow-800/50' : '',
+      color === 'brown' ? 'border-brown-800/50' : '',
+      (!color || color === 'gray') ? 'border-gray-700' : ''
+    ]"
   >
     <!-- Header -->
     <UpgradeHeader

@@ -94,9 +94,19 @@
         </div>
         
         <!-- Build Filter Switch -->
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-400">View:</span>
-          <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <!-- Temporary Upgrades Dropdown - Mobile: eigene Zeile, Desktop: inline -->
+          <div class="w-full sm:w-auto">
+            <TemporaryUpgradesDropdown 
+              :hunterId="currentHunter?.id"
+              @upgradeChanged="handleUpgradeChanged"
+            />
+          </div>
+          
+          <!-- View Controls -->
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <span class="text-sm text-gray-400">View:</span>
+            <div class="flex gap-2">
             <button 
               @click="buildFilterMode = 'active'"
               class="flex items-center space-x-1 px-3 py-1.5 rounded-full transition-colors duration-200 text-xs sm:text-sm"
@@ -114,13 +124,14 @@
               <span class="text-xs opacity-75">({{ archivedBuildsCount }})</span>
             </button>
           </div>
-          <button 
-            @click="showLootFilterModal = true"
-            class="md:hidden flex items-center space-x-1 px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors duration-200 text-xs sm:text-sm"
-          >
-            <IconFilter size="14" class="text-blue-400" />
-            <span>Loot Filter</span>
-          </button>        
+            <button 
+              @click="showLootFilterModal = true"
+              class="md:hidden flex items-center space-x-1 px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors duration-200 text-xs sm:text-sm"
+            >
+              <IconFilter size="14" class="text-blue-400" />
+              <span>Loot Filter</span>
+            </button>        
+          </div>
         </div>
       </div>
     </div>
@@ -433,6 +444,7 @@ import BuildCardMobile from '@/components/builds/Views/mobileView/BuildCardMobil
 import MobileLootFilterModal from '@/components/common/MobileLootFilterModal.vue';
 import GadgetsCostModal from '@/components/common/GadgetsCostModal.vue';
 import SeedToggle from '@/components/common/SeedToggle.vue';
+import TemporaryUpgradesDropdown from '@/components/common/TemporaryUpgradesDropdown.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -1066,6 +1078,18 @@ function onBuildReevaluate(buildId) {
       progressIteration: 0
     }
   };
+}
+
+// Handler für temporäre Upgrade-Änderungen
+function handleUpgradeChanged(changeData) {
+  // Prüfe ob eine Neuevaluierung ausgelöst werden soll
+  if (changeData.triggerReevaluation) {
+    // Triggere Neuberechnung aller Builds
+    builds.value.forEach(build => {
+      handleBuildReevaluate(build.id);
+    });
+  }
+  // Wenn triggerReevaluation false ist, keine Aktion - nur Store-Update wurde bereits gemacht
 }
 
 // Lade gespeicherte Filter beim Start

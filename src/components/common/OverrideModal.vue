@@ -118,8 +118,8 @@
               <!-- Parameter Name mit Description -->
               <div class="flex justify-between items-center mb-1">
                 <div class="flex-1 mr-2">
-                  <span class="text-xs font-medium text-gray-300">{{ truncateName(param.name) }}</span>
-                  <!-- NEU: Description für Inscryptions -->
+                  <span class="text-xs font-medium text-gray-300 ">{{ param.name }}</span>
+                  <!-- Description für Inscryptions -->
                   <span 
                     v-if="param.description" 
                     class="text-[10px] text-gray-500 ml-1"

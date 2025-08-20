@@ -64,18 +64,17 @@
     <!-- Main Content - Ultra Compact Grid -->
     <div class="space-y-3">
       <!-- Gem Cards Grid - Super Compact -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-1.5">
+      <div 
+        class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-1.5"
+      >
         <div
           v-for="gem in gemList"
           :key="gem.id"
-          class="bg-gray-900/80 border border-gray-700/50 rounded-xl hover:border-purple-500/50 transition-colors"
+          class="bg-gray-900/80 border border-gray-700/50 rounded-xl hover:border-purple-500/50 transition-all duration-300 ease-in-out"
         >
-          <!-- Gem Header - Dynamic padding based on nodes -->
+          <!-- Gem Header - Fixed height to prevent layout jumps -->
           <div 
-            class="border-b border-gray-600/50 rounded-t-xl"
-            :class="[
-              gem.gemNodes && gem.gemNodes.length > 0 ? 'p-2' : 'p-2 pb-10'
-            ]"
+            class="gem-header border-b border-gray-600/50 rounded-t-xl p-2 transition-all duration-300 ease-in-out"
           >
             <div class="flex items-center justify-between mb-1">
               <div class="flex items-center gap-2">
@@ -110,20 +109,24 @@
             </div>
             
             <!-- Gem Nodes - Only show if gem has nodes -->
-            <div v-if="gem.gemNodes && gem.gemNodes.length > 0" class="flex gap-1 mt-2">
+            <div 
+              v-if="getAvailableGemNodes(gem.id).length > 0" 
+              class="flex gap-1 mt-2"
+            >
               <button
-                v-for="(node, index) in gem.gemNodes"
-                :key="index"
-                @click="toggleGemNode(gem.id, index)"
-                class="flex-1 py-1 text-xs rounded transition-colors font-mono border border-gray-500"
+                v-for="(node, index) in getAvailableGemNodes(gem.id)"
+                :key="`${gem.id}-node-${index}`"
+                @click="toggleGemNode(gem.id, gem.gemNodes.indexOf(node))"
+                class="flex-1 py-1 text-xs rounded transition-all duration-200 ease-in-out font-mono border border-gray-500 hover:scale-105"
                 :class="[
-                  hasGemNode(gem.id, index)
-                    ? 'text-white'
-                    : 'bg-gray-600/60 text-gray-300 hover:bg-gray-500/60'
+                  hasGemNode(gem.id, gem.gemNodes.indexOf(node))
+                    ? 'text-white shadow-lg'
+                    : 'bg-gray-600/60 text-gray-300 hover:bg-gray-500/60',
+                  isNodeNewlyAppeared(gem.id, gem.gemNodes.indexOf(node)) ? 'gem-node-pulse' : ''
                 ]"
-                :style="hasGemNode(gem.id, index) ? { background: gem.color.gradient } : {}"
+                :style="hasGemNode(gem.id, gem.gemNodes.indexOf(node)) ? { background: gem.color.gradient } : {}"
               >
-                {{ index + 1 }}
+                {{ gem.gemNodes.indexOf(node) + 1 }}
               </button>
             </div>
           </div>
@@ -180,6 +183,7 @@ const gemPlannerStore = useGemPlannerStore();
 
 // State
 const showOnlySimRelevant = ref(false);
+const newlyAppearedNodes = ref(new Set()); // Track newly appeared nodes for animation
 
 // Computed
 const gemList = computed(() => GEM_LIST);
@@ -204,6 +208,38 @@ function updateGemLevel(gemId, newLevel) {
   
   newLevel = Math.max(0, Math.min(newLevel, gem.maxLevel));
   
+  // Special handling for Exodus level changes to track new nodes
+  if (gemId === 'exodus') {
+    const currentExodusLevel = getCurrentGemLevel('exodus');
+    
+    // If Exodus reaches level 5 for the first time, mark all new nodes
+    if (currentExodusLevel < 5 && newLevel >= 5) {
+      // Clear previous newly appeared nodes
+      newlyAppearedNodes.value.clear();
+      
+      // Mark all gems' new nodes as newly appeared
+      GEM_LIST.forEach(otherGem => {
+        if (otherGem.gemNodes) {
+          otherGem.gemNodes.forEach((node, nodeIndex) => {
+            if (node.unlockRequirement === 'exodus-5') {
+              newlyAppearedNodes.value.add(`${otherGem.id}-node-${nodeIndex}`);
+            }
+          });
+        }
+      });
+      
+      // Remove the "new" effect after animation completes
+      setTimeout(() => {
+        newlyAppearedNodes.value.clear();
+      }, 1500);
+    }
+    
+    // If Exodus level drops below 5, clear animation tracking
+    if (currentExodusLevel >= 5 && newLevel < 5) {
+      newlyAppearedNodes.value.clear();
+    }
+  }
+  
   // Check if we're reducing the level and need to reset upgrades
   const currentLevel = getCurrentGemLevel(gemId);
   if (newLevel < currentLevel) {
@@ -215,6 +251,20 @@ function updateGemLevel(gemId, newLevel) {
     // Reset those upgrades to 0
     upgradesToReset.forEach(upgrade => {
       gemPlannerStore.updateUpgradeLevel(gemId, upgrade.id, 0);
+    });
+  }
+  
+  // Special handling for Exodus: Reset Exodus-5 dependent gem nodes
+  if (gemId === 'exodus' && newLevel < 5) {
+    // Reset all Exodus-5 dependent gem nodes for all gems
+    GEM_LIST.forEach(otherGem => {
+      if (otherGem.gemNodes) {
+        otherGem.gemNodes.forEach((node, nodeIndex) => {
+          if (node.unlockRequirement === 'exodus-5' && hasGemNode(otherGem.id, nodeIndex)) {
+            gemPlannerStore.toggleGemNode(otherGem.id, nodeIndex);
+          }
+        });
+      }
     });
   }
   
@@ -234,6 +284,11 @@ function toggleGemNode(gemId, nodeIndex) {
     return;
   }
   
+  // Check if node requires Exodus level 5
+  if (node.unlockRequirement === 'exodus-5' && getCurrentGemLevel('exodus') < 5) {
+    return;
+  }
+  
   // Toggle the node in store
   gemPlannerStore.toggleGemNode(gemId, nodeIndex);
 }
@@ -241,6 +296,27 @@ function toggleGemNode(gemId, nodeIndex) {
 function hasGemNode(gemId, nodeIndex) {
   const gemState = gemPlannerStore.getGemState(gemId);
   return gemState?.nodes[nodeIndex] || false;
+}
+
+// Get available gem nodes based on Exodus level
+function getAvailableGemNodes(gemId) {
+  const gem = GEMS[gemId];
+  if (!gem || !gem.gemNodes) return [];
+  
+  const exodusLevel = getCurrentGemLevel('exodus');
+  
+  // If Exodus is not level 5, only show original nodes (first 3)
+  if (exodusLevel < 5) {
+    return gem.gemNodes.filter(node => !node.unlockRequirement);
+  }
+  
+  // If Exodus is level 5, show all nodes
+  return gem.gemNodes;
+}
+
+// Check if a node is newly appeared (for animation)
+function isNodeNewlyAppeared(gemId, nodeIndex) {
+  return newlyAppearedNodes.value.has(`${gemId}-node-${nodeIndex}`);
 }
 
 // Upgrade Functions
@@ -395,3 +471,38 @@ watch(showOnlySimRelevant, () => {
   saveToggleSettings();
 });
 </script>
+
+<style scoped>
+/* Fixed height for gem headers to prevent layout jumps */
+.gem-header {
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Simple pulse animation for newly appeared nodes */
+@keyframes gem-node-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.6);
+    background-color: rgba(147, 51, 234, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(147, 51, 234, 0.3);
+    background-color: rgba(147, 51, 234, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
+    background-color: transparent;
+  }
+}
+
+.gem-node-pulse {
+  animation: gem-node-pulse 1.2s ease-out;
+}
+
+/* Enhanced hover effects */
+.gem-node-button:hover {
+  transform: translateY(-1px) scale(1.02);
+  transition: all 0.2s ease-out;
+}
+</style>

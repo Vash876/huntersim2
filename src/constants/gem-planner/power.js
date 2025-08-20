@@ -23,7 +23,11 @@ export const POWER_GEM = {
   gemNodes: [
     { node: 1, cost: 7.5e8 },
     { node: 2, cost: 3e9 },
-    { node: 3, cost: 1e10 }
+    { node: 3, cost: 1e10 },
+    // New nodes unlocked when Exodus reaches level 5
+    { node: 4, cost: 0, unlockRequirement: 'exodus-5' },
+    { node: 5, cost: 0, unlockRequirement: 'exodus-5' },
+    { node: 6, cost: 0, unlockRequirement: 'exodus-5' }
   ],
   
   // Upgrades available in this gem

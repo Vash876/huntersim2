@@ -2,6 +2,32 @@
 const changelog = 
 [
   {
+    version: '2.7.11',
+    date: '2025-08-20',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added 3 new Inscryptions and 1 new Loop Mod',
+          'Added Temporary Upgrades dropdown for quick Upgrade Management after TR',
+        ]
+      },
+      {
+        text: 'Gadget Planner',
+        subItems: [
+          'Adjusted costs for Fradget',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added IAP Fragmentation Pack',
+          'Fixed TR Plan import code issues (hopefully)',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.10',
     date: '2025-08-15',
     changes: [

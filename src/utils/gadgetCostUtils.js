@@ -176,8 +176,8 @@ function calculateG11(level) {
  */
 function calculateG12(level) {
   const M13 = 60000;
-  const N13 = 1.3;
-  const O13 = 1.8;
+  const N13 = 1.28;
+  const O13 = 1.4;
   const exponent = Math.floor((level-1) / 10);
   const value = M13 * Math.pow(N13, level-1) * Math.pow(O13, exponent);
   return Math.ceil(value);

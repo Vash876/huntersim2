@@ -183,6 +183,42 @@ function calculateI101(level) {
 }
 
 /**
+ * Berechnet die Kosten für Inscryption #103
+ * @param {number} level - Das aktuelle Level (1-basiert)
+ * @returns {number} - Die Kosten für dieses Level
+ */
+function calculateI103(level) {
+  const startValue = 3e20;
+  const multi = 3;
+  if (level <= 1) return startValue;
+  return startValue * Math.pow(multi, level - 1);
+}
+
+/**
+ * Berechnet die Kosten für Inscryption #104
+ * @param {number} level - Das aktuelle Level (1-basiert)
+ * @returns {number} - Die Kosten für dieses Level
+ */
+function calculateI104(level) {
+  const startValue = 4e20;
+  const multi = 3;
+  if (level <= 1) return startValue;
+  return startValue * Math.pow(multi, level - 1);
+}
+
+/**
+ * Berechnet die Kosten für Inscryption #105
+ * @param {number} level - Das aktuelle Level (1-basiert)
+ * @returns {number} - Die Kosten für dieses Level
+ */
+function calculateI105(level) {
+  const startValue = 5e20;
+  const multi = 3;
+  if (level <= 1) return startValue;
+  return startValue * Math.pow(multi, level - 1);
+}
+
+/**
  * Berechnet die Kosten für eine bestimmte Inscryption basierend auf der ID und dem Level
  * @param {string} InscryptionId - ID der Inscryption (i80, i81, i84, i86, i87, i88, i89, i91, i92)
  * @param {number} level - Das Level (1-basiert)
@@ -220,6 +256,12 @@ function getInscryptionCost(InscryptionId, level) {
       return calculateI92(level);
     case 'i101':
       return calculateI101(level);
+    case 'i103':
+      return calculateI103(level);
+    case 'i104':
+      return calculateI104(level);
+    case 'i105':
+      return calculateI105(level);
     default:
       console.error(`Unbekannte Inscryption ID: ${InscryptionId}`);
       return 0;
@@ -323,6 +365,18 @@ export function getI101Cost(level) {
   return getInscryptionCost('i101', level);
 }
 
+export function getI103Cost(level) {
+  return getInscryptionCost('i103', level);
+}
+
+export function getI104Cost(level) {
+  return getInscryptionCost('i104', level);
+}
+
+export function getI105Cost(level) {
+  return getInscryptionCost('i105', level);
+}
+
 // Hauptexporte
 export {
   getInscryptionCost,
@@ -342,4 +396,7 @@ export {
   calculateI91,
   calculateI92,
   calculateI101,
+  calculateI103,
+  calculateI104,
+  calculateI105
 };

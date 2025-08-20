@@ -69,7 +69,8 @@
                 :class="{
                   'text-red-300': hunter.color === 'red',
                   'text-green-300': hunter.color === 'green',
-                  'text-blue-300': hunter.color === 'blue'
+                  'text-blue-300': hunter.color === 'blue',
+                  'text-purple-300': hunter.color === 'purple'
                 }"
               >
                 {{ formatModValue(mod, getModLevel({ id: mod.id })) }}
@@ -85,6 +86,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useHunterStore } from '@/store/hunterStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { 
   getAllUpgradesWithHunterInfo, 
   getHuntersForUpgrade, 
@@ -99,9 +101,10 @@ import UpgradeCard from '@/components/upgrades/UpgradeCard.vue';
 
 // Store für Upgrades
 const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Loop Mods aus den Konstanten laden
-const loopmods = ref([]);
+const allLoopmods = ref([]);
 const loading = ref(true);
 const category = 'loopmods'; // Die Kategorie dieser View
 
@@ -110,12 +113,31 @@ onMounted(async () => {
   loading.value = true;
   try {
     // Alle Loop Mods mit Hunter-Informationen laden (asynchron)
-    loopmods.value = await getAllUpgradesWithHunterInfo(category);
+    allLoopmods.value = await getAllUpgradesWithHunterInfo(category);
   } catch (error) {
     console.error(`Fehler beim Laden der ${category}:`, error);
   } finally {
     loading.value = false;
   }
+});
+
+// Computed für verfügbare Loop Mods basierend auf Gem-Leveln
+const loopmods = computed(() => {
+  return allLoopmods.value.filter(mod => {
+    // Prüfe ob das Loop Mod Gem-Anforderungen hat
+    if (mod.unlock_gem && mod.unlock_lvl) {
+      const gemState = gemPlannerStore.getGemState(mod.unlock_gem);
+      const currentGemLevel = gemState?.level || 0;
+      
+      // Verstecke das Loop Mod wenn das erforderliche Gem-Level nicht erreicht ist
+      if (currentGemLevel < mod.unlock_lvl) {
+        return false;
+      }
+    }
+    
+    // Zeige das Loop Mod an, wenn keine Gem-Anforderungen oder Anforderungen erfüllt sind
+    return true;
+  });
 });
 
 // Getrennte Listen für boolean und level Mods
@@ -135,7 +157,7 @@ function getModLevel(item) {
 // Mod aktualisieren
 function updateModLevel(item, newLevel) {
   // Finde das Mod-Objekt um Limits zu prüfen
-  const mod = loopmods.value.find(m => m.id === item.id);
+  const mod = allLoopmods.value.find(m => m.id === item.id);
   if (!mod) return;
   
   // Stelle sicher, dass der neue Wert innerhalb der Grenzen liegt

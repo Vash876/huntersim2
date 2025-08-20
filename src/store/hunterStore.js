@@ -188,8 +188,9 @@ export const useHunterStore = defineStore('hunter', () => {
       upgrades.value[category] = {};
     }
     
-    // Aktualisiere den Wert
-    upgrades.value[category][id] = value;
+    // Aktualisiere den Wert und triggere Reactivity durch Objekterstellung
+    const newCategoryData = { ...upgrades.value[category], [id]: value };
+    upgrades.value = { ...upgrades.value, [category]: newCategoryData };
   }
 
   /**

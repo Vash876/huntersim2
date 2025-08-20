@@ -407,8 +407,10 @@ export const useTRPlannerStore = defineStore('trPlanner', {
      * @returns {Object} Export result with encoded data
      */
     async exportTRPlan(planId) {
+      console.log('🚀 exportTRPlan called with planId:', planId);
       try {
         const plan = this.getTRPlanById(planId);
+        console.log('📋 Found plan:', plan);
         if (!plan) {
           throw new Error('Plan not found');
         }
@@ -416,12 +418,68 @@ export const useTRPlannerStore = defineStore('trPlanner', {
         // Get current gem data or imported gem context
         let gemContext = null;
         if (plan.isImported && this.importedPlanContexts[planId]) {
+          console.log('📥 Using imported gem context');
           // Use the imported gem context
           gemContext = this.importedPlanContexts[planId];
         } else {
           // Use current user's gem data
           const { getGemDataFromLocalStorage } = await import('@/utils/gemDataUtils');
           gemContext = getGemDataFromLocalStorage();
+          
+          console.log('Original gemContext:', gemContext);
+          console.log('Plan gemOverrides:', plan.gemOverrides);
+          
+          // WICHTIG: Plan gemOverrides haben Vorrang vor globalen Werten
+          if (plan.gemOverrides && Object.keys(plan.gemOverrides).length > 0) {
+            console.log('Applying gemOverrides...');
+            // Erstelle eine Kopie des globalen gemContext
+            gemContext = {
+              levels: { ...gemContext.levels },
+              activeNodes: { ...gemContext.activeNodes }
+            };
+            
+            // Wende Plan-spezifische Overrides an
+            Object.entries(plan.gemOverrides).forEach(([key, value]) => {
+              console.log(`Processing override: ${key} = ${value}`);
+              if (key.endsWith('Level')) {
+                // Gem Level Override
+                const gemId = key.replace('Level', '');
+                gemContext.levels[gemId] = value;
+              } else if (key.includes('Node')) {
+                // Gem Node Override
+                const match = key.match(/^(.+)Node(\d+)$/);
+                if (match) {
+                  const gemId = match[1];
+                  const nodeIndex = parseInt(match[2], 10);
+                  
+                  console.log(`  Gem: ${gemId}, Node: ${nodeIndex}, Value: ${value}`);
+                  
+                  // Stelle sicher, dass das Array für den Gem existiert
+                  if (!gemContext.activeNodes[gemId]) {
+                    gemContext.activeNodes[gemId] = [];
+                  }
+                  
+                  if (value === 1 || value === true) {
+                    // Node aktivieren (falls nicht bereits aktiv)
+                    if (!gemContext.activeNodes[gemId].includes(nodeIndex)) {
+                      gemContext.activeNodes[gemId].push(nodeIndex);
+                    }
+                  } else {
+                    // Node deaktivieren (falls aktiv)
+                    const index = gemContext.activeNodes[gemId].indexOf(nodeIndex);
+                    if (index !== -1) {
+                      gemContext.activeNodes[gemId].splice(index, 1);
+                    }
+                  }
+                }
+              }
+            });
+            
+            // Debug-Log für das finale gemContext
+            console.log('Final gemContext after overrides:', gemContext);
+          } else {
+            console.log('No gemOverrides found in plan');
+          }
         }
 
         // Export the plan

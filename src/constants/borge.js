@@ -78,9 +78,9 @@ export const ATTRIBUTE_MIN_VALUE = {
 
 export const HUNTER_UPGRADES = {
   relics: ["r4", "r7", "r16", "r19"],
-  inscryptions: ["i3", "i4", "i11", "i13", "i14", "i23", "i24", "i27", "i44", "i60", "i80", "i84", "i87", "i88", "i89", "i91"],
+  inscryptions: ["i3", "i4", "i11", "i13", "i14", "i23", "i24", "i27", "i44", "i60", "i80", "i84", "i87", "i88", "i89", "i91", "i103"],
   gadgets: ["wrench"],
-  loopmods: ["trample", "scavenger"],
+  loopmods: ["trample", "scavenger", "stelzi"],
   shardmilestones: ["m0"],
   researches: ["res81", "res95", "res105"],
   cms: ["cm46", "cm47", "cm48", "cm51"],
@@ -185,6 +185,9 @@ export const EVAL_PARAMS = [
   "upgrades.cms.cm51",            // Construction Milestone #51
   "upgrades.gems_nodes.creation_borgeGU", // Borge Gem Upgrade
   "upgrades.gems_nodes.evolution_gem3",   // Evolution Gem Node 3
+  "upgrades.gems_nodes.temporal_gem4",      // Temporal Gem Node 4
+  "upgrades.loopmods.stelzi",                 // Stelzi
+  "upgrades.inscryptions.i103",
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -258,6 +261,7 @@ export const OVERRIDES = {
     "upgrades.inscryptions.i88",     // Inscription #88
     "upgrades.inscryptions.i89",     // Inscription #89
     "upgrades.inscryptions.i91",     // Inscription #91
+    "upgrades.inscryptions.i103",    // Inscription #103
   ],
 
   //Construction Milestones
@@ -279,6 +283,7 @@ export const OVERRIDES = {
   loopmods: [
     "upgrades.loopmods.trample",     // Trample: Borge
     "upgrades.loopmods.scavenger",   // Scavengers Advantage
+    "upgrades.loopmods.stelzi",      // Stelzi
   ],
 
   // Shard Milestones
@@ -293,6 +298,7 @@ export const OVERRIDES = {
 
   // Gem Nodes
   gemNodes: [
+    //"upgrades.gems_nodes.temporal_gem4",    // Temporal Gem Node 4
     "upgrades.gems_nodes.creation_gem1",    // Creation Gem Node 1
     "upgrades.gems_nodes.creation_gem2",    // Creation Gem Node 2
     "upgrades.gems_nodes.creation_gem3",    // Creation Gem Node 3
@@ -418,6 +424,9 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
   "upgrades.gems_nodes.creation_borgeGU", // Borge Gem Upgrade
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
+  "upgrades.gems_nodes.temporal_gem4", // Temporal Gem Node 4
+  "upgrades.loopmods.stelzi",           // Stelzi
+  "upgrades.inscryptions.i103",        // Inscription #103
 ];
 
 export const STATS_RESULT_LABELS = [

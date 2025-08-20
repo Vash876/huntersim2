@@ -79,9 +79,9 @@ export const ATTRIBUTE_MIN_VALUE = {
 // Liste aller für Ozzy relevanten Upgrades
 export const HUNTER_UPGRADES = {
   relics: ["r4", "r7", "r17"],
-  inscryptions: ["i31", "i32", "i33", "i36", "i37", "i40", "i81", "i86", "i92"],
+  inscryptions: ["i31", "i32", "i33", "i36", "i37", "i40", "i81", "i86", "i92", "i104"],
   gadgets: ["zaptron"],
-  loopmods: ["scavenger2"],
+  loopmods: ["scavenger2", "stelzi"],
   shardmilestones: ["m0"],
   researches: ["res810", "res95", "res105"],
   cms: ["cm46", "cm47", "cm48", "cm51"],
@@ -175,6 +175,8 @@ export const EVAL_PARAMS = [
   "upgrades.cms.cm51",              // Construction Milestone 51
   "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
+  "upgrades.loopmods.stelzi",       // Stelzi
+  "upgrades.inscryptions.i104",
 
 ];
 
@@ -242,6 +244,7 @@ export const OVERRIDES = {
     "upgrades.inscryptions.i81",     // Inscription #24
     "upgrades.inscryptions.i86",     // Inscription #27
     "upgrades.inscryptions.i92",     // Inscription #44
+    "upgrades.inscryptions.i104",    // Inscription #104
   ],
 
   // Research
@@ -262,6 +265,7 @@ export const OVERRIDES = {
   // Loopmods
   loopmods: [
     "upgrades.loopmods.scavenger2",   // Scavengers Advantage
+    "upgrades.loopmods.stelzi",       // Stelzi
   ],
 
   // Shard Milestones
@@ -386,6 +390,8 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
   "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
+  "upgrades.loopmods.stelzi",           // Stelzi
+  "upgrades.inscryptions.i104",        // Inscription #104
 ];
 
 export const STATS_RESULT_LABELS = [

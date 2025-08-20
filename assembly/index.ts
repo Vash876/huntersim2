@@ -81,6 +81,7 @@ import {
   getLiveNextBossBonusAtk,
   getLiveNextFuryToggle,
   getLiveEnemyEnrageSpeedReduction,
+  getLiveBorgeHelltouch
 } from './evalBorge';
 
 // Ozzy Imports
@@ -255,6 +256,7 @@ export {
   getLiveNextBossBonusAtk,
   getLiveNextFuryToggle,
   getLiveEnemyEnrageSpeedReduction,
+  getLiveBorgeHelltouch
 };
 
 // Re-Export aller OZZY-Funktionen

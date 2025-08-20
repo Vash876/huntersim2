@@ -274,6 +274,7 @@ defineExpose({
 @media (max-width: 768px) {
   .mobile-modal-container {
     padding-bottom: var(--mobile-safe-bottom, 70px);
+    padding-top: 60px;
   }
 }
 

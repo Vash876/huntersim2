@@ -55,13 +55,13 @@
           >
             <IconShare size="16" />
           </button>
-          <button 
+          <!-- <button 
             @click.stop="$emit('planOrbs')" 
             class="icon-button text-purple-400/80 hover:text-purple-300"
             title="Plan orb spending"
           >
             <IconDiamond size="16" />
-          </button>
+          </button> -->
           
           <!-- Delete Button mit Dropdown-Bestätigung -->
           <div class="relative" ref="deleteButtonContainer">

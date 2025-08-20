@@ -318,7 +318,7 @@ function getColumnEndLevel(column) {
 }
 
 function getCostForPosition(column, row) {
-  const startLevel = currentM0Level.value;
+  const startLevel = currentM0Level.value + 1;
   const level = startLevel + (column - 1) * 10 + (row - 1);
   const maxLevel = Math.min(startLevel + levelRange.value - 1, 1000);
   

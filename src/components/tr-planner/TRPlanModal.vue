@@ -1006,6 +1006,19 @@ function addTRStep() {
       }
     });
     
+    // ZUSÄTZLICH: Alle aktuell aktiven Boolean Boosts übernehmen wenn sie nicht für nächste TR vorgemerkt sind
+    allBoosts.forEach(boost => {
+      if (boost.type === 'boolean') {
+        const isCurrentlyActive = lastStep.targetBools[boost.key] || false;
+        const isAlreadyProcessed = uniqueSelectedBoosts.includes(boost.key);
+        
+        // Wenn der Boost aktuell aktiv ist, aber noch nicht verarbeitet wurde
+        if (isCurrentlyActive && !isAlreadyProcessed) {
+          newStep.targetBools[boost.key] = true;
+        }
+      }
+    });
+    
     trSteps.push(newStep);
     
     // Nach dem Hinzufügen alle Stats aktualisieren
@@ -1144,6 +1157,14 @@ const mergedGemData = computed(() => {
 function getGemDataWithOverrides() {
   // Globale Gem-Daten laden
   const globalGemData = getGemDataFromStore();
+  
+  // Wenn importierte Gem-Daten vorhanden sind, verwende diese direkt
+  if (props.importedPlanData?.importedGemContext) {
+    if (typeof window !== 'undefined') {
+      window.__PLAN_CONTEXT__ = { gemData: props.importedPlanData.importedGemContext };
+    }
+    return props.importedPlanData.importedGemContext;
+  }
   
   // Wenn keine Overrides vorhanden sind, globale Daten zurückgeben
   if (!localGemOverrides.value || Object.keys(localGemOverrides.value).length === 0) {
@@ -1531,8 +1552,25 @@ function updateFollowingStepsStats(modifiedStepIndex) {
           step.stats[key] = step.targetBools[key] ? 1 : 0;
         }
         else if (!isSelected) {
-          // nicht markiert  →  Wert aus Haupt‑TR
-          step.stats[key] = mainBoolDefaults[key] ? 1 : 0;
+          // NEUE LOGIK: Prüfe ob der Boost in irgendeinem vorherigen TR aktiv war
+          let wasActiveInAnyPreviousTR = false;
+          for (let j = 0; j < i; j++) {
+            const prevTRStep = trSteps[j];
+            const wasActive = prevTRStep.targetBools[key] === true || 
+                             (prevTRStep.stats[key] && !Object.prototype.hasOwnProperty.call(prevTRStep.targetBools, key));
+            if (wasActive) {
+              wasActiveInAnyPreviousTR = true;
+              break;
+            }
+          }
+          
+          if (wasActiveInAnyPreviousTR) {
+            // Boost war in einem vorherigen TR aktiv → aktiviert lassen
+            step.stats[key] = 1;
+          } else {
+            // Boost war nie aktiv → Wert aus Haupt‑TR
+            step.stats[key] = mainBoolDefaults[key] ? 1 : 0;
+          }
         }
         // sonst (markiert, aber ohne explizites Target) bleibt der
         // bisherige inherited‑Wert in step.stats unverändert
@@ -2189,8 +2227,36 @@ function initData() {
       trStartDate.value = plan.trStartDate || trStartDate.value;
       trStartTime.value = plan.trStartTime || trStartTime.value;
       
-      // Gem Overrides laden
-      localGemOverrides.value = plan.gemOverrides ? { ...plan.gemOverrides } : {};
+      // Gem Overrides laden - beim Import aus importedGemContext konvertieren
+      if (plan.importedGemContext) {
+        const gemOverrides = {};
+        
+        // Gem Levels konvertieren
+        if (plan.importedGemContext.levels) {
+          Object.entries(plan.importedGemContext.levels).forEach(([gemId, level]) => {
+            gemOverrides[`${gemId}Level`] = level;
+          });
+        }
+        
+        // Gem Nodes konvertieren
+        if (plan.importedGemContext.activeNodes) {
+          Object.entries(plan.importedGemContext.activeNodes).forEach(([gemId, nodeArray]) => {
+            if (Array.isArray(nodeArray)) {
+              // Alle möglichen Nodes (0, 1, 2) prüfen
+              for (let i = 0; i < 3; i++) {
+                const nodeKey = `${gemId}Node${i}`;
+                const isActive = nodeArray.includes(i);
+                gemOverrides[nodeKey] = isActive;
+              }
+            }
+          });
+        }
+        
+        localGemOverrides.value = gemOverrides;
+      } else {
+        // Fallback: normale gemOverrides verwenden
+        localGemOverrides.value = plan.gemOverrides ? { ...plan.gemOverrides } : {};
+      }
       
       // Maxed Boosts Overrides laden
       localMaxedBoostsOverrides.value = plan.maxedBoostsOverrides ? { ...plan.maxedBoostsOverrides } : {};
@@ -2216,8 +2282,15 @@ function initData() {
         stats: statsWithOrbCalcFlags,
         targetLevels:      {},
         targetBools:       {},
-        selectedForNextTR: ['hoursInTR'] // Starte nur mit hoursInTR
+        selectedForNextTR: Array.isArray(plan.selectedForNextTR)
+                           ? [...plan.selectedForNextTR]
+                           : ['hoursInTR'] // Fallback nur mit hoursInTR
       };
+      
+      // Stelle sicher, dass hoursInTR immer enthalten ist
+      if (!firstStep.selectedForNextTR.includes('hoursInTR')) {
+        firstStep.selectedForNextTR.push('hoursInTR');
+      }
 
       // Boosts aus plan.boosts übernehmen
       if (Array.isArray(plan.boosts)) {
@@ -2323,6 +2396,27 @@ function initData() {
           Object.entries(step.targetBools).forEach(([k, v]) => acc[k] = v ? 1 : 0);
         });
       }
+      
+      // Nach Import: Korrigiere permanente Boolean Boosts in allen Schritten
+      // Wenn ein permanenter Boost in irgendeinem Schritt aktiviert ist, muss er in allen folgenden aktiviert sein
+      const permanentBoosts = allBoosts.filter(b => b.type === 'boolean');
+      permanentBoosts.forEach(boost => {
+        let activated = false;
+        trSteps.forEach(step => {
+          if (step.targetBools[boost.key] === true) {
+            activated = true;
+          }
+          if (activated) {
+            step.targetBools[boost.key] = true;
+            step.stats[boost.key] = 1;
+          }
+        });
+      });
+      
+      // Nach Import: Aktualisiere permanente Boosts für alle Folge-TRs
+      nextTick(() => {
+        updateFollowingStepsStats(0);
+      });
       
       // Erfasse Originalzustand
       captureOriginalState();

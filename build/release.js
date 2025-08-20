@@ -158,6 +158,7 @@ export const {
   getLiveNextBossBonusAtk,
   getLiveNextFuryToggle,
   getLiveEnemyEnrageSpeedReduction,
+  getLiveBorgeHelltouch,
   EVALOZZY_WASM,
   getLastOzzyAvgStage,
   getLastOzzyAvgTime,

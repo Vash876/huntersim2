@@ -248,6 +248,17 @@
                       </div>
                     </div>
                   </div>
+                  
+                  <!-- Helltouch -->
+                  <div class="stat-item-game bg-gray-800/50 rounded p-2">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-info">
+                      <div class="stat-label text-gray-400">Helltouch DMG</div>
+                      <div class="stat-value text-red-500 font-bold">
+                        {{ formatNumber(gameState.borge?.helltouch || 0) }}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

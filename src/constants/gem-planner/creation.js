@@ -25,7 +25,11 @@ export const CREATION_GEM = {
   gemNodes: [
     { node: 1, cost: 8e5 },
     { node: 2, cost: 5e8 },
-    { node: 3, cost: 3.3e4 }
+    { node: 3, cost: 3.3e4 },
+    // New nodes unlocked when Exodus reaches level 5
+    { node: 4, cost: 0, unlockRequirement: 'exodus-5' },
+    { node: 5, cost: 0, unlockRequirement: 'exodus-5' },
+    { node: 6, cost: 0, unlockRequirement: 'exodus-5' }
   ],
   
   // Upgrades available in this gem

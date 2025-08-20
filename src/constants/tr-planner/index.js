@@ -911,6 +911,17 @@ export const allBoosts = [
     multiplier: 1.25,
   },
   {
+    id: 34,
+    key: 'iap_frag',
+    label: 'IAP Frag. Pack',
+    category: 'premium',
+    type: 'boolean',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    fragmulti: 1.1,
+  },
+  {
     id: 27,
     key: 'hera',
     label: 'Hera Card',

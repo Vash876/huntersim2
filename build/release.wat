@@ -16,15 +16,15 @@
  (type $14 (func (param i64 i64 i32 i64 i32) (result i32)))
  (type $15 (func (param i32 i32 f64)))
  (type $16 (func (param i32 i32) (result f64)))
- (type $17 (func (param i32 i32 i32 i32 i32 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 i32 i32)))
- (type $18 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
- (type $19 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32)))
+ (type $17 (func (param i32 i32 i32 i32 i32 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 i32 i32 i32 i32 i32)))
+ (type $18 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
+ (type $19 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32)))
  (type $20 (func (param i32 f64 i32)))
- (type $21 (func (param i32 i32 i32 i32 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 i32 i32)))
- (type $22 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
+ (type $21 (func (param i32 i32 i32 i32 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 i32 i32 i32 i32)))
+ (type $22 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
  (type $23 (func (param f64)))
- (type $24 (func (param i32 i32 i32 f64 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32)))
- (type $25 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
+ (type $24 (func (param i32 i32 i32 f64 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32)))
+ (type $25 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
  (import "env" "abort" (func $~lib/builtins/abort (param i32 i32 i32 i32)))
  (global $assembly/evalBorge/seed (mut i32) (i32.const 12345))
  (global $~lib/rt/itcms/total (mut i32) (i32.const 0))
@@ -52,10 +52,12 @@
  (global $assembly/evalBorge/nextRegen (mut f64) (f64.const 0))
  (global $assembly/evalBorge/nextBossBonusAtk (mut f64) (f64.const 0))
  (global $assembly/evalBorge/nextFury (mut f64) (f64.const 0))
+ (global $assembly/evalBorge/nextInfernalBulk (mut f64) (f64.const 0))
  (global $assembly/evalBorge/currentAttr (mut i32) (i32.const 0))
  (global $assembly/evalBorge/currentCatchup99gu (mut i32) (i32.const 0))
  (global $assembly/evalBorge/currentTrample (mut i32) (i32.const 0))
  (global $assembly/evalBorge/currentMaxStage (mut i32) (i32.const 0))
+ (global $assembly/evalBorge/currentTempGN4 (mut i32) (i32.const 0))
  (global $assembly/evalBorge/lastBorge (mut i32) (i32.const 0))
  (global $assembly/evalBorge/liveState (mut i32) (i32.const 0))
  (global $assembly/evalOzzy/seed (mut i32) (i32.const 12345))
@@ -102,7 +104,7 @@
  (global $~lib/util/number/_K (mut i32) (i32.const 0))
  (global $~lib/util/number/_frc_pow (mut i64) (i64.const 0))
  (global $~lib/util/number/_exp_pow (mut i32) (i32.const 0))
- (global $~lib/memory/__stack_pointer (mut i32) (i32.const 45052))
+ (global $~lib/memory/__stack_pointer (mut i32) (i32.const 45100))
  (memory $0 1)
  (data $0 (i32.const 1036) ",")
  (data $0.1 (i32.const 1048) "\02\00\00\00\1c\00\00\00I\00n\00v\00a\00l\00i\00d\00 \00l\00e\00n\00g\00t\00h")
@@ -328,10 +330,12 @@
  (data $54.1 (i32.const 11960) "\02\00\00\00\02\00\00\00_")
  (data $55 (i32.const 11980) ",\00\00\00\03\00\00\00\00\00\00\00\19\00\00\00\18\00\00\00p\"\00\00\00\00\00\00\c0.\00\00\00\00\00\00\90\"")
  (data $56 (i32.const 12028) ",")
- (data $56.1 (i32.const 12040) "\02\00\00\00\0e\00\00\00u\00n\00k\00n\00o\00w\00n")
- (data $57 (i32.const 12076) ",\00\00\00\03\00\00\00\00\00\00\00\19\00\00\00\18\00\00\00p\"\00\00\00\00\00\00\c0.\00\00\00\00\00\00\90\"")
+ (data $56.1 (i32.const 12040) "\02\00\00\00\18\00\00\00i\00n\00f\00e\00r\00n\00a\00l\00B\00u\00l\00k")
+ (data $57 (i32.const 12076) ",")
+ (data $57.1 (i32.const 12088) "\02\00\00\00\0e\00\00\00u\00n\00k\00n\00o\00w\00n")
  (data $58 (i32.const 12124) ",\00\00\00\03\00\00\00\00\00\00\00\19\00\00\00\18\00\00\00p\"\00\00\00\00\00\00\c0.\00\00\00\00\00\00\90\"")
- (data $59 (i32.const 12176) "\1a\00\00\00 \00\00\00 \00\00\00 \00\00\00\00\00\00\00 \00\00\00\04A\00\00\00\00\00\00 \00\00\00\04A\00\00\10\t\12\00\02A\00\00\00\00\00\00 \00\00\00\04A\00\00\00\00\00\00 \00\00\00\04A\00\00$\t\00\00 \00\00\00\04A\00\00\00\00\00\00 \00\00\00\04A\00\00$\1a\00\00\02\t\00\00\04A")
+ (data $59 (i32.const 12172) ",\00\00\00\03\00\00\00\00\00\00\00\19\00\00\00\18\00\00\00p\"\00\00\00\00\00\00\c0.\00\00\00\00\00\00\90\"")
+ (data $60 (i32.const 12224) "\1a\00\00\00 \00\00\00 \00\00\00 \00\00\00\00\00\00\00 \00\00\00\04A\00\00\00\00\00\00 \00\00\00\04A\00\00\10\t\12\00\02A\00\00\00\00\00\00 \00\00\00\04A\00\00\00\00\00\00 \00\00\00\04A\00\00$\t\00\00 \00\00\00\04A\00\00\00\00\00\00 \00\00\00\04A\00\00$\1a\00\00\02\t\00\00\04A")
  (export "multiWasm" (func $assembly/evalBorge/multi))
  (export "testMultiFunction" (func $assembly/index/testMultiFunction))
  (export "HunterType.BORGE" (global $assembly/index/HunterType.BORGE))
@@ -412,6 +416,7 @@
  (export "getLiveNextBossBonusAtk" (func $assembly/evalBorge/getLiveNextBossBonusAtk))
  (export "getLiveNextFuryToggle" (func $assembly/evalBorge/getLiveNextFury))
  (export "getLiveEnemyEnrageSpeedReduction" (func $assembly/evalBorge/getLiveEnemyEnrageSpeedReduction))
+ (export "getLiveBorgeHelltouch" (func $assembly/evalBorge/getLiveBorgeHelltouch))
  (export "EVALOZZY_WASM" (func $assembly/evalOzzy/EVALOZZY_WASM))
  (export "getLastOzzyAvgStage" (func $assembly/evalOzzy/getLastOzzyAvgStage))
  (export "getLastOzzyAvgTime" (func $assembly/evalOzzy/getLastOzzyAvgTime))
@@ -643,7 +648,7 @@
    local.get $1
    global.set $~lib/rt/itcms/iter
   end
-  block $__inlined_func$~lib/rt/itcms/Object#unlink$3045
+  block $__inlined_func$~lib/rt/itcms/Object#unlink$3136
    local.get $0
    i32.load offset=4
    i32.const -4
@@ -655,7 +660,7 @@
     i32.load offset=8
     i32.eqz
     local.get $0
-    i32.const 45052
+    i32.const 45100
     i32.lt_u
     i32.and
     i32.eqz
@@ -667,7 +672,7 @@
      call $~lib/builtins/abort
      unreachable
     end
-    br $__inlined_func$~lib/rt/itcms/Object#unlink$3045
+    br $__inlined_func$~lib/rt/itcms/Object#unlink$3136
    end
    local.get $0
    i32.load offset=8
@@ -704,7 +709,7 @@
    i32.const 1
   else
    local.get $1
-   i32.const 12176
+   i32.const 12224
    i32.load
    i32.gt_u
    if
@@ -718,7 +723,7 @@
    local.get $1
    i32.const 2
    i32.shl
-   i32.const 12180
+   i32.const 12228
    i32.add
    i32.load
    i32.const 32
@@ -1302,10 +1307,10 @@
   if
    unreachable
   end
-  i32.const 45056
+  i32.const 45104
   i32.const 0
   i32.store
-  i32.const 46624
+  i32.const 46672
   i32.const 0
   i32.store
   loop $for-loop|0
@@ -1316,7 +1321,7 @@
     local.get $0
     i32.const 2
     i32.shl
-    i32.const 45056
+    i32.const 45104
     i32.add
     i32.const 0
     i32.store offset=4
@@ -1334,7 +1339,7 @@
       i32.add
       i32.const 2
       i32.shl
-      i32.const 45056
+      i32.const 45104
       i32.add
       i32.const 0
       i32.store offset=96
@@ -1352,14 +1357,14 @@
     br $for-loop|0
    end
   end
-  i32.const 45056
-  i32.const 46628
+  i32.const 45104
+  i32.const 46676
   memory.size
   i64.extend_i32_s
   i64.const 16
   i64.shl
   call $~lib/rt/tlsf/addMemory
-  i32.const 45056
+  i32.const 45104
   global.set $~lib/rt/tlsf/ROOT
  )
  (func $~lib/rt/itcms/step (result i32)
@@ -1444,7 +1449,7 @@
      local.set $0
      loop $while-continue|0
       local.get $0
-      i32.const 45052
+      i32.const 45100
       i32.lt_u
       if
        local.get $0
@@ -1540,7 +1545,7 @@
      unreachable
     end
     local.get $0
-    i32.const 45052
+    i32.const 45100
     i32.lt_u
     if
      local.get $0
@@ -1563,7 +1568,7 @@
      i32.const 4
      i32.add
      local.tee $0
-     i32.const 45052
+     i32.const 45100
      i32.ge_u
      if
       global.get $~lib/rt/tlsf/ROOT
@@ -3318,11 +3323,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -4466,11 +4471,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -4609,7 +4614,7 @@
                  i32.sub
                  global.set $~lib/memory/__stack_pointer
                  global.get $~lib/memory/__stack_pointer
-                 i32.const 12284
+                 i32.const 12332
                  i32.lt_s
                  br_if $folding-inner0
                  global.get $~lib/memory/__stack_pointer
@@ -4638,7 +4643,7 @@
                 i32.sub
                 global.set $~lib/memory/__stack_pointer
                 global.get $~lib/memory/__stack_pointer
-                i32.const 12284
+                i32.const 12332
                 i32.lt_s
                 br_if $folding-inner0
                 global.get $~lib/memory/__stack_pointer
@@ -4760,7 +4765,7 @@
       i32.sub
       global.set $~lib/memory/__stack_pointer
       global.get $~lib/memory/__stack_pointer
-      i32.const 12284
+      i32.const 12332
       i32.lt_s
       br_if $folding-inner0
       global.get $~lib/memory/__stack_pointer
@@ -4770,8 +4775,8 @@
      end
      unreachable
     end
-    i32.const 45072
     i32.const 45120
+    i32.const 45168
     i32.const 1
     i32.const 1
     call $~lib/builtins/abort
@@ -4821,7 +4826,7 @@
   memory.size
   i32.const 16
   i32.shl
-  i32.const 45052
+  i32.const 45100
   i32.sub
   i32.const 1
   i32.shr_u
@@ -4856,7 +4861,7 @@
   global.set $~lib/memory/__stack_pointer
   block $folding-inner0
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -4888,7 +4893,7 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -4922,7 +4927,7 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -4949,8 +4954,8 @@
    global.set $assembly/evalKnox/lastKnox
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
@@ -4962,11 +4967,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -5024,11 +5029,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -5119,7 +5124,7 @@
   global.set $~lib/memory/__stack_pointer
   block $folding-inner0
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -5872,7 +5877,7 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -5916,7 +5921,7 @@
      i32.sub
      global.set $~lib/memory/__stack_pointer
      global.get $~lib/memory/__stack_pointer
-     i32.const 12284
+     i32.const 12332
      i32.lt_s
      br_if $folding-inner0
      global.get $~lib/memory/__stack_pointer
@@ -6013,8 +6018,8 @@
    local.get $0
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
@@ -6025,20 +6030,20 @@
   (local $2 i32)
   (local $3 i32)
   (local $4 f64)
-  (local $5 f64)
+  (local $5 i32)
   (local $6 f64)
-  (local $7 i32)
+  (local $7 f64)
   (local $8 f64)
   global.get $~lib/memory/__stack_pointer
-  i32.const 8
+  i32.const 12
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -6048,7 +6053,10 @@
   i64.const 0
   i64.store
   global.get $~lib/memory/__stack_pointer
-  i32.const 96
+  i32.const 0
+  i32.store offset=8
+  global.get $~lib/memory/__stack_pointer
+  i32.const 112
   i32.const 4
   call $~lib/rt/itcms/__new
   local.tee $2
@@ -6125,6 +6133,18 @@
   local.get $2
   f64.const 0
   f64.store offset=88
+  global.get $~lib/memory/__stack_pointer
+  local.get $2
+  i32.store offset=4
+  local.get $2
+  f64.const 0
+  f64.store offset=96
+  global.get $~lib/memory/__stack_pointer
+  local.get $2
+  i32.store offset=4
+  local.get $2
+  f64.const 0
+  f64.store offset=104
   local.get $0
   call $assembly/evalBorge/multi
   local.set $4
@@ -6145,7 +6165,7 @@
   local.get $2
   local.get $0
   f64.convert_i32_s
-  local.tee $5
+  local.tee $7
   f64.const 4
   f64.mul
   f64.const 9
@@ -6165,7 +6185,7 @@
   i32.trunc_sat_f64_s
   local.tee $3
   f64.convert_i32_s
-  local.tee $6
+  local.tee $8
   call $~lib/math/NativeMath.pow
   f64.mul
   f64.const 90
@@ -6178,9 +6198,9 @@
   local.get $0
   i32.const 300
   i32.eq
-  local.tee $7
+  local.tee $5
   select
-  local.tee $8
+  local.tee $6
   f64.mul
   f64.store
   global.get $~lib/memory/__stack_pointer
@@ -6193,7 +6213,7 @@
   local.get $2
   i32.store offset=4
   local.get $2
-  local.get $5
+  local.get $7
   f64.const 0.7
   f64.mul
   f64.const 2.5
@@ -6201,7 +6221,7 @@
   local.get $4
   f64.mul
   f64.const 2.85
-  local.get $6
+  local.get $8
   call $~lib/math/NativeMath.pow
   f64.mul
   f64.const 3.63
@@ -6209,14 +6229,56 @@
   local.get $1
   select
   f64.mul
-  local.get $8
+  local.get $6
   f64.mul
   f64.store offset=16
   global.get $~lib/memory/__stack_pointer
   local.get $2
   i32.store offset=4
+  global.get $~lib/memory/__stack_pointer
   local.get $2
-  local.get $5
+  i32.store offset=8
+  local.get $2
+  local.get $2
+  f64.load offset=16
+  f64.store offset=104
+  local.get $0
+  i32.const 400
+  i32.eq
+  if
+   global.get $~lib/memory/__stack_pointer
+   local.get $2
+   i32.store offset=4
+   global.get $~lib/memory/__stack_pointer
+   local.get $2
+   i32.store offset=8
+   local.get $2
+   local.get $2
+   f64.load offset=16
+   f64.const 2780
+   f64.add
+   f64.store offset=16
+   global.get $~lib/memory/__stack_pointer
+   local.get $2
+   i32.store offset=4
+   local.get $2
+   f64.const 10
+   f64.store offset=96
+  else
+   global.get $~lib/memory/__stack_pointer
+   local.get $2
+   i32.store offset=4
+   local.get $2
+   f64.const 0
+   f64.store offset=96
+  end
+  global.get $~lib/memory/__stack_pointer
+  local.get $2
+  i32.store offset=4
+  local.get $2
+  local.get $0
+  f64.convert_i32_s
+  local.tee $6
   f64.const 0.0004
   f64.mul
   f64.const 0.0322
@@ -6233,7 +6295,7 @@
   local.get $2
   i32.store offset=4
   local.get $2
-  local.get $5
+  local.get $6
   f64.const 0.008
   f64.mul
   f64.const 1.212
@@ -6370,7 +6432,7 @@
   f64.mul
   f64.const 0.9
   f64.const 1
-  local.get $7
+  local.get $5
   select
   f64.mul
   f64.store offset=64
@@ -6403,7 +6465,7 @@
   f64.const 0
   f64.store offset=88
   global.get $~lib/memory/__stack_pointer
-  i32.const 8
+  i32.const 12
   i32.add
   global.set $~lib/memory/__stack_pointer
   local.get $2
@@ -6416,11 +6478,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -6433,7 +6495,7 @@
   i32.const 0
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
-  i32.const 141
+  i32.const 149
   i32.const 11
   call $~lib/rt/itcms/__new
   local.tee $0
@@ -6510,14 +6572,14 @@
   local.get $0
   i32.store offset=4
   local.get $0
-  i32.const 0
-  i32.store8 offset=72
+  f64.const 0
+  f64.store offset=72
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
   local.get $0
-  f64.const 0
-  f64.store offset=80
+  i32.const 0
+  i32.store8 offset=80
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
@@ -6528,20 +6590,14 @@
   local.get $0
   i32.store offset=4
   local.get $0
-  i32.const 0
-  i32.store offset=96
+  f64.const 0
+  f64.store offset=96
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
   local.get $0
   i32.const 0
-  i32.store offset=100
-  global.get $~lib/memory/__stack_pointer
-  local.get $0
-  i32.store offset=4
-  local.get $0
-  i32.const 0
-  i32.store8 offset=104
+  i32.store offset=104
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
@@ -6553,13 +6609,19 @@
   i32.store offset=4
   local.get $0
   i32.const 0
-  i32.store offset=112
+  i32.store8 offset=112
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
   local.get $0
-  f64.const 0
-  f64.store offset=120
+  i32.const 0
+  i32.store offset=116
+  global.get $~lib/memory/__stack_pointer
+  local.get $0
+  i32.store offset=4
+  local.get $0
+  i32.const 0
+  i32.store offset=120
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
@@ -6570,14 +6632,20 @@
   local.get $0
   i32.store offset=4
   local.get $0
-  i32.const 0
-  i32.store offset=136
+  f64.const 0
+  f64.store offset=136
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
   local.get $0
   i32.const 0
-  i32.store8 offset=140
+  i32.store offset=144
+  global.get $~lib/memory/__stack_pointer
+  local.get $0
+  i32.store offset=4
+  local.get $0
+  i32.const 0
+  i32.store8 offset=148
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
@@ -6661,14 +6729,14 @@
   local.get $0
   i32.store offset=4
   local.get $0
-  i32.const 0
-  i32.store8 offset=72
+  f64.const 0
+  f64.store offset=72
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
   local.get $0
-  f64.const 0
-  f64.store offset=80
+  i32.const 0
+  i32.store8 offset=80
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
@@ -6679,20 +6747,14 @@
   local.get $0
   i32.store offset=4
   local.get $0
-  i32.const 0
-  i32.store offset=96
+  f64.const 0
+  f64.store offset=96
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
   local.get $0
   i32.const 0
-  i32.store offset=100
-  global.get $~lib/memory/__stack_pointer
-  local.get $0
-  i32.store offset=4
-  local.get $0
-  i32.const 0
-  i32.store8 offset=104
+  i32.store offset=104
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
@@ -6704,13 +6766,19 @@
   i32.store offset=4
   local.get $0
   i32.const 0
-  i32.store offset=112
+  i32.store8 offset=112
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
   local.get $0
-  f64.const 0
-  f64.store offset=120
+  i32.const 0
+  i32.store offset=116
+  global.get $~lib/memory/__stack_pointer
+  local.get $0
+  i32.store offset=4
+  local.get $0
+  i32.const 0
+  i32.store offset=120
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
@@ -6721,14 +6789,20 @@
   local.get $0
   i32.store offset=4
   local.get $0
-  i32.const 0
-  i32.store offset=136
+  f64.const 0
+  f64.store offset=136
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
   local.get $0
   i32.const 0
-  i32.store8 offset=140
+  i32.store offset=144
+  global.get $~lib/memory/__stack_pointer
+  local.get $0
+  i32.store offset=4
+  local.get $0
+  i32.const 0
+  i32.store8 offset=148
   global.get $~lib/memory/__stack_pointer
   i32.const 12
   i32.add
@@ -6746,7 +6820,7 @@
   global.set $~lib/memory/__stack_pointer
   block $folding-inner0
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -7631,7 +7705,7 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -7675,7 +7749,7 @@
      i32.sub
      global.set $~lib/memory/__stack_pointer
      global.get $~lib/memory/__stack_pointer
-     i32.const 12284
+     i32.const 12332
      i32.lt_s
      br_if $folding-inner0
      global.get $~lib/memory/__stack_pointer
@@ -7772,8 +7846,8 @@
    local.get $0
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
@@ -7793,11 +7867,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -8212,7 +8286,7 @@
   global.set $~lib/memory/__stack_pointer
   block $folding-inner0
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -9145,7 +9219,7 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -9189,7 +9263,7 @@
      i32.sub
      global.set $~lib/memory/__stack_pointer
      global.get $~lib/memory/__stack_pointer
-     i32.const 12284
+     i32.const 12332
      i32.lt_s
      br_if $folding-inner0
      global.get $~lib/memory/__stack_pointer
@@ -9286,8 +9360,8 @@
    local.get $0
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
@@ -9306,11 +9380,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -9635,11 +9709,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -9685,11 +9759,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -9753,11 +9827,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -9882,6 +9956,38 @@
    i32.trunc_sat_f64_s
    call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
    global.set $assembly/evalBorge/currentEnemy
+   global.get $assembly/evalBorge/currentEnem
+   i32.const 4000
+   i32.eq
+   if
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/currentEnemy
+    local.tee $0
+    i32.store
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/currentEnemy
+    local.tee $3
+    i32.store offset=4
+    local.get $0
+    local.get $3
+    f64.load offset=104
+    f64.const 2780
+    f64.add
+    f64.store offset=16
+   else
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/currentEnemy
+    local.tee $0
+    i32.store
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/currentEnemy
+    local.tee $3
+    i32.store offset=4
+    local.get $0
+    local.get $3
+    f64.load offset=104
+    f64.store offset=16
+   end
   end
   loop $while-continue|0
    global.get $~lib/memory/__stack_pointer
@@ -9939,6 +10045,38 @@
      i32.trunc_sat_f64_s
      call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
      global.set $assembly/evalBorge/currentEnemy
+     global.get $assembly/evalBorge/currentEnem
+     i32.const 4000
+     i32.eq
+     if
+      global.get $~lib/memory/__stack_pointer
+      global.get $assembly/evalBorge/currentEnemy
+      local.tee $0
+      i32.store
+      global.get $~lib/memory/__stack_pointer
+      global.get $assembly/evalBorge/currentEnemy
+      local.tee $3
+      i32.store offset=4
+      local.get $0
+      local.get $3
+      f64.load offset=104
+      f64.const 2780
+      f64.add
+      f64.store offset=16
+     else
+      global.get $~lib/memory/__stack_pointer
+      global.get $assembly/evalBorge/currentEnemy
+      local.tee $0
+      i32.store
+      global.get $~lib/memory/__stack_pointer
+      global.get $assembly/evalBorge/currentEnemy
+      local.tee $3
+      i32.store offset=4
+      local.get $0
+      local.get $3
+      f64.load offset=104
+      f64.store offset=16
+     end
     end
     br $while-continue|0
    end
@@ -10138,6 +10276,13 @@
   if
    f64.const 99999999
    global.set $assembly/evalBorge/nextBossBonusAtk
+   global.get $assembly/evalBorge/currentEnem
+   i32.const 4000
+   i32.ne
+   if
+    f64.const 999999999
+    global.set $assembly/evalBorge/nextInfernalBulk
+   end
   else
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentBorge
@@ -10253,6 +10398,15 @@
     f64.add
     global.set $assembly/evalBorge/nextFury
    end
+   global.get $assembly/evalBorge/currentEnem
+   i32.const 4000
+   i32.eq
+   if
+    global.get $assembly/evalBorge/currentTime
+    f64.const 10
+    f64.add
+    global.set $assembly/evalBorge/nextInfernalBulk
+   end
   end
   global.get $~lib/memory/__stack_pointer
   i32.const 8
@@ -10266,11 +10420,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -10339,11 +10493,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -10399,11 +10553,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -10479,7 +10633,7 @@
   global.set $~lib/memory/__stack_pointer
   block $folding-inner0
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -10582,7 +10736,7 @@
      i32.sub
      global.set $~lib/memory/__stack_pointer
      global.get $~lib/memory/__stack_pointer
-     i32.const 12284
+     i32.const 12332
      i32.lt_s
      br_if $folding-inner0
      global.get $~lib/memory/__stack_pointer
@@ -10832,8 +10986,8 @@
    global.set $~lib/memory/__stack_pointer
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
@@ -10841,9 +10995,9 @@
  )
  (func $assembly/evalBorge/enemyAttack (param $0 i32)
   (local $1 f64)
-  (local $2 i32)
+  (local $2 f64)
   (local $3 i32)
-  (local $4 f64)
+  (local $4 i32)
   (local $5 f64)
   (local $6 f64)
   (local $7 f64)
@@ -10852,11 +11006,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -10870,32 +11024,32 @@
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentEnemy
-  local.tee $2
+  local.tee $3
   i32.store
-  local.get $2
+  local.get $3
   f64.load offset=16
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentBorge
-  local.tee $2
+  local.tee $3
   i32.store
   f64.const 1
-  local.get $2
-  f64.load offset=120
-  f64.sub
-  f64.mul
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/currentBorge
-  local.tee $2
-  i32.store
-  f64.const 1
-  local.get $2
+  local.get $3
   i32.load offset=240
   f64.convert_i32_s
   f64.const 0.01
   f64.mul
   f64.sub
   f64.mul
-  local.set $1
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/currentBorge
+  local.tee $3
+  i32.store
+  f64.const 1
+  local.get $3
+  f64.load offset=120
+  f64.sub
+  f64.mul
+  local.set $2
   global.get $assembly/evalBorge/currentEnem
   i32.const 0
   i32.gt_s
@@ -10919,14 +11073,14 @@
   else
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentEnemy
-   local.tee $2
+   local.tee $3
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentEnemy
-   local.tee $3
+   local.tee $4
    i32.store offset=4
-   local.get $2
    local.get $3
+   local.get $4
    i32.load offset=80
    i32.const 1
    i32.add
@@ -10935,7 +11089,7 @@
    i32.const 1
    global.get $assembly/evalBorge/furyEnabled
    select
-   local.set $2
+   local.set $3
    local.get $0
    if
     global.get $~lib/memory/__stack_pointer
@@ -10946,9 +11100,9 @@
     f64.load offset=72
     f64.const 1.8
     f64.mul
-    local.get $2
+    local.get $3
     f64.convert_i32_s
-    local.tee $4
+    local.tee $1
     f64.div
     local.set $5
     global.get $~lib/memory/__stack_pointer
@@ -10970,7 +11124,7 @@
     f64.load offset=72
     f64.const 1.8
     f64.mul
-    local.get $4
+    local.get $1
     f64.div
     f64.const 200
     f64.div
@@ -10986,7 +11140,7 @@
     i32.store
     local.get $0
     f64.load offset=72
-    local.get $4
+    local.get $1
     f64.div
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/currentEnemy
@@ -11003,7 +11157,7 @@
     i32.store
     local.get $0
     f64.load offset=72
-    local.get $4
+    local.get $1
     f64.div
     f64.const 200
     f64.div
@@ -11018,7 +11172,7 @@
     i32.store
     local.get $0
     f64.load offset=72
-    local.get $4
+    local.get $1
     f64.div
     local.set $6
     global.get $~lib/memory/__stack_pointer
@@ -11039,7 +11193,7 @@
     local.get $7
     local.get $0
     f64.load offset=72
-    local.get $4
+    local.get $1
     f64.div
     f64.const 200
     f64.div
@@ -11057,9 +11211,9 @@
     i32.store
     local.get $0
     f64.load offset=72
-    local.get $2
+    local.get $3
     f64.convert_i32_s
-    local.tee $4
+    local.tee $1
     f64.div
     local.set $5
     global.get $~lib/memory/__stack_pointer
@@ -11079,7 +11233,7 @@
     local.get $6
     local.get $0
     f64.load offset=72
-    local.get $4
+    local.get $1
     f64.div
     f64.const 200
     f64.div
@@ -11097,7 +11251,7 @@
     f64.load offset=72
     f64.const 1.8
     f64.mul
-    local.get $4
+    local.get $1
     f64.div
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/currentEnemy
@@ -11116,7 +11270,7 @@
     f64.load offset=72
     f64.const 1.8
     f64.mul
-    local.get $4
+    local.get $1
     f64.div
     f64.const 200
     f64.div
@@ -11133,7 +11287,7 @@
     f64.load offset=72
     f64.const 1.8
     f64.mul
-    local.get $4
+    local.get $1
     f64.div
     local.set $6
     global.get $~lib/memory/__stack_pointer
@@ -11156,7 +11310,7 @@
     f64.load offset=72
     f64.const 1.8
     f64.mul
-    local.get $4
+    local.get $1
     f64.div
     f64.const 200
     f64.div
@@ -11169,13 +11323,39 @@
     global.set $assembly/evalBorge/nextBossBonusAtk
    end
   end
+  global.get $assembly/evalBorge/currentTempGN4
+  i32.const 0
+  i32.gt_s
+  if (result f64)
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/currentEnemy
+   local.tee $0
+   i32.store
+   local.get $0
+   f64.load offset=16
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/currentBorge
+   local.tee $0
+   i32.store
+   f64.const 1
+   local.get $0
+   i32.load offset=240
+   f64.convert_i32_s
+   f64.const 0.01
+   f64.mul
+   f64.sub
+   f64.mul
+  else
+   f64.const 0
+  end
+  local.set $1
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentBorge
   local.tee $0
   i32.store
   local.get $0
   f64.load offset=48
-  local.tee $4
+  local.tee $5
   f64.const 0
   f64.gt
   if (result i32)
@@ -11189,7 +11369,7 @@
    i64.and
    i32.wrap_i64
    global.set $assembly/evalBorge/seed
-   local.get $4
+   local.get $5
    global.get $assembly/evalBorge/seed
    f64.convert_i32_u
    f64.const 2.3283064365386963e-10
@@ -11198,8 +11378,9 @@
   else
    i32.const 0
   end
-  if (result f64)
+  if
    f64.const 0
+   local.set $2
   else
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentEnemy
@@ -11207,7 +11388,7 @@
    i32.store
    local.get $0
    f64.load offset=24
-   local.tee $4
+   local.tee $5
    f64.const 0
    f64.gt
    if (result i32)
@@ -11221,7 +11402,7 @@
     i64.and
     i32.wrap_i64
     global.set $assembly/evalBorge/seed
-    local.get $4
+    local.get $5
     global.get $assembly/evalBorge/seed
     f64.convert_i32_u
     f64.const 2.3283064365386963e-10
@@ -11230,20 +11411,20 @@
    else
     i32.const 0
    end
-   if (result f64)
+   if
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/currentEnemy
     local.tee $0
     i32.store
     local.get $0
     f64.load offset=32
-    local.set $4
+    local.set $5
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/currentBorge
     local.tee $0
     i32.store
-    local.get $1
-    local.get $4
+    local.get $2
+    local.get $5
     f64.const 1
     local.get $0
     i32.load offset=252
@@ -11253,23 +11434,35 @@
     f64.sub
     f64.mul
     f64.mul
-   else
-    local.get $1
+    local.set $2
+    global.get $assembly/evalBorge/currentTempGN4
+    i32.const 0
+    i32.gt_s
+    if
+     global.get $~lib/memory/__stack_pointer
+     global.get $assembly/evalBorge/currentEnemy
+     local.tee $0
+     i32.store
+     local.get $1
+     local.get $0
+     f64.load offset=32
+     f64.mul
+     local.set $1
+    end
    end
   end
-  local.set $1
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentBorge
   local.tee $0
   i32.store
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentBorge
-  local.tee $2
+  local.tee $3
   i32.store offset=4
   local.get $0
-  local.get $2
+  local.get $3
   f64.load offset=16
-  local.get $1
+  local.get $2
   f64.sub
   f64.store offset=16
   global.get $~lib/memory/__stack_pointer
@@ -11278,23 +11471,28 @@
   i32.store
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentEnemy
-  local.tee $2
+  local.tee $3
   i32.store offset=4
-  local.get $2
+  local.get $3
   f64.load offset=8
-  local.set $4
+  local.set $5
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentBorge
-  local.tee $2
+  local.tee $3
   i32.store offset=4
   local.get $0
-  local.get $4
-  local.get $2
+  local.get $5
+  local.get $3
   i32.load offset=244
   f64.convert_i32_s
   f64.const 0.08
   f64.mul
+  local.get $2
   local.get $1
+  global.get $assembly/evalBorge/currentTempGN4
+  i32.const 0
+  i32.le_s
+  select
   f64.mul
   f64.const 1
   f64.const 0.1
@@ -11359,10 +11557,10 @@
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentBorge
-   local.tee $2
+   local.tee $3
    i32.store offset=4
    local.get $0
-   local.get $2
+   local.get $3
    f64.load offset=120
    f64.const -0.02
    f64.add
@@ -11395,10 +11593,10 @@
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentBorge
-   local.tee $2
+   local.tee $3
    i32.store offset=4
    local.get $0
-   local.get $2
+   local.get $3
    f64.load offset=96
    f64.const 0.8
    f64.mul
@@ -11411,9 +11609,9 @@
    i32.load offset=340
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentBorge
-   local.tee $2
+   local.tee $3
    i32.store
-   local.get $2
+   local.get $3
    i32.load offset=148
    i32.sub
    i32.const 1
@@ -11427,38 +11625,38 @@
    local.set $0
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentBorge
-   local.tee $2
+   local.tee $3
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $2
+   local.get $3
    i32.load offset=336
-   local.tee $2
+   local.tee $3
    i32.store
-   local.get $2
+   local.get $3
    local.get $0
    call $"~lib/map/Map<i32,i32>#has"
    if
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/currentBorge
-    local.tee $2
+    local.tee $3
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $2
+    local.get $3
     i32.load offset=336
-    local.tee $2
+    local.tee $3
     i32.store
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/currentBorge
-    local.tee $3
+    local.tee $4
     i32.store offset=8
     global.get $~lib/memory/__stack_pointer
-    local.get $3
+    local.get $4
     i32.load offset=336
-    local.tee $3
+    local.tee $4
     i32.store offset=4
-    local.get $2
-    local.get $0
     local.get $3
+    local.get $0
+    local.get $4
     local.get $0
     call $"~lib/map/Map<i32,i32>#get"
     i32.const 1
@@ -11467,14 +11665,14 @@
    else
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/currentBorge
-    local.tee $2
+    local.tee $3
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $2
+    local.get $3
     i32.load offset=336
-    local.tee $2
+    local.tee $3
     i32.store
-    local.get $2
+    local.get $3
     local.get $0
     i32.const 1
     call $"~lib/map/Map<i32,i32>#set"
@@ -11485,10 +11683,10 @@
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentBorge
-   local.tee $2
+   local.tee $3
    i32.store offset=4
    local.get $0
-   local.get $2
+   local.get $3
    i32.load offset=148
    i32.const 1
    i32.sub
@@ -11499,10 +11697,10 @@
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentBorge
-   local.tee $2
+   local.tee $3
    i32.store offset=4
    local.get $0
-   local.get $2
+   local.get $3
    f64.load offset=160
    f64.const 3
    f64.add
@@ -11520,10 +11718,10 @@
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentBorge
-   local.tee $2
+   local.tee $3
    i32.store offset=4
    local.get $0
-   local.get $2
+   local.get $3
    f64.load offset=40
    global.get $assembly/evalBorge/currentEnem
    i32.const 1000
@@ -11561,11 +11759,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -12221,11 +12419,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -12275,11 +12473,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -12327,7 +12525,7 @@
   global.set $~lib/memory/__stack_pointer
   block $folding-inner0
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -12341,7 +12539,7 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -12398,28 +12596,27 @@
    global.set $~lib/memory/__stack_pointer
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
   unreachable
  )
- (func $assembly/evalBorge/sim (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 f64) (param $7 i32) (param $8 f64) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 f64) (param $27 i32) (param $28 i32)
-  (local $29 f64)
-  (local $30 f64)
-  (local $31 f64)
+ (func $assembly/evalBorge/sim (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 f64) (param $7 i32) (param $8 f64) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 f64) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32)
   (local $32 f64)
-  (local $33 i32)
-  (local $34 i32)
+  (local $33 f64)
+  (local $34 f64)
   (local $35 f64)
+  (local $36 i32)
+  (local $37 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 32
   i32.sub
   global.set $~lib/memory/__stack_pointer
   block $folding-inner1
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner1
    global.get $~lib/memory/__stack_pointer
@@ -12442,6 +12639,8 @@
    global.set $assembly/evalBorge/currentTrample
    local.get $1
    global.set $assembly/evalBorge/currentMaxStage
+   local.get $29
+   global.set $assembly/evalBorge/currentTempGN4
    global.get $~lib/memory/__stack_pointer
    local.get $0
    i32.store
@@ -12575,12 +12774,12 @@
    local.get $0
    i32.load offset=4
    f64.convert_i32_s
-   local.set $29
+   local.set $32
    global.get $~lib/memory/__stack_pointer
    local.get $0
    i32.store offset=4
    local.get $0
-   local.get $29
+   local.get $32
    local.get $0
    i32.load offset=284
    i32.const 10
@@ -12659,6 +12858,8 @@
    global.set $assembly/evalBorge/nextBossBonusAtk
    f64.const 999999999
    global.set $assembly/evalBorge/nextFury
+   f64.const 999999999
+   global.set $assembly/evalBorge/nextInfernalBulk
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentBorge
    local.tee $1
@@ -12688,12 +12889,14 @@
     f64.const 0
     f64.gt
     if
+     global.get $assembly/evalBorge/nextInfernalBulk
      global.get $assembly/evalBorge/nextFury
      global.get $assembly/evalBorge/nextBossBonusAtk
      global.get $assembly/evalBorge/nextAthena
      global.get $assembly/evalBorge/nextRegen
      global.get $assembly/evalBorge/nextAtk
      global.get $assembly/evalBorge/nextEnemAtk
+     f64.min
      f64.min
      f64.min
      f64.min
@@ -12709,7 +12912,7 @@
       i32.sub
       global.set $~lib/memory/__stack_pointer
       global.get $~lib/memory/__stack_pointer
-      i32.const 12284
+      i32.const 12332
       i32.lt_s
       br_if $folding-inner1
       global.get $~lib/memory/__stack_pointer
@@ -12725,7 +12928,7 @@
       i32.store offset=4
       local.get $3
       f64.load offset=96
-      local.set $29
+      local.set $32
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalBorge/currentBorge
       local.tee $3
@@ -12739,7 +12942,7 @@
       local.get $3
       f64.load offset=112
       f64.add
-      local.set $30
+      local.set $33
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalBorge/currentBorge
       local.tee $3
@@ -12749,23 +12952,23 @@
       f64.convert_i32_s
       f64.const 0.0008
       f64.mul
-      local.set $31
+      local.set $34
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalBorge/currentBorge
       local.tee $3
       i32.store offset=4
       local.get $3
       f64.load offset=96
-      local.set $32
+      local.set $35
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalBorge/currentBorge
       local.tee $3
       i32.store offset=4
       local.get $1
-      local.get $29
-      local.get $30
-      local.get $31
       local.get $32
+      local.get $33
+      local.get $34
+      local.get $35
       local.get $3
       f64.load offset=16
       f64.sub
@@ -12783,29 +12986,29 @@
       i32.store offset=4
       local.get $3
       f64.load
-      local.set $29
+      local.set $32
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalBorge/currentEnemy
       local.tee $3
       i32.store offset=4
       local.get $3
       f64.load offset=8
-      local.set $30
+      local.set $33
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalBorge/currentEnemy
       local.tee $3
       i32.store offset=4
       local.get $3
       f64.load offset=64
-      local.set $31
+      local.set $34
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalBorge/currentBorge
       local.tee $3
       i32.store offset=4
       local.get $1
-      local.get $29
-      local.get $30
-      local.get $31
+      local.get $32
+      local.get $33
+      local.get $34
       f64.const 1
       local.get $3
       i32.load offset=184
@@ -12888,7 +13091,7 @@
            i32.sub
            global.set $~lib/memory/__stack_pointer
            global.get $~lib/memory/__stack_pointer
-           i32.const 12284
+           i32.const 12332
            i32.lt_s
            br_if $folding-inner1
            global.get $~lib/memory/__stack_pointer
@@ -12908,7 +13111,7 @@
            f64.sub
            f64.const 0
            f64.max
-           local.set $29
+           local.set $32
            local.get $1
            if
             global.get $assembly/evalBorge/currentTime
@@ -12917,26 +13120,26 @@
             global.set $assembly/evalBorge/nextFury
             global.get $assembly/evalBorge/currentTime
             global.get $assembly/evalBorge/nextEnemAtk
-            local.get $29
+            local.get $32
             f64.sub
             global.get $assembly/evalBorge/currentTime
             f64.sub
             f64.const 3
             f64.div
             f64.add
-            local.get $29
+            local.get $32
             f64.add
             global.set $assembly/evalBorge/nextEnemAtk
             global.get $assembly/evalBorge/currentTime
             global.get $assembly/evalBorge/nextBossBonusAtk
-            local.get $29
+            local.get $32
             f64.sub
             global.get $assembly/evalBorge/currentTime
             f64.sub
             f64.const 3
             f64.div
             f64.add
-            local.get $29
+            local.get $32
             f64.add
             global.set $assembly/evalBorge/nextBossBonusAtk
            else
@@ -12946,26 +13149,26 @@
             global.set $assembly/evalBorge/nextFury
             global.get $assembly/evalBorge/currentTime
             global.get $assembly/evalBorge/nextEnemAtk
-            local.get $29
+            local.get $32
             f64.sub
             global.get $assembly/evalBorge/currentTime
             f64.sub
             f64.const 3
             f64.mul
             f64.add
-            local.get $29
+            local.get $32
             f64.add
             global.set $assembly/evalBorge/nextEnemAtk
             global.get $assembly/evalBorge/currentTime
             global.get $assembly/evalBorge/nextBossBonusAtk
-            local.get $29
+            local.get $32
             f64.sub
             global.get $assembly/evalBorge/currentTime
             f64.sub
             f64.const 3
             f64.mul
             f64.add
-            local.get $29
+            local.get $32
             f64.add
             global.set $assembly/evalBorge/nextBossBonusAtk
            end
@@ -12973,6 +13176,53 @@
            i32.const 4
            i32.add
            global.set $~lib/memory/__stack_pointer
+          else
+           global.get $assembly/evalBorge/currentTime
+           global.get $assembly/evalBorge/nextInfernalBulk
+           f64.eq
+           if
+            global.get $~lib/memory/__stack_pointer
+            i32.const 8
+            i32.sub
+            global.set $~lib/memory/__stack_pointer
+            global.get $~lib/memory/__stack_pointer
+            i32.const 12332
+            i32.lt_s
+            br_if $folding-inner1
+            global.get $~lib/memory/__stack_pointer
+            i64.const 0
+            i64.store
+            global.get $assembly/evalBorge/currentEnem
+            i32.const 4000
+            i32.eq
+            if
+             global.get $~lib/memory/__stack_pointer
+             global.get $assembly/evalBorge/currentEnemy
+             local.tee $1
+             i32.store
+             global.get $~lib/memory/__stack_pointer
+             global.get $assembly/evalBorge/currentEnemy
+             local.tee $3
+             i32.store offset=4
+             local.get $1
+             local.get $3
+             f64.load offset=16
+             f64.const 2800
+             f64.add
+             f64.store offset=16
+             global.get $assembly/evalBorge/currentTime
+             f64.const 10
+             f64.add
+             global.set $assembly/evalBorge/nextInfernalBulk
+            else
+             f64.const 999999
+             global.set $assembly/evalBorge/nextInfernalBulk
+            end
+            global.get $~lib/memory/__stack_pointer
+            i32.const 8
+            i32.add
+            global.set $~lib/memory/__stack_pointer
+           end
           end
          end
         end
@@ -13030,7 +13280,7 @@
       i32.store offset=4
       local.get $5
       f64.load
-      local.set $29
+      local.set $32
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalBorge/ENEMIES
       local.tee $5
@@ -13045,7 +13295,7 @@
       local.get $1
       i32.store offset=4
       local.get $4
-      local.get $29
+      local.get $32
       local.get $1
       f64.load
       f64.add
@@ -13092,7 +13342,7 @@
        i32.store offset=4
        local.get $5
        f64.load
-       local.set $29
+       local.set $32
        global.get $~lib/memory/__stack_pointer
        global.get $assembly/evalBorge/ENEMIES
        local.tee $5
@@ -13107,7 +13357,7 @@
        local.get $1
        i32.store offset=4
        local.get $4
-       local.get $29
+       local.get $32
        local.get $1
        f64.load offset=8
        f64.add
@@ -13161,150 +13411,142 @@
    global.get $~lib/memory/__stack_pointer
    i32.const 7
    call $~lib/staticarray/StaticArray<f64>#constructor
-   local.tee $33
+   local.tee $4
    i32.store offset=16
    global.get $~lib/memory/__stack_pointer
-   local.get $33
+   local.get $4
    i32.store
-   local.get $33
+   local.get $4
    i32.const 0
    f64.const 1
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $33
+   local.get $4
    i32.store
-   local.get $33
+   local.get $4
    i32.const 1
    f64.const 1.1
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $33
+   local.get $4
    i32.store
-   local.get $33
+   local.get $4
    i32.const 2
    f64.const 1.3
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $33
+   local.get $4
    i32.store
-   local.get $33
+   local.get $4
    i32.const 3
    f64.const 1.5
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $33
+   local.get $4
    i32.store
-   local.get $33
+   local.get $4
    i32.const 4
    f64.const 1.7
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $33
+   local.get $4
    i32.store
-   local.get $33
+   local.get $4
    i32.const 5
    f64.const 2
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $33
+   local.get $4
    i32.store
-   local.get $33
+   local.get $4
    i32.const 6
    f64.const 3.2
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
    i32.const 4
    call $~lib/staticarray/StaticArray<f64>#constructor
-   local.tee $3
+   local.tee $5
    i32.store offset=20
    global.get $~lib/memory/__stack_pointer
-   local.get $3
+   local.get $5
    i32.store
-   local.get $3
+   local.get $5
    i32.const 0
    f64.const 1
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $3
+   local.get $5
    i32.store
-   local.get $3
+   local.get $5
    i32.const 1
    f64.const 1.2
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $3
+   local.get $5
    i32.store
-   local.get $3
+   local.get $5
    i32.const 2
    f64.const 1.4
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $3
+   local.get $5
    i32.store
-   local.get $3
+   local.get $5
    i32.const 3
    f64.const 2.8
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
    i32.const 3
    call $~lib/staticarray/StaticArray<f64>#constructor
-   local.tee $5
+   local.tee $3
    i32.store offset=24
    global.get $~lib/memory/__stack_pointer
-   local.get $5
+   local.get $3
    i32.store
-   local.get $5
+   local.get $3
    i32.const 0
    f64.const 0.8
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $5
+   local.get $3
    i32.store
-   local.get $5
+   local.get $3
    i32.const 1
    f64.const 1
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $5
+   local.get $3
    i32.store
-   local.get $5
+   local.get $3
    i32.const 2
    f64.const 1.8
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
    i32.const 2
    call $~lib/staticarray/StaticArray<f64>#constructor
-   local.tee $34
+   local.tee $36
    i32.store offset=28
    global.get $~lib/memory/__stack_pointer
-   local.get $34
+   local.get $36
    i32.store
-   local.get $34
+   local.get $36
    i32.const 0
    f64.const 1
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $34
+   local.get $36
    i32.store
-   local.get $34
+   local.get $36
    i32.const 1
    f64.const 1.2
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $33
+   local.get $4
    i32.store
-   local.get $33
+   local.get $4
    call $assembly/evalBorge/arrayAverage
    f64.const 3
    f64.mul
-   global.get $~lib/memory/__stack_pointer
-   local.get $3
-   i32.store
-   local.get $3
-   call $assembly/evalBorge/arrayAverage
-   f64.const 3
-   f64.mul
-   f64.add
    global.get $~lib/memory/__stack_pointer
    local.get $5
    i32.store
@@ -13314,16 +13556,24 @@
    f64.mul
    f64.add
    global.get $~lib/memory/__stack_pointer
-   local.get $34
+   local.get $3
    i32.store
-   local.get $34
+   local.get $3
+   call $assembly/evalBorge/arrayAverage
+   f64.const 3
+   f64.mul
+   f64.add
+   global.get $~lib/memory/__stack_pointer
+   local.get $36
+   i32.store
+   local.get $36
    call $assembly/evalBorge/arrayAverage
    f64.add
    f64.const 10
    f64.div
-   local.set $29
+   local.set $32
    i32.const 1010
-   local.set $4
+   local.set $29
    f64.const 1.5
    f64.const 1
    local.get $13
@@ -13342,7 +13592,7 @@
    f64.convert_i32_s
    call $~lib/math/NativeMath.pow
    f64.mul
-   local.set $30
+   local.set $33
    global.get $~lib/memory/__stack_pointer
    local.get $0
    i32.store
@@ -13367,7 +13617,7 @@
    f64.const 1
    f64.add
    f64.mul
-   local.set $31
+   local.set $34
    f64.const 1
    local.set $26
    i32.const 1
@@ -13511,8 +13761,18 @@
    i32.gt_s
    select
    f64.mul
+   f64.const 1.02
+   local.get $30
+   f64.convert_i32_s
+   call $~lib/math/NativeMath.pow
+   f64.mul
+   f64.const 1.08
+   local.get $31
+   f64.convert_i32_s
+   call $~lib/math/NativeMath.pow
+   f64.mul
    local.set $8
-   local.get $29
+   local.get $32
    f64.const 1.051
    global.get $assembly/evalBorge/currentEnem
    f64.convert_i32_s
@@ -13554,7 +13814,7 @@
    f64.mul
    f64.add
    f64.mul
-   local.get $31
+   local.get $34
    f64.mul
    global.get $~lib/memory/__stack_pointer
    local.get $0
@@ -13580,7 +13840,7 @@
    local.set $2
    loop $while-continue|3
     local.get $2
-    local.get $4
+    local.get $29
     i32.ge_s
     if
      local.get $6
@@ -13597,18 +13857,18 @@
      i32.store offset=4
      local.get $0
      f64.load offset=288
-     local.set $32
+     local.set $35
      global.get $~lib/memory/__stack_pointer
-     local.get $33
+     local.get $4
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $33
+     local.get $4
      i32.store offset=8
      local.get $0
-     local.get $32
+     local.get $35
      local.get $6
-     local.get $33
-     local.get $33
+     local.get $4
+     local.get $4
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -13620,7 +13880,7 @@
      f64.mul
      f64.const 800
      f64.mul
-     local.get $31
+     local.get $34
      f64.mul
      local.get $8
      f64.mul
@@ -13634,18 +13894,18 @@
      i32.store offset=4
      local.get $0
      f64.load offset=296
-     local.set $32
+     local.set $35
      global.get $~lib/memory/__stack_pointer
-     local.get $3
+     local.get $5
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $3
+     local.get $5
      i32.store offset=8
      local.get $0
-     local.get $32
+     local.get $35
      local.get $6
-     local.get $3
-     local.get $3
+     local.get $5
+     local.get $5
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -13657,7 +13917,7 @@
      f64.mul
      f64.const 600
      f64.mul
-     local.get $31
+     local.get $34
      f64.mul
      local.get $8
      f64.mul
@@ -13671,18 +13931,18 @@
      i32.store offset=4
      local.get $0
      f64.load offset=304
-     local.set $32
+     local.set $35
      global.get $~lib/memory/__stack_pointer
-     local.get $5
+     local.get $3
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $5
+     local.get $3
      i32.store offset=8
      local.get $0
-     local.get $32
+     local.get $35
      local.get $6
-     local.get $5
-     local.get $5
+     local.get $3
+     local.get $3
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -13694,7 +13954,7 @@
      f64.mul
      f64.const 400
      f64.mul
-     local.get $31
+     local.get $34
      f64.mul
      local.get $8
      f64.mul
@@ -13708,18 +13968,18 @@
      i32.store offset=4
      local.get $0
      f64.load offset=312
-     local.set $32
+     local.set $35
      global.get $~lib/memory/__stack_pointer
-     local.get $34
+     local.get $36
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $34
+     local.get $36
      i32.store offset=8
      local.get $0
-     local.get $32
+     local.get $35
      local.get $6
-     local.get $34
-     local.get $34
+     local.get $36
+     local.get $36
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -13731,11 +13991,11 @@
      f64.mul
      f64.const 300
      f64.mul
-     local.get $31
+     local.get $34
      f64.mul
      local.get $8
      f64.mul
-     local.get $30
+     local.get $33
      f64.mul
      f64.add
      f64.store offset=312
@@ -13747,18 +14007,18 @@
      i32.store offset=4
      local.get $0
      f64.load offset=264
-     local.set $32
+     local.set $35
      global.get $~lib/memory/__stack_pointer
-     local.get $33
+     local.get $4
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $33
+     local.get $4
      i32.store offset=8
      local.get $0
-     local.get $32
+     local.get $35
      local.get $6
-     local.get $33
-     local.get $33
+     local.get $4
+     local.get $4
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -13770,7 +14030,7 @@
      f64.mul
      f64.const 800
      f64.mul
-     local.get $31
+     local.get $34
      f64.mul
      f64.add
      f64.store offset=264
@@ -13782,18 +14042,18 @@
      i32.store offset=4
      local.get $0
      f64.load offset=264
-     local.set $32
+     local.set $35
      global.get $~lib/memory/__stack_pointer
-     local.get $3
+     local.get $5
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $3
+     local.get $5
      i32.store offset=8
      local.get $0
-     local.get $32
+     local.get $35
      local.get $6
-     local.get $3
-     local.get $3
+     local.get $5
+     local.get $5
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -13805,7 +14065,7 @@
      f64.mul
      f64.const 600
      f64.mul
-     local.get $31
+     local.get $34
      f64.mul
      f64.add
      f64.store offset=264
@@ -13817,18 +14077,18 @@
      i32.store offset=4
      local.get $0
      f64.load offset=264
-     local.set $32
+     local.set $35
      global.get $~lib/memory/__stack_pointer
-     local.get $5
+     local.get $3
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $5
+     local.get $3
      i32.store offset=8
      local.get $0
-     local.get $32
+     local.get $35
      local.get $6
-     local.get $5
-     local.get $5
+     local.get $3
+     local.get $3
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -13840,7 +14100,7 @@
      f64.mul
      f64.const 400
      f64.mul
-     local.get $31
+     local.get $34
      f64.mul
      f64.add
      f64.store offset=264
@@ -13852,18 +14112,18 @@
      i32.store offset=4
      local.get $0
      f64.load offset=264
-     local.set $32
+     local.set $35
      global.get $~lib/memory/__stack_pointer
-     local.get $34
+     local.get $36
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $34
+     local.get $36
      i32.store offset=8
      local.get $0
-     local.get $32
+     local.get $35
      local.get $6
-     local.get $34
-     local.get $34
+     local.get $36
+     local.get $36
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -13875,35 +14135,35 @@
      f64.mul
      f64.const 300
      f64.mul
-     local.get $31
+     local.get $34
      f64.mul
      f64.add
      f64.store offset=264
      local.get $2
-     local.get $4
+     local.get $29
      i32.sub
      local.set $2
      i32.const 1000
-     local.set $4
+     local.set $29
      local.get $2
      f64.convert_i32_s
      f64.const 990
      f64.min
-     local.tee $32
+     local.tee $35
      f64.const 10
      f64.div
      f64.floor
-     local.set $35
+     local.set $37
      local.get $6
      f64.const 5
      f64.mul
      local.tee $6
-     local.get $29
-     f64.mul
-     f64.const 1.051
-     f64.mul
-     f64.const 1.051
      local.get $32
+     f64.mul
+     f64.const 1.051
+     f64.mul
+     f64.const 1.051
+     local.get $35
      f64.const 10
      f64.div
      f64.floor
@@ -13914,20 +14174,20 @@
      f64.div
      f64.const 10
      f64.mul
-     local.get $32
      local.get $35
+     local.get $37
      f64.const 10
      f64.mul
      f64.sub
      f64.const 1.051
-     local.get $35
+     local.get $37
      call $~lib/math/NativeMath.pow
      f64.mul
      f64.add
      f64.mul
-     local.get $31
+     local.get $34
      f64.mul
-     local.set $32
+     local.set $35
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.store
@@ -13936,13 +14196,13 @@
      f64.convert_i32_s
      f64.const 0.2
      f64.mul
-     local.set $35
+     local.set $37
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.store
      local.get $26
-     local.get $32
      local.get $35
+     local.get $37
      local.get $0
      f64.load offset=56
      f64.mul
@@ -13964,7 +14224,7 @@
    f64.load offset=288
    local.set $6
    global.get $~lib/memory/__stack_pointer
-   local.get $33
+   local.get $4
    i32.store offset=4
    local.get $0
    local.get $6
@@ -13974,10 +14234,10 @@
    f64.const 10
    f64.div
    local.tee $6
-   local.get $33
+   local.get $4
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $29
+   local.get $32
    f64.div
    local.get $8
    f64.mul
@@ -13991,17 +14251,17 @@
    i32.store offset=4
    local.get $0
    f64.load offset=296
-   local.set $31
+   local.set $34
    global.get $~lib/memory/__stack_pointer
-   local.get $3
+   local.get $5
    i32.store offset=4
    local.get $0
-   local.get $31
+   local.get $34
    local.get $6
-   local.get $3
+   local.get $5
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $29
+   local.get $32
    f64.div
    local.get $8
    f64.mul
@@ -14015,17 +14275,17 @@
    i32.store offset=4
    local.get $0
    f64.load offset=304
-   local.set $31
+   local.set $34
    global.get $~lib/memory/__stack_pointer
-   local.get $5
+   local.get $3
    i32.store offset=4
    local.get $0
-   local.get $31
+   local.get $34
    local.get $6
-   local.get $5
+   local.get $3
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $29
+   local.get $32
    f64.div
    local.get $8
    f64.mul
@@ -14041,21 +14301,21 @@
    f64.load offset=312
    local.set $6
    global.get $~lib/memory/__stack_pointer
-   local.get $34
+   local.get $36
    i32.store offset=4
    local.get $0
    local.get $6
    local.get $26
    f64.const 10
    f64.div
-   local.get $34
+   local.get $36
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $29
+   local.get $32
    f64.div
    local.get $8
    f64.mul
-   local.get $30
+   local.get $33
    f64.mul
    f64.add
    f64.store offset=312
@@ -14214,27 +14474,27 @@
    global.set $~lib/memory/__stack_pointer
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
   unreachable
  )
- (func $assembly/evalBorge/EVALBORGE_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 i32) (param $35 i32) (param $36 i32) (param $37 f64) (param $38 f64) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32) (result f64)
-  (local $83 f64)
-  (local $84 f64)
-  (local $85 f64)
+ (func $assembly/evalBorge/EVALBORGE_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 i32) (param $35 i32) (param $36 i32) (param $37 f64) (param $38 f64) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32) (param $83 i32) (param $84 i32) (param $85 i32) (result f64)
+  (local $86 f64)
+  (local $87 f64)
+  (local $88 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 12
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -14250,32 +14510,32 @@
   f64.const 1.001
   local.get $35
   f64.convert_i32_s
-  local.tee $83
+  local.tee $86
   call $~lib/math/NativeMath.pow
   f64.const 1.02
   local.get $35
   i32.const 10
   i32.div_s
   f64.convert_i32_s
-  local.tee $84
+  local.tee $87
   call $~lib/math/NativeMath.pow
   f64.mul
-  local.set $85
+  local.set $88
   f64.const 1.005
-  local.get $83
+  local.get $86
   call $~lib/math/NativeMath.pow
   f64.const 1.02
-  local.get $84
+  local.get $87
   call $~lib/math/NativeMath.pow
   f64.mul
-  local.set $83
+  local.set $86
   local.get $81
   f64.convert_i32_s
   f64.const 0.01
   f64.mul
   f64.const 1
   f64.add
-  local.set $84
+  local.set $87
   global.get $~lib/memory/__stack_pointer
   call $assembly/evalBorge/Borge#constructor
   local.tee $35
@@ -14319,7 +14579,7 @@
   f64.convert_i32_s
   f64.mul
   f64.add
-  local.get $85
+  local.get $88
   f64.mul
   local.get $43
   f64.convert_i32_s
@@ -14378,7 +14638,7 @@
   f64.const 1
   f64.add
   f64.mul
-  local.get $84
+  local.get $87
   f64.mul
   f64.store offset=8
   global.get $~lib/memory/__stack_pointer
@@ -14406,7 +14666,7 @@
   f64.convert_i32_s
   f64.mul
   f64.add
-  local.get $85
+  local.get $88
   f64.mul
   local.get $45
   f64.convert_i32_s
@@ -14458,7 +14718,7 @@
   f64.convert_i32_s
   call $~lib/math/NativeMath.pow
   f64.mul
-  local.get $84
+  local.get $87
   f64.mul
   f64.store offset=24
   global.get $~lib/memory/__stack_pointer
@@ -14483,7 +14743,7 @@
   f64.convert_i32_s
   f64.mul
   f64.add
-  local.get $85
+  local.get $88
   f64.mul
   f64.const 1.03
   f64.const 1
@@ -14516,7 +14776,7 @@
   local.get $82
   select
   f64.mul
-  local.get $84
+  local.get $87
   f64.mul
   f64.store offset=32
   global.get $~lib/memory/__stack_pointer
@@ -14531,7 +14791,7 @@
   f64.const 0
   local.get $64
   select
-  local.tee $84
+  local.tee $87
   f64.add
   local.get $53
   f64.convert_i32_s
@@ -14570,7 +14830,7 @@
   local.get $66
   select
   f64.add
-  local.get $84
+  local.get $87
   f64.add
   local.get $49
   f64.convert_i32_s
@@ -14593,7 +14853,7 @@
   f64.mul
   f64.const 0.05
   f64.add
-  local.get $84
+  local.get $87
   f64.add
   local.get $48
   f64.convert_i32_s
@@ -14785,7 +15045,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=8
-  local.set $84
+  local.set $87
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -14796,13 +15056,13 @@
   f64.mul
   f64.const 1
   f64.add
-  local.set $85
+  local.set $88
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $84
-  local.get $85
+  local.get $87
+  local.get $88
   local.get $35
   i32.load offset=204
   f64.convert_i32_s
@@ -14821,7 +15081,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=32
-  local.set $84
+  local.set $87
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -14832,13 +15092,13 @@
   f64.mul
   f64.const 1
   f64.add
-  local.set $85
+  local.set $88
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $84
-  local.get $85
+  local.get $87
+  local.get $88
   local.get $35
   i32.load offset=208
   f64.convert_i32_s
@@ -14857,7 +15117,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=24
-  local.set $84
+  local.set $87
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -14879,13 +15139,13 @@
   f64.const 1
   f64.add
   f64.mul
-  local.set $85
+  local.set $88
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $84
-  local.get $85
+  local.get $87
+  local.get $88
   local.get $35
   i32.load offset=240
   f64.convert_i32_s
@@ -14904,12 +15164,12 @@
   i32.store offset=8
   local.get $35
   f64.load offset=40
-  local.set $84
+  local.set $87
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $84
+  local.get $87
   local.get $35
   i32.load offset=212
   f64.convert_i32_s
@@ -14925,7 +15185,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=64
-  local.set $84
+  local.set $87
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -14934,13 +15194,13 @@
   f64.convert_i32_s
   f64.const 0.044
   f64.mul
-  local.set $85
+  local.set $88
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $84
-  local.get $85
+  local.get $87
+  local.get $88
   local.get $35
   i32.load offset=256
   f64.convert_i32_s
@@ -14957,7 +15217,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=72
-  local.set $84
+  local.set $87
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -14966,13 +15226,13 @@
   f64.convert_i32_s
   f64.const 0.08
   f64.mul
-  local.set $85
+  local.set $88
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $84
-  local.get $85
+  local.get $87
+  local.get $88
   local.get $35
   i32.load offset=256
   f64.convert_i32_s
@@ -14989,7 +15249,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=56
-  local.set $84
+  local.set $87
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -14998,13 +15258,13 @@
   f64.convert_i32_s
   f64.const 0.012
   f64.mul
-  local.set $85
+  local.set $88
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $84
-  local.get $85
+  local.get $87
+  local.get $88
   local.get $35
   i32.load offset=256
   f64.convert_i32_s
@@ -15021,12 +15281,12 @@
   i32.store offset=8
   local.get $35
   f64.load offset=48
-  local.set $84
+  local.set $87
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $84
+  local.get $87
   local.get $35
   i32.load offset=232
   f64.convert_i32_s
@@ -15091,11 +15351,14 @@
     local.get $78
     local.get $79
     local.get $80
-    local.get $83
+    local.get $86
     local.get $72
     i32.const 0
     i32.gt_s
     local.get $56
+    local.get $83
+    local.get $84
+    local.get $85
     call $assembly/evalBorge/sim
     local.get $0
     i32.const 1
@@ -15128,11 +15391,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15194,11 +15457,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15252,11 +15515,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15309,11 +15572,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15344,11 +15607,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15383,11 +15646,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15545,11 +15808,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15685,11 +15948,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15740,11 +16003,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15795,11 +16058,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15850,11 +16113,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15903,11 +16166,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -15934,11 +16197,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -16003,7 +16266,7 @@
     select
     local.set $1
    end
-   block $__inlined_func$~lib/rt/itcms/__renew$2974
+   block $__inlined_func$~lib/rt/itcms/__renew$3064
     local.get $3
     i32.const 20
     i32.sub
@@ -16021,7 +16284,7 @@
      i32.store offset=16
      local.get $3
      local.set $2
-     br $__inlined_func$~lib/rt/itcms/__renew$2974
+     br $__inlined_func$~lib/rt/itcms/__renew$3064
     end
     local.get $1
     local.get $4
@@ -16077,7 +16340,7 @@
   global.set $~lib/memory/__stack_pointer
   block $folding-inner1
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner1
    global.get $~lib/memory/__stack_pointer
@@ -16101,7 +16364,7 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner1
    global.get $~lib/memory/__stack_pointer
@@ -16238,7 +16501,7 @@
       i32.sub
       global.set $~lib/memory/__stack_pointer
       global.get $~lib/memory/__stack_pointer
-      i32.const 12284
+      i32.const 12332
       i32.lt_s
       br_if $folding-inner1
       global.get $~lib/memory/__stack_pointer
@@ -16308,7 +16571,7 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner1
    global.get $~lib/memory/__stack_pointer
@@ -16335,8 +16598,8 @@
    local.get $6
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
@@ -16348,11 +16611,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -16377,11 +16640,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -16430,7 +16693,7 @@
   global.set $~lib/memory/__stack_pointer
   block $folding-inner0
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -16447,7 +16710,7 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -16467,7 +16730,7 @@
    global.get $~lib/memory/__stack_pointer
    local.get $1
    i32.store
-   block $__inlined_func$~lib/string/String#concat$3057
+   block $__inlined_func$~lib/string/String#concat$3148
     local.get $1
     i32.const 20
     i32.sub
@@ -16486,7 +16749,7 @@
      global.set $~lib/memory/__stack_pointer
      i32.const 8784
      local.set $0
-     br $__inlined_func$~lib/string/String#concat$3057
+     br $__inlined_func$~lib/string/String#concat$3148
     end
     global.get $~lib/memory/__stack_pointer
     local.get $0
@@ -16516,8 +16779,8 @@
    local.get $0
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
@@ -16534,11 +16797,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -16746,11 +17009,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -16793,11 +17056,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17000,11 +17263,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17257,11 +17520,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17289,11 +17552,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17321,11 +17584,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17353,11 +17616,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17385,11 +17648,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17417,11 +17680,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17449,11 +17712,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17481,11 +17744,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17513,11 +17776,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17545,11 +17808,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17599,11 +17862,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17635,11 +17898,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17704,11 +17967,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17786,11 +18049,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17822,11 +18085,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17891,11 +18154,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -17979,11 +18242,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -18182,18 +18445,18 @@
   global.set $~lib/memory/__stack_pointer
   local.get $0
  )
- (func $assembly/evalBorge/initLiveSimulation (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 i32) (param $35 i32) (param $36 i32) (param $37 f64) (param $38 f64) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32)
-  (local $83 f64)
+ (func $assembly/evalBorge/initLiveSimulation (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 i32) (param $35 i32) (param $36 i32) (param $37 f64) (param $38 f64) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32) (param $83 i32) (param $84 i32) (param $85 i32)
+  (local $86 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 16
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -18218,7 +18481,7 @@
   i32.const 10
   i32.div_s
   f64.convert_i32_s
-  local.tee $83
+  local.tee $86
   call $~lib/math/NativeMath.pow
   f64.mul
   local.set $37
@@ -18227,7 +18490,7 @@
   call $~lib/math/NativeMath.pow
   drop
   f64.const 1.02
-  local.get $83
+  local.get $86
   call $~lib/math/NativeMath.pow
   drop
   local.get $66
@@ -19019,14 +19282,14 @@
   i32.store
   local.get $0
   local.get $70
-  i32.store offset=96
+  i32.store offset=104
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
   i32.store
   local.get $0
   local.get $71
-  i32.store offset=100
+  i32.store offset=108
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
@@ -19035,14 +19298,25 @@
   local.get $40
   i32.const 0
   i32.gt_s
-  i32.store8 offset=104
+  local.tee $0
+  i32.store8 offset=112
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   local.get $1
-  i32.store offset=108
+  i32.store offset=116
+  local.get $70
+  global.set $assembly/evalBorge/currentAttr
+  local.get $71
+  global.set $assembly/evalBorge/currentCatchup99gu
+  local.get $0
+  global.set $assembly/evalBorge/currentTrample
+  local.get $1
+  global.set $assembly/evalBorge/currentMaxStage
+  local.get $83
+  global.set $assembly/evalBorge/currentTempGN4
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
@@ -19193,14 +19467,7 @@
   i32.store
   local.get $0
   i32.const 0
-  i32.store8 offset=72
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store
-  local.get $0
-  f64.const 0
-  f64.store offset=80
+  i32.store8 offset=80
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
@@ -19208,6 +19475,13 @@
   local.get $0
   f64.const 0
   f64.store offset=88
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $0
+  i32.store
+  local.get $0
+  f64.const 0
+  f64.store offset=96
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
@@ -19252,6 +19526,63 @@
   local.get $1
   f64.load
   f64.store offset=8
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $0
+  i32.store
+  local.get $0
+  i32.load offset=4
+  i32.const 4000
+  i32.eq
+  if
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $0
+   i32.store offset=8
+   global.get $~lib/memory/__stack_pointer
+   local.get $0
+   i32.load offset=8
+   local.tee $0
+   i32.store
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $1
+   i32.store offset=12
+   global.get $~lib/memory/__stack_pointer
+   local.get $1
+   i32.load offset=8
+   local.tee $1
+   i32.store offset=8
+   local.get $0
+   local.get $1
+   f64.load offset=104
+   f64.const 2780
+   f64.add
+   f64.store offset=16
+  else
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $0
+   i32.store offset=8
+   global.get $~lib/memory/__stack_pointer
+   local.get $0
+   i32.load offset=8
+   local.tee $0
+   i32.store
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $1
+   i32.store offset=12
+   global.get $~lib/memory/__stack_pointer
+   local.get $1
+   i32.load offset=8
+   local.tee $1
+   i32.store offset=8
+   local.get $0
+   local.get $1
+   f64.load offset=104
+   f64.store offset=16
+  end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
@@ -19330,15 +19661,15 @@
   local.tee $0
   i32.store
   local.get $0
-  i32.const 0
-  i32.store offset=112
+  f64.const 999999999
+  f64.store offset=72
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
   i32.store
   local.get $0
-  f64.const 0
-  f64.store offset=120
+  i32.const 0
+  i32.store offset=120
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
@@ -19351,15 +19682,22 @@
   local.tee $0
   i32.store
   local.get $0
-  i32.const 0
-  i32.store offset=136
+  f64.const 0
+  f64.store offset=136
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
   i32.store
   local.get $0
   i32.const 0
-  i32.store8 offset=140
+  i32.store offset=144
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $0
+  i32.store
+  local.get $0
+  i32.const 0
+  i32.store8 offset=148
   global.get $~lib/memory/__stack_pointer
   i32.const 16
   i32.add
@@ -19375,11 +19713,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -19478,7 +19816,7 @@
      end
     end
    end
-   block $__inlined_func$~lib/util/string/compareImpl$1320
+   block $__inlined_func$~lib/util/string/compareImpl$1354
     loop $while-continue|1
      local.get $0
      local.tee $3
@@ -19498,7 +19836,7 @@
       local.get $4
       local.get $5
       i32.ne
-      br_if $__inlined_func$~lib/util/string/compareImpl$1320
+      br_if $__inlined_func$~lib/util/string/compareImpl$1354
       local.get $2
       i32.const 2
       i32.add
@@ -19533,11 +19871,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -19770,11 +20108,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -19954,7 +20292,7 @@
    i32.store
    local.get $3
    i32.const 0
-   i32.store8 offset=72
+   i32.store8 offset=80
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
    local.tee $3
@@ -19986,14 +20324,14 @@
    local.get $3
    i32.const 8096
    call $assembly/evalBorge/getEventTypeId
-   i32.store offset=112
+   i32.store offset=120
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
    local.tee $3
    i32.store
    local.get $3
    local.get $0
-   i32.store offset=136
+   i32.store offset=144
   end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
@@ -20040,6 +20378,63 @@
    local.get $3
    i32.const 0
    call $~lib/rt/itcms/__link
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $3
+   i32.store
+   local.get $3
+   i32.load offset=4
+   i32.const 4000
+   i32.eq
+   if
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/liveState
+    local.tee $3
+    i32.store offset=4
+    global.get $~lib/memory/__stack_pointer
+    local.get $3
+    i32.load offset=8
+    local.tee $3
+    i32.store
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/liveState
+    local.tee $4
+    i32.store offset=8
+    global.get $~lib/memory/__stack_pointer
+    local.get $4
+    i32.load offset=8
+    local.tee $4
+    i32.store offset=4
+    local.get $3
+    local.get $4
+    f64.load offset=104
+    f64.const 2780
+    f64.add
+    f64.store offset=16
+   else
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/liveState
+    local.tee $3
+    i32.store offset=4
+    global.get $~lib/memory/__stack_pointer
+    local.get $3
+    i32.load offset=8
+    local.tee $3
+    i32.store
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/liveState
+    local.tee $4
+    i32.store offset=8
+    global.get $~lib/memory/__stack_pointer
+    local.get $4
+    i32.load offset=8
+    local.tee $4
+    i32.store offset=4
+    local.get $3
+    local.get $4
+    f64.load offset=104
+    f64.store offset=16
+   end
   end
   loop $while-continue|0
    global.get $~lib/memory/__stack_pointer
@@ -20047,7 +20442,7 @@
    local.tee $3
    i32.store
    local.get $3
-   f64.load offset=80
+   f64.load offset=88
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
    local.tee $3
@@ -20094,7 +20489,7 @@
     local.tee $4
     i32.store offset=4
     local.get $4
-    f64.load offset=80
+    f64.load offset=88
     local.set $1
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
@@ -20110,7 +20505,7 @@
     local.get $4
     f64.load
     f64.sub
-    f64.store offset=80
+    f64.store offset=88
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
     local.tee $3
@@ -20170,6 +20565,63 @@
      local.get $3
      i32.const 0
      call $~lib/rt/itcms/__link
+     global.get $~lib/memory/__stack_pointer
+     global.get $assembly/evalBorge/liveState
+     local.tee $3
+     i32.store
+     local.get $3
+     i32.load offset=4
+     i32.const 4000
+     i32.eq
+     if
+      global.get $~lib/memory/__stack_pointer
+      global.get $assembly/evalBorge/liveState
+      local.tee $3
+      i32.store offset=4
+      global.get $~lib/memory/__stack_pointer
+      local.get $3
+      i32.load offset=8
+      local.tee $3
+      i32.store
+      global.get $~lib/memory/__stack_pointer
+      global.get $assembly/evalBorge/liveState
+      local.tee $4
+      i32.store offset=8
+      global.get $~lib/memory/__stack_pointer
+      local.get $4
+      i32.load offset=8
+      local.tee $4
+      i32.store offset=4
+      local.get $3
+      local.get $4
+      f64.load offset=104
+      f64.const 2780
+      f64.add
+      f64.store offset=16
+     else
+      global.get $~lib/memory/__stack_pointer
+      global.get $assembly/evalBorge/liveState
+      local.tee $3
+      i32.store offset=4
+      global.get $~lib/memory/__stack_pointer
+      local.get $3
+      i32.load offset=8
+      local.tee $3
+      i32.store
+      global.get $~lib/memory/__stack_pointer
+      global.get $assembly/evalBorge/liveState
+      local.tee $4
+      i32.store offset=8
+      global.get $~lib/memory/__stack_pointer
+      local.get $4
+      i32.load offset=8
+      local.tee $4
+      i32.store offset=4
+      local.get $3
+      local.get $4
+      f64.load offset=104
+      f64.store offset=16
+     end
     end
     br $while-continue|0
    end
@@ -20212,7 +20664,7 @@
   i32.store
   local.get $3
   f64.const 0
-  f64.store offset=80
+  f64.store offset=88
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $3
@@ -20469,7 +20921,7 @@
    local.tee $4
    i32.store offset=4
    local.get $4
-   f64.load offset=128
+   f64.load offset=136
    local.set $2
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
@@ -20487,7 +20939,7 @@
    local.get $1
    f64.sub
    f64.add
-   f64.store offset=128
+   f64.store offset=136
   end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
@@ -20543,6 +20995,23 @@
    local.get $3
    f64.const 99999999
    f64.store offset=56
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $3
+   i32.store
+   local.get $3
+   i32.load offset=4
+   i32.const 4000
+   i32.ne
+   if
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/liveState
+    local.tee $3
+    i32.store
+    local.get $3
+    f64.const 999999999
+    f64.store offset=72
+   end
   else
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
@@ -20755,6 +21224,30 @@
     f64.add
     f64.store offset=64
    end
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $3
+   i32.store
+   local.get $3
+   i32.load offset=4
+   i32.const 4000
+   i32.eq
+   if
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/liveState
+    local.tee $3
+    i32.store
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/liveState
+    local.tee $4
+    i32.store offset=4
+    local.get $3
+    local.get $4
+    f64.load offset=16
+    f64.const 10
+    f64.add
+    f64.store offset=72
+   end
   end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
@@ -20775,7 +21268,7 @@
    local.tee $0
    i32.store
    local.get $0
-   i32.load offset=112
+   i32.load offset=120
    local.set $0
    global.get $~lib/memory/__stack_pointer
    i32.const 8096
@@ -20798,7 +21291,7 @@
    local.get $0
    i32.const 8048
    call $assembly/evalBorge/getEventTypeId
-   i32.store offset=112
+   i32.store offset=120
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
    local.tee $0
@@ -20806,7 +21299,7 @@
    local.get $0
    local.get $1
    i32.trunc_sat_f64_s
-   i32.store offset=136
+   i32.store offset=144
   end
   global.get $~lib/memory/__stack_pointer
   i32.const 12
@@ -20826,11 +21319,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -21078,7 +21571,7 @@
   local.get $0
   i32.const 7984
   call $assembly/evalBorge/getEventTypeId
-  i32.store offset=112
+  i32.store offset=120
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
@@ -21097,14 +21590,14 @@
   f64.load offset=16
   local.get $1
   f64.sub
-  f64.store offset=128
+  f64.store offset=136
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
   i32.store
   local.get $0
   f64.const 0
-  f64.store offset=120
+  f64.store offset=128
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
@@ -21127,9 +21620,9 @@
   global.set $~lib/memory/__stack_pointer
  )
  (func $assembly/evalBorge/liveEnemyAttackEvent
-  (local $0 i32)
+  (local $0 f64)
   (local $1 f64)
-  (local $2 f64)
+  (local $2 i32)
   (local $3 f64)
   (local $4 i32)
   (local $5 i32)
@@ -21140,11 +21633,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -21158,61 +21651,61 @@
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load offset=8
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   f64.load offset=16
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load
-  local.tee $0
+  local.tee $2
   i32.store
   f64.const 1
-  local.get $0
-  f64.load offset=120
-  f64.sub
-  f64.mul
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store offset=4
-  global.get $~lib/memory/__stack_pointer
-  local.get $0
-  i32.load
-  local.tee $0
-  i32.store
-  f64.const 1
-  local.get $0
+  local.get $2
   i32.load offset=240
   f64.convert_i32_s
   f64.const 0.01
   f64.mul
   f64.sub
   f64.mul
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $2
+  i32.store offset=4
+  global.get $~lib/memory/__stack_pointer
+  local.get $2
+  i32.load
+  local.tee $2
+  i32.store
+  f64.const 1
+  local.get $2
+  f64.load offset=120
+  f64.sub
+  f64.mul
   local.set $3
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   i32.load offset=4
   i32.const 0
   i32.gt_s
   if (result i32)
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store
-   local.get $0
+   local.get $2
    i32.load offset=4
    i32.const 1000
    i32.rem_s
@@ -21222,7 +21715,7 @@
   if
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
@@ -21230,7 +21723,7 @@
    i32.store offset=4
    local.get $4
    f64.load offset=16
-   local.set $1
+   local.set $0
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
    local.tee $4
@@ -21240,8 +21733,8 @@
    i32.load offset=8
    local.tee $4
    i32.store offset=4
+   local.get $2
    local.get $0
-   local.get $1
    local.get $4
    f64.load offset=72
    f64.add
@@ -21249,12 +21742,12 @@
   else
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load offset=8
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
@@ -21265,7 +21758,7 @@
    i32.load offset=8
    local.tee $4
    i32.store offset=4
-   local.get $0
+   local.get $2
    local.get $4
    i32.load offset=80
    i32.const 1
@@ -21273,14 +21766,14 @@
    i32.store offset=80
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store
    i32.const 3
    i32.const 1
-   local.get $0
-   i32.load8_u offset=72
+   local.get $2
+   i32.load8_u offset=80
    select
-   local.set $0
+   local.set $2
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
    local.tee $4
@@ -21291,7 +21784,7 @@
    i32.store offset=4
    local.get $5
    f64.load offset=16
-   local.set $1
+   local.set $0
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
    local.tee $5
@@ -21303,40 +21796,40 @@
    i32.store offset=4
    local.get $5
    f64.load offset=72
-   local.get $0
+   local.get $2
    f64.convert_i32_s
-   local.tee $2
+   local.tee $1
    f64.div
    local.set $6
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=8
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load offset=8
-   local.tee $0
+   local.tee $2
    i32.store offset=4
-   local.get $0
+   local.get $2
    i32.load offset=80
    f64.convert_i32_s
    local.set $7
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=8
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load offset=8
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    local.get $4
-   local.get $1
+   local.get $0
    local.get $6
    local.get $7
-   local.get $0
-   f64.load offset=72
    local.get $2
+   f64.load offset=72
+   local.get $1
    f64.div
    f64.const 200
    f64.div
@@ -21349,16 +21842,16 @@
   end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   f64.load offset=48
-  local.tee $1
+  local.tee $0
   f64.const 0
   f64.gt
   if (result i32)
@@ -21372,7 +21865,7 @@
    i64.and
    i32.wrap_i64
    global.set $assembly/evalBorge/seed
-   local.get $1
+   local.get $0
    global.get $assembly/evalBorge/seed
    f64.convert_i32_u
    f64.const 2.3283064365386963e-10
@@ -21386,16 +21879,16 @@
   else
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load offset=8
-   local.tee $0
+   local.tee $2
    i32.store
-   local.get $0
+   local.get $2
    f64.load offset=24
-   local.tee $1
+   local.tee $0
    f64.const 0
    f64.gt
    if (result i32)
@@ -21409,7 +21902,7 @@
     i64.and
     i32.wrap_i64
     global.set $assembly/evalBorge/seed
-    local.get $1
+    local.get $0
     global.get $assembly/evalBorge/seed
     f64.convert_i32_u
     f64.const 2.3283064365386963e-10
@@ -21421,29 +21914,29 @@
    if (result f64)
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
-    local.tee $0
+    local.tee $2
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $0
+    local.get $2
     i32.load offset=8
-    local.tee $0
+    local.tee $2
     i32.store
-    local.get $0
+    local.get $2
     f64.load offset=32
-    local.set $1
+    local.set $0
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
-    local.tee $0
+    local.tee $2
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $0
+    local.get $2
     i32.load
-    local.tee $0
+    local.tee $2
     i32.store
     local.get $3
-    local.get $1
-    f64.const 1
     local.get $0
+    f64.const 1
+    local.get $2
     i32.load offset=252
     f64.convert_i32_s
     f64.const 0.11
@@ -21455,15 +21948,15 @@
     local.get $3
    end
   end
-  local.set $1
+  local.set $0
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load
-  local.tee $0
+  local.tee $2
   i32.store
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
@@ -21474,20 +21967,39 @@
   i32.load
   local.tee $4
   i32.store offset=4
-  local.get $0
+  local.get $2
   local.get $4
   f64.load offset=16
-  local.get $1
+  local.get $0
   f64.sub
   f64.store offset=16
+  global.get $assembly/evalBorge/currentTempGN4
+  i32.const 0
+  i32.gt_s
+  if (result f64)
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $2
+   i32.store offset=4
+   global.get $~lib/memory/__stack_pointer
+   local.get $2
+   i32.load offset=8
+   local.tee $2
+   i32.store
+   local.get $2
+   f64.load offset=16
+  else
+   local.get $0
+  end
+  local.set $1
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load offset=8
-  local.tee $0
+  local.tee $2
   i32.store
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
@@ -21500,7 +22012,7 @@
   i32.store offset=4
   local.get $4
   f64.load offset=8
-  local.set $2
+  local.set $3
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $4
@@ -21517,14 +22029,14 @@
   f64.mul
   local.get $1
   f64.mul
-  local.set $3
+  local.set $1
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $4
   i32.store offset=4
-  local.get $0
   local.get $2
   local.get $3
+  local.get $1
   f64.const 1
   f64.const 0.1
   local.get $4
@@ -21534,9 +22046,9 @@
   if (result i32)
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
-   local.get $0
+   local.get $2
    i32.load offset=4
    i32.const 1000
    i32.rem_s
@@ -21549,39 +22061,39 @@
   f64.store offset=8
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store
   global.get $~lib/memory/__stack_pointer
   i32.const 7888
   i32.store offset=4
-  local.get $0
+  local.get $2
   i32.const 7888
   call $assembly/evalBorge/getEventTypeId
-  i32.store offset=112
+  i32.store offset=120
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store
+  local.get $2
   local.get $0
-  local.get $1
-  f64.store offset=120
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store
-  local.get $0
-  f64.const 0
   f64.store offset=128
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
+  i32.store
+  local.get $2
+  f64.const 0
+  f64.store offset=136
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load offset=8
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   f64.load offset=8
   f64.const 0
   f64.le
@@ -21590,16 +22102,16 @@
   end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load offset=8
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   f64.load offset=56
-  local.tee $1
+  local.tee $0
   f64.const 0
   f64.gt
   if (result i32)
@@ -21613,7 +22125,7 @@
    i64.and
    i32.wrap_i64
    global.set $assembly/evalBorge/seed
-   local.get $1
+   local.get $0
    global.get $assembly/evalBorge/seed
    f64.convert_i32_u
    f64.const 2.3283064365386963e-10
@@ -21625,12 +22137,12 @@
   if
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
@@ -21641,7 +22153,7 @@
    i32.load
    local.tee $4
    i32.store offset=4
-   local.get $0
+   local.get $2
    local.get $4
    f64.load offset=120
    f64.const -0.02
@@ -21652,26 +22164,26 @@
   end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   i32.load offset=148
   if (result i32)
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
-   local.get $0
+   local.get $2
    f64.load offset=16
    f64.const 0
    f64.le
@@ -21681,12 +22193,12 @@
   if
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
@@ -21697,7 +22209,7 @@
    i32.load
    local.tee $4
    i32.store offset=4
-   local.get $0
+   local.get $2
    local.get $4
    f64.load offset=96
    f64.const 0.8
@@ -21705,12 +22217,12 @@
    f64.store offset=16
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
@@ -21721,7 +22233,7 @@
    i32.load
    local.tee $4
    i32.store offset=4
-   local.get $0
+   local.get $2
    local.get $4
    i32.load offset=148
    i32.const 1
@@ -21729,12 +22241,12 @@
    i32.store offset=148
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
@@ -21745,7 +22257,7 @@
    i32.load
    local.tee $4
    i32.store offset=4
-   local.get $0
+   local.get $2
    local.get $4
    f64.load offset=160
    f64.const 3
@@ -21753,20 +22265,20 @@
    f64.store offset=160
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store
-   local.get $0
-   i32.load8_u offset=72
+   local.get $2
+   i32.load8_u offset=80
    if
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
-    local.tee $0
+    local.tee $2
     i32.store
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
     local.tee $4
     i32.store offset=4
-    local.get $0
+    local.get $2
     local.get $4
     f64.load offset=64
     f64.const -3
@@ -21775,12 +22287,12 @@
    end
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
@@ -21793,13 +22305,13 @@
    i32.store offset=4
    local.get $4
    f64.load offset=40
-   local.set $1
+   local.set $0
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
    local.tee $4
    i32.store offset=4
+   local.get $2
    local.get $0
-   local.get $1
    local.get $4
    i32.load offset=4
    i32.const 1000
@@ -21809,14 +22321,14 @@
    else
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
-    local.tee $0
+    local.tee $2
     i32.store offset=8
     global.get $~lib/memory/__stack_pointer
-    local.get $0
+    local.get $2
     i32.load
-    local.tee $0
+    local.tee $2
     i32.store offset=4
-    local.get $0
+    local.get $2
     i32.load offset=236
     f64.convert_i32_s
     f64.const 0.007
@@ -21826,25 +22338,25 @@
    f64.store offset=120
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    i32.const 8016
    i32.store offset=4
-   local.get $0
+   local.get $2
    i32.const 8016
    call $assembly/evalBorge/getEventTypeId
-   i32.store offset=112
+   i32.store offset=120
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store
-   local.get $0
+   local.get $2
    f64.const 0
-   f64.store offset=120
+   f64.store offset=128
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
@@ -21855,12 +22367,12 @@
    i32.load
    local.tee $4
    i32.store offset=4
-   local.get $0
+   local.get $2
    local.get $4
    f64.load offset=96
    f64.const 0.8
    f64.mul
-   f64.store offset=128
+   f64.store offset=136
   end
   global.get $~lib/memory/__stack_pointer
   i32.const 12
@@ -21880,11 +22392,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -22135,7 +22647,7 @@
    local.tee $3
    i32.store
    local.get $3
-   i32.load8_u offset=104
+   i32.load8_u offset=112
   else
    i32.const 0
   end
@@ -22158,7 +22670,7 @@
    local.get $6
    f64.load
    f64.sub
-   f64.store offset=80
+   f64.store offset=88
   end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
@@ -22174,7 +22686,7 @@
   local.get $3
   local.get $6
   call $assembly/evalBorge/getEventTypeId
-  i32.store offset=112
+  i32.store offset=120
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $3
@@ -22193,14 +22705,14 @@
   local.get $6
   f64.load offset=40
   f64.mul
-  f64.store offset=120
+  f64.store offset=128
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $3
   i32.store
   local.get $3
   f64.const 0
-  f64.store offset=128
+  f64.store offset=136
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $3
@@ -22405,7 +22917,7 @@
   f64.load offset=16
   local.get $4
   f64.sub
-  f64.store offset=128
+  f64.store offset=136
   local.get $1
   i32.eqz
   if
@@ -22749,7 +23261,7 @@
     f64.convert_i32_s
     f64.const 0.1
     f64.mul
-    f64.store offset=88
+    f64.store offset=96
    end
   end
   global.get $~lib/memory/__stack_pointer
@@ -22766,7 +23278,7 @@
    local.tee $1
    i32.store
    local.get $1
-   i32.load offset=96
+   i32.load offset=104
    i32.const 0
    i32.gt_s
   else
@@ -22779,7 +23291,7 @@
    i32.store
    f64.const 1.08
    local.get $1
-   i32.load offset=100
+   i32.load offset=108
    f64.convert_i32_s
    call $~lib/math/NativeMath.pow
    global.get $~lib/memory/__stack_pointer
@@ -22787,7 +23299,7 @@
    local.tee $1
    i32.store
    local.get $1
-   i32.load offset=96
+   i32.load offset=104
    f64.convert_i32_s
    f64.const 0.1
    f64.mul
@@ -22909,7 +23421,7 @@
   local.tee $0
   i32.store
   local.get $0
-  i64.load offset=88
+  i64.load offset=96
   i64.const 1
   i64.shl
   i64.const 2
@@ -22950,7 +23462,7 @@
    local.tee $0
    i32.store
    local.get $0
-   f64.load offset=88
+   f64.load offset=96
    local.get $2
    f64.const 0.5
    f64.mul
@@ -22974,7 +23486,7 @@
     local.get $0
     local.get $2
     local.get $1
-    f64.load offset=88
+    f64.load offset=96
     f64.sub
     f64.store offset=32
     global.get $~lib/memory/__stack_pointer
@@ -22995,7 +23507,7 @@
     local.get $0
     local.get $2
     local.get $1
-    f64.load offset=88
+    f64.load offset=96
     f64.sub
     f64.store offset=24
     global.get $~lib/memory/__stack_pointer
@@ -23004,7 +23516,7 @@
     i32.store
     local.get $0
     f64.const 0
-    f64.store offset=88
+    f64.store offset=96
    else
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
@@ -23047,10 +23559,10 @@
     i32.store offset=4
     local.get $0
     local.get $1
-    f64.load offset=88
+    f64.load offset=96
     local.get $2
     f64.sub
-    f64.store offset=88
+    f64.store offset=96
    end
   end
   global.get $~lib/memory/__stack_pointer
@@ -23059,12 +23571,12 @@
   global.set $~lib/memory/__stack_pointer
  )
  (func $assembly/evalBorge/liveBonusAttackEvent
-  (local $0 i32)
+  (local $0 f64)
   (local $1 f64)
-  (local $2 f64)
-  (local $3 f64)
+  (local $2 i32)
+  (local $3 i32)
   (local $4 i32)
-  (local $5 i32)
+  (local $5 f64)
   (local $6 f64)
   (local $7 f64)
   (local $8 f64)
@@ -23073,11 +23585,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -23091,141 +23603,141 @@
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load offset=8
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   f64.load offset=16
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load
-  local.tee $0
+  local.tee $2
   i32.store
   f64.const 1
-  local.get $0
-  f64.load offset=120
-  f64.sub
-  f64.mul
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store offset=4
-  global.get $~lib/memory/__stack_pointer
-  local.get $0
-  i32.load
-  local.tee $0
-  i32.store
-  f64.const 1
-  local.get $0
+  local.get $2
   i32.load offset=240
   f64.convert_i32_s
   f64.const 0.01
   f64.mul
   f64.sub
   f64.mul
-  local.set $3
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
+  i32.load
+  local.tee $2
+  i32.store
+  f64.const 1
+  local.get $2
+  f64.load offset=120
+  f64.sub
+  f64.mul
+  local.set $1
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $2
+  i32.store offset=4
+  global.get $~lib/memory/__stack_pointer
+  local.get $2
   i32.load offset=8
-  local.tee $0
+  local.tee $2
   i32.store
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $4
+  local.tee $3
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
-  local.get $4
+  local.get $3
   i32.load offset=8
-  local.tee $4
+  local.tee $3
   i32.store offset=4
-  local.get $0
-  local.get $4
+  local.get $2
+  local.get $3
   i32.load offset=80
   i32.const 1
   i32.add
   i32.store offset=80
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store
   i32.const 3
   i32.const 1
-  local.get $0
-  i32.load8_u offset=72
+  local.get $2
+  i32.load8_u offset=80
   select
+  local.set $2
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $3
+  i32.store
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $4
+  i32.store offset=4
+  local.get $4
+  f64.load offset=16
   local.set $0
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $4
-  i32.store
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $5
-  i32.store offset=4
-  local.get $5
-  f64.load offset=16
-  local.set $2
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $5
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
-  local.get $5
+  local.get $4
   i32.load offset=8
-  local.tee $5
+  local.tee $4
   i32.store offset=4
-  local.get $5
+  local.get $4
   f64.load offset=72
   f64.const 1.8
   f64.mul
-  local.get $0
+  local.get $2
   f64.convert_i32_s
-  local.tee $1
+  local.tee $5
   f64.div
   local.set $6
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load offset=8
-  local.tee $0
+  local.tee $2
   i32.store offset=4
-  local.get $0
+  local.get $2
   i32.load offset=80
   f64.convert_i32_s
   local.set $7
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
-  local.get $0
-  i32.load offset=8
-  local.tee $0
-  i32.store offset=4
-  local.get $4
   local.get $2
+  i32.load offset=8
+  local.tee $2
+  i32.store offset=4
+  local.get $3
+  local.get $0
   local.get $6
   local.get $7
-  local.get $0
+  local.get $2
   f64.load offset=72
   f64.const 1.8
   f64.mul
-  local.get $1
+  local.get $5
   f64.div
   f64.const 200
   f64.div
@@ -23237,54 +23749,54 @@
   f64.store offset=56
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $4
+  local.tee $3
   i32.store offset=4
-  local.get $4
+  local.get $3
   f64.load offset=40
   local.set $6
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $4
+  local.tee $3
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
-  local.get $4
+  local.get $3
   i32.load offset=8
-  local.tee $4
+  local.tee $3
   i32.store offset=4
-  local.get $4
+  local.get $3
   f64.load offset=72
-  local.get $1
+  local.get $5
   f64.div
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $4
+  local.tee $3
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
-  local.get $4
+  local.get $3
   i32.load offset=8
-  local.tee $4
+  local.tee $3
   i32.store offset=4
-  local.get $4
+  local.get $3
   i32.load offset=80
   i32.const 1
   i32.sub
   f64.convert_i32_s
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $4
+  local.tee $3
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
-  local.get $4
+  local.get $3
   i32.load offset=8
-  local.tee $4
+  local.tee $3
   i32.store offset=4
-  local.get $4
+  local.get $3
   f64.load offset=72
-  local.get $1
+  local.get $5
   f64.div
   f64.const 200
   f64.div
@@ -23295,48 +23807,48 @@
   local.set $7
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $4
+  local.tee $3
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
-  local.get $4
+  local.get $3
   i32.load offset=8
-  local.tee $4
+  local.tee $3
   i32.store offset=4
-  local.get $4
+  local.get $3
   f64.load offset=72
-  local.get $1
+  local.get $5
   f64.div
-  local.set $2
+  local.set $0
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $4
+  local.tee $3
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
-  local.get $4
+  local.get $3
   i32.load offset=8
-  local.tee $4
+  local.tee $3
   i32.store offset=4
-  local.get $4
+  local.get $3
   i32.load offset=80
   f64.convert_i32_s
   local.set $8
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $4
+  local.tee $3
   i32.store offset=8
   global.get $~lib/memory/__stack_pointer
-  local.get $4
+  local.get $3
   i32.load offset=8
-  local.tee $4
+  local.tee $3
   i32.store offset=4
-  local.get $0
+  local.get $2
   local.get $6
   local.get $7
-  local.get $2
+  local.get $0
   local.get $8
-  local.get $4
+  local.get $3
   f64.load offset=72
-  local.get $1
+  local.get $5
   f64.div
   f64.const 200
   f64.div
@@ -23349,16 +23861,16 @@
   f64.store offset=40
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   f64.load offset=48
-  local.tee $1
+  local.tee $0
   f64.const 0
   f64.gt
   if (result i32)
@@ -23372,7 +23884,7 @@
    i64.and
    i32.wrap_i64
    global.set $assembly/evalBorge/seed
-   local.get $1
+   local.get $0
    global.get $assembly/evalBorge/seed
    f64.convert_i32_u
    f64.const 2.3283064365386963e-10
@@ -23386,16 +23898,16 @@
   else
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load offset=8
-   local.tee $0
+   local.tee $2
    i32.store
-   local.get $0
+   local.get $2
    f64.load offset=24
-   local.tee $1
+   local.tee $0
    f64.const 0
    f64.gt
    if (result i32)
@@ -23409,7 +23921,7 @@
     i64.and
     i32.wrap_i64
     global.set $assembly/evalBorge/seed
-    local.get $1
+    local.get $0
     global.get $assembly/evalBorge/seed
     f64.convert_i32_u
     f64.const 2.3283064365386963e-10
@@ -23421,29 +23933,29 @@
    if (result f64)
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
-    local.tee $0
+    local.tee $2
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $0
+    local.get $2
     i32.load offset=8
-    local.tee $0
+    local.tee $2
     i32.store
-    local.get $0
+    local.get $2
     f64.load offset=32
-    local.set $1
+    local.set $0
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
-    local.tee $0
+    local.tee $2
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $0
+    local.get $2
     i32.load
-    local.tee $0
+    local.tee $2
     i32.store
-    local.get $3
     local.get $1
-    f64.const 1
     local.get $0
+    f64.const 1
+    local.get $2
     i32.load offset=252
     f64.convert_i32_s
     f64.const 0.11
@@ -23452,67 +23964,86 @@
     f64.mul
     f64.mul
    else
-    local.get $3
+    local.get $1
    end
+  end
+  local.set $0
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $2
+  i32.store offset=4
+  global.get $~lib/memory/__stack_pointer
+  local.get $2
+  i32.load
+  local.tee $2
+  i32.store
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $3
+  i32.store offset=8
+  global.get $~lib/memory/__stack_pointer
+  local.get $3
+  i32.load
+  local.tee $3
+  i32.store offset=4
+  local.get $2
+  local.get $3
+  f64.load offset=16
+  local.get $0
+  f64.sub
+  f64.store offset=16
+  global.get $assembly/evalBorge/currentTempGN4
+  i32.const 0
+  i32.gt_s
+  if (result f64)
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $2
+   i32.store offset=4
+   global.get $~lib/memory/__stack_pointer
+   local.get $2
+   i32.load offset=8
+   local.tee $2
+   i32.store
+   local.get $2
+   f64.load offset=16
+  else
+   local.get $0
   end
   local.set $1
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
-  i32.load
-  local.tee $0
-  i32.store
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $4
-  i32.store offset=8
-  global.get $~lib/memory/__stack_pointer
-  local.get $4
-  i32.load
-  local.tee $4
-  i32.store offset=4
-  local.get $0
-  local.get $4
-  f64.load offset=16
-  local.get $1
-  f64.sub
-  f64.store offset=16
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store offset=4
-  global.get $~lib/memory/__stack_pointer
-  local.get $0
-  i32.load offset=8
-  local.tee $0
-  i32.store
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $4
-  i32.store offset=8
-  global.get $~lib/memory/__stack_pointer
-  local.get $4
-  i32.load offset=8
-  local.tee $4
-  i32.store offset=4
-  local.get $4
-  f64.load offset=8
-  local.set $2
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $4
-  i32.store offset=8
-  global.get $~lib/memory/__stack_pointer
-  local.get $4
-  i32.load
-  local.tee $4
-  i32.store offset=4
-  local.get $0
   local.get $2
-  local.get $4
+  i32.load offset=8
+  local.tee $2
+  i32.store
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $3
+  i32.store offset=8
+  global.get $~lib/memory/__stack_pointer
+  local.get $3
+  i32.load offset=8
+  local.tee $3
+  i32.store offset=4
+  local.get $3
+  f64.load offset=8
+  local.set $5
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $3
+  i32.store offset=8
+  global.get $~lib/memory/__stack_pointer
+  local.get $3
+  i32.load
+  local.tee $3
+  i32.store offset=4
+  local.get $2
+  local.get $5
+  local.get $3
   i32.load offset=244
   f64.convert_i32_s
   f64.const 0.08
@@ -23525,39 +24056,39 @@
   f64.store offset=8
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store
   global.get $~lib/memory/__stack_pointer
   i32.const 7936
   i32.store offset=4
-  local.get $0
+  local.get $2
   i32.const 7936
   call $assembly/evalBorge/getEventTypeId
-  i32.store offset=112
+  i32.store offset=120
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store
+  local.get $2
   local.get $0
-  local.get $1
-  f64.store offset=120
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store
-  local.get $0
-  f64.const 0
   f64.store offset=128
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
+  i32.store
+  local.get $2
+  f64.const 0
+  f64.store offset=136
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load offset=8
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   f64.load offset=8
   f64.const 0
   f64.le
@@ -23566,16 +24097,16 @@
   end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load offset=8
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   f64.load offset=56
-  local.tee $1
+  local.tee $0
   f64.const 0
   f64.gt
   if (result i32)
@@ -23589,7 +24120,7 @@
    i64.and
    i32.wrap_i64
    global.set $assembly/evalBorge/seed
-   local.get $1
+   local.get $0
    global.get $assembly/evalBorge/seed
    f64.convert_i32_u
    f64.const 2.3283064365386963e-10
@@ -23601,24 +24132,24 @@
   if
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $4
+   local.tee $3
    i32.store offset=8
    global.get $~lib/memory/__stack_pointer
-   local.get $4
+   local.get $3
    i32.load
-   local.tee $4
+   local.tee $3
    i32.store offset=4
-   local.get $0
-   local.get $4
+   local.get $2
+   local.get $3
    f64.load offset=120
    f64.const -0.02
    f64.add
@@ -23628,26 +24159,26 @@
   end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
-  local.tee $0
+  local.tee $2
   i32.store offset=4
   global.get $~lib/memory/__stack_pointer
-  local.get $0
+  local.get $2
   i32.load
-  local.tee $0
+  local.tee $2
   i32.store
-  local.get $0
+  local.get $2
   i32.load offset=148
   if (result i32)
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
-   local.get $0
+   local.get $2
    f64.load offset=16
    f64.const 0
    f64.le
@@ -23657,93 +24188,93 @@
   if
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $4
+   local.tee $3
    i32.store offset=8
    global.get $~lib/memory/__stack_pointer
-   local.get $4
+   local.get $3
    i32.load
-   local.tee $4
+   local.tee $3
    i32.store offset=4
-   local.get $0
-   local.get $4
+   local.get $2
+   local.get $3
    f64.load offset=96
    f64.const 0.8
    f64.mul
    f64.store offset=16
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $4
+   local.tee $3
    i32.store offset=8
    global.get $~lib/memory/__stack_pointer
-   local.get $4
+   local.get $3
    i32.load
-   local.tee $4
+   local.tee $3
    i32.store offset=4
-   local.get $0
-   local.get $4
+   local.get $2
+   local.get $3
    i32.load offset=148
    i32.const 1
    i32.sub
    i32.store offset=148
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $4
+   local.tee $3
    i32.store offset=8
    global.get $~lib/memory/__stack_pointer
-   local.get $4
+   local.get $3
    i32.load
-   local.tee $4
+   local.tee $3
    i32.store offset=4
-   local.get $0
-   local.get $4
+   local.get $2
+   local.get $3
    f64.load offset=160
    f64.const 3
    f64.add
    f64.store offset=160
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store
-   local.get $0
-   i32.load8_u offset=72
+   local.get $2
+   i32.load8_u offset=80
    if
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
-    local.tee $0
+    local.tee $2
     i32.store
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
-    local.tee $4
+    local.tee $3
     i32.store offset=4
-    local.get $0
-    local.get $4
+    local.get $2
+    local.get $3
     f64.load offset=64
     f64.const -3
     f64.add
@@ -23751,32 +24282,32 @@
    end
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store offset=4
    global.get $~lib/memory/__stack_pointer
-   local.get $0
+   local.get $2
    i32.load
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $4
+   local.tee $3
    i32.store offset=8
    global.get $~lib/memory/__stack_pointer
-   local.get $4
+   local.get $3
    i32.load
-   local.tee $4
+   local.tee $3
    i32.store offset=4
-   local.get $4
+   local.get $3
    f64.load offset=40
-   local.set $1
+   local.set $0
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $4
+   local.tee $3
    i32.store offset=4
+   local.get $2
    local.get $0
-   local.get $1
-   local.get $4
+   local.get $3
    i32.load offset=4
    i32.const 1000
    i32.rem_s
@@ -23785,14 +24316,14 @@
    else
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
-    local.tee $0
+    local.tee $2
     i32.store offset=8
     global.get $~lib/memory/__stack_pointer
-    local.get $0
+    local.get $2
     i32.load
-    local.tee $0
+    local.tee $2
     i32.store offset=4
-    local.get $0
+    local.get $2
     i32.load offset=236
     f64.convert_i32_s
     f64.const 0.007
@@ -23802,41 +24333,41 @@
    f64.store offset=120
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    i32.const 8016
    i32.store offset=4
-   local.get $0
+   local.get $2
    i32.const 8016
    call $assembly/evalBorge/getEventTypeId
-   i32.store offset=112
+   i32.store offset=120
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store
-   local.get $0
+   local.get $2
    f64.const 0
-   f64.store offset=120
+   f64.store offset=128
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
+   local.tee $2
    i32.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $4
+   local.tee $3
    i32.store offset=8
    global.get $~lib/memory/__stack_pointer
-   local.get $4
+   local.get $3
    i32.load
-   local.tee $4
+   local.tee $3
    i32.store offset=4
-   local.get $0
-   local.get $4
+   local.get $2
+   local.get $3
    f64.load offset=96
    f64.const 0.8
    f64.mul
-   f64.store offset=128
+   f64.store offset=136
   end
   global.get $~lib/memory/__stack_pointer
   i32.const 12
@@ -23854,11 +24385,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -23877,9 +24408,9 @@
   i32.store offset=4
   local.get $0
   local.get $2
-  i32.load8_u offset=72
+  i32.load8_u offset=80
   i32.eqz
-  i32.store8 offset=72
+  i32.store8 offset=80
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
@@ -23906,7 +24437,7 @@
   local.tee $0
   i32.store
   local.get $0
-  i32.load8_u offset=72
+  i32.load8_u offset=80
   if
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
@@ -24092,7 +24623,7 @@
   i32.store offset=4
   local.get $0
   local.get $2
-  i32.load8_u offset=72
+  i32.load8_u offset=80
   if (result i32)
    global.get $~lib/memory/__stack_pointer
    i32.const 8144
@@ -24105,14 +24636,7 @@
    i32.const 8192
   end
   call $assembly/evalBorge/getEventTypeId
-  i32.store offset=112
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store
-  local.get $0
-  f64.const 0
-  f64.store offset=120
+  i32.store offset=120
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/liveState
   local.tee $0
@@ -24120,6 +24644,13 @@
   local.get $0
   f64.const 0
   f64.store offset=128
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $0
+  i32.store
+  local.get $0
+  f64.const 0
+  f64.store offset=136
   global.get $~lib/memory/__stack_pointer
   i32.const 8
   i32.add
@@ -24133,138 +24664,123 @@
   i32.const 8
   i32.sub
   global.set $~lib/memory/__stack_pointer
-  global.get $~lib/memory/__stack_pointer
-  i32.const 12284
-  i32.lt_s
-  if
-   i32.const 45072
-   i32.const 45120
-   i32.const 1
-   i32.const 1
-   call $~lib/builtins/abort
-   unreachable
-  end
-  global.get $~lib/memory/__stack_pointer
-  i64.const 0
-  i64.store
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store
-  local.get $0
-  i32.load8_u offset=140
-  if (result i32)
-   i32.const 1
-  else
+  block $folding-inner0
+   global.get $~lib/memory/__stack_pointer
+   i32.const 12332
+   i32.lt_s
+   br_if $folding-inner0
+   global.get $~lib/memory/__stack_pointer
+   i64.const 0
+   i64.store
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
    local.tee $0
+   i32.store
+   local.get $0
+   i32.load8_u offset=148
+   if (result i32)
+    i32.const 1
+   else
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/liveState
+    local.tee $0
+    i32.store offset=4
+    global.get $~lib/memory/__stack_pointer
+    local.get $0
+    i32.load
+    local.tee $0
+    i32.store
+    local.get $0
+    f64.load offset=16
+    f64.const 0
+    f64.le
+   end
+   if
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalBorge/liveState
+    local.tee $0
+    i32.store
+    local.get $0
+    i32.const 1
+    i32.store8 offset=148
+    global.get $~lib/memory/__stack_pointer
+    i32.const 8
+    i32.add
+    global.set $~lib/memory/__stack_pointer
+    i32.const 0
+    return
+   end
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $0
+   i32.store
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $2
    i32.store offset=4
-   global.get $~lib/memory/__stack_pointer
-   local.get $0
-   i32.load
-   local.tee $0
-   i32.store
-   local.get $0
-   f64.load offset=16
-   f64.const 0
-   f64.le
-  end
-  if
+   local.get $2
+   f64.load offset=24
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/liveState
-   local.tee $0
-   i32.store
-   local.get $0
-   i32.const 1
-   i32.store8 offset=140
-   global.get $~lib/memory/__stack_pointer
-   i32.const 8
-   i32.add
-   global.set $~lib/memory/__stack_pointer
-   i32.const 0
-   return
-  end
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $2
-  i32.store offset=4
-  local.get $2
-  f64.load offset=24
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $2
-  i32.store offset=4
-  local.get $2
-  f64.load offset=40
-  f64.min
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $2
-  i32.store offset=4
-  local.get $2
-  f64.load offset=48
-  f64.min
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $2
-  i32.store offset=4
-  local.get $2
-  f64.load offset=32
-  f64.min
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $2
-  i32.store offset=4
-  local.get $2
-  f64.load offset=56
-  f64.min
-  local.set $1
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $2
-  i32.store offset=4
-  local.get $0
-  local.get $1
-  local.get $2
-  f64.load offset=64
-  f64.min
-  f64.store offset=16
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store
-  local.get $0
-  f64.load offset=16
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store
-  local.get $0
-  f64.load offset=48
-  f64.eq
-  if
-   call $assembly/evalBorge/liveRegenEvent
-  else
-   global.get $~lib/memory/__stack_pointer
-   global.get $assembly/evalBorge/liveState
-   local.tee $0
-   i32.store
-   local.get $0
-   f64.load offset=16
-   global.get $~lib/memory/__stack_pointer
-   global.get $assembly/evalBorge/liveState
-   local.tee $0
-   i32.store
-   local.get $0
+   local.tee $2
+   i32.store offset=4
+   local.get $2
    f64.load offset=40
+   f64.min
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $2
+   i32.store offset=4
+   local.get $2
+   f64.load offset=48
+   f64.min
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $2
+   i32.store offset=4
+   local.get $2
+   f64.load offset=32
+   f64.min
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $2
+   i32.store offset=4
+   local.get $2
+   f64.load offset=56
+   f64.min
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $2
+   i32.store offset=4
+   local.get $2
+   f64.load offset=64
+   f64.min
+   local.set $1
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $2
+   i32.store offset=4
+   local.get $0
+   local.get $1
+   local.get $2
+   f64.load offset=72
+   f64.min
+   f64.store offset=16
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $0
+   i32.store
+   local.get $0
+   f64.load offset=16
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $0
+   i32.store
+   local.get $0
+   f64.load offset=48
    f64.eq
    if
-    call $assembly/evalBorge/liveEnemyAttackEvent
+    call $assembly/evalBorge/liveRegenEvent
    else
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/liveState
@@ -24277,11 +24793,10 @@
     local.tee $0
     i32.store
     local.get $0
-    f64.load offset=24
+    f64.load offset=40
     f64.eq
     if
-     i32.const 0
-     call $assembly/evalBorge/liveAttackLogic
+     call $assembly/evalBorge/liveEnemyAttackEvent
     else
      global.get $~lib/memory/__stack_pointer
      global.get $assembly/evalBorge/liveState
@@ -24294,10 +24809,10 @@
      local.tee $0
      i32.store
      local.get $0
-     f64.load offset=32
+     f64.load offset=24
      f64.eq
      if
-      i32.const 1
+      i32.const 0
       call $assembly/evalBorge/liveAttackLogic
      else
       global.get $~lib/memory/__stack_pointer
@@ -24311,10 +24826,11 @@
       local.tee $0
       i32.store
       local.get $0
-      f64.load offset=56
+      f64.load offset=32
       f64.eq
       if
-       call $assembly/evalBorge/liveBonusAttackEvent
+       i32.const 1
+       call $assembly/evalBorge/liveAttackLogic
       else
        global.get $~lib/memory/__stack_pointer
        global.get $assembly/evalBorge/liveState
@@ -24327,21 +24843,160 @@
        local.tee $0
        i32.store
        local.get $0
-       f64.load offset=64
+       f64.load offset=56
        f64.eq
        if
-        call $assembly/evalBorge/liveFuryEvent
+        call $assembly/evalBorge/liveBonusAttackEvent
+       else
+        global.get $~lib/memory/__stack_pointer
+        global.get $assembly/evalBorge/liveState
+        local.tee $0
+        i32.store
+        local.get $0
+        f64.load offset=16
+        global.get $~lib/memory/__stack_pointer
+        global.get $assembly/evalBorge/liveState
+        local.tee $0
+        i32.store
+        local.get $0
+        f64.load offset=64
+        f64.eq
+        if
+         call $assembly/evalBorge/liveFuryEvent
+        else
+         global.get $~lib/memory/__stack_pointer
+         global.get $assembly/evalBorge/liveState
+         local.tee $0
+         i32.store
+         local.get $0
+         f64.load offset=16
+         global.get $~lib/memory/__stack_pointer
+         global.get $assembly/evalBorge/liveState
+         local.tee $0
+         i32.store
+         local.get $0
+         f64.load offset=72
+         f64.eq
+         if
+          global.get $~lib/memory/__stack_pointer
+          i32.const 12
+          i32.sub
+          global.set $~lib/memory/__stack_pointer
+          global.get $~lib/memory/__stack_pointer
+          i32.const 12332
+          i32.lt_s
+          br_if $folding-inner0
+          global.get $~lib/memory/__stack_pointer
+          i64.const 0
+          i64.store
+          global.get $~lib/memory/__stack_pointer
+          i32.const 0
+          i32.store offset=8
+          global.get $~lib/memory/__stack_pointer
+          global.get $assembly/evalBorge/liveState
+          local.tee $0
+          i32.store
+          local.get $0
+          i32.load offset=4
+          i32.const 4000
+          i32.eq
+          if
+           global.get $~lib/memory/__stack_pointer
+           global.get $assembly/evalBorge/liveState
+           local.tee $0
+           i32.store offset=4
+           global.get $~lib/memory/__stack_pointer
+           local.get $0
+           i32.load offset=8
+           local.tee $0
+           i32.store
+           global.get $~lib/memory/__stack_pointer
+           global.get $assembly/evalBorge/liveState
+           local.tee $2
+           i32.store offset=8
+           global.get $~lib/memory/__stack_pointer
+           local.get $2
+           i32.load offset=8
+           local.tee $2
+           i32.store offset=4
+           local.get $0
+           local.get $2
+           f64.load offset=16
+           f64.const 2800
+           f64.add
+           f64.store offset=16
+           global.get $~lib/memory/__stack_pointer
+           global.get $assembly/evalBorge/liveState
+           local.tee $0
+           i32.store
+           global.get $~lib/memory/__stack_pointer
+           global.get $assembly/evalBorge/liveState
+           local.tee $2
+           i32.store offset=4
+           local.get $0
+           local.get $2
+           f64.load offset=16
+           f64.const 10
+           f64.add
+           f64.store offset=72
+           global.get $~lib/memory/__stack_pointer
+           global.get $assembly/evalBorge/liveState
+           local.tee $0
+           i32.store
+           global.get $~lib/memory/__stack_pointer
+           i32.const 12048
+           i32.store offset=4
+           local.get $0
+           i32.const 12048
+           call $assembly/evalBorge/getEventTypeId
+           i32.store offset=120
+           global.get $~lib/memory/__stack_pointer
+           global.get $assembly/evalBorge/liveState
+           local.tee $0
+           i32.store
+           local.get $0
+           f64.const 2800
+           f64.store offset=128
+           global.get $~lib/memory/__stack_pointer
+           global.get $assembly/evalBorge/liveState
+           local.tee $0
+           i32.store
+           local.get $0
+           f64.const 0
+           f64.store offset=136
+          else
+           global.get $~lib/memory/__stack_pointer
+           global.get $assembly/evalBorge/liveState
+           local.tee $0
+           i32.store
+           local.get $0
+           f64.const 999999999
+           f64.store offset=72
+          end
+          global.get $~lib/memory/__stack_pointer
+          i32.const 12
+          i32.add
+          global.set $~lib/memory/__stack_pointer
+         end
+        end
        end
       end
      end
     end
    end
+   global.get $~lib/memory/__stack_pointer
+   i32.const 8
+   i32.add
+   global.set $~lib/memory/__stack_pointer
+   i32.const 1
+   return
   end
-  global.get $~lib/memory/__stack_pointer
-  i32.const 8
-  i32.add
-  global.set $~lib/memory/__stack_pointer
+  i32.const 45120
+  i32.const 45168
   i32.const 1
+  i32.const 1
+  call $~lib/builtins/abort
+  unreachable
  )
  (func $assembly/evalBorge/getLiveBorgeHp (result f64)
   (local $0 i32)
@@ -24351,11 +25006,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24388,11 +25043,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24426,11 +25081,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24509,11 +25164,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24546,11 +25201,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24583,11 +25238,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24620,11 +25275,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24657,11 +25312,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24694,11 +25349,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24731,11 +25386,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24768,11 +25423,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24805,11 +25460,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24836,11 +25491,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24867,11 +25522,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24901,11 +25556,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24938,11 +25593,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -24974,11 +25629,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25021,11 +25676,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25053,11 +25708,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25085,11 +25740,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25117,11 +25772,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25149,11 +25804,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25180,11 +25835,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25198,7 +25853,7 @@
   local.tee $0
   i32.store
   local.get $0
-  i32.load8_u offset=72
+  i32.load8_u offset=80
   i32.const 0
   i32.ne
   global.get $~lib/memory/__stack_pointer
@@ -25213,11 +25868,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25231,7 +25886,7 @@
   local.tee $0
   i32.store
   local.get $0
-  i32.load offset=112
+  i32.load offset=120
   global.get $~lib/memory/__stack_pointer
   i32.const 4
   i32.add
@@ -25245,7 +25900,7 @@
   global.set $~lib/memory/__stack_pointer
   block $folding-inner0
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -25256,7 +25911,7 @@
    local.tee $0
    i32.store
    local.get $0
-   i32.load offset=112
+   i32.load offset=120
    local.tee $0
    i32.const 0
    i32.ge_s
@@ -25280,7 +25935,7 @@
     i32.sub
     global.set $~lib/memory/__stack_pointer
     global.get $~lib/memory/__stack_pointer
-    i32.const 12284
+    i32.const 12332
     i32.lt_s
     br_if $folding-inner0
     global.get $~lib/memory/__stack_pointer
@@ -25339,11 +25994,11 @@
    i32.const 4
    i32.add
    global.set $~lib/memory/__stack_pointer
-   i32.const 12048
+   i32.const 12096
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
@@ -25357,43 +26012,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
-   i32.const 1
-   i32.const 1
-   call $~lib/builtins/abort
-   unreachable
-  end
-  global.get $~lib/memory/__stack_pointer
-  i32.const 0
-  i32.store
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalBorge/liveState
-  local.tee $0
-  i32.store
-  local.get $0
-  f64.load offset=120
-  global.get $~lib/memory/__stack_pointer
-  i32.const 4
-  i32.add
-  global.set $~lib/memory/__stack_pointer
- )
- (func $assembly/evalBorge/getLiveLastEventHealing (result f64)
-  (local $0 i32)
-  (local $1 f64)
-  global.get $~lib/memory/__stack_pointer
-  i32.const 4
-  i32.sub
-  global.set $~lib/memory/__stack_pointer
-  global.get $~lib/memory/__stack_pointer
-  i32.const 12284
-  i32.lt_s
-  if
-   i32.const 45072
-   i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25413,18 +26036,19 @@
   i32.add
   global.set $~lib/memory/__stack_pointer
  )
- (func $assembly/evalBorge/getLiveLastEventStage (result i32)
+ (func $assembly/evalBorge/getLiveLastEventHealing (result f64)
   (local $0 i32)
+  (local $1 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 4
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25438,7 +26062,38 @@
   local.tee $0
   i32.store
   local.get $0
-  i32.load offset=136
+  f64.load offset=136
+  global.get $~lib/memory/__stack_pointer
+  i32.const 4
+  i32.add
+  global.set $~lib/memory/__stack_pointer
+ )
+ (func $assembly/evalBorge/getLiveLastEventStage (result i32)
+  (local $0 i32)
+  global.get $~lib/memory/__stack_pointer
+  i32.const 4
+  i32.sub
+  global.set $~lib/memory/__stack_pointer
+  global.get $~lib/memory/__stack_pointer
+  i32.const 12332
+  i32.lt_s
+  if
+   i32.const 45120
+   i32.const 45168
+   i32.const 1
+   i32.const 1
+   call $~lib/builtins/abort
+   unreachable
+  end
+  global.get $~lib/memory/__stack_pointer
+  i32.const 0
+  i32.store
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $0
+  i32.store
+  local.get $0
+  i32.load offset=144
   global.get $~lib/memory/__stack_pointer
   i32.const 4
   i32.add
@@ -25451,11 +26106,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25469,7 +26124,7 @@
   local.tee $0
   i32.store
   local.get $0
-  i32.load8_u offset=140
+  i32.load8_u offset=148
   i32.const 0
   i32.ne
   global.get $~lib/memory/__stack_pointer
@@ -25485,11 +26140,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25522,11 +26177,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25559,11 +26214,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25596,11 +26251,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25633,11 +26288,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25670,11 +26325,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25707,11 +26362,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25744,11 +26399,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25780,11 +26435,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25817,11 +26472,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25849,11 +26504,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25925,17 +26580,145 @@
   i32.add
   global.set $~lib/memory/__stack_pointer
  )
+ (func $assembly/evalBorge/getLiveBorgeHelltouch (result f64)
+  (local $0 f64)
+  (local $1 i32)
+  global.get $~lib/memory/__stack_pointer
+  i32.const 8
+  i32.sub
+  global.set $~lib/memory/__stack_pointer
+  global.get $~lib/memory/__stack_pointer
+  i32.const 12332
+  i32.lt_s
+  if
+   i32.const 45120
+   i32.const 45168
+   i32.const 1
+   i32.const 1
+   call $~lib/builtins/abort
+   unreachable
+  end
+  global.get $~lib/memory/__stack_pointer
+  i64.const 0
+  i64.store
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $1
+  i32.store offset=4
+  global.get $~lib/memory/__stack_pointer
+  local.get $1
+  i32.load offset=8
+  local.tee $1
+  i32.store
+  local.get $1
+  f64.load offset=16
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $1
+  i32.store offset=4
+  global.get $~lib/memory/__stack_pointer
+  local.get $1
+  i32.load
+  local.tee $1
+  i32.store
+  f64.const 1
+  local.get $1
+  i32.load offset=240
+  f64.convert_i32_s
+  f64.const 0.01
+  f64.mul
+  f64.sub
+  f64.mul
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $1
+  i32.store offset=4
+  global.get $~lib/memory/__stack_pointer
+  local.get $1
+  i32.load
+  local.tee $1
+  i32.store
+  f64.const 1
+  local.get $1
+  f64.load offset=120
+  f64.sub
+  f64.mul
+  local.set $0
+  global.get $assembly/evalBorge/currentTempGN4
+  i32.const 0
+  i32.gt_s
+  if
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $1
+   i32.store offset=4
+   global.get $~lib/memory/__stack_pointer
+   local.get $1
+   i32.load offset=8
+   local.tee $1
+   i32.store
+   local.get $1
+   f64.load offset=16
+   local.set $0
+  end
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $1
+  i32.store offset=4
+  global.get $~lib/memory/__stack_pointer
+  local.get $1
+  i32.load
+  local.tee $1
+  i32.store
+  local.get $1
+  i32.load offset=244
+  f64.convert_i32_s
+  f64.const 0.08
+  f64.mul
+  local.get $0
+  f64.mul
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalBorge/liveState
+  local.tee $1
+  i32.store
+  local.get $1
+  i32.load offset=4
+  i32.const 0
+  i32.gt_s
+  if (result i32)
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/liveState
+   local.tee $1
+   i32.store
+   local.get $1
+   i32.load offset=4
+   i32.const 1000
+   i32.rem_s
+  else
+   i32.const 1
+  end
+  local.set $1
+  global.get $~lib/memory/__stack_pointer
+  i32.const 8
+  i32.add
+  global.set $~lib/memory/__stack_pointer
+  f64.const 1
+  f64.const 0.1
+  local.get $1
+  select
+  f64.mul
+ )
  (func $~lib/staticarray/StaticArray<i32>#__set (param $0 i32) (param $1 i32) (param $2 i32)
   global.get $~lib/memory/__stack_pointer
   i32.const 4
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -25984,11 +26767,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -26038,11 +26821,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -26338,11 +27121,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -26553,11 +27336,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -27083,11 +27866,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -27446,11 +28229,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -27670,25 +28453,25 @@
   i32.add
   global.set $~lib/memory/__stack_pointer
  )
- (func $assembly/evalOzzy/ozzySim (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 f64) (param $6 i32) (param $7 f64) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 f64) (param $23 i32) (param $24 i32)
-  (local $25 f64)
-  (local $26 i32)
-  (local $27 i32)
-  (local $28 f64)
+ (func $assembly/evalOzzy/ozzySim (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 f64) (param $6 i32) (param $7 f64) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 f64) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32)
+  (local $27 f64)
+  (local $28 i32)
   (local $29 i32)
   (local $30 f64)
-  (local $31 f64)
+  (local $31 i32)
   (local $32 f64)
+  (local $33 f64)
+  (local $34 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 32
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -27852,12 +28635,12 @@
   local.get $0
   i32.load offset=4
   f64.convert_i32_s
-  local.set $25
+  local.set $27
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store offset=4
   local.get $0
-  local.get $25
+  local.get $27
   local.get $0
   i32.load offset=324
   i32.const 10
@@ -27982,17 +28765,17 @@
       i32.store offset=4
       local.get $0
       i32.load offset=148
-      local.set $26
+      local.set $28
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalOzzy/bossAttemptsByRevive
-      local.tee $27
+      local.tee $29
       i32.store offset=4
       global.get $~lib/memory/__stack_pointer
       local.get $0
       i32.store offset=8
       local.get $4
-      local.get $26
-      local.get $27
+      local.get $28
+      local.get $29
       local.get $0
       i32.load offset=148
       call $~lib/staticarray/StaticArray<i32>#__get
@@ -28155,11 +28938,11 @@
       global.get $~lib/memory/__stack_pointer
       local.get $0
       i32.load offset=392
-      local.tee $26
+      local.tee $28
       i32.store offset=4
       local.get $4
       local.get $3
-      local.get $26
+      local.get $28
       local.get $3
       call $"~lib/map/Map<i32,i32>#get"
       i32.const 1
@@ -28199,7 +28982,7 @@
      i32.store offset=4
      local.get $0
      f64.load offset=24
-     local.set $25
+     local.set $27
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.store offset=4
@@ -28208,7 +28991,7 @@
      f64.convert_i32_s
      f64.const 0.02
      f64.mul
-     local.set $28
+     local.set $30
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.store offset=4
@@ -28225,8 +29008,8 @@
      local.get $0
      i32.store offset=4
      local.get $0
-     local.get $25
-     local.get $28
+     local.get $27
+     local.get $30
      local.get $3
      local.get $0
      i32.load offset=148
@@ -28245,7 +29028,7 @@
      i32.store offset=4
      local.get $0
      f64.load offset=40
-     local.set $25
+     local.set $27
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.store offset=4
@@ -28254,7 +29037,7 @@
      f64.convert_i32_s
      f64.const 0.016
      f64.mul
-     local.set $28
+     local.set $30
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.store offset=4
@@ -28271,8 +29054,8 @@
      local.get $0
      i32.store offset=4
      local.get $0
-     local.get $25
-     local.get $28
+     local.get $27
+     local.get $30
      local.get $3
      local.get $0
      i32.load offset=148
@@ -28289,12 +29072,12 @@
      i32.store offset=4
      local.get $0
      f64.load offset=128
-     local.set $25
+     local.set $27
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.store offset=4
      local.get $0
-     local.get $25
+     local.get $27
      local.get $0
      i32.load offset=288
      f64.convert_i32_s
@@ -28310,12 +29093,12 @@
      i32.store offset=4
      local.get $0
      f64.load offset=136
-     local.set $25
+     local.set $27
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.store offset=4
      local.get $0
-     local.get $25
+     local.get $27
      local.get $0
      i32.load offset=288
      f64.convert_i32_s
@@ -28383,14 +29166,14 @@
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.load offset=384
-     local.tee $26
+     local.tee $28
      i32.store offset=4
-     local.get $26
+     local.get $28
      local.get $3
      call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
-     local.set $26
+     local.set $28
      global.get $~lib/memory/__stack_pointer
-     local.get $26
+     local.get $28
      i32.store
      global.get $~lib/memory/__stack_pointer
      local.get $0
@@ -28398,23 +29181,23 @@
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.load offset=384
-     local.tee $27
+     local.tee $29
      i32.store offset=8
-     local.get $27
+     local.get $29
      local.get $3
      call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
+     local.set $29
+     global.get $~lib/memory/__stack_pointer
+     local.get $29
+     i32.store offset=4
+     local.get $29
+     f64.load
      local.set $27
      global.get $~lib/memory/__stack_pointer
-     local.get $27
-     i32.store offset=4
-     local.get $27
-     f64.load
-     local.set $25
-     global.get $~lib/memory/__stack_pointer
      global.get $assembly/evalOzzy/OZZY_ENEMIES
-     local.tee $27
+     local.tee $29
      i32.store offset=8
-     local.get $27
+     local.get $29
      local.get $4
      i32.const 100
      i32.mul
@@ -28423,8 +29206,8 @@
      global.get $~lib/memory/__stack_pointer
      local.get $4
      i32.store offset=4
-     local.get $26
-     local.get $25
+     local.get $28
+     local.get $27
      local.get $4
      f64.load
      f64.add
@@ -28445,14 +29228,14 @@
       global.get $~lib/memory/__stack_pointer
       local.get $0
       i32.load offset=384
-      local.tee $26
+      local.tee $28
       i32.store offset=4
-      local.get $26
+      local.get $28
       local.get $3
       call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
-      local.set $26
+      local.set $28
       global.get $~lib/memory/__stack_pointer
-      local.get $26
+      local.get $28
       i32.store
       global.get $~lib/memory/__stack_pointer
       local.get $0
@@ -28460,23 +29243,23 @@
       global.get $~lib/memory/__stack_pointer
       local.get $0
       i32.load offset=384
-      local.tee $27
+      local.tee $29
       i32.store offset=8
-      local.get $27
+      local.get $29
       local.get $3
       call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
+      local.set $29
+      global.get $~lib/memory/__stack_pointer
+      local.get $29
+      i32.store offset=4
+      local.get $29
+      f64.load
       local.set $27
       global.get $~lib/memory/__stack_pointer
-      local.get $27
-      i32.store offset=4
-      local.get $27
-      f64.load
-      local.set $25
-      global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalOzzy/OZZY_ENEMIES
-      local.tee $27
+      local.tee $29
       i32.store offset=8
-      local.get $27
+      local.get $29
       local.get $4
       i32.const 100
       i32.mul
@@ -28485,8 +29268,8 @@
       global.get $~lib/memory/__stack_pointer
       local.get $4
       i32.store offset=4
-      local.get $26
-      local.get $25
+      local.get $28
+      local.get $27
       local.get $4
       f64.load offset=8
       f64.add
@@ -28513,17 +29296,17 @@
       global.get $~lib/memory/__stack_pointer
       local.get $0
       i32.load offset=384
-      local.tee $26
+      local.tee $28
       i32.store offset=8
-      local.get $26
+      local.get $28
       local.get $3
       call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
-      local.set $26
+      local.set $28
       global.get $~lib/memory/__stack_pointer
-      local.get $26
+      local.get $28
       i32.store offset=4
       local.get $4
-      local.get $26
+      local.get $28
       i32.load offset=8
       i32.const 1
       i32.add
@@ -28540,113 +29323,113 @@
   global.get $~lib/memory/__stack_pointer
   i32.const 7
   call $~lib/staticarray/StaticArray<f64>#constructor
-  local.tee $26
+  local.tee $28
   i32.store offset=16
   global.get $~lib/memory/__stack_pointer
-  local.get $26
+  local.get $28
   i32.store
-  local.get $26
+  local.get $28
   i32.const 0
   f64.const 1
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $26
+  local.get $28
   i32.store
-  local.get $26
+  local.get $28
   i32.const 1
   f64.const 1.2
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $26
+  local.get $28
   i32.store
-  local.get $26
+  local.get $28
   i32.const 2
   f64.const 1.4
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $26
+  local.get $28
   i32.store
-  local.get $26
+  local.get $28
   i32.const 3
   f64.const 1.6
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $26
+  local.get $28
   i32.store
-  local.get $26
+  local.get $28
   i32.const 4
   f64.const 1.8
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $26
+  local.get $28
   i32.store
-  local.get $26
+  local.get $28
   i32.const 5
   f64.const 2.5
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $26
+  local.get $28
   i32.store
-  local.get $26
+  local.get $28
   i32.const 6
   f64.const 3.2
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
   i32.const 4
   call $~lib/staticarray/StaticArray<f64>#constructor
-  local.tee $27
+  local.tee $29
   i32.store offset=20
   global.get $~lib/memory/__stack_pointer
-  local.get $27
+  local.get $29
   i32.store
-  local.get $27
+  local.get $29
   i32.const 0
   f64.const 1.1
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $27
+  local.get $29
   i32.store
-  local.get $27
+  local.get $29
   i32.const 1
   f64.const 1.3
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $27
+  local.get $29
   i32.store
-  local.get $27
+  local.get $29
   i32.const 2
   f64.const 1.4
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $27
+  local.get $29
   i32.store
-  local.get $27
+  local.get $29
   i32.const 3
   f64.const 2.8
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
   i32.const 3
   call $~lib/staticarray/StaticArray<f64>#constructor
-  local.tee $29
+  local.tee $31
   i32.store offset=24
   global.get $~lib/memory/__stack_pointer
-  local.get $29
+  local.get $31
   i32.store
-  local.get $29
+  local.get $31
   i32.const 0
   f64.const 0.9
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $29
+  local.get $31
   i32.store
-  local.get $29
+  local.get $31
   i32.const 1
   f64.const 1
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $29
+  local.get $31
   i32.store
-  local.get $29
+  local.get $31
   i32.const 2
   f64.const 1.95
   call $~lib/staticarray/StaticArray<f64>#__set
@@ -28670,24 +29453,24 @@
   f64.const 1.6
   call $~lib/staticarray/StaticArray<f64>#__set
   global.get $~lib/memory/__stack_pointer
-  local.get $26
+  local.get $28
   i32.store
-  local.get $26
+  local.get $28
   call $assembly/evalBorge/arrayAverage
   f64.const 3
   f64.mul
   global.get $~lib/memory/__stack_pointer
-  local.get $27
+  local.get $29
   i32.store
-  local.get $27
+  local.get $29
   call $assembly/evalBorge/arrayAverage
   f64.const 3
   f64.mul
   f64.add
   global.get $~lib/memory/__stack_pointer
-  local.get $29
+  local.get $31
   i32.store
-  local.get $29
+  local.get $31
   call $assembly/evalBorge/arrayAverage
   f64.const 3
   f64.mul
@@ -28700,7 +29483,7 @@
   f64.add
   f64.const 10
   f64.div
-  local.set $25
+  local.set $27
   i32.const 1010
   local.set $3
   f64.const 1.75
@@ -28716,7 +29499,7 @@
   f64.convert_i32_s
   call $~lib/math/NativeMath.pow
   f64.mul
-  local.set $28
+  local.set $30
   global.get $~lib/memory/__stack_pointer
   local.get $0
   i32.store
@@ -28745,7 +29528,7 @@
   local.get $23
   select
   f64.mul
-  local.set $30
+  local.set $32
   f64.const 1
   local.set $22
   i32.const 1
@@ -28884,8 +29667,18 @@
   i32.gt_s
   select
   f64.mul
-  local.set $7
+  f64.const 1.02
   local.get $25
+  f64.convert_i32_s
+  call $~lib/math/NativeMath.pow
+  f64.mul
+  f64.const 1.08
+  local.get $26
+  f64.convert_i32_s
+  call $~lib/math/NativeMath.pow
+  f64.mul
+  local.set $7
+  local.get $27
   f64.const 1.059
   global.get $assembly/evalOzzy/currentOzzyEnem
   f64.convert_i32_s
@@ -28927,7 +29720,7 @@
   f64.mul
   f64.add
   f64.mul
-  local.get $30
+  local.get $32
   f64.mul
   global.get $~lib/memory/__stack_pointer
   local.get $0
@@ -28970,18 +29763,18 @@
     i32.store offset=4
     local.get $0
     f64.load offset=328
-    local.set $31
+    local.set $33
     global.get $~lib/memory/__stack_pointer
-    local.get $26
+    local.get $28
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $26
+    local.get $28
     i32.store offset=8
     local.get $0
-    local.get $31
+    local.get $33
     local.get $5
-    local.get $26
-    local.get $26
+    local.get $28
+    local.get $28
     i32.const 20
     i32.sub
     i32.load offset=16
@@ -28993,7 +29786,7 @@
     f64.mul
     f64.const 800
     f64.mul
-    local.get $30
+    local.get $32
     f64.mul
     local.get $7
     f64.mul
@@ -29007,18 +29800,18 @@
     i32.store offset=4
     local.get $0
     f64.load offset=336
-    local.set $31
+    local.set $33
     global.get $~lib/memory/__stack_pointer
-    local.get $27
+    local.get $29
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $27
+    local.get $29
     i32.store offset=8
     local.get $0
-    local.get $31
+    local.get $33
     local.get $5
-    local.get $27
-    local.get $27
+    local.get $29
+    local.get $29
     i32.const 20
     i32.sub
     i32.load offset=16
@@ -29030,7 +29823,7 @@
     f64.mul
     f64.const 600
     f64.mul
-    local.get $30
+    local.get $32
     f64.mul
     local.get $7
     f64.mul
@@ -29044,18 +29837,18 @@
     i32.store offset=4
     local.get $0
     f64.load offset=344
-    local.set $31
+    local.set $33
     global.get $~lib/memory/__stack_pointer
-    local.get $29
+    local.get $31
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $29
+    local.get $31
     i32.store offset=8
     local.get $0
-    local.get $31
+    local.get $33
     local.get $5
-    local.get $29
-    local.get $29
+    local.get $31
+    local.get $31
     i32.const 20
     i32.sub
     i32.load offset=16
@@ -29067,7 +29860,7 @@
     f64.mul
     f64.const 400
     f64.mul
-    local.get $30
+    local.get $32
     f64.mul
     local.get $7
     f64.mul
@@ -29081,7 +29874,7 @@
     i32.store offset=4
     local.get $0
     f64.load offset=352
-    local.set $31
+    local.set $33
     global.get $~lib/memory/__stack_pointer
     local.get $4
     i32.store offset=4
@@ -29089,7 +29882,7 @@
     local.get $4
     i32.store offset=8
     local.get $0
-    local.get $31
+    local.get $33
     local.get $5
     local.get $4
     local.get $4
@@ -29104,11 +29897,11 @@
     f64.mul
     f64.const 300
     f64.mul
-    local.get $30
+    local.get $32
     f64.mul
     local.get $7
     f64.mul
-    local.get $28
+    local.get $30
     f64.mul
     f64.add
     f64.store offset=352
@@ -29120,18 +29913,18 @@
     i32.store offset=4
     local.get $0
     f64.load offset=304
-    local.set $31
+    local.set $33
     global.get $~lib/memory/__stack_pointer
-    local.get $26
+    local.get $28
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $26
+    local.get $28
     i32.store offset=8
     local.get $0
-    local.get $31
+    local.get $33
     local.get $5
-    local.get $26
-    local.get $26
+    local.get $28
+    local.get $28
     i32.const 20
     i32.sub
     i32.load offset=16
@@ -29143,7 +29936,7 @@
     f64.mul
     f64.const 800
     f64.mul
-    local.get $30
+    local.get $32
     f64.mul
     f64.add
     f64.store offset=304
@@ -29155,18 +29948,18 @@
     i32.store offset=4
     local.get $0
     f64.load offset=304
-    local.set $31
+    local.set $33
     global.get $~lib/memory/__stack_pointer
-    local.get $27
+    local.get $29
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $27
+    local.get $29
     i32.store offset=8
     local.get $0
-    local.get $31
+    local.get $33
     local.get $5
-    local.get $27
-    local.get $27
+    local.get $29
+    local.get $29
     i32.const 20
     i32.sub
     i32.load offset=16
@@ -29178,7 +29971,7 @@
     f64.mul
     f64.const 600
     f64.mul
-    local.get $30
+    local.get $32
     f64.mul
     f64.add
     f64.store offset=304
@@ -29190,18 +29983,18 @@
     i32.store offset=4
     local.get $0
     f64.load offset=304
-    local.set $31
+    local.set $33
     global.get $~lib/memory/__stack_pointer
-    local.get $29
+    local.get $31
     i32.store offset=4
     global.get $~lib/memory/__stack_pointer
-    local.get $29
+    local.get $31
     i32.store offset=8
     local.get $0
-    local.get $31
+    local.get $33
     local.get $5
-    local.get $29
-    local.get $29
+    local.get $31
+    local.get $31
     i32.const 20
     i32.sub
     i32.load offset=16
@@ -29213,7 +30006,7 @@
     f64.mul
     f64.const 400
     f64.mul
-    local.get $30
+    local.get $32
     f64.mul
     f64.add
     f64.store offset=304
@@ -29225,7 +30018,7 @@
     i32.store offset=4
     local.get $0
     f64.load offset=304
-    local.set $31
+    local.set $33
     global.get $~lib/memory/__stack_pointer
     local.get $4
     i32.store offset=4
@@ -29233,7 +30026,7 @@
     local.get $4
     i32.store offset=8
     local.get $0
-    local.get $31
+    local.get $33
     local.get $5
     local.get $4
     local.get $4
@@ -29248,7 +30041,7 @@
     f64.mul
     f64.const 300
     f64.mul
-    local.get $30
+    local.get $32
     f64.mul
     f64.add
     f64.store offset=304
@@ -29262,21 +30055,21 @@
     f64.convert_i32_s
     f64.const 990
     f64.min
-    local.tee $31
+    local.tee $33
     f64.const 10
     f64.div
     f64.floor
-    local.set $32
+    local.set $34
     local.get $5
     f64.const 5
     f64.mul
     local.tee $5
-    local.get $25
+    local.get $27
     f64.mul
     f64.const 1.059
     f64.mul
     f64.const 1.059
-    local.get $31
+    local.get $33
     f64.const 10
     f64.div
     f64.floor
@@ -29287,20 +30080,20 @@
     f64.div
     f64.const 10
     f64.mul
-    local.get $31
-    local.get $32
+    local.get $33
+    local.get $34
     f64.const 10
     f64.mul
     f64.sub
     f64.const 1.059
-    local.get $32
+    local.get $34
     call $~lib/math/NativeMath.pow
     f64.mul
     f64.add
     f64.mul
-    local.get $30
+    local.get $32
     f64.mul
-    local.set $31
+    local.set $33
     global.get $~lib/memory/__stack_pointer
     local.get $0
     i32.store
@@ -29309,13 +30102,13 @@
     f64.convert_i32_s
     f64.const 0.2
     f64.mul
-    local.set $32
+    local.set $34
     global.get $~lib/memory/__stack_pointer
     local.get $0
     i32.store
     local.get $22
-    local.get $31
-    local.get $32
+    local.get $33
+    local.get $34
     local.get $0
     f64.load offset=56
     f64.mul
@@ -29337,7 +30130,7 @@
   f64.load offset=328
   local.set $5
   global.get $~lib/memory/__stack_pointer
-  local.get $26
+  local.get $28
   i32.store offset=4
   local.get $0
   local.get $5
@@ -29347,10 +30140,10 @@
   f64.const 10
   f64.div
   local.tee $5
-  local.get $26
+  local.get $28
   call $assembly/evalBorge/arrayAverage
   f64.mul
-  local.get $25
+  local.get $27
   f64.div
   local.get $7
   f64.mul
@@ -29364,17 +30157,17 @@
   i32.store offset=4
   local.get $0
   f64.load offset=336
-  local.set $30
+  local.set $32
   global.get $~lib/memory/__stack_pointer
-  local.get $27
+  local.get $29
   i32.store offset=4
   local.get $0
-  local.get $30
+  local.get $32
   local.get $5
-  local.get $27
+  local.get $29
   call $assembly/evalBorge/arrayAverage
   f64.mul
-  local.get $25
+  local.get $27
   f64.div
   local.get $7
   f64.mul
@@ -29388,17 +30181,17 @@
   i32.store offset=4
   local.get $0
   f64.load offset=344
-  local.set $30
+  local.set $32
   global.get $~lib/memory/__stack_pointer
-  local.get $29
+  local.get $31
   i32.store offset=4
   local.get $0
-  local.get $30
+  local.get $32
   local.get $5
-  local.get $29
+  local.get $31
   call $assembly/evalBorge/arrayAverage
   f64.mul
-  local.get $25
+  local.get $27
   f64.div
   local.get $7
   f64.mul
@@ -29424,11 +30217,11 @@
   local.get $4
   call $assembly/evalBorge/arrayAverage
   f64.mul
-  local.get $25
+  local.get $27
   f64.div
   local.get $7
   f64.mul
-  local.get $28
+  local.get $30
   f64.mul
   f64.add
   f64.store offset=352
@@ -29586,22 +30379,22 @@
   i32.add
   global.set $~lib/memory/__stack_pointer
  )
- (func $assembly/evalOzzy/EVALOZZY_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 i32) (param $35 i32) (param $36 i32) (param $37 f64) (param $38 f64) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (result f64)
-  (local $71 i32)
-  (local $72 i32)
-  (local $73 f64)
-  (local $74 f64)
-  (local $75 i32)
+ (func $assembly/evalOzzy/EVALOZZY_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 i32) (param $35 i32) (param $36 i32) (param $37 f64) (param $38 f64) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (result f64)
+  (local $73 i32)
+  (local $74 i32)
+  (local $75 f64)
   (local $76 f64)
-  (local $77 f64)
+  (local $77 i32)
   (local $78 f64)
+  (local $79 f64)
+  (local $80 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 12
   i32.sub
   global.set $~lib/memory/__stack_pointer
   block $folding-inner0
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -29615,35 +30408,35 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
    i64.const 0
    i64.store
    loop $for-loop|0
-    local.get $71
+    local.get $73
     i32.const 1000
     i32.le_s
     if
      global.get $~lib/memory/__stack_pointer
      global.get $assembly/evalOzzy/OZZY_ENEMIES
-     local.tee $72
+     local.tee $74
      i32.store
-     local.get $71
+     local.get $73
      call $assembly/evalOzzy/OzzyEnemy#constructor
-     local.set $75
+     local.set $77
      global.get $~lib/memory/__stack_pointer
-     local.get $75
+     local.get $77
      i32.store offset=4
-     local.get $72
-     local.get $71
-     local.get $75
+     local.get $74
+     local.get $73
+     local.get $77
      call $~lib/staticarray/StaticArray<assembly/evalBorge/BossStats>#__set
-     local.get $71
+     local.get $73
      i32.const 1
      i32.add
-     local.set $71
+     local.set $73
      br $for-loop|0
     end
    end
@@ -29656,39 +30449,39 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
    i32.const 0
    i32.store
    i32.const 0
-   local.set $71
+   local.set $73
    loop $for-loop|00
-    local.get $71
+    local.get $73
     i32.const 11
     i32.lt_s
     if
      global.get $~lib/memory/__stack_pointer
      global.get $assembly/evalOzzy/bossKillsByRevive
-     local.tee $72
+     local.tee $74
      i32.store
-     local.get $72
-     local.get $71
+     local.get $74
+     local.get $73
      i32.const 0
      call $~lib/staticarray/StaticArray<i32>#__set
      global.get $~lib/memory/__stack_pointer
      global.get $assembly/evalOzzy/bossAttemptsByRevive
-     local.tee $72
+     local.tee $74
      i32.store
-     local.get $72
-     local.get $71
+     local.get $74
+     local.get $73
      i32.const 0
      call $~lib/staticarray/StaticArray<i32>#__set
-     local.get $71
+     local.get $73
      i32.const 1
      i32.add
-     local.set $71
+     local.set $73
      br $for-loop|00
     end
    end
@@ -29699,25 +30492,25 @@
    f64.const 1.001
    local.get $35
    f64.convert_i32_s
-   local.tee $73
+   local.tee $75
    call $~lib/math/NativeMath.pow
    f64.const 1.02
    local.get $35
    i32.const 10
    i32.div_s
    f64.convert_i32_s
-   local.tee $74
+   local.tee $76
    call $~lib/math/NativeMath.pow
    f64.mul
-   local.set $76
+   local.set $78
    f64.const 1.005
-   local.get $73
+   local.get $75
    call $~lib/math/NativeMath.pow
    f64.const 1.02
-   local.get $74
+   local.get $76
    call $~lib/math/NativeMath.pow
    f64.mul
-   local.set $77
+   local.set $79
    global.get $~lib/memory/__stack_pointer
    call $assembly/evalOzzy/Ozzy#constructor
    local.tee $35
@@ -29751,7 +30544,7 @@
    f64.mul
    f64.const 16
    f64.add
-   local.get $76
+   local.get $78
    f64.mul
    local.get $42
    f64.convert_i32_s
@@ -29764,7 +30557,7 @@
    f64.const 1
    local.get $60
    select
-   local.tee $73
+   local.tee $75
    f64.mul
    local.get $69
    f64.convert_i32_s
@@ -29772,13 +30565,13 @@
    f64.mul
    f64.const 1
    f64.add
-   local.tee $74
+   local.tee $76
    f64.mul
    f64.const 1.0777
    f64.const 1
    local.get $70
    select
-   local.tee $78
+   local.tee $80
    f64.mul
    f64.store offset=8
    global.get $~lib/memory/__stack_pointer
@@ -29798,7 +30591,7 @@
    f64.mul
    f64.const 2
    f64.add
-   local.get $76
+   local.get $78
    f64.mul
    local.get $44
    f64.convert_i32_s
@@ -29812,9 +30605,9 @@
    local.get $55
    select
    f64.mul
-   local.get $73
+   local.get $75
    f64.mul
-   local.get $74
+   local.get $76
    f64.mul
    f64.store offset=24
    global.get $~lib/memory/__stack_pointer
@@ -29834,18 +30627,18 @@
    f64.mul
    f64.const 0.1
    f64.add
-   local.get $76
+   local.get $78
    f64.mul
    f64.const 1.25
    f64.const 1
    local.get $54
    select
    f64.mul
-   local.get $73
+   local.get $75
    f64.mul
-   local.get $74
+   local.get $76
    f64.mul
-   local.get $78
+   local.get $80
    f64.mul
    f64.store offset=32
    global.get $~lib/memory/__stack_pointer
@@ -30153,7 +30946,7 @@
    i32.store offset=8
    local.get $35
    f64.load offset=8
-   local.set $73
+   local.set $75
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
@@ -30164,13 +30957,13 @@
    f64.mul
    f64.const 1
    f64.add
-   local.set $74
+   local.set $76
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $73
-   local.get $74
+   local.get $75
+   local.get $76
    local.get $35
    i32.load offset=236
    f64.convert_i32_s
@@ -30189,7 +30982,7 @@
    i32.store offset=8
    local.get $35
    f64.load offset=32
-   local.set $73
+   local.set $75
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
@@ -30200,13 +30993,13 @@
    f64.mul
    f64.const 1
    f64.add
-   local.set $74
+   local.set $76
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $73
-   local.get $74
+   local.get $75
+   local.get $76
    local.get $35
    i32.load offset=236
    f64.convert_i32_s
@@ -30225,7 +31018,7 @@
    i32.store offset=8
    local.get $35
    f64.load offset=24
-   local.set $73
+   local.set $75
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
@@ -30247,13 +31040,13 @@
    f64.const 1
    f64.add
    f64.mul
-   local.set $74
+   local.set $76
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $73
-   local.get $74
+   local.get $75
+   local.get $76
    local.get $35
    i32.load offset=236
    f64.convert_i32_s
@@ -30272,12 +31065,12 @@
    i32.store offset=8
    local.get $35
    f64.load offset=80
-   local.set $73
+   local.set $75
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $73
+   local.get $75
    local.get $35
    i32.load offset=216
    f64.convert_i32_s
@@ -30293,12 +31086,12 @@
    i32.store offset=8
    local.get $35
    f64.load offset=40
-   local.set $73
+   local.set $75
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $73
+   local.get $75
    local.get $35
    i32.load offset=264
    f64.convert_i32_s
@@ -30314,12 +31107,12 @@
    i32.store offset=8
    local.get $35
    f64.load offset=56
-   local.set $73
+   local.set $75
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $73
+   local.get $75
    local.get $35
    i32.load offset=268
    f64.convert_i32_s
@@ -30335,12 +31128,12 @@
    i32.store offset=8
    local.get $35
    f64.load offset=48
-   local.set $73
+   local.set $75
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $73
+   local.get $75
    local.get $35
    i32.load offset=264
    f64.convert_i32_s
@@ -30369,12 +31162,12 @@
    i32.store offset=8
    local.get $35
    f64.load offset=80
-   local.set $73
+   local.set $75
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $73
+   local.get $75
    f64.const 1
    local.get $35
    i32.load offset=256
@@ -30430,11 +31223,13 @@
      local.get $66
      local.get $67
      local.get $68
-     local.get $77
+     local.get $79
      local.get $60
      i32.const 0
      i32.gt_s
      local.get $47
+     local.get $71
+     local.get $72
      call $assembly/evalOzzy/ozzySim
      local.get $0
      i32.const 1
@@ -30458,8 +31253,8 @@
    global.set $~lib/memory/__stack_pointer
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
@@ -30473,11 +31268,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -30531,11 +31326,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -30588,11 +31383,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -30623,11 +31418,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -30662,11 +31457,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -30824,11 +31619,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -30964,11 +31759,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31019,11 +31814,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31074,11 +31869,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31129,11 +31924,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31184,11 +31979,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31216,11 +32011,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31248,11 +32043,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31280,11 +32075,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31312,11 +32107,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31344,11 +32139,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31376,11 +32171,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31408,11 +32203,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31440,11 +32235,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31471,11 +32266,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31507,11 +32302,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31576,11 +32371,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31658,11 +32453,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31694,11 +32489,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31763,11 +32558,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31851,11 +32646,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -31974,51 +32769,51 @@
     local.tee $5
     i32.store offset=24
     global.get $~lib/memory/__stack_pointer
-    i32.const 12096
+    i32.const 12144
     i32.store offset=28
     global.get $~lib/memory/__stack_pointer
     local.get $3
     i32.store offset=32
-    i32.const 12100
+    i32.const 12148
     local.get $3
     i32.store
-    i32.const 12096
+    i32.const 12144
     local.get $3
     i32.const 1
     call $~lib/rt/itcms/__link
     global.get $~lib/memory/__stack_pointer
-    i32.const 12096
+    i32.const 12144
     i32.store offset=28
     global.get $~lib/memory/__stack_pointer
     local.get $4
     i32.store offset=32
-    i32.const 12108
+    i32.const 12156
     local.get $4
     i32.store
-    i32.const 12096
+    i32.const 12144
     local.get $4
     i32.const 1
     call $~lib/rt/itcms/__link
     global.get $~lib/memory/__stack_pointer
-    i32.const 12096
+    i32.const 12144
     i32.store offset=28
     global.get $~lib/memory/__stack_pointer
     local.get $5
     i32.store offset=32
-    i32.const 12116
+    i32.const 12164
     local.get $5
     i32.store
-    i32.const 12096
+    i32.const 12144
     local.get $5
     i32.const 1
     call $~lib/rt/itcms/__link
     global.get $~lib/memory/__stack_pointer
-    i32.const 12096
+    i32.const 12144
     i32.store offset=28
     global.get $~lib/memory/__stack_pointer
     i32.const 8784
     i32.store offset=32
-    i32.const 12096
+    i32.const 12144
     call $~lib/staticarray/StaticArray<~lib/string/String>#join
     local.set $3
     global.get $~lib/memory/__stack_pointer
@@ -32063,11 +32858,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -32118,11 +32913,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -32184,11 +32979,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -32256,11 +33051,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -32327,11 +33122,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -32378,11 +33173,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -32971,11 +33766,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -33690,11 +34485,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -33956,11 +34751,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -34421,28 +35216,28 @@
   i32.add
   global.set $~lib/memory/__stack_pointer
  )
- (func $assembly/evalKnox/knoxSim (param $0 i32) (param $1 i32) (param $2 i32) (param $3 f64) (param $4 i32) (param $5 f64) (param $6 i32) (param $7 f64) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32)
-  (local $15 i64)
-  (local $16 f64)
-  (local $17 f64)
+ (func $assembly/evalKnox/knoxSim (param $0 i32) (param $1 i32) (param $2 i32) (param $3 f64) (param $4 i32) (param $5 f64) (param $6 i32) (param $7 f64) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32)
+  (local $17 i64)
   (local $18 f64)
   (local $19 f64)
-  (local $20 i32)
-  (local $21 i32)
-  (local $22 i64)
-  (local $23 i64)
+  (local $20 f64)
+  (local $21 f64)
+  (local $22 i32)
+  (local $23 i32)
   (local $24 i64)
-  (local $25 i32)
+  (local $25 i64)
   (local $26 i64)
-  (local $27 i64)
+  (local $27 i32)
   (local $28 i64)
+  (local $29 i64)
+  (local $30 i64)
   global.get $~lib/memory/__stack_pointer
   i32.const 32
   i32.sub
   global.set $~lib/memory/__stack_pointer
   block $folding-inner1
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner1
    global.get $~lib/memory/__stack_pointer
@@ -34466,201 +35261,201 @@
      local.get $0
      i32.load offset=340
      f64.convert_i32_s
-     local.tee $17
-     local.get $17
+     local.tee $19
+     local.get $19
      f64.trunc
      f64.sub
-     local.get $17
+     local.get $19
      f64.copysign
      local.get $2
      f64.convert_i32_s
-     local.tee $16
+     local.tee $18
      f64.abs
      f64.const 1
      f64.eq
      br_if $__inlined_func$~lib/math/NativeMath.mod$1
      drop
-     local.get $16
+     local.get $18
      i64.reinterpret_f64
-     local.tee $26
+     local.tee $28
      i64.const 52
      i64.shr_u
      i64.const 2047
      i64.and
-     local.set $27
-     local.get $26
+     local.set $29
+     local.get $28
      i64.const 1
      i64.shl
-     local.tee $23
+     local.tee $25
      i64.eqz
-     local.get $17
+     local.get $19
      i64.reinterpret_f64
-     local.tee $22
+     local.tee $24
      i64.const 52
      i64.shr_u
      i64.const 2047
      i64.and
-     local.tee $28
+     local.tee $30
      i64.const 2047
      i64.eq
      i32.or
-     local.get $16
-     local.get $16
+     local.get $18
+     local.get $18
      f64.ne
      i32.or
      if
-      local.get $17
-      local.get $16
+      local.get $19
+      local.get $18
       f64.mul
-      local.tee $16
-      local.get $16
+      local.tee $18
+      local.get $18
       f64.div
       br $__inlined_func$~lib/math/NativeMath.mod$1
      end
-     local.get $22
+     local.get $24
      i64.const 1
      i64.shl
-     local.tee $15
-     local.get $23
+     local.tee $17
+     local.get $25
      i64.le_u
      if
+      local.get $19
       local.get $17
-      local.get $15
-      local.get $23
+      local.get $25
       i64.ne
       f64.convert_i32_u
       f64.mul
       br $__inlined_func$~lib/math/NativeMath.mod$1
      end
-     local.get $22
+     local.get $24
      i64.const 63
      i64.shr_u
+     local.set $26
+     local.get $30
+     i64.eqz
+     if (result i64)
+      local.get $24
+      i64.const 1
+      local.get $30
+      local.get $24
+      i64.const 12
+      i64.shl
+      i64.clz
+      i64.sub
+      local.tee $30
+      i64.sub
+      i64.shl
+     else
+      local.get $24
+      i64.const 4503599627370495
+      i64.and
+      i64.const 4503599627370496
+      i64.or
+     end
+     local.set $17
+     local.get $29
+     i64.eqz
+     if (result i64)
+      local.get $28
+      i64.const 1
+      local.get $29
+      local.get $28
+      i64.const 12
+      i64.shl
+      i64.clz
+      i64.sub
+      local.tee $29
+      i64.sub
+      i64.shl
+     else
+      local.get $28
+      i64.const 4503599627370495
+      i64.and
+      i64.const 4503599627370496
+      i64.or
+     end
      local.set $24
-     local.get $28
-     i64.eqz
-     if (result i64)
-      local.get $22
-      i64.const 1
-      local.get $28
-      local.get $22
-      i64.const 12
-      i64.shl
-      i64.clz
-      i64.sub
-      local.tee $28
-      i64.sub
-      i64.shl
-     else
-      local.get $22
-      i64.const 4503599627370495
-      i64.and
-      i64.const 4503599627370496
-      i64.or
-     end
-     local.set $15
-     local.get $27
-     i64.eqz
-     if (result i64)
-      local.get $26
-      i64.const 1
-      local.get $27
-      local.get $26
-      i64.const 12
-      i64.shl
-      i64.clz
-      i64.sub
-      local.tee $27
-      i64.sub
-      i64.shl
-     else
-      local.get $26
-      i64.const 4503599627370495
-      i64.and
-      i64.const 4503599627370496
-      i64.or
-     end
-     local.set $22
      loop $while-continue|0
-      local.get $27
-      local.get $28
+      local.get $29
+      local.get $30
       i64.lt_s
       if
-       local.get $15
-       local.get $22
+       local.get $17
+       local.get $24
        i64.ge_u
        if (result i64)
-        local.get $17
+        local.get $19
         f64.const 0
         f64.mul
-        local.get $15
-        local.get $22
+        local.get $17
+        local.get $24
         i64.eq
         br_if $__inlined_func$~lib/math/NativeMath.mod$1
         drop
-        local.get $15
-        local.get $22
+        local.get $17
+        local.get $24
         i64.sub
        else
-        local.get $15
+        local.get $17
        end
        i64.const 1
        i64.shl
-       local.set $15
-       local.get $28
+       local.set $17
+       local.get $30
        i64.const 1
        i64.sub
-       local.set $28
+       local.set $30
        br $while-continue|0
       end
      end
-     local.get $15
-     local.get $22
+     local.get $17
+     local.get $24
      i64.ge_u
      if
-      local.get $17
+      local.get $19
       f64.const 0
       f64.mul
-      local.get $15
-      local.get $22
+      local.get $17
+      local.get $24
       i64.eq
       br_if $__inlined_func$~lib/math/NativeMath.mod$1
       drop
-      local.get $15
-      local.get $22
+      local.get $17
+      local.get $24
       i64.sub
-      local.set $15
+      local.set $17
      end
-     local.get $28
-     local.get $15
+     local.get $30
+     local.get $17
      i64.const 11
      i64.shl
      i64.clz
-     local.tee $23
+     local.tee $25
      i64.sub
-     local.set $22
-     local.get $15
-     local.get $23
+     local.set $24
+     local.get $17
+     local.get $25
      i64.shl
-     local.set $15
-     local.get $22
+     local.set $17
+     local.get $24
      i64.const 0
      i64.gt_s
      if (result i64)
-      local.get $15
+      local.get $17
       i64.const 4503599627370496
       i64.sub
-      local.get $22
+      local.get $24
       i64.const 52
       i64.shl
       i64.or
      else
-      local.get $15
+      local.get $17
       i64.const 1
-      local.get $22
+      local.get $24
       i64.sub
       i64.shr_u
      end
-     local.get $24
+     local.get $26
      i64.const 63
      i64.shl
      i64.or
@@ -34773,12 +35568,12 @@
    local.get $0
    i32.load offset=4
    f64.convert_i32_s
-   local.set $16
+   local.set $18
    global.get $~lib/memory/__stack_pointer
    local.get $0
    i32.store offset=4
    local.get $0
-   local.get $16
+   local.get $18
    local.get $0
    i32.load offset=348
    i32.const 10
@@ -34893,7 +35688,7 @@
       i32.sub
       global.set $~lib/memory/__stack_pointer
       global.get $~lib/memory/__stack_pointer
-      i32.const 12284
+      i32.const 12332
       i32.lt_s
       br_if $folding-inner1
       global.get $~lib/memory/__stack_pointer
@@ -34923,29 +35718,29 @@
        i32.store offset=4
        local.get $2
        f64.load offset=96
-       local.set $18
+       local.set $20
        global.get $~lib/memory/__stack_pointer
        global.get $assembly/evalKnox/currentKnox
        local.tee $2
        i32.store offset=4
        local.get $2
        f64.load offset=16
-       local.set $17
+       local.set $19
        global.get $~lib/memory/__stack_pointer
        global.get $assembly/evalKnox/currentKnox
        local.tee $2
        i32.store offset=4
        local.get $2
        f64.load offset=112
-       local.set $16
+       local.set $18
        global.get $~lib/memory/__stack_pointer
        global.get $assembly/evalKnox/currentKnox
        local.tee $2
        i32.store offset=4
        local.get $4
+       local.get $20
+       local.get $19
        local.get $18
-       local.get $17
-       local.get $16
        local.get $2
        i32.load offset=200
        if (result f64)
@@ -34996,29 +35791,29 @@
       i32.store offset=4
       local.get $2
       f64.load
-      local.set $18
+      local.set $20
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalKnox/currentKnoxEnemy
       local.tee $2
       i32.store offset=4
       local.get $2
       f64.load offset=8
-      local.set $17
+      local.set $19
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalKnox/currentKnoxEnemy
       local.tee $2
       i32.store offset=4
       local.get $2
       f64.load offset=56
-      local.set $16
+      local.set $18
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalKnox/currentKnox
       local.tee $2
       i32.store offset=4
       local.get $4
+      local.get $20
+      local.get $19
       local.get $18
-      local.get $17
-      local.get $16
       f64.const 1
       local.get $2
       i32.load offset=264
@@ -35074,7 +35869,7 @@
           i32.sub
           global.set $~lib/memory/__stack_pointer
           global.get $~lib/memory/__stack_pointer
-          i32.const 12284
+          i32.const 12332
           i32.lt_s
           br_if $folding-inner1
           global.get $~lib/memory/__stack_pointer
@@ -35083,7 +35878,7 @@
           i32.const 0
           local.set $4
           loop $for-loop|0
-           block $__inlined_func$assembly/evalKnox/knoxTorpedo$3035
+           block $__inlined_func$assembly/evalKnox/knoxTorpedo$3126
             global.get $~lib/memory/__stack_pointer
             global.get $assembly/evalKnox/currentKnox
             local.tee $2
@@ -35097,7 +35892,7 @@
             if
              global.get $~lib/memory/__stack_pointer
              global.get $assembly/evalKnox/currentKnoxEnemy
-             local.tee $20
+             local.tee $22
              i32.store
              global.get $~lib/memory/__stack_pointer
              global.get $assembly/evalKnox/currentKnoxEnemy
@@ -35105,7 +35900,7 @@
              i32.store offset=4
              local.get $2
              f64.load offset=8
-             local.set $17
+             local.set $19
              global.get $~lib/memory/__stack_pointer
              global.get $assembly/evalKnox/currentKnox
              local.tee $2
@@ -35126,14 +35921,14 @@
              f64.const 1
              f64.add
              f64.mul
-             local.set $16
+             local.set $18
              global.get $~lib/memory/__stack_pointer
              global.get $assembly/evalKnox/currentKnox
              local.tee $2
              i32.store offset=4
-             local.get $20
-             local.get $17
-             local.get $16
+             local.get $22
+             local.get $19
+             local.get $18
              local.get $2
              i32.load offset=304
              f64.convert_i32_s
@@ -35167,7 +35962,7 @@
               i32.const 4
               i32.add
               global.set $assembly/evalKnox/leftoverTorpedos
-              br $__inlined_func$assembly/evalKnox/knoxTorpedo$3035
+              br $__inlined_func$assembly/evalKnox/knoxTorpedo$3126
              end
              local.get $4
              i32.const 1
@@ -35202,7 +35997,7 @@
      local.get $2
      i32.const 1
      i32.add
-     local.tee $21
+     local.tee $23
      i32.const 1000
      i32.mul
      i32.lt_s
@@ -35218,9 +36013,9 @@
       local.get $4
       local.get $2
       call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
-      local.set $20
+      local.set $22
       global.get $~lib/memory/__stack_pointer
-      local.get $20
+      local.get $22
       i32.store
       global.get $~lib/memory/__stack_pointer
       local.get $0
@@ -35239,13 +36034,13 @@
       i32.store offset=4
       local.get $4
       f64.load
-      local.set $16
+      local.set $18
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalKnox/KNOX_ENEMIES
       local.tee $4
       i32.store offset=8
       local.get $4
-      local.get $21
+      local.get $23
       i32.const 100
       i32.mul
       call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
@@ -35253,8 +36048,8 @@
       global.get $~lib/memory/__stack_pointer
       local.get $4
       i32.store offset=4
-      local.get $20
-      local.get $16
+      local.get $22
+      local.get $18
       local.get $4
       f64.load
       f64.add
@@ -35264,7 +36059,7 @@
       local.get $2
       i32.const 1
       i32.add
-      local.tee $21
+      local.tee $23
       i32.const 1000
       i32.mul
       i32.eq
@@ -35280,9 +36075,9 @@
        local.get $4
        local.get $2
        call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
-       local.set $20
+       local.set $22
        global.get $~lib/memory/__stack_pointer
-       local.get $20
+       local.get $22
        i32.store
        global.get $~lib/memory/__stack_pointer
        local.get $0
@@ -35301,13 +36096,13 @@
        i32.store offset=4
        local.get $4
        f64.load
-       local.set $16
+       local.set $18
        global.get $~lib/memory/__stack_pointer
        global.get $assembly/evalKnox/KNOX_ENEMIES
        local.tee $4
        i32.store offset=8
        local.get $4
-       local.get $21
+       local.get $23
        i32.const 100
        i32.mul
        call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
@@ -35315,8 +36110,8 @@
        global.get $~lib/memory/__stack_pointer
        local.get $4
        i32.store offset=4
-       local.get $20
-       local.get $16
+       local.get $22
+       local.get $18
        local.get $4
        f64.load offset=8
        f64.add
@@ -35333,9 +36128,9 @@
        local.get $4
        local.get $2
        call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
-       local.set $20
+       local.set $22
        global.get $~lib/memory/__stack_pointer
-       local.get $20
+       local.get $22
        i32.store
        global.get $~lib/memory/__stack_pointer
        local.get $0
@@ -35352,7 +36147,7 @@
        global.get $~lib/memory/__stack_pointer
        local.get $4
        i32.store offset=4
-       local.get $20
+       local.get $22
        local.get $4
        i32.load offset=8
        i32.const 1
@@ -35370,113 +36165,113 @@
    global.get $~lib/memory/__stack_pointer
    i32.const 7
    call $~lib/staticarray/StaticArray<f64>#constructor
-   local.tee $21
+   local.tee $23
    i32.store offset=16
    global.get $~lib/memory/__stack_pointer
-   local.get $21
+   local.get $23
    i32.store
-   local.get $21
+   local.get $23
    i32.const 0
    f64.const 1
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $21
+   local.get $23
    i32.store
-   local.get $21
+   local.get $23
    i32.const 1
    f64.const 1.04
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $21
+   local.get $23
    i32.store
-   local.get $21
+   local.get $23
    i32.const 2
    f64.const 1.06
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $21
+   local.get $23
    i32.store
-   local.get $21
+   local.get $23
    i32.const 3
    f64.const 1.08
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $21
+   local.get $23
    i32.store
-   local.get $21
+   local.get $23
    i32.const 4
    f64.const 1.11
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $21
+   local.get $23
    i32.store
-   local.get $21
+   local.get $23
    i32.const 5
    f64.const 1.18
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $21
+   local.get $23
    i32.store
-   local.get $21
+   local.get $23
    i32.const 6
    f64.const 1.25
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
    i32.const 4
    call $~lib/staticarray/StaticArray<f64>#constructor
-   local.tee $20
+   local.tee $22
    i32.store offset=20
    global.get $~lib/memory/__stack_pointer
-   local.get $20
+   local.get $22
    i32.store
-   local.get $20
+   local.get $22
    i32.const 0
    f64.const 0.77
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $20
+   local.get $22
    i32.store
-   local.get $20
+   local.get $22
    i32.const 1
    f64.const 0.88
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $20
+   local.get $22
    i32.store
-   local.get $20
+   local.get $22
    i32.const 2
    f64.const 0.99
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $20
+   local.get $22
    i32.store
-   local.get $20
+   local.get $22
    i32.const 3
    f64.const 1.05
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
    i32.const 3
    call $~lib/staticarray/StaticArray<f64>#constructor
-   local.tee $25
+   local.tee $27
    i32.store offset=24
    global.get $~lib/memory/__stack_pointer
-   local.get $25
+   local.get $27
    i32.store
-   local.get $25
+   local.get $27
    i32.const 0
    f64.const 0.6
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $25
+   local.get $27
    i32.store
-   local.get $25
+   local.get $27
    i32.const 1
    f64.const 0.7
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $25
+   local.get $27
    i32.store
-   local.get $25
+   local.get $27
    i32.const 2
    f64.const 0.8
    call $~lib/staticarray/StaticArray<f64>#__set
@@ -35497,7 +36292,7 @@
    i32.const 100
    i32.div_s
    f64.convert_i32_s
-   local.tee $16
+   local.tee $18
    call $~lib/math/NativeMath.pow
    f64.const 1.3
    f64.mul
@@ -35508,30 +36303,30 @@
    local.get $4
    i32.const 1
    f64.const 2
-   local.get $16
+   local.get $18
    call $~lib/math/NativeMath.pow
    f64.const 1.4
    f64.mul
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $21
+   local.get $23
    i32.store
-   local.get $21
+   local.get $23
    call $assembly/evalBorge/arrayAverage
    f64.const 3
    f64.mul
    global.get $~lib/memory/__stack_pointer
-   local.get $20
+   local.get $22
    i32.store
-   local.get $20
+   local.get $22
    call $assembly/evalBorge/arrayAverage
    f64.const 3
    f64.mul
    f64.add
    global.get $~lib/memory/__stack_pointer
-   local.get $25
+   local.get $27
    i32.store
-   local.get $25
+   local.get $27
    call $assembly/evalBorge/arrayAverage
    f64.const 3
    f64.mul
@@ -35544,7 +36339,7 @@
    f64.add
    f64.const 10
    f64.div
-   local.set $19
+   local.set $21
    i32.const 1010
    local.set $1
    global.get $~lib/memory/__stack_pointer
@@ -35559,7 +36354,7 @@
    f64.add
    local.get $3
    f64.mul
-   local.set $18
+   local.set $20
    f64.const 1
    local.set $3
    i32.const 1
@@ -35654,8 +36449,18 @@
    i32.gt_s
    select
    f64.mul
-   local.set $17
-   local.get $19
+   f64.const 1.02
+   local.get $15
+   f64.convert_i32_s
+   call $~lib/math/NativeMath.pow
+   f64.mul
+   f64.const 1.08
+   local.get $16
+   f64.convert_i32_s
+   call $~lib/math/NativeMath.pow
+   f64.mul
+   local.set $19
+   local.get $21
    f64.const 1.074
    global.get $assembly/evalKnox/currentKnoxEnem
    f64.convert_i32_s
@@ -35697,7 +36502,7 @@
    f64.mul
    f64.add
    f64.mul
-   local.get $18
+   local.get $20
    f64.mul
    global.get $~lib/memory/__stack_pointer
    local.get $0
@@ -35742,16 +36547,16 @@
      f64.load offset=352
      local.set $3
      global.get $~lib/memory/__stack_pointer
-     local.get $21
+     local.get $23
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $21
+     local.get $23
      i32.store offset=8
      local.get $0
      local.get $3
      local.get $5
-     local.get $21
-     local.get $21
+     local.get $23
+     local.get $23
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -35763,9 +36568,9 @@
      f64.mul
      f64.const 800
      f64.mul
-     local.get $18
+     local.get $20
      f64.mul
-     local.get $17
+     local.get $19
      f64.mul
      f64.add
      f64.store offset=352
@@ -35779,16 +36584,16 @@
      f64.load offset=360
      local.set $3
      global.get $~lib/memory/__stack_pointer
-     local.get $20
+     local.get $22
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $20
+     local.get $22
      i32.store offset=8
      local.get $0
      local.get $3
      local.get $5
-     local.get $20
-     local.get $20
+     local.get $22
+     local.get $22
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -35800,9 +36605,9 @@
      f64.mul
      f64.const 600
      f64.mul
-     local.get $18
+     local.get $20
      f64.mul
-     local.get $17
+     local.get $19
      f64.mul
      f64.add
      f64.store offset=360
@@ -35816,16 +36621,16 @@
      f64.load offset=368
      local.set $3
      global.get $~lib/memory/__stack_pointer
-     local.get $25
+     local.get $27
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $25
+     local.get $27
      i32.store offset=8
      local.get $0
      local.get $3
      local.get $5
-     local.get $25
-     local.get $25
+     local.get $27
+     local.get $27
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -35837,9 +36642,9 @@
      f64.mul
      f64.const 400
      f64.mul
-     local.get $18
+     local.get $20
      f64.mul
-     local.get $17
+     local.get $19
      f64.mul
      f64.add
      f64.store offset=368
@@ -35874,9 +36679,9 @@
      f64.mul
      f64.const 300
      f64.mul
-     local.get $18
+     local.get $20
      f64.mul
-     local.get $17
+     local.get $19
      f64.mul
      f64.add
      f64.store offset=376
@@ -35890,16 +36695,16 @@
      f64.load offset=328
      local.set $3
      global.get $~lib/memory/__stack_pointer
-     local.get $21
+     local.get $23
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $21
+     local.get $23
      i32.store offset=8
      local.get $0
      local.get $3
      local.get $5
-     local.get $21
-     local.get $21
+     local.get $23
+     local.get $23
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -35911,7 +36716,7 @@
      f64.mul
      f64.const 800
      f64.mul
-     local.get $18
+     local.get $20
      f64.mul
      f64.add
      f64.store offset=328
@@ -35925,16 +36730,16 @@
      f64.load offset=328
      local.set $3
      global.get $~lib/memory/__stack_pointer
-     local.get $20
+     local.get $22
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $20
+     local.get $22
      i32.store offset=8
      local.get $0
      local.get $3
      local.get $5
-     local.get $20
-     local.get $20
+     local.get $22
+     local.get $22
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -35946,7 +36751,7 @@
      f64.mul
      f64.const 600
      f64.mul
-     local.get $18
+     local.get $20
      f64.mul
      f64.add
      f64.store offset=328
@@ -35960,16 +36765,16 @@
      f64.load offset=328
      local.set $3
      global.get $~lib/memory/__stack_pointer
-     local.get $25
+     local.get $27
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $25
+     local.get $27
      i32.store offset=8
      local.get $0
      local.get $3
      local.get $5
-     local.get $25
-     local.get $25
+     local.get $27
+     local.get $27
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -35981,7 +36786,7 @@
      f64.mul
      f64.const 400
      f64.mul
-     local.get $18
+     local.get $20
      f64.mul
      f64.add
      f64.store offset=328
@@ -36016,7 +36821,7 @@
      f64.mul
      f64.const 300
      f64.mul
-     local.get $18
+     local.get $20
      f64.mul
      f64.add
      f64.store offset=328
@@ -36030,7 +36835,7 @@
      f64.const 5
      f64.mul
      local.tee $3
-     local.get $19
+     local.get $21
      f64.mul
      f64.const 1.074
      f64.mul
@@ -36039,7 +36844,7 @@
      f64.convert_i32_s
      f64.const 990
      f64.min
-     local.tee $16
+     local.tee $18
      f64.const 10
      f64.div
      f64.floor
@@ -36051,7 +36856,7 @@
      f64.div
      f64.const 10
      f64.mul
-     local.get $16
+     local.get $18
      local.get $5
      f64.const 10
      f64.mul
@@ -36062,9 +36867,9 @@
      f64.mul
      f64.add
      f64.mul
-     local.get $18
+     local.get $20
      f64.mul
-     local.set $16
+     local.set $18
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.store
@@ -36078,7 +36883,7 @@
      local.get $0
      i32.store
      local.get $7
-     local.get $16
+     local.get $18
      local.get $5
      local.get $0
      f64.load offset=64
@@ -36101,7 +36906,7 @@
    f64.load offset=352
    local.set $3
    global.get $~lib/memory/__stack_pointer
-   local.get $21
+   local.get $23
    i32.store offset=4
    local.get $0
    local.get $3
@@ -36111,12 +36916,12 @@
    f64.const 10
    f64.div
    local.tee $5
-   local.get $21
+   local.get $23
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $19
+   local.get $21
    f64.div
-   local.get $17
+   local.get $19
    f64.mul
    f64.add
    f64.store offset=352
@@ -36130,17 +36935,17 @@
    f64.load offset=360
    local.set $3
    global.get $~lib/memory/__stack_pointer
-   local.get $20
+   local.get $22
    i32.store offset=4
    local.get $0
    local.get $3
    local.get $5
-   local.get $20
+   local.get $22
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $19
+   local.get $21
    f64.div
-   local.get $17
+   local.get $19
    f64.mul
    f64.add
    f64.store offset=360
@@ -36154,17 +36959,17 @@
    f64.load offset=368
    local.set $3
    global.get $~lib/memory/__stack_pointer
-   local.get $25
+   local.get $27
    i32.store offset=4
    local.get $0
    local.get $3
    local.get $5
-   local.get $25
+   local.get $27
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $19
+   local.get $21
    f64.div
-   local.get $17
+   local.get $19
    f64.mul
    f64.add
    f64.store offset=368
@@ -36188,9 +36993,9 @@
    local.get $4
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $19
+   local.get $21
    f64.div
-   local.get $17
+   local.get $19
    f64.mul
    f64.add
    f64.store offset=376
@@ -36407,25 +37212,25 @@
    global.set $~lib/memory/__stack_pointer
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
   unreachable
  )
- (func $assembly/evalKnox/EVALKNOX_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 f64) (param $35 f64) (param $36 i32) (param $37 i32) (param $38 i32) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (result f64)
-  (local $69 f64)
-  (local $70 f64)
+ (func $assembly/evalKnox/EVALKNOX_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 f64) (param $35 f64) (param $36 i32) (param $37 i32) (param $38 i32) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (result f64)
   (local $71 f64)
   (local $72 f64)
+  (local $73 f64)
+  (local $74 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 12
   i32.sub
   global.set $~lib/memory/__stack_pointer
   block $folding-inner0
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -36439,7 +37244,7 @@
    i32.sub
    global.set $~lib/memory/__stack_pointer
    global.get $~lib/memory/__stack_pointer
-   i32.const 12284
+   i32.const 12332
    i32.lt_s
    br_if $folding-inner0
    global.get $~lib/memory/__stack_pointer
@@ -36480,25 +37285,25 @@
    f64.const 1.001
    local.get $31
    f64.convert_i32_s
-   local.tee $69
+   local.tee $71
    call $~lib/math/NativeMath.pow
    f64.const 1.02
    local.get $31
    i32.const 10
    i32.div_s
    f64.convert_i32_s
-   local.tee $70
+   local.tee $72
    call $~lib/math/NativeMath.pow
    f64.mul
-   local.set $71
+   local.set $73
    f64.const 1.005
-   local.get $69
+   local.get $71
    call $~lib/math/NativeMath.pow
    f64.const 1.02
-   local.get $70
+   local.get $72
    call $~lib/math/NativeMath.pow
    f64.mul
-   local.set $70
+   local.set $72
    global.get $~lib/memory/__stack_pointer
    call $assembly/evalKnox/Knox#constructor
    local.tee $31
@@ -36532,7 +37337,7 @@
    f64.mul
    f64.const 20
    f64.add
-   local.get $71
+   local.get $73
    f64.mul
    local.get $67
    f64.convert_i32_s
@@ -36540,13 +37345,13 @@
    f64.mul
    f64.const 1
    f64.add
-   local.tee $72
+   local.tee $74
    f64.mul
    f64.const 1.0777
    f64.const 1
    local.get $68
    select
-   local.tee $69
+   local.tee $71
    f64.mul
    f64.store offset=8
    global.get $~lib/memory/__stack_pointer
@@ -36576,9 +37381,9 @@
    f64.mul
    f64.const 1.2
    f64.add
-   local.get $71
+   local.get $73
    f64.mul
-   local.get $72
+   local.get $74
    f64.mul
    f64.store offset=24
    global.get $~lib/memory/__stack_pointer
@@ -36607,11 +37412,11 @@
    f64.mul
    f64.const 0.05
    f64.add
+   local.get $73
+   f64.mul
+   local.get $74
+   f64.mul
    local.get $71
-   f64.mul
-   local.get $72
-   f64.mul
-   local.get $69
    f64.mul
    f64.store offset=40
    global.get $~lib/memory/__stack_pointer
@@ -36860,12 +37665,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=8
-   local.set $69
+   local.set $71
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $69
+   local.get $71
    local.get $31
    i32.load offset=280
    f64.convert_i32_s
@@ -36883,12 +37688,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=40
-   local.set $69
+   local.set $71
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $69
+   local.get $71
    local.get $31
    i32.load offset=280
    f64.convert_i32_s
@@ -36906,12 +37711,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=24
-   local.set $69
+   local.set $71
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $69
+   local.get $71
    local.get $31
    i32.load offset=280
    f64.convert_i32_s
@@ -36929,12 +37734,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=48
-   local.set $69
+   local.set $71
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $69
+   local.get $71
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -36950,7 +37755,7 @@
    i32.store offset=8
    local.get $31
    f64.load offset=72
-   local.set $69
+   local.set $71
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
@@ -36959,13 +37764,13 @@
    f64.convert_i32_s
    f64.const 0.01
    f64.mul
-   local.set $71
+   local.set $73
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $69
    local.get $71
+   local.get $73
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -36982,7 +37787,7 @@
    i32.store offset=8
    local.get $31
    f64.load offset=64
-   local.set $69
+   local.set $71
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
@@ -36991,13 +37796,13 @@
    f64.convert_i32_s
    f64.const 0.02
    f64.mul
-   local.set $71
+   local.set $73
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $69
    local.get $71
+   local.get $73
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -37014,7 +37819,7 @@
    i32.store offset=8
    local.get $31
    f64.load offset=56
-   local.set $69
+   local.set $71
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
@@ -37023,13 +37828,13 @@
    f64.convert_i32_s
    f64.const 0.01
    f64.mul
-   local.set $71
+   local.set $73
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $69
    local.get $71
+   local.get $73
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -37068,12 +37873,12 @@
    f64.const 3
    f64.div
    f64.add
-   local.set $69
+   local.set $71
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $69
+   local.get $71
    local.get $31
    i32.load offset=4
    i32.const 1
@@ -37114,12 +37919,12 @@
    f64.convert_i32_s
    f64.const 100
    f64.add
-   local.set $69
+   local.set $71
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $69
+   local.get $71
    local.get $31
    i32.load offset=4
    i32.const 1
@@ -37144,7 +37949,7 @@
      local.get $31
      local.get $1
      local.get $40
-     local.get $70
+     local.get $72
      local.get $39
      local.get $34
      local.get $33
@@ -37158,6 +37963,8 @@
      local.get $64
      local.get $65
      local.get $66
+     local.get $69
+     local.get $70
      call $assembly/evalKnox/knoxSim
      local.get $0
      i32.const 1
@@ -37181,8 +37988,8 @@
    global.set $~lib/memory/__stack_pointer
    return
   end
-  i32.const 45072
   i32.const 45120
+  i32.const 45168
   i32.const 1
   i32.const 1
   call $~lib/builtins/abort
@@ -37196,11 +38003,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37254,11 +38061,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37311,11 +38118,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37346,11 +38153,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37385,11 +38192,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37547,11 +38354,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37687,11 +38494,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37742,11 +38549,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37797,11 +38604,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37852,11 +38659,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37907,11 +38714,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37939,11 +38746,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -37971,11 +38778,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38003,11 +38810,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38035,11 +38842,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38067,11 +38874,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38099,11 +38906,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38131,11 +38938,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38163,11 +38970,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38195,11 +39002,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38226,11 +39033,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38262,11 +39069,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38331,11 +39138,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38413,11 +39220,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38449,11 +39256,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38518,11 +39325,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38606,11 +39413,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38729,51 +39536,51 @@
     local.tee $5
     i32.store offset=24
     global.get $~lib/memory/__stack_pointer
-    i32.const 12144
+    i32.const 12192
     i32.store offset=28
     global.get $~lib/memory/__stack_pointer
     local.get $3
     i32.store offset=32
-    i32.const 12148
+    i32.const 12196
     local.get $3
     i32.store
-    i32.const 12144
+    i32.const 12192
     local.get $3
     i32.const 1
     call $~lib/rt/itcms/__link
     global.get $~lib/memory/__stack_pointer
-    i32.const 12144
+    i32.const 12192
     i32.store offset=28
     global.get $~lib/memory/__stack_pointer
     local.get $4
     i32.store offset=32
-    i32.const 12156
+    i32.const 12204
     local.get $4
     i32.store
-    i32.const 12144
+    i32.const 12192
     local.get $4
     i32.const 1
     call $~lib/rt/itcms/__link
     global.get $~lib/memory/__stack_pointer
-    i32.const 12144
+    i32.const 12192
     i32.store offset=28
     global.get $~lib/memory/__stack_pointer
     local.get $5
     i32.store offset=32
-    i32.const 12164
+    i32.const 12212
     local.get $5
     i32.store
-    i32.const 12144
+    i32.const 12192
     local.get $5
     i32.const 1
     call $~lib/rt/itcms/__link
     global.get $~lib/memory/__stack_pointer
-    i32.const 12144
+    i32.const 12192
     i32.store offset=28
     global.get $~lib/memory/__stack_pointer
     i32.const 8784
     i32.store offset=32
-    i32.const 12144
+    i32.const 12192
     call $~lib/staticarray/StaticArray<~lib/string/String>#join
     local.set $3
     global.get $~lib/memory/__stack_pointer
@@ -38815,11 +39622,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38858,11 +39665,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -38889,11 +39696,11 @@
   i32.sub
   global.set $~lib/memory/__stack_pointer
   global.get $~lib/memory/__stack_pointer
-  i32.const 12284
+  i32.const 12332
   i32.lt_s
   if
-   i32.const 45072
    i32.const 45120
+   i32.const 45168
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort

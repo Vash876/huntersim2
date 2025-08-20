@@ -74,7 +74,10 @@ export function getUpgradeColor(upgrade, category) {
   // Finde heraus, welche Hunter dieses Upgrade verwenden
   let hunterIds = [];
   
-  if (upgrade.hunter && upgrade.hunter !== 'all') {
+  if (upgrade.hunter === 'all') {
+    // Wenn explizit für alle Hunter, verwende lila
+    return 'purple';
+  } else if (upgrade.hunter) {
     // Wenn hunter-Info im Upgrade vorhanden
     hunterIds = upgrade.hunter.split(',');
   } else {

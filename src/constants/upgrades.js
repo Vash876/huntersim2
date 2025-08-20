@@ -92,6 +92,7 @@ export const UPGRADES = {
       hunter: "all",
       type: "level",
       maxLevel: 6,
+      temporary: true,
       multitext: "Loot Reward",
       unlock_gem: "innovation",
       unlock_lvl: 3,
@@ -527,7 +528,40 @@ export const UPGRADES = {
       description: "Effect Chance", 
       format: "percent",
       color: "green" 
-    }
+    },
+    {
+      id: "i103",
+      name: "Inscryption #103",
+      hunter: "borge",
+      type: "level",
+      multiplier: 1.08,
+      maxLevel: 8,
+      description: "Loot Rewards",
+      format: "multiplier",
+      color: "red"
+    },
+    {
+      id: "i104",
+      name: "Inscryption #104",
+      hunter: "ozzy",
+      type: "level",
+      multiplier: 1.08,
+      maxLevel: 8,
+      description: "Loot Rewards",
+      format: "multiplier",
+      color: "green"
+    },
+    {
+      id: "i105",
+      name: "Inscryption #105",
+      hunter: "knox",
+      type: "level",
+      multiplier: 1.08,
+      maxLevel: 8,
+      description: "Loot Rewards",
+      format: "multiplier",
+      color: "blue"
+    },
   ],
 
   ///////////////GEMS////////////////
@@ -540,6 +574,16 @@ export const UPGRADES = {
       maxLevel: 4,
       color: "purple",
       nodes: []
+    },
+    {
+      id: 'temporal',
+      name: 'Temporal Gem',
+      type: 'level',
+      maxLevel: 4,
+      color: "red",
+      nodes: [
+        { id: 'gem4', name: 'Temporal Gem Node #4', type: 'boolean' },
+      ]
     },
     {
       id: 'creation',
@@ -601,6 +645,7 @@ export const UPGRADES = {
       name: "Trample: Borge",
       hunter: "borge",
       type: "boolean",
+      temporary: true,
       upgradeType: "effect", // Spezialeffekt-Upgrade
       description: "Enables Borge Trample Effect",
     },
@@ -610,6 +655,7 @@ export const UPGRADES = {
       hunter: "borge",
       type: "level",
       upgradeType: "multiplicative",
+      temporary: true,
       value: 1.05,  // multipliziert mit 1.05 pro Level
       maxLevel: 25,
       description: "Loot Rewards",
@@ -620,9 +666,23 @@ export const UPGRADES = {
       hunter: "ozzy",
       type: "level",
       upgradeType: "multiplicative",
+      temporary: true,
       value: 1.05,  // multipliziert mit 1.05 pro Level
       maxLevel: 25,
       description: "Loot Rewards",
+    },
+    {
+      id: "stelzi",
+      name: "Mutual Mining Agreement: The Stelzi",
+      hunter: "all",
+      type: "level",
+      upgradeType: "multiplicative",
+      temporary: true,
+      value: 1.02,  
+      maxLevel: 8,  //+e600 cost
+      description: "Loot Rewards",
+      unlock_gem: "temporal",
+      unlock_lvl: 3,
     },
   ],
 
@@ -633,6 +693,7 @@ export const UPGRADES = {
       id: "cm46",
       name: "CM #46",
       type: "boolean",
+      temporary: true,
       value: 1.03,
       multitext: "Hunter Loot Rewards",
       unlock_gem: "power",
@@ -642,6 +703,7 @@ export const UPGRADES = {
       id: "cm47",
       name: "CM #47",
       type: "boolean",
+      temporary: true,
       value: 1.02,
       multitext: "Hunter Loot Rewards",
       unlock_gem: "power",
@@ -651,6 +713,7 @@ export const UPGRADES = {
       id: "cm48",
       name: "CM #48",
       type: "boolean",
+      temporary: true,
       value: 1.07,
       multitext: "Hunter Loot Rewards",
       unlock_gem: "power",
@@ -660,6 +723,7 @@ export const UPGRADES = {
       id: "cm51",
       name: "CM #51",
       type: "boolean",
+      temporary: true,
       value: 1.05,
       multitext: "Hunter Loot Rewards",
       unlock_gem: "power",

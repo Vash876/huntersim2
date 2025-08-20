@@ -118,7 +118,57 @@ const rawCode = computed(() => {
   if (!props.plan) return '';
   
   try {
-    const currentGemData = getGemDataFromLocalStorage();
+    let currentGemData = getGemDataFromLocalStorage();
+    
+    // WICHTIG: Plan gemOverrides haben Vorrang vor globalen Werten
+    if (props.plan.gemOverrides && Object.keys(props.plan.gemOverrides).length > 0) {
+      console.log('TRPlanShareModal: Applying gemOverrides to export');
+      console.log('Original gem data:', currentGemData);
+      console.log('Plan gemOverrides:', props.plan.gemOverrides);
+      
+      // Erstelle eine Kopie der globalen Gem-Daten
+      currentGemData = {
+        levels: { ...currentGemData.levels },
+        activeNodes: { ...currentGemData.activeNodes }
+      };
+      
+      // Wende Plan-spezifische Overrides an
+      Object.entries(props.plan.gemOverrides).forEach(([key, value]) => {
+        if (key.endsWith('Level')) {
+          // Gem Level Override
+          const gemId = key.replace('Level', '');
+          currentGemData.levels[gemId] = value;
+        } else if (key.includes('Node')) {
+          // Gem Node Override
+          const match = key.match(/^(.+)Node(\d+)$/);
+          if (match) {
+            const gemId = match[1];
+            const nodeIndex = parseInt(match[2], 10);
+            
+            // Stelle sicher, dass das Array für den Gem existiert
+            if (!currentGemData.activeNodes[gemId]) {
+              currentGemData.activeNodes[gemId] = [];
+            }
+            
+            if (value === 1 || value === true) {
+              // Node aktivieren (falls nicht bereits aktiv)
+              if (!currentGemData.activeNodes[gemId].includes(nodeIndex)) {
+                currentGemData.activeNodes[gemId].push(nodeIndex);
+              }
+            } else {
+              // Node deaktivieren (falls aktiv)
+              const index = currentGemData.activeNodes[gemId].indexOf(nodeIndex);
+              if (index !== -1) {
+                currentGemData.activeNodes[gemId].splice(index, 1);
+              }
+            }
+          }
+        }
+      });
+      
+      console.log('Final gem data with overrides:', currentGemData);
+    }
+    
     return exportTRPlan(props.plan, currentGemData) || '';
   } catch (error) {
     console.error('Error generating TR plan code:', error);
@@ -130,7 +180,51 @@ const discordCode = computed(() => {
   if (!props.plan) return '';
   
   try {
-    const currentGemData = getGemDataFromLocalStorage();
+    let currentGemData = getGemDataFromLocalStorage();
+    
+    // WICHTIG: Plan gemOverrides haben Vorrang vor globalen Werten
+    if (props.plan.gemOverrides && Object.keys(props.plan.gemOverrides).length > 0) {
+      // Erstelle eine Kopie der globalen Gem-Daten
+      currentGemData = {
+        levels: { ...currentGemData.levels },
+        activeNodes: { ...currentGemData.activeNodes }
+      };
+      
+      // Wende Plan-spezifische Overrides an
+      Object.entries(props.plan.gemOverrides).forEach(([key, value]) => {
+        if (key.endsWith('Level')) {
+          // Gem Level Override
+          const gemId = key.replace('Level', '');
+          currentGemData.levels[gemId] = value;
+        } else if (key.includes('Node')) {
+          // Gem Node Override
+          const match = key.match(/^(.+)Node(\d+)$/);
+          if (match) {
+            const gemId = match[1];
+            const nodeIndex = parseInt(match[2], 10);
+            
+            // Stelle sicher, dass das Array für den Gem existiert
+            if (!currentGemData.activeNodes[gemId]) {
+              currentGemData.activeNodes[gemId] = [];
+            }
+            
+            if (value === 1 || value === true) {
+              // Node aktivieren (falls nicht bereits aktiv)
+              if (!currentGemData.activeNodes[gemId].includes(nodeIndex)) {
+                currentGemData.activeNodes[gemId].push(nodeIndex);
+              }
+            } else {
+              // Node deaktivieren (falls aktiv)
+              const index = currentGemData.activeNodes[gemId].indexOf(nodeIndex);
+              if (index !== -1) {
+                currentGemData.activeNodes[gemId].splice(index, 1);
+              }
+            }
+          }
+        }
+      });
+    }
+    
     const rawPlanCode = exportTRPlan(props.plan, currentGemData) || '';
     
     // Plan basic info

@@ -86,6 +86,7 @@ export class LiveSimulationWASM {
         reload: this.wasm.exports.getLiveBorgeReload(),       
         revives: this.wasm.exports.getLiveBorgeRevives(),
         shieldBreakStacks: this.wasm.exports.getLiveBorgeShieldBreakStacks(),
+        helltouch: this.wasm.exports.getLiveBorgeHelltouch(),
       },
       timing: {
         currentTime: this.wasm.exports.getLiveCurrentTime(),
