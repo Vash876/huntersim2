@@ -496,6 +496,7 @@ export const UPGRADES_BY_CURRENCY = {
     { key: 'upgrades.inscryptions.i88', label: 'Inscryption #88', max: 7 },
     { key: 'upgrades.inscryptions.i89', label: 'Inscryption #89', max: 7 },
     { key: 'upgrades.inscryptions.i91', label: 'Inscryption #91', max: 7 },
+    { key: 'upgrades.inscryptions.i103', label: 'Inscryption #103', max: 8 },
   ],
 
   [CURRENCY_TYPES.FRAGS]: [
