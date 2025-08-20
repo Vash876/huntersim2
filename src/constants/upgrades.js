@@ -681,8 +681,6 @@ export const UPGRADES = {
       value: 1.02,  
       maxLevel: 8,  //+e600 cost
       description: "Loot Rewards",
-      unlock_gem: "temporal",
-      unlock_lvl: 3,
     },
   ],
 

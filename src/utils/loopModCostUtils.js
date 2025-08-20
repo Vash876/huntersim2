@@ -7,7 +7,8 @@ import Decimal from 'break_infinity.js';
 
 // Loop Mod Namen als Konstanten
 export const LOOP_MODS = {
-  RULE_OF_CONSISTENCY: "Ultima LM: Rule of Consistency"
+  RULE_OF_CONSISTENCY: "Ultima LM: Rule of Consistency",
+  STELZI: "Stelzi"
 };
 
 /**
@@ -17,6 +18,10 @@ const LOOP_MOD_CONFIG = {
   [LOOP_MODS.RULE_OF_CONSISTENCY]: {
     baseExp: 5400,   // Basis-Exponent für Level 1: 1e5400
     incExp: 288      // Inkrementeller Exponent pro Level: +1e288
+  },
+  [LOOP_MODS.STELZI]: {
+    baseCost: 3400,  // Basis-Kosten für Level 1: 3400
+    increment: 600   // Increment pro Level: +600
   }
 };
 
@@ -35,6 +40,18 @@ const LOOP_MOD_COST_LOOKUP = {
     20: "1e11160",
     50: "1e19800",
     100: "1e34200"
+    // Weitere Werte können bei Bedarf hinzugefügt werden
+  },
+  [LOOP_MODS.STELZI]: {
+    1: 3400,
+    2: 4000,
+    3: 4600,
+    4: 5200,
+    5: 5800,
+    10: 8800,
+    20: 14800,
+    50: 32800,
+    100: 62800
     // Weitere Werte können bei Bedarf hinzugefügt werden
   }
 };
@@ -61,10 +78,17 @@ function getLoopModCostDecimal(modName, level) {
   
   // Sonst berechnen nach Formel
   const config = LOOP_MOD_CONFIG[modName];
-  const exponent = config.baseExp + (level - 1) * config.incExp;
   
-  // Erstelle Decimal mit wissenschaftlicher Notation
-  return new Decimal("1e" + exponent);
+  if (modName === LOOP_MODS.STELZI) {
+    // Stelzi: Lineare Kostensteigerung
+    // Level 1: 3400, Level 2: 4000 (+600), Level 3: 4600 (+600), etc.
+    const cost = config.baseCost + (level - 1) * config.increment;
+    return new Decimal(cost);
+  } else {
+    // Rule of Consistency: Exponential
+    const exponent = config.baseExp + (level - 1) * config.incExp;
+    return new Decimal("1e" + exponent);
+  }
 }
 
 /**
@@ -91,8 +115,13 @@ function calculateLoopModCostRangeDecimal(modName, fromLevel, toLevel) {
 export function getLoopModCost(modName, level) {
   const decimalCost = getLoopModCostDecimal(modName, level);
   
-  // Zu groß für JavaScript-Number
-  return Infinity;  // Alle Werte sind zu groß für einen Number-Typ
+  // Für Stelzi können wir normale Numbers verwenden
+  if (modName === LOOP_MODS.STELZI) {
+    return decimalCost.toNumber();
+  }
+  
+  // Für Rule of Consistency ist es zu groß für JavaScript-Number
+  return Infinity;
 }
 
 /**
@@ -121,13 +150,25 @@ export function formatLoopModCost(value) {
   }
   
   if (typeof value === 'number') {
-    return "∞";  // Alle Loop Mod-Kosten sind zu groß für Number
+    if (value === Infinity) return "∞";
+    if (value >= 1000000) {
+      return (value / 1000000).toFixed(1) + "M";
+    }
+    if (value >= 1000) {
+      return (value / 1000).toFixed(1) + "K";
+    }
+    return value.toLocaleString();
   }
   
   if (value instanceof Decimal) {
     if (value.eq(0)) return "0";
     
-    // Für Loop Mods immer wissenschaftliche Notation
+    // Für Stelzi normale Zahlenformatierung
+    if (value.lt(1e6)) {
+      return value.toNumber().toLocaleString();
+    }
+    
+    // Für große Zahlen wissenschaftliche Notation
     return value.toExponential(2);
   }
   
