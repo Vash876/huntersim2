@@ -304,9 +304,7 @@ export function useBuildEvaluation(props, emit) {
           }
         }
         
-        // Gem-Konvertierung NACH den Overrides anwenden
-        convertGemStatesToUpgrades(store.gemPlannerStore.gemStates, store.upgrades);
-        console.log('🔧 [Override] Gem data converted after overrides applied');
+        console.log('🔧 [Override] All overrides applied successfully');
       }
       
       totalIterations.value = store.hunterIterations?.[props.hunterId] || 1000;

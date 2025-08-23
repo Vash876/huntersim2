@@ -184,7 +184,7 @@
               <div class="text-xs text-gray-400 flex items-center gap-1">
                 Time in LR
                 <InfoTooltip 
-                  content="Time spent in current LR run. Uses LR Ticks from tracking data and Tick Speed/Ticks per Tick from AttGN3 Calculator settings"
+                  content="Time spent in current LR run. Uses LR Ticks from tracking data and Tick Speed/Ticks per Tick from AttGN3 Calculator settings. Updates live based on time elapsed since last entry."
                   placement="top" 
                 />
               </div>
@@ -416,7 +416,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, watch, h } from 'vue';
+import { ref, computed, nextTick, watch, h, onMounted, onUnmounted } from 'vue';
 import { IconX, IconDatabase, IconTrash, IconChartLine, IconPlus, IconGripVertical, IconCheck, IconEdit, IconShare, IconChevronDown } from '@tabler/icons-vue';
 import { AgGridVue } from 'ag-grid-vue3';
 import { ModuleRegistry, AllCommunityModule, themeQuartz, colorSchemeDark } from 'ag-grid-community';
@@ -459,6 +459,10 @@ const currentTrackForModal = ref(null); // Track data reactive ref to pass to Ne
 
 // Help Guide state
 const isHelpGuideExpanded = ref(true); // Default to expanded
+
+// Live time tracking
+const currentTime = ref(new Date());
+const liveTimeInterval = ref(null);
 
 // Initialize help guide state from localStorage
 const initializeHelpGuideState = () => {
@@ -1876,8 +1880,36 @@ function getAttGN3PendingMultiplier() {
   if (efficiencyBadge) operationsPerOperation *= 3;
   if (ts5) operationsPerOperation *= 2;
   
-  // Calculate current operations
-  const currentOperations = (currentTicksInLR / ticksPerOperation) * operationsPerOperation;
+  // Get real-time adjusted ticks in LR (same logic as Time in LR)
+  let adjustedTicksInLR = currentTicksInLR;
+  
+  // Add live ticks elapsed since last log entry
+  if (props.track && props.track.entries && props.track.entries.length > 0) {
+    // Find the most recent entry by date
+    const sortedEntries = [...props.track.entries].sort((a, b) => {
+      return new Date(b.date) - new Date(a.date);
+    });
+    
+    const lastEntry = sortedEntries[0];
+    const lastEntryTime = new Date(lastEntry.date);
+    const now = currentTime.value;
+    
+    // Only add live time if the track is active (not completed)
+    if (props.track.isActive && !isNaN(lastEntryTime.getTime()) && now > lastEntryTime) {
+      const millisecondsElapsed = now - lastEntryTime;
+      const liveSecondsElapsed = millisecondsElapsed / 1000;
+      
+      // Convert live seconds to ticks using calculator settings
+      if (tickSpeed > 0 && ticksPerTick > 0) {
+        const liveTickEvents = liveSecondsElapsed / tickSpeed;
+        const liveTicksElapsed = liveTickEvents * ticksPerTick;
+        adjustedTicksInLR = currentTicksInLR + liveTicksElapsed;
+      }
+    }
+  }
+  
+  // Calculate current operations using adjusted ticks
+  const currentOperations = (adjustedTicksInLR / ticksPerOperation) * operationsPerOperation;
   
   // Research data for retention calculation
   const researchData = [
@@ -1921,7 +1953,7 @@ function getAttGN3PendingMultiplier() {
   return multiplier.toFixed(2);
 }
 
-// Get Time in LR - calculates current time spent in this LR run
+// Get Time in LR - calculates current time spent in this LR run (including live time elapsed)
 function getTimeInLR() {
   const latestValues = getLatestValues();
   
@@ -1944,15 +1976,39 @@ function getTimeInLR() {
   
   if (tickSpeed === 0 || ticksPerTick === 0) return '0d 0h';
   
-  // Calculate time in LR (same logic as AttGN3 Calculator)
+  // Calculate base time in LR from ticks (same logic as AttGN3 Calculator)
   // Number of actual "tick events" = currentTicksInLR / ticksPerTick
   const actualTickEvents = currentTicksInLR / ticksPerTick;
   
   // Each tick event lasts tickSpeed seconds
-  const secondsInLR = actualTickEvents * tickSpeed;
+  const baseSecondsInLR = actualTickEvents * tickSpeed;
+  
+  // Add live time elapsed since last log entry
+  let liveSecondsElapsed = 0;
+  
+  // Get the timestamp of the most recent entry to calculate live elapsed time
+  if (props.track && props.track.entries && props.track.entries.length > 0) {
+    // Find the most recent entry by date
+    const sortedEntries = [...props.track.entries].sort((a, b) => {
+      return new Date(b.date) - new Date(a.date);
+    });
+    
+    const lastEntry = sortedEntries[0];
+    const lastEntryTime = new Date(lastEntry.date);
+    const now = currentTime.value;
+    
+    // Only add live time if the track is active (not completed)
+    if (props.track.isActive && !isNaN(lastEntryTime.getTime()) && now > lastEntryTime) {
+      const millisecondsElapsed = now - lastEntryTime;
+      liveSecondsElapsed = millisecondsElapsed / 1000;
+    }
+  }
+  
+  // Total seconds = base time from ticks + live elapsed time
+  const totalSecondsInLR = baseSecondsInLR + liveSecondsElapsed;
   
   // Convert seconds to days
-  const daysInLR = secondsInLR / 86400;
+  const daysInLR = totalSecondsInLR / 86400;
   
   // Format in days, hours and minutes (as requested)
   if (daysInLR === 0) return '0d 0h 0m';
@@ -3108,6 +3164,42 @@ async function shareTrack() {
     });
   }
 }
+
+// Live time update timer
+function startLiveTimeUpdate() {
+  // Update current time every minute for live calculation
+  liveTimeInterval.value = setInterval(() => {
+    currentTime.value = new Date();
+  }, 60000); // Update every minute
+}
+
+function stopLiveTimeUpdate() {
+  if (liveTimeInterval.value) {
+    clearInterval(liveTimeInterval.value);
+    liveTimeInterval.value = null;
+  }
+}
+
+// Setup timer when modal opens/closes
+onMounted(() => {
+  if (props.show) {
+    startLiveTimeUpdate();
+  }
+});
+
+onUnmounted(() => {
+  stopLiveTimeUpdate();
+});
+
+// Watch for modal show/hide to start/stop timer
+watch(() => props.show, (newShow) => {
+  if (newShow) {
+    currentTime.value = new Date(); // Update immediately when opening
+    startLiveTimeUpdate();
+  } else {
+    stopLiveTimeUpdate();
+  }
+});
 </script>
 
 <style scoped>

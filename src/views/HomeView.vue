@@ -2,6 +2,30 @@
 const changelog = 
 [
   {
+    version: '2.7.12',
+    date: '2025-08-23',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Fixed Gems not applying correctly to build code',
+        ]
+      },
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Time in LR and AttGN3 Pending Multiplier now update live with real time elapsed since last log entry',
+        ]
+      },
+      {
+        text: 'Trait Sphere Planner',
+        subItems: [
+          'Added cost display showing the AMC cost for the next milestones',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.11',
     date: '2025-08-20',
     changes: [

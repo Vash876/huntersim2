@@ -103,66 +103,138 @@
                 </div>
                 
                 <!-- Cell Milestone -->
-                <div class="flex items-center justify-between mb-1.5">
-                  <div class="flex items-center">
-                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
-                      <img src="@/assets/general/cells.png" alt="Cells" class="w-4 h-4" />
+                <div class="flex flex-col sm:flex-row sm:items-center mb-1.5">
+                  <div class="flex items-center justify-between sm:justify-start sm:flex-1">
+                    <div class="flex items-center">
+                      <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
+                        <img src="@/assets/general/cells.png" alt="Cells" class="w-4 h-4" />
+                      </div>
+                      <span class="text-xs sm:text-sm text-gray-300">Cell Milestones</span>
                     </div>
-                    <span class="text-xs sm:text-sm text-gray-300">Cell Milestones</span>
+                    <!-- Mobile: Controls rechts -->
+                    <ToolValueControls
+                      :value="currentCellMilestones"
+                      @update:value="currentCellMilestones = $event"
+                      :minValue="startCellMilestones"
+                      :maxValue="99"
+                      :step="1"
+                      :fastStep="5"
+                      value-class="text-green-400 font-medium"
+                      :autoEdit="true"
+                      class="ml-2 sm:hidden"
+                    />
                   </div>
-                  <ToolValueControls
-                    :value="currentCellMilestones"
-                    @update:value="currentCellMilestones = $event"
-                    :minValue="startCellMilestones"
-                    :maxValue="99"
-                    :step="1"
-                    :fastStep="5"
-                    value-class="text-green-400 font-medium"
-                    :autoEdit="true"
-                    class="ml-2"
-                  />
+                  <!-- Desktop: Cost zwischen Label und Controls -->
+                  <div v-if="currentCellMilestones < 99" class="hidden sm:flex items-center text-xs text-gray-300 mx-4">
+                    Next Cost: <span class="text-green-400 ml-1">1e{{ nextCellMilestoneCost }}</span>
+                  </div>
+                  <!-- Desktop: Controls rechts mit mehr Platz -->
+                  <div class="hidden sm:block sm:w-32">
+                    <ToolValueControls
+                      :value="currentCellMilestones"
+                      @update:value="currentCellMilestones = $event"
+                      :minValue="startCellMilestones"
+                      :maxValue="99"
+                      :step="1"
+                      :fastStep="5"
+                      value-class="text-green-400 font-medium"
+                      :autoEdit="true"
+                    />
+                  </div>
+                  <!-- Mobile: Cost unten -->
+                  <div v-if="currentCellMilestones < 99" class="text-xs text-gray-300 mt-1 sm:hidden">
+                    Next Cost: <span class="text-green-400">1e{{ nextCellMilestoneCost }}</span>
+                  </div>
                 </div>
                 
                 <!-- MP Milestone -->
-                <div class="flex items-center justify-between mb-1.5">
-                  <div class="flex items-center">
-                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
-                      <img src="@/assets/general/mp.png" alt="MP" class="w-4 h-4" />
+                <div class="flex flex-col sm:flex-row sm:items-center mb-1.5">
+                  <div class="flex items-center justify-between sm:justify-start sm:flex-1">
+                    <div class="flex items-center">
+                      <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
+                        <img src="@/assets/general/mp.png" alt="MP" class="w-4 h-4" />
+                      </div>
+                      <span class="text-xs sm:text-sm text-gray-300">MP Milestones</span>
                     </div>
-                    <span class="text-xs sm:text-sm text-gray-300">MP Milestones</span>
+                    <!-- Mobile: Controls rechts -->
+                    <ToolValueControls
+                      :value="currentMPMilestones"
+                      @update:value="currentMPMilestones = $event"
+                      :minValue="startMPMilestones"
+                      :maxValue="99"
+                      :step="1"
+                      :fastStep="5"
+                      value-class="text-red-400 font-medium"
+                      :autoEdit="true"
+                      class="ml-2 sm:hidden"
+                    />
                   </div>
-                  <ToolValueControls
-                    :value="currentMPMilestones"
-                    @update:value="currentMPMilestones = $event"
-                    :minValue="startMPMilestones"
-                    :maxValue="99"
-                    :step="1"
-                    :fastStep="5"
-                    value-class="text-red-400 font-medium"
-                    :autoEdit="true"
-                    class="ml-2"
-                  />
+                  <!-- Desktop: Cost zwischen Label und Controls -->
+                  <div v-if="currentMPMilestones < 99" class="hidden sm:flex items-center text-xs text-gray-300 mx-4">
+                    Next Cost: <span class="text-red-400 ml-1">1e{{ nextMPMilestoneCost }}</span>
+                  </div>
+                  <!-- Desktop: Controls rechts mit mehr Platz -->
+                  <div class="hidden sm:block sm:w-32">
+                    <ToolValueControls
+                      :value="currentMPMilestones"
+                      @update:value="currentMPMilestones = $event"
+                      :minValue="startMPMilestones"
+                      :maxValue="99"
+                      :step="1"
+                      :fastStep="5"
+                      value-class="text-red-400 font-medium"
+                      :autoEdit="true"
+                    />
+                  </div>
+                  <!-- Mobile: Cost unten -->
+                  <div v-if="currentMPMilestones < 99" class="text-xs text-gray-300 mt-1 sm:hidden">
+                    Next Cost: <span class="text-red-400">1e{{ nextMPMilestoneCost }}</span>
+                  </div>
                 </div>
                 
                 <!-- RP Milestone -->
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
-                      <img src="@/assets/general/rp.png" alt="RP" class="w-4 h-4" />
+                <div class="flex flex-col sm:flex-row sm:items-center">
+                  <div class="flex items-center justify-between sm:justify-start sm:flex-1">
+                    <div class="flex items-center">
+                      <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
+                        <img src="@/assets/general/rp.png" alt="RP" class="w-4 h-4" />
+                      </div>
+                      <span class="text-xs sm:text-sm text-gray-300">RP Milestones</span>
                     </div>
-                    <span class="text-xs sm:text-sm text-gray-300">RP Milestones</span>
+                    <!-- Mobile: Controls rechts -->
+                    <ToolValueControls
+                      :value="currentRPMilestones"
+                      @update:value="currentRPMilestones = $event"
+                      :minValue="startRPMilestones"
+                      :maxValue="99"
+                      :step="1"
+                      :fastStep="5"
+                      value-class="text-amber-400 font-medium"
+                      :autoEdit="true"
+                      class="ml-2 sm:hidden"
+                    />
                   </div>
-                  <ToolValueControls
-                    :value="currentRPMilestones"
-                    @update:value="currentRPMilestones = $event"
-                    :minValue="startRPMilestones"
-                    :maxValue="99"
-                    :step="1"
-                    :fastStep="5"
-                    value-class="text-amber-400 font-medium"
-                    :autoEdit="true"
-                    class="ml-2"
-                  />
+                  <!-- Desktop: Cost zwischen Label und Controls -->
+                  <div v-if="currentRPMilestones < 99" class="hidden sm:flex items-center text-xs text-gray-300 mx-4">
+                    Next Cost: <span class="text-amber-400 ml-1">1e{{ nextRPMilestoneCost }}</span>
+                  </div>
+                  <!-- Desktop: Controls rechts mit mehr Platz -->
+                  <div class="hidden sm:block sm:w-32">
+                    <ToolValueControls
+                      :value="currentRPMilestones"
+                      @update:value="currentRPMilestones = $event"
+                      :minValue="startRPMilestones"
+                      :maxValue="99"
+                      :step="1"
+                      :fastStep="5"
+                      value-class="text-amber-400 font-medium"
+                      :autoEdit="true"
+                    />
+                  </div>
+                  <!-- Mobile: Cost unten -->
+                  <div v-if="currentRPMilestones < 99" class="text-xs text-gray-300 mt-1 sm:hidden">
+                    Next Cost: <span class="text-amber-400">1e{{ nextRPMilestoneCost }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -175,7 +247,7 @@
                     <IconStar size="16" class="text-red-400" />
                   </div>
                   <span class="text-xs sm:text-sm text-gray-300">Boon of Ouroboros: Juncture</span>
-                  <span class="text-xs text-gray-500 ml-2">(+1 Antimatter Core)</span>
+                  <span class="text-xs text-gray-500 ml-2">(+1 AMC)</span>
                 </div>
                 <div class="flex items-center">
                   <!-- Toggle Switch -->
@@ -770,6 +842,26 @@ function formatMultiplier(value) {
 // Kombinierter Multiplikator basierend auf Total LP
 const combinedMultiplier = computed(() => {
   return Math.pow(2, Math.floor(totalLP.value / 10));
+});
+
+// Milestone cost calculations
+const nextCellMilestoneCost = computed(() => {
+  const nextLevel = currentCellMilestones.value + 1;
+  if (nextLevel === 1) return 500;
+  if (nextLevel === 2) return 5000;
+  return 5000 + (nextLevel - 2) * 5000;
+});
+
+const nextMPMilestoneCost = computed(() => {
+  const nextLevel = currentMPMilestones.value + 1;
+  if (nextLevel === 1) return 1000;
+  return 1000 + (nextLevel - 1) * 500;
+});
+
+const nextRPMilestoneCost = computed(() => {
+  const nextLevel = currentRPMilestones.value + 1;
+  if (nextLevel === 1) return 800;
+  return 800 + (nextLevel - 1) * 400;
 });
 
 // Color mapping for different sphere effects

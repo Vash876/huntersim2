@@ -82,7 +82,7 @@ src/
 ├── components/          # Reusable Vue components
 │   ├── common/         # Shared components (modals, controls)
 │   ├── builds/         # Build management components
-│   ├── tr-tracking/    # Time Rewind tracking components
+│   ├── tr-tracking/    # Traversal Reset tracking components
 │   ├── tr-planner/     # TR planning components
 │   └── gem-planner/    # Gem optimization components
 ├── views/              # Page-level route components
@@ -125,10 +125,44 @@ src/
 - **Multi-Threading**: Heavy calculations run in Web Workers to prevent UI blocking
 
 ### Data Management
-- **Import/Export**: Base58-encoded build sharing system
+- **Import/Export**: Base58-encoded build sharing system with intelligent override detection
 - **Cloud Sync**: Optional authentication with Neon database backend
 - **Backup System**: Complete data export/import with JSON format
 - **Versioning**: Automatic data migration for store structure changes
+
+#### Build Code Import/Export Behavior
+
+**Export Process**:
+- Build codes contain parameter values in a specific order defined by hunter-specific parameter arrays
+- Values are extracted using priority system: Overrides > Talents > Attributes > Stats > Store Data
+- Gem nodes and upgrades are converted from gemPlannerStore format to upgrades.gems_nodes format
+- Build-specific overrides have highest priority during export encoding
+
+**Import Process**:
+- Intelligent override detection compares imported values with current store data
+- Creates overrides for all parameters where imported values differ from current store values
+- Build codes represent exact build configurations that should be fully reproduced
+- All imported values are applied as overrides regardless of whether they are higher or lower than current values
+- This ensures the imported build matches exactly what was exported
+
+**Gem Nodes Priority System**:
+1. **Build Overrides** (highest priority) - temporary modifications for specific builds, including imported values
+2. **Base Gem States** - permanent progress from gem planner
+3. **Normal Gem States** - current active gem configuration
+4. **Store Defaults** (lowest priority) - fallback values
+
+**Parameter Categories**:
+- **Stats**: Hunter-specific battle statistics (hp, atk, regen, dr, etc.)
+- **Talents**: Hunter skill tree abilities (revival, omen, ultima, etc.)
+- **Attributes**: Hunter skill tree attributes
+- **Upgrades**: Game progression including gems, equipment, and research
+- **Special**: Level, stage, and other meta parameters
+
+**Build Code Format**:
+- Base58 encoding for compact, URL-safe sharing
+- Binary packing with variable-length integer encoding
+- Header contains hunter type and version information
+- Parameter order is fixed per hunter type for consistency
 
 ## Common Patterns
 
@@ -276,6 +310,79 @@ async function evaluateBuild(buildData) {
   } finally {
     isLoading.value = false;
   }
+}
+```
+
+### Build Code Handling Pattern
+```javascript
+import { BuildCodeHandler } from '@/utils/BuildCodeHandler';
+
+// Export build to code
+function exportBuild(build, storeData) {
+  // Apply build overrides to store data for accurate export
+  const exportStoreData = { ...storeData };
+  
+  // Convert gem planner data to upgrades format
+  convertGemStatesToUpgrades(
+    gemPlannerStore.gemStates,
+    exportStoreData.upgrades
+  );
+  
+  // Apply build-specific overrides
+  if (build.overrides) {
+    Object.entries(build.overrides).forEach(([key, value]) => {
+      if (key.startsWith('upgrades.')) {
+        // Apply override to store data for export
+        applyOverrideToStoreData(exportStoreData, key, value);
+      }
+    });
+  }
+  
+  return BuildCodeHandler.generateCode(build, exportStoreData);
+}
+
+// Import build from code
+function importBuild(code, currentStoreData) {
+  const importedBuild = BuildCodeHandler.parseCode(code, currentStoreData);
+  
+  if (!importedBuild) {
+    throw new Error('Invalid build code');
+  }
+  
+  // All imported values are applied as overrides to reproduce the exact build
+  // This ensures the imported build matches exactly what was exported
+  return importedBuild;
+}
+
+// Gem conversion helper
+function convertGemStatesToUpgrades(gemStates, upgrades) {
+  if (!gemStates) return;
+  
+  upgrades.gems_nodes = {};
+  
+  Object.entries(gemStates).forEach(([gemId, gemState]) => {
+    // Level
+    upgrades.gems_nodes[`${gemId}_level`] = gemState.level || 0;
+    
+    // Nodes (array format: [true, false, true])
+    if (Array.isArray(gemState.nodes)) {
+      gemState.nodes.forEach((hasNode, index) => {
+        upgrades.gems_nodes[`${gemId}_gem${index + 1}`] = hasNode ? 1 : 0;
+      });
+    }
+    
+    // Upgrades with mapping
+    if (gemState.upgrades) {
+      Object.entries(gemState.upgrades).forEach(([upgradeId, level]) => {
+        const mappedKey = getUpgradeMapping(upgradeId);
+        if (mappedKey) {
+          upgrades.gems_nodes[mappedKey] = level;
+        } else {
+          upgrades.gems_nodes[`${gemId}_${upgradeId}`] = level;
+        }
+      });
+    }
+  });
 }
 ```
 

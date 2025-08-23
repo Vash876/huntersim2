@@ -120,6 +120,7 @@ import { ref, computed, watch } from 'vue';
 import { IconShare, IconX, IconCopy, IconCheck, IconBrandDiscord } from '@tabler/icons-vue';
 import { BuildCodeHandler } from '../../utils/BuildCodeHandler';
 import { useHunterStore } from '../../store/hunterStore';
+import { useGemPlannerStore } from '../../store/gemPlannerStore';
 import { formatNumber } from '@/composables/format';
 import { getHunterById } from '@/constants/hunters';
 
@@ -135,6 +136,7 @@ const emit = defineEmits(['close']);
 
 // Store
 const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Refs
 const codeTextarea = ref(null);
@@ -144,15 +146,98 @@ const discordCopied = ref(false);
 const linkCopied = ref(false);
 const codeFormat = ref('raw'); // 'raw' or 'discord'
 
+// Helper function to convert gem states to upgrades format (from useBuildEvaluation)
+function convertGemStatesToUpgrades(gemStates, upgrades) {
+  if (!gemStates) return;
+  
+  // Stelle sicher dass gems_nodes existiert und leere es komplett
+  upgrades.gems_nodes = {};
+  
+  // Mapping von gemPlannerStore upgrade IDs zu upgrades.gems_nodes keys
+  const upgradeMapping = {
+    // Attraction Gem Upgrades
+    'borge-loot-bonus': 'attraction_lootBorge',
+    'ozzy-loot-bonus': 'attraction_lootOzzy', 
+    'catch-up-power': 'attraction_catchUp',
+    
+    // Creation Gem Upgrades
+    'borge-stat-bonus': 'creation_borgeGU',
+    'ozzy-stat-bonus': 'creation_ozzyGU',
+    'knox-stat-bonus': 'creation_knoxGU',
+  };
+  
+  // Konvertiere alle Gem-Daten
+  Object.entries(gemStates).forEach(([gemId, gemState]) => {
+    if (!gemState) return;
+    
+    // Konvertiere Gem Level
+    if (gemState.level > 0) {
+      upgrades.gems_nodes[`${gemId}_level`] = gemState.level;
+    } else {
+      upgrades.gems_nodes[`${gemId}_level`] = 0;
+    }
+    
+    // Konvertiere Gem Nodes (boolean array zu gem1, gem2, gem3)
+    if (Array.isArray(gemState.nodes)) {
+      gemState.nodes.forEach((hasNode, index) => {
+        upgrades.gems_nodes[`${gemId}_gem${index + 1}`] = hasNode ? 1 : 0;
+      });
+    }
+    
+    // Konvertiere Gem Upgrades
+    if (gemState.upgrades) {
+      Object.entries(gemState.upgrades).forEach(([upgradeId, level]) => {
+        const mappedKey = upgradeMapping[upgradeId];
+        if (mappedKey) {
+          upgrades.gems_nodes[mappedKey] = level;
+        } else {
+          upgrades.gems_nodes[`${gemId}_${upgradeId}`] = level;
+        }
+      });
+    }
+  });
+}
+
 // Computed
 const buildCode = computed(() => {
   if (!props.build) return '';
   
-  // Get store data for encoding
+  // Get store data for encoding - inklusive Gem Planner Data
   const storeData = {
     hunterStats: { ...hunterStore.hunterStats },
     upgrades: { ...hunterStore.upgrades }
   };
+  
+  // Konvertiere Gem Planner Store Daten in upgrades.gems_nodes Format
+  if (gemPlannerStore.gemStates) {
+    convertGemStatesToUpgrades(gemPlannerStore.gemStates, storeData.upgrades);
+  }
+  
+  // Apply build-specific overrides to storeData for correct export
+  if (props.build.overrides) {
+    Object.entries(props.build.overrides).forEach(([key, value]) => {
+      if (key.startsWith('upgrades.')) {
+        const parts = key.split('.');
+        
+        if (parts.length === 3) {
+          const [_, category, itemKey] = parts;
+          if (!storeData.upgrades[category]) {
+            storeData.upgrades[category] = {};
+          }
+          storeData.upgrades[category][itemKey] = value;
+        } else if (parts.length === 4) {
+          const [_, category, subcategory, itemKey] = parts;
+          if (!storeData.upgrades[category]) {
+            storeData.upgrades[category] = {};
+          }
+          if (!storeData.upgrades[category][subcategory]) {
+            storeData.upgrades[category][subcategory] = {};
+          }
+          storeData.upgrades[category][subcategory][itemKey] = value;
+        }
+      }
+    });
+  }
   
   return BuildCodeHandler.generateCode(props.build, storeData) || '';
 });
