@@ -23,7 +23,7 @@
       </div>
       
       <!-- Body -->
-      <div class="p-5 space-y-4">        
+      <div class="p-2 space-y-4">        
         <!-- Summary Header -->
         <div class="bg-gray-700/50 rounded-md p-3 border border-gray-600/50">
           <div class="grid grid-cols-3 gap-3">
@@ -56,11 +56,13 @@
         <!-- Gadget Table -->
         <div class="bg-gray-700/50 rounded-md border border-gray-600/50 overflow-hidden">
           <!-- Table Header -->
-          <div class="grid grid-cols-12 p-2 bg-gray-600/70 text-xs font-medium text-gray-300 border-b border-gray-600">
-            <div class="col-span-6 px-2">GADGET</div>
-            <div class="col-span-2 px-2 text-center">CURRENT</div>
-            <div class="col-span-2 px-2 text-center">TARGET</div>
-            <div class="col-span-2 px-2 text-right">COST</div>
+          <div class="grid grid-cols-14 md:grid-cols-20 p-2 md:p-2 py-5 md:py-2 bg-gray-600/70 text-xs font-medium text-gray-300 border-b border-gray-600">
+            <div class="col-span-2 md:col-span-1"></div>
+            <div class="col-span-10 px-2 hidden md:block">GADGET</div>
+            <div class="col-span-3 md:col-span-2 px-2 text-center">CURRENT</div>
+            <div class="col-span-3 md:col-span-2 px-2 text-center">TARGET</div>
+            <div class="col-span-3 md:col-span-2 px-2 text-center">TIME</div>
+            <div class="col-span-3 md:col-span-3 px-2 text-right">COST</div>
           </div>
           
           <!-- Table Body -->
@@ -68,22 +70,37 @@
             <div 
               v-for="gadget in sortedGadgetData" 
               :key="gadget.id"
-              class="grid grid-cols-12 p-2 border-b border-gray-600/30 hover:bg-gray-600/20"
+              class="grid grid-cols-14 md:grid-cols-20 p-1 md:p-2 md:py-2 border-b border-gray-600/30 hover:bg-gray-600/20"
               :class="{'bg-gray-600/10': gadget.hasChanges}"
             >
+              <div class="col-span-2 md:col-span-1 px-1 flex items-center justify-center min-w-0">
+                <img 
+                  v-if="gadget.imageUrl" 
+                  :src="gadget.imageUrl" 
+                  :alt="gadget.label"
+                  class="w-6 h-6 md:w-6 md:h-6 object-contain flex-shrink-0"
+                  style="min-width: 30px; min-height: 30px;"
+                />
+              </div>
               <div 
-                class="col-span-6 px-2 text-white font-medium"
+                class="col-span-10 px-2 text-white font-medium items-center hidden md:flex"
                 :title="gadget.label"  
               >
                 {{ gadget.truncatedLabel }}  
               </div>
-              <div class="col-span-2 px-2 text-center text-gray-300">{{ gadget.current }}</div>
-              <div class="col-span-2 px-2 text-center" 
+              <div class="col-span-3 md:col-span-2 px-2 text-center text-gray-300 flex items-center justify-center">{{ gadget.current }}</div>
+              <div class="col-span-3 md:col-span-2 px-2 text-center flex items-center justify-center" 
                 :class="gadget.hasChanges ? 'text-green-400 font-medium' : 'text-gray-300'"
               >
                 {{ gadget.target }}
               </div>
-              <div class="col-span-2 px-2 text-right">
+              <div class="col-span-3 md:col-span-2 px-2 text-center text-xs flex items-center justify-center">
+                <span v-if="gadget.hasChanges" class="text-blue-400">
+                  {{ formatIndividualTime(gadget.cost) }}
+                </span>
+                <span v-else class="text-gray-500">-</span>
+              </div>
+              <div class="col-span-3 md:col-span-3 px-2 text-right flex items-center justify-end">
                 <span v-if="gadget.hasChanges" class="text-amber-400">
                   {{ formatGadgetCost(gadget.cost) }}
                 </span>
@@ -139,6 +156,14 @@ const props = defineProps({
   buildName: {
     type: String,
     default: ''
+  },
+  tessarectsPerDay: {
+    type: Number,
+    default: 0
+  },
+  gadgetImages: {
+    type: Object,
+    default: () => ({})
   }
 });
 
@@ -154,12 +179,21 @@ function truncateGadgetName(name, maxLength) {
 
 // Computed für responsive max length
 const maxNameLength = computed(() => {
-  // Einfache Bildschirmbreiten-Erkennung
-  if (typeof window !== 'undefined') {
-    return window.innerWidth < 640 ? 30 : 45; // sm breakpoint = 640px
-  }
-  return 30; // Fallback für SSR
+  // Für das Modal verwenden wir eine feste, kompakte Länge
+  return 48;
 });
+
+// Hilfsfunktion um die Bildnummer zu ermitteln
+function getGadgetImageNumber(gadgetId) {
+  const gadgetIndex = GADGETS.findIndex(g => g.id === gadgetId);
+  return gadgetIndex + 1; // 1-basiert für die Dateinamen
+}
+
+// Hilfsfunktion um Gadget Image URL zu bekommen
+function getGadgetImageUrl(gadgetId) {
+  const imageNumber = getGadgetImageNumber(gadgetId);
+  return props.gadgetImages[imageNumber] || null;
+}
 
 // Sortiert und transformiert die Gadget-Daten für die Anzeige
 const sortedGadgetData = computed(() => {
@@ -172,7 +206,8 @@ const sortedGadgetData = computed(() => {
     return {
       id: gadget.id,
       label: gadget.label,
-      truncatedLabel: truncateGadgetName(gadget.label, maxNameLength.value), // NEU!
+      truncatedLabel: truncateGadgetName(gadget.label, maxNameLength.value),
+      imageUrl: getGadgetImageUrl(gadget.id),
       current,
       target,
       hasChanges,
@@ -180,6 +215,43 @@ const sortedGadgetData = computed(() => {
     };
   });
 });
+
+// Formatiere individuelle Zeiten für einzelne Gadgets
+function formatIndividualTime(cost) {
+  if (cost <= 0 || props.tessarectsPerDay <= 0) return 'N/A';
+  
+  const days = cost / props.tessarectsPerDay;
+  
+  if (days === Infinity || isNaN(days)) return 'N/A';
+  if (days > 36500) return '☠️';
+  
+  if (days > 365) {
+    const years = Math.floor(days / 365);
+    const remainingDays = days % 365;
+    const months = Math.floor(remainingDays / 30);
+    
+    if (months === 0) {
+      return `${years}y`;
+    } else {
+      return `${years}y ${months}m`;
+    }
+  }
+  
+  if (days > 60) {
+    return `${Math.floor(days)}d`;
+  }
+  
+  const fullDays = Math.floor(days);
+  const hours = Math.round((days - fullDays) * 24);
+  
+  if (fullDays === 0) {
+    return `${hours}h`;
+  } else if (hours === 0) {
+    return `${fullDays}d`;
+  } else {
+    return `${fullDays}d ${hours}h`;
+  }
+}
 
 // Formatiere den Zeitwert benutzerfreundlich
 const formatTime = computed(() => {

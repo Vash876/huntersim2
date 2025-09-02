@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="p-0 sm:p-6 max-w-[1440px] mx-auto">
-      <div class="bg-gray-900/95 rounded-xl p-3 sm:p-5">
+  <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8 border border-gray-800/80">
         <!-- Header -->
         <h2 class="text-xl sm:text-2xl font-bold mb-3 text-center text-white">
           <span>Mech Planner</span>
@@ -9,7 +9,7 @@
         
         <!-- Global Settings (unchanged) -->
         <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-3">
-          <div class="header p-2 flex justify-between items-center">
+          <div class="header p-3 flex justify-between items-center">
             <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
               <IconSettings size="16" class="mr-1.5 text-blue-400" />
               Global Settings
@@ -25,11 +25,11 @@
           </div>
           
           <div class="p-2 sm:p-3">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Left Column -->
               <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
                 <!-- The C.O.O.R.S (Relic #8) -->
-                <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center justify-between mb-2">
                   <div class="flex items-center">
                     <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
                       <IconStar size="16" class="text-orange-400" />
@@ -98,7 +98,7 @@
               <!-- Right Column -->
               <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
                 <!-- The Transmission Amplifier - nur wenn Creation Gem Level >= 4 -->
-                <div v-if="creationGemLevel >= 4" class="space-y-3">
+                <div v-if="creationGemLevel >= 4" class="space-y-2">
                   <!-- Transmission Amplifier Tier -->
                   <div class="flex items-center justify-between">
                     <div class="flex items-center">
@@ -158,7 +158,7 @@
         
         <!-- Mech Units Grid -->
         <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
-          <div class="header p-2">
+          <div class="header p-3">
             <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
               <IconRobot size="25" class="mr-1.5 text-orange-400" />
               Mech Units
@@ -178,7 +178,7 @@
                 class="bg-gray-900/60 rounded-lg border border-gray-700/50 overflow-hidden"
               >
                 <!-- Mech Header -->
-                <div class="p-3 border-b border-gray-600 bg-gradient-to-r from-gray-800 to-gray-700">
+                <div class="p-3 border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-700 rounded-t-lg">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center">
                       <!-- Mech Asset Image -->
@@ -241,7 +241,7 @@
                 <!-- Mech Content -->
                 <div class="p-3">
                   <!-- Upgrade Controls Grid mit Best Upgrade Highlighting -->
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
                     <!-- Mechs Owned -->
                     <div 
                       class="bg-gray-800/50 rounded-lg p-3 border"
@@ -336,7 +336,7 @@
                   <!-- Output Information Grid - Unterschiedlich für Token vs Normal -->
                   <div v-if="mech.key !== 'token_mk1'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <!-- Current Output Multiplier -->
-                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                    <div class="bg-gray-800/80 rounded-xl p-3 border border-gray-700/60">
                       <div class="flex items-center mb-2">
                         <IconChartLine size="16" class="text-purple-400 mr-2" />
                         <span class="text-sm font-medium text-gray-300">Current Output</span>
@@ -368,7 +368,7 @@
                     </div>
 
                     <!-- Output Statistics -->
-                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                    <div class="bg-gray-800/80 rounded-xl p-3 border border-gray-700/60">
                       <div class="flex items-center mb-2">
                         <IconTrendingUp size="16" class="text-cyan-400 mr-2" />
                         <span class="text-sm font-medium text-gray-300">Output Statistics</span>
@@ -396,7 +396,7 @@
                   <!-- Token Unit spezifische Statistiken -->
                   <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <!-- Token Generation -->
-                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                    <div class="bg-gray-800/80 rounded-xl p-3 border border-gray-700/60">
                       <div class="flex items-center mb-2">
                         <IconStar size="16" class="text-yellow-400 mr-2" />
                         <span class="text-sm font-medium text-gray-300">Token Generation</span>
@@ -421,7 +421,7 @@
                     </div>
 
                     <!-- Token Statistics -->
-                    <div class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
+                    <div class="bg-gray-800/80 rounded-xl p-3 border border-gray-700/60">
                       <div class="flex items-center mb-2">
                         <IconTrendingUp size="16" class="text-cyan-400 mr-2" />
                         <span class="text-sm font-medium text-gray-300">Token Statistics</span>
@@ -1838,7 +1838,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Modernisierte Header-Styles */
 .header {
   background: linear-gradient(to right, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.95));
+  border-radius: 0.75rem 0.75rem 0 0;
 }
 </style>

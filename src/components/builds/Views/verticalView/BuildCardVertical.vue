@@ -8,6 +8,7 @@
       :hunter-color="hunterColor"
       :is-reference-build="isReferenceBuild"
       :results="results"
+      :is-loading="isLoading"
       @edit="emit('edit', buildData)"
       @clone="emit('clone', buildData)"
       @archive="emit('archive', buildData)"

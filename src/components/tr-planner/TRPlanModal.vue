@@ -3239,6 +3239,10 @@ function initializeWithCopyData(copyData) {
     allTimeOrbs.value = copyData.allTimeOrbs || copyData.updatedStats?.allTimeOrbs || 0;
     allTimeOrbsDisplay.value = formatSuffixNotation(allTimeOrbs.value);
 
+    // Override-Daten aus dem kopierten Plan laden
+    localGemOverrides.value = copyData.gemOverrides ? { ...copyData.gemOverrides } : {};
+    localMaxedBoostsOverrides.value = copyData.maxedBoostsOverrides ? { ...copyData.maxedBoostsOverrides } : {};
+
     // 2) Bestehende Schritte löschen
     trSteps.length = 0;
 

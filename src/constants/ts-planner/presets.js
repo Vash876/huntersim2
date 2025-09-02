@@ -448,6 +448,38 @@ export const traitSpherePresets = [
     spheres: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15, 16],
   },
 
+  // 89 AM Cores
+  {
+    cores: 89,
+    milestones: "",
+    category: 'short/long',
+    spheres: [1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 14, 16, 19],
+  },
+
+  // 91 AM Cores
+  {
+    cores: 91,
+    milestones: "",
+    category: 'short/long',
+    spheres: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 16, 19],
+  },
+
+  // 100 AM Cores
+  {
+    cores: 100,
+    milestones: "",
+    category: 'short/long',
+    spheres: [1, 2, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15, 16, 19],
+  },
+
+  // 102 AM Cores
+  {
+    cores: 102,
+    milestones: "",
+    category: 'short/long',
+    spheres: [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15, 16, 19],
+  }
+
 ];
 
 /**

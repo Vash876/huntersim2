@@ -1,12 +1,12 @@
 <template>
-  <div class="p-1 sm:p-6 max-w-[1440px] mx-auto">
-    <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
+  <div class="p-0 sm:p-6 max-w-[1440px] mx-auto">
+    <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8 border border-gray-800/80">
       <!-- Überschrift -->
-      <h2 class="text-3xl font-bold mb-6 text-center text-white">Diamond Ultima Calculator</h2>
+  <h2 class="text-3xl font-bold mb-6 text-center text-white">Diamond Ultima Calculator</h2>
       
       <!-- TR Count und Total Levels mit responsiver Anpassung -->
-      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-8">
-        <div class="header p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center">
+      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
+        <div class="header p-3 flex flex-col sm:flex-row sm:justify-between sm:items-center">
           <!-- TR Count - immer in der ersten Zeile -->
           <div class="flex items-center gap-6 mb-3 sm:mb-0">
             <h3 class="text-lg font-semibold text-white flex items-center">
@@ -24,7 +24,6 @@
                 :fastStep="10"
                 :showFastControls="true"
                 @update:value="updateTrCount"
-                class="w-32"
               />
             </div>
           </div>
@@ -45,8 +44,8 @@
       </div>
       
       <!-- Upgrades Tabelle -->
-      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-8">
-        <div class="header p-4 flex justify-between items-center">
+      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
+        <div class="header p-3 flex justify-between items-center">
           <h3 class="text-lg font-semibold text-white flex items-center">
             <IconArrowUpCircle size="20" class="mr-2 text-green-400" />
             Ultima Upgrades
@@ -55,7 +54,7 @@
           <div class="flex space-x-2">            
             <button 
               @click="resetForm"
-              class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 text-sm rounded-lg flex items-center transition-colors"
+              class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 text-xs rounded-lg flex items-center transition-colors"
             >
               <IconRefresh size="16" class="mr-1.5" />
               Reset

@@ -1,33 +1,31 @@
 <template>
   <div>
     <div class="p-0 sm:p-6 max-w-[1440px] mx-auto">
-      <div class="bg-gray-900/95 rounded-xl p-3 sm:p-5">
+      <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8 border border-gray-800/80">
         <!-- Header -->
-        <h2 class="text-xl sm:text-2xl font-bold mb-3 text-center text-white">
+        <h2 class="text-2xl font-bold mb-4 text-center text-white">
           <span>Attraction GN#3 Calculator</span>
         </h2>
         
         <!-- Input Settings -->
-        <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-3">
-          <div class="header p-2 flex justify-between items-center">
-            <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
-              <IconSettings size="16" class="mr-1.5 text-blue-400" />
+        <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
+          <div class="header p-3 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-white flex items-center">
+              <IconSettings size="18" class="mr-2 text-blue-400" />
               Calculator Settings
             </h3>
-            
             <button 
               @click="resetSettings" 
-              class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
+              class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 text-xs rounded-lg flex items-center transition-colors"
             >
-              <IconRefresh size="12" class="mr-1" />
+              <IconRefresh size="14" class="mr-1" />
               Reset
             </button>
           </div>
-          
-          <div class="p-2 sm:p-3">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="p-3 sm:p-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Left Column -->
-              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
                 <!-- Tick Speed -->
                 <div class="flex items-center justify-between mb-3">
                   <div class="flex items-center">
@@ -114,7 +112,7 @@
               </div>
               
               <!-- Right Column -->
-              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
                 <!-- TS#5 Toggle -->
                 <div class="flex items-center justify-between mb-3">
                   <div class="flex items-center">
@@ -126,14 +124,16 @@
                   <div class="flex items-center">
                     <button 
                       @click="toggleTS5" 
-                      class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                      class="relative inline-flex h-6 w-12 items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
                       :class="{
                         'bg-purple-600': ts5,
                         'bg-gray-600': !ts5
                       }"
+                      role="switch"
+                      :aria-checked="ts5"
                     >
                       <span 
-                        class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
                         :class="{
                           'translate-x-6': ts5,
                           'translate-x-1': !ts5
@@ -154,14 +154,16 @@
                   <div class="flex items-center">
                     <button 
                       @click="toggleEfficiencyBadge" 
-                      class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                      class="relative inline-flex h-6 w-12 items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
                       :class="{
                         'bg-green-600': efficiencyBadge,
                         'bg-gray-600': !efficiencyBadge
                       }"
+                      role="switch"
+                      :aria-checked="efficiencyBadge"
                     >
                       <span 
-                        class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                        class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out"
                         :class="{
                           'translate-x-6': efficiencyBadge,
                           'translate-x-1': !efficiencyBadge
@@ -217,7 +219,7 @@
                       @focus="selectAllInput"
                       @click="selectAllInput"
                       type="text"
-                      class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-pink-400 font-medium text-sm w-23 text-right"
+                      class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-pink-400 font-medium text-sm w-24 text-right focus:outline-none focus:ring-2 focus:ring-pink-400"
                       placeholder="1e100"
                     />
                   </div>
@@ -228,19 +230,18 @@
         </div>
         
         <!-- Results Section -->
-        <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
-          <div class="header p-2">
-            <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
-              <IconCalculator size="16" class="mr-1.5 text-green-400" />
+        <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
+          <div class="header p-3">
+            <h3 class="text-lg font-semibold text-white flex items-center">
+              <IconCalculator size="18" class="mr-2 text-green-400" />
               Calculation Results
             </h3>
           </div>
-          
-          <div class="p-2 sm:p-3">
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+          <div class="p-3 sm:p-4">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
               
               <!-- Multi per Day -->
-              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
                 <div class="text-center">
                   <div class="text-sm font-semibold text-gray-300 mb-1">Multiplier per Day</div>
                   <div class="text-2xl font-bold text-yellow-400">
@@ -250,7 +251,7 @@
               </div>
               
               <!-- Days to 1e333 -->
-              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
                 <div class="text-center">
                   <div class="text-sm font-semibold text-gray-300 mb-1">Days to 1e333</div>
                   <div class="text-2xl font-bold text-blue-400">
@@ -260,7 +261,7 @@
               </div>
 
               <!-- Days left to 1e333 -->
-              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
                 <div class="text-center">
                   <div class="text-sm font-semibold text-gray-300 mb-1">Days left to 1e333</div>
                   <div class="text-2xl font-bold text-orange-400">
@@ -270,7 +271,7 @@
               </div>
 
               <!-- Current Multiplier -->
-              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
                 <div class="text-center">
                   <div class="text-sm font-semibold text-gray-300 mb-1">Pending Multiplier</div>
                   <div class="text-2xl font-bold text-emerald-400">
@@ -281,7 +282,7 @@
             </div>
             
             <!-- Details -->
-            <div class="mt-3 bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+            <div class="mt-4 bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
               <h4 class="text-sm font-semibold text-gray-200 mb-2 flex items-center">
                 <IconInfoCircle size="14" class="mr-1.5 text-blue-400" />
                 Calculation Details

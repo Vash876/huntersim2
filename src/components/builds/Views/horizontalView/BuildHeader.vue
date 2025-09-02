@@ -121,6 +121,7 @@
         <component :is="buildData.isArchived ? IconArchiveOff : IconArchive" size="16" />
       </button>
       <button
+        v-if="!isLoading"
         @click="emit('delete', buildData)"
         class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
         title="Delete Build"
@@ -151,6 +152,10 @@ const props = defineProps({
   results: { 
     type: Object, 
     default: null 
+  },
+  isLoading: { 
+    type: Boolean, 
+    default: false 
   }
 });
 

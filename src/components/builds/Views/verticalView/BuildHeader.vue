@@ -136,6 +136,7 @@
         </button>
         
         <button 
+          v-if="!isLoading"
           @click="emit('delete')" 
           class="action-button-compact hover:text-red-400" 
           title="Delete build">
@@ -159,7 +160,8 @@ const props = defineProps({
   buildData: { type: Object, required: true },
   hunterColor: { type: String, required: true },
   isReferenceBuild: { type: Boolean, default: false },
-  results: { type: Object, default: () => ({}) }
+  results: { type: Object, default: () => ({}) },
+  isLoading: { type: Boolean, default: false }
 });
 
 const emit = defineEmits([

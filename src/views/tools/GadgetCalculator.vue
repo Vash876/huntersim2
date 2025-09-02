@@ -1,6 +1,6 @@
 <template>
   <div class="p-0 sm:p-6 max-w-[1440px] mx-auto">
-    <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
+    <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8 border border-gray-800/80">
       <!-- Überschrift -->
       <h2 class="text-2xl font-bold mb-4 text-center text-white">
         <span>Gadget Planner</span>
@@ -65,7 +65,7 @@
       </div>
       
       <!-- Summary Box (total cost, days) -->
-      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
+      <div class="bg-gray-800/80 rounded-xl border border-gray-700/60 overflow-hidden mb-4">
         <div class="header p-3 flex items-center">
           <h3 class="text-lg font-semibold text-white flex items-center">
             <IconChartDots size="18" class="mr-2 text-green-400" />
@@ -75,7 +75,7 @@
         
         <div class="p-2 sm:p-4">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+        <div class="bg-gray-900/80 rounded-lg p-3 border border-gray-700/60">
               <div class="text-gray-400 text-xs mb-0.5">Total Tesseracts Cost</div>
               <div class="text-amber-400 font-bold text-lg">{{ formatGadgetCost(totalCost) }}</div>
             </div>
@@ -154,7 +154,7 @@
             <div
               v-for="gadget in GADGETS"
               :key="gadget.id"
-              class="custom-gadget-item rounded-lg p-4 transition-colors border border-transparent hover:border-gray-600 relative overflow-hidden"
+              class="gadget-card rounded-xl border border-gray-700 bg-gray-800/90 pb-2 p-4 transition-colors hover:border-cyan-600 relative overflow-hidden mb-1"
               :class="{ 'active-gadget': hasLevelChanges(gadget.id) }"
             >
               <!-- Hintergrundbild - GEFIXT mit dynamischem Import -->
@@ -162,7 +162,7 @@
                 v-if="getGadgetImageUrl(gadget.id)"
                 :src="getGadgetImageUrl(gadget.id)"
                 :alt="`Gadget ${getGadgetImageNumber(gadget.id)}`"
-                class="absolute top-2 right-2 w-20 h-20 object-contain opacity-90 pointer-events-none z-0"
+                class="absolute top-2 right-2 w-16 h-16 object-contain opacity-80 pointer-events-none z-0"
                 style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;"
               />
               
@@ -178,23 +178,23 @@
                       {{ gadget.label.length > 28 ? gadget.label.substring(0, 25) + '...' : gadget.label }}
                     </span>
                   </span>
-                  <div v-if="getGadgetCost(gadget.id) > 0" class="flex flex-col items-end">
+                  <div v-if="getGadgetCost(gadget.id) > 0" class="flex flex-col items-end gap-1">
                     <!-- Cost Badge -->
-                    <div class="text-amber-400 text-sm font-bold gadget-cost bg-gray-900/80 px-2 py-1 rounded-md">
+                    <div class="text-amber-400 text-xs font-bold bg-gray-900/90 px-2 py-0.5 rounded-lg border border-amber-700/40">
                       {{ formatGadgetCost(getGadgetCost(gadget.id)) }}
                     </div>
-                    <!-- NEU: Time Badge -->
-                    <div class="text-xs mt-1 px-2 py-0.5 rounded-md bg-blue-900/60 text-blue-200 font-bold">
+                    <!-- Time Badge -->
+                    <div class="text-xs px-2 py-0.5 rounded-lg bg-blue-900/80 text-blue-200 font-bold border border-blue-700/40">
                       {{ formatIndividualSaveTime(gadget.id) }}
                     </div>
                   </div>
                 </div>
 
                 <!-- Level Controls -->
-                <div class="grid grid-cols-2 gap-3 mb-3">
+                <div class="grid grid-cols-2 gap-2 mb-2">
                   <!-- Current Level Controls -->
                   <div class="gadget-controls">
-                    <div class="text-xs text-gray-200 mb-1 uppercase font-semibold">Current</div>
+                    <div class="text-[11px] text-gray-400 mb-1 uppercase font-semibold tracking-wide">Current</div>
                     <ToolValueControls
                       :value="currentLevels[gadget.id] || 0"
                       :maxValue="999"
@@ -211,7 +211,7 @@
                   
                   <!-- Target Level Controls -->
                   <div class="gadget-controls">
-                    <div class="text-xs text-gray-200 mb-1 uppercase font-semibold">Target</div>
+                    <div class="text-[11px] text-gray-400 mb-1 uppercase font-semibold tracking-wide">Target</div>
                     <ToolValueControls
                       :value="targetLevels[gadget.id] || 0"
                       :maxValue="999"
@@ -232,20 +232,20 @@
                 </div>
                 
                 <!-- Multiplier Information -->
-                <div v-if="showMultipliers" class="gadget-multipliers rounded-lg p-3 border border-gray-700/50">                
-                  <div class="space-y-1.5">
+                <div v-if="showMultipliers" class="gadget-multipliers rounded-xl p-3 border border-gray-700 bg-gray-900/80 mt-1">
+                  <div class="space-y-1">
                     <div v-for="(boost, index) in gadget.boost" :key="`${gadget.id}-boost-${index}`">
                       <!-- Current Multiplier -->
                       <div class="flex justify-between">
-                        <span class="text-sm text-gray-200 font-medium">{{ boost.description }}:</span>
-                        <span class="text-sm font-bold text-white">
+                        <span class="text-xs text-gray-300 font-medium">{{ boost.description }}:</span>
+                        <span class="text-xs font-bold text-white">
                           {{ formatMultiplier(calculateMultiplier(gadget, currentLevels[gadget.id] || 0, boost.type), false, gadget.id) }}
                         </span>
                       </div>
 
                       <!-- Target Multiplier (if different from current) -->
                       <div v-if="hasLevelChanges(gadget.id)" class="flex justify-between mt-0.5">
-                        <span class="text-xs text-gray-300 font-medium">Target:</span>
+                        <span class="text-xs text-gray-400 font-medium">Target:</span>
                         <span class="text-xs font-bold text-green-400">
                           {{ formatMultiplier(calculateMultiplier(gadget, targetLevels[gadget.id] || 0, boost.type), false, gadget.id) }}
                           <span class="text-gray-400 ml-1">({{ 
@@ -266,14 +266,16 @@
       </div>
     </div>
     <GadgetSummaryModal
-      :is-visible="showSummaryModal"
-      :current-levels="currentLevels"
-      :target-levels="targetLevels"
-      :total-cost="totalCost"
-      :days-to-save="daysToSave"
-      :build-name="selectedBuild?.name || ''"
-      @close="showSummaryModal = false"
-    />
+        :is-visible="showSummaryModal"
+        :current-levels="currentLevels"
+        :target-levels="targetLevels"
+        :total-cost="totalCost"
+        :days-to-save="daysToSave"
+        :build-name="selectedBuild?.name || ''"
+        :tessarects-per-day="tessarectsPerDay"
+        :gadget-images="gadgetImages"
+        @close="showSummaryModal = false"
+      />
   </div>
 </template>
 
@@ -845,23 +847,22 @@ onMounted(async () => {
 }
 
 /* Erweiterte Gadget-Styles mit Hintergrundbildern */
-.custom-gadget-item {
+.gadget-card {
   background: linear-gradient(to bottom, rgba(35, 39, 47, 0.9), rgba(28, 32, 38, 0.95));
-  border-left: 3px solid transparent;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease-in-out;
   position: relative;
 }
 
-.custom-gadget-item:hover {
+.gadget-card:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  border-left-color: rgba(59, 130, 246, 0.5);
+  border-color: #22d3ee; /* cyan-400 */
 }
 
-.custom-gadget-item.active-gadget {
-  background: linear-gradient(to bottom, rgba(30, 41, 59, 0.9), rgba(30, 41, 55, 0.95));
-  border-left-color: rgb(37, 99, 235);
-  box-shadow: 0 3px 6px rgba(37, 99, 235, 0.15);
+.gadget-card.active-gadget {
+  background: linear-gradient(to bottom, rgba(39, 51, 65, 0.98), rgba(28, 32, 38, 0.98));
+  box-shadow: 0 0 0 2px rgba(34,211,238,0.18), 0 0 12px 2px rgba(34,211,238,0.18);
+  border-color: #38bdf8; /* cyan-400, aber sehr subtil */
 }
 
 /* Hintergrundbild-Styles - BESSER SICHTBAR */

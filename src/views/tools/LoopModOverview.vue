@@ -1,6 +1,6 @@
 <template>
   <div class="p-0 sm:p-6 max-w-[1440px] mx-auto">
-    <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
+  <div class="bg-gray-900/95 rounded-xl border border-gray-800 p-4 sm:p-8">
       <!-- Überschrift -->
       <h2 class="text-2xl font-bold mb-4 text-center text-white">
         <span>Loop Mod Overview</span>
@@ -13,8 +13,8 @@
         </p>
       </div>
       
-      <!-- Filter und Einstellungen -->
-      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
+  <!-- Filter und Einstellungen -->
+  <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 mb-4">
         <div class="header p-3 flex justify-between items-center">
           <h3 class="text-lg font-semibold text-white flex items-center">
             <IconFilter size="18" class="mr-2 text-blue-400" />
@@ -213,7 +213,7 @@
       <div v-auto-animate="autoAnimateOptions" class="mb-4">
         <div 
           v-if="showRequirementsPanel"
-          class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4 transition-all duration-300"
+          class="bg-gray-800/50 rounded-lg border border-gray-700/50 mb-4 transition-all duration-300"
         >
           <div class="p-4">
             <div class="mb-4">
@@ -352,8 +352,8 @@
         </div>
       </div>
       
-      <!-- Loop Mods Table -->
-      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
+  <!-- Loop Mods Table -->
+  <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 mb-4">
         <div class="header p-3 flex justify-between items-center">
           <h3 class="text-lg font-semibold text-white flex items-center">
             <IconList size="18" class="mr-2 text-green-400" />
@@ -1206,23 +1206,17 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.header {
-  background: linear-gradient(to right, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.95));
-}
-
 .bg-gray-750 {
   background-color: rgba(42, 46, 53, 0.8);
 }
 
 /* Responsive Styles */
 @media (max-width: 640px) {
-  /* Make the table more mobile-friendly */
   table {
     display: block;
     overflow-x: auto;
     white-space: nowrap;
   }
-  
   th, td {
     padding: 0.5rem 0.75rem;
   }

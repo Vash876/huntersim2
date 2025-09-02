@@ -20,7 +20,7 @@ export const mechs = [
       { minLevel: 0, multiplier: 1.2 }
     ],
     multiIncrease: 0.027,
-    multiCost: 2,
+    multiCost: 7.2,
     multiCostMulti: 3.6,
     multiMaxLevels: 10,
     mechCost: 5.4,

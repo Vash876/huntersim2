@@ -2,6 +2,49 @@
 const changelog = 
 [
   {
+    version: '2.7.13',
+    date: '2025-09-02',
+    changes: [
+      {
+        text: 'General',
+        subItems: [
+          'Visual style improvements and consistency updates across various components',
+        ]
+      },
+      {
+        text: 'Gadget Planner',
+        subItems: [
+          'Enhanced Summary Modal with gadget thumbnail images for better visual identification',
+          'Added "Time to Save" display in Summary Modal showing individual upgrade collection times',
+        ]
+      },
+      {
+        text: 'Mech Planner',
+        subItems: [
+          'Fixed cost calculation bug for Multi Upgrades on Cradler-Unit MK1',
+        ]
+      },
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Delete button is now hidden while builds are being evaluated to prevent data corruption that could occur when deleting builds mid-evaluation',
+        ]
+      },
+      {
+        text: 'Trait Sphere Planner',
+        subItems: [
+          'Extended preset list for endgame',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Fixed override copying functionality: Gem overrides and Maxed Boost overrides are now properly copied when duplicating TR plans',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.7.12',
     date: '2025-08-23',
     changes: [

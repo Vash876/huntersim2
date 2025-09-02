@@ -12,6 +12,7 @@
         :buildData="buildData"
         :enabledStats="enabledStats"
         :results="results"
+        :is-loading="isLoading"
         @edit="emit('edit', buildData)"
         @clone="emit('clone', buildData)"
         @archive="emit('archive', buildData)"
