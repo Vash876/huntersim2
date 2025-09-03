@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
-/* Modern Theme Variables für HunterSim2 */
 @theme {
-  /* App-spezifische Hunter-Farben */
+  /* Container Konfiguration für max-width und padding */
+  --container-center: true;
+  --container-padding-default: 1rem;
+  --container-padding-sm: 2rem;
+  --container-padding-lg: 4rem;
+  --container-padding-xl: 5rem;
+  --container-padding-2xl: 6rem;
+  
+  /* Hunter Farben */
   --color-hunter-borge-500: oklch(0.63 0.24 25);
   --color-hunter-borge-600: oklch(0.57 0.24 27);
   --color-hunter-borge-700: oklch(0.50 0.21 27);
@@ -15,20 +22,20 @@
   --color-hunter-ozzy-600: oklch(0.63 0.19 149);
   --color-hunter-ozzy-700: oklch(0.53 0.15 150);
 
-  /* Gaming-spezifische Breakpoints */
+  /* Breakpoints */
   --breakpoint-xs: 30rem;
   --breakpoint-3xl: 120rem;
   --breakpoint-4xl: 160rem;
 
-  /* App-spezifische Spacing */
+  /* Spacing */
   --spacing-mobile-safe: 70px;
   --spacing-navbar: 60px;
   
-  /* Gaming UI Shadows */
+  /* Shadows */
   --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.5);
   --shadow-glow-hunter: 0 0 15px rgba(139, 92, 246, 0.4);
   
-  /* Custom Animations */
+  /* Animations */
   --animate-slide-up: slide-up 0.3s ease-out;
   --animate-fade-scale: fade-scale 0.2s ease-out;
   
@@ -42,6 +49,45 @@
     to { opacity: 1; transform: scale(1); }
   }
 }
+
+/* Container-Utilities für bessere Kontrolle */
+.container {
+  max-width: 95%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    padding-left: 5rem;
+    padding-right: 5rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    padding-left: 6rem;
+    padding-right: 6rem;
+  }
+}
+
+@config "../../../tailwind.config.js";
 
 .diff-box-green {
   @apply inline-flex items-center justify-center font-medium rounded bg-green-700/30 text-green-400 px-1 ;
