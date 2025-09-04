@@ -202,10 +202,10 @@ function convertGemStatesToUpgrades(gemStates, upgrades) {
 const buildCode = computed(() => {
   if (!props.build) return '';
   
-  // Get store data for encoding - inklusive Gem Planner Data
+  // Get store data for encoding - inklusive Gem Planner Data (Deep Copy via JSON)
   const storeData = {
-    hunterStats: { ...hunterStore.hunterStats },
-    upgrades: { ...hunterStore.upgrades }
+    hunterStats: JSON.parse(JSON.stringify(hunterStore.hunterStats)),
+    upgrades: JSON.parse(JSON.stringify(hunterStore.upgrades))
   };
   
   // Konvertiere Gem Planner Store Daten in upgrades.gems_nodes Format
