@@ -3,7 +3,6 @@
     <div class="bg-gray-900/95 rounded-xl border border-gray-800 p-4 sm:p-8">
       <!-- Header -->
       <h2 class="text-2xl font-bold mb-4 text-center text-white flex items-center justify-center gap-2">
-        <IconScript size="28" class="text-red-400" />
         Inscryption Planner
       </h2>
 
@@ -484,7 +483,7 @@
             >
               <template #item="{ element: item, index }">
                 <div 
-                  class="bg-gray-700/30 rounded-lg p-3 transition-all duration-200"
+                  class="bg-gray-700/30 rounded-lg p-3 transition-all duration-200 hover:bg-gray-700/50"
                   :class="{
                     'border-2 border-red-500': invalidDragItems.has(item.id),
                     'border border-transparent': !invalidDragItems.has(item.id)
@@ -539,8 +538,18 @@
                               </button>
                             </span>
                           </div>
-                          <div>
-                            {{ formatItemTimeToSaveWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }} • {{ formatItemTargetDateWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}
+                          
+                          <!-- Enhanced Time Display -->
+                          <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-700/50">
+                            <div class="flex items-center gap-2">
+                              <div class="bg-gray-700 text-gray-200 px-2 py-1 rounded-md text-xs flex items-center gap-1">
+                                <IconClock size="12" />
+                                {{ formatItemTimeToSaveWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}
+                              </div>
+                              <div class="text-xs text-gray-400">
+                                Ready: {{ formatCumulativeTargetDate(index) }}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -614,6 +623,7 @@ import {
   IconPlus, 
   IconX,
   IconChartDots,
+  IconClock,
   IconGripVertical,
   IconCheck,
   IconTrash
@@ -624,7 +634,7 @@ import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { shouldEvaluate } from '@/services/evaluationCacheService';
 import { formatNumber } from '@/composables/format';
 import { useBuildEvaluation } from '@/composables/useBuildEvaluation';
-import InscryptionOwnershipModal from '@/components/common/InscryptionOwnershipModal.vue';
+import InscryptionOwnershipModal from '@/components/common/inscryption-planner/InscryptionOwnershipModal.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
 import Draggable from 'vuedraggable';
 
@@ -760,17 +770,8 @@ async function evaluateBorgeBuff2Item(item) {
     ];
     const evaluationCacheKey = cacheKeyParts.join('|');
     
-    console.log('[evaluateBorgeBuff2Item] Cache key for item', item.inscryptionId, 'rank', item.rank, ':', evaluationCacheKey);
-    console.log('[evaluateBorgeBuff2Item] Cache key parts:', cacheKeyParts);
-    console.log('[evaluateBorgeBuff2Item] Previous items affecting evaluation:', previousItems.filter(prevItem => {
-      const prevMetadata = store.inscryptionsData.find(data => data.inscryptionId == prevItem.inscryptionId);
-      return prevMetadata && prevMetadata.borgeBuff !== 1;
-    }).map(p => `i${p.inscryptionId}_rank${p.rank}`));
-    
     // Check if we already have this evaluation cached
     if (borgeBuff2Evaluations.value[evaluationCacheKey]) {
-      console.log('[evaluateBorgeBuff2Item] Using cached evaluation for:', evaluationCacheKey);
-      console.log('[evaluateBorgeBuff2Item] BUT this should NOT happen for different ranks of same inscryption!');
       // Copy cached result to current item's ID for template access
       borgeBuff2Evaluations.value[item.id] = borgeBuff2Evaluations.value[evaluationCacheKey];
       evaluationProgress.value[item.id] = 'Evaluation complete (cached)';
@@ -788,22 +789,18 @@ async function evaluateBorgeBuff2Item(item) {
     // Evaluate missing previous Borge Buff 2 items first
     for (const prevBorgeBuff2Item of previousBorgeBuff2Items) {
       if (!borgeBuff2Evaluations.value[prevBorgeBuff2Item.id] && !evaluatingItems.value.has(prevBorgeBuff2Item.id)) {
-        console.log('[evaluateBorgeBuff2Item] Need to evaluate previous Borge Buff 2 item first:', prevBorgeBuff2Item.id);
         await evaluateBorgeBuff2Item(prevBorgeBuff2Item);
       }
     }
     
     // Don't include Borge Buff 1 items in the evaluation - they're just multipliers we can apply afterwards
-    // But DO include other Borge Buff 2 items and non-multiplier inscriptions
+    // But DO include other Borge Buff 2 items and non-multiplier inscryptions
     const previousNonMultiplierItems = previousItems.filter(prevItem => {
       const prevMetadata = store.inscryptionsData.find(
         data => data.inscryptionId == prevItem.inscryptionId
       );
       return prevMetadata && prevMetadata.borgeBuff !== 1; // Exclude only Borge Buff 1 (multipliers)
     });
-    
-    console.log('[evaluateBorgeBuff2Item] Evaluating with cache key:', evaluationCacheKey);
-    console.log('[evaluateBorgeBuff2Item] Applying', previousNonMultiplierItems.length, 'non-multiplier items to build (including previous Borge Buff 2, excluding Borge Buff 1)');
     
     // Apply all previous non-multiplier inscryption upgrades
     previousNonMultiplierItems.forEach((prevItem, prevIndex) => {
@@ -822,15 +819,10 @@ async function evaluateBorgeBuff2Item(item) {
       // The target level for this previous item
       const prevTargetLevel = prevCurrentLevel + 1;
       modifiedBuild.overrides[prevInscryptionKey] = prevTargetLevel;
-      
-      console.log('[evaluateBorgeBuff2Item] Applied previous non-multiplier item:', prevInscryptionKey, '=', prevTargetLevel, 
-        '(base:', hunterStore.getUpgradeValue('inscryptions', `i${prevItem.inscryptionId}`) || 0, 
-        '+ earlier ranks:', prevSameInscryptionItems.length, ')');
     });
     
     // Use base HBM production for evaluation (no Borge Buff 1 multipliers applied)
     modifiedBuild.overrides['settings.hellishBiomatterProduction'] = store.settings.hellishBiomatterProduction || 0;
-    console.log('[evaluateBorgeBuff2Item] Set base HBM production override:', store.settings.hellishBiomatterProduction || 0);
     
     // Add the inscryption upgrade (format: upgrades.inscyptions.i{id})
     const inscryptionKey = `upgrades.inscryptions.i${item.inscryptionId}`;
@@ -848,28 +840,10 @@ async function evaluateBorgeBuff2Item(item) {
     const targetLevel = currentLevel + 1;
     modifiedBuild.overrides[inscryptionKey] = targetLevel;
 
-    console.log('[evaluateBorgeBuff2Item] Inscryption level calculation:', {
-      inscryptionId: item.inscryptionId,
-      storeLevel: hunterStore.getUpgradeValue('inscryptions', `i${item.inscryptionId}`) || 0,
-      previousSameInscryptionRanks: previousSameInscryptionItems.length,
-      adjustedCurrentLevel: currentLevel,
-      targetLevel: targetLevel,
-      itemRank: item.rank
-    });
-
-    console.log('[evaluateBorgeBuff2Item] Modified build with all overrides:', {
-      totalOverrides: Object.keys(modifiedBuild.overrides).length,
-      currentItemKey: inscryptionKey,
-      currentItemLevel: targetLevel,
-      previousItemsCount: previousItems.length
-    });
-
     evaluationProgress.value[item.id] = 'Running evaluation...';
 
     // Evaluate the modified build
     const evaluationResult = await evaluateBuildWithParams(modifiedBuild);
-    
-    console.log('[evaluateBorgeBuff2Item] Evaluation result:', evaluationResult);
     
     if (evaluationResult && evaluationResult.mat3) {
       // Store the evaluation result both by cache key (for reuse) and item.id (for template access)
@@ -883,7 +857,6 @@ async function evaluateBorgeBuff2Item(item) {
       borgeBuff2Evaluations.value[item.id] = resultData; // Access by item ID for template
       
       evaluationProgress.value[item.id] = 'Evaluation complete';
-      console.log('[evaluateBorgeBuff2Item] Evaluation stored successfully for cache key:', evaluationCacheKey, 'and item ID:', item.id);
     } else {
       throw new Error('Invalid evaluation result');
     }
@@ -905,18 +878,12 @@ async function evaluateBorgeBuff2Item(item) {
 const shoppingListWithAdvancedHBMProduction = computed(() => {
   // Safety check: ensure store data is loaded
   if (!store.shoppingList || store.shoppingList.length === 0) {
-    console.log('[shoppingListWithAdvancedHBMProduction] No shopping list items');
     return [];
   }
   
   if (!store.inscryptionsData || store.inscryptionsData.length === 0) {
-    console.log('[shoppingListWithAdvancedHBMProduction] No inscryptions metadata, using fallback');
     return store.shoppingList.map(item => ({ ...item, currentHBMProduction: 0, newHBMProduction: 0 }));
   }
-
-  console.log('[shoppingListWithAdvancedHBMProduction] Processing', store.shoppingList.length, 'items');
-  console.log('[shoppingListWithAdvancedHBMProduction] Available borgeBuff values:', 
-    [...new Set(store.inscryptionsData.map(item => item.borgeBuff))]);
 
   // Start with base HBM production and calculate everything ourselves
   let currentHBMProduction = store.settings.hellishBiomatterProduction || 0;
@@ -929,13 +896,9 @@ const shoppingListWithAdvancedHBMProduction = computed(() => {
       hbmIncrease: 0
     };
     
-    console.log('[shoppingListWithAdvancedHBMProduction] Processing item:', item.inscryptionId, 'rank:', item.rank, 'currentHBM:', currentHBMProduction);
-    
     try {
       // Safety check: ensure inscryptions data is available
       if (!store.inscryptionsData || store.inscryptionsData.length === 0) {
-        console.log('[shoppingListWithAdvancedHBMProduction] No inscryptionsData available for item:', item.id);
-        console.log('[DEBUG] store.inscryptionsData:', store.inscryptionsData, 'length:', store.inscryptionsData?.length);
         return enhancedItem;
       }
       
@@ -946,26 +909,16 @@ const shoppingListWithAdvancedHBMProduction = computed(() => {
       
       // Debug: Log what we're looking for vs what's available
       if (!inscryptionMetadata) {
-        console.log('[DEBUG] Could not find metadata for inscryptionId:', item.inscryptionId, 'type:', typeof item.inscryptionId);
-        console.log('[DEBUG] Available inscryptionsData IDs:', store.inscryptionsData.map(d => `${d.inscryptionId} (${typeof d.inscryptionId})`).slice(0, 10));
         return enhancedItem;
       }
       
       if (inscryptionMetadata) {
-        console.log('[shoppingListWithAdvancedHBMProduction] Found metadata:', {
-          inscryptionId: item.inscryptionId,
-          borgeBuff: inscryptionMetadata.borgeBuff,
-          buffPerRank: inscryptionMetadata.buffPerRank
-        });
-        
         // Handle Borge Buff = 1 items (HBM multipliers)
         if (inscryptionMetadata.borgeBuff === 1) {
-          console.log('[Borge Buff 1] Processing multiplier for:', item.inscryptionId, 'with buffString:', inscryptionMetadata.buffPerRank);
           const buffString = inscryptionMetadata.buffPerRank || '';
           
           // Find ALL multipliers in the string (e.g., "x1.05;x1.10" should find both 1.05 and 1.10)
           const multiplierMatches = buffString.match(/x?(\d+\.?\d*)/g);
-          console.log('[Borge Buff 1] Found multiplier matches:', multiplierMatches);
           
           if (multiplierMatches && multiplierMatches.length > 0) {
             // Calculate combined multiplier by multiplying all found multipliers
@@ -987,23 +940,10 @@ const shoppingListWithAdvancedHBMProduction = computed(() => {
             enhancedItem.hbmMultiplier = combinedMultiplier;
             enhancedItem.hbmIncrease = newHBMProduction - currentHBMProduction;
             currentHBMProduction = newHBMProduction;
-            
-            console.log('[Borge Buff 1] Applied combined multiplier:', {
-              buffString,
-              individualMultipliers,
-              combinedMultiplier,
-              before: enhancedItem.currentHBMProduction,
-              after: newHBMProduction,
-              increase: enhancedItem.hbmIncrease
-            });
-          } else {
-            console.log('[Borge Buff 1] No valid multipliers found in buffString:', buffString);
           }
         }
         // Handle Borge Buff = 2 items (require evaluation)
         else if (inscryptionMetadata.borgeBuff === 2) {
-          console.log('[Borge Buff 2] Found item requiring evaluation:', item.inscryptionId, 'rank', item.rank);
-          
           const evaluation = borgeBuff2Evaluations.value[item.id];
           const isEvaluating = evaluatingItems.value.has(item.id);
           const progress = evaluationProgress.value[item.id];
@@ -1013,8 +953,6 @@ const shoppingListWithAdvancedHBMProduction = computed(() => {
           enhancedItem.evaluationProgress = progress;
           
           if (evaluation && !isEvaluating) {
-            console.log('[Borge Buff 2] Using cached evaluation for:', item.id);
-            
             // Take the mat3 result from evaluation
             let baseMat3 = evaluation.mat3 || 0;
             
@@ -1054,19 +992,8 @@ const shoppingListWithAdvancedHBMProduction = computed(() => {
             enhancedItem.newHBMProduction = itemHBMProduction;
             enhancedItem.hbmIncrease = itemHBMProduction - currentHBMProduction;
             currentHBMProduction = itemHBMProduction;
-            
-            console.log('[Borge Buff 2] Applied evaluation result:', {
-              baseMat3,
-              borgeBuff1Multiplier,
-              boostedMat3,
-              itemHBMProduction,
-              previousTotal: enhancedItem.currentHBMProduction,
-              newTotal: itemHBMProduction,
-              increase: enhancedItem.hbmIncrease
-            });
           } else if (!evaluation && !isEvaluating && selectedBuild.value) {
             // Trigger evaluation for this item with current cumulative HBM
-            console.log('[Borge Buff 2] Triggering NEW evaluation for:', item.id, 'with cumulative HBM:', currentHBMProduction);
             evaluateBorgeBuff2Item(item);
           }
         }
@@ -1374,6 +1301,59 @@ function formatItemTargetDateWithProduction(itemCost, hbmProduction) {
   });
 }
 
+// Berechnet die kumulative Zeit bis ein Item in der Shopping List dran ist
+function formatCumulativeTargetDate(itemIndex) {
+  let cumulativeDays = 0;
+  let currentHBMProduction = currentHBM.value || 0;
+  
+  // Gehe durch alle Items vor dem aktuellen Item
+  for (let i = 0; i <= itemIndex; i++) {
+    const item = store.shoppingList[i];
+    if (!item) continue;
+    
+    const remainingCost = Math.max(0, item.costSci - currentHBMProduction);
+    
+    // Finde die aktuelle HBM-Produktion für dieses Item
+    const itemHBMData = hbmProductionDataMap.value[item.id];
+    const dailyProduction = itemHBMData?.currentHBMProduction || 0;
+    
+    if (dailyProduction <= 0) {
+      return 'Set production rate';
+    }
+    
+    const daysForThisItem = remainingCost / dailyProduction;
+    cumulativeDays += daysForThisItem;
+    
+    // Nach dem Kauf dieses Items erhöht sich die HBM-Produktion
+    currentHBMProduction = itemHBMData?.newHBMProduction || currentHBMProduction;
+  }
+  
+  if (cumulativeDays === Infinity || cumulativeDays > 36500) return 'Never';
+  if (cumulativeDays <= 0) return 'Available now';
+  
+  const now = new Date();
+  const targetDate = new Date(now.getTime() + (cumulativeDays * 24 * 60 * 60 * 1000));
+  const userLocale = navigator.language || 'en-US';
+  
+  // Zeige Zeit nur wenn es in weniger als 7 Tagen ist
+  if (cumulativeDays < 7) {
+    return targetDate.toLocaleDateString(userLocale, {
+      weekday: 'short',
+      day: '2-digit',
+      month: '2-digit'
+    }) + ' ' + targetDate.toLocaleTimeString(userLocale, {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+  
+  return targetDate.toLocaleDateString(userLocale, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+}
+
 // Handler für "Mark as Purchased" - fügt Item zu owned hinzu und entfernt es aus der Shopping List
 function markAsPurchased(item) {
   const inscryptionId = item.inscryptionId;
@@ -1396,15 +1376,6 @@ function markAsPurchased(item) {
   
   // Entferne das Item aus der Shopping List
   store.removeFromShoppingList(item.id);
-  
-  // Toast-Nachricht anzeigen
-  showToastMessage(`Inscryption i${inscryptionId} Rank ${rank} marked as purchased`, 'success');
-}
-
-// Toast-Nachricht anzeigen
-function showToastMessage(message, type = 'success', duration = 3000) {
-  console.log(`${type.toUpperCase()}: ${message}`);
-  // Hier könnte eine echte Toast-Implementierung stehen
 }
 
 // Backup der ursprünglichen Liste vor dem Drag
@@ -1413,7 +1384,6 @@ let dragBackup = [];
 // Handler für Drag-Start - speichere die ursprüngliche Reihenfolge
 function onDragStart(evt) {
   dragBackup = [...store.shoppingList];
-  console.log('[DragStart] Backup created with', dragBackup.length, 'items');
 }
 
 // Validiert ob die aktuelle Reihenfolge für jede Inscryption korrekt ist
@@ -1441,7 +1411,6 @@ function validateInscryptionOrder() {
         const currentRank = items[i].item.rank;
         
         if (currentRank <= prevRank) {
-          console.log(`[OrderValidation] Invalid order for inscryption ${inscryptionId}: Rank ${currentRank} after Rank ${prevRank}`);
           // Markiere beide betroffenen Items als invalid
           invalidItems.add(items[i - 1].item.id);
           invalidItems.add(items[i].item.id);
@@ -1455,13 +1424,11 @@ function validateInscryptionOrder() {
 
 // Handler für das Drag-Ende-Event der Shopping List
 function onShoppingListDragEnd() {
-  console.log('[DragEnd] Validating new order...');
   
   // Validiere die neue Reihenfolge
   const validation = validateInscryptionOrder();
   
   if (!validation.isValid) {
-    console.log('[DragEnd] Invalid order detected - showing visual warning and restoring backup');
     
     // Zeige visuelle Warnung für betroffene Items
     invalidDragItems.value = validation.invalidItems;
@@ -1477,7 +1444,6 @@ function onShoppingListDragEnd() {
     return;
   }
   
-  console.log('[DragEnd] Order is valid - clearing Borge Buff 2 evaluations');
   
   // Clear all Borge Buff 2 evaluations since the order changed
   borgeBuff2Evaluations.value = {};
@@ -1486,7 +1452,6 @@ function onShoppingListDragEnd() {
   
   // Force reactivity update
   const updatedList = shoppingListWithAdvancedHBMProduction.value;
-  console.log('Recalculated HBM production after drag:', updatedList.length, 'items');
 }
 
 function getOwnedRanksDisplay(inscryptionId) {

@@ -58,98 +58,157 @@
               </button>
             </div>
           </div>
-          
-          <!-- Bulk Action Buttons -->
-          <div class="flex flex-wrap gap-2 text-xs">
-            <button 
-              @click="ownAllInscryptions"
-              class="px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-white transition-colors"
-            >
-              Own All
-            </button>
-            <button 
-              @click="ownNoneInscryptions"
-              class="px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded text-white transition-colors"
-            >
-              Own None
-            </button>
-            <button 
-              @click="showBulkModal = true"
-              class="px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-white transition-colors"
-            >
-              Own First X
-            </button>
-            <span class="text-gray-400 text-xs self-center">
-              {{ getTotalOwnedCount() }} / {{ getTotalInscryptionsCount() }} owned
-            </span>
-          </div>
         </div>
       </div>
 
       <!-- Content -->
       <div class="p-3 sm:p-4 max-h-[75vh] overflow-y-auto">
-        <p class="text-sm text-gray-300 mb-4">
+        <p class="text-sm text-gray-300 mb-2">
           Mark inscryptions you already own. Owned inscryptions will be hidden from the main list.
         </p>
+        <p class="text-xs text-blue-400 mb-3">
+          Global Hunter Inscryptions are automatically owned and don't need to be marked here.
+        </p>
+
+        <!-- Bulk Action Buttons -->
+        <div class="flex flex-wrap gap-2 text-xs mb-4 p-3 bg-gray-800/30 rounded-lg border border-gray-700/50">
+          <button 
+            @click="ownAllInscryptions"
+            class="px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-white transition-colors"
+          >
+            Own All
+          </button>
+          <button 
+            @click="ownNoneInscryptions"
+            class="px-2 py-1 bg-gray-600 hover:bg-gray-700 rounded text-white transition-colors"
+          >
+            Own None
+          </button>
+          <button 
+            @click="showBulkModal = true"
+            class="px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-white transition-colors"
+          >
+            Own First X
+          </button>
+          <span class="text-gray-400 text-xs self-center ml-auto">
+            {{ getTotalOwnedCount() }} / {{ getTotalInscryptionsCount() }} owned
+          </span>
+        </div>
 
         <!-- Inscryptions List -->
         <div class="space-y-2">
           <div 
             v-for="baseInscryption in filteredInscryptions" 
             :key="baseInscryption.inscryptionId"
+            v-auto-animate="autoAnimateOptions"
             class="bg-gray-700/30 rounded-lg border border-gray-700/50"
           >
             <!-- Main Inscryption Row -->
-            <div class="p-3 flex items-center justify-between">
-              <div class="flex items-center gap-3 flex-1">
-                <!-- Toggle All Button -->
-                <button
-                  @click="toggleExpanded(baseInscryption.inscryptionId)"
-                  class="p-1 hover:bg-gray-600 rounded transition-colors"
-                >
-                  <IconChevronDown 
-                    v-if="expandedGroups.has(baseInscryption.inscryptionId)"
-                    size="16" 
-                    class="text-gray-400" 
-                  />
-                  <IconChevronRight 
-                    v-else
-                    size="16" 
-                    class="text-gray-400" 
-                  />
-                </button>
+            <div class="p-3">
+              <!-- Desktop Layout -->
+              <div class="hidden sm:flex items-center justify-between">
+                <div class="flex items-center gap-3 flex-1">
+                  <!-- Toggle All Button -->
+                  <button
+                    @click="toggleExpanded(baseInscryption.inscryptionId)"
+                    class="p-1 hover:bg-gray-600 rounded transition-colors"
+                  >
+                    <IconChevronDown 
+                      v-if="expandedGroups.has(baseInscryption.inscryptionId)"
+                      size="16" 
+                      class="text-gray-400" 
+                    />
+                    <IconChevronRight 
+                      v-else
+                      size="16" 
+                      class="text-gray-400" 
+                    />
+                  </button>
 
-                <!-- Inscryption Info -->
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
-                      i{{ baseInscryption.inscryptionId }}
-                    </span>
-                    <span class="text-sm font-medium text-white truncate">
-                      {{ baseInscryption.description }}
-                    </span>
+                  <!-- Inscryption Info -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
+                        i{{ baseInscryption.inscryptionId }}
+                      </span>
+                      <span class="text-sm font-medium text-white truncate">
+                        {{ baseInscryption.description }}
+                      </span>
+                    </div>
+                    <div class="text-xs text-gray-400">
+                      {{ baseInscryption.maxRanks }} rank{{ baseInscryption.maxRanks !== 1 ? 's' : '' }} available
+                      <span v-if="getOwnedRanksCount(baseInscryption.inscryptionId) > 0" class="text-green-400 ml-2">
+                        ({{ getOwnedRanksCount(baseInscryption.inscryptionId) }} owned)
+                      </span>
+                    </div>
                   </div>
-                  <div class="text-xs text-gray-400">
-                    {{ baseInscryption.maxRanks }} rank{{ baseInscryption.maxRanks !== 1 ? 's' : '' }} available
-                    <span v-if="getOwnedRanksCount(baseInscryption.inscryptionId) > 0" class="text-green-400 ml-2">
+
+                  <!-- Own All Toggle -->
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-400">Own All</span>
+                    <button
+                      @click="toggleOwnAll(baseInscryption.inscryptionId, baseInscryption.maxRanks)"
+                      class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+                      :class="getOwnAllStatus(baseInscryption.inscryptionId, baseInscryption.maxRanks) ? 'bg-red-600' : 'bg-gray-600'"
+                    >
+                      <span
+                        class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                        :class="getOwnAllStatus(baseInscryption.inscryptionId, baseInscryption.maxRanks) ? 'translate-x-6' : 'translate-x-1'"
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mobile Layout -->
+              <div class="sm:hidden">
+                <!-- First Row: Expand Button + ID + Title -->
+                <div class="flex items-center gap-2 mb-2">
+                  <button
+                    @click="toggleExpanded(baseInscryption.inscryptionId)"
+                    class="p-1 hover:bg-gray-600 rounded transition-colors flex-shrink-0"
+                  >
+                    <IconChevronDown 
+                      v-if="expandedGroups.has(baseInscryption.inscryptionId)"
+                      size="16" 
+                      class="text-gray-400" 
+                    />
+                    <IconChevronRight 
+                      v-else
+                      size="16" 
+                      class="text-gray-400" 
+                    />
+                  </button>
+                  <span class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300 flex-shrink-0">
+                    i{{ baseInscryption.inscryptionId }}
+                  </span>
+                  <span class="text-sm font-medium text-white truncate">
+                    {{ baseInscryption.description }}
+                  </span>
+                </div>
+
+                <!-- Second Row: Info + Own All Toggle -->
+                <div class="flex items-center justify-between">
+                  <div class="text-xs text-gray-400 flex-1 min-w-0 mr-3">
+                    {{ baseInscryption.maxRanks }} rank{{ baseInscryption.maxRanks !== 1 ? 's' : '' }}
+                    <span v-if="getOwnedRanksCount(baseInscryption.inscryptionId) > 0" class="text-green-400 ml-1">
                       ({{ getOwnedRanksCount(baseInscryption.inscryptionId) }} owned)
                     </span>
                   </div>
-                </div>
-
-                <!-- Own All Toggle -->
-                <div class="flex items-center gap-2">
-                  <span class="text-xs text-gray-400">Own All</span>
-                  <button
-                    @click="toggleOwnAll(baseInscryption.inscryptionId, baseInscryption.maxRanks)"
-                    class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
-                    :class="getOwnAllStatus(baseInscryption.inscryptionId, baseInscryption.maxRanks) ? 'bg-red-600' : 'bg-gray-600'"
-                  >
-                    <span
-                      class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                      :class="getOwnAllStatus(baseInscryption.inscryptionId, baseInscryption.maxRanks) ? 'translate-x-6' : 'translate-x-1'"
-                    />
-                  </button>
+                  
+                  <div class="flex items-center gap-2 flex-shrink-0">
+                    <span class="text-xs text-gray-400">All</span>
+                    <button
+                      @click="toggleOwnAll(baseInscryption.inscryptionId, baseInscryption.maxRanks)"
+                      class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none"
+                      :class="getOwnAllStatus(baseInscryption.inscryptionId, baseInscryption.maxRanks) ? 'bg-red-600' : 'bg-gray-600'"
+                    >
+                      <span
+                        class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform"
+                        :class="getOwnAllStatus(baseInscryption.inscryptionId, baseInscryption.maxRanks) ? 'translate-x-5' : 'translate-x-1'"
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -159,41 +218,38 @@
               v-if="expandedGroups.has(baseInscryption.inscryptionId)" 
               class="border-t border-gray-600/50 bg-gray-800/30"
             >
-              <div class="p-3 space-y-2">
-                <div 
-                  v-for="rank in getRanksForInscryption(baseInscryption)" 
-                  :key="`${baseInscryption.inscryptionId}-${rank}`"
-                  class="flex items-center justify-between py-2 px-3 bg-gray-700/30 rounded-lg"
-                >
-                  <div class="flex items-center gap-3 flex-1">
-                    <span class="text-xs bg-red-900/50 px-1.5 py-0.5 rounded text-red-300 font-mono">
-                      R{{ rank }}
-                    </span>
-                    <div class="flex-1">
-                      <div class="text-sm text-white">
-                        {{ baseInscryption.description }} - Rank {{ rank }}
-                      </div>
-                      <div class="text-xs text-gray-400">
-                        Cost: {{ formatCostForRank(baseInscryption, rank) }}
-                      </div>
-                      <div class="text-xs text-green-400">
-                        Buff: {{ baseInscryption.buffPerRank }}
-                      </div>
+              <div class="p-3">
+                <!-- Desktop Layout -->
+                <div class="hidden sm:flex items-center justify-between">
+                  <div class="flex items-center gap-4 flex-1">
+                    <span class="text-xs text-gray-400">Owned Rank:</span>
+                    <div class="flex items-center gap-3">
+                      <ToolValueControls
+                        :value="getOwnedRanksCount(baseInscryption.inscryptionId)"
+                        :minValue="0"
+                        :maxValue="baseInscryption.maxRanks"
+                        :step="1"
+                        @update:value="setOwnedRankCount(baseInscryption.inscryptionId, $event, baseInscryption.maxRanks)"
+                      />
+                      <span class="text-xs text-gray-400">/ {{ baseInscryption.maxRanks }}</span>
                     </div>
                   </div>
-                  
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-400">Owned</span>
-                    <button
-                      @click="toggleRankOwnership(baseInscryption.inscryptionId, rank, baseInscryption.maxRanks)"
-                      class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none"
-                      :class="isRankOwned(baseInscryption.inscryptionId, rank) ? 'bg-red-600' : 'bg-gray-600'"
-                    >
-                      <span
-                        class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform"
-                        :class="isRankOwned(baseInscryption.inscryptionId, rank) ? 'translate-x-5' : 'translate-x-1'"
+                </div>
+
+                <!-- Mobile Layout -->
+                <div class="sm:hidden">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-gray-400">Owned Rank:</span>
+                    <div class="flex items-center gap-2">
+                      <ToolValueControls
+                        :value="getOwnedRanksCount(baseInscryption.inscryptionId)"
+                        :minValue="0"
+                        :maxValue="baseInscryption.maxRanks"
+                        :step="1"
+                        @update:value="setOwnedRankCount(baseInscryption.inscryptionId, $event, baseInscryption.maxRanks)"
                       />
-                    </button>
+                      <span class="text-xs text-gray-400">/ {{ baseInscryption.maxRanks }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -256,11 +312,18 @@ import {
 import { formatNumber } from '@/composables/format.js';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
+import { vAutoAnimate } from '@formkit/auto-animate/vue';
 
 const emit = defineEmits(['close']);
 
 // Store
 const store = useInscryptionPlannerStore();
+
+// Auto-animate options
+const autoAnimateOptions = {
+  duration: 200,
+  easing: 'cubic-bezier(0.8, 0, 0.2, 1)'  // Material Design easing
+};
 
 // Local state
 const expandedGroups = ref(new Set());
@@ -332,6 +395,19 @@ function toggleOwnAll(inscryptionId, maxRanks) {
   } else {
     // Add all ranks
     localOwnership.value[inscryptionId] = Array.from({ length: maxRanks }, (_, i) => i + 1);
+  }
+}
+
+function setOwnedRankCount(inscryptionId, count, maxRanks) {
+  if (count <= 0) {
+    // No ranks owned
+    localOwnership.value[inscryptionId] = [];
+  } else if (count >= maxRanks) {
+    // All ranks owned
+    localOwnership.value[inscryptionId] = Array.from({ length: maxRanks }, (_, i) => i + 1);
+  } else {
+    // Specific number of ranks owned (from 1 to count)
+    localOwnership.value[inscryptionId] = Array.from({ length: count }, (_, i) => i + 1);
   }
 }
 
