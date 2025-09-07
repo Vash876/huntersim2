@@ -296,7 +296,7 @@
                           </span>
                         </div>
                         <p class="text-sm font-medium text-white mt-1 leading-tight">
-                          {{ item.description }}
+                          {{ truncateDescription(item.description) }}
                         </p>
                       </div>
                     </div>
@@ -502,7 +502,7 @@
                             i{{ item.inscryptionId }}
                           </span>
                           <span class="text-sm font-medium text-white truncate">
-                            {{ item.description }}
+                            {{ truncateDescription(item.description) }}
                           </span>
                           <span class="text-xs bg-blue-900/50 px-1.5 py-0.5 rounded text-blue-300">
                             Rank {{ item.rank }}
@@ -1057,6 +1057,13 @@ function resetProduction() {
   store.settings.hellishBiomatterProduction = 0;
   selectedBuildId.value = '';
   localStorage.removeItem('inscryption-planner-selectedBuildId');
+}
+
+// Truncate description to specified length
+function truncateDescription(description, maxLength = 40) {
+  if (!description) return '';
+  if (description.length <= maxLength) return description;
+  return description.substring(0, maxLength) + '...';
 }
 
 function formatTimeToSave() {
