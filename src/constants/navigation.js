@@ -18,7 +18,8 @@ import {
   IconAbacus,
   IconRobot,
   IconChartLine,
-  IconSparkles
+  IconSparkles,
+  IconScript
 } from '@tabler/icons-vue';
 
 const IconMilestone = {
@@ -225,6 +226,12 @@ export const NAVIGATION = {
           name: 'Trait Sphere Planner',
           path: '/tools/ts-planner',
           icon: IconHexagon
+        },
+        {
+          id: 'inscryptionplanner',
+          name: 'Inscryption Planner',
+          path: '/tools/inscryption-planner',
+          icon: IconScript
         }
       ]
     },
@@ -317,6 +324,12 @@ export const NAVIGATION = {
       name: 'Ultima Calculator',
       path: '/tools/ultima-calculator',
       icon: IconCrown
+    },
+    {
+      id: 'inscryptionplanner',
+      name: 'Inscryption Planner',
+      path: '/tools/inscryption-planner',
+      icon: IconScript
     }
   ]
 };

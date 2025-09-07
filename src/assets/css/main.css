@@ -52,15 +52,16 @@
 
 /* Container-Utilities für bessere Kontrolle */
 .container {
-  max-width: 95%;
+  max-width: 100%;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  padding-left: 0.2rem;
+  padding-right: 0.2rem;
 }
 
 @media (min-width: 640px) {
   .container {
+    max-width: 95%;
     padding-left: 2rem;
     padding-right: 2rem;
   }

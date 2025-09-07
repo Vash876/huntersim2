@@ -10,7 +10,7 @@
       <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
         <div class="header p-3 flex justify-between items-center">
           <h3 class="text-lg font-semibold text-white flex items-center">
-            <IconAnchor size="18" class="mr-2 text-blue-400" />
+            <img src="@/assets/knox/loot_mat3.png" class="w-7 h-7 mr-2" alt="Hellish Biomatter" />
             Tesseract Production
           </h3>
           

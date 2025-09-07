@@ -6,8 +6,8 @@
     @blur="handleBlur"
     @focus="handleFocus"
     v-bind="$attrs"
-    class="w-20 text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 placeholder-purple-400 focus:outline-none focus:ring-1"
-    :class="[focusRingClass, textColorClass]"
+    class="w-20 text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 focus:outline-none focus:ring-1"
+    :class="[focusRingClass, textColorClass, placeholderClass]"
   />
 </template>
 
@@ -27,6 +27,10 @@ const props = defineProps({
   textColorClass: {
     type: String,
     default: 'text-white'
+  },
+  placeholderClass: {
+    type: String,
+    default: 'placeholder-gray-400'
   }
 });
 

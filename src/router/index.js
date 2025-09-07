@@ -157,6 +157,11 @@ const routes = [
     name: 'Ultima Calculator',
     component: () => import('../views/tools/UltimaCalculator.vue'),
   },
+  {
+    path: '/tools/inscryption-planner',
+    name: 'Inscryption Planner',
+    component: () => import('../views/tools/InscryptionPlanner.vue'),
+  },
 
 
   // Settings Route
