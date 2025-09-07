@@ -9,6 +9,9 @@ const changelog =
         text: '<b class="text-yellow-400">NEW:</b> Inscryption Planner Tool',
         subItems: [
           'Added comprehensive Inscryption Planner for optimizing Inscryption purchases',
+          'Live build evaluation if you purchase Borge related upgrades',
+          'Smart shopping list with drag and drop reordering',
+          'Integrated with backup/restore system',
         ]
       },
     ]

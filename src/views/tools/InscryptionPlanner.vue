@@ -1035,13 +1035,10 @@ onMounted(async () => {
     await hunterStore.initHunterConfig('borge');
   }
   
-  // Initialize inscryption planner store and sync global inscryptions
-  await store.initialize(hunterStore);
-  
-  // Load cached results
+  // Load cached results early (independent of inscryption data)
   await loadCachedResults();
   
-  // Load saved build selection
+  // Load saved build selection early (independent of inscryption data)
   const savedBuildId = localStorage.getItem('inscryption-planner-selectedBuildId');
   if (savedBuildId) {
     const buildExists = borgeBuilds.value.some(build => String(build.id) === String(savedBuildId));
@@ -1050,6 +1047,10 @@ onMounted(async () => {
       updateFromSelectedBuild();
     }
   }
+  
+  // Initialize inscryption planner store and sync global inscryptions (can be async)
+  // This doesn't need to block the HBM production display
+  store.initialize(hunterStore);
 });
 
 // Functions
