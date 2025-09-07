@@ -198,7 +198,7 @@
               <div class="text-xs text-gray-400 flex items-center gap-1">
                 AttGN3 to 1e333
                 <InfoTooltip 
-                  content="Uses current LR Ticks, RP, and AttGN3 Buff from tracking data, other settings taken from AttGN3 Calculator"
+                  content="Uses current LR Ticks, RP, and AttGN3 Buff from tracking data, other settings taken from AttGN3 Calculator. The remaining time in brackets updates live."
                   placement="top" 
                 />
               </div>
@@ -209,7 +209,13 @@
 
             <!-- AttGN3 Pending Multiplier -->
             <div class="bg-gray-700/30 rounded-md p-2">
-              <div class="text-xs text-gray-400">AttGN3 Pending Multiplier</div>
+              <div class="text-xs text-gray-400 flex items-center gap-1">
+                AttGN3 Pending Multiplier
+                <InfoTooltip 
+                  content="Shows the multiplier gained from current LR operations. Updates live based on time elapsed since last entry."
+                  placement="top" 
+                />
+              </div>
               <div class="text-sm font-semibold text-green-400">
                 {{ getAttGN3PendingMultiplier() }}
               </div>
@@ -1816,9 +1822,21 @@ function getAttGN3CompletionDetails() {
   const numDays = parseFloat(daysToMax);
   if (isNaN(numDays)) return 'Never';
   
-  // Calculate completion date/time
-  const now = new Date();
-  const completionDate = new Date(now.getTime() + (numDays * 24 * 60 * 60 * 1000));
+  // Use the timestamp of the latest entry as base time for the completion date
+  let baseTime = new Date();
+  if (props.track && props.track.entries && props.track.entries.length > 0) {
+    const sortedEntries = [...props.track.entries].sort((a, b) => {
+      return new Date(b.date) - new Date(a.date);
+    });
+    const lastEntry = sortedEntries[0];
+    const lastEntryTime = new Date(lastEntry.date);
+    if (!isNaN(lastEntryTime.getTime())) {
+      baseTime = lastEntryTime;
+    }
+  }
+  
+  // Calculate completion date/time from the base time (this stays fixed)
+  const completionDate = new Date(baseTime.getTime() + (numDays * 24 * 60 * 60 * 1000));
   
   // Format completion date/time
   const formattedDateTime = completionDate.toLocaleString(undefined, {
@@ -1829,20 +1847,31 @@ function getAttGN3CompletionDetails() {
     minute: '2-digit'
   });
   
-  // Calculate remaining days and hours
-  const wholeDays = Math.floor(numDays);
-  const remainingHours = Math.round((numDays - wholeDays) * 24);
+  // Calculate remaining time from current time (this updates live)
+  const now = currentTime.value;
+  const remainingMs = completionDate.getTime() - now.getTime();
+  const remainingDays = remainingMs / (24 * 60 * 60 * 1000);
   
   let remainingText;
-  if (numDays >= 1) {
+  if (remainingDays < 0) {
+    remainingText = 'Overdue';
+  } else if (remainingDays >= 1) {
+    const wholeDays = Math.floor(remainingDays);
+    const remainingHours = Math.floor((remainingDays - wholeDays) * 24);
     if (remainingHours > 0) {
       remainingText = `${wholeDays}d ${remainingHours}h`;
     } else {
       remainingText = `${wholeDays}d`;
     }
   } else {
-    const hours = Math.ceil(numDays * 24);
-    remainingText = `${hours}h`;
+    // Under 24 hours - show hours and minutes
+    const remainingHours = Math.floor(remainingDays * 24);
+    const remainingMinutes = Math.floor((remainingDays * 24 * 60) % 60);
+    if (remainingHours > 0) {
+      remainingText = `${remainingHours}h ${remainingMinutes}m`;
+    } else {
+      remainingText = `${remainingMinutes}m`;
+    }
   }
   
   return `${formattedDateTime} (${remainingText})`;
