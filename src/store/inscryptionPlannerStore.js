@@ -201,7 +201,7 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
       'qu': 1e18,
       'sx': 1e21,
       'sp': 1e24,
-      'oc': 1e27,
+      'o': 1e27,
       'n': 1e30,
       'd': 1e33
     };

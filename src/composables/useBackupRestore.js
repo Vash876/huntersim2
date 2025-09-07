@@ -29,6 +29,37 @@ export function useBackupRestore() {
     try {
       isCreatingBackup.value = true;
       
+      // CRITICAL: Ensure TR Tracking Store is initialized before backup
+      if (!trTrackingStore.isInitialized) {
+        console.log('🔄 TR Tracking Store not initialized, initializing now...');
+        try {
+          await trTrackingStore.init();
+          console.log('✅ TR Tracking Store initialized successfully');
+        } catch (initError) {
+          console.error('❌ Failed to initialize TR Tracking Store:', initError);
+          console.warn('⚠️ Backup will proceed but TR Tracking data may be incomplete');
+        }
+      }
+      
+      // Try to ensure other stores are also properly loaded if they have initialization methods
+      try {
+        if (gemPlannerStore.initialize && !gemPlannerStore.isInitialized) {
+          console.log('🔄 Initializing Gem Planner Store...');
+          await gemPlannerStore.initialize();
+        }
+      } catch (error) {
+        console.warn('Could not initialize Gem Planner Store:', error);
+      }
+      
+      try {
+        if (inscryptionPlannerStore.initialize && !inscryptionPlannerStore.isInitialized) {
+          console.log('🔄 Initializing Inscryption Planner Store...');
+          await inscryptionPlannerStore.initialize();
+        }
+      } catch (error) {
+        console.warn('Could not initialize Inscryption Planner Store:', error);
+      }
+      
       // 1. Hunter Simulator Daten (Store-State klonen, um den Store nicht zu verändern)
       const hunterStoreState = JSON.parse(JSON.stringify(hunterStore.$state));
       
@@ -74,6 +105,16 @@ export function useBackupRestore() {
       
       // 13. TR Tracking Daten (diese Funktion holt automatisch aus dem aktuellen Storage-System)
       const trTrackingData = trTrackingStore.exportData();
+      
+      // Debug: Check if TR Tracking data is actually present
+      console.log('🔍 TR Tracking Debug Info:', {
+        trTracksCount: trTrackingData?.trTracks?.length || 0,
+        selectedResourcesCount: trTrackingData?.selectedResources?.length || 0,
+        customResourcesCount: trTrackingData?.customResources?.length || 0,
+        storeInitialized: !!trTrackingStore.isInitialized,
+        useIndexedDB: trTrackingStore.useIndexedDB,
+        exportedData: trTrackingData
+      });
       
       // 14. Storage-System-Informationen für bessere Backup-Kompatibilität
       const storageInfo = {
@@ -129,8 +170,42 @@ export function useBackupRestore() {
       
       console.log('Backup created successfully', {
         size: backupCode.length,
-        timestamp: backupData.timestamp
+        timestamp: backupData.timestamp,
+        trTrackingIncluded: !!(backupData.data.trTrackingStore?.trTracks?.length),
+        trTracksCount: backupData.data.trTrackingStore?.trTracks?.length || 0
       });
+      
+      // Warn if important data is missing
+      const backupSummary = {
+        hunterStore: {
+          hasBuilds: !!(backupData.data.hunterStore?.hunterBuilds && Object.keys(backupData.data.hunterStore.hunterBuilds).some(hunter => 
+            backupData.data.hunterStore.hunterBuilds[hunter]?.length > 0
+          )),
+          hasStats: !!(backupData.data.hunterStore?.hunterStats)
+        },
+        trTracking: {
+          hasTracks: !!(backupData.data.trTrackingStore?.trTracks?.length),
+          tracksCount: backupData.data.trTrackingStore?.trTracks?.length || 0,
+          hasSelectedResources: !!(backupData.data.trTrackingStore?.selectedResources?.length),
+          hasCustomResources: !!(backupData.data.trTrackingStore?.customResources?.length)
+        },
+        gemPlanner: {
+          hasData: !!(backupData.data.gemPlannerStore && Object.keys(backupData.data.gemPlannerStore).length > 0)
+        },
+        inscryptionPlanner: {
+          hasData: !!(backupData.data.inscryptionPlannerStore && Object.keys(backupData.data.inscryptionPlannerStore).length > 0)
+        }
+      };
+      
+      console.log('📊 Backup Content Summary:', backupSummary);
+      
+      if (!backupData.data.trTrackingStore?.trTracks?.length) {
+        console.warn('⚠️ WARNING: No TR Tracking data found in backup! This could indicate:');
+        console.warn('   1. TR Tracking store is not initialized');
+        console.warn('   2. User has no TR tracks yet');
+        console.warn('   3. IndexedDB data is not being exported properly');
+        console.warn('   4. User needs to visit TR Tracking page first to initialize the store');
+      }
       
       return backupCode;
       
@@ -154,13 +229,40 @@ export function useBackupRestore() {
         throw new Error('Backup code is required');
       }
       
+      // Check if backup code looks complete (should be substantial length for real backup)
+      const trimmedCode = backupCode.trim();
+      if (trimmedCode.length < 100) {
+        throw new Error('Backup code appears to be too short or incomplete. A complete backup code should be much longer.');
+      }
+      
+      // Check if it ends properly (Base64 should end with = or == if padded, or alphanumeric)
+      if (!trimmedCode.match(/[A-Za-z0-9+\/=]$/)) {
+        throw new Error('Backup code appears to be incomplete - it should end with valid Base64 characters.');
+      }
+      
       // Decode and parse backup data
       let backupData;
       try {
         const decodedData = atob(backupCode.trim());
         backupData = JSON.parse(decodedData);
       } catch (error) {
-        throw new Error('Invalid backup code format');
+        // More specific error messages for different failure scenarios
+        if (error.name === 'InvalidCharacterError' || error.message.includes('Invalid character')) {
+          throw new Error('Invalid backup code format - contains invalid characters. Please check that the code was copied completely.');
+        }
+        if (error instanceof SyntaxError) {
+          // Try to determine how much of the backup might be missing
+          try {
+            const decodedPartial = atob(backupCode.trim());
+            const position = error.message.match(/position (\d+)/);
+            const positionNum = position ? parseInt(position[1]) : decodedPartial.length;
+            
+            throw new Error(`Backup code is incomplete or corrupted. The JSON structure is cut off at position ${positionNum}. The backup code appears to end with: "${decodedPartial.slice(-20)}". Please ensure you have the complete backup code from the database.`);
+          } catch (decodeError) {
+            throw new Error('Backup code appears to be incomplete or corrupted. Please ensure you have the complete backup code.');
+          }
+        }
+        throw new Error(`Invalid backup code format: ${error.message}`);
       }
       
       if (!backupData || !backupData.data || backupData.type !== 'hunter-simulator-backup') {

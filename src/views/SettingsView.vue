@@ -138,7 +138,8 @@
           </div>
         </div>
       </div>
-      
+
+
       <!-- Cache Management -->
       <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-8">
         <div class="header p-4 flex justify-between items-center">
@@ -263,6 +264,41 @@
           </div>
         </div>
       </div>
+    <!-- Emergency Data Recovery Tool -->
+    <div class="mt-8 text-center">
+      <button 
+        @click="searchIndexedDB"
+        class="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded text-sm"
+        :disabled="isSearching"
+        style="font-family: monospace;"
+      >
+        <span v-if="!isSearching">emergency data recovery</span>
+        <span v-else>searching...</span>
+      </button>
+      
+      <!-- Recovery Results -->
+      <div v-if="foundData.hasData" class="mt-4 text-left max-w-4xl mx-auto">
+        <div v-for="(track, index) in foundData.trTracks" :key="index" class="mb-4 p-3 bg-gray-900 rounded border">
+          <div class="text-white font-mono text-sm mb-2">{{ track.name }}</div>
+          <textarea 
+            :value="generateTrackCode(track)" 
+            readonly 
+            class="w-full bg-black text-green-400 font-mono text-xs p-2 rounded h-16 resize-none"
+            @click="$event.target.select()"
+          ></textarea>
+          <button 
+            @click="copyTrackCode(track, index)"
+            class="mt-1 bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs"
+          >
+            copy
+          </button>
+        </div>
+      </div>
+      
+      <div v-else-if="searchPerformed && !foundData.hasData" class="mt-4 text-red-400 text-sm font-mono">
+        no data found
+      </div>
+    </div>
 
     </div>
 
@@ -327,7 +363,17 @@ const codeCopied = ref(false);
 const showResetConfirmation = ref(false);
 const fileInput = ref(null);
 const toast = ref({ show: false, message: '', type: 'info' });
-const highIterationsEnabled = ref(false); 
+const highIterationsEnabled = ref(false);
+
+// Data Recovery State
+const isSearching = ref(false);
+const searchPerformed = ref(false);
+const foundData = ref({
+  hasData: false,
+  trTracks: [],
+  trEntries: [],
+  trSettings: []
+}); 
 
 // AlertDialog-States
 const alertDialog = ref({
@@ -373,6 +419,196 @@ function confirmDialog() {
 
 function cancelDialog() {
   alertDialog.value.isVisible = false;
+}
+
+// Data Recovery Functions
+async function searchIndexedDB() {
+  isSearching.value = true;
+  searchPerformed.value = true;
+  
+  try {
+    console.log('=== STARTING INDEXEDDB SEARCH ===');
+    
+    // Reset found data
+    foundData.value.trTracks = [];
+    foundData.value.trEntries = [];
+    foundData.value.trSettings = [];
+    foundData.value.hasData = false;
+    
+    // Open CIFI-Tools-DB (not TRTrackingDB!)
+    const dbRequest = indexedDB.open('CIFI-Tools-DB');
+    
+    dbRequest.onerror = () => {
+      console.error('CIFI-Tools-DB database nicht gefunden!');
+      isSearching.value = false;
+    };
+    
+    dbRequest.onsuccess = async (event) => {
+      const db = event.target.result;
+      console.log('Database geöffnet:', db);
+      
+      // Get all store names
+      const storeNames = Array.from(db.objectStoreNames);
+      console.log('Gefundene Stores:', storeNames);
+      
+      // Read all TR Tracking stores
+      const stores = ['trTracker_tracks', 'trTracker_entries', 'trTracker_settings'];
+      
+      for (const storeName of stores) {
+        if (storeNames.includes(storeName)) {
+          try {
+            const transaction = db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            
+            await new Promise((resolve) => {
+              const request = store.getAll();
+              
+              request.onsuccess = () => {
+                const data = request.result || [];
+                console.log(`${storeName}:`, data);
+                
+                if (storeName === 'trTracker_tracks') {
+                  foundData.value.trTracks = data;
+                } else if (storeName === 'trTracker_entries') {
+                  foundData.value.trEntries = data;
+                } else if (storeName === 'trTracker_settings') {
+                  foundData.value.trSettings = data;
+                }
+                
+                resolve();
+              };
+              
+              request.onerror = () => {
+                console.error(`Error reading ${storeName}`);
+                resolve();
+              };
+            });
+          } catch (error) {
+            console.error(`Access error for ${storeName}:`, error);
+          }
+        } else {
+          console.log(`${storeName}: NOT FOUND`);
+        }
+      }
+      
+      // Check if we found any data
+      const totalItems = foundData.value.trTracks.length + foundData.value.trEntries.length + foundData.value.trSettings.length;
+      foundData.value.hasData = totalItems > 0;
+      
+      console.log(`Total items found: ${totalItems}`);
+      
+      db.close();
+      isSearching.value = false;
+    };
+    
+  } catch (error) {
+    console.error('IndexedDB search failed:', error);
+    isSearching.value = false;
+  }
+}
+
+function exportFoundData() {
+  if (!foundData.value.hasData) {
+    console.log('No data to export');
+    return;
+  }
+  
+  try {
+    const exportData = {
+      timestamp: new Date().toISOString(),
+      source: 'indexeddb-recovery',
+      data: {
+        trTracks: foundData.value.trTracks,
+        trEntries: foundData.value.trEntries,
+        trSettings: foundData.value.trSettings
+      }
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `recovered-data-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    console.log('Data exported successfully!');
+    
+  } catch (error) {
+    console.error('Export failed:', error);
+  }
+}
+
+// Generate share code for individual track (same logic as ShareTrackModal)
+function generateTrackCode(track) {
+  try {
+    // Find entries for this track from the recovered entries
+    const trackEntries = foundData.value.trEntries.filter(entry => entry.trackId === track.id) || [];
+    
+    // Create a complete shareable version of the track
+    const shareableTrack = {
+      name: track.name,
+      startDate: track.startDate,
+      notes: track.notes || '',
+      trCount: track.trCount,
+      targetGoals: track.targetGoals || {},
+      initialValues: track.initialValues || {},
+      entries: trackEntries,
+      selectedResources: track.selectedResources || [],
+      resourceOrder: track.resourceOrder || [],
+      isActive: track.isActive,
+      createdAt: track.createdAt,
+      updatedAt: track.updatedAt,
+      version: '2.0'
+    };
+    
+    // Use ultra-compressed format version 2 (like ShareTrackModal)
+    const compressed = {
+      v: '2', // Version 2 format
+      n: shareableTrack.name,
+      s: shareableTrack.startDate,
+      nt: shareableTrack.notes,
+      t: shareableTrack.trCount,
+      g: shareableTrack.targetGoals,
+      i: shareableTrack.initialValues,
+      e: shareableTrack.entries.map(entry => [
+        entry.date,
+        entry.values,
+        entry.notes || '',
+        entry.id
+      ]),
+      r: shareableTrack.selectedResources,
+      o: shareableTrack.resourceOrder, // Note: 'o' not 'ro' for version 2
+      a: shareableTrack.isActive ? 1 : 0, // Boolean as number
+      c: shareableTrack.createdAt,
+      u: shareableTrack.updatedAt
+    };
+    
+    // Base64 encode with URL-safe characters
+    const jsonString = JSON.stringify(compressed);
+    let encoded = btoa(unescape(encodeURIComponent(jsonString)));
+    
+    // Make URL-safe and remove padding
+    encoded = encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    
+    return encoded;
+    
+  } catch (error) {
+    console.error('Failed to generate track code:', error);
+    return 'ERROR_GENERATING_CODE';
+  }
+}
+
+function copyTrackCode(track, index) {
+  try {
+    const code = generateTrackCode(track);
+    navigator.clipboard.writeText(code);
+    console.log(`Track code for "${track.name}" copied to clipboard!`);
+  } catch (error) {
+    console.error('Failed to copy track code:', error);
+  }
 }
 
 // Toggle High Iterations Mode

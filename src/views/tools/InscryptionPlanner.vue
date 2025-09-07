@@ -125,7 +125,7 @@
             <div class="flex items-center justify-center gap-2">
               <IconList size="16" />
               <span>Available</span>
-              <span class="text-xs bg-red-900/50 px-1.5 py-0.5 rounded">{{ store.availableInscryptions.length }}</span>
+              <span class="text-xs bg-red-900/50 px-1.5 py-0.5 rounded">{{ sortedAvailableInscryptions.length }}</span>
             </div>
           </button>
           <button
@@ -165,6 +165,40 @@
             </button>
           </div>
 
+          <!-- Sort Controls for Mobile -->
+          <div class="flex items-center justify-center gap-1 bg-gray-700/50 rounded-lg p-1">
+            <button
+              @click="sortBy = 'id'"
+              :class="[
+                'px-2 py-1 text-xs rounded transition-colors flex-1',
+                sortBy === 'id' 
+                  ? 'bg-red-700 text-white' 
+                  : 'text-gray-300 hover:text-white hover:bg-gray-600'
+              ]"
+            >
+              Sort by ID
+            </button>
+            <button
+              @click="sortBy = 'cost'"
+              :class="[
+                'px-2 py-1 text-xs rounded transition-colors flex-1',
+                sortBy === 'cost' 
+                  ? 'bg-red-700 text-white' 
+                  : 'text-gray-300 hover:text-white hover:bg-gray-600'
+              ]"
+            >
+              Sort by Cost
+            </button>
+            <button
+              @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+              class="px-2 py-1 text-xs text-gray-300 hover:text-white transition-colors"
+              :title="sortOrder === 'asc' ? 'Sort Descending' : 'Sort Ascending'"
+            >
+              <IconChevronUp v-if="sortOrder === 'asc'" size="14" />
+              <IconChevronDown v-else size="14" />
+            </button>
+          </div>
+
           <!-- Loading State -->
           <div v-if="store.isLoading" class="text-center py-6">
             <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-red-400"></div>
@@ -183,7 +217,7 @@
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="store.availableInscryptions.length === 0" class="text-center py-6 text-gray-400">
+          <div v-else-if="sortedAvailableInscryptions.length === 0" class="text-center py-6 text-gray-400">
             <IconList size="32" class="mx-auto mb-3 opacity-50" />
             <p class="text-sm">No inscryptions available</p>
           </div>
@@ -191,7 +225,7 @@
           <!-- Inscryptions List - Mobile Compact View -->
           <div v-else class="space-y-2">
             <div 
-              v-for="inscryption in store.availableInscryptions"
+              v-for="inscryption in sortedAvailableInscryptions"
               :key="`${inscryption.inscryptionId}-${inscryption.rank}`"
               class="bg-gray-700/30 rounded-lg p-3 hover:bg-gray-700/50 transition-colors border border-gray-600/30"
             >
@@ -358,13 +392,49 @@
               Available Inscryptions
             </h3>
             
-            <button 
-              @click="showOwnershipModal = true" 
-              class="bg-red-700 hover:bg-red-600 text-white px-2 py-1 text-xs rounded-lg flex items-center transition-colors"
-            >
-              <IconSettings size="12" class="mr-1" />
-              Manage Owned
-            </button>
+            <div class="flex items-center gap-2">
+              <!-- Sort Controls -->
+              <div class="flex items-center gap-1 bg-gray-700/50 rounded-lg p-1">
+                <button
+                  @click="sortBy = 'id'"
+                  :class="[
+                    'px-2 py-1 text-xs rounded transition-colors',
+                    sortBy === 'id' 
+                      ? 'bg-red-700 text-white' 
+                      : 'text-gray-300 hover:text-white hover:bg-gray-600'
+                  ]"
+                >
+                  ID
+                </button>
+                <button
+                  @click="sortBy = 'cost'"
+                  :class="[
+                    'px-2 py-1 text-xs rounded transition-colors',
+                    sortBy === 'cost' 
+                      ? 'bg-red-700 text-white' 
+                      : 'text-gray-300 hover:text-white hover:bg-gray-600'
+                  ]"
+                >
+                  Cost
+                </button>
+                <button
+                  @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+                  class="px-1 py-1 text-xs text-gray-300 hover:text-white transition-colors"
+                  :title="sortOrder === 'asc' ? 'Sort Descending' : 'Sort Ascending'"
+                >
+                  <IconChevronUp v-if="sortOrder === 'asc'" size="14" />
+                  <IconChevronDown v-else size="14" />
+                </button>
+              </div>
+              
+              <button 
+                @click="showOwnershipModal = true" 
+                class="bg-red-700 hover:bg-red-600 text-white px-2 py-1 text-xs rounded-lg flex items-center transition-colors"
+              >
+                <IconSettings size="12" class="mr-1" />
+                Manage Owned
+              </button>
+            </div>
           </div>
 
           <!-- Loading State -->
@@ -385,7 +455,7 @@
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="store.availableInscryptions.length === 0" class="text-center py-8 text-gray-400">
+          <div v-else-if="sortedAvailableInscryptions.length === 0" class="text-center py-8 text-gray-400">
             <IconList size="48" class="mx-auto mb-4 opacity-50" />
             <p>No inscryptions available</p>
             <p class="text-sm">All inscryptions are owned or in shopping list</p>
@@ -394,7 +464,7 @@
           <!-- Inscryptions List -->
           <div v-else class="space-y-2">
             <div 
-              v-for="inscryption in store.availableInscryptions"
+              v-for="inscryption in sortedAvailableInscryptions"
               :key="`${inscryption.inscryptionId}-${inscryption.rank}`"
               class="bg-gray-700/30 rounded-lg p-3 hover:bg-gray-700/50 transition-colors"
             >
@@ -410,7 +480,7 @@
                     </span>
                   </div>
                   <div class="flex items-center gap-4 text-xs text-gray-400">
-                    <span>Cost: {{ formatNumber(inscryption.costSci) }}</span>
+                    <span>Cost: <span class="text-yellow-400">{{ formatNumber(inscryption.costSci) }}</span></span>
                     <span v-if="inscryption.buffPerRank" class="text-green-400">
                       {{ inscryption.buffPerRank }}
                     </span>
@@ -540,15 +610,24 @@
                           </div>
                           
                           <!-- Enhanced Time Display -->
-                          <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-700/50">
-                            <div class="flex items-center gap-2">
-                              <div class="bg-gray-700 text-gray-200 px-2 py-1 rounded-md text-xs flex items-center gap-1">
-                                <IconClock size="12" />
-                                {{ formatItemTimeToSaveWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}
-                              </div>
-                              <div class="text-xs text-gray-400">
-                                Ready: {{ formatCumulativeTargetDate(index) }}
-                              </div>
+                          <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2 pt-2 border-t border-gray-700/50">
+                            <!-- Individual item time (if bought alone with current HBM) -->
+                            <div 
+                              class="bg-blue-700/50 text-blue-200 px-2 py-1 rounded-md text-xs flex items-center gap-1 cursor-help flex-1" 
+                              title="Time to afford this item alone with current HBM reserves and production rate"
+                            >
+                              <IconClock size="12" />
+                              <span class="font-medium">Individual:</span>
+                              {{ formatItemTimeToSaveWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}
+                            </div>
+                            <!-- Cumulative time (considering all previous items in order) -->
+                            <div 
+                              class="bg-green-700/50 text-green-200 px-2 py-1 rounded-md text-xs flex items-center gap-1 cursor-help flex-1" 
+                              title="When this item will be available considering all previous items in shopping queue and production boosts"
+                            >
+                              <IconChartDots size="12" />
+                              <span class="font-medium">In Queue:</span>
+                              {{ formatCumulativeTargetDate(index) }}
                             </div>
                           </div>
                         </div>
@@ -626,7 +705,9 @@ import {
   IconClock,
   IconGripVertical,
   IconCheck,
-  IconTrash
+  IconTrash,
+  IconChevronUp,
+  IconChevronDown
 } from '@tabler/icons-vue';
 import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
@@ -645,6 +726,10 @@ const showOwnershipModal = ref(false);
 
 // Mobile state
 const activeMobileTab = ref('available');
+
+// Sorting state for Available Inscryptions
+const sortBy = ref('id'); // 'id' or 'cost'
+const sortOrder = ref('asc'); // 'asc' or 'desc'
 
 // New state for HBM production
 const cachedResults = ref({});
@@ -690,6 +775,27 @@ const hellishBiomatterPerDay = computed(() => {
   }
   
   return 0;
+});
+
+// Sorted Available Inscryptions
+const sortedAvailableInscryptions = computed(() => {
+  if (!store.availableInscryptions || store.availableInscryptions.length === 0) {
+    return [];
+  }
+  
+  const sorted = [...store.availableInscryptions].sort((a, b) => {
+    let comparison = 0;
+    
+    if (sortBy.value === 'cost') {
+      comparison = (a.costSci || 0) - (b.costSci || 0);
+    } else { // sortBy.value === 'id'
+      comparison = (a.inscryptionId || 0) - (b.inscryptionId || 0);
+    }
+    
+    return sortOrder.value === 'desc' ? -comparison : comparison;
+  });
+  
+  return sorted;
 });
 
 // Load cached results for Borge builds
@@ -1312,28 +1418,36 @@ function formatItemTargetDateWithProduction(itemCost, hbmProduction) {
 // Berechnet die kumulative Zeit bis ein Item in der Shopping List dran ist
 function formatCumulativeTargetDate(itemIndex) {
   let cumulativeDays = 0;
-  let currentHBMProduction = currentHBM.value || 0;
+  let availableHBM = currentHBM.value || 0; // Start with current available HBM
+  let currentDailyProduction = hellishBiomatterPerDay.value; // Start with base production
   
-  // Gehe durch alle Items vor dem aktuellen Item
+  // Gehe durch alle Items bis zum gewünschten Index (inklusive)
   for (let i = 0; i <= itemIndex; i++) {
     const item = store.shoppingList[i];
     if (!item) continue;
     
-    const remainingCost = Math.max(0, item.costSci - currentHBMProduction);
+    // Wie viel HBM brauchen wir noch für dieses Item?
+    const remainingCost = Math.max(0, item.costSci - availableHBM);
     
-    // Finde die aktuelle HBM-Produktion für dieses Item
-    const itemHBMData = hbmProductionDataMap.value[item.id];
-    const dailyProduction = itemHBMData?.currentHBMProduction || 0;
-    
-    if (dailyProduction <= 0) {
-      return 'Set production rate';
+    if (remainingCost > 0) {
+      if (currentDailyProduction <= 0) {
+        return 'Set production rate';
+      }
+      
+      // Berechne die Tage, die wir warten müssen
+      const daysForThisItem = remainingCost / currentDailyProduction;
+      cumulativeDays += daysForThisItem;
     }
     
-    const daysForThisItem = remainingCost / dailyProduction;
-    cumulativeDays += daysForThisItem;
+    // Nach dem Kauf dieses Items:
+    // 1. Verfügbares HBM wird komplett ausgegeben
+    availableHBM = 0;
     
-    // Nach dem Kauf dieses Items erhöht sich die HBM-Produktion
-    currentHBMProduction = itemHBMData?.newHBMProduction || currentHBMProduction;
+    // 2. Schaue nach, ob dieses Item die Produktion erhöht
+    const itemHBMData = hbmProductionDataMap.value[item.id];
+    if (itemHBMData && itemHBMData.newHBMProduction > currentDailyProduction) {
+      currentDailyProduction = itemHBMData.newHBMProduction;
+    }
   }
   
   if (cumulativeDays === Infinity || cumulativeDays > 36500) return 'Never';
