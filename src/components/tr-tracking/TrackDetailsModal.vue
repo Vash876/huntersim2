@@ -212,7 +212,7 @@
               <div class="text-xs text-gray-400 flex items-center gap-1">
                 AttGN3 Pending Multiplier
                 <InfoTooltip 
-                  content="Shows the multiplier gained from current LR operations. Updates live based on time elapsed since last entry."
+                  content="Updates live based on time elapsed since last entry."
                   placement="top" 
                 />
               </div>
