@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.8.0',
+    date: '2025-09-07',
+    changes: [
+      {
+        text: '<b class="text-yellow-400">NEW:</b> Inscryption Planner Tool',
+        subItems: [
+          'Added comprehensive Inscryption Planner for optimizing Inscryption purchases',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.7.13',
     date: '2025-09-02',
     changes: [

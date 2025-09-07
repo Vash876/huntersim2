@@ -289,6 +289,7 @@ import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { useUltimaStore } from '@/store/ultimaStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useSyncStore } from '@/store/syncStore';
+import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 import { 
@@ -316,6 +317,7 @@ const trTrackingStore = useTRTrackingStore();
 const ultimaStore = useUltimaStore();
 const gemPlannerStore = useGemPlannerStore();
 const syncStore = useSyncStore();
+const inscryptionPlannerStore = useInscryptionPlannerStore();
 const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBackupRestore();
 
 // UI State
@@ -407,7 +409,7 @@ function copyBackupCode() {
 function showResetDataDialog() {
   showDialog({
     title: 'Reset All Data',
-    message: 'This will reset all your data including all hunters, builds, TR-Planner data, Gadget Calculator, Mech Planner, Ultima Calculator, AttrGN3 Calculator, TS Planner, Research Overview, and Loop Mod Overview settings. This action cannot be undone.',
+    message: 'This will reset all your data including all hunters, builds, TR-Planner data, Gadget Calculator, Mech Planner, Ultima Calculator, AttrGN3 Calculator, TS Planner, Research Overview, Loop Mod Overview, Inscryption Planner, and all related settings. This action cannot be undone.',
     type: 'error',
     confirmText: 'Yes, Reset Everything',
     cancelText: 'Cancel',
@@ -508,7 +510,18 @@ function resetAllData() {
       }
     });
     
-    // 6. Sync Store zurücksetzen
+    // 6. Inscryption Planner Store zurücksetzen
+    Object.keys(inscryptionPlannerStore.$state).forEach(key => {
+      if (Array.isArray(inscryptionPlannerStore.$state[key])) {
+        inscryptionPlannerStore.$state[key] = [];
+      } else if (typeof inscryptionPlannerStore.$state[key] === 'object' && inscryptionPlannerStore.$state[key] !== null) {
+        inscryptionPlannerStore.$state[key] = {};
+      } else {
+        inscryptionPlannerStore.$state[key] = null;
+      }
+    });
+    
+    // 7. Sync Store zurücksetzen
     Object.keys(syncStore.$state).forEach(key => {
       if (Array.isArray(syncStore.$state[key])) {
         syncStore.$state[key] = [];
@@ -519,7 +532,7 @@ function resetAllData() {
       }
     });
     
-    // 7. Tool-spezifische localStorage-Einträge löschen
+    // 8. Tool-spezifische localStorage-Einträge löschen
     // Gadget Calculator
     localStorage.removeItem('gadgetCalculator_currentLevels');
     localStorage.removeItem('gadgetCalculator_targetLevels');
@@ -542,6 +555,12 @@ function resetAllData() {
     
     // M0 Cost Overview
     localStorage.removeItem('m0CostOverview_filters');
+    
+    // Inscryption Planner
+    localStorage.removeItem('inscryption-shopping-list');
+    localStorage.removeItem('inscryption-owned');
+    localStorage.removeItem('inscryption-planner-settings');
+    localStorage.removeItem('inscryption-planner-selectedBuildId');
     
     // TR Planner
     localStorage.removeItem('trPlanOrderIds');

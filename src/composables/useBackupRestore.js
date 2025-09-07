@@ -8,6 +8,7 @@ import { useTRPlannerStore } from '@/store/orbStore';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { useUltimaStore } from '@/store/ultimaStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
+import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
 
 export function useBackupRestore() {
   const hunterStore = useHunterStore();
@@ -15,6 +16,7 @@ export function useBackupRestore() {
   const trTrackingStore = useTRTrackingStore();
   const ultimaStore = useUltimaStore();
   const gemPlannerStore = useGemPlannerStore();
+  const inscryptionPlannerStore = useInscryptionPlannerStore();
 
   const isCreatingBackup = ref(false);
   const isRestoring = ref(false);
@@ -67,19 +69,26 @@ export function useBackupRestore() {
       // 11. Gem Planner Daten (Pinia Store)
       const gemPlannerData = gemPlannerStore.exportData();
       
-      // 12. TR Tracking Daten (diese Funktion holt automatisch aus dem aktuellen Storage-System)
+      // 12. Inscryption Planner Daten (Pinia Store)
+      const inscryptionPlannerData = JSON.parse(JSON.stringify(inscryptionPlannerStore.$state));
+      
+      // 13. TR Tracking Daten (diese Funktion holt automatisch aus dem aktuellen Storage-System)
       const trTrackingData = trTrackingStore.exportData();
       
-      // 13. Storage-System-Informationen für bessere Backup-Kompatibilität
+      // 14. Storage-System-Informationen für bessere Backup-Kompatibilität
       const storageInfo = {
         trTrackingUsesIndexedDB: trTrackingStore.useIndexedDB,
         backupCreatedWith: 'indexedDB-migration-v1'
       };
       
-      // 14. Weitere relevante localStorage-Einträge sammeln
+      // 15. Weitere relevante localStorage-Einträge sammeln
       const trPlanOrderIds = localStorage.getItem('trPlanOrderIds');
       const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
       const gemsShowOnlySimRelevant = localStorage.getItem('gems_showOnlySimRelevant');
+      const inscryptionShoppingList = localStorage.getItem('inscryption-shopping-list');
+      const inscryptionOwned = localStorage.getItem('inscryption-owned');
+      const inscryptionPlannerSettings = localStorage.getItem('inscryption-planner-settings');
+      const inscryptionSelectedBuildId = localStorage.getItem('inscryption-planner-selectedBuildId');
       
       // Backup-Datenpaket erstellen
       const backupData = {
@@ -89,6 +98,7 @@ export function useBackupRestore() {
           trTrackingStore: trTrackingData,
           ultimaStore: ultimaStoreData,
           gemPlannerStore: gemPlannerData,
+          inscryptionPlannerStore: inscryptionPlannerData,
           localStorage: {
             gadgetCalculator_currentLevels: gadgetCurrentLevels ? JSON.parse(gadgetCurrentLevels) : {},
             gadgetCalculator_targetLevels: gadgetTargetLevels ? JSON.parse(gadgetTargetLevels) : {},
@@ -101,7 +111,11 @@ export function useBackupRestore() {
             m0CostOverview_filters: m0CostOverviewSettings ? JSON.parse(m0CostOverviewSettings) : {},
             trPlanOrderIds: trPlanOrderIds ? JSON.parse(trPlanOrderIds) : [],
             huntersim_high_iterations_mode: highIterationsMode,
-            gems_showOnlySimRelevant: gemsShowOnlySimRelevant ? JSON.parse(gemsShowOnlySimRelevant) : false
+            gems_showOnlySimRelevant: gemsShowOnlySimRelevant ? JSON.parse(gemsShowOnlySimRelevant) : false,
+            inscryption_shopping_list: inscryptionShoppingList ? JSON.parse(inscryptionShoppingList) : [],
+            inscryption_owned: inscryptionOwned ? JSON.parse(inscryptionOwned) : {},
+            inscryption_planner_settings: inscryptionPlannerSettings ? JSON.parse(inscryptionPlannerSettings) : {},
+            inscryption_planner_selectedBuildId: inscryptionSelectedBuildId
           },
           storageInfo: storageInfo
         },
@@ -250,7 +264,17 @@ export function useBackupRestore() {
         }
       }
       
-      // 6. Restore localStorage data
+      // 6. Restore Inscryption Planner Store
+      if (backupData.data.inscryptionPlannerStore) {
+        console.log('📥 Restoring Inscryption Planner data from backup...');
+        Object.keys(backupData.data.inscryptionPlannerStore).forEach(key => {
+          if (key in inscryptionPlannerStore.$state) {
+            inscryptionPlannerStore.$state[key] = backupData.data.inscryptionPlannerStore[key];
+          }
+        });
+      }
+      
+      // 7. Restore localStorage data
       if (backupData.data.localStorage) {
         const localStorageData = backupData.data.localStorage;
         
@@ -320,6 +344,20 @@ export function useBackupRestore() {
         // M0 Cost Overview
         if (localStorageData.m0CostOverview_filters) {
           localStorage.setItem('m0CostOverview_filters', JSON.stringify(localStorageData.m0CostOverview_filters));
+        }
+        
+        // Inscryption Planner (these are handled by useStorage in the store, but we restore them here for backup compatibility)
+        if (localStorageData.inscryption_shopping_list) {
+          localStorage.setItem('inscryption-shopping-list', JSON.stringify(localStorageData.inscryption_shopping_list));
+        }
+        if (localStorageData.inscryption_owned) {
+          localStorage.setItem('inscryption-owned', JSON.stringify(localStorageData.inscryption_owned));
+        }
+        if (localStorageData.inscryption_planner_settings) {
+          localStorage.setItem('inscryption-planner-settings', JSON.stringify(localStorageData.inscryption_planner_settings));
+        }
+        if (localStorageData.inscryption_planner_selectedBuildId) {
+          localStorage.setItem('inscryption-planner-selectedBuildId', localStorageData.inscryption_planner_selectedBuildId);
         }
         
         // Other settings

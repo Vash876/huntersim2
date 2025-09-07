@@ -88,12 +88,14 @@ export const useSyncStore = defineStore('sync', () => {
       const { useTRTrackingStore } = await import('@/store/trTrackingStore');
       const { useUltimaStore } = await import('@/store/ultimaStore');
       const { useGemPlannerStore } = await import('@/store/gemPlannerStore');
+      const { useInscryptionPlannerStore } = await import('@/store/inscryptionPlannerStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
       const trTrackingStore = useTRTrackingStore();
       const ultimaStore = useUltimaStore();
       const gemPlannerStore = useGemPlannerStore();
+      const inscryptionPlannerStore = useInscryptionPlannerStore();
 
       // Create backup data (same as Settings createBackup)
       const hunterStoreState = JSON.parse(JSON.stringify(hunterStore.$state));
@@ -108,6 +110,7 @@ export const useSyncStore = defineStore('sync', () => {
           trTrackingStore: trTrackingStore.exportData(),
           ultimaStore: JSON.parse(JSON.stringify(ultimaStore.$state)),
           gemPlannerStore: gemPlannerStore.exportData(),
+          inscryptionPlannerStore: JSON.parse(JSON.stringify(inscryptionPlannerStore.$state)),
           localStorage: {
             gadgetCalculator_currentLevels: JSON.parse(localStorage.getItem('gadgetCalculator_currentLevels') || '{}'),
             gadgetCalculator_targetLevels: JSON.parse(localStorage.getItem('gadgetCalculator_targetLevels') || '{}'),
@@ -117,9 +120,14 @@ export const useSyncStore = defineStore('sync', () => {
             traitSpherePlanner_settings: JSON.parse(localStorage.getItem('traitSpherePlanner_settings') || '{}'),
             researchOverview_filters: JSON.parse(localStorage.getItem('researchOverview_filters') || '{}'),
             loopModOverview_filters: JSON.parse(localStorage.getItem('loopModOverview_filters') || '{}'),
+            m0CostOverview_filters: JSON.parse(localStorage.getItem('m0CostOverview_filters') || '{}'),
             trPlanOrderIds: JSON.parse(localStorage.getItem('trPlanOrderIds') || '[]'),
             huntersim_high_iterations_mode: localStorage.getItem('huntersim_high_iterations_mode'),
-            gems_showOnlySimRelevant: JSON.parse(localStorage.getItem('gems_showOnlySimRelevant') || 'false')
+            gems_showOnlySimRelevant: JSON.parse(localStorage.getItem('gems_showOnlySimRelevant') || 'false'),
+            inscryption_shopping_list: JSON.parse(localStorage.getItem('inscryption-shopping-list') || '[]'),
+            inscryption_owned: JSON.parse(localStorage.getItem('inscryption-owned') || '{}'),
+            inscryption_planner_settings: JSON.parse(localStorage.getItem('inscryption-planner-settings') || '{}'),
+            inscryption_planner_selectedBuildId: localStorage.getItem('inscryption-planner-selectedBuildId')
           }
         },
         version: '2.1.0',
@@ -172,12 +180,14 @@ export const useSyncStore = defineStore('sync', () => {
       const { useTRTrackingStore } = await import('@/store/trTrackingStore');
       const { useUltimaStore } = await import('@/store/ultimaStore');
       const { useGemPlannerStore } = await import('@/store/gemPlannerStore');
+      const { useInscryptionPlannerStore } = await import('@/store/inscryptionPlannerStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
       const trTrackingStore = useTRTrackingStore();
       const ultimaStore = useUltimaStore();
       const gemPlannerStore = useGemPlannerStore();
+      const inscryptionPlannerStore = useInscryptionPlannerStore();
 
       // Restore stores (same as Settings restoreFromBackup)
       if (backupData.data.hunterStore) {
@@ -236,6 +246,16 @@ export const useSyncStore = defineStore('sync', () => {
         }
       }
 
+      // Restore Inscryption Planner Store
+      if (backupData.data.inscryptionPlannerStore) {
+        console.log('📥 Restoring Inscryption Planner data from cloud backup...');
+        Object.keys(backupData.data.inscryptionPlannerStore).forEach(key => {
+          if (key in inscryptionPlannerStore.$state) {
+            inscryptionPlannerStore.$state[key] = backupData.data.inscryptionPlannerStore[key];
+          }
+        });
+      }
+
       // Restore localStorage
       if (backupData.data.localStorage) {
         const localStorageData = backupData.data.localStorage;
@@ -264,11 +284,28 @@ export const useSyncStore = defineStore('sync', () => {
         if (localStorageData.loopModOverview_filters) {
           localStorage.setItem('loopModOverview_filters', JSON.stringify(localStorageData.loopModOverview_filters));
         }
+        if (localStorageData.m0CostOverview_filters) {
+          localStorage.setItem('m0CostOverview_filters', JSON.stringify(localStorageData.m0CostOverview_filters));
+        }
         if (localStorageData.trPlanOrderIds) {
           localStorage.setItem('trPlanOrderIds', JSON.stringify(localStorageData.trPlanOrderIds));
         }
         if (localStorageData.huntersim_high_iterations_mode !== undefined) {
           localStorage.setItem('huntersim_high_iterations_mode', localStorageData.huntersim_high_iterations_mode);
+        }
+        
+        // Inscryption Planner localStorage
+        if (localStorageData.inscryption_shopping_list) {
+          localStorage.setItem('inscryption-shopping-list', JSON.stringify(localStorageData.inscryption_shopping_list));
+        }
+        if (localStorageData.inscryption_owned) {
+          localStorage.setItem('inscryption-owned', JSON.stringify(localStorageData.inscryption_owned));
+        }
+        if (localStorageData.inscryption_planner_settings) {
+          localStorage.setItem('inscryption-planner-settings', JSON.stringify(localStorageData.inscryption_planner_settings));
+        }
+        if (localStorageData.inscryption_planner_selectedBuildId) {
+          localStorage.setItem('inscryption-planner-selectedBuildId', localStorageData.inscryption_planner_selectedBuildId);
         }
         
         // Gem Planner settings
