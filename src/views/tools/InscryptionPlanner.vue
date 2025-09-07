@@ -1437,11 +1437,14 @@ function formatCumulativeTargetDate(itemIndex) {
       // Berechne die Tage, die wir warten müssen
       const daysForThisItem = remainingCost / currentDailyProduction;
       cumulativeDays += daysForThisItem;
+      
+      // Nach dem Warten haben wir genug HBM produziert
+      availableHBM += daysForThisItem * currentDailyProduction;
     }
     
     // Nach dem Kauf dieses Items:
-    // 1. Verfügbares HBM wird komplett ausgegeben
-    availableHBM = 0;
+    // 1. Verfügbares HBM wird um die Kosten reduziert
+    availableHBM -= item.costSci;
     
     // 2. Schaue nach, ob dieses Item die Produktion erhöht
     const itemHBMData = hbmProductionDataMap.value[item.id];

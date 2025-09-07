@@ -265,7 +265,7 @@
         </div>
       </div>
     <!-- Emergency Data Recovery Tool -->
-    <div class="mt-8 text-center">
+    <!-- <div class="mt-8 text-center">
       <button 
         @click="searchIndexedDB"
         class="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded text-sm"
@@ -276,7 +276,6 @@
         <span v-else>searching...</span>
       </button>
       
-      <!-- Recovery Results -->
       <div v-if="foundData.hasData" class="mt-4 text-left max-w-4xl mx-auto">
         <div v-for="(track, index) in foundData.trTracks" :key="index" class="mb-4 p-3 bg-gray-900 rounded border">
           <div class="text-white font-mono text-sm mb-2">{{ track.name }}</div>
@@ -298,7 +297,7 @@
       <div v-else-if="searchPerformed && !foundData.hasData" class="mt-4 text-red-400 text-sm font-mono">
         no data found
       </div>
-    </div>
+    </div> -->
 
     </div>
 
