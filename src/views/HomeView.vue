@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.8.1',
+    date: '2025-09-09',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added next level cost display to Inscryptions upgrade interface',
+        ]
+      },
+      {
+        text: 'Inscryption Planner',
+        subItems: [
+          'Added game icons for better visibility',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.0',
     date: '2025-09-07',
     changes: [

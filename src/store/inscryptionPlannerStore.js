@@ -269,6 +269,9 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
           case 'Description':
             row.description = value;
             break;
+          case 'Icon':
+            row.icon = value;
+            break;
           default:
             // Ignore other fields like Current Buff, Final Rank, Purchased
             break;

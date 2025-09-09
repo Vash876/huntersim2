@@ -377,13 +377,33 @@ export function getI105Cost(level) {
   return getInscryptionCost('i105', level);
 }
 
+/**
+ * Berechnet die Kosten für das nächste Level einer Inscryption
+ * @param {string} inscryptionId - ID der Inscryption (i80, i81, etc.)
+ * @param {number} currentLevel - Das aktuelle Level
+ * @returns {number|null} - Die Kosten für das nächste Level oder null wenn kein Upgrade möglich
+ */
+function getNextLevelCost(inscryptionId, currentLevel) {
+  const nextLevel = currentLevel + 1;
+  
+  // Prüfe ob es ein unterstütztes Inscryption ist
+  const supportedInscryptions = ['i32', 'i33', 'i60', 'i78', 'i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92', 'i101', 'i103', 'i104', 'i105'];
+  if (!supportedInscryptions.includes(inscryptionId)) {
+    return null;
+  }
+  
+  return getInscryptionCost(inscryptionId, nextLevel);
+}
+
 // Hauptexporte
 export {
   getInscryptionCost,
   calcInscryptionCostDifference,
   formatInscryptionCost,
+  getNextLevelCost,
   calculateI32,
   calculateI33,
+  calculateI52,
   calculateI60,
   calculateI78,
   calculateI80,

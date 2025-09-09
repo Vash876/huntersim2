@@ -98,6 +98,14 @@
               </span>
             </div>
 
+            <!-- Kosten für nächstes Level -->
+            <div v-if="getNextLevelCostForInscryption(inscryption)" class="flex justify-between items-center py-1 border-t border-gray-700/50 mt-2 pt-2">
+              <span class="text-gray-500 text-xs">Next Level Cost:</span>
+              <span class="text-yellow-400 text-xs font-medium">
+                {{ getNextLevelCostForInscryption(inscryption) }}
+              </span>
+            </div>
+
             <!-- Spezieller Fall für i60 Multi-Power -->
             <div v-else>
               <div 
@@ -110,6 +118,14 @@
                   class="font-medium text-sm"
                 >
                   x{{ (1 + inscryption.baseBonus * getUpgradeLevel({ id: inscryption.id })).toFixed(2) }}
+                </span>
+              </div>
+              
+              <!-- Kosten für nächstes Level bei i60 -->
+              <div v-if="getNextLevelCostForInscryption(inscryption)" class="flex justify-between items-center py-1 border-t border-gray-700/50 mt-2 pt-2 pl-2">
+                <span class="text-gray-500 text-xs">Next Level Cost:</span>
+                <span class="text-orange-400 text-xs font-medium">
+                  {{ getNextLevelCostForInscryption(inscryption) }}
                 </span>
               </div>
             </div>
@@ -126,6 +142,7 @@ import { useHunterStore } from '@/store/hunterStore';
 import { getAllUpgradesWithHunterInfo } from '@/utils/upgradeUtils';
 import { HUNTERS } from '@/constants/hunters';
 import { useButtonControls } from '@/utils/useButtonControls.js';
+import { getNextLevelCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils.js';
 import UpgradeGrid from '@/components/upgrades/UpgradeGrid.vue';
 import UpgradeCard from '@/components/upgrades/UpgradeCard.vue';
 
@@ -211,6 +228,27 @@ function updateUpgradeLevel(item, newLevel) {
     default:
       return level;
   }
+}
+
+/**
+ * Berechnet die Kosten für das nächste Level einer Inscryption
+ */
+function getNextLevelCostForInscryption(inscryption) {
+  const currentLevel = getUpgradeLevel({ id: inscryption.id });
+  const maxLevel = inscryption.maxLevel ?? Infinity;
+  
+  // Wenn schon auf Max-Level, keine Kosten anzeigen
+  if (currentLevel >= maxLevel) {
+    return null;
+  }
+  
+  const nextLevelCost = getNextLevelCost(inscryption.id, currentLevel);
+  
+  if (nextLevelCost === null || nextLevelCost === 0) {
+    return null;
+  }
+  
+  return formatInscryptionCost(nextLevelCost);
 }
 
 // Speichern und Laden des Filter-Status

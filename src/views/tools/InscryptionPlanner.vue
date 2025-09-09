@@ -229,10 +229,22 @@
               :key="`${inscryption.inscryptionId}-${inscryption.rank}`"
               class="bg-gray-700/30 rounded-lg p-3 hover:bg-gray-700/50 transition-colors border border-gray-600/30"
             >
-              <!-- Mobile Header -->
-              <div class="flex items-start justify-between mb-2">
+              <!-- Mobile Layout: Icon left, Content right -->
+              <div class="flex items-start gap-3">
+                <!-- Icon standalone on the left -->
+                <div class="w-[50px] h-[50px] bg-gray-600/30 rounded-lg border border-gray-600/50 flex items-center justify-center flex-shrink-0">
+                  <img 
+                    :src="getInscryptionIconUrl(inscryption.icon || 'default')"
+                    :alt="inscryption.description"
+                    class="w-[40px] h-[40px] object-contain"
+                    @error="$event.target.src = getInscryptionIconUrl('default')"
+                  />
+                </div>
+                
+                <!-- Content area -->
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2">
+                  <!-- Header with ID and rank -->
+                  <div class="flex items-center gap-2 mb-1">
                     <span class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
                       i{{ inscryption.inscryptionId }}
                     </span>
@@ -240,31 +252,38 @@
                       {{ inscryption.rank - 1 }}/{{ inscryption.maxRanks }}
                     </span>
                   </div>
-                  <p class="text-sm font-medium text-white mt-1 leading-tight">
+                  
+                  <!-- Description -->
+                  <p class="text-sm font-medium text-white mb-2 leading-tight">
                     {{ inscryption.description }}
                   </p>
+                  
+                  <!-- Cost and details under description -->
+                  <div class="space-y-1">
+                    <div class="text-xs text-gray-400">
+                      Cost: <span class="text-yellow-400">{{ formatNumber(inscryption.costSci) }}</span>
+                    </div>
+                    <!-- Hunter-specific Info -->
+                    <div v-if="isHunterSpecificInscryption(inscryption.inscryptionId)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5 inline-block">
+                      <IconWorld size="12" class="inline mr-1" />
+                    </div>
+                    <div v-if="inscryption.buffPerRank" class="text-xs text-green-400">
+                      {{ inscryption.buffPerRank }}
+                    </div>
+                    <div v-if="getShoppingListRanksDisplay(inscryption.inscryptionId)" class="text-xs text-blue-400">
+                      In shopping: {{ getShoppingListRanksDisplay(inscryption.inscryptionId) }}
+                    </div>
+                  </div>
                 </div>
                 
+                <!-- Buy button on the right -->
                 <button
                   @click="addToShoppingList(inscryption)"
-                  class="text-xs px-2.5 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 ml-3 whitespace-nowrap"
+                  class="text-xs px-2.5 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
                 >
                   <IconPlus size="12" />
                   Buy {{ inscryption.rank }}
                 </button>
-              </div>
-
-              <!-- Mobile Details -->
-              <div class="space-y-1">
-                <div class="text-xs text-gray-400">
-                  Cost: <span class="text-yellow-400">{{ formatNumber(inscryption.costSci) }}</span>
-                </div>
-                <div v-if="inscryption.buffPerRank" class="text-xs text-green-400">
-                  {{ inscryption.buffPerRank }}
-                </div>
-                <div v-if="getShoppingListRanksDisplay(inscryption.inscryptionId)" class="text-xs text-blue-400">
-                  In cart: {{ getShoppingListRanksDisplay(inscryption.inscryptionId) }}
-                </div>
               </div>
             </div>
           </div>
@@ -334,22 +353,19 @@
                         </p>
                       </div>
                     </div>
-
-                    <button
-                      @click="store.removeFromShoppingList(item.id)"
-                      class="text-red-400 hover:text-red-300 p-1 ml-2"
-                    >
-                      <IconX size="14" />
-                    </button>
                   </div>
 
                   <!-- Mobile Shopping Item Details -->
                   <div class="space-y-1">
-                    <div class="text-xs text-gray-400">
-                      Cost: <span class="text-yellow-400">{{ formatNumber(item.costSci) }}</span>
+                    <!-- Cost and Buff in one line -->
+                    <div class="flex items-center gap-4 text-xs">
+                      <span class="text-gray-400">Cost: <span class="text-yellow-400">{{ formatNumber(item.costSci) }}</span></span>
+                      <span v-if="item.buffPerRank" class="text-green-400">{{ item.buffPerRank }}</span>
                     </div>
-                    <div v-if="item.buffPerRank" class="text-xs text-green-400">
-                      {{ item.buffPerRank }}
+                    <!-- Hunter-specific Info -->
+                    <div v-if="isHunterSpecificInscryption(item.inscryptionId)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5">
+                      <IconWorld size="12" class="inline mr-1" />
+                      Automatically updates global Inscryption Rank when purchased
                     </div>
                     
                     <!-- Production Display -->
@@ -371,6 +387,26 @@
                     <div v-else-if="hbmProductionDataMap[item.id]?.needsEvaluation && !hbmProductionDataMap[item.id]?.newHBMProduction" class="text-xs">
                       <button @click="triggerEvaluation(item)" class="text-red-400 hover:text-red-300">
                         Evaluate Impact
+                      </button>
+                    </div>
+                    
+                    <!-- Mobile Action Buttons -->
+                    <div class="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-gray-700/50">
+                      <button
+                        @click="markAsPurchased(item)"
+                        class="flex items-center gap-1 px-2 py-1 bg-green-700 hover:bg-green-600 rounded text-xs text-white transition-colors"
+                        :title="isHunterSpecificInscryption(item.inscryptionId) ? 'Mark as purchased (updates global Hunter level)' : 'Mark as purchased'"
+                      >
+                        <IconCheck size="12" />
+                        <span>Purchased</span>
+                      </button>
+                      <button
+                        @click="store.removeFromShoppingList(item.id)"
+                        class="flex items-center gap-1 px-2 py-1 bg-red-700 hover:bg-red-600 rounded text-xs text-white transition-colors"
+                        title="Remove from shopping list"
+                      >
+                        <IconX size="12" />
+                        <span>Remove</span>
                       </button>
                     </div>
                   </div>
@@ -468,9 +504,20 @@
               :key="`${inscryption.inscryptionId}-${inscryption.rank}`"
               class="bg-gray-700/30 rounded-lg p-3 hover:bg-gray-700/50 transition-colors"
             >
-              <div class="flex items-center justify-between">
-                <!-- Left side: ID, Name, Cost -->
+              <div class="flex items-start gap-3">
+                <!-- Icon standalone on the left -->
+                <div class="w-[35px] h-[35px] flex items-center justify-center flex-shrink-0">
+                  <img 
+                    :src="getInscryptionIconUrl(inscryption.icon || 'default')"
+                    :alt="inscryption.description"
+                    class="w-[35px] h-[35px] object-contain"
+                    @error="$event.target.src = getInscryptionIconUrl('default')"
+                  />
+                </div>
+                
+                <!-- Content area -->
                 <div class="flex-1 min-w-0">
+                  <!-- Header with ID and Description -->
                   <div class="flex items-center gap-2 mb-1">
                     <span class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
                       i{{ inscryption.inscryptionId }}
@@ -478,9 +525,18 @@
                     <span class="text-sm font-medium text-white truncate">
                       {{ inscryption.description }}
                     </span>
+                    <span class="text-xs bg-gray-600/50 px-2 py-1 rounded-full text-gray-300 font-mono ml-auto">
+                      {{ inscryption.rank - 1 }}/{{ inscryption.maxRanks }}
+                    </span>
                   </div>
+                  
+                  <!-- Cost and details under description -->
                   <div class="flex items-center gap-4 text-xs text-gray-400">
                     <span>Cost: <span class="text-yellow-400">{{ formatNumber(inscryption.costSci) }}</span></span>
+                    <!-- Hunter-specific Info -->
+                    <span v-if="isHunterSpecificInscryption(inscryption.inscryptionId)" class="text-blue-400 bg-blue-900/20 rounded px-1 py-0.5">
+                      <IconWorld size="12" class="inline mr-1" />
+                    </span>
                     <span v-if="inscryption.buffPerRank" class="text-green-400">
                       {{ inscryption.buffPerRank }}
                     </span>
@@ -490,22 +546,14 @@
                   </div>
                 </div>
 
-                <!-- Right side: Max Rank Badge + Buy Button -->
-                <div class="flex items-center gap-3 ml-4">
-                  <!-- Max Rank Badge -->
-                  <span class="text-xs bg-gray-600/50 px-2 py-1 rounded-full text-gray-300 font-mono">
-                    {{ inscryption.rank - 1 }}/{{ inscryption.maxRanks }}
-                  </span>
-                  
-                  <!-- Buy Button -->
-                  <button
-                    @click="addToShoppingList(inscryption)"
-                    class="text-xs px-3 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 whitespace-nowrap"
-                  >
-                    <IconPlus size="12" />
-                    Buy Rank {{ inscryption.rank }}
-                  </button>
-                </div>
+                <!-- Buy Button on the right -->
+                <button
+                  @click="addToShoppingList(inscryption)"
+                  class="text-xs px-3 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                >
+                  <IconPlus size="12" />
+                  Buy {{ inscryption.rank }}
+                </button>
               </div>
             </div>
           </div>
@@ -579,6 +627,11 @@
                           </span>
                         </div>
                         <div class="text-xs text-gray-400 mb-1">
+                          <!-- Hunter-specific Info -->
+                          <div v-if="isHunterSpecificInscryption(item.inscryptionId)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5 mb-1">
+                            <IconWorld size="12" class="inline mr-1" />
+                            Automatically updates global Inscryption Rank when purchased
+                          </div>
                           <span class="text-green-400">{{ item.buffPerRank }}</span>
                         </div>
                         
@@ -644,7 +697,7 @@
                       <button
                         @click="markAsPurchased(item)"
                         class="text-green-400 hover:text-green-300 transition-colors p-1"
-                        title="Mark as purchased"
+                        :title="isHunterSpecificInscryption(item.inscryptionId) ? 'Mark as purchased (updates global Hunter level)' : 'Mark as purchased'"
                       >
                         <IconCheck size="16" />
                       </button>
@@ -707,7 +760,8 @@ import {
   IconCheck,
   IconTrash,
   IconChevronUp,
-  IconChevronDown
+  IconChevronDown,
+  IconWorld
 } from '@tabler/icons-vue';
 import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
@@ -715,6 +769,7 @@ import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { shouldEvaluate } from '@/services/evaluationCacheService';
 import { formatNumber } from '@/composables/format';
 import { useBuildEvaluation } from '@/composables/useBuildEvaluation';
+import { getInscryptionIconUrl } from '@/utils/inscryptionIconMapping';
 import InscryptionOwnershipModal from '@/components/common/inscryption-planner/InscryptionOwnershipModal.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
 import Draggable from 'vuedraggable';
@@ -1484,23 +1539,46 @@ function markAsPurchased(item) {
   const inscryptionId = item.inscryptionId;
   const rank = item.rank;
   
-  // Hole aktuelle owned ranks für diese Inscryption
-  const currentOwnedRanks = store.getOwnedRanksForInscryption(inscryptionId);
+  // Prüfe ob es eine hunterspezifische Inscryption ist
+  const isHunterSpecific = isHunterSpecificInscryption(inscryptionId);
   
-  // Füge den neuen Rank hinzu (falls nicht bereits vorhanden)
-  if (!currentOwnedRanks.includes(rank)) {
-    const updatedOwnedRanks = [...currentOwnedRanks, rank].sort((a, b) => a - b);
+  if (isHunterSpecific) {
+    // Für hunterspezifische Inscryptions: Aktualisiere den globalen Hunter Store
+    // Das Planner Modal synct automatisch vom Hunter Store
+    const currentLevel = hunterStore.getUpgradeValue('inscryptions', `i${inscryptionId}`) || 0;
+    const newLevel = Math.max(currentLevel, rank); // Setze auf den höchsten Rang
+    hunterStore.updateUpgrade('inscryptions', `i${inscryptionId}`, newLevel);
+  } else {
+    // Für globale Inscryptions: Aktualisiere den Planner Store wie bisher
+    const currentOwnedRanks = store.getOwnedRanksForInscryption(inscryptionId);
     
-    // Aktualisiere die owned inscryptions
-    const newOwnership = { 
-      ...store.ownedInscryptions, 
-      [inscryptionId]: updatedOwnedRanks 
-    };
-    store.updateOwnedInscryptions(newOwnership);
+    if (!currentOwnedRanks.includes(rank)) {
+      const updatedOwnedRanks = [...currentOwnedRanks, rank].sort((a, b) => a - b);
+      
+      // Aktualisiere die owned inscryptions
+      const newOwnership = { 
+        ...store.ownedInscryptions, 
+        [inscryptionId]: updatedOwnedRanks 
+      };
+      store.updateOwnedInscryptions(newOwnership);
+    }
   }
   
   // Entferne das Item aus der Shopping List
   store.removeFromShoppingList(item.id);
+}
+
+// Hilfsfunktion um zu prüfen ob eine Inscryption hunterspezifisch ist
+function isHunterSpecificInscryption(inscryptionId) {
+  // Diese Inscryptions sind hunterspezifisch basierend auf den Konstanten
+  const hunterSpecificInscryptions = [
+    3, 4, 11, 13, 14, 23, 24, 27,    // Borge
+    31, 32, 33, 36, 37, 40,          // Ozzy  
+    44, 60, 80, 81, 84, 86, 87, 88, 89, 91, 92, // Borge/Ozzy mix
+    103, 104, 105                    // Borge/Ozzy/Knox
+  ];
+  
+  return hunterSpecificInscryptions.includes(parseInt(inscryptionId));
 }
 
 // Backup der ursprünglichen Liste vor dem Drag
