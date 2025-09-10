@@ -6,7 +6,7 @@ import Decimal from 'break_infinity.js';
 export const EXODUS_GEM = {
   id: 'exodus',
   name: 'Exodus',
-  maxLevel: 5,
+  maxLevel: 4,
   color: {
     primary: '#8b5cf6', // Purple
     secondary: '#ec4899', // Pink
