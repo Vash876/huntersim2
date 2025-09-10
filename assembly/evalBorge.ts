@@ -351,8 +351,10 @@ function enemyAttack(isBonus: boolean = false): void {
   // Calculate base damage for Helltouch before applying evasion/crit modifiers
   let helltouchBaseDamage = currentTempGN4 > 0 ? currentEnemy.atk * (1 - 0.01 * currentBorge.mino) : 0;
   
+  let evaded = false;
   if (ck(currentBorge.evade)) {
     dmg = 0;
+    evaded = true;
   } else if (ck(currentEnemy.critRate)) {
     dmg *= currentEnemy.critDmg * (1 - 0.11 * currentBorge.weakspot);
     // If tempGN4 is active, apply crit to Helltouch base damage as well
@@ -375,7 +377,8 @@ function enemyAttack(isBonus: boolean = false): void {
     killEnemy();
   }
   
-  if (ck(currentEnemy.effect)) {
+  // Only apply debuff if Borge didn't evade the attack
+  if (!evaded && ck(currentEnemy.effect)) {
    currentBorge.currentDr = Math.max(0, currentBorge.currentDr - 0.02);
   }
   

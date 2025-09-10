@@ -298,7 +298,7 @@ export const OVERRIDES = {
 
   // Gem Nodes
   gemNodes: [
-    //"upgrades.gems_nodes.temporal_gem4",    // Temporal Gem Node 4
+    "upgrades.gems_nodes.temporal_gem4",    // Temporal Gem Node 4
     "upgrades.gems_nodes.creation_gem1",    // Creation Gem Node 1
     "upgrades.gems_nodes.creation_gem2",    // Creation Gem Node 2
     "upgrades.gems_nodes.creation_gem3",    // Creation Gem Node 3
