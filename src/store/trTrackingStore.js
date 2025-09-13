@@ -2,7 +2,6 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { generateId } from '@/utils/base58';
 import IndexedDBService from '@/services/indexedDBService.js';
-import TRDataMigrationService from '@/services/trDataMigrationService.js';
 
 // Default available resources that users can choose from
 const DEFAULT_AVAILABLE_RESOURCES = [
@@ -56,7 +55,6 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
   const trTracks = ref([]);
   const isInitialized = ref(false);
   const useIndexedDB = ref(false);
-  const migrationService = new TRDataMigrationService();
   const idbService = new IndexedDBService();
 
   // Computed
@@ -97,10 +95,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         await idbService.init();
         await saveToIndexedDB();
         
-        // Mark migration as completed to prevent future overwrites
-        migrationService.markMigrationCompleted();
-        
-        console.log('✅ Saved restored data to IndexedDB and marked migration as completed');
+        console.log('✅ Saved restored data to IndexedDB');
       } catch (error) {
         console.error('❌ Failed to save restored data to IndexedDB:', error);
       }
@@ -121,12 +116,12 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       await idbService.init();
       
       // Check if we should migrate to IndexedDB
-      const shouldMigrate = await migrationService.shouldMigrate();
+      const shouldMigrate = false; // Migration removed
       
       if (shouldMigrate) {
         console.log('� Starting TR tracking data migration...');
         
-        const migrationResult = await migrationService.migrateData();
+        const migrationResult = { success: false }; // Migration removed
         
         if (migrationResult.success) {
           console.log('✅ Migration successful!', migrationResult.results);
@@ -775,17 +770,6 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     importTrackData,
     importMultipleTracksData,
     updateStandardResourceColor,
-    updateCustomResource,
-
-    // Debug methods for migration
-    forceMigration: async () => {
-      console.log('🔄 Forcing migration reset...');
-      migrationService.resetMigrationStatus();
-      isInitialized.value = false;
-      await init();
-    },
-    
-    getMigrationStatus: () => migrationService.getMigrationStatus(),
-    verifyMigrationData: () => migrationService.verifyMigrationData()
+    updateCustomResource
   };
 });

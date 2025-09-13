@@ -112,11 +112,11 @@ const routes = [
     name: 'Test',
     component: () => import('../views/tools/Test.vue'),
   },
-  // {
-  //   path: '/tools/gem-planner',
-  //   name: 'Gem Planner',
-  //   component: () => import('../views/tools/GemPlanner.vue'),
-  // },
+  {
+    path: '/tools/gem-planner',
+    name: 'Gem Planner',
+    component: () => import('../views/tools/GemPlanner.vue'),
+  },
   {
     path: '/tools/gadget-calculator',
     name: 'Gadget Calculator',    

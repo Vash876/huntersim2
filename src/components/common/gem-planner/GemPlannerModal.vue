@@ -42,37 +42,39 @@
             <h4 class="font-medium text-sm text-indigo-200">Plan Settings</h4>
           </div>
           
-          <div class="bg-gray-700/30 rounded-md p-3 space-y-3">
-            <!-- Plan Name Input -->
-            <div>
-              <label class="block text-xs text-gray-400 mb-1">Plan Name</label>
-              <input
-                v-model="activePlan.name"
-                class="w-64 text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 placeholder-purple-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-white"
-                placeholder="Enter plan name..."
-              />
-            </div>
-            
-            <!-- Efficiency Scaling -->
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <label class="block text-xs text-gray-400">Efficiency Scaling</label>
-                <InfoTooltip 
-                  content="Controls the efficiency calculation scale. Increase this value if efficiency numbers become too small (showing 0.00). Formula: Value / Cost × 10^(this value). Default: 10 (= 1e10)" 
-                  placement="top"
+          <div class="bg-gray-700/30 rounded-md p-3">
+            <!-- Plan Name and Efficiency Scaling in one row -->
+            <div class="flex items-end gap-4">
+              <!-- Plan Name Input -->
+              <div class="flex-shrink-0">
+                <label class="block text-xs text-gray-400 mb-1">Plan Name</label>
+                <input
+                  v-model="activePlan.name"
+                  class="w-64 text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 placeholder-purple-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-white"
+                  placeholder="Enter plan name..."
                 />
               </div>
-              <div class="w-32">
-                <ToolValueControls
-                  :value="efficiencyScaling"
-                  @update:value="efficiencyScaling = $event"
-                  :min-value="0"
-                  :max-value="99"
-                  :show-fast-controls="false"
-                  :autoEdit="true"
-                />
+              
+              <!-- Efficiency Scaling -->
+              <div class="flex-shrink-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <label class="block text-xs text-gray-400">Efficiency Scaling</label>
+                  <InfoTooltip 
+                    content="Controls the efficiency calculation scale. Increase this value if efficiency numbers become too small (showing 0.00). Formula: Value / Cost × 10^(this value). Default: 10 (= 1e10)" 
+                    placement="top"
+                  />
+                </div>
+                <div class="w-32">
+                  <ToolValueControls
+                    :value="efficiencyScaling"
+                    @update:value="efficiencyScaling = $event"
+                    :min-value="0"
+                    :max-value="99"
+                    :show-fast-controls="false"
+                    :autoEdit="true"
+                  />
+                </div>
               </div>
-              <div class="text-xs text-gray-500 mt-1">Current: 1e{{ efficiencyScaling }}</div>
             </div>
           </div>
         </div>
@@ -87,46 +89,63 @@
           <div class="bg-gray-700/30 rounded-md p-3 space-y-3">
             <!-- TR Navigation -->
             <div class="flex items-center justify-between">
+              <!-- Previous TR Button -->
               <button
                 @click="previousTR"
                 :disabled="currentTRIndex <= 0"
-                :class="[
-                  'flex items-center space-x-2 px-3 py-1.5 rounded-md transition-colors text-sm',
-                  currentTRIndex <= 0 
-                    ? 'text-gray-500 cursor-not-allowed' 
-                    : 'text-blue-400 hover:text-blue-300 hover:bg-gray-700/50'
-                ]"
+                class="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all text-sm font-medium border disabled:opacity-40 disabled:cursor-not-allowed"
+                :class="currentTRIndex <= 0 
+                  ? 'text-gray-500 bg-gray-700/30 border-gray-600/50' 
+                  : 'text-purple-300 bg-purple-900/20 border-purple-500/30 hover:bg-purple-800/30 hover:border-purple-400/50 hover:text-purple-200'"
               >
-                <IconChevronLeft size="14" />
-                <span>Previous TR</span>
+                <IconChevronLeft size="16" />
+                <span>Previous</span>
               </button>
               
+              <!-- Center: TR Info, Delete Button and Budget -->
               <div class="flex items-center space-x-4">
-                <span class="text-gray-300 font-mono text-sm">
-                  TR {{ currentTRIndex + 1 }} / {{ maxTRReached }}
-                </span>
-                <div class="text-xs text-gray-400">
-                  {{ formatNumber(currentTRBudget) }} orbs
+                <!-- Delete TR Button and TR Display -->
+                <div class="flex items-center space-x-2">
+                  <!-- Delete TR Button - only show for last TR and not TR1 -->
+                  <button
+                    v-if="currentTRIndex === maxTRReached - 1 && currentTRIndex > 0"
+                    @click="deleteTR"
+                    class="flex items-center justify-center p-2 rounded-lg transition-all text-xs font-medium border text-red-300 bg-red-900/20 border-red-500/30 hover:bg-red-800/30 hover:border-red-400/50 hover:text-red-200"
+                    title="Delete current TR"
+                  >
+                    <IconTrash size="14" />
+                  </button>
+                  
+                  <!-- TR Display -->
+                  <div class="text-center">
+                    <div class="text-lg font-bold text-white font-mono">
+                      TR {{ currentTRIndex + 1 }} / {{ maxTRReached }}
+                    </div>
+                    <div class="text-xs text-gray-400">
+                      {{ currentTRIndex === 0 ? 'Base TR' : `Reset ${currentTRIndex}` }}
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Budget Input -->
+                <div class="flex flex-col items-center">
+                  <label class="block text-xs text-gray-400 mb-1">Budget</label>
+                  <SuffixInput
+                    v-model="currentTRBudget"
+                    class="w-28 text-center"
+                    placeholder="100K"
+                  />
                 </div>
               </div>
               
+              <!-- Next TR Button -->
               <button
                 @click="nextTR"
-                class="flex items-center space-x-2 px-3 py-1.5 rounded-md transition-colors text-sm text-blue-400 hover:text-blue-300 hover:bg-gray-700/50"
+                class="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all text-sm font-medium border text-blue-300 bg-blue-900/20 border-blue-500/30 hover:bg-blue-800/30 hover:border-blue-400/50 hover:text-blue-200"
               >
-                <span>Next TR</span>
-                <IconChevronRight size="14" />
+                <span>Next</span>
+                <IconChevronRight size="16" />
               </button>
-            </div>
-            
-            <!-- Current TR Budget Input -->
-            <div class="mb-3">
-              <label class="block text-xs text-gray-400 mb-1">TR {{ currentTRIndex + 1 }} Budget</label>
-              <SuffixInput
-                v-model="currentTRBudget"
-                class="w-32"
-                placeholder="100K"
-              />
             </div>
 
             <!-- Budget Display -->
@@ -284,30 +303,31 @@
             <div
               v-for="gem in gemList"
               :key="gem.id"
-              class="bg-gray-700/30 border border-gray-600 rounded-md hover:border-purple-500/50 transition-colors"
+              class="bg-gray-700/30 border border-gray-700/50 rounded-xl hover:border-purple-500/50 transition-all duration-300 ease-in-out"
             >
-              <!-- Gem Header -->
+              <!-- Gem Header - Fixed height to prevent layout jumps -->
               <div 
-                class="bg-gradient-to-r from-gray-700 to-gray-600 border-b border-gray-500/50 relative"
-                :class="[
-                  gem.gemNodes && gem.gemNodes.length > 0 ? 'p-2' : 'p-2 pb-8'
-                ]"
+                class="gem-header border-b border-gray-600/50 rounded-t-xl p-2 transition-all duration-300 ease-in-out"
               >
-                <!-- Gradient top border -->
-                <div 
-                  class="absolute left-0 top-0 right-0 h-1"
-                  :style="{ background: gem.color.gradient }"
-                ></div>
                 <div class="flex items-center justify-between mb-1">
                   <div class="flex items-center gap-2">
-                    <h3 class="text-xs font-semibold text-white truncate">{{ gem.name }}</h3>
+                    <div 
+                      class="w-4 h-4 rounded-full border border-gray-500"
+                      :style="{ background: gem.color.gradient }"
+                    ></div>
+                    <h3 class="text-sm font-semibold text-white truncate">{{ gem.name }}</h3>
                   </div>
-                  <div class="text-xs text-purple-300 font-mono">
-                    {{ getPlanGemLevel(gem.id) }}/{{ gem.maxLevel }}
+                  <div class="flex items-center gap-1">
+                    <span 
+                      class="text-xs text-white px-1.5 py-0.5 rounded-full font-mono border border-gray-500/50"
+                      :style="{ background: gem.color.gradient }"
+                    >
+                      {{ getPlanGemLevel(gem.id) }}/{{ gem.maxLevel }}
+                    </span>
                   </div>
                 </div>
                 
-                <!-- Level & Cost -->
+                <!-- Level & Cost in single row -->
                 <div class="flex items-center gap-2">
                   <div class="flex-1">
                     <ToolValueControls
@@ -324,6 +344,13 @@
                   </div>
                 </div>
                 
+                <!-- Gem Level Efficiency -->
+                <div v-if="getPlanGemLevel(gem.id) < gem.maxLevel && props.weights" class="mt-1">
+                  <div class="text-xs text-purple-400 font-mono">
+                    Eff: {{ formatEfficiency(getPlanGemLevelEfficiency(gem.id)) }}
+                  </div>
+                </div>
+                
                 <!-- Purchased Levels Display -->
                 <div v-if="getPurchasedGemLevels(gem.id) > 0" class="mt-1 pt-1 border-t border-gray-500/30">
                   <div class="text-xs text-cyan-400 font-mono">
@@ -331,32 +358,62 @@
                   </div>
                 </div>
                 
-                <!-- Gem Nodes -->
-                <div v-if="gem.gemNodes && gem.gemNodes.length > 0" class="flex gap-1 mt-2">
-                  <button
-                    v-for="(node, index) in gem.gemNodes"
+                <!-- Gem Nodes - Only show available nodes based on Exodus level -->
+                <div 
+                  v-if="getAvailablePlanGemNodes(gem.id).length > 0" 
+                  class="flex gap-1 mt-2"
+                >
+                  <div
+                    v-for="(node, index) in getAvailablePlanGemNodes(gem.id)"
                     :key="index"
-                    @click="togglePlanGemNode(gem.id, index)"
-                    class="flex-1 py-1 text-xs rounded transition-colors font-mono border border-gray-400"
-                    :class="[
-                      hasPlanGemNode(gem.id, index)
-                        ? 'text-white'
-                        : 'bg-gray-600/60 text-gray-300 hover:bg-gray-500/60'
-                    ]"
-                    :style="hasPlanGemNode(gem.id, index) ? { background: gem.color.gradient } : {}"
-                    :title="`Node ${index + 1}: ${formatNumber(node.cost)}`"
+                    class="flex-1 relative"
                   >
-                    {{ index + 1 }}
-                  </button>
+                    <button
+                      @click="togglePlanGemNode(gem.id, gem.gemNodes.indexOf(node))"
+                      class="w-full py-1 text-xs rounded transition-all duration-200 ease-in-out font-mono border hover:scale-105 relative"
+                      :class="[
+                        hasPlanGemNode(gem.id, gem.gemNodes.indexOf(node))
+                          ? [
+                              'text-white shadow-lg',
+                              isGemNodePurchasedInPlan(gem.id, gem.gemNodes.indexOf(node)) 
+                                ? 'border-cyan-400 ring-1 ring-cyan-400/50' 
+                                : 'border-gray-500'
+                            ]
+                          : 'bg-gray-600/60 text-gray-300 hover:bg-gray-500/60 border-gray-500',
+                        isNodeNewlyAppeared(gem.id, gem.gemNodes.indexOf(node)) ? 'gem-node-pulse' : ''
+                      ]"
+                      :style="hasPlanGemNode(gem.id, gem.gemNodes.indexOf(node)) ? { background: gem.color.gradient } : {}"
+                    >
+                      {{ gem.gemNodes.indexOf(node) + 1 }}
+                      <!-- Small indicator for purchased nodes -->
+                      <div 
+                        v-if="isGemNodePurchasedInPlan(gem.id, gem.gemNodes.indexOf(node))"
+                        class="absolute -top-1 -right-1 w-2 h-2 bg-cyan-400 rounded-full border border-gray-800"
+                      ></div>
+                    </button>
+                    <!-- InfoTooltip only for nodes that weren't initially purchased -->
+                    <div 
+                      v-if="!getMinimumGemNodes(gem.id).includes(gem.gemNodes.indexOf(node))"
+                      class="absolute bottom-0 right-0 z-20 transform translate-x-1 translate-y-1"
+                    >
+                      <InfoTooltip 
+                        :content="`${node.cost === null ? 'Cost: FREE' : 'Cost: ' + formatNumber(node.cost)}${isGemNodePurchasedInPlan(gem.id, gem.gemNodes.indexOf(node)) ? '<br><span class=&quot;text-cyan-400&quot;>Purchased in plan</span>' : ''}`"
+                        placement="top"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
               
               <!-- Upgrades -->
               <div class="p-2 space-y-1">
                 <div
-                  v-for="upgrade in getAvailableUpgrades(gem.id)"
+                  v-for="upgrade in getPlanAvailableUpgrades(gem.id)"
                   :key="upgrade.id"
-                  class="bg-gray-700/40 rounded-sm p-2 hover:bg-gray-600/40 transition-colors border-l-3"
+                  class="rounded-sm p-2 hover:bg-gray-600/40 transition-colors border-l-3 border border-transparent"
+                  :class="getPurchasedLevels(gem.id, upgrade.id) > 0 
+                    ? 'bg-cyan-800/60 shadow-sm shadow-cyan-500/20' 
+                    : 'bg-gray-700/40'"
                   :style="{ borderLeftColor: upgrade.color }"
                 >
                   <!-- Upgrade Header -->
@@ -411,6 +468,19 @@
           </div>
         </div>
       </div>
+
+      <!-- Alert Dialog - Inside modal content to prevent modal closing -->
+      <AlertDialog
+        :isVisible="alertDialog.isVisible"
+        :title="alertDialog.title"
+        :message="alertDialog.message"
+        :type="alertDialog.type"
+        :showCancel="alertDialog.showCancel"
+        :confirmText="alertDialog.confirmText"
+        :cancelText="alertDialog.cancelText"
+        @confirm="alertDialog.onConfirm"
+        @cancel="alertDialog.onCancel"
+      />
     </div>
   </div>
 </template>
@@ -431,6 +501,7 @@ import {
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
+import AlertDialog from '@/components/common/AlertDialog.vue';
 import { formatNumber } from '@/composables/format.js';
 import { formatNumberDecimal } from '@/composables/format.js';
 import { GEMS, GEM_LIST } from '@/constants/gem-planner';
@@ -461,7 +532,7 @@ const emit = defineEmits(['close', 'plan-created', 'plan-saved']);
 const activePlan = ref({
   id: Date.now().toString(),
   name: `Gem Plan ${new Date().toLocaleDateString()}`,
-  budget: 1000000,
+  budget: 1e33,
   trBudgets: {}, // Budgets per TR index
   trSteps: [],
   // Plan-internal gem states per TR
@@ -470,13 +541,29 @@ const activePlan = ref({
   }
 });
 
+// State for Exodus node animation tracking
+const newlyAppearedNodes = ref(new Set()); // Track newly appeared nodes for animation
+
 const currentTRIndex = ref(0);
 const spendingMode = ref('manual');
 const spentOrbs = ref({});
 const maxTRReached = ref(1); // Track the highest TR reached
 
+// Alert dialog state
+const alertDialog = ref({
+  isVisible: false,
+  title: '',
+  message: '',
+  type: 'info',
+  showCancel: false,
+  confirmText: 'OK',
+  cancelText: 'Cancel',
+  onConfirm: null,
+  onCancel: null
+});
+
 // Auto-optimizer state
-const { optimizeGemPurchases, resetAllUpgrades, calculateUpgradeEfficiency, formatEfficiency, formatValue } = useOrbOptimizer();
+const { optimizeGemPurchases, resetAllUpgrades, calculateUpgradeEfficiency, calculateGemLevelEfficiency, formatEfficiency, formatValue } = useOrbOptimizer();
 const isOptimizing = ref(false);
 const optimizationResults = ref(null);
 const optimizationProgress = ref(null);
@@ -488,11 +575,7 @@ const currentTRBudget = computed({
     return activePlan.value.trBudgets[currentTRIndex.value] || Math.floor(activePlan.value.budget / 10);
   },
   set(value) {
-    if (!activePlan.value.trBudgets[currentTRIndex.value]) {
-      activePlan.value.trBudgets[currentTRIndex.value] = value;
-    } else {
-      activePlan.value.trBudgets[currentTRIndex.value] = value;
-    }
+    activePlan.value.trBudgets[currentTRIndex.value] = value;
   }
 });
 
@@ -586,6 +669,15 @@ function getMinimumGemNodes(gemId) {
 // Plan-internal gem state functions
 function getPlanGemLevel(gemId) {
   const trIndex = currentTRIndex.value;
+  
+  // Ensure trGemStates exists and is initialized
+  if (!activePlan.value.trGemStates) {
+    activePlan.value.trGemStates = {};
+  }
+  if (!activePlan.value.trGemStates[trIndex]) {
+    activePlan.value.trGemStates[trIndex] = { levels: {}, nodes: {}, upgrades: {} };
+  }
+  
   return activePlan.value.trGemStates[trIndex]?.levels[gemId] || getMinimumGemLevel(gemId);
 }
 
@@ -606,6 +698,15 @@ function setPlanGemLevel(gemId, level) {
 
 function getPlanGemNodes(gemId) {
   const trIndex = currentTRIndex.value;
+  
+  // Ensure trGemStates exists and is initialized
+  if (!activePlan.value.trGemStates) {
+    activePlan.value.trGemStates = {};
+  }
+  if (!activePlan.value.trGemStates[trIndex]) {
+    activePlan.value.trGemStates[trIndex] = { levels: {}, nodes: {}, upgrades: {} };
+  }
+  
   return activePlan.value.trGemStates[trIndex]?.nodes[gemId] || getMinimumGemNodes(gemId);
 }
 
@@ -638,7 +739,7 @@ function togglePlanGemNode(gemId, nodeIndex) {
     if (!hasNode) {
       // Adding node - check if can afford
       if (!canAfford(nodeCost)) {
-        alert(`Not enough orbs! Need ${formatNumber(nodeCost - remainingBudget.value)} more orbs.`);
+        showAlert(`Not enough orbs! Need ${formatNumber(nodeCost - remainingBudget.value)} more orbs.`, 'Insufficient Orbs', 'warning');
         return;
       }
       trackSpending(gemId, `_gem_node_${nodeIndex}`, nodeCost);
@@ -658,6 +759,15 @@ function togglePlanGemNode(gemId, nodeIndex) {
 
 function getPlanUpgradeLevel(gemId, upgradeId) {
   const trIndex = currentTRIndex.value;
+  
+  // Ensure trGemStates exists and is initialized
+  if (!activePlan.value.trGemStates) {
+    activePlan.value.trGemStates = {};
+  }
+  if (!activePlan.value.trGemStates[trIndex]) {
+    activePlan.value.trGemStates[trIndex] = { levels: {}, nodes: {}, upgrades: {} };
+  }
+  
   return activePlan.value.trGemStates[trIndex]?.upgrades[gemId]?.[upgradeId] || getMinimumUpgradeLevel(gemId, upgradeId);
 }
 
@@ -680,12 +790,60 @@ function setPlanUpgradeLevel(gemId, upgradeId, level) {
   activePlan.value.trGemStates[trIndex].upgrades[gemId][upgradeId] = finalLevel;
 }
 
+// Check if gem has any upgraded upgrades in the current plan
+function hasUpgradedUpgrades(gemId) {
+  const gem = GEMS[gemId];
+  if (!gem) return false;
+  
+  // Check if gem level is higher than minimum
+  const currentLevel = getPlanGemLevel(gemId);
+  const minimumLevel = getMinimumGemLevel(gemId);
+  if (currentLevel > minimumLevel) return true;
+  
+  // Check if any gem nodes are added beyond minimum
+  const currentNodes = getPlanGemNodes(gemId);
+  const minimumNodes = getMinimumGemNodes(gemId);
+  if (currentNodes.length > minimumNodes.length) return true;
+  
+  // Check if any upgrade level is higher than minimum
+  if (gem.upgrades) {
+    return gem.upgrades.some(upgrade => {
+      const currentUpgradeLevel = getPlanUpgradeLevel(gemId, upgrade.id);
+      const minimumUpgradeLevel = getMinimumUpgradeLevel(gemId, upgrade.id);
+      return currentUpgradeLevel > minimumUpgradeLevel;
+    });
+  }
+  
+  return false;
+}
+
 // Cost calculation functions for plan
 function getPlanNextLevelCost(gemId) {
   const currentLevel = getPlanGemLevel(gemId);
   const gem = GEMS[gemId];
   const qualityCost = gem?.qualityCosts.find(cost => cost.level === currentLevel + 1);
   return qualityCost?.cost || 0;
+}
+
+// Calculate gem level efficiency
+function getPlanGemLevelEfficiency(gemId) {
+  const gem = GEMS[gemId];
+  if (!gem) return 0;
+  
+  const currentLevel = getPlanGemLevel(gemId);
+  if (currentLevel >= gem.maxLevel) return 0;
+  
+  const gemLevelCost = getPlanNextLevelCost(gemId);
+  if (gemLevelCost <= 0) return Number.MAX_SAFE_INTEGER; // Free upgrades
+  
+  return calculateGemLevelEfficiency(
+    gem, 
+    currentLevel, 
+    gemLevelCost, 
+    props.weights || {}, 
+    getPlanGemLevel, 
+    getPlanUpgradeLevel
+  );
 }
 
 function getPlanUpgradeNextLevelCost(gemId, upgradeId) {
@@ -706,6 +864,27 @@ function getPlanUpgradeNextLevelCost(gemId, upgradeId) {
   }
   
   return cost;
+}
+
+// Get available gem nodes based on Exodus level (same logic as Gems.vue)
+function getAvailablePlanGemNodes(gemId) {
+  const gem = GEMS[gemId];
+  if (!gem || !gem.gemNodes) return [];
+  
+  const exodusLevel = getPlanGemLevel('exodus');
+  
+  // If Exodus is not level 5, only show original nodes (without unlock requirement)
+  if (exodusLevel < 5) {
+    return gem.gemNodes.filter(node => !node.unlockRequirement);
+  }
+  
+  // If Exodus is level 5, show all nodes
+  return gem.gemNodes;
+}
+
+// Check if a node is newly appeared (for animation)
+function isNodeNewlyAppeared(gemId, nodeIndex) {
+  return newlyAppearedNodes.value.has(`${gemId}-node-${nodeIndex}`);
 }
 
 // Utility functions for formatting (copied from 1.vue)
@@ -744,9 +923,12 @@ function formatPlanMultiplierWithType(gemId, upgradeId, multiplier) {
     if (multiplier && typeof multiplier === 'object' && 
         multiplier.mantissa !== undefined && multiplier.exponent !== undefined) {
       const value = multiplier.mantissa * Math.pow(10, multiplier.exponent);
-      if (value < 1000) {
-        // Under 1000: show as whole number without decimals
-        return '+' + Math.floor(value).toString();
+      if (value < 1) {
+        // Under 1: show with 3 decimal places
+        return '+' + value.toFixed(3);
+      } else if (value < 1000) {
+        // 1-1000: show with 2 decimal places
+        return '+' + value.toFixed(2);
       } else {
         // 1000 and above: use formatNumberDecimal for suffix notation
         return '+' + formatNumberDecimal(multiplier);
@@ -755,9 +937,12 @@ function formatPlanMultiplierWithType(gemId, upgradeId, multiplier) {
     
     // Handle regular numbers (fallback)
     if (typeof multiplier === 'number') {
-      if (multiplier < 1000) {
-        // Under 1000: show as whole number without decimals
-        return '+' + Math.floor(multiplier).toString();
+      if (multiplier < 1) {
+        // Under 1: show with 3 decimal places
+        return '+' + multiplier.toFixed(3);
+      } else if (multiplier < 1000) {
+        // 1-1000: show with 2 decimal places
+        return '+' + multiplier.toFixed(2);
       } else {
         // 1000 and above: use formatNumber which handles suffixes with decimals
         return '+' + formatNumber(multiplier);
@@ -789,8 +974,42 @@ function getPlanCurrentMultiplier(gemId, upgradeId) {
     const functionString = upgrade.multiplier.calculate.toString();
     const expectsGameStats = functionString.includes('gameStats') || functionString.includes('level, gemLevel,') || functionString.includes('level,gemLevel,');
     
-    if (expectsGameStats && props.gameStats) {
-      result = upgrade.multiplier.calculate(currentLevel, gemLevel, props.gameStats);
+    // Create enhanced gameStats for mk9-core-resonance
+    let enhancedGameStats = props.gameStats;
+    
+    // Special handling for mk9-core-resonance: calculate mk9CoreStability from mk9-core-stability upgrade
+    if (gemId === 'evolution' && upgradeId === 'mk9-core-resonance') {
+      enhancedGameStats = { ...props.gameStats };
+      
+      // Get mk9-core-stability level and calculate its multiplier
+      const mk9CoreStabilityLevel = getPlanUpgradeLevel('evolution', 'mk9-core-stability');
+      const evolutionLevel = getPlanGemLevel('evolution');
+      
+      // Pass the stability level directly to the formula
+      enhancedGameStats.stabilityLevel = mk9CoreStabilityLevel;
+      
+      if (mk9CoreStabilityLevel > 0) {
+        const mk9CoreStabilityUpgrade = gem.upgrades.find(u => u.id === 'mk9-core-stability');
+        if (mk9CoreStabilityUpgrade) {
+          const mk9CoreStabilityResult = mk9CoreStabilityUpgrade.multiplier.calculate(mk9CoreStabilityLevel, evolutionLevel);
+          
+          // Convert Decimal to number for gameStats
+          if (mk9CoreStabilityResult && typeof mk9CoreStabilityResult === 'object' && 
+              mk9CoreStabilityResult.mantissa !== undefined && mk9CoreStabilityResult.exponent !== undefined) {
+            enhancedGameStats.mk9CoreStability = mk9CoreStabilityResult.mantissa * Math.pow(10, mk9CoreStabilityResult.exponent);
+          } else if (typeof mk9CoreStabilityResult === 'number') {
+            enhancedGameStats.mk9CoreStability = mk9CoreStabilityResult;
+          } else {
+            enhancedGameStats.mk9CoreStability = 0;
+          }
+        }
+      } else {
+        enhancedGameStats.mk9CoreStability = 0;
+      }
+    }
+    
+    if (expectsGameStats && enhancedGameStats) {
+      result = upgrade.multiplier.calculate(currentLevel, gemLevel, enhancedGameStats);
     } else {
       result = upgrade.multiplier.calculate(currentLevel, gemLevel);
     }
@@ -838,6 +1057,62 @@ function getPurchasedGemLevels(gemId) {
   const currentLevel = getPlanGemLevel(gemId);
   const minimumLevel = getMinimumGemLevel(gemId);
   return Math.max(0, currentLevel - minimumLevel);
+}
+
+// Get available upgrades for plan (based on plan gem level)
+function getPlanAvailableUpgrades(gemId) {
+  const gem = GEMS[gemId];
+  if (!gem) return [];
+  
+  const currentLevel = getPlanGemLevel(gemId);
+  return gem.upgrades.filter(upgrade => currentLevel >= upgrade.unlock);
+}
+
+// Check if a gem node was purchased in this plan
+function isGemNodePurchasedInPlan(gemId, nodeIndex) {
+  const minimumNodes = getMinimumGemNodes(gemId);
+  const currentNodes = getPlanGemNodes(gemId);
+  
+  // Node is purchased in plan if it's currently active but wasn't in minimum nodes
+  return currentNodes.includes(nodeIndex) && !minimumNodes.includes(nodeIndex);
+}
+
+// Alert helper functions
+function showAlert(message, title = 'Alert', type = 'info') {
+  alertDialog.value = {
+    isVisible: true,
+    title,
+    message,
+    type,
+    showCancel: false,
+    confirmText: 'OK',
+    onConfirm: () => {
+      alertDialog.value.isVisible = false;
+    },
+    onCancel: null
+  };
+}
+
+function showConfirm(message, title = 'Confirm') {
+  return new Promise((resolve) => {
+    alertDialog.value = {
+      isVisible: true,
+      title,
+      message,
+      type: 'warning',
+      showCancel: true,
+      confirmText: 'Yes',
+      cancelText: 'No',
+      onConfirm: () => {
+        alertDialog.value.isVisible = false;
+        resolve(true);
+      },
+      onCancel: () => {
+        alertDialog.value.isVisible = false;
+        resolve(false);
+      }
+    };
+  });
 }
 
 // Calculate upgrade efficiency - wrapper for the centralized function
@@ -895,6 +1170,39 @@ function previousTR() {
   }
 }
 
+// Delete current TR function
+async function deleteTR() {
+  console.log('deleteTR called, currentTRIndex:', currentTRIndex.value, 'maxTRReached:', maxTRReached.value);
+  
+  const confirmed = await showConfirm(`Are you sure you want to delete TR ${currentTRIndex.value + 1}? This will remove all gem purchases for this TR.`);
+  console.log('User confirmed deletion:', confirmed);
+  
+  if (confirmed) {
+    const currentTR = currentTRIndex.value;
+    console.log('Deleting TR:', currentTR);
+    
+    // Remove TR data
+    if (activePlan.value.trGemStates[currentTR]) {
+      console.log('Removing trGemStates for TR:', currentTR);
+      delete activePlan.value.trGemStates[currentTR];
+    }
+    if (activePlan.value.trBudgets[currentTR]) {
+      console.log('Removing trBudgets for TR:', currentTR);
+      delete activePlan.value.trBudgets[currentTR];
+    }
+    
+    // Update maxTRReached
+    console.log('Updating maxTRReached from', maxTRReached.value, 'to', maxTRReached.value - 1);
+    maxTRReached.value = maxTRReached.value - 1;
+    
+    // Go to previous TR automatically
+    console.log('Moving from TR', currentTRIndex.value, 'to', currentTR - 1);
+    currentTRIndex.value = currentTR - 1;
+    
+    console.log('Delete completed. New state - currentTRIndex:', currentTRIndex.value, 'maxTRReached:', maxTRReached.value);
+  }
+}
+
 function nextTR() {
   // Before moving to next TR, copy current TR values to next TR as starting values
   const currentTR = currentTRIndex.value;
@@ -931,16 +1239,16 @@ function nextTR() {
     }
   }
   
+  // Auto-set budget for new TR to match current TR budget
+  if (!activePlan.value.trBudgets[nextTR]) {
+    activePlan.value.trBudgets[nextTR] = activePlan.value.trBudgets[currentTR] || Math.floor(activePlan.value.budget / 10);
+  }
+  
   currentTRIndex.value = nextTR;
   
   // Update maxTRReached if we've gone to a new TR
   if (nextTR + 1 > maxTRReached.value) {
     maxTRReached.value = nextTR + 1;
-  }
-  
-  // Initialize budget for new TR if not set
-  if (!activePlan.value.trBudgets[nextTR]) {
-    activePlan.value.trBudgets[nextTR] = Math.floor(activePlan.value.budget / 10);
   }
 }
 
@@ -983,6 +1291,178 @@ function clearCurrentTRSpending() {
   }
 }
 
+// Import purchased items from saved plan back to trGemStates
+function importPurchasedItemsToTRStates() {
+  // First, try to import from trSteps if available (more detailed data)
+  if (activePlan.value.trSteps && activePlan.value.trSteps.length > 0) {
+    activePlan.value.trSteps.forEach((trStep, index) => {
+      if (trStep.gemStates && index < activePlan.value.trCount) {
+        // Ensure the trGemStates structure exists
+        if (!activePlan.value.trGemStates[index]) {
+          activePlan.value.trGemStates[index] = { levels: {}, nodes: {}, upgrades: {} };
+        }
+        
+        // Import the gem states from trSteps
+        if (trStep.gemStates.levels) {
+          activePlan.value.trGemStates[index].levels = { ...trStep.gemStates.levels };
+        }
+        if (trStep.gemStates.nodes) {
+          activePlan.value.trGemStates[index].nodes = { ...trStep.gemStates.nodes };
+        }
+        if (trStep.gemStates.upgrades) {
+          activePlan.value.trGemStates[index].upgrades = { ...trStep.gemStates.upgrades };
+        }
+      }
+    });
+    return; // If we imported from trSteps, we're done
+  }
+  
+  // Fallback: import from summary data (purchasedGems, purchasedNodes, purchasedUpgrades)
+  if (!activePlan.value.purchasedGems && !activePlan.value.purchasedNodes && !activePlan.value.purchasedUpgrades) {
+    return; // No purchase data to import
+  }
+  
+  // Import purchased gem levels
+  if (activePlan.value.purchasedGems) {
+    Object.entries(activePlan.value.purchasedGems).forEach(([gemId, purchasedLevels]) => {
+      if (purchasedLevels > 0) {
+        const minimumLevel = getMinimumGemLevel(gemId);
+        const targetLevel = minimumLevel + purchasedLevels;
+        
+        // Apply to the highest TR where this level was reached
+        let highestTR = Math.min(activePlan.value.trCount - 1, maxTRReached.value - 1);
+        for (let trIndex = highestTR; trIndex >= 0; trIndex--) {
+          if (!activePlan.value.trGemStates[trIndex]) {
+            activePlan.value.trGemStates[trIndex] = { levels: {}, nodes: {}, upgrades: {} };
+          }
+          activePlan.value.trGemStates[trIndex].levels[gemId] = targetLevel;
+        }
+      }
+    });
+  }
+  
+  // Import purchased gem nodes
+  if (activePlan.value.purchasedNodes) {
+    Object.entries(activePlan.value.purchasedNodes).forEach(([gemId, purchasedNodes]) => {
+      if (purchasedNodes && purchasedNodes.length > 0) {
+        const minimumNodes = getMinimumGemNodes(gemId);
+        const targetNodes = [...minimumNodes, ...purchasedNodes];
+        
+        // Apply to the highest TR where these nodes were unlocked
+        let highestTR = Math.min(activePlan.value.trCount - 1, maxTRReached.value - 1);
+        for (let trIndex = highestTR; trIndex >= 0; trIndex--) {
+          if (!activePlan.value.trGemStates[trIndex]) {
+            activePlan.value.trGemStates[trIndex] = { levels: {}, nodes: {}, upgrades: {} };
+          }
+          activePlan.value.trGemStates[trIndex].nodes[gemId] = targetNodes;
+        }
+      }
+    });
+  }
+  
+  // Import purchased upgrades
+  if (activePlan.value.purchasedUpgrades) {
+    Object.entries(activePlan.value.purchasedUpgrades).forEach(([gemId, upgrades]) => {
+      Object.entries(upgrades).forEach(([upgradeId, purchasedLevels]) => {
+        if (purchasedLevels > 0) {
+          const minimumLevel = getMinimumUpgradeLevel(gemId, upgradeId);
+          const targetLevel = minimumLevel + purchasedLevels;
+          
+          // Apply to the highest TR where this upgrade level was reached
+          let highestTR = Math.min(activePlan.value.trCount - 1, maxTRReached.value - 1);
+          for (let trIndex = highestTR; trIndex >= 0; trIndex--) {
+            if (!activePlan.value.trGemStates[trIndex]) {
+              activePlan.value.trGemStates[trIndex] = { levels: {}, nodes: {}, upgrades: {} };
+            }
+            if (!activePlan.value.trGemStates[trIndex].upgrades[gemId]) {
+              activePlan.value.trGemStates[trIndex].upgrades[gemId] = {};
+            }
+            activePlan.value.trGemStates[trIndex].upgrades[gemId][upgradeId] = targetLevel;
+          }
+        }
+      });
+    });
+  }
+  
+  // Calculate initial spending based on copied states vs minimums
+  // This ensures the spent amount is correct when saving a new plan
+  for (let trIndex = 0; trIndex < maxTRReached.value; trIndex++) {
+    const actualSpent = calculateActualSpentOrbs(trIndex);
+    if (actualSpent > 0) {
+      // Initialize spentOrbs structure if it doesn't exist
+      if (!spentOrbs.value[trIndex]) {
+        spentOrbs.value[trIndex] = {};
+      }
+      
+      // Set a placeholder entry to track the actual spent amount
+      if (!spentOrbs.value[trIndex]['_calculated']) {
+        spentOrbs.value[trIndex]['_calculated'] = {};
+      }
+      spentOrbs.value[trIndex]['_calculated']['total'] = actualSpent;
+    }
+  }
+}
+
+// Calculate actual spent orbs based on purchased items
+function calculateActualSpentOrbs(trIndex) {
+  let totalSpent = 0;
+  
+  if (!activePlan.value.trGemStates[trIndex]) {
+    return 0;
+  }
+  
+  const trState = activePlan.value.trGemStates[trIndex];
+  
+  GEM_LIST.forEach(gem => {
+    // Calculate gem level costs
+    const currentLevel = trState.levels?.[gem.id] || 0;
+    const minimumLevel = getMinimumGemLevel(gem.id);
+    
+    for (let level = minimumLevel + 1; level <= currentLevel; level++) {
+      const qualityCost = gem.qualityCosts?.find(cost => cost.level === level);
+      if (qualityCost && qualityCost.cost !== null && qualityCost.cost !== undefined) {
+        totalSpent += qualityCost.cost;
+      }
+    }
+    
+    // Calculate gem node costs
+    const currentNodes = trState.nodes?.[gem.id] || [];
+    const minimumNodes = getMinimumGemNodes(gem.id);
+    
+    currentNodes.forEach(nodeIndex => {
+      if (!minimumNodes.includes(nodeIndex) && gem.gemNodes && gem.gemNodes[nodeIndex]) {
+        const nodeCost = gem.gemNodes[nodeIndex].cost;
+        // Handle free nodes (cost: 0 or null)
+        if (nodeCost !== null && nodeCost !== undefined) {
+          totalSpent += nodeCost;
+        }
+      }
+    });
+    
+    // Calculate upgrade costs
+    if (gem.upgrades && trState.upgrades?.[gem.id]) {
+      gem.upgrades.forEach(upgrade => {
+        const currentLevel = trState.upgrades[gem.id][upgrade.id] || 0;
+        const minimumLevel = getMinimumUpgradeLevel(gem.id, upgrade.id);
+        
+        for (let level = minimumLevel; level < currentLevel; level++) {
+          let cost = upgrade.baseCost * Math.pow(upgrade.costMultiplier, level);
+          if (upgrade.costBumps) {
+            upgrade.costBumps.forEach(bump => {
+              if (level >= bump.startLevel) {
+                cost *= Math.pow(bump.multiplier, level - bump.startLevel);
+              }
+            });
+          }
+          totalSpent += cost;
+        }
+      });
+    }
+  });
+  
+  return totalSpent;
+}
+
 // Track spending
 function trackSpending(gemId, upgradeId, cost) {
   const trIndex = currentTRIndex.value;
@@ -1018,6 +1498,31 @@ watch(() => props.show, (newShow) => {
         ...JSON.parse(JSON.stringify(props.editPlan)) // Deep copy to avoid mutating original
       };
       
+      // Ensure trGemStates exists and is properly initialized
+      if (!activePlan.value.trGemStates) {
+        activePlan.value.trGemStates = {};
+      }
+      
+      // Ensure trBudgets exists and is properly initialized
+      if (!activePlan.value.trBudgets) {
+        activePlan.value.trBudgets = {};
+      }
+      
+      // Initialize trGemStates for each TR if not present
+      const trCount = activePlan.value.trCount || 1;
+      for (let i = 0; i < trCount; i++) {
+        if (!activePlan.value.trGemStates[i]) {
+          activePlan.value.trGemStates[i] = { levels: {}, nodes: {}, upgrades: {} };
+        }
+        // Initialize trBudgets if not present
+        if (activePlan.value.trBudgets[i] === undefined) {
+          activePlan.value.trBudgets[i] = activePlan.value.initialBudget || 1e33;
+        }
+      }
+      
+      // Import purchased items back into trGemStates
+      importPurchasedItemsToTRStates();
+      
       // Restore the TR state
       if (props.editPlan.currentTRIndex !== undefined) {
         currentTRIndex.value = props.editPlan.currentTRIndex;
@@ -1033,12 +1538,15 @@ watch(() => props.show, (newShow) => {
       }
     } else {
       // Create new plan
+      const now = new Date().toISOString();
       activePlan.value = {
         id: Date.now().toString(),
         name: `Gem Plan ${new Date().toLocaleDateString()}`,
-        budget: 1000000,
+        budget: 1e33,
         trBudgets: {}, // Budgets per TR index
         trSteps: [],
+        createdAt: now,
+        updatedAt: now,
         // Plan-internal gem states per TR
         trGemStates: {
           // trIndex -> { levels: {}, nodes: {}, upgrades: {} }
@@ -1079,7 +1587,7 @@ function updatePlanGemLevel(gemId, newLevel) {
       }
       
       if (!canAfford(totalCost)) {
-        alert(`Not enough orbs! Need ${formatNumber(totalCost - remainingBudget.value)} more orbs.`);
+        showAlert(`Not enough orbs! Need ${formatNumber(totalCost - remainingBudget.value)} more orbs.`, 'Insufficient Orbs', 'warning');
         return;
       }
       
@@ -1096,6 +1604,49 @@ function updatePlanGemLevel(gemId, newLevel) {
       
       // Track negative spending (refund)
       trackSpending(gemId, '_gem_level', -refundCost);
+    }
+  }
+  
+  // Special handling for Exodus level changes to track new nodes
+  if (gemId === 'exodus') {
+    const currentExodusLevel = getPlanGemLevel('exodus');
+    
+    // If Exodus reaches level 5 for the first time, mark all new nodes
+    if (currentExodusLevel < 5 && finalLevel >= 5) {
+      // Clear previous newly appeared nodes
+      newlyAppearedNodes.value.clear();
+      
+      // Mark all gems' new nodes as newly appeared
+      GEM_LIST.forEach(otherGem => {
+        if (otherGem.gemNodes) {
+          otherGem.gemNodes.forEach((node, nodeIndex) => {
+            if (node.unlockRequirement === 'exodus-5') {
+              newlyAppearedNodes.value.add(`${otherGem.id}-node-${nodeIndex}`);
+            }
+          });
+        }
+      });
+      
+      // Remove the "new" effect after animation completes
+      setTimeout(() => {
+        newlyAppearedNodes.value.clear();
+      }, 1500);
+    }
+    
+    // If Exodus level drops below 5, reset Exodus-5 dependent gem nodes and clear animation
+    if (currentExodusLevel >= 5 && finalLevel < 5) {
+      newlyAppearedNodes.value.clear();
+      
+      // Reset all Exodus-5 dependent gem nodes for all gems
+      GEM_LIST.forEach(otherGem => {
+        if (otherGem.gemNodes) {
+          otherGem.gemNodes.forEach((node, nodeIndex) => {
+            if (node.unlockRequirement === 'exodus-5' && hasPlanGemNode(otherGem.id, nodeIndex)) {
+              togglePlanGemNode(otherGem.id, nodeIndex); // Remove the node
+            }
+          });
+        }
+      });
     }
   }
   
@@ -1132,7 +1683,7 @@ function updatePlanUpgradeLevel(gemId, upgradeId, newLevel) {
         }
         
         if (!canAfford(totalCost)) {
-          alert(`Not enough orbs! Need ${formatNumber(totalCost - remainingBudget.value)} more orbs.`);
+          showAlert(`Not enough orbs! Need ${formatNumber(totalCost - remainingBudget.value)} more orbs.`, 'Insufficient Orbs', 'warning');
           return;
         }
         
@@ -1170,14 +1721,118 @@ function updatePlanUpgradeLevel(gemId, upgradeId, newLevel) {
 
 // Save plan function
 function savePlan() {
-  // Create a complete plan object with all current state
+  // Calculate total budget across all TRs
+  const totalBudgetAcrossAllTRs = Object.values(activePlan.value.trBudgets).reduce((sum, budget) => sum + budget, 0);
+
+  // Create trSteps array for OrbPlanCard compatibility
+  const trSteps = [];
+  let totalSpentAcrossAllTRs = 0;
+  
+  for (let i = 0; i < maxTRReached.value; i++) {
+    const trBudget = activePlan.value.trBudgets[i] || 0;
+    
+    // Always calculate actual spent based on gem states first
+    let trSpent = calculateActualSpentOrbs(i);
+    
+    // Override with manual tracking if it exists and is more than calculated
+    if (spentOrbs.value[i]) {
+      let manualSpent = 0;
+      Object.values(spentOrbs.value[i]).forEach(gemSpending => {
+        Object.values(gemSpending).forEach(upgradeSpent => {
+          manualSpent += upgradeSpent;
+        });
+      });
+      
+      // Use manual tracking if it's greater (more accurate for manual spending mode)
+      if (manualSpent > trSpent) {
+        trSpent = manualSpent;
+      }
+    }
+    
+    totalSpentAcrossAllTRs += trSpent;
+
+    trSteps.push({
+      trIndex: i,
+      budget: trBudget,
+      spentOrbs: trSpent,
+      remainingOrbs: Math.max(0, trBudget - trSpent),
+      gemStates: activePlan.value.trGemStates[i] || { levels: {}, nodes: {}, upgrades: {} }
+    });
+  }
+
+  // Create summary of purchased items for display purposes
+  const purchasedGems = {};
+  const purchasedNodes = {};
+  const purchasedUpgrades = {};
+
+  GEM_LIST.forEach(gem => {
+    // Check each TR for purchases
+    Object.keys(activePlan.value.trGemStates).forEach(trIndex => {
+      const trState = activePlan.value.trGemStates[trIndex];
+      if (!trState) return;
+
+      // Gem levels purchased
+      const currentLevel = trState.levels?.[gem.id] || 0;
+      const minimumLevel = getMinimumGemLevel(gem.id);
+      const purchasedLevels = Math.max(0, currentLevel - minimumLevel);
+      
+      if (purchasedLevels > 0) {
+        if (!purchasedGems[gem.id]) purchasedGems[gem.id] = 0;
+        purchasedGems[gem.id] = Math.max(purchasedGems[gem.id], purchasedLevels);
+      }
+
+      // Gem nodes purchased
+      const currentNodes = trState.nodes?.[gem.id] || [];
+      const minimumNodes = getMinimumGemNodes(gem.id);
+      const newNodes = currentNodes.filter(nodeIndex => !minimumNodes.includes(nodeIndex));
+      
+      if (newNodes.length > 0) {
+        if (!purchasedNodes[gem.id]) purchasedNodes[gem.id] = [];
+        purchasedNodes[gem.id] = [...new Set([...purchasedNodes[gem.id], ...newNodes])];
+      }
+
+      // Upgrades purchased
+      if (gem.upgrades && trState.upgrades?.[gem.id]) {
+        gem.upgrades.forEach(upgrade => {
+          const currentLevel = trState.upgrades[gem.id][upgrade.id] || 0;
+          const minimumLevel = getMinimumUpgradeLevel(gem.id, upgrade.id);
+          const purchasedLevels = Math.max(0, currentLevel - minimumLevel);
+          
+          if (purchasedLevels > 0) {
+            if (!purchasedUpgrades[gem.id]) purchasedUpgrades[gem.id] = {};
+            if (!purchasedUpgrades[gem.id][upgrade.id]) purchasedUpgrades[gem.id][upgrade.id] = 0;
+            purchasedUpgrades[gem.id][upgrade.id] = Math.max(purchasedUpgrades[gem.id][upgrade.id], purchasedLevels);
+          }
+        });
+      }
+    });
+  });
+
+  // Create a complete plan object with all current state and statistics
   const planToSave = {
     ...activePlan.value,
     savedAt: new Date().toISOString(),
+    createdAt: activePlan.value.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     currentTRIndex: currentTRIndex.value,
     maxTRReached: maxTRReached.value,
     spentOrbs: { ...spentOrbs.value },
-    spendingMode: spendingMode.value
+    spendingMode: spendingMode.value,
+    
+    // Statistics for OrbPlanCard
+    trCount: maxTRReached.value,
+    initialBudget: activePlan.value.trBudgets[0] || Math.floor(activePlan.value.budget / 10),
+    totalBudget: totalBudgetAcrossAllTRs,
+    totalSpent: totalSpentAcrossAllTRs,
+    trSteps: trSteps,
+    
+    // Purchase summaries
+    purchasedGems: purchasedGems,
+    purchasedNodes: purchasedNodes,
+    purchasedUpgrades: purchasedUpgrades,
+    
+    // Additional metadata
+    efficiencyScaling: efficiencyScaling.value
   };
   
   // Emit the save event to parent component
@@ -1237,8 +1892,13 @@ async function runAutoOptimizer() {
   }
 }
 
-function resetToMinimumLevels() {
-  if (confirm('Reset all upgrades to minimum levels? This will undo all planned purchases for this TR.')) {
+async function resetToMinimumLevels() {
+  const confirmed = await showConfirm(
+    'Reset all upgrades to minimum levels? This will undo all planned purchases for this TR.',
+    'Reset Upgrades'
+  );
+  
+  if (confirmed) {
     resetAllUpgrades({
       getMinimumGemLevel,
       setPlanGemLevel,
@@ -1287,5 +1947,32 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+/* Fixed height for gem headers to prevent layout jumps */
+.gem-header {
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Simple pulse animation for newly appeared nodes (from Gems.vue) */
+@keyframes gem-node-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.6);
+    background-color: rgba(147, 51, 234, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(147, 51, 234, 0.3);
+    background-color: rgba(147, 51, 234, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
+    background-color: transparent;
+  }
+}
+
+.gem-node-pulse {
+  animation: gem-node-pulse 1.2s ease-out;
 }
 </style>

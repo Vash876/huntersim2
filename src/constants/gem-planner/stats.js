@@ -57,6 +57,14 @@ export const GAME_STATS_CONFIG = {
         step: 1,
         faststep: 10,
         category: 'progression'
+      },
+      {
+        id: 'mk9Purchased',
+        name: 'MK9 Purchased',
+        max: 99999,
+        step: 4,
+        faststep: 20,
+        category: 'progression'
       }
     ]
   },
@@ -68,36 +76,57 @@ export const GAME_STATS_CONFIG = {
       {
         id: 'cradleRank',
         name: 'Cradle Rank',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'rank'
       },
       {
         id: 'auxesiaRank',
         name: 'Auxesia Rank',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'rank '
       },
       {
         id: 'zagreusRank',
         name: 'Zagreus Rank',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'rank'
       },
       {
         id: 'hephaestusRank',
         name: 'Hephaestus Rank',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'rank'
       },
       {
         id: 'demeterRank',
         name: 'Demeter Rank',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'rank'
       },
       {
         id: 'koiosRank',
         name: 'Koios Rank',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'rank'
       },
       {
         id: 'zeusRank',
         name: 'Zeus Rank',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'rank'
       },
     ]
@@ -110,36 +139,57 @@ export const GAME_STATS_CONFIG = {
       {
         id: 'cradleCrew',
         name: 'Cradle Crew',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'crew'
       },
       {
         id: 'auxesiaCrew',
         name: 'Auxesia Crew',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'crew'
       },
       {
         id: 'zagreusCrew',
         name: 'Zagreus Crew',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'crew'
       },
       {
         id: 'hephaestusCrew',
         name: 'Hephaestus Crew',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'crew'
       },
       {
         id: 'demeterCrew',
         name: 'Demeter Crew',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'crew'
       },
       {
         id: 'koiosCrew',
         name: 'Koios Crew',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'crew'
       },
       {
         id: 'zeusCrew',
         name: 'Zeus Crew',
+        max: 9999,
+        step: 1,
+        faststep: 100,
         category: 'crew'
       },
     ]

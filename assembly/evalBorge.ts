@@ -378,7 +378,12 @@ function enemyAttack(isBonus: boolean = false): void {
   }
   
   // Only apply debuff if Borge didn't evade the attack
-  if (!evaded && ck(currentEnemy.effect)) {
+  /*
+  
+  // DR Debuff from enemy effect (only if Borge didn't evade)
+  
+  */
+  if (ck(currentEnemy.effect)) {
    currentBorge.currentDr = Math.max(0, currentBorge.currentDr - 0.02);
   }
   
@@ -1879,4 +1884,3 @@ export function getLiveEnemyEnrageSpeedReduction(): f64 {
   const speedReduction = (enrageLevel as f64) * baseSpeed / 200.0;
   return Math.min(speedReduction, baseSpeed - 0.5); 
 }
-

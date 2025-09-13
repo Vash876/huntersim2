@@ -27,9 +27,9 @@ export const CREATION_GEM = {
     { node: 2, cost: 5e8 },
     { node: 3, cost: 3.3e4 },
     // New nodes unlocked when Exodus reaches level 5
-    { node: 4, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 5, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 6, cost: 0, unlockRequirement: 'exodus-5' }
+    { node: 4, cost: 1.7e16, unlockRequirement: 'exodus-5' },
+    { node: 5, cost: 3e21, unlockRequirement: 'exodus-5' },
+    { node: 6, cost: 1e22, unlockRequirement: 'exodus-5' }
   ],
   
   // Upgrades available in this gem
@@ -305,7 +305,12 @@ export const CREATION_GEM = {
       name: 'Borge Stat Bonus',
       hunter: true,
       resource: 'Borge',
-      weight: null,
+      weight: {
+        calculate: (weights) => {
+          const borge = weights.borge || 0;
+          return borge * 5;
+        }
+      },
       baseCost: 1e11,
       costMultiplier: 10,
       maxLevel: 50,
@@ -323,7 +328,12 @@ export const CREATION_GEM = {
       name: 'Ozzy Stat Bonus',
       hunter: true,
       resource: 'Ozzy',
-      weight: null,
+      weight: {
+        calculate: (weights) => {
+          const ozzy = weights.ozzy || 0;
+          return ozzy * 5;
+        }
+      },
       baseCost: 1e6,
       costMultiplier: 10,
       maxLevel: 50,
@@ -341,7 +351,12 @@ export const CREATION_GEM = {
       name: 'Knox Stat Bonus',
       hunter: true,
       resource: 'Knox',
-      weight: null,
+      weight: {
+        calculate: (weights) => {
+          const knox = weights.knox || 0;
+          return knox * 5;
+        }
+      },
       baseCost: 1e11,
       costMultiplier: 10,
       maxLevel: 50,

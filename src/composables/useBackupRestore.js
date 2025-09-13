@@ -119,7 +119,7 @@ export function useBackupRestore() {
       // 14. Storage-System-Informationen für bessere Backup-Kompatibilität
       const storageInfo = {
         trTrackingUsesIndexedDB: trTrackingStore.useIndexedDB,
-        backupCreatedWith: 'indexedDB-migration-v1'
+        backupCreatedWith: 'indexedDB-v2'
       };
       
       // 15. Weitere relevante localStorage-Einträge sammeln
@@ -276,9 +276,9 @@ export function useBackupRestore() {
         trTrackingDataPresent: !!backupData.data.trTrackingStore
       });
       
-      // Backward compatibility check for IndexedDB migration
+      // Backward compatibility check
       if (!backupData.data.storageInfo) {
-        console.log('📋 This backup was created before IndexedDB migration. TR Tracking data will be automatically migrated during import.');
+        console.log('📋 This backup was created with an older version.');
       }
       
       // 1. Restore Hunter Store
@@ -322,26 +322,21 @@ export function useBackupRestore() {
         });
       }
       
-      // 3. Restore TR Tracking Store with automatic migration
+      // 3. Restore TR Tracking Store
       if (backupData.data.trTrackingStore) {
         console.log('📥 Restoring TR Tracking data from backup...');
         
-        // First, restore the data to the store
+        // Restore the data to the store
         Object.keys(backupData.data.trTrackingStore).forEach(key => {
           if (key in trTrackingStore.$state) {
             trTrackingStore.$state[key] = backupData.data.trTrackingStore[key];
           }
         });
         
-        // Reset migration status to force re-migration with the restored data
-        const migrationKey = 'tr_tracking_migration_completed';
-        localStorage.removeItem(migrationKey);
-        console.log('🔄 Reset TR Tracking migration status to force migration with restored data');
-        
-        // Initialize TR Tracking store to trigger migration
+        // Initialize TR Tracking store
         try {
           await trTrackingStore.init();
-          console.log('✅ TR Tracking store initialized and data migrated successfully');
+          console.log('✅ TR Tracking store initialized successfully');
         } catch (error) {
           console.error('❌ Error initializing TR Tracking store after restore:', error);
           console.log('💡 Data is available in the store but may not persist until TR Tracking page is visited');
@@ -387,13 +382,9 @@ export function useBackupRestore() {
           localStorageData.tr_tracking_custom_resources;
         
         if (hasTRTrackingLocalStorageData) {
-          console.log('📋 Backup contains TR Tracking localStorage data - resetting migration status');
+          console.log('📋 Backup contains TR Tracking localStorage data - restoring');
           
-          // Reset migration status to allow migration of localStorage data
-          const migrationKey = 'tr_tracking_migration_completed';
-          localStorage.removeItem(migrationKey);
-          
-          // Set the localStorage data first
+          // Set the localStorage data
           if (localStorageData.tr_tracking_selected_resources) {
             localStorage.setItem('tr_tracking_selected_resources', JSON.stringify(localStorageData.tr_tracking_selected_resources));
           }
@@ -404,7 +395,7 @@ export function useBackupRestore() {
             localStorage.setItem('tr_tracking_custom_resources', JSON.stringify(localStorageData.tr_tracking_custom_resources));
           }
           
-          console.log('✅ TR Tracking localStorage data restored and migration reset');
+          console.log('✅ TR Tracking localStorage data restored');
         }
         
         // Gadget Calculator

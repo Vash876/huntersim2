@@ -9,15 +9,17 @@ function generateId() {
 
 // Default weights configuration
 const DEFAULT_WEIGHTS = {
-  cells: 1.0,
-  mp: 1.0,
-  shards: 1.0,
-  rp: 1.0,
-  ap: 1.0,
-  mats: 1.0,
-  borge: 1.0,
-  ozzy: 1.0,
-  knox: 1.0
+  cells: 1,
+  mp: 20,
+  shards: 15,
+  rp: 10,
+  ap: 12,
+  mats: 100,
+  orbs: 10000,
+  borge: 10000,
+  ozzy: 1000,
+  knox: 10000,
+  meltdown: 0.500
 };
 
 export const useGemPlannerStore = defineStore('gemPlanner', () => {
@@ -80,7 +82,7 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
         // Load game stats with defaults fallback
         gameStats.value = { ...getDefaultStatsValues(), ...(data.gameStats || {}) };
         
-        // Load weights with defaults fallback
+        // Load weights with defaults fallback - ensure all default weights are present
         weights.value = { ...DEFAULT_WEIGHTS, ...(data.weights || {}) };
         
         // Load gem states

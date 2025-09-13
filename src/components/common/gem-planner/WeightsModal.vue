@@ -53,43 +53,14 @@
                   </label>
                   <ToolValueControls
                     :value="weights[weight.id] || 0"
-                    :min-value="0"
-                    :max-value="100"
-                    :step="0.1"
-                    :fast-step="1"
+                    :min-value="1"
+                    :max-value="10000"
+                    :step="1"
+                    :fast-step="10"
                     @update:value="updateWeight(weight.id, $event)"
                     :show-fast-controls="true"
                     :autoEdit="true"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Meltdown Weights -->
-            <div class="bg-gradient-to-r from-red-900/30 to-orange-900/30 rounded-lg p-2 sm:p-3 border border-red-800/50">
-              <h3 class="text-sm font-semibold text-white mb-2 sm:mb-3 flex items-center">
-                <IconFlame size="20" class="mr-2 text-red-400" />
-                Meltdown
-              </h3>
-              <div class="grid grid-cols-1 gap-2">
-                <div 
-                  v-for="weight in meltdownWeight" 
-                  :key="weight.id"
-                  class="bg-gray-700/60 rounded p-1 sm:p-1.5"
-                >
-                  <label :for="weight.id" class="block text-xs font-medium text-gray-300 mb-1">
-                    {{ weight.name }}
-                  </label>
-                  <ToolValueControls
-                    :value="weights[weight.id] || 0"
-                    :min-value="0"
-                    :max-value="1"
-                    :step="0.01"
-                    :fast-step="0.1"
-                    @update:value="updateWeight(weight.id, $event)"
-                    :show-fast-controls="true"
-                    :autoEdit="true"
-                    :decimal-places="2"
+                    :decimal-places="0"
                   />
                 </div>
               </div>
@@ -112,18 +83,48 @@
                   </label>
                   <ToolValueControls
                     :value="weights[weight.id] || 0"
-                    :min-value="0"
-                    :max-value="100"
-                    :step="0.1"
-                    :fast-step="1"
+                    :min-value="1"
+                    :max-value="10000"
+                    :step="1"
+                    :fast-step="10"
                     @update:value="updateWeight(weight.id, $event)"
                     :show-fast-controls="true"
                     :autoEdit="true"
+                    :decimal-places="0"
                   />
                 </div>
               </div>
             </div>
-            
+
+            <!-- Meltdown  -->
+            <div class="bg-gradient-to-r from-red-900/30 to-orange-900/30 rounded-lg p-2 sm:p-3 border border-red-800/50">
+              <h3 class="text-sm font-semibold text-white mb-2 sm:mb-3 flex items-center">
+                <IconFlame size="20" class="mr-2 text-red-400" />
+                Meltdown
+              </h3>
+              <div class="grid grid-cols-1 gap-2">
+                <div 
+                  v-for="weight in meltdownWeight" 
+                  :key="weight.id"
+                  class="bg-gray-700/60 rounded p-1 sm:p-1.5"
+                >
+                  <label :for="weight.id" class="block text-xs font-medium text-gray-300 mb-1">
+                    {{ weight.name }}
+                  </label>
+                  <ToolValueControls
+                    :value="weights[weight.id] || 0"
+                    :min-value="0"
+                    :max-value="1"
+                    :step="0.001"
+                    :fast-step="0.01"
+                    @update:value="updateWeight(weight.id, $event)"
+                    :show-fast-controls="true"
+                    :autoEdit="true"
+                    :decimal-places="3"
+                  />
+                </div>
+              </div>
+            </div>            
           </div>
         </div>
       </div>
@@ -177,6 +178,7 @@ const resourceWeights = [
   { id: 'rp', name: 'RP' },
   { id: 'ap', name: 'AP' },
   { id: 'mats', name: 'Mats' },
+  { id: 'orbs', name: 'Orbs' },
 ]
 
 const meltdownWeight = [
@@ -239,16 +241,9 @@ function showNotification(message, type = 'success') {
 
 // Modal functions
 function closeModal() {
-  // Weights are automatically saved via the store system
-  // No need for manual localStorage handling
   emit('close')
 }
 
-// Watchers
-watch(() => weights.value, () => {
-  updateLastUpdated()
-  emit('weights-updated', weights.value)
-}, { deep: true })
 
 // Lifecycle
 onMounted(() => {

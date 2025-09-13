@@ -25,9 +25,9 @@ export const POWER_GEM = {
     { node: 2, cost: 3e9 },
     { node: 3, cost: 1e10 },
     // New nodes unlocked when Exodus reaches level 5
-    { node: 4, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 5, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 6, cost: 0, unlockRequirement: 'exodus-5' }
+    { node: 4, cost: 2e16, unlockRequirement: 'exodus-5' },
+    { node: 5, cost: 4e21, unlockRequirement: 'exodus-5' },
+    { node: 6, cost: 1e23, unlockRequirement: 'exodus-5' }
   ],
   
   // Upgrades available in this gem
@@ -36,6 +36,80 @@ export const POWER_GEM = {
       id: 'cradle-bonus',
       name: 'Cradle Bonus',
       resource: 'Cradle',
+      effects: [
+        {
+          resource: 'Cells',
+          multiplier: {
+            calculate: (level, powerLevel, gameStats = {}) => {
+              const cradleCrew = gameStats.cradleCrew || 0;
+              const cradleRank = gameStats.cradleRank || 0;
+              const levelDecimal = new Decimal(level);
+              const powerLevelDecimal = new Decimal(powerLevel);
+              const cradleCrewDecimal = new Decimal(cradleCrew);
+              const cradleRankDecimal = new Decimal(cradleRank);
+              
+              const crewBase = new Decimal(1).add(levelDecimal.mul(0.0012));
+              const crewPower = crewBase.pow(cradleCrewDecimal);
+              
+              const rankBase = new Decimal(1).add(levelDecimal.mul(0.02));
+              const rankPower = rankBase.pow(cradleRankDecimal);
+              
+              const innerResult = crewPower.mul(rankPower);
+              const outerExponent = new Decimal(1).add(powerLevelDecimal.mul(0.1)).sub(0.1);
+              
+              return innerResult.pow(outerExponent);
+            }
+          }
+        },
+        {
+          resource: 'Shards',
+          multiplier: {
+            calculate: (level, powerLevel, gameStats = {}) => {
+              const cradleCrew = gameStats.cradleCrew || 0;
+              const cradleRank = gameStats.cradleRank || 0;
+              const levelDecimal = new Decimal(level);
+              const powerLevelDecimal = new Decimal(powerLevel);
+              const cradleCrewDecimal = new Decimal(cradleCrew);
+              const cradleRankDecimal = new Decimal(cradleRank);
+              
+              const crewBase = new Decimal(1).add(levelDecimal.mul(0.0012));
+              const crewPower = crewBase.pow(cradleCrewDecimal);
+              
+              const rankBase = new Decimal(1).add(levelDecimal.mul(0.02));
+              const rankPower = rankBase.pow(cradleRankDecimal);
+              
+              const innerResult = crewPower.mul(rankPower);
+              const outerExponent = new Decimal(1).add(powerLevelDecimal.mul(0.1)).sub(0.1);
+              
+              return innerResult.pow(outerExponent);
+            }
+          }
+        },
+        {
+          resource: 'RP',
+          multiplier: {
+            calculate: (level, powerLevel, gameStats = {}) => {
+              const cradleCrew = gameStats.cradleCrew || 0;
+              const cradleRank = gameStats.cradleRank || 0;
+              const levelDecimal = new Decimal(level);
+              const powerLevelDecimal = new Decimal(powerLevel);
+              const cradleCrewDecimal = new Decimal(cradleCrew);
+              const cradleRankDecimal = new Decimal(cradleRank);
+              
+              const crewBase = new Decimal(1).add(levelDecimal.mul(0.0012));
+              const crewPower = crewBase.pow(cradleCrewDecimal);
+              
+              const rankBase = new Decimal(1).add(levelDecimal.mul(0.02));
+              const rankPower = rankBase.pow(cradleRankDecimal);
+              
+              const innerResult = crewPower.mul(rankPower);
+              const outerExponent = new Decimal(1).add(powerLevelDecimal.mul(0.1)).sub(0.1);
+              
+              return innerResult.pow(outerExponent);
+            }
+          }
+        }
+      ],
       weight: {
         calculate: (weights) => {
           const cells = weights.cells || 0;
@@ -406,7 +480,7 @@ export const POWER_GEM = {
     {
       id: 'blueprints',
       name: 'Blueprints',
-      weight: null,
+      weight: 100,
       baseCost: 1,
       costMultiplier: 10,
       maxLevel: 50,
@@ -426,7 +500,7 @@ export const POWER_GEM = {
     {
       id: 'innovation-cores',
       name: 'Innovation Cores',
-      weight: null,
+      weight: 200,
       baseCost: 1,
       costMultiplier: 10,
       maxLevel: 50,

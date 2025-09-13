@@ -18,12 +18,12 @@
           </div>
           
           <!-- Datum in zweiter Zeile -->
-          <div class="flex items-center text-xs text-gray-400 mt-1"> 
+          <!-- <div class="flex items-center text-xs text-gray-400 mt-1"> 
             <IconCalendarEvent size="12" class="mr-1" />
             <span>{{ formatPlanDate }}</span>
             <span class="mx-1">•</span>
             <span>{{ plan.maxTRReached || 1 }} TRs</span>
-          </div>
+          </div> -->
         </div>
       </div>
       
@@ -34,13 +34,6 @@
       <div class="flex items-center justify-between mt-2 relative">
         <!-- Linke Seite: Action Buttons -->
         <div class="flex items-center space-x-3">
-          <button 
-            @click.stop="$emit('load')" 
-            class="icon-button text-blue-400/80 hover:text-blue-300"
-            title="Load plan"
-          >
-            <IconEye size="16" />
-          </button>
           <button 
             @click.stop="$emit('edit')" 
             class="icon-button"
@@ -54,13 +47,6 @@
             title="Copy plan"
           >
             <IconCopy size="16" />
-          </button>
-          <button 
-            @click.stop="$emit('share')" 
-            class="icon-button"
-            title="Share plan"
-          >
-            <IconShare size="16" />
           </button>
           
           <!-- Delete Button mit Dropdown-Bestätigung -->
@@ -100,25 +86,13 @@
             </div>
           </div>
         </div>
-        
-        <!-- Rechte Seite: Mode Badge -->
-        <div class="flex items-center space-x-2">
-          <!-- Spending Mode Badge -->
-          <span 
-            class="px-2 py-0.5 text-xs rounded border flex items-center"
-            :class="spendingModeClass"
-            :title="`Spending mode: ${plan.spendingMode || 'manual'}`"
-          >
-            <component :is="spendingModeIcon" size="12" class="mr-1" />
-            {{ (plan.spendingMode || 'manual').charAt(0).toUpperCase() + (plan.spendingMode || 'manual').slice(1) }}
-          </span>
-        </div>
       </div>
     </div>
     
     <!-- Plan Stats -->
     <div class="px-4 py-3">
-      <div class="grid grid-cols-2 gap-3">
+
+      <div class="grid grid-cols-2 gap-3 mb-3">
         <!-- Total Budget -->
         <div class="stat-box">
           <div class="text-xs text-gray-400">Total Budget</div>
@@ -127,7 +101,15 @@
             {{ formatNumber(totalBudget) }}
           </div>
         </div>
-        
+
+        <!-- TRs Count -->
+        <div class="stat-box">
+          <div class="text-xs text-gray-400">TRs</div>
+          <div class="text-base font-semibold text-blue-400">{{ trCount }}</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
         <!-- Spent -->
         <div class="stat-box">
           <div class="text-xs text-gray-400">Spent</div>
@@ -145,26 +127,6 @@
             {{ formatNumber(totalBudget - totalSpent) }}
           </div>
         </div>
-        
-        <!-- Gems Upgraded -->
-        <div class="stat-box">
-          <div class="text-xs text-gray-400">Gems Upgraded</div>
-          <div class="text-base font-semibold text-blue-400 flex items-center">
-            <IconDiamond size="16" class="mr-1" />
-            {{ gemsUpgraded }}
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Progress & Info -->
-    <div class="px-4 py-3 bg-gray-800/40 border-t border-gray-700">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center text-xs text-gray-400">
-          <IconClock size="14" class="mr-1" />
-          <span>{{ budgetStatusText }}</span>
-        </div>
-        <div class="text-xs font-medium" :class="budgetStatusColor">{{ budgetUsagePercentage }}%</div>
       </div>
     </div>
   </div>
@@ -173,17 +135,10 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { 
-  IconCalendarEvent, 
   IconEdit, 
   IconTrash, 
-  IconClock,
   IconCopy,
-  IconShare,
   IconGripVertical,
-  IconDiamond,
-  IconEye,
-  IconTool,
-  IconRobot
 } from '@tabler/icons-vue';
 import { formatNumber } from '@/composables/format';
 
@@ -194,7 +149,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['click', 'load', 'edit', 'copy', 'share', 'delete']);
+const emit = defineEmits(['click', 'edit', 'copy', 'share', 'delete']);
 
 // Formatiertes Speicherdatum
 const formatPlanDate = computed(() => {
@@ -238,6 +193,12 @@ const totalBudget = computed(() => {
 
 // Total Spent über alle TRs
 const totalSpent = computed(() => {
+  // Use plan.totalSpent if available (from newer saved plans)
+  if (props.plan.totalSpent !== undefined && props.plan.totalSpent !== null) {
+    return props.plan.totalSpent;
+  }
+  
+  // Fallback to spentOrbs calculation for older plans
   let total = 0;
   if (props.plan.spentOrbs) {
     Object.values(props.plan.spentOrbs).forEach(trSpending => {
@@ -251,68 +212,19 @@ const totalSpent = computed(() => {
   return total;
 });
 
+// TR Count
+const trCount = computed(() => {
+  // Use maxTRReached if available, otherwise count trBudgets entries, fallback to 1
+  return props.plan.maxTRReached || 
+         (props.plan.trBudgets ? Object.keys(props.plan.trBudgets).length : 0) || 
+         props.plan.trCount || 
+         1;
+});
+
 // Budget Usage Percentage
 const budgetUsagePercentage = computed(() => {
   if (totalBudget.value === 0) return 0;
   return Math.round((totalSpent.value / totalBudget.value) * 100);
-});
-
-// Budget Status Text
-const budgetStatusText = computed(() => {
-  const percentage = budgetUsagePercentage.value;
-  if (percentage === 0) return 'No spending yet';
-  if (percentage < 50) return 'Light spending';
-  if (percentage < 75) return 'Moderate spending';
-  if (percentage < 90) return 'Heavy spending';
-  if (percentage < 100) return 'Almost fully spent';
-  return 'Budget exceeded';
-});
-
-// Budget Status Color
-const budgetStatusColor = computed(() => {
-  const percentage = budgetUsagePercentage.value;
-  if (percentage < 50) return 'text-green-400';
-  if (percentage < 75) return 'text-yellow-400';
-  if (percentage < 90) return 'text-orange-400';
-  if (percentage <= 100) return 'text-red-400';
-  return 'text-red-600';
-});
-
-// Spending Mode styling
-const spendingModeClass = computed(() => {
-  const mode = props.plan.spendingMode || 'manual';
-  if (mode === 'manual') {
-    return 'bg-orange-600/20 text-orange-300 border-orange-500/30';
-  } else {
-    return 'bg-green-600/20 text-green-300 border-green-500/30';
-  }
-});
-
-const spendingModeIcon = computed(() => {
-  const mode = props.plan.spendingMode || 'manual';
-  return mode === 'manual' ? IconTool : IconRobot;
-});
-
-// Gems Upgraded count
-const gemsUpgraded = computed(() => {
-  const upgradedGems = new Set();
-  
-  if (props.plan.trGemStates) {
-    Object.values(props.plan.trGemStates).forEach(trState => {
-      if (trState.levels) {
-        Object.entries(trState.levels).forEach(([gemId, level]) => {
-          if (level > 0) upgradedGems.add(gemId);
-        });
-      }
-      if (trState.upgrades) {
-        Object.keys(trState.upgrades).forEach(gemId => {
-          upgradedGems.add(gemId);
-        });
-      }
-    });
-  }
-  
-  return upgradedGems.size;
 });
 
 // Delete Confirmation State

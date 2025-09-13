@@ -93,6 +93,28 @@ export function useOrbOptimizer() {
       
       if (nextLevelCost === 0 || currentLevel >= upgrade.maxLevel) return { value: 0, efficiency: 0 };
       
+      // Calculate multiplier improvement FIRST (same logic as in GemPlannerModal)
+      const currentMultiplier = getPlanCurrentMultiplier(gemId, upgradeId, gameStats, getPlanGemLevel, getPlanUpgradeLevel);
+      
+      // Simulate next level multiplier
+      const nextLevel = currentLevel + 1;
+      const gemLevel = getPlanGemLevel(gemId);
+      
+      let nextMultiplier = 1;
+      try {
+        const functionString = upgrade.multiplier.calculate.toString();
+        const expectsGameStats = functionString.includes('gameStats') || functionString.includes('level, gemLevel,') || functionString.includes('level,gemLevel,');
+        
+        if (expectsGameStats && gameStats) {
+          nextMultiplier = upgrade.multiplier.calculate(nextLevel, gemLevel, gameStats);
+        } else {
+          nextMultiplier = upgrade.multiplier.calculate(nextLevel, gemLevel);
+        }
+      } catch (error) {
+        console.warn(`Error calculating next multiplier for ${gemId}/${upgradeId}:`, error);
+        return { value: 0, efficiency: 0 };
+      }
+
       // Get weight value (same logic as in GemPlannerModal calculateUpgradeEfficiency)
       let weightValue = 0;
       if (upgrade.weight) {
@@ -114,28 +136,19 @@ export function useOrbOptimizer() {
         }
       }
       
-      if (weightValue === 0) return { value: 0, efficiency: 0 };
-      
-      // Calculate multiplier improvement (same logic as in GemPlannerModal)
-      const currentMultiplier = getPlanCurrentMultiplier(gemId, upgradeId, gameStats, getPlanGemLevel, getPlanUpgradeLevel);
-      
-      // Simulate next level multiplier
-      const nextLevel = currentLevel + 1;
-      const gemLevel = getPlanGemLevel(gemId);
-      
-      let nextMultiplier = 1;
-      try {
-        const functionString = upgrade.multiplier.calculate.toString();
-        const expectsGameStats = functionString.includes('gameStats') || functionString.includes('level, gemLevel,') || functionString.includes('level,gemLevel,');
+      if (weightValue === 0) {
+        // Fallback: If no weight is defined, use a basic efficiency calculation
+        // This ensures upgrades without weights can still be purchased
+        const improvement = nextMultiplier > currentMultiplier ? nextMultiplier / Math.max(currentMultiplier, 1) : 0;
+        if (improvement <= 1) return { value: 0, efficiency: 0 };
         
-        if (expectsGameStats && gameStats) {
-          nextMultiplier = upgrade.multiplier.calculate(nextLevel, gemLevel, gameStats);
-        } else {
-          nextMultiplier = upgrade.multiplier.calculate(nextLevel, gemLevel);
-        }
-      } catch (error) {
-        console.warn(`Error calculating next multiplier for ${gemId}/${upgradeId}:`, error);
-        return { value: 0, efficiency: 0 };
+        // Use log improvement as value with a default weight of 1
+        const logImprovement = Math.log10(improvement);
+        const fallbackValue = logImprovement * 1; // Default weight = 1
+        const scalingFactor = Math.pow(10, efficiencyScaling);
+        const fallbackEfficiency = (fallbackValue / nextLevelCost) * scalingFactor;
+        
+        return { value: fallbackValue, efficiency: fallbackEfficiency };
       }
       
       // Calculate improvement using Decimal for large numbers (same as GemPlannerModal)
@@ -191,7 +204,17 @@ export function useOrbOptimizer() {
       }
       
       // Value = LOG10(improvement) * weight (same as GemPlannerModal)
-      const logImprovement = improvement > 0 ? Math.log10(improvement) : 0;
+      // Special handling for LP resource: use log10(2^(improvement/10)) instead of log10(improvement)
+      let logImprovement;
+      if (upgrade.resource === 'LP') {
+        // For LP upgrades: log10(2^(improvement/10))
+        const exponent = improvement / 10;
+        const baseValue = Math.pow(2, exponent);
+        logImprovement = baseValue > 0 ? Math.log10(baseValue) : 0;
+      } else {
+        // Standard calculation for all other resources
+        logImprovement = improvement > 0 ? Math.log10(improvement) : 0;
+      }
       const value = logImprovement * weightValue;
       
       // Efficiency with configurable scaling: (value / cost) * 10^scalingFactor
@@ -219,7 +242,14 @@ export function useOrbOptimizer() {
     const currentLevel = getPlanUpgradeLevel(gemId, upgradeId);
     const gemLevel = getPlanGemLevel(gemId);
     
-    if (currentLevel === 0) return 1;
+    if (currentLevel === 0) {
+      // For additive upgrades, level 0 means 0 contribution, not 1
+      if (upgrade.type === 'additive') {
+        return 0;
+      } else {
+        return 1; // Multiplicative upgrades start at 1
+      }
+    }
     
     try {
       const functionString = upgrade.multiplier.calculate.toString();
@@ -253,6 +283,115 @@ export function useOrbOptimizer() {
       return 1;
     }
   }
+  
+  /**
+   * Calculate the efficiency of a gem level upgrade by considering its impact on ALL upgrades in that gem
+   */
+  function calculateGemLevelEfficiency(gem, currentGemLevel, gemLevelCost, weights, getPlanGemLevel, getPlanUpgradeLevel) {
+    let totalEfficiencyGain = 0;
+    
+    // Check if gem has upgrades that benefit from gem level
+    if (gem.upgrades && gem.upgrades.length > 0) {
+      const nextGemLevel = currentGemLevel + 1;
+      
+      // Calculate improvement for each upgrade in this gem
+      gem.upgrades.forEach(upgrade => {
+        const currentUpgradeLevel = getPlanUpgradeLevel(gem.id, upgrade.id);
+        
+        // Only consider upgrades that are currently purchased (level > 0)
+        if (currentUpgradeLevel > 0) {
+          try {
+            // Calculate current multiplier at current gem level
+            const currentMultiplier = upgrade.multiplier.calculate(currentUpgradeLevel, currentGemLevel);
+            
+            // Calculate multiplier at next gem level (same upgrade level, higher gem level)
+            const nextMultiplier = upgrade.multiplier.calculate(currentUpgradeLevel, nextGemLevel);
+            
+            // Calculate the improvement factor
+            let improvementFactor = 1;
+            if (currentMultiplier && nextMultiplier) {
+              // Handle Decimal objects
+              let currentValue, nextValue;
+              
+              if (typeof currentMultiplier === 'object' && currentMultiplier.mantissa !== undefined) {
+                currentValue = new Decimal(currentMultiplier.mantissa).mul(new Decimal(10).pow(currentMultiplier.exponent));
+              } else {
+                currentValue = new Decimal(currentMultiplier);
+              }
+              
+              if (typeof nextMultiplier === 'object' && nextMultiplier.mantissa !== undefined) {
+                nextValue = new Decimal(nextMultiplier.mantissa).mul(new Decimal(10).pow(nextMultiplier.exponent));
+              } else {
+                nextValue = new Decimal(nextMultiplier);
+              }
+              
+              if (currentValue.gt(0)) {
+                improvementFactor = nextValue.div(currentValue).toNumber();
+              }
+            }
+            
+            // Get weight for this upgrade
+            let weightValue = 0;
+            if (upgrade.weight && weights) {
+              if (typeof upgrade.weight === 'string') {
+                const weightMapping = {
+                  'Cells': 'cells', 'MP': 'mp', 'Shards': 'shards',
+                  'RP': 'rp', 'AP': 'ap', 'Mats': 'mats', 'Orbs': 'orbs'
+                };
+                const weightKey = weightMapping[upgrade.weight] || upgrade.weight.toLowerCase();
+                weightValue = weights[weightKey] || 0;
+              } else if (upgrade.weight.calculate) {
+                weightValue = upgrade.weight.calculate(weights);
+              }
+            }
+            
+            // If no weight, use fallback weight of 1
+            if (weightValue === 0) {
+              weightValue = 1;
+            }
+            
+            // Calculate value gain: log(improvement) * weight * upgrade_level
+            if (improvementFactor > 1) {
+              const logImprovement = Math.log10(improvementFactor);
+              const valueGain = logImprovement * weightValue * currentUpgradeLevel;
+              totalEfficiencyGain += valueGain;
+            }
+            
+          } catch (error) {
+            console.warn(`Error calculating gem level impact for ${gem.id}/${upgrade.id}:`, error);
+          }
+        }
+      });
+    }
+    
+    // Fallback: if no upgrades benefit or no efficiency gain, use basic weight-based efficiency
+    if (totalEfficiencyGain === 0) {
+      let weightValue = 0;
+      if (weights && gem.weight) {
+        if (typeof gem.weight === 'string') {
+          const weightMapping = {
+            'Cells': 'cells', 'MP': 'mp', 'Shards': 'shards',
+            'RP': 'rp', 'AP': 'ap', 'Mats': 'mats', 'Orbs': 'orbs'
+          };
+          const weightKey = weightMapping[gem.weight] || gem.weight.toLowerCase();
+          weightValue = weights[weightKey] || 0;
+        } else if (gem.weight.calculate) {
+          weightValue = gem.weight.calculate(weights);
+        }
+      }
+      
+      // Use weight or fallback to basic efficiency
+      if (weightValue > 0) {
+        totalEfficiencyGain = weightValue;
+      } else {
+        totalEfficiencyGain = 1; // Minimum fallback
+      }
+    }
+    
+    // Apply scaling factor (same as upgrade efficiency)
+    const scalingFactor = Math.pow(10, 10); // Default efficiency scaling
+    return (totalEfficiencyGain / gemLevelCost) * scalingFactor;
+  }
 
   /**
    * Main optimization function - IMPROVED VERSION
@@ -284,7 +423,7 @@ export function useOrbOptimizer() {
       let totalSpent = 0;
       let availableOrbs = budget;
       let iteration = 0;
-      const maxIterations = 1000;
+      const maxIterations = 10000;
       
       profiler.start('Initial Setup');
       
@@ -309,6 +448,7 @@ export function useOrbOptimizer() {
         
         // Collect all available upgrades with efficiency calculation
         const allUpgrades = [];
+        const zeroEfficiencyUpgrades = []; // Store upgrades with no efficiency for fallback
         
         for (const gem of GEM_LIST) {
           const gemLevel = getPlanGemLevel(gem.id);
@@ -327,7 +467,21 @@ export function useOrbOptimizer() {
                   if (!batchUpgradeKeys.has(upgradeKey)) {
                     const cost = getPlanUpgradeNextLevelCost(gem.id, upgrade.id);
                     
-                    if (cost > 0) {
+                    // Include free upgrades (cost = 0 or null) with maximum efficiency
+                    if (cost >= 0 || cost === null) {
+                      if (cost === 0 || cost === null) {
+                        // Free upgrades get maximum priority
+                        allUpgrades.push({
+                          gemId: gem.id,
+                          upgradeId: upgrade.id,
+                          gemName: gem.name,
+                          upgradeName: upgrade.name,
+                          currentLevel: getPlanUpgradeLevel(gem.id, upgrade.id),
+                          cost: 0,
+                          efficiency: Number.MAX_SAFE_INTEGER,
+                          type: 'gem_upgrade'
+                        });
+                      } else {
                       // Use the improved efficiency calculation that matches GemPlannerModal
                       const efficiencyResult = calculateUpgradeEfficiency(
                         gem.id,
@@ -351,6 +505,19 @@ export function useOrbOptimizer() {
                           efficiency: efficiencyResult.efficiency,
                           type: 'upgrade'
                         });
+                      } else {
+                        // Store zero-efficiency upgrades for potential fallback consideration
+                        zeroEfficiencyUpgrades.push({
+                          gemId: gem.id,
+                          upgradeId: upgrade.id,
+                          gemName: gem.name,
+                          upgradeName: upgrade.name,
+                          currentLevel,
+                          cost,
+                          efficiency: 0,
+                          type: 'upgrade'
+                        });
+                      }
                       }
                     }
                   }
@@ -366,32 +533,22 @@ export function useOrbOptimizer() {
             
             if (!batchUpgradeKeys.has(upgradeKey)) {
               const qualityCost = gem.qualityCosts.find(cost => cost.level === currentGemLevel + 1);
-              if (qualityCost && qualityCost.cost > 0) {
-                // Enhanced efficiency calculation for gem levels using weight if available
-                let efficiency = 1 / qualityCost.cost; // Basic efficiency
-                
-                // Check if gem has a weight for gem levels
-                if (weights && gem.weight) {
-                  let weightValue = 0;
-                  if (typeof gem.weight === 'string') {
-                    const weightMapping = {
-                      'Cells': 'cells',
-                      'MP': 'mp', 
-                      'Shards': 'shards',
-                      'RP': 'rp',
-                      'AP': 'ap',
-                      'Mats': 'mats'
-                    };
-                    const weightKey = weightMapping[gem.weight] || gem.weight.toLowerCase();
-                    weightValue = weights[weightKey] || 0;
-                  } else if (gem.weight.calculate) {
-                    weightValue = gem.weight.calculate(weights);
-                  }
-                  
-                  if (weightValue > 0) {
-                    efficiency = weightValue / qualityCost.cost;
-                  }
-                }
+              if (qualityCost && qualityCost.cost !== undefined) {
+                if (qualityCost.cost === 0 || qualityCost.cost === null) {
+                  // Free gem level upgrades get maximum priority
+                  allUpgrades.push({
+                    gemId: gem.id,
+                    upgradeId: '_gem_level',
+                    gemName: gem.name,
+                    upgradeName: 'Gem Quality',
+                    currentLevel: currentGemLevel,
+                    cost: 0,
+                    efficiency: Number.MAX_SAFE_INTEGER,
+                    type: 'gem_level'
+                  });
+                } else {
+                  // Enhanced efficiency calculation for gem levels - consider impact on ALL upgrades
+                  let efficiency = calculateGemLevelEfficiency(gem, currentGemLevel, qualityCost.cost, weights, getPlanGemLevel, getPlanUpgradeLevel);
                 
                 allUpgrades.push({
                   gemId: gem.id,
@@ -403,6 +560,7 @@ export function useOrbOptimizer() {
                   efficiency,
                   type: 'gem_level'
                 });
+                }
               }
             }
           }
@@ -410,15 +568,21 @@ export function useOrbOptimizer() {
           // Gem nodes (toggles) - like row 53 in Apps Script
           if (gem.gemNodes && gem.gemNodes.length > 0) {
             gem.gemNodes.forEach((node, nodeIndex) => {
-              if (node.cost && node.cost > 0) {
+              // Include all nodes - cost 0 or null nodes have infinite efficiency (highest priority)
+              if (node.cost !== undefined) {
                 const upgradeKey = `${gem.id}_node_${nodeIndex}`;
                 
                 if (!batchUpgradeKeys.has(upgradeKey) && !hasPlanGemNode(gem.id, nodeIndex)) {
-                  // Higher priority efficiency for nodes (like toggles in Apps Script)
-                  let efficiency = 2 / node.cost; // Base priority multiplier
+                  // Free nodes (cost = 0 or null) get maximum efficiency priority
+                  let efficiency = (node.cost === 0 || node.cost === null) ? Number.MAX_SAFE_INTEGER : 2 / node.cost;
                   
-                  // Apply weights if available for gem nodes
-                  if (weights && node.weight) {
+                  // DEBUG: Log free nodes
+                  if (node.cost === 0 || node.cost === null) {
+                    console.log(`🆓 Found FREE NODE: ${gem.name} Node ${nodeIndex + 1}, cost: ${node.cost}, efficiency: ${efficiency}, hasNode: ${hasPlanGemNode(gem.id, nodeIndex)}`);
+                  }
+                  
+                  // Apply weights if available for gem nodes (only for non-free nodes)
+                  if (weights && node.weight && node.cost > 0) {
                     let weightValue = 0;
                     if (typeof node.weight === 'string') {
                       const weightMapping = {
@@ -459,13 +623,53 @@ export function useOrbOptimizer() {
         
         profiler.end(`Iteration ${iteration} - Collect Upgrades`);
         
+        // Fallback logic: Add zero-efficiency upgrades if they are 1000x cheaper than cheapest efficient upgrade
+        if (zeroEfficiencyUpgrades.length > 0 && allUpgrades.length > 0) {
+          // Find cheapest upgrade with efficiency
+          const cheapestEfficientUpgrade = allUpgrades.reduce((cheapest, upgrade) => 
+            upgrade.cost < cheapest.cost ? upgrade : cheapest
+          );
+          
+          const fallbackThreshold = cheapestEfficientUpgrade.cost / 1000;
+          
+          // Add zero-efficiency upgrades that are cheaper than threshold
+          const fallbackUpgrades = zeroEfficiencyUpgrades.filter(upgrade => 
+            upgrade.cost <= fallbackThreshold
+          ).map(upgrade => ({
+            ...upgrade,
+            efficiency: 0.001 / upgrade.cost // Very low but non-zero efficiency
+          }));
+          
+          if (fallbackUpgrades.length > 0) {
+            console.log(`💡 Adding ${fallbackUpgrades.length} fallback upgrades (cost ≤ ${formatNumber(fallbackThreshold)}):`, 
+              fallbackUpgrades.map(u => `${u.gemName}/${u.upgradeName} (${formatNumber(u.cost)})`));
+            allUpgrades.push(...fallbackUpgrades);
+          }
+        }
+        
         // Find best affordable upgrade (like Apps Script)
         profiler.start(`Iteration ${iteration} - Find Best Upgrade`);
         const bestUpgrade = findBestAffordableUpgrade(allUpgrades, availableOrbs);
         profiler.end(`Iteration ${iteration} - Find Best Upgrade`);
         
+        // DEBUG: Log upgrade search results
+        if (iteration <= 5 || iteration % 1000 === 0) {
+          console.log(`DEBUG Iteration ${iteration}:`, {
+            totalUpgrades: allUpgrades.length,
+            availableOrbs: formatNumber(availableOrbs),
+            bestUpgrade: bestUpgrade ? {
+              name: `${bestUpgrade.gemName}/${bestUpgrade.upgradeName}`,
+              cost: formatNumber(bestUpgrade.cost),
+              efficiency: bestUpgrade.efficiency.toFixed(3),
+              currentLevel: bestUpgrade.currentLevel,
+              upgradeKey: `${bestUpgrade.gemId}_${bestUpgrade.upgradeId}`
+            } : null,
+            batchSize: batchPurchases.length
+          });
+        }
+        
         if (!bestUpgrade) {
-          console.log('Optimization complete - no more affordable upgrades found.');
+          console.log(`Optimization complete - no more affordable upgrades found at iteration ${iteration}.`);
           break;
         }
         
@@ -520,10 +724,23 @@ export function useOrbOptimizer() {
           return upgrade.cost <= availableOrbs && !batchUpgradeKeys.has(upgradeKey);
         }), availableOrbs);
         
-        const shouldFlush = batchUpgradeKeys.size >= 5 || noNewUpgrades || iteration >= maxIterations;
+        const shouldFlush = batchUpgradeKeys.size >= 1 || noNewUpgrades || iteration >= maxIterations; // CHANGED: Flush after every purchase
+        
+        // DEBUG: Log batch flush decision
+        if (iteration <= 5 || iteration % 1000 === 0 || shouldFlush) {
+          console.log(`DEBUG Batch ${iteration}:`, {
+            batchSize: batchUpgradeKeys.size,
+            batchPurchases: batchPurchases.length,
+            noNewUpgrades,
+            shouldFlush,
+            maxIterations: iteration >= maxIterations
+          });
+        }
         
         if (shouldFlush && batchPurchases.length > 0) {
           profiler.start(`Iteration ${iteration} - Batch Flush`);
+          
+          console.log(`🔥 FLUSHING BATCH: ${batchPurchases.length} purchases at iteration ${iteration}`);
           
           // Apply all batch purchases to plan state
           for (const purchase of batchPurchases) {
@@ -614,6 +831,12 @@ export function useOrbOptimizer() {
     let bestUpgrade = null;
     let bestEfficiency = 0;
     
+    // DEBUG: Log free upgrades
+    const freeUpgrades = upgrades.filter(u => u.cost === 0);
+    if (freeUpgrades.length > 0) {
+      console.log(`🆓 Found ${freeUpgrades.length} FREE upgrades:`, freeUpgrades.map(u => `${u.gemName}/${u.upgradeName} (${u.efficiency})`));
+    }
+    
     for (const upgrade of upgrades) {
       if (upgrade.cost > availableOrbs) continue;
       
@@ -621,6 +844,11 @@ export function useOrbOptimizer() {
         bestEfficiency = upgrade.efficiency;
         bestUpgrade = upgrade;
       }
+    }
+    
+    // DEBUG: Log selected upgrade
+    if (bestUpgrade && bestUpgrade.cost === 0) {
+      console.log(`🎯 SELECTED FREE UPGRADE: ${bestUpgrade.gemName}/${bestUpgrade.upgradeName}`);
     }
     
     return bestUpgrade;
@@ -684,6 +912,7 @@ export function useOrbOptimizer() {
     optimizeGemPurchases,
     resetAllUpgrades,
     calculateUpgradeEfficiency,
+    calculateGemLevelEfficiency,
     formatEfficiency,
     formatValue
   };

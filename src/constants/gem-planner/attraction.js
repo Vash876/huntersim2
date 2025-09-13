@@ -26,9 +26,9 @@ export const ATTRACTION_GEM = {
     { node: 2, cost: 2e5 },
     { node: 3, cost: 6e4 },
     // New nodes unlocked when Exodus reaches level 5
-    { node: 4, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 5, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 6, cost: 0, unlockRequirement: 'exodus-5' }
+    { node: 4, cost: 1.1e14, unlockRequirement: 'exodus-5' },
+    { node: 5, cost: 1e20, unlockRequirement: 'exodus-5' },
+    { node: 6, cost: 1e24, unlockRequirement: 'exodus-5' }
   ],
   
   // Upgrades available in this gem
@@ -38,6 +38,7 @@ export const ATTRACTION_GEM = {
       name: 'Borge Loot Bonus',
       hunter: true,
       resource: 'Borge',
+      weight : 'Borge',
       baseCost: 5,
       costMultiplier: 2.5,
       maxLevel: 50,
@@ -65,6 +66,7 @@ export const ATTRACTION_GEM = {
       name: 'Ozzy Loot Bonus',
       hunter: true,
       resource: 'Ozzy',
+      weight : 'Ozzy',
       baseCost: 20,
       costMultiplier: 2.5,
       maxLevel: 50,
@@ -92,6 +94,13 @@ export const ATTRACTION_GEM = {
       name: 'Catch Up Power',
       hunter: true,
       resource: 'Hunter',
+      weight: {
+        calculate: (weights) => {
+          const borgeWeight = weights.borge || 0;
+          const ozzyWeight = weights.ozzy || 0;
+          return (borgeWeight + ozzyWeight) / 25;
+        }
+      },
       baseCost: 1,
       costMultiplier: 100,
       maxLevel: 5,

@@ -6,7 +6,7 @@ import Decimal from 'break_infinity.js';
 export const EXODUS_GEM = {
   id: 'exodus',
   name: 'Exodus',
-  maxLevel: 4,
+  maxLevel: 5,
   color: {
     primary: '#8b5cf6', // Purple
     secondary: '#ec4899', // Pink
@@ -24,12 +24,12 @@ export const EXODUS_GEM = {
 
   // Gem Nodes (6 new nodes unlocked at level 5)
   gemNodes: [
-    { node: 1, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 2, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 3, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 4, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 5, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 6, cost: 0, unlockRequirement: 'exodus-5' }
+    { node: 1, cost: 1e14, unlockRequirement: 'exodus-5' },
+    { node: 2, cost: 1e15, unlockRequirement: 'exodus-5' },
+    { node: 3, cost: 1e16, unlockRequirement: 'exodus-5' },
+    { node: 4, cost: 1e17, unlockRequirement: 'exodus-5' },
+    { node: 5, cost: 1e19, unlockRequirement: 'exodus-5' },
+    { node: 6, cost: 1e21, unlockRequirement: 'exodus-5' }
   ],
   
   // Upgrades available in this gem
@@ -150,6 +150,57 @@ export const EXODUS_GEM = {
           const levelDecimal = new Decimal(level);
           const exodusLevelDecimal = new Decimal(exodusLevel);
           const innerBase = new Decimal(1.6).pow(levelDecimal); // Math.pow(1.6, level)
+          const outerExponent = new Decimal(1).add(exodusLevelDecimal.mul(0.1)).sub(0.1); // 1 + (exodusLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
+        }
+      }
+    },
+    {
+      id: 'mats-bonus',
+      name: 'Materials Bonus',
+      weight: 'Mats',
+      baseCost: 1e9,
+      costMultiplier: 2.2,
+      maxLevel: 999,
+      color: '#8b5a3c',
+      unlock: 5,
+      costBumps: [
+        { startLevel: 14, multiplier: 1.1 },
+        { startLevel: 29, multiplier: 1.2 },
+        { startLevel: 39, multiplier: 1.3 }
+      ], 
+      multiplier: {
+        calculate: (level, exodusLevel) => {
+          const levelDecimal = new Decimal(level);
+          const exodusLevelDecimal = new Decimal(exodusLevel);
+          const innerBase = new Decimal(1.4).pow(levelDecimal); // Math.pow(1.6, level)
+          const outerExponent = new Decimal(1).add(exodusLevelDecimal.mul(0.1)).sub(0.1); // 1 + (exodusLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
+        }
+      }
+    },
+    {
+      id: 'orbs-bonus',
+      name: 'Orbs Bonus',
+      weight: 'Orbs',
+      baseCost: 1e12,
+      costMultiplier: 150,
+      maxLevel: 999,
+      color: '#BA88FC',
+      unlock: 5,
+      costBumps: [
+        { startLevel: 1, multiplier: 0.04 },
+        { startLevel: 2, multiplier: 0.5 },
+        { startLevel: 4, multiplier: 1.1 },
+        { startLevel: 9, multiplier: 1.1 },
+        { startLevel: 14, multiplier: 1.1 },
+        { startLevel: 19, multiplier: 1.1 },
+      ], 
+      multiplier: {
+        calculate: (level, exodusLevel) => {
+          const levelDecimal = new Decimal(level);
+          const exodusLevelDecimal = new Decimal(exodusLevel);
+          const innerBase = new Decimal(1.1).pow(levelDecimal); // Math.pow(1.6, level)
           const outerExponent = new Decimal(1).add(exodusLevelDecimal.mul(0.1)).sub(0.1); // 1 + (exodusLevel * 0.1) - 0.1
           return innerBase.pow(outerExponent);
         }

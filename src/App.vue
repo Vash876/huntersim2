@@ -23,11 +23,11 @@ onMounted(async () => {
     gemPlannerStore.init();
     await gemPlanningStore.init();
     
-    // Note: TR Tracking store is NOT initialized here on purpose
-    // It will be initialized when the TR Tracking page is visited
-    // This allows backup restore to work properly by setting store data first
+    // CRITICAL: TR Tracking store MUST be initialized on app start
+    // Otherwise cloud save/load will destroy data if user never visited TR page
+    await trTrackingStore.init();
     
-    console.log('✅ Core stores initialized successfully');
+    console.log('✅ All stores initialized successfully (including TR Tracking)');
   } catch (error) {
     console.error('Store initialization failed:', error);
   }

@@ -34,7 +34,7 @@
             </h3>
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-1 sm:gap-1.5">
               <div 
-                v-for="stat in GAME_STATS_CONFIG.progression.stats" 
+                v-for="(stat, index) in GAME_STATS_CONFIG.progression.stats" 
                 :key="stat.id"
                 class="bg-gray-700/60 rounded p-1 sm:p-1.5"
               >
@@ -51,6 +51,7 @@
                   :show-fast-controls="true"
                   :autoEdit="true"
                   value-class="text-white text-xs"
+                  :tab-index="getProgressionTabIndex(index)"
                 />
               </div>
             </div>
@@ -67,7 +68,7 @@
               </h3>
               <div class="space-y-1.5 sm:space-y-2">
                 <div 
-                  v-for="stat in GAME_STATS_CONFIG.rank.stats" 
+                  v-for="(stat, index) in GAME_STATS_CONFIG.rank.stats" 
                   :key="stat.id"
                   class="bg-gray-700/60 rounded p-1 sm:p-1.5"
                 >
@@ -77,12 +78,13 @@
                   <ToolValueControls
                     :value="gameStats[stat.id] || 0"
                     :min-value="0"
-                    :max-value="999"
-                    :step="1"
-                    :fast-step="10"
+                    :max-value="stat.max || 9999"
+                    :step="stat.step || 1"
+                    :fast-step="stat.faststep || 100"
                     @update:value="updateStat(stat.id, $event)"
                     :show-fast-controls="true"
                     :autoEdit="true"
+                    :tab-index="getTabIndex('rank', index)"
                   />
                 </div>
               </div>
@@ -96,7 +98,7 @@
               </h3>
               <div class="space-y-1.5 sm:space-y-2">
                 <div 
-                  v-for="stat in GAME_STATS_CONFIG.crew.stats" 
+                  v-for="(stat, index) in GAME_STATS_CONFIG.crew.stats" 
                   :key="stat.id"
                   class="bg-gray-700/60 rounded p-1 sm:p-1.5"
                 >
@@ -106,12 +108,13 @@
                   <ToolValueControls
                     :value="gameStats[stat.id] || 0"
                     :min-value="0"
-                    :max-value="9999"
-                    :step="1"
-                    :fast-step="100"
+                    :max-value="stat.max || 9999"
+                    :step="stat.step || 1"
+                    :fast-step="stat.faststep || 100"
                     @update:value="updateStat(stat.id, $event)"
                     :show-fast-controls="true"
                     :autoEdit="true"
+                    :tab-index="getTabIndex('crew', index)"
                   />
                 </div>
               </div>
@@ -192,6 +195,31 @@ function updateStat(statId, value) {
   gemPlannerStore.updateGameStat(statId, value)
   updateLastUpdated()
   emit('stats-updated', gameStats.value)
+}
+
+// Get tab index for progression stats (starts at 1)
+function getProgressionTabIndex(index) {
+  return index + 1
+}
+
+// Calculate tab index for intelligent ship navigation
+// Progression stats: 1, 2, 3, ..., N
+// Ship stats: N+1, N+2, N+3, ... (rank/crew alternating)
+function getTabIndex(type, index) {
+  // Calculate base offset: total progression stats + 1
+  const progressionStatsCount = GAME_STATS_CONFIG.progression.stats.length
+  const baseOffset = progressionStatsCount
+  
+  // Each ship pair gets 2 consecutive numbers: rank then crew
+  const shipPairIndex = index * 2
+  
+  if (type === 'rank') {
+    // Rank gets the odd position within ship stats: baseOffset + 1, baseOffset + 3, baseOffset + 5, etc.
+    return baseOffset + shipPairIndex + 1
+  } else { // crew
+    // Crew gets the even position within ship stats: baseOffset + 2, baseOffset + 4, baseOffset + 6, etc.
+    return baseOffset + shipPairIndex + 2
+  }
 }
 
 // Quick actions

@@ -694,154 +694,98 @@ function handleFileUpload(event) {
 }
 
 // Reset all data
-function resetAllData() {
+async function resetAllData() {
   try {
-    // 1. Hunter Store zurücksetzen
-    Object.keys(hunterStore.$state).forEach(key => {
-      if (key === 'evaluationCache') {
-        hunterStore.$state[key] = {};
-      } else if (Array.isArray(hunterStore.$state[key])) {
-        hunterStore.$state[key] = [];
-      } else if (typeof hunterStore.$state[key] === 'object' && hunterStore.$state[key] !== null) {
-        hunterStore.$state[key] = {};
-      } else {
-        hunterStore.$state[key] = null;
-      }
+    console.log('Starting complete data reset...');
+    
+    // 1. Stores zurücksetzen (behalten die Struktur bei)
+    const stores = [hunterStore, trPlannerStore, ultimaStore, gemPlannerStore, inscryptionPlannerStore, syncStore];
+    
+    stores.forEach(store => {
+      Object.keys(store.$state).forEach(key => {
+        if (key === 'evaluationCache') {
+          store.$state[key] = {};
+        } else if (Array.isArray(store.$state[key])) {
+          store.$state[key] = [];
+        } else if (typeof store.$state[key] === 'object' && store.$state[key] !== null) {
+          store.$state[key] = {};
+        } else {
+          store.$state[key] = null;
+        }
+      });
     });
     
-    // 2. TR-Planner Store zurücksetzen
-    Object.keys(trPlannerStore.$state).forEach(key => {
-      if (Array.isArray(trPlannerStore.$state[key])) {
-        trPlannerStore.$state[key] = [];
-      } else if (typeof trPlannerStore.$state[key] === 'object' && trPlannerStore.$state[key] !== null) {
-        trPlannerStore.$state[key] = {};
-      } else {
-        trPlannerStore.$state[key] = null;
-      }
-    });
-    
-    // 3. TR-Tracking Store zurücksetzen
+    // TR-Tracking Store hat spezielle clearAllData Methode
     trTrackingStore.clearAllData();
     
-    // 4. Ultima Calculator Store zurücksetzen
-    Object.keys(ultimaStore.$state).forEach(key => {
-      if (Array.isArray(ultimaStore.$state[key])) {
-        ultimaStore.$state[key] = [];
-      } else if (typeof ultimaStore.$state[key] === 'object' && ultimaStore.$state[key] !== null) {
-        ultimaStore.$state[key] = {};
-      } else {
-        ultimaStore.$state[key] = null;
-      }
-    });
+    // 2. Kompletten localStorage löschen
+    console.log('Clearing localStorage...');
+    localStorage.clear();
     
-    // 5. Gem Planner Store zurücksetzen
-    Object.keys(gemPlannerStore.$state).forEach(key => {
-      if (Array.isArray(gemPlannerStore.$state[key])) {
-        gemPlannerStore.$state[key] = [];
-      } else if (typeof gemPlannerStore.$state[key] === 'object' && gemPlannerStore.$state[key] !== null) {
-        gemPlannerStore.$state[key] = {};
-      } else {
-        gemPlannerStore.$state[key] = null;
-      }
-    });
-    
-    // 6. Inscryption Planner Store zurücksetzen
-    Object.keys(inscryptionPlannerStore.$state).forEach(key => {
-      if (Array.isArray(inscryptionPlannerStore.$state[key])) {
-        inscryptionPlannerStore.$state[key] = [];
-      } else if (typeof inscryptionPlannerStore.$state[key] === 'object' && inscryptionPlannerStore.$state[key] !== null) {
-        inscryptionPlannerStore.$state[key] = {};
-      } else {
-        inscryptionPlannerStore.$state[key] = null;
-      }
-    });
-    
-    // 7. Sync Store zurücksetzen
-    Object.keys(syncStore.$state).forEach(key => {
-      if (Array.isArray(syncStore.$state[key])) {
-        syncStore.$state[key] = [];
-      } else if (typeof syncStore.$state[key] === 'object' && syncStore.$state[key] !== null) {
-        syncStore.$state[key] = {};
-      } else {
-        syncStore.$state[key] = null;
-      }
-    });
-    
-    // 8. Tool-spezifische localStorage-Einträge löschen
-    // Gadget Calculator
-    localStorage.removeItem('gadgetCalculator_currentLevels');
-    localStorage.removeItem('gadgetCalculator_targetLevels');
-    localStorage.removeItem('gadgetCalculator_referenceBuildId');
-    
-    // Mech Planner
-    localStorage.removeItem('mechPlanner_settings');
-    
-    // AttrGN3 Calculator
-    localStorage.removeItem('attrGN3Calculator_settings');
-    
-    // TS Planner
-    localStorage.removeItem('traitSpherePlanner_settings');
-    
-    // Research Overview
-    localStorage.removeItem('researchOverview_filters');
-    
-    // Loop Mod Overview
-    localStorage.removeItem('loopModOverview_filters');
-    
-    // M0 Cost Overview
-    localStorage.removeItem('m0CostOverview_filters');
-    
-    // Inscryption Planner
-    localStorage.removeItem('inscryption-shopping-list');
-    localStorage.removeItem('inscryption-owned');
-    localStorage.removeItem('inscryption-planner-settings');
-    localStorage.removeItem('inscryption-planner-selectedBuildId');
-    
-    // TR Planner
-    localStorage.removeItem('trPlanOrderIds');
-    localStorage.removeItem('tr-planner-data');
-    localStorage.removeItem('trplanner_userstats');
-    localStorage.removeItem('gemData');
-    
-    // TR Tracking
-    localStorage.removeItem('tr_tracking_selected_resources');
-    localStorage.removeItem('tr_tracking_tracks');
-    localStorage.removeItem('tr_tracking_custom_resources');
-    localStorage.removeItem('tr_data_migration_completed');
-    
-    // Gems und andere UI-Einstellungen
-    localStorage.removeItem('gems_showOnlySimRelevant');
-    localStorage.removeItem('fragments_per_day');
-    localStorage.removeItem('huntersim_high_iterations_mode');
-    
-    // Override Modal Settings
-    localStorage.removeItem('hideMaxedUpgrades');
-    
-    // Alle TR-Planner-Pläne und Hunter-Filter löschen
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('tr-plan-') || 
-          key.startsWith('lootFilters_') ||
-          key.startsWith('huntersim_cache_')) {
-        localStorage.removeItem(key);
-      }
-    });
-    
-    // IndexedDB komplett löschen (falls vorhanden)
-    if ('indexedDB' in window) {
+    // 3. Alle IndexedDB Datenbanken finden und löschen
+    console.log('Clearing IndexedDB...');
+    if ('indexedDB' in window && indexedDB.databases) {
       try {
-        // TR Tracking Database löschen
-        indexedDB.deleteDatabase('TRTrackingDB');
-        console.log('IndexedDB TRTrackingDB deleted');
+        const databases = await indexedDB.databases();
+        console.log('Found databases:', databases.map(db => db.name));
+        
+        // Alle gefundenen Datenbanken löschen
+        await Promise.all(
+          databases.map(db => {
+            return new Promise((resolve, reject) => {
+              console.log(`Deleting database: ${db.name}`);
+              const deleteReq = indexedDB.deleteDatabase(db.name);
+              deleteReq.onsuccess = () => {
+                console.log(`✓ Deleted database: ${db.name}`);
+                resolve();
+              };
+              deleteReq.onerror = (error) => {
+                console.warn(`⚠ Failed to delete database ${db.name}:`, error);
+                resolve(); // Continue even if one fails
+              };
+              deleteReq.onblocked = () => {
+                console.warn(`⚠ Database deletion blocked: ${db.name}`);
+                resolve(); // Continue even if blocked
+              };
+            });
+          })
+        );
       } catch (error) {
-        console.warn('Could not delete IndexedDB:', error);
+        console.warn('Could not enumerate/delete IndexedDB databases:', error);
+        
+        // Fallback: Versuche bekannte Datenbanken zu löschen
+        const knownDatabases = ['TRTrackingDB', 'CIFI-Tools-DB'];
+        await Promise.all(
+          knownDatabases.map(dbName => {
+            return new Promise((resolve) => {
+              console.log(`Fallback: Deleting known database: ${dbName}`);
+              const deleteReq = indexedDB.deleteDatabase(dbName);
+              deleteReq.onsuccess = () => {
+                console.log(`✓ Deleted known database: ${dbName}`);
+                resolve();
+              };
+              deleteReq.onerror = () => {
+                console.log(`⚠ Known database ${dbName} not found or could not be deleted`);
+                resolve();
+              };
+            });
+          })
+        );
       }
     }
     
-    showToast('All data has been reset successfully', 'success');
+    console.log('Data reset completed successfully');
+    showToast('All data has been reset successfully - localStorage and IndexedDB cleared', 'success');
     showResetConfirmation.value = false;
+    
+    // Nach dem Reset die Seite neu laden, damit alle Stores sauber initialisiert werden
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+    
   } catch (error) {
     console.error('Error resetting data:', error);
-    showToast('Failed to reset data', 'error');
+    showToast('Failed to reset data completely - check console for details', 'error');
   }
 }
 

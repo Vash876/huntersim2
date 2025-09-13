@@ -7,7 +7,7 @@
           <div>
             <!-- Image and Title in one line -->
             <div class="flex items-center mb-1">
-              <img src="@/assets/general/orbs.png" class="w-6 h-6 mr-2" alt="Orbs" />
+              <IconDiamond size="24" class="mr-2 text-purple-400" />
               <h1 class="text-2xl font-bold">Gem Planner</h1>
             </div>
             <p class="text-sm text-purple-200">Manage your gem investment plans</p>
@@ -33,55 +33,15 @@
               <span>Weights</span>
             </button>
             
-            <!-- Import Plan -->
+            <!-- New Gem Plan Button -->
             <button
-              @click="importPlan"
+              @click="openGemPlannerModal"
               class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
             >
-              <IconFileImport size="18" />
-              <span>Import Plan</span>
-            </button>
-
-            <!-- Export Plan -->
-            <button
-              @click="exportPlan"
-              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
-            >
-              <IconDownload size="18" />
-              <span>Export Plan</span>
-            </button>
-
-            <!-- Reset Button -->
-            <button
-              @click="resetPlanner"
-              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
-            >
-              <IconRefresh size="18" />
-              <span>Reset</span>
+              <IconPlus size="18" />
+              <span>New Gem Plan</span>
             </button>
           </div>
-        </div>
-      </div>
-      
-      <!-- Settings Bar -->
-      <div class="bg-gray-800 py-3 px-4 flex flex-wrap items-center justify-between gap-2">
-        <!-- Left Side: Plan Title or Overview -->
-        <div class="flex items-center gap-3">
-          <div class="text-gray-300 text-sm">
-            <span>Plan Overview</span>
-          </div>
-        </div>
-
-        <!-- Right Side: New Plan Button -->
-        <div class="flex flex-wrap items-center gap-2">
-          <!-- New Plan Button -->
-          <button
-            @click="openGemPlannerModal"
-            class="flex items-center space-x-2 px-4 py-2 rounded-md bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-semibold shadow-lg transition-colors duration-200 text-sm"
-          >
-            <IconPlus size="18" />
-            <span>New Orb Plan</span>
-          </button>
         </div>
       </div>
     </div>
@@ -89,25 +49,32 @@
     <!-- Plan Overview -->
     <div class="mb-6">
       <!-- Saved Plans Section -->
-      <div v-if="savedPlans.length > 0" class="mb-6">
-        <div class="flex items-center mb-3">
-          <div class="w-1.5 h-5 bg-green-500 rounded-r mr-2"></div>
-          <h3 class="text-lg font-semibold text-white">Saved Plans</h3>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <GemPlanCard
-            v-for="plan in savedPlans"
-            :key="plan.id"
-            :plan="plan"
-            @click="() => handleSelectPlan(plan)"
-            @load="() => loadPlan(plan)"
-            @edit="() => editPlan(plan)"
-            @copy="() => copyPlan(plan)"
-            @share="() => sharePlan(plan)"
-            @delete="() => deletePlan(plan.id)"
-          />
-        </div>
+      <div v-if="plans.length > 0" class="mb-6">        
+        <Draggable 
+          v-model="plans"
+          :componentData="{
+            class: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
+          }"
+          handle=".grip-handle"
+          :group="{ name: 'gem-plans' }"
+          itemKey="id"
+          :animation="200"
+          ghostClass="ghost"
+          chosenClass="chosen"
+          dragClass="dragging"
+          @end="onDragEnd"
+        >
+          <template #item="{ element }">
+            <GemPlanCard
+              :plan="element"
+              @click="() => openPlanDetailsModal(element)"
+              @edit="() => editPlan(element)"
+              @copy="() => copyPlan(element)"
+              @share="() => sharePlan(element)"
+              @delete="() => deletePlan(element.id)"
+            />
+          </template>
+        </Draggable>
       </div>
       
       <!-- Empty State -->
@@ -115,7 +82,8 @@
         <IconDiamond size="48" class="mx-auto mb-4 text-purple-500" />
         <h3 class="text-xl font-semibold mb-2">Welcome to Gem Planner</h3>
         <p class="text-sm mb-4">Create and manage your gem investment plans to optimize your orb spending.</p>
-        <p class="text-xs text-gray-500">Click "New Orb Plan" to get started with gem planning.</p>
+        <p class="text-xs text-gray-500 mb-2">Starting values are automatically taken from your current global gem configuration.</p>
+        <p class="text-xs text-gray-500">Click "New Gem Plan" to get started with gem planning.</p>
       </div>
     </div>
 
@@ -156,6 +124,14 @@
       @weights-updated="onWeightsUpdated"
     />
 
+    <!-- Plan Details Modal -->
+    <GemPlanDetailsModal
+      :is-visible="showPlanDetailsModal"
+      :plan="selectedPlanForDetails"
+      @close="closePlanDetailsModal"
+      @edit-plan="onEditPlanFromDetails"
+    />
+
     <!-- Toast Notification -->
     <Transition name="toast">
       <div 
@@ -170,11 +146,24 @@
         <span>{{ toast.message }}</span>
       </div>
     </Transition>
+
+    <!-- Alert Dialog -->
+    <AlertDialog
+      :isVisible="alertDialog.isVisible"
+      :title="alertDialog.title"
+      :message="alertDialog.message"
+      :type="alertDialog.type"
+      :showCancel="alertDialog.showCancel"
+      :confirmText="alertDialog.confirmText"
+      :cancelText="alertDialog.cancelText"
+      @confirm="alertDialog.onConfirm"
+      @cancel="alertDialog.onCancel"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { 
   IconSettings, 
   IconFileImport,
@@ -186,10 +175,13 @@ import {
   IconEye,
   IconTrash
 } from '@tabler/icons-vue';
-import GemPlannerModal from '@/components/gem-planner/GemPlannerModal.vue';
-import GemPlanCard from '@/components/gem-planner/GemPlanCard.vue';
+import GemPlannerModal from '@/components/common/gem-planner/GemPlannerModal.vue';
+import GemPlanCard from '@/components/common/gem-planner/GemPlanCard.vue';
+import GemPlanDetailsModal from '@/components/common/gem-planner/GemPlanDetailsModal.vue';
 import GameStatsModal from '@/components/common/gem-planner/GameStatsModal.vue';
 import WeightsModal from '@/components/common/gem-planner/WeightsModal.vue';
+import AlertDialog from '@/components/common/AlertDialog.vue';
+import Draggable from 'vuedraggable';
 import { formatNumber } from '@/composables/format.js';
 import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
 import { useGemPlanningStore } from '@/store/gemPlanningStore.js';
@@ -203,14 +195,34 @@ const gemPlanningStore = useGemPlanningStore(); // For planning data
 const showStatsModal = ref(false);
 const showWeightsModal = ref(false);
 const showGemPlannerModal = ref(false);
+const showPlanDetailsModal = ref(false);
 const editingPlan = ref(null); // Track which plan is being edited
+const selectedPlanForDetails = ref(null); // Track which plan is being viewed
 
 // Toast notification
 const toast = ref({ show: false, message: '', type: 'info' });
 
+// Alert dialog state
+const alertDialog = ref({
+  isVisible: false,
+  title: '',
+  message: '',
+  type: 'info',
+  showCancel: false,
+  confirmText: 'OK',
+  cancelText: 'Cancel',
+  onConfirm: null,
+  onCancel: null
+});
+
 // Store reactive references
 const gameStats = computed(() => gemPlannerStore.gameStats);
 const weights = computed(() => gemPlannerStore.weights);
+
+// Local reactive copy of plans for draggable
+const plans = ref([]);
+
+// Original saved plans for computed
 const savedPlans = computed(() => gemPlanningStore.orbSpendingPlans);
 
 // Modal Functions
@@ -263,17 +275,12 @@ async function onPlanSaved(plan) {
   try {
     // Create or update plan in the planning store
     if (plan.id && gemPlanningStore.getOrbSpendingPlanById(plan.id)) {
-      // Update existing plan
+      // Update existing plan with full data
       await gemPlanningStore.updateOrbSpendingPlan(plan.id, plan);
       showToastMessage(`Plan "${plan.name}" updated successfully!`, 'success');
     } else {
-      // Create new plan
-      await gemPlanningStore.createOrbSpendingPlan(
-        plan.name, 
-        plan.trPlanId, 
-        plan.initialBudget || 0, 
-        plan.trCount || 1
-      );
+      // Create new plan with full data - use the complete plan object
+      await gemPlanningStore.createOrbSpendingPlanFromData(plan);
       showToastMessage(`Plan "${plan.name}" saved successfully!`, 'success');
     }
   } catch (error) {
@@ -294,9 +301,28 @@ async function loadPlan(plan) {
 }
 
 function handleSelectPlan(plan) {
-  // Handle clicking on the plan card
-  showToastMessage(`Selected plan: ${plan.name}`, 'info');
-  // TODO: Could open a detail modal or navigate to edit view
+  // Handle clicking on the plan card - now redirects to details modal
+  openPlanDetailsModal(plan);
+}
+
+// Plan Details Modal Functions
+function openPlanDetailsModal(plan) {
+  selectedPlanForDetails.value = plan;
+  showPlanDetailsModal.value = true;
+}
+
+function closePlanDetailsModal() {
+  showPlanDetailsModal.value = false;
+  selectedPlanForDetails.value = null;
+}
+
+function onEditPlanFromDetails() {
+  // Close details modal and open edit modal
+  if (selectedPlanForDetails.value) {
+    editingPlan.value = selectedPlanForDetails.value;
+    showPlanDetailsModal.value = false;
+    showGemPlannerModal.value = true;
+  }
 }
 
 function editPlan(plan) {
@@ -323,8 +349,45 @@ function sharePlan(plan) {
   // For now, could copy to clipboard or open share dialog
 }
 
+// Alert helper functions
+function showAlert(message, title = 'Alert', type = 'info') {
+  alertDialog.value = {
+    isVisible: true,
+    title,
+    message,
+    type,
+    showCancel: false,
+    confirmText: 'OK',
+    onConfirm: () => {
+      alertDialog.value.isVisible = false;
+    },
+    onCancel: null
+  };
+}
+
+function showConfirm(message, title = 'Confirm', onConfirm, onCancel = null) {
+  alertDialog.value = {
+    isVisible: true,
+    title,
+    message,
+    type: 'warning',
+    showCancel: true,
+    confirmText: 'Yes',
+    cancelText: 'No',
+    onConfirm: () => {
+      alertDialog.value.isVisible = false;
+      if (onConfirm) onConfirm();
+    },
+    onCancel: () => {
+      alertDialog.value.isVisible = false;
+      if (onCancel) onCancel();
+    }
+  };
+}
+
 async function deletePlan(planId) {
-  if (confirm('Are you sure you want to delete this plan? This cannot be undone.')) {
+  const plan = gemPlanningStore.getOrbSpendingPlanById(planId);
+  if (plan) {
     try {
       await gemPlanningStore.deleteOrbSpendingPlan(planId);
       showToastMessage('Plan deleted successfully', 'success');
@@ -500,20 +563,24 @@ async function exportPlan() {
 }
 
 async function resetPlanner() {
-  if (confirm('Are you sure you want to reset all gem data? This cannot be undone.')) {
-    try {
-      // Reset current gem data (old store)
-      gemPlannerStore.resetToDefaults();
-      
-      // Clear all planning data (new store)
-      await gemPlanningStore.clearAllData();
-      
-      showToastMessage('Planner reset successfully', 'info');
-    } catch (error) {
-      console.error('Error resetting planner:', error);
-      showToastMessage('Failed to reset planner', 'error');
+  showConfirm(
+    'Are you sure you want to reset all gem data? This cannot be undone.',
+    'Reset Planner',
+    async () => {
+      try {
+        // Reset current gem data (old store)
+        gemPlannerStore.resetToDefaults();
+        
+        // Clear all planning data (new store)
+        await gemPlanningStore.clearAllData();
+        
+        showToastMessage('Planner reset successfully', 'info');
+      } catch (error) {
+        console.error('Error resetting planner:', error);
+        showToastMessage('Failed to reset planner', 'error');
+      }
     }
-  }
+  );
 }
 
 function showToastMessage(message, type = 'success', duration = 3000) {
@@ -522,6 +589,22 @@ function showToastMessage(message, type = 'success', duration = 3000) {
     toast.value.show = false;
   }, duration);
 }
+
+// Drag & Drop functionality
+function onDragEnd(event) {
+  console.log('Gem plans reordered:', plans.value.map(p => p.name));
+  
+  // Save the new order to the planning store
+  gemPlanningStore.saveOrbSpendingPlansOrder(plans.value);
+  
+  // Show success message
+  showToastMessage('Plan order updated', 'success', 1500);
+}
+
+// Watch for changes in saved plans and sync to local plans array
+watch(savedPlans, (newPlans) => {
+  plans.value = [...newPlans];
+}, { immediate: true, deep: true });
 </script>
 
 <style scoped>
@@ -533,5 +616,43 @@ function showToastMessage(message, type = 'success', duration = 3000) {
 .toast-enter-from, .toast-leave-to {
   opacity: 0;
   transform: translateX(100%);
+}
+
+/* Draggable animations and styles */
+.flip-list-move {
+  transition: transform 0.5s;
+}
+
+.flip-list-enter-active, 
+.flip-list-leave-active {
+  transition: all 0.5s;
+}
+
+.flip-list-enter-from, 
+.flip-list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.ghost {
+  opacity: 0.5;
+  background-color: rgba(51, 51, 51, 0.3) !important;
+  border: 1px dashed rgba(156, 163, 175, 0.7) !important;
+}
+
+.chosen {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.dragging {
+  opacity: 0.8;
+}
+
+.grip-handle {
+  cursor: grab;
+}
+
+.grip-handle:active {
+  cursor: grabbing;
 }
 </style>

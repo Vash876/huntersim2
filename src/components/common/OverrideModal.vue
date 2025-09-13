@@ -376,6 +376,16 @@ function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
         'catch-up-power': 'attraction_catchUp'
       }
     },
+    innovation: {
+      level: 'innovation_level',
+      nodes: {
+        gem1: 'innovation_gem1',
+        gem2: 'innovation_gem2',
+        gem3: 'innovation_gem3'
+      },
+      upgrades: {
+      }
+    },
     creation: {
       level: 'creation_level',
       nodes: {

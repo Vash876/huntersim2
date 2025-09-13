@@ -238,13 +238,59 @@ export const useGemPlanningStore = defineStore('gemPlanning', () => {
     }
   }
 
+  async function createOrbSpendingPlanFromData(planData) {
+    // Serialize the plan data to remove Vue proxy objects and make it IndexedDB-safe
+    const serializedData = JSON.parse(JSON.stringify(planData));
+    
+    // Ensure required properties exist
+    const plan = {
+      id: serializedData.id || generateId(),
+      name: serializedData.name,
+      createdAt: serializedData.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      trPlanId: serializedData.trPlanId || null,
+      trCount: serializedData.trCount || 1,
+      initialBudget: serializedData.initialBudget || 0,
+      trSteps: serializedData.trSteps || [],
+      // Include any additional data from the GemPlannerModal
+      trBudgets: serializedData.trBudgets || [],
+      purchasedGems: serializedData.purchasedGems || {},
+      purchasedNodes: serializedData.purchasedNodes || {},
+      purchasedUpgrades: serializedData.purchasedUpgrades || {},
+      totalSpent: serializedData.totalSpent || 0,
+      totalBudget: serializedData.totalBudget || 0,
+      description: serializedData.description || ''
+    };
+    
+    try {
+      await gemPlanningDB.put(STORES.orbSpendingPlans, plan);
+      
+      // Check if plan already exists in the array and replace it, otherwise add it
+      const existingIndex = orbSpendingPlans.value.findIndex(p => p.id === plan.id);
+      if (existingIndex !== -1) {
+        orbSpendingPlans.value[existingIndex] = plan;
+      } else {
+        orbSpendingPlans.value.unshift(plan); // Add to beginning for newest first
+      }
+      
+      console.log('Orb spending plan created from data:', plan.name);
+      return plan;
+    } catch (error) {
+      console.error('Error creating orb spending plan from data:', error);
+      throw error;
+    }
+  }
+
   async function updateOrbSpendingPlan(planId, updates) {
     const planIndex = orbSpendingPlans.value.findIndex(p => p.id === planId);
     if (planIndex === -1) return null;
 
+    // Serialize to remove Vue proxy objects
+    const serializedUpdates = JSON.parse(JSON.stringify(updates));
+
     const updatedPlan = {
       ...orbSpendingPlans.value[planIndex],
-      ...updates,
+      ...serializedUpdates,
       updatedAt: new Date().toISOString()
     };
 
@@ -296,6 +342,36 @@ export const useGemPlanningStore = defineStore('gemPlanning', () => {
       return plan;
     }
     return null;
+  }
+
+  // Save the order of orb spending plans
+  async function saveOrbSpendingPlansOrder(orderedPlans) {
+    try {
+      // Update the local reactive array
+      orbSpendingPlans.value = [...orderedPlans];
+      
+      // Update each plan with the new order timestamp
+      for (let i = 0; i < orderedPlans.length; i++) {
+        const plan = orderedPlans[i];
+        const updatedPlan = {
+          ...plan,
+          orderIndex: i,
+          updatedAt: new Date().toISOString()
+        };
+        
+        // Save to IndexedDB
+        await gemPlanningDB.put(STORES.orbSpendingPlans, updatedPlan);
+        
+        // Update the local array
+        orbSpendingPlans.value[i] = updatedPlan;
+      }
+      
+      console.log('Orb spending plans order saved');
+      return true;
+    } catch (error) {
+      console.error('Error saving orb spending plans order:', error);
+      throw error;
+    }
   }
 
   async function duplicateOrbSpendingPlan(planId) {
@@ -685,11 +761,13 @@ export const useGemPlanningStore = defineStore('gemPlanning', () => {
 
     // Orb Spending Plans
     createOrbSpendingPlan,
+    createOrbSpendingPlanFromData,
     updateOrbSpendingPlan,
     deleteOrbSpendingPlan,
     loadOrbSpendingPlan,
     duplicateOrbSpendingPlan,
     getOrbSpendingPlanById,
+    saveOrbSpendingPlansOrder,
 
     // Plan-specific Gem Functions
     initializePlanGemState,

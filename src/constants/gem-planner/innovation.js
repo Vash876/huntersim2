@@ -26,9 +26,9 @@ export const INNOVATION_GEM = {
     { node: 2, cost: 3e6 },
     { node: 3, cost: 1.2e4 },
     // New nodes unlocked when Exodus reaches level 5
-    { node: 4, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 5, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 6, cost: 0, unlockRequirement: 'exodus-5' }
+    { node: 4, cost: 7e14, unlockRequirement: 'exodus-5' },
+    { node: 5, cost: 1e20, unlockRequirement: 'exodus-5' },
+    { node: 6, cost: 1e22, unlockRequirement: 'exodus-5' }
   ],
   
   // Upgrades available in this gem
@@ -36,7 +36,7 @@ export const INNOVATION_GEM = {
     {
       id: 'studies-per-study',
       name: 'Studies per Study',
-      weight: null,
+      weight: 'RP',
       baseCost: 3,
       costMultiplier: 2,
       maxLevel: 50,
@@ -218,7 +218,7 @@ export const INNOVATION_GEM = {
     {
       id: 'bonus-blueprints',
       name: 'Bonus Blueprints',
-      weight: null,
+      weight: 500,
       baseCost: 1e8,
       costMultiplier: 1e5,
       maxLevel: 50,
@@ -237,7 +237,7 @@ export const INNOVATION_GEM = {
     {
       id: 'bonus-innovation-cores',
       name: 'Bonus Innovation Cores',
-      weight: null,
+      weight: 1000,
       baseCost: 1e8,
       costMultiplier: 1e7,
       maxLevel: 50,

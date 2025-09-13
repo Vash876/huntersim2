@@ -26,9 +26,9 @@ export const TEMPORAL_GEM = {
     { node: 2, cost: 9e3 },
     { node: 3, cost: 7e6 },
     // New nodes unlocked when Exodus reaches level 5
-    { node: 4, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 5, cost: 0, unlockRequirement: 'exodus-5' },
-    { node: 6, cost: 0, unlockRequirement: 'exodus-5' }
+    { node: 4, cost: null, unlockRequirement: 'exodus-5' },
+    { node: 5, cost: 1e18, unlockRequirement: 'exodus-5' },
+    { node: 6, cost: 1e23, unlockRequirement: 'exodus-5' }
   ],
   
   // Upgrades available in this gem

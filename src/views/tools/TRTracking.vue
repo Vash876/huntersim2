@@ -373,7 +373,17 @@ const alertDialog = ref({
 
 // Computed
 const selectedResources = computed(() => trTrackingStore.selectedResources);
-const trTracks = computed(() => trTrackingStore.trTracks);
+const trTracks = computed(() => {
+  return [...trTrackingStore.trTracks].sort((a, b) => {
+    // 1. Aktive Tracks zuerst
+    if (a.isActive !== b.isActive) {
+      return b.isActive - a.isActive;
+    }
+    
+    // 2. Dann nach Erstellungsdatum (neueste zuerst)
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+});
 const activeTracks = computed(() => trTrackingStore.activeTracks);
 const completedTracks = computed(() => trTrackingStore.completedTracks);
 const hasSelectedResources = computed(() => selectedResources.value.length > 0);
