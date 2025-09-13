@@ -16,7 +16,6 @@ const changelog =
         text: 'Cloud Sync Improvements',
         subItems: [
           'Fixed cloud save/load system where TR Tracking data could be lost during synchronization',
-          'Enhanced data integrity checks for cloud backup operations',
         ]
       },
     ]
