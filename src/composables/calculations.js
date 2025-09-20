@@ -560,6 +560,7 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
   let research_alltime = getFragMultiplier("research_alltime", planStats.research_alltime, planStats);
   let ouroinstalls = getFragMultiplier("ouroinstalls", planStats.ouroinstalls, planStats);
   let iap_frag = getFragMultiplier("iap_frag", planStats.iap_frag, planStats);
+  let i110 = getFragMultiplier("i110", planStats.i110, planStats);
   
   // Store-basierte Gem-Node-Checks
   // Attraction GN #1 (Node Index 0) - erfordert Attraction Level 1+
@@ -580,7 +581,7 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
   
   // Kampagnen-Schleife
   for (let i = 0; i < campaigns; i++) {
-    let baseFrags = (2.5 + r6Add) * (m0 * attr1 * campfragdet * pow2 * research_alltime * ouroinstalls * iap_frag * r6Multi);
+    let baseFrags = (2.5 + r6Add) * (m0 * attr1 * campfragdet * pow2 * research_alltime * ouroinstalls * iap_frag * i110 * r6Multi);
     
     // Spezielle Multiplikatoren für bestimmte Kampagnen
     let campaignMulti = 1;

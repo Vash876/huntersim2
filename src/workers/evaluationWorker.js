@@ -53,6 +53,305 @@ function extractParamValue(storeData, hunterId, buildData, param) {
     return true;
   }
 
+  // Spezielle Behandlung für Exodus Temporal Evolution Count
+  if (param === 'upgrades.gems_nodes.exodus_temporalEvolutionCount') {
+    // Borge: Berechnet Temporal + Evolution Upgrades wenn exodus_gem1 aktiv ist
+    
+    // ZUERST prüfen ob es einen direkten Override für exodus_temporalEvolutionCount gibt
+    if (buildData?.overrides && 'upgrades.gems_nodes.exodus_temporalEvolutionCount' in buildData.overrides) {
+      const overrideValue = buildData.overrides['upgrades.gems_nodes.exodus_temporalEvolutionCount'];
+      console.log(`🔥 [Worker] Borge Exodus temporalEvolutionCount Override detected: ${overrideValue}`);
+      return overrideValue;
+    }
+    
+    // Ansonsten prüfen ob exodus_gem1 aktiviert ist (entweder via Override oder global)
+    let hasExodusNode1;
+    if (buildData?.overrides && 'upgrades.gems_nodes.exodus_gem1' in buildData.overrides) {
+      hasExodusNode1 = buildData.overrides['upgrades.gems_nodes.exodus_gem1'] === 1;
+      console.log(`🔥 [Worker] Borge Exodus Node 1 Override detected: ${hasExodusNode1}`);
+    } else {
+      // Fallback auf globalen Zustand
+      const exodusGemState = storeData.gemPlannerStore?.gemStates?.exodus;
+      hasExodusNode1 = exodusGemState?.nodes?.[0] || false;
+      console.log(`🔥 [Worker] Borge Exodus Node 1 Global state: ${hasExodusNode1}`);
+    }
+    
+    if (!hasExodusNode1) {
+      console.log(`🔥 [Worker] Borge Exodus Node 1 not activated, returning 0 for temporalEvolutionCount`);
+      return 0; // Node ist nicht aktiviert
+    }
+    
+    // Wenn aktiviert, berechne die Anzahl der Temporal + Evolution Upgrades
+    let upgradeCount = 0;
+    
+    // Count Temporal gem upgrades
+    const temporalGemState = storeData.gemPlannerStore?.gemStates?.temporal;
+    if (temporalGemState?.upgrades) {
+      upgradeCount += Object.values(temporalGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    // Count Evolution gem upgrades
+    const evolutionGemState = storeData.gemPlannerStore?.gemStates?.evolution;
+    if (evolutionGemState?.upgrades) {
+      upgradeCount += Object.values(evolutionGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    console.log(`🔥 [Worker] Borge Exodus temporalEvolutionCount calculated: ${upgradeCount}`);
+    return upgradeCount;
+  }
+  
+  if (param === 'upgrades.gems_nodes.exodus_gem3') {
+    // Ozzy: Exodus Gem Node 3 - zählt Power + Innovation Upgrades
+    
+    // ZUERST prüfen ob ein Override existiert
+    let hasExodusNode3;
+    if (buildData?.overrides && 'upgrades.gems_nodes.exodus_gem3' in buildData.overrides) {
+      hasExodusNode3 = buildData.overrides['upgrades.gems_nodes.exodus_gem3'] === 1;
+      console.log(`🔵 [Worker] Ozzy Exodus Node 3 Override detected: ${hasExodusNode3}`);
+    } else {
+      // Fallback auf globalen Zustand
+      const exodusGemState = storeData.gemPlannerStore?.gemStates?.exodus;
+      hasExodusNode3 = exodusGemState?.nodes?.[2] || false; // Node 3 = Index 2
+      console.log(`🔵 [Worker] Ozzy Exodus Node 3 Global state: ${hasExodusNode3}`);
+    }
+    
+    if (!hasExodusNode3) {
+      console.log(`🔵 [Worker] Ozzy Exodus Gem Node 3 not activated, returning 0`);
+      return 0; // Node ist nicht aktiviert
+    }
+    
+    // Wenn aktiviert, berechne die Anzahl der Power + Innovation Upgrades
+    let upgradeCount = 0;
+    
+    // Count Power gem upgrades
+    const powerGemState = storeData.gemPlannerStore?.gemStates?.power;
+    if (powerGemState?.upgrades) {
+      upgradeCount += Object.values(powerGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    // Count Innovation gem upgrades
+    const innovationGemState = storeData.gemPlannerStore?.gemStates?.innovation;
+    if (innovationGemState?.upgrades) {
+      upgradeCount += Object.values(innovationGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    console.log(`🔥 [Worker] Ozzy Exodus Node 3 active - Power + Innovation upgrade count: ${upgradeCount}`);
+    return upgradeCount;
+  }
+
+  // Spezielle Behandlung für Ozzy Exodus Power Innovation Count
+  if (param === 'upgrades.gems_nodes.exodus_powerInnovationCount') {
+    // Ozzy: Berechnet Power + Innovation Upgrades wenn exodus_gem3 aktiv ist
+    
+    // ZUERST prüfen ob es einen direkten Override für exodus_powerInnovationCount gibt
+    if (buildData?.overrides && 'upgrades.gems_nodes.exodus_powerInnovationCount' in buildData.overrides) {
+      const overrideValue = buildData.overrides['upgrades.gems_nodes.exodus_powerInnovationCount'];
+      console.log(`🔵 [Worker] Ozzy Exodus powerInnovationCount Override detected: ${overrideValue}`);
+      return overrideValue;
+    }
+    
+    // Ansonsten prüfen ob exodus_gem3 aktiviert ist (entweder via Override oder global)
+    let hasExodusNode3;
+    if (buildData?.overrides && 'upgrades.gems_nodes.exodus_gem3' in buildData.overrides) {
+      hasExodusNode3 = buildData.overrides['upgrades.gems_nodes.exodus_gem3'] === 1;
+      console.log(`🔵 [Worker] Ozzy Exodus Node 3 Override detected: ${hasExodusNode3}`);
+    } else {
+      // Fallback auf globalen Zustand
+      const exodusGemState = storeData.gemPlannerStore?.gemStates?.exodus;
+      hasExodusNode3 = exodusGemState?.nodes?.[2] || false; // Node 3 = Index 2
+      console.log(`🔵 [Worker] Ozzy Exodus Node 3 Global state: ${hasExodusNode3}`);
+    }
+    
+    if (!hasExodusNode3) {
+      console.log(`🔵 [Worker] Ozzy Exodus Node 3 not activated, returning 0 for powerInnovationCount`);
+      return 0; // Node ist nicht aktiviert
+    }
+    
+    // Wenn aktiviert, berechne die Anzahl der Power + Innovation Upgrades
+    let upgradeCount = 0;
+    
+    // Count Power gem upgrades
+    const powerGemState = storeData.gemPlannerStore?.gemStates?.power;
+    if (powerGemState?.upgrades) {
+      upgradeCount += Object.values(powerGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    // Count Innovation gem upgrades
+    const innovationGemState = storeData.gemPlannerStore?.gemStates?.innovation;
+    if (innovationGemState?.upgrades) {
+      upgradeCount += Object.values(innovationGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    console.log(`🔵 [Worker] Ozzy Exodus powerInnovationCount calculated: ${upgradeCount}`);
+    return upgradeCount;
+  }
+  
+  if (param === 'upgrades.gems_nodes.exodus_gem5') {
+    // Knox: Exodus Gem Node 5 - zählt Attraction + Creation Upgrades
+    
+    // ZUERST prüfen ob ein Override existiert
+    let hasExodusNode5;
+    if (buildData?.overrides && 'upgrades.gems_nodes.exodus_gem5' in buildData.overrides) {
+      hasExodusNode5 = buildData.overrides['upgrades.gems_nodes.exodus_gem5'] === 1;
+      console.log(`🔶 [Worker] Knox Exodus Node 5 Override detected: ${hasExodusNode5}`);
+    } else {
+      // Fallback auf globalen Zustand
+      const exodusGemState = storeData.gemPlannerStore?.gemStates?.exodus;
+      hasExodusNode5 = exodusGemState?.nodes?.[4] || false; // Node 5 = Index 4
+      console.log(`🔶 [Worker] Knox Exodus Node 5 Global state: ${hasExodusNode5}`);
+    }
+    
+    if (!hasExodusNode5) {
+      console.log(`� [Worker] Knox Exodus Gem Node 5 not activated, returning 0`);
+      return 0; // Node ist nicht aktiviert
+    }
+    
+    // Wenn aktiviert, berechne die Anzahl der Attraction + Creation Upgrades
+    let upgradeCount = 0;
+    
+    // Count Attraction gem upgrades
+    const attractionGemState = storeData.gemPlannerStore?.gemStates?.attraction;
+    if (attractionGemState?.upgrades) {
+      upgradeCount += Object.values(attractionGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    // Count Creation gem upgrades
+    const creationGemState = storeData.gemPlannerStore?.gemStates?.creation;
+    if (creationGemState?.upgrades) {
+      upgradeCount += Object.values(creationGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    console.log(`🔥 [Worker] Knox Exodus Node 5 active - Attraction + Creation upgrade count: ${upgradeCount}`);
+    return upgradeCount;
+  }
+
+  // Spezielle Behandlung für Knox Exodus Attraction Creation Count
+  if (param === 'upgrades.gems_nodes.exodus_attractionCreationCount') {
+    // Knox: Berechnet Attraction + Creation Upgrades wenn exodus_gem5 aktiv ist
+    
+    // ZUERST prüfen ob es einen direkten Override für exodus_attractionCreationCount gibt
+    if (buildData?.overrides && 'upgrades.gems_nodes.exodus_attractionCreationCount' in buildData.overrides) {
+      const overrideValue = buildData.overrides['upgrades.gems_nodes.exodus_attractionCreationCount'];
+      console.log(`🔶 [Worker] Knox Exodus attractionCreationCount Override detected: ${overrideValue}`);
+      return overrideValue;
+    }
+    
+    // Ansonsten prüfen ob exodus_gem5 aktiviert ist (entweder via Override oder global)
+    let hasExodusNode5;
+    if (buildData?.overrides && 'upgrades.gems_nodes.exodus_gem5' in buildData.overrides) {
+      hasExodusNode5 = buildData.overrides['upgrades.gems_nodes.exodus_gem5'] === 1;
+      console.log(`🔶 [Worker] Knox Exodus Node 5 Override detected: ${hasExodusNode5}`);
+    } else {
+      // Fallback auf globalen Zustand
+      const exodusGemState = storeData.gemPlannerStore?.gemStates?.exodus;
+      hasExodusNode5 = exodusGemState?.nodes?.[4] || false; // Node 5 = Index 4
+      console.log(`🔶 [Worker] Knox Exodus Node 5 Global state: ${hasExodusNode5}`);
+    }
+    
+    if (!hasExodusNode5) {
+      console.log(`🔶 [Worker] Knox Exodus Node 5 not activated, returning 0 for attractionCreationCount`);
+      return 0; // Node ist nicht aktiviert
+    }
+    
+    // Wenn aktiviert, berechne die Anzahl der Attraction + Creation Upgrades
+    let upgradeCount = 0;
+    
+    // Count Attraction gem upgrades
+    const attractionGemState = storeData.gemPlannerStore?.gemStates?.attraction;
+    if (attractionGemState?.upgrades) {
+      upgradeCount += Object.values(attractionGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    // Count Creation gem upgrades
+    const creationGemState = storeData.gemPlannerStore?.gemStates?.creation;
+    if (creationGemState?.upgrades) {
+      upgradeCount += Object.values(creationGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    console.log(`🔶 [Worker] Knox Exodus attractionCreationCount calculated: ${upgradeCount}`);
+    return upgradeCount;
+  }
+
+  // Spezielle Behandlung für CMS Exodus Gem4 Count
+  if (param === 'upgrades.cms.exodus_gem4') {
+    // Berechnet Construction Milestone Upgrades wenn exodus_gem4 aktiv ist
+    
+    // ZUERST prüfen ob es einen direkten Override für cms.exodus_gem4 gibt
+    if (buildData?.overrides && 'upgrades.cms.exodus_gem4' in buildData.overrides) {
+      const overrideValue = buildData.overrides['upgrades.cms.exodus_gem4'];
+      console.log(`🟠 [Worker] CMS Exodus_gem4 Override detected: ${overrideValue}`);
+      return overrideValue;
+    }
+    
+    // Ansonsten prüfen ob exodus_gem4 aktiviert ist (entweder via Override oder global)
+    let hasExodusNode4;
+    if (buildData?.overrides && 'upgrades.gems_nodes.exodus_gem4' in buildData.overrides) {
+      hasExodusNode4 = buildData.overrides['upgrades.gems_nodes.exodus_gem4'] === 1;
+      console.log(`🟠 [Worker] Exodus Node 4 Override detected for CMS: ${hasExodusNode4}`);
+    } else {
+      // Fallback auf globalen Zustand
+      const exodusGemState = storeData.gemPlannerStore?.gemStates?.exodus;
+      hasExodusNode4 = exodusGemState?.nodes?.[3] || false; // Node 4 = Index 3
+      console.log(`🟠 [Worker] Exodus Node 4 Global state for CMS: ${hasExodusNode4}`);
+    }
+    
+    if (!hasExodusNode4) {
+      console.log(`🟠 [Worker] Exodus Node 4 not activated, returning 0 for CMS count`);
+      return 0; // Node ist nicht aktiviert
+    }
+    
+    // Wenn aktiviert, berechne die Anzahl der Construction Milestone Upgrades
+    let milestoneCount = 0;
+    
+    // Check Construction Milestone upgrades
+    if (storeData.upgrades?.cms) {
+      milestoneCount = Object.values(storeData.upgrades.cms).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    console.log(`🟠 [Worker] CMS Exodus_gem4 calculated: ${milestoneCount}`);
+    return milestoneCount;
+  }
+
+  // Spezielle Behandlung für Creation Gem5 Trinkets Count
+  if (param === 'upgrades.gems_nodes.creation_galvTrinketsCount') {
+    // Berechnet Trinket-Level wenn creation_gem5 aktiv ist
+    
+    // ZUERST prüfen ob es einen direkten Override für creation_galvTrinketsCount gibt
+    if (buildData?.overrides && 'upgrades.gems_nodes.creation_galvTrinketsCount' in buildData.overrides) {
+      const overrideValue = buildData.overrides['upgrades.gems_nodes.creation_galvTrinketsCount'];
+      console.log(`🟤 [Worker] Creation galvTrinketsCount Override detected: ${overrideValue}`);
+      return overrideValue;
+    }
+    
+    // Ansonsten prüfen ob creation_gem5 aktiviert ist (entweder via Override oder global)
+    let hasCreationNode5;
+    if (buildData?.overrides && 'upgrades.gems_nodes.creation_gem5' in buildData.overrides) {
+      hasCreationNode5 = buildData.overrides['upgrades.gems_nodes.creation_gem5'] === 1;
+      console.log(`🟤 [Worker] Creation Node 5 Override detected: ${hasCreationNode5}`);
+    } else {
+      // Fallback auf globalen Zustand
+      const creationGemState = storeData.gemPlannerStore?.gemStates?.creation;
+      hasCreationNode5 = creationGemState?.nodes?.[4] || false; // Node 5 = Index 4
+      console.log(`🟤 [Worker] Creation Node 5 Global state: ${hasCreationNode5}`);
+    }
+    
+    if (!hasCreationNode5) {
+      console.log(`🟤 [Worker] Creation Node 5 not activated, returning 0 for galvTrinketsCount`);
+      return 0; // Node ist nicht aktiviert
+    }
+    
+    // Wenn aktiviert, berechne die Anzahl aller Trinket-Level
+    let trinketLevelCount = 0;
+    
+    // Count all trinket levels from upgrades.trinkets
+    if (storeData.upgrades?.trinkets) {
+      trinketLevelCount = Object.values(storeData.upgrades.trinkets).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    console.log(`🟤 [Worker] Creation galvTrinketsCount calculated: ${trinketLevelCount}`);
+    return trinketLevelCount;
+  }
+
   // Override-Werte haben höchste Priorität
   if (buildData?.overrides && param in buildData.overrides) {
     // Spezielle Behandlung für diamondspecials.hunterloot in Overrides

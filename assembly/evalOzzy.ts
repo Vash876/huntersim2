@@ -302,6 +302,11 @@ let nextHarden: f64 = 0;
 let currentOzzyAttr: i32 = 0;
 let currentOzzyCatchup99gu: i32 = 0;
 let currentOzzyMaxStage: i32 = 0;
+let currentOzzyCreaGem4: i32 = 0;
+let currentOzzyInnoGem5: i32 = 0;
+let currentOzzyCreaGem5: i32 = 0;
+let currentOzzyCreaGalvTrinketsCount: i32 = 0;
+let currentOzzyCreaGem6: i32 = 0;
 let bossKillsByRevive = new StaticArray<i32>(11); 
 let bossAttemptsByRevive = new StaticArray<i32>(11); 
 let lastTrackedBossStage: i32 = -1; 
@@ -394,7 +399,7 @@ function ozzyEnemyAttack(): void {
     currentOzzy.currentDr = Math.max(0, currentOzzy.currentDr - 0.02);
   }
   
-  currentOzzy.hp -= dmg * (1 - currentOzzy.currentDr) * (1 - 0.01 * currentOzzy.scarab);
+  currentOzzy.hp -= dmg * (1 - currentOzzy.currentDr) * (1 - 0.01 * currentOzzy.scarab - 0.03 * currentOzzyCreaGem4);
 }
 
 // Kill Enemy function
@@ -488,7 +493,10 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
                  special: f64, iap: boolean, ultima: f64, scavengers: i32, m0: i32, r7: i32, 
                  attrGN3: boolean, lootgu: i32, i32_: i32, i81: i32, research81: i32, research95: i32, research105: i32,
                  cm46: i32, cm47: i32, cm48: i32, cm51: i32, gadgetLootMulti: f64, 
-                 card: boolean, i33: i32, evoGN3: boolean, stelzi: i32, i104: i32): void {
+                 card: boolean, i33: i32, evoGN3: boolean, stelzi: i32, i104: i32, exodus_gem3: i32, 
+                 exodus_powerInnovationCount: i32, exodus_gem4: i32, exodus_constructionMilestoneCount: i32, 
+                 temp_gem6: i32, inno_gem5: i32, crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32, crea_gem6: i32
+): void {
   entryRevivesForRun = -1;
   lastTrackedBossStage = -1;
 
@@ -499,6 +507,11 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
   currentOzzyAttr = attr;
   currentOzzyCatchup99gu = catchup99gu;
   currentOzzyMaxStage = maxStage;
+  currentOzzyCreaGem4 = crea_gem4;
+  currentOzzyInnoGem5 = inno_gem5;
+  currentOzzyCreaGem5 = crea_gem5;
+  currentOzzyCreaGalvTrinketsCount = crea_galvTrinketsCount;
+  currentOzzyCreaGem6 = crea_gem6;
 
   vectidStacks = 0;
   cripplingActive = false;
@@ -626,7 +639,7 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
   let stageGrowth: f64 = 1.059;
   let enemiesInSection: i32 = 1010;
   let excludedXpMultis = Math.pow(1.75, i33 as f64) * Math.pow(2, Math.floor((maxStage - 1) / 100) as f64);
-  let includedMultis = (1 + ozzy.timeless * 0.16) * (1 + 0.05 * ozzy.scarab) * gadgetLootMulti * (card ? 1.05 : 1);
+  let includedMultis = (1 + ozzy.timeless * 0.16) * (1 + 0.05 * ozzy.scarab) * gadgetLootMulti * (card ? 1.05 : 1) * (temp_gem6 > 0 ? 1.03 : 1);
   
   // Research95: Kumulativer Multiplier (level 1: 1.02, level 2: 1.02*1.03, etc.)
   let research95Multi: f64 = 1;
@@ -634,7 +647,7 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
     research95Multi *= (1 + (i + 1) * 0.01);
   }
   
-  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * Math.pow(1.05, scavengers as f64) * Math.pow(1.02, m0 as f64) * Math.pow(1.05, r7 as f64) * (attrGN3 ? 1.25 : 1) * (Math.pow(Math.pow(1.04, lootgu as f64), 1 + attr * 0.1 - 0.1)) * Math.pow(1.5, i32_ as f64) * Math.pow(1.1, i81 as f64) * (research81 >= 2 ? 1.1 : 1) * (research81 >= 5 ? 1.2 : 1) * research95Multi * (research105 >= 2 ? 1.2 : 1) * (research105 >= 5 ? 1.3 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1) * Math.pow(1.02, stelzi as f64) * Math.pow(1.08, i104 as f64);
+  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * Math.pow(1.05, scavengers as f64) * Math.pow(1.02, m0 as f64) * Math.pow(1.05, r7 as f64) * (attrGN3 ? 1.25 : 1) * (Math.pow(Math.pow(1.04, lootgu as f64), 1 + attr * 0.1 - 0.1)) * Math.pow(1.5, i32_ as f64) * Math.pow(1.1, i81 as f64) * (research81 >= 2 ? 1.1 : 1) * (research81 >= 5 ? 1.2 : 1) * research95Multi * (research105 >= 2 ? 1.2 : 1) * (research105 >= 5 ? 1.3 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1) * Math.pow(1.02, stelzi as f64) * Math.pow(1.08, i104 as f64) * (1 + exodus_powerInnovationCount * 0.003) * (inno_gem5 > 0 ? 1.3 : 1);
   
   let loopLoot = normalized * ((Math.pow(stageGrowth, Math.floor(Math.min(currentOzzyEnem, enemiesInSection - 10) / 10) as f64) - 1) / (stageGrowth - 1) * 10 + (Math.min(currentOzzyEnem, enemiesInSection - 10) - Math.floor(Math.min(currentOzzyEnem, enemiesInSection - 10) / 10) * 10) * Math.pow(stageGrowth, Math.floor(Math.min(currentOzzyEnem, enemiesInSection - 10) / 10) as f64)) * includedMultis * (1 + ozzy.ll * 0.2 * ozzy.effect);
   
@@ -699,7 +712,10 @@ export function EVALOZZY_WASM(
   innoGN3: i32, attrGN3: i32, attr: i32, catchup99gu: i32,
   lootgu: i32, card: i32, research81: i32, research95: i32, research105: i32, iters: i32,
   cm46: i32, cm47: i32, cm48: i32, cm51: i32, creaOzzyStat: i32, evoGN3: i32,
-  stelzi: i32, i104: i32
+  stelzi: i32, i104: i32, exodus_gem3: i32, exodus_powerInnovationCount: i32, 
+  exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32, 
+  inno_gem5: i32, crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32, crea_gem6: i32,
+  evo_gem6: i32
 ): f64 {
   
   // Enemies initialisieren
@@ -717,14 +733,25 @@ export function EVALOZZY_WASM(
   ozzy.lvl = lvl;
   ozzy.maxStage = maxStage;
   
+  // Crea Gem 5: HP Bonus basierend auf crea_galvTrinketsCount (0.01% pro Count, Cap bei 100%)
+  let creaGem5HpBonus: f64 = 1;
+  if (crea_gem5 > 0) {
+    let hpBonusPercent = Math.min(100, crea_galvTrinketsCount as f64) * 0.01;
+    creaGem5HpBonus = 1 + hpBonusPercent;
+  }
+  
   // Base Stats
-  ozzy.maxHp = (16 + (2 + Math.floor(hp / 5) * 0.03) * hp) * gadgetMulti * (1 + 0.03 * r4) * (card ? 1.03 : 1) * crea4GUMulti * (evoGN3 ? 1.0777 : 1);
-  ozzy.atk = (2 + (0.3 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r17) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * crea4GUMulti;
-  ozzy.regen = (0.1 + (0.05 + Math.floor(regen / 30) * 0.01) * regen) * gadgetMulti * (innoGN2 ? 1.25 : 1) * (card ? 1.03 : 1) * crea4GUMulti * (evoGN3 ? 1.0777 : 1);
+  ozzy.maxHp = (16 + (2 + Math.floor(hp / 5) * 0.03) * hp) * gadgetMulti * (1 + 0.03 * r4) * (card ? 1.03 : 1) * crea4GUMulti * (evoGN3 ? 1.0777 : 1) * (temp_gem6 > 0 ? 1.03 : 1) * creaGem5HpBonus * (crea_gem6 > 0 ? 1 + Math.max(0, (lvl - 69) * 0.015) : 1);
+  ozzy.atk = (2 + (0.3 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r17) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * crea4GUMulti * (temp_gem6 > 0 ? 1.03 : 1) * (crea_gem6 > 0 ? 1 + Math.max(0, (lvl - 69) * 0.01) : 1);
+  ozzy.regen = (0.1 + (0.05 + Math.floor(regen / 30) * 0.01) * regen) * gadgetMulti * (innoGN2 ? 1.25 : 1) * (card ? 1.03 : 1) * crea4GUMulti * (evoGN3 ? 1.0777 : 1) * (crea_gem6 > 0 ? 1 + Math.max(0, (lvl - 69) * 0.005) : 1);
   ozzy.dr = 0.0035 * dr + 0.0111 * i37 + 0.002 * i86;
   ozzy.evade = 0.0062 * evade + 0.05;
   ozzy.effect = 0.0035 * effect + 0.04 + 0.006 * i31 + 0.002 * i92;
   ozzy.multistrike = 0.05 + 0.0038 * multistrike + (innoGN3 ? 0.03 : 0) + 0.005 * i40;
+  // Evolution Gem 6: +2% Multistrike Chance für Ozzy
+  if (evo_gem6 > 0) {
+    ozzy.multistrike += 0.02;
+  }
   ozzy.multistrikePower = 0.01 * multistrikePower + 0.25;
   ozzy.reload = 4 - 0.02 * aspd - 0.03 * i36;
   
@@ -772,6 +799,16 @@ export function EVALOZZY_WASM(
   ozzy.regen *= (1 + 0.02 * ozzy.lotl) * (1 + 0.01 * ozzy.ultimaTalent);
   ozzy.atk *= (1 + 0.012 * ozzy.exo) * (1 + 0.02 * ozzy.cat) * (1 + 0.01 * ozzy.ultimaTalent);
   ozzy.reload -= 0.06 * ozzy.thousandNeedles;
+  
+  // Exodus Gem 4: Construction Milestone ATK Speed Bonus
+  let exodusAtkSpeedBonus: f64 = 0;
+  if (exodus_gem4 > 0) {
+    // Jede 3 Construction Milestones senkt ATK Speed um 0.01s, max 0.25s
+    let atkSpeedReduction = Math.floor(exodus_constructionMilestoneCount as f64 / 3) * 0.01;
+    exodusAtkSpeedBonus = Math.min(0.25, atkSpeedReduction);
+  }
+  
+  ozzy.reload -= exodusAtkSpeedBonus;
   ozzy.dr += 0.026 * ozzy.wings;
   ozzy.effect += 0.028 * ozzy.exterm;
   ozzy.evade += 0.005 * ozzy.wings;
@@ -783,7 +820,7 @@ export function EVALOZZY_WASM(
   
   // Simulation laufen lassen
   for (let i = 0; i < iters; i++) {
-    ozzySim(ozzy, maxStage, attr, catchup99gu, reviveCd, special, iap > 0, ultima, scavengers, m0, r7, attrGN3 > 0, lootgu, i32_, i81, research81, research95, research105, cm46, cm47, cm48, cm51, gadgetLootMulti, card > 0, i33, evoGN3 > 0, stelzi, i104);
+    ozzySim(ozzy, maxStage, attr, catchup99gu, reviveCd, special, iap > 0, ultima, scavengers, m0, r7, attrGN3 > 0, lootgu, i32_, i81, research81, research95, research105, cm46, cm47, cm48, cm51, gadgetLootMulti, card > 0, i33, evoGN3 > 0, stelzi, i104, exodus_gem3, exodus_powerInnovationCount, exodus_gem4, exodus_constructionMilestoneCount, temp_gem6, inno_gem5, crea_gem4, crea_gem5, crea_galvTrinketsCount, crea_gem6);
   }
   
   // lastOzzy für Export-Funktionen setzen

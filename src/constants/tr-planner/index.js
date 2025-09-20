@@ -387,6 +387,18 @@ export const allBoosts = [
     multiplier: (value) => Math.pow(1.08, value),
     max: 8
   },
+  {
+    id: 35,
+    key: 'i110',
+    label: 'Inscryp. #110',
+    category: 'inscryption',
+    type: 'number',
+    orbcalc: false,
+    permanent: true,
+    tooltip: '0',
+    fragmulti: (value) => Math.pow(1.04, value),
+    max: 10
+  },
 
   //Construction Milestones
   {

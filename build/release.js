@@ -36,26 +36,6 @@ async function instantiate(module, imports = {}) {
       // assembly/evalBorge/getDeathsByStageAndReviveString() => ~lib/string/String
       return __liftString(exports.getDeathsByStageAndReviveString() >>> 0);
     },
-    liveSimulationStep() {
-      // assembly/evalBorge/liveSimulationStep() => bool
-      return exports.liveSimulationStep() != 0;
-    },
-    getLiveIsBoss() {
-      // assembly/evalBorge/getLiveIsBoss() => bool
-      return exports.getLiveIsBoss() != 0;
-    },
-    getLiveFuryEnabled() {
-      // assembly/evalBorge/getLiveFuryEnabled() => bool
-      return exports.getLiveFuryEnabled() != 0;
-    },
-    getLiveLastEventTypeString() {
-      // assembly/evalBorge/getLiveLastEventTypeString() => ~lib/string/String
-      return __liftString(exports.getLiveLastEventTypeString() >>> 0);
-    },
-    getLiveIsFinished() {
-      // assembly/evalBorge/getLiveIsFinished() => bool
-      return exports.getLiveIsFinished() != 0;
-    },
     getOzzyDeathsByStageAndReviveString() {
       // assembly/evalOzzy/getOzzyDeathsByStageAndReviveString() => ~lib/string/String
       return __liftString(exports.getOzzyDeathsByStageAndReviveString() >>> 0);
@@ -107,7 +87,6 @@ export const {
   getLastBorgeCritRate,
   getLastBorgeCritPower,
   getLastBorgeReload,
-  getLiveBorgeShieldBreakStacks,
   getProgressSize,
   getProgressStageAt,
   getProgressCountAt,
@@ -115,50 +94,6 @@ export const {
   getDeathKeyAt,
   getDeathCountAt,
   getDeathsByStageAndReviveString,
-  initLiveSimulation,
-  liveSimulationStep,
-  getLiveBorgeHp,
-  getLiveBorgeMaxHp,
-  getLiveBorgeAtk,
-  getLiveBorgeRevives,
-  getLiveBorgeRegen,
-  getLiveBorgeDr,
-  getLiveBorgeEvade,
-  getLiveBorgeEffect,
-  getLiveBorgeCritRate,
-  getLiveBorgeCritPower,
-  getLiveBorgeReload,
-  getLiveCurrentTime,
-  getLiveCurrentEnem,
-  getLiveCurrentStage,
-  getLiveEnemyHp,
-  getLiveEnemyMaxHp,
-  getLiveIsBoss,
-  getLiveNextAtk,
-  getLiveNextEnemAtk,
-  getLiveNextRegen,
-  getLiveNextAthena,
-  getLiveNextFury,
-  getLiveFuryEnabled,
-  getLiveLastEventType,
-  getLiveLastEventTypeString,
-  getLiveLastEventDamage,
-  getLiveLastEventHealing,
-  getLiveLastEventStage,
-  getLiveIsFinished,
-  getLiveEnemyAtk,
-  getLiveEnemyRegen,
-  getLiveEnemyDr,
-  getLiveEnemyEvade,
-  getLiveEnemyEffect,
-  getLiveEnemyCritRate,
-  getLiveEnemyCritDmg,
-  getLiveEnemyAtkSpd,
-  getLiveEnemyEnrage,
-  getLiveNextBossBonusAtk,
-  getLiveNextFuryToggle,
-  getLiveEnemyEnrageSpeedReduction,
-  getLiveBorgeHelltouch,
   EVALOZZY_WASM,
   getLastOzzyAvgStage,
   getLastOzzyAvgTime,

@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.8.3',
+    date: '2025-09-20',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added all new Gem Node buffs',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added Inscryption#110 to the calculations',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.2',
     date: '2025-09-13',
     changes: [

@@ -1,12 +1,13 @@
 <!-- filepath: /c:/Users/igorn/projects/huntersim2/src/components/upgrades/UpgradeHeader.vue -->
 <template>
   <div 
-    class="flex items-center justify-between"
+    class="flex items-center justify-between gap-2"
     :class="{ 'mb-1': !compact }"
   >
     <h3 
-      class="font-semibold text-white"
+      class="font-semibold text-white truncate min-w-0 flex-1"
       :class="compact ? 'text-base' : 'text-lg'"
+      :title="name"
     >{{ name }}</h3>
     
     <div v-if="level !== null" class="flex items-center">

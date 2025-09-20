@@ -161,6 +161,17 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
   "upgrades.loopmods.stelzi",           // Stelzi
   "upgrades.inscryptions.i105",        // Inscription #105
+  "upgrades.gems_nodes.exodus_gem5",   // Exodus Gem Node 5
+  "upgrades.gems_nodes.exodus_attractionCreationCount", // Attraction & Creation Upgrades Count
+  "upgrades.gems_nodes.exodus_gem4", // Exodus Gem Node 4
+  "upgrades.cms.exodus_gem4",       // Exodus Gem Node 4
+  "upgrades.gems_nodes.temporal_gem6",      // Temporal Gem Node 6
+  "upgrades.gems_nodes.innovation_gem5",    // Innovation Gem Node 5
+  "upgrades.gems_nodes.power_gem6",         // Power Gem Node 6
+  "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
+  "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
+  "upgrades.gems_nodes.creation_galvTrinketsCount", // Creation Galv Trinkets Count
+  "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -232,14 +243,28 @@ export const OVERRIDES = {
     "upgrades.cms.cm47",             // CM47
     "upgrades.cms.cm48",             // CM48
     "upgrades.cms.cm51",             // CM51
+    "upgrades.cms.exodus_gem4",
+  ],
+
+  gemNodes: [
+    "upgrades.gems_nodes.exodus_gem5",   // Exodus Gem Node 5
+    "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
+    "upgrades.gems_nodes.temporal_gem6",      // Temporal Gem Node 6
+    "upgrades.gems_nodes.innovation_gem5",    // Innovation Gem Node 5
+    "upgrades.gems_nodes.power_gem6",         // Power Gem Node 6
+    "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
+    "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
+    "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
+    "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
   ],
 
   gemUpgrades: [
     "upgrades.gems_nodes.creation_knoxGU", // Knox Gem Upgrade
+    "upgrades.gems_nodes.exodus_attractionCreationCount", // Attraction & Creation Upgrades Count
   ],
 
-  gemNodes: [
-    "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
+  trinkets: [
+    "upgrades.gems_nodes.creation_galvTrinketsCount", // Creation Galv Trinkets Count
   ],
 
   diamondSpecials: [
@@ -254,6 +279,9 @@ export const OVERRIDES_FLAT = [
   ...OVERRIDES.gadgets,
   ...OVERRIDES.researches,
   ...OVERRIDES.cms,
+  ...OVERRIDES.gemNodes,
+  ...OVERRIDES.gemUpgrades,
+  ...OVERRIDES.trinkets,
   ...OVERRIDES.diamondSpecials,
 ];
 
@@ -263,6 +291,9 @@ export const OVERRIDE_CATEGORY_LABELS = {
   gadgets: "Gadgets",
   researches: "Researches",
   cms: "Construction Milestones",
+  gemNodes: "Gem Nodes",
+  gemUpgrades: "Gem Upgrades",
+  trinkets: "Trinkets",
   diamondSpecials: "Diamond Specials",
 };
 
@@ -303,6 +334,14 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gadgets.anchor",  // Gadget (The Anchor of Ages)
   "upgrades.gems_nodes.creation_knoxGU", // Knox Gem Upgrade
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
+  "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.cms.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.gems_nodes.temporal_gem6",      // Temporal Gem Node 6
+  "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
+  "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
+  "upgrades.gems_nodes.power_gem6",         // Power Gem Node 6
+  "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
+  
 ];
 
 export const STATS_RESULT_LABELS = [
@@ -314,7 +353,7 @@ export const STATS_RESULT_LABELS = [
   { key: 'effect', label: 'Effect Chance', unit: '%', roundDigits: 1, multiplier: 100 },
   { key: 'chargechance', label: 'Charge Chance', unit: '%', roundDigits: 1, multiplier: 100 },
   { key: 'chargegained', label: 'Charge Gained', unit: 'x', roundDigits: 2 },
-  { key: 'atkspeed', label: 'Reload Time', unit: '/s', roundDigits: 2 },
+  { key: 'atkspeed', label: 'Reload Time', unit: 's', roundDigits: 2 },
   { key: 'souulschance', label: 'Souls Chance', unit: '%', roundDigits: 1, multiplier: 100 },
 ];
 
@@ -386,5 +425,5 @@ export const LOOT_ICONS = {
   mat1: mat1Icon,
   mat2: mat2Icon,
   mat3: mat3Icon,
-  xp: xpIcon,
+  xp:   xpIcon,
 };

@@ -300,6 +300,11 @@ let nextKnoxTorpedo: f64 = 0;
 let nextKnoxEnemAtk: f64 = 0;
 let nextKnoxRegen: f64 = 0;
 let currentKnoxRespec: i32 = 0;
+let currentKnoxCreaGem4: i32 = 0;
+let currentKnoxInnoGem5: i32 = 0;
+let currentKnoxPowGem6: i32 = 0;
+let currentKnoxCreaGem5: i32 = 0;
+let currentKnoxCreaGalvTrinketsCount: i32 = 0;
 
 // Array-Hilfsfunktionen 
 function knoxArraySum(arr: StaticArray<f64>): f64 {
@@ -360,7 +365,7 @@ function knoxEnemyAttack(): void {
     }
   }
   
-  currentKnox.hp -= dmg * (1 - currentKnox.dr);
+  currentKnox.hp -= dmg * (1 - currentKnox.dr) * (1 - 0.03 * currentKnoxCreaGem4);
   
   if (currentKnox.revives && currentKnox.hp <= 0) {
     currentKnox.hp = 0.8 * currentKnox.currentMaxHp;
@@ -436,7 +441,7 @@ function knoxKillEnemy(extraTime: f64 = 0): void {
     currentKnox.hp = Math.min(currentKnox.currentMaxHp, currentKnox.hp + currentKnox.currentMaxHp * currentKnox.ua * 0.02);
   }
   
-  if (currentKnox.reflect || (currentKnoxEnem > 0 && currentKnoxEnem % 1000 === 0) || (currentKnoxEnemy.maxDps * (1 - currentKnox.pog * 0.03) * (1 - currentKnox.dr) > currentKnox.currentRegen)) {
+  if (currentKnox.reflect || (currentKnoxEnem > 0 && currentKnoxEnem % 1000 === 0) || (currentKnoxEnemy.maxDps * (1 - currentKnox.pog * 0.03) * (1 - currentKnox.dr) * (1 - 0.03 * currentKnoxCreaGem4) > currentKnox.currentRegen)) {
     nextKnoxEnemAtk = currentKnoxTime + currentKnoxEnemy.atkSpd + extraTime;
   } else {
     nextKnoxEnemAtk = 9999999;
@@ -524,12 +529,17 @@ function knoxAtk(skipAtkReset: boolean = false): void {
 function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64, 
                  reviveCd: i32, special: f64, iap: boolean, ultima: f64, 
                  research81: i32, research95: i32, research105: i32, evoGN3: boolean, cm46: i32, 
-                 cm47: i32, cm48: i32, cm51: i32, iters: i32, stelzi: i32, i105: i32): void {
+                 cm47: i32, cm48: i32, cm51: i32, iters: i32, stelzi: i32, i105: i32, exodus_gem5: i32, exodus_attractionCreationCount: i32, exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32, inno_gem5: i32, pow_gem6: i32, crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32): void {
   // Globale Variablen setzen
   currentKnox = knox;
   currentKnoxEnem = 0;
   currentKnoxTime = 0;
   currentKnoxRespec = respec;
+  currentKnoxCreaGem4 = crea_gem4;
+  currentKnoxInnoGem5 = inno_gem5;
+  currentKnoxPowGem6 = pow_gem6;
+  currentKnoxCreaGem5 = crea_gem5;
+  currentKnoxCreaGalvTrinketsCount = crea_galvTrinketsCount;
 
   leftoverTorpedos = 0;
   
@@ -611,7 +621,7 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
   let stageGrowth: f64 = 1.074;
   let enemiesInSection: i32 = 1010;
   let excludedXpMultis: f64 = 1; 
-  let includedMultis = (1 + knox.timeless * 0.13) * gadgetLootMulti;
+  let includedMultis = (1 + knox.timeless * 0.13) * gadgetLootMulti * (temp_gem6 > 0 ? 1.03 : 1);
   
   // Research95: Kumulativer Multiplier (level 1: 1.02, level 2: 1.02*1.03, etc.)
   let research95Multi: f64 = 1;
@@ -619,7 +629,7 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
     research95Multi *= (1 + (i + 1) * 0.01);
   }
   
-  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * (research81 >= 3 ? 1.1 : 1) * (research81 >= 6 ? 1.2 : 1) * research95Multi * (research105 >= 3 ? 1.2 : 1) * (research105 >= 6 ? 1.3 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1) * Math.pow(1.02, stelzi as f64) * Math.pow(1.08, i105 as f64);
+  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * (research81 >= 3 ? 1.1 : 1) * (research81 >= 6 ? 1.2 : 1) * research95Multi * (research105 >= 3 ? 1.2 : 1) * (research105 >= 6 ? 1.3 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1) * Math.pow(1.02, stelzi as f64) * Math.pow(1.08, i105 as f64) * (1 + exodus_attractionCreationCount * 0.003) * (inno_gem5 > 0 ? 1.3 : 1);
   
   let loopLoot = normalized * ((Math.pow(stageGrowth, Math.floor(Math.min(currentKnoxEnem, enemiesInSection - 10) / 10) as f64) - 1) / (stageGrowth - 1) * 10 + (Math.min(currentKnoxEnem, enemiesInSection - 10) - Math.floor(Math.min(currentKnoxEnem, enemiesInSection - 10) / 10) * 10) * Math.pow(stageGrowth, Math.floor(Math.min(currentKnoxEnem, enemiesInSection - 10) / 10) as f64)) * includedMultis * (1 + knox.ll * 0.2 * knox.effect);
   
@@ -688,7 +698,10 @@ export function EVALKNOX_WASM(
   chargeGain1: i32, reload1: i32, proj1: i32, gadget1: i32, lvl1: i32,
   time1: i32, research81: i32, research95: i32, research105: i32, cm46: i32, 
   cm47: i32, cm48: i32, cm51: i32, creastat: i32, evoGN3: i32,
-  stelzi: i32, i105: i32
+  stelzi: i32, i105: i32, exodus_gem5: i32, exodus_attractionCreationCount: i32,
+  exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32,
+  inno_gem5: i32, pow_gem6: i32, crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32,
+  evo_gem6: i32
 ): f64 {
   
   // Enemies initialisieren
@@ -705,18 +718,35 @@ export function EVALKNOX_WASM(
   knox.lvl = lvl;
   knox.maxStage = maxStage;
   
+  // Crea Gem 5: HP Bonus basierend auf crea_galvTrinketsCount (0.01% pro Count, Cap bei 100%)
+  let creaGem5HpBonus: f64 = 1;
+  if (crea_gem5 > 0) {
+    let hpBonusPercent = Math.min(100, crea_galvTrinketsCount as f64) * 0.01;
+    creaGem5HpBonus = 1 + hpBonusPercent;
+  }
+  
   // Base Stats 
-  knox.maxHp = (20 + (2 + Math.floor(hp / 5) * 0.1) * hp) * gadgetMulti * crea4GUMulti * (evoGN3 ? 1.0777 : 1);
+  knox.maxHp = (20 + (2 + Math.floor(hp / 5) * 0.1) * hp) * gadgetMulti * crea4GUMulti * (evoGN3 ? 1.0777 : 1) * (temp_gem6 > 0 ? 1.03 : 1) * (crea_gem4 > 0 ? 1.08 : 1) * (pow_gem6 > 0 ? 1 + Math.max(0, (lvl - 29) * 0.015) : 1) * creaGem5HpBonus;
   knox.hp = knox.maxHp;
-  knox.atk = (1.2 + (0.06 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * crea4GUMulti;
+  knox.atk = (1.2 + (0.06 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * crea4GUMulti * (temp_gem6 > 0 ? 1.03 : 1) * (pow_gem6 > 0 ? 1 + Math.max(0, (lvl - 29) * 0.01) : 1);
   knox.salvo = 3 + proj * 1;
-  knox.regen = (0.05 + (0.03 + Math.floor(regen / 30) * 0.02) * regen) * gadgetMulti * crea4GUMulti * (evoGN3 ? 1.0777 : 1);
+  knox.regen = (0.05 + (0.03 + Math.floor(regen / 30) * 0.02) * regen) * gadgetMulti * crea4GUMulti * (evoGN3 ? 1.0777 : 1) * (crea_gem4 > 0 ? 1.08 : 1) * (pow_gem6 > 0 ? 1 + Math.max(0, (lvl - 29) * 0.005) : 1);
   knox.dr = 0.0032 * dr;
   knox.block = 0.0055 * block + 0.08;
   knox.effect = 0.0036 * effect + 0.05;
   knox.charge = 0.07 + 0.0025 * charge;
   knox.chargeGain = 0.01 * chargeGain + 0.25;
   knox.reload = 7 - 0.03 * reload;
+  
+  // Exodus Gem 4: Construction Milestone ATK Speed Bonus
+  let exodusAtkSpeedBonus: f64 = 0;
+  if (exodus_gem4 > 0) {
+    // Jede 3 Construction Milestones senkt ATK Speed um 0.01s, max 0.25s
+    let atkSpeedReduction = Math.floor(exodus_constructionMilestoneCount as f64 / 3) * 0.01;
+    exodusAtkSpeedBonus = Math.min(0.25, atkSpeedReduction);
+  }
+  
+  knox.reload -= exodusAtkSpeedBonus;
   
   // Base Stats Record 
   knox.basehp = hp;
@@ -759,6 +789,10 @@ export function EVALKNOX_WASM(
   knox.atk *= (1 + 0.005 * knox.kraken);
   knox.dr += 0.009 * knox.pirate;
   knox.charge += 0.01 * knox.sear + 0.006 * knox.pirate;
+  // Evolution Gem 6: +2% Charge Chance für Knox
+  if (evo_gem6 > 0) {
+    knox.charge += 0.02;
+  }
   knox.effect += 0.02 * knox.sear + 0.007 * knox.pirate;
   knox.block += 0.01 * knox.elixer + 0.008 * knox.pirate;
   
@@ -769,7 +803,7 @@ export function EVALKNOX_WASM(
   
   // Simulation laufen lassen
   for (let i = 0; i < iters; i++) {
-    knoxSim(knox, maxStage, respec, gadgetLootMulti, reviveCd, special, iap > 0, ultima, research81, research95, research105, evoGN3 > 0, cm46, cm47, cm48, cm51, iters, stelzi, i105);
+    knoxSim(knox, maxStage, respec, gadgetLootMulti, reviveCd, special, iap > 0, ultima, research81, research95, research105, evoGN3 > 0, cm46, cm47, cm48, cm51, iters, stelzi, i105, exodus_gem5, exodus_attractionCreationCount, exodus_gem4, exodus_constructionMilestoneCount, temp_gem6, inno_gem5, pow_gem6, crea_gem4, crea_gem5, crea_galvTrinketsCount);
   }
   
   // lastKnox für Export-Funktionen setzen

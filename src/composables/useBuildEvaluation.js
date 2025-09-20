@@ -264,7 +264,8 @@ export function useBuildEvaluation(props, emit) {
             key.includes('innovation_') || 
             key.includes('power_') || 
             key.includes('evolution_') ||
-            key.includes('_gem') && !key.match(/^upgrades\.gems_nodes\.(creation|attraction|innovation)_gem[1-3]$/)
+            key.includes('exodus') ||
+            key.includes('_gem') && !key.match(/^upgrades\.gems_nodes\.(creation|attraction|innovation)_gem[1-6]$/)
           )) {
             console.log('🚫 [Override] Skipping old gem override:', key);
             continue;

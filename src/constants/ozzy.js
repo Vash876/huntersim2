@@ -177,7 +177,17 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
   "upgrades.loopmods.stelzi",       // Stelzi
   "upgrades.inscryptions.i104",
-
+  "upgrades.gems_nodes.exodus_gem3", // Exodus Gem Node 3
+  "upgrades.gems_nodes.exodus_powerInnovationCount", // Power & Innovation Upgrades Count
+  "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.cms.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.gems_nodes.temporal_gem6",      // Temporal Gem Node 6
+  "upgrades.gems_nodes.innovation_gem5",    // Innovation Gem Node 5
+  "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
+  "upgrades.gems_nodes.creation_gem5",      // Creation Gem Node 5
+  "upgrades.gems_nodes.creation_galvTrinketsCount", // Creation Galv Trinkets Count
+  "upgrades.gems_nodes.creation_gem6",      // Creation Gem Node 6
+  "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -260,6 +270,7 @@ export const OVERRIDES = {
     "upgrades.cms.cm47",
     "upgrades.cms.cm48",
     "upgrades.cms.cm51",
+    "upgrades.cms.exodus_gem4",
   ],
 
   // Loopmods
@@ -273,28 +284,42 @@ export const OVERRIDES = {
     "upgrades.shardmilestones.m0",   // Shard Milestone 0
   ],
 
-  // Diamond Specials
-  diamondSpecials: [
-    "upgrades.diamondspecials.reviveboost", // Revive Cooldown
-  ],
-
   // Gem Nodes
   gemNodes: [
+    "upgrades.gems_nodes.exodus_gem3",            // Exodus Gem Node 3
+    "upgrades.gems_nodes.exodus_gem4",            // Exodus Gem Node 4
+    "upgrades.gems_nodes.temporal_gem6",          // Temporal Gem Node 6
     "upgrades.gems_nodes.innovation_gem2",         // Innovation Gem Node 2
     "upgrades.gems_nodes.innovation_gem3",         // Innovation Gem Node 3
+    "upgrades.gems_nodes.innovation_gem5",    // Innovation Gem Node 5
     "upgrades.gems_nodes.attraction_gem3",         // Attraction Gem Node 3
+    "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
+    "upgrades.gems_nodes.creation_gem5",      // Creation Gem Node 5
+    "upgrades.gems_nodes.creation_gem6",      // Creation Gem Node 6
     "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
+    "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
   ],
 
   gemUpgrades: [
     "upgrades.gems_nodes.attraction_catchUp", // Catchup Power 
     "upgrades.gems_nodes.attraction_lootOzzy", // Loot (Ozzy)
     "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
+    "upgrades.gems_nodes.exodus_powerInnovationCount", // Power & Innovation Upgrades Count
   ],
 
   // Gem Levels
   gemLevels: [
     "upgrades.gems_nodes.attraction_level",             // Attraction Gem Level
+  ],
+
+  // Trinkets
+  trinkets: [
+    "upgrades.gems_nodes.creation_galvTrinketsCount", // Creation Galv Trinkets Count
+  ],
+
+  // Diamond Specials
+  diamondSpecials: [
+    "upgrades.diamondspecials.reviveboost", // Revive Cooldown
   ],
 
   // Diamond Cards
@@ -317,6 +342,7 @@ export const OVERRIDES_FLAT = [
   ...OVERRIDES.gemNodes,
   ...OVERRIDES.gemUpgrades,
   ...OVERRIDES.gemLevels,
+  ...OVERRIDES.trinkets,
   ...OVERRIDES.diamondCards
 ];
 
@@ -334,6 +360,7 @@ export const OVERRIDE_CATEGORY_LABELS = {
   gemNodes: "Gem Nodes",
   gemUpgrades: "Gem Upgrades",
   gemLevels: "Gem Levels",
+  trinkets: "Trinkets",
   diamondCards: "Diamond Cards"
 };
 
@@ -392,6 +419,13 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
   "upgrades.loopmods.stelzi",           // Stelzi
   "upgrades.inscryptions.i104",        // Inscription #104
+  "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.cms.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.gems_nodes.temporal_gem6",      // Temporal Gem Node 6
+  "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
+  "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
+  "upgrades.gems_nodes.creation_gem6",    // Creation Gem Node 6
+  "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
 ];
 
 export const STATS_RESULT_LABELS = [
@@ -403,7 +437,7 @@ export const STATS_RESULT_LABELS = [
   { key: 'effect', label: 'Effect Chance', unit: '%', roundDigits: 1, multiplier: 100 },
   { key: 'multichance', label: 'Multistrike Chance', unit: '%', roundDigits: 1, multiplier: 100 },
   { key: 'multipower', label: 'Multistrike Power', unit: 'x', roundDigits: 2 },
-  { key: 'atkspeed', label: 'ATK Speed', unit: '/s', roundDigits: 2 }
+  { key: 'atkspeed', label: 'ATK Speed', unit: 's', roundDigits: 2 }
 ];
 
 //Kosten Effizienz

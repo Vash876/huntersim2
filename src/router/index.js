@@ -74,6 +74,11 @@ const routes = [
     component: () => import('../views/upgrades/ConstructionMilestones.vue')
   },
   {
+    path: '/upgrades/trinkets',
+    name: 'Trinkets',
+    component: () => import('../views/upgrades/Trinkets.vue')
+  },
+  {
     path: '/upgrades/diamondspecials',
     name: 'Diamond Specials',
     component: () => import('../views/upgrades/DiamondSpecials.vue')

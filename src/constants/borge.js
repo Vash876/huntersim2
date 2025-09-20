@@ -188,6 +188,16 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.temporal_gem4",      // Temporal Gem Node 4
   "upgrades.loopmods.stelzi",                 // Stelzi
   "upgrades.inscryptions.i103",
+  "upgrades.gems_nodes.exodus_gem1",      // Exodus Gem Node 1 (for re-evaluation trigger)
+  "upgrades.gems_nodes.exodus_temporalEvolutionCount", // Exodus Temporal Evolution Count
+  "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.cms.exodus_gem4",             // Exodus Gem Node 4
+  "upgrades.gems_nodes.temporal_gem6",      // Temporal Gem Node 6
+  "upgrades.gems_nodes.innovation_gem5",    // Innovation Gem Node 5
+  "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
+  "upgrades.gems_nodes.creation_gem5",      // Creation Gem Node 5
+  "upgrades.gems_nodes.creation_galvTrinketsCount", // Creation Galv Trinkets Count
+  "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -227,7 +237,7 @@ export const OVERRIDES = {
     "critchance",      // Crit Chance
     "critpower",       // Crit Power
     "atkspeed",        // ATK Speed
-    "stage",           // Maximale Stage (aus buildData)
+    "stage",           // Maximale Stage 
   ],
 
   // Gadgets
@@ -243,7 +253,7 @@ export const OVERRIDES = {
     "upgrades.relics.r19",           // Relic #19
   ],
 
-  // Inscriptions
+  // Inscryptions
   inscryptions: [
     "upgrades.inscryptions.i3",      // Inscription #3
     "upgrades.inscryptions.i4",      // Inscription #4
@@ -270,6 +280,7 @@ export const OVERRIDES = {
     "upgrades.cms.cm47",            // Construction Milestone #47
     "upgrades.cms.cm48",            // Construction Milestone #48
     "upgrades.cms.cm51",            // Construction Milestone #51
+    "upgrades.cms.exodus_gem4",     // Exodus Gem Node 4 (via CM)
   ],
 
   // Research
@@ -291,32 +302,45 @@ export const OVERRIDES = {
     "upgrades.shardmilestones.m0",   // Shard Milestone 0
   ],
 
-  // Diamond Specials
-  diamondSpecials: [
-    "upgrades.diamondspecials.reviveboost", // Revive Cooldown
-  ],
-
   // Gem Nodes
   gemNodes: [
+    "upgrades.gems_nodes.exodus_gem1",      // Exodus Gem Node 1
+    "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
     "upgrades.gems_nodes.temporal_gem4",    // Temporal Gem Node 4
+    "upgrades.gems_nodes.temporal_gem6",    // Temporal Gem Node 6
+    "upgrades.gems_nodes.innovation_gem3",  // Innovation Gem Node 3
+    "upgrades.gems_nodes.innovation_gem5",    // Innovation Gem Node 5
+    "upgrades.gems_nodes.attraction_gem2",  // Attraction Gem Node 2
+    "upgrades.gems_nodes.attraction_gem3",  // Attraction Gem Node 3
     "upgrades.gems_nodes.creation_gem1",    // Creation Gem Node 1
     "upgrades.gems_nodes.creation_gem2",    // Creation Gem Node 2
     "upgrades.gems_nodes.creation_gem3",    // Creation Gem Node 3
-    "upgrades.gems_nodes.innovation_gem3",  // Innovation Gem Node 3
-    "upgrades.gems_nodes.attraction_gem2",  // Attraction Gem Node 2
-    "upgrades.gems_nodes.attraction_gem3",  // Attraction Gem Node 3
+    "upgrades.gems_nodes.creation_gem4",    // Creation Gem Node 4
+    "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
     "upgrades.gems_nodes.evolution_gem3",   // Evolution Gem Node 3
+    "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
   ],
 
   gemUpgrades: [
     "upgrades.gems_nodes.attraction_catchUp", // Catchup Power
     "upgrades.gems_nodes.attraction_lootBorge", // Loot (Borge)
     "upgrades.gems_nodes.creation_borgeGU", // Borge Gem Upgrade
+    "upgrades.gems_nodes.exodus_temporalEvolutionCount", // Exodus Temporal Evolution Count
   ],
 
   // Gem Levels
   gemLevels: [
     "upgrades.gems_nodes.attraction_level",     // Attraction Gem Level
+  ],
+
+  // Trinkets
+  trinkets: [
+    "upgrades.gems_nodes.creation_galvTrinketsCount", // Creation Galv Trinkets Count
+  ],
+
+  // Diamond Specials
+  diamondSpecials: [
+    "upgrades.diamondspecials.reviveboost", // Revive Cooldown
   ],
 
   // Diamond Cards
@@ -339,6 +363,7 @@ export const OVERRIDES_FLAT = [
   ...OVERRIDES.gemNodes,
   ...OVERRIDES.gemUpgrades,
   ...OVERRIDES.gemLevels,
+  ...OVERRIDES.trinkets,
   ...OVERRIDES.diamondCards
 ];
 
@@ -356,6 +381,7 @@ export const OVERRIDE_CATEGORY_LABELS = {
   gemNodes: "Gem Nodes",
   gemUpgrades: "Gem Upgrades",
   gemLevels: "Gem Levels",
+  trinkets: "Trinkets",
   diamondCards: "Diamond Cards"
 };
 
@@ -427,6 +453,12 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.temporal_gem4", // Temporal Gem Node 4
   "upgrades.loopmods.stelzi",           // Stelzi
   "upgrades.inscryptions.i103",        // Inscription #103
+  "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.cms.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.gems_nodes.temporal_gem6", // Temporal Gem Node 6
+  "upgrades.gems_nodes.creation_gem4",    // Creation Gem Node 4
+  "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
+  "upgrades.gems_nodes.evolution_gem6",   // Evolution Gem Node 6
 ];
 
 export const STATS_RESULT_LABELS = [
@@ -438,7 +470,7 @@ export const STATS_RESULT_LABELS = [
   { key: 'effect', label: 'Effect Chance', unit: '%', roundDigits: 1, multiplier: 100 },
   { key: 'critchance', label: 'Crit Chance', unit: '%', roundDigits: 1, multiplier: 100 },
   { key: 'critpower', label: 'Crit Power', unit: 'x', roundDigits: 2 },
-  { key: 'atkspeed', label: 'ATK Speed', unit: '/s', roundDigits: 2 }
+  { key: 'atkspeed', label: 'ATK Speed', unit: 's', roundDigits: 2 }
 ];
 
 //Kosten Effizienz

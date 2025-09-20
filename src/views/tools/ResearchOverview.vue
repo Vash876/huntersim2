@@ -437,10 +437,10 @@ function finalizeAllTimeHighestRP() {
 const filteredResearches = computed(() => {
   let result = researchData.value;
 
-  // All Time Highest RP Filter - hide permanent dark researches already owned
+  // All Time Highest RP Filter - hide permanent dark and temporal researches already owned
   if (allTimeHighestRP.value > 0) {
     result = result.filter(research => {
-      if (research.type === 'Dark' && research.cost <= allTimeHighestRP.value) {
+      if ((research.type === 'Dark' || research.research === 'Temporal Research') && research.cost <= allTimeHighestRP.value) {
         return false; // Filter out - already owned
       }
       return true;

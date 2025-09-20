@@ -264,7 +264,6 @@ function toggleHideMaxed() {
 function saveHideMaxedSetting() {
   try {
     localStorage.setItem(HIDE_MAXED_KEY, JSON.stringify(localHideMaxed.value));
-    console.log(`Hide Maxed setting saved: ${localHideMaxed.value}`);
   } catch (error) {
     console.error('Fehler beim Speichern der Hide Maxed Einstellung:', error);
   }
@@ -276,7 +275,6 @@ function loadHideMaxedSetting() {
     const saved = localStorage.getItem(HIDE_MAXED_KEY);
     if (saved !== null) {
       localHideMaxed.value = JSON.parse(saved);
-      console.log(`Hide Maxed setting loaded: ${localHideMaxed.value}`);
     }
   } catch (error) {
     console.error('Fehler beim Laden der Hide Maxed Einstellung:', error);
@@ -284,7 +282,7 @@ function loadHideMaxedSetting() {
   }
 }
 
-// NEU: Prüft ob ein Parameter "maxed" ist
+//  Prüft ob ein Parameter "maxed" ist
 function isParameterMaxed(param) {
   // Prüfe zuerst, ob ein Override existiert
   const overrideValue = localOverrides.value[param.key];
@@ -335,10 +333,12 @@ const filteredCategories = computed(() => {
   }
   
   // Filtere Parameter in jeder Kategorie
-  return visibleCategories.value.map(category => ({
+  const filtered = visibleCategories.value.map(category => ({
     ...category,
     params: category.params.filter(param => !isParameterMaxed(param))
   })).filter(category => category.params.length > 0); // Entferne leere Kategorien
+  
+  return filtered;
 });
 
 // Helper function to truncate names
@@ -363,12 +363,29 @@ function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
   
   // Conversion mappings
   const gemMappings = {
+    exodus: {
+      level: 'exodus_level',
+      nodes: {
+        gem1: 'exodus_gem1',
+        gem2: 'exodus_gem2',
+        gem3: 'exodus_gem3',
+        gem4: 'exodus_gem4',
+        gem5: 'exodus_gem5',
+        gem6: 'exodus_gem6',
+        temporalEvolutionCount: 'exodus_temporalEvolutionCount'
+      },
+      upgrades: {
+      }
+    },
     attraction: {
       level: 'attraction_level',
       nodes: {
         gem1: 'attraction_gem1',
         gem2: 'attraction_gem2', 
-        gem3: 'attraction_gem3'
+        gem3: 'attraction_gem3',
+        gem4: 'attraction_gem4',
+        gem5: 'attraction_gem5',
+        gem6: 'attraction_gem6',
       },
       upgrades: {
         'borge-loot-bonus': 'attraction_lootBorge',
@@ -381,7 +398,10 @@ function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
       nodes: {
         gem1: 'innovation_gem1',
         gem2: 'innovation_gem2',
-        gem3: 'innovation_gem3'
+        gem3: 'innovation_gem3',
+        gem4: 'innovation_gem4',
+        gem5: 'innovation_gem5',
+        gem6: 'innovation_gem6',
       },
       upgrades: {
       }
@@ -391,7 +411,11 @@ function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
       nodes: {
         gem1: 'creation_gem1',
         gem2: 'creation_gem2',
-        gem3: 'creation_gem3'  
+        gem3: 'creation_gem3',
+        gem4: 'creation_gem4',
+        gem5: 'creation_gem5',
+        gem6: 'creation_gem6',
+        galvTrinketsCount: 'creation_galvTrinketsCount'
       },
       upgrades: {
         'borge-stat-bonus': 'creation_borgeGU',
@@ -402,7 +426,8 @@ function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
     evolution: {
       level: 'evolution_level',
       nodes: {
-        gem3: 'evolution_gem3'
+        gem3: 'evolution_gem3',
+        gem6: 'evolution_gem6'
       },
       upgrades: {
         'gem3': 'evolution_gem3'
@@ -472,8 +497,6 @@ async function loadOverrideData() {
     // Convert gemPlannerStore format to upgrades.gems_nodes format
     const upgradesData = convertGemStatesToUpgrades(baseUpgradesData, gemPlannerStore);
     
-    console.log('🔧 [OverrideModal] Gem data converted for modal display');
-    
     // Process all parameters from OVERRIDES
     const processedCategories = [];
     
@@ -483,6 +506,7 @@ async function loadOverrideData() {
       
       const processedCategory = {
         key: category,
+        name: category,  // Füge name hinzu für Kompatibilität 
         label: categoryLabel,
         params: []
       };
@@ -507,6 +531,72 @@ async function loadOverrideData() {
             
             // Get the global value from the store
             globalValue = upgradesData?.[upgradeType]?.[upgradeId] || 0;
+            
+            // Special handling for exodus_temporalEvolutionCount - calculate the value
+            if (paramKey === 'upgrades.gems_nodes.exodus_temporalEvolutionCount') {
+              // Check if exodus gem1 is active (considering both global state and current overrides)
+              const exodusGem1Key = 'upgrades.gems_nodes.exodus_gem1';
+              
+              // First check if there's an override for exodus_gem1 in current overrides
+              let hasExodusNode1;
+              if (props.currentOverrides && props.currentOverrides[exodusGem1Key] !== undefined) {
+                hasExodusNode1 = props.currentOverrides[exodusGem1Key] > 0;
+              } else {
+                // Fallback to global state
+                const exodusGemState = gemPlannerStore?.gemStates?.exodus;
+                hasExodusNode1 = exodusGemState?.nodes?.[0] || false;
+              }
+              
+              if (hasExodusNode1) {
+                // Calculate temporal + evolution upgrade count
+                let upgradeCount = 0;
+                
+                // Count Temporal gem upgrades
+                const temporalGemState = gemPlannerStore?.gemStates?.temporal;
+                if (temporalGemState?.upgrades) {
+                  upgradeCount += Object.values(temporalGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+                }
+                
+                // Count Evolution gem upgrades
+                const evolutionGemState = gemPlannerStore?.gemStates?.evolution;
+                if (evolutionGemState?.upgrades) {
+                  upgradeCount += Object.values(evolutionGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+                }
+                
+                globalValue = upgradeCount;
+              } else {
+                globalValue = 0;
+              }
+            }
+            
+            // Special handling for creation_galvTrinketsCount - calculate the value
+            if (paramKey === 'upgrades.gems_nodes.creation_galvTrinketsCount') {
+              // Check if creation gem5 is active (considering both global state and current overrides)
+              const creationGem5Key = 'upgrades.gems_nodes.creation_gem5';
+              
+              // First check if there's an override for creation_gem5 in current overrides
+              let hasCreationNode5;
+              if (props.currentOverrides && props.currentOverrides[creationGem5Key] !== undefined) {
+                hasCreationNode5 = props.currentOverrides[creationGem5Key] > 0;
+              } else {
+                // Fallback to global state (node 5 = index 4)
+                const creationGemState = gemPlannerStore?.gemStates?.creation;
+                hasCreationNode5 = creationGemState?.nodes?.[4] || false;
+              }
+              
+              if (hasCreationNode5) {
+                // Calculate total trinket levels
+                let trinketCount = 0;
+                
+                if (upgradesData?.trinkets) {
+                  trinketCount = Object.values(upgradesData.trinkets).reduce((sum, level) => sum + (level || 0), 0);
+                }
+                
+                globalValue = trinketCount;
+              } else {
+                globalValue = 0;
+              }
+            }
             
             // Special handling for gem_nodes
             if (upgradeType === 'gems_nodes') {
@@ -545,7 +635,11 @@ async function loadOverrideData() {
                         'catchUp': 'catchUp',
                         'borgeGU': 'borgeGU',
                         'ozzyGU': 'ozzyGU',
-                        'knoxGU': 'knoxGU'
+                        'knoxGU': 'knoxGU',
+                        'galvTrinketsCount': 'galvTrinketsCount',
+                        'temporalEvolutionCount': 'temporalEvolutionCount',
+                        'powerInnovationCount': 'powerInnovationCount',
+                        'attractionCreationCount': 'attractionCreationCount'
                       };
                       return n.id === propertyToNodeMap[property];
                     });
@@ -562,11 +656,15 @@ async function loadOverrideData() {
                         'catchUp': 'Catch-Up Power',
                         'borgeGU': 'Borge Stat Bonus',
                         'ozzyGU': 'Ozzy Stat Bonus',
-                        'knoxGU': 'Knox Stat Bonus'
+                        'knoxGU': 'Knox Stat Bonus',
+                        'galvTrinketsCount': 'Galvarium Trinkets Count',
+                        'temporalEvolutionCount': 'Temporal Evolution Upgrades Count',
+                        'powerInnovationCount': 'Power & Innovation Upgrades Count',
+                        'attractionCreationCount': 'Attraction & Creation Upgrades Count'
                       };
                       
                       paramName = upgradeNameMap[property] || property;
-                      maxValue = 50; // Fallback max
+                      maxValue = property === 'galvTrinketsCount' ? Infinity : 50; // Spezielle Behandlung für galvTrinketsCount
                       type = "numeric";
                     }
                   }
@@ -698,9 +796,328 @@ function initLocalOverrides() {
   localOverrides.value = newOverrides;
 }
 
+// Computed property for calculated exodus_temporalEvolutionCount value
+const calculatedExodusTemporalEvolutionCount = computed(() => {
+  // Check if exodus gem1 is active (considering both global state and current overrides)
+  const exodusGem1Key = 'upgrades.gems_nodes.exodus_gem1';
+  
+  // First check if there's an override for exodus_gem1 in local overrides
+  let hasExodusNode1;
+  if (localOverrides.value[exodusGem1Key] !== null && localOverrides.value[exodusGem1Key] !== undefined) {
+    hasExodusNode1 = localOverrides.value[exodusGem1Key] > 0;
+  } else if (props.currentOverrides && props.currentOverrides[exodusGem1Key] !== undefined) {
+    hasExodusNode1 = props.currentOverrides[exodusGem1Key] > 0;
+  } else {
+    // Fallback to global state
+    const exodusGemState = gemPlannerStore?.gemStates?.exodus;
+    hasExodusNode1 = exodusGemState?.nodes?.[0] || false;
+  }
+  
+  if (hasExodusNode1) {
+    // Calculate temporal + evolution upgrade count
+    let upgradeCount = 0;
+    
+    // Count Temporal gem upgrades
+    const temporalGemState = gemPlannerStore?.gemStates?.temporal;
+    if (temporalGemState?.upgrades) {
+      upgradeCount += Object.values(temporalGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    // Count Evolution gem upgrades
+    const evolutionGemState = gemPlannerStore?.gemStates?.evolution;
+    if (evolutionGemState?.upgrades) {
+      upgradeCount += Object.values(evolutionGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    return upgradeCount;
+  } else {
+    return 0;
+  }
+});
+
+// Computed property for calculated creation_galvTrinketsCount value
+const calculatedCreationGalvTrinketsCount = computed(() => {
+  // Check if creation gem5 is active (considering both global state and current overrides)
+  const creationGem5Key = 'upgrades.gems_nodes.creation_gem5';
+  
+  // First check if there's an override for creation_gem5 in local overrides
+  let hasCreationNode5;
+  if (localOverrides.value[creationGem5Key] !== null && localOverrides.value[creationGem5Key] !== undefined) {
+    hasCreationNode5 = localOverrides.value[creationGem5Key] > 0;
+  } else if (props.currentOverrides && props.currentOverrides[creationGem5Key] !== undefined) {
+    hasCreationNode5 = props.currentOverrides[creationGem5Key] > 0;
+  } else {
+    // Fallback to global state (node 5 = index 4)
+    const creationGemState = gemPlannerStore?.gemStates?.creation;
+    hasCreationNode5 = creationGemState?.nodes?.[4] || false;
+  }
+  
+  if (hasCreationNode5) {
+    // Calculate total trinket levels
+    let trinketCount = 0;
+    
+    // Get current upgrades data
+    const upgradesData = hunterStore.upgrades || {};
+    if (upgradesData?.trinkets) {
+      trinketCount = Object.values(upgradesData.trinkets).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    return trinketCount;
+  } else {
+    return 0;
+  }
+});
+
+// Computed property for calculated exodus_powerInnovationCount value (Ozzy)
+const calculatedExodusPowerInnovationCount = computed(() => {
+  // Check if exodus gem3 is active (considering both global state and current overrides)
+  const exodusGem3Key = 'upgrades.gems_nodes.exodus_gem3';
+  
+  // First check if there's an override for exodus_gem3 in local overrides
+  let hasExodusNode3;
+  if (localOverrides.value[exodusGem3Key] !== null && localOverrides.value[exodusGem3Key] !== undefined) {
+    hasExodusNode3 = localOverrides.value[exodusGem3Key] > 0;
+  } else if (props.currentOverrides && props.currentOverrides[exodusGem3Key] !== undefined) {
+    hasExodusNode3 = props.currentOverrides[exodusGem3Key] > 0;
+  } else {
+    // Fallback to global state
+    const exodusGemState = gemPlannerStore?.gemStates?.exodus;
+    hasExodusNode3 = exodusGemState?.nodes?.[2] || false; // Node 3 = Index 2
+  }
+  
+  if (hasExodusNode3) {
+    // Calculate power + innovation upgrade count
+    let upgradeCount = 0;
+    
+    // Count Power gem upgrades
+    const powerGemState = gemPlannerStore?.gemStates?.power;
+    if (powerGemState?.upgrades) {
+      upgradeCount += Object.values(powerGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    // Count Innovation gem upgrades
+    const innovationGemState = gemPlannerStore?.gemStates?.innovation;
+    if (innovationGemState?.upgrades) {
+      upgradeCount += Object.values(innovationGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    return upgradeCount;
+  } else {
+    return 0;
+  }
+});
+
+// Computed property for calculated exodus_attractionCreationCount value (Knox)
+const calculatedExodusAttractionCreationCount = computed(() => {
+  // Check if exodus gem5 is active (considering both global state and current overrides)
+  const exodusGem5Key = 'upgrades.gems_nodes.exodus_gem5';
+  
+  // First check if there's an override for exodus_gem5 in local overrides
+  let hasExodusNode5;
+  if (localOverrides.value[exodusGem5Key] !== null && localOverrides.value[exodusGem5Key] !== undefined) {
+    hasExodusNode5 = localOverrides.value[exodusGem5Key] > 0;
+  } else if (props.currentOverrides && props.currentOverrides[exodusGem5Key] !== undefined) {
+    hasExodusNode5 = props.currentOverrides[exodusGem5Key] > 0;
+  } else {
+    // Fallback to global state
+    const exodusGemState = gemPlannerStore?.gemStates?.exodus;
+    hasExodusNode5 = exodusGemState?.nodes?.[4] || false; // Node 5 = Index 4
+  }
+  
+  if (hasExodusNode5) {
+    // Calculate attraction + creation upgrade count
+    let upgradeCount = 0;
+    
+    // Count Attraction gem upgrades
+    const attractionGemState = gemPlannerStore?.gemStates?.attraction;
+    if (attractionGemState?.upgrades) {
+      upgradeCount += Object.values(attractionGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    // Count Creation gem upgrades
+    const creationGemState = gemPlannerStore?.gemStates?.creation;
+    if (creationGemState?.upgrades) {
+      upgradeCount += Object.values(creationGemState.upgrades).reduce((sum, level) => sum + (level || 0), 0);
+    }
+    
+    return upgradeCount;
+  } else {
+    return 0;
+  }
+});
+
 // Computed list of categories that have parameters
 const visibleCategories = computed(() => {
-  return parameterData.value.filter(category => category.params.length > 0);
+  return parameterData.value.map(category => {
+    // Filter parameters basierend auf aktuellen Bedingungen
+    const filteredParams = category.params.filter(param => {
+      // Generische Logik für exodus gem CMS Parameter
+      if (param.key.startsWith('upgrades.cms.exodus_gem')) {
+        // Extrahiere die exodus gem ID aus dem Parameter key (z.B. "exodus_gem4" aus "upgrades.cms.exodus_gem4")
+        const exodusGemMatch = param.key.match(/upgrades\.cms\.(exodus_gem\d+)/);
+        if (exodusGemMatch) {
+          const exodusGemId = exodusGemMatch[1]; // z.B. "exodus_gem4"
+          const exodusGemKey = `upgrades.gems_nodes.${exodusGemId}`;
+          
+          // Prüfe aktuellen Override-Status für das entsprechende exodus gem
+          const exodusGemOverride = localOverrides.value[exodusGemKey];
+          
+          // Prüfe global state aus dem ursprünglichen parameterData
+          const exodusGemParam = parameterData.value
+            .flatMap(cat => cat.params)
+            .find(p => p.key === exodusGemKey);
+          const globalValue = exodusGemParam?.globalValue || 0;
+          
+          // Bestimme den aktuellen effektiven Wert
+          const effectiveValue = (exodusGemOverride !== null && exodusGemOverride !== undefined) 
+            ? exodusGemOverride 
+            : globalValue;
+          
+          const isActive = effectiveValue > 0;
+          
+          return isActive;
+        }
+      }
+      
+      // Spezielle Logik für exodus_temporalEvolutionCount - nur anzeigen wenn exodus_gem1 aktiv ist
+      if (param.key === 'upgrades.gems_nodes.exodus_temporalEvolutionCount') {
+        const exodusGem1Key = 'upgrades.gems_nodes.exodus_gem1';
+        
+        // Prüfe aktuellen Override-Status für exodus gem1
+        const exodusGem1Override = localOverrides.value[exodusGem1Key];
+        
+        // Prüfe global state für exodus gem1
+        const exodusGem1Param = parameterData.value
+          .flatMap(cat => cat.params)
+          .find(p => p.key === exodusGem1Key);
+        const exodusGem1GlobalValue = exodusGem1Param?.globalValue || 0;
+        
+        // Bestimme den aktuellen effektiven Wert für exodus gem1
+        const exodusGem1EffectiveValue = (exodusGem1Override !== null && exodusGem1Override !== undefined) 
+          ? exodusGem1Override 
+          : exodusGem1GlobalValue;
+        
+        const isExodusGem1Active = exodusGem1EffectiveValue > 0;
+        
+        return isExodusGem1Active;
+      }
+      
+      // Spezielle Logik für creation_galvTrinketsCount - nur anzeigen wenn creation_gem5 aktiv ist
+      if (param.key === 'upgrades.gems_nodes.creation_galvTrinketsCount') {
+        const creationGem5Key = 'upgrades.gems_nodes.creation_gem5';
+        
+        // Prüfe aktuellen Override-Status für creation gem5
+        const creationGem5Override = localOverrides.value[creationGem5Key];
+        
+        // Prüfe global state für creation gem5
+        const creationGem5Param = parameterData.value
+          .flatMap(cat => cat.params)
+          .find(p => p.key === creationGem5Key);
+        const creationGem5GlobalValue = creationGem5Param?.globalValue || 0;
+        
+        // Bestimme den aktuellen effektiven Wert für creation gem5
+        const creationGem5EffectiveValue = (creationGem5Override !== null && creationGem5Override !== undefined) 
+          ? creationGem5Override 
+          : creationGem5GlobalValue;
+        
+        const isCreationGem5Active = creationGem5EffectiveValue > 0;
+        
+        return isCreationGem5Active;
+      }
+      
+      // Spezielle Logik für exodus_powerInnovationCount - nur anzeigen wenn exodus_gem3 aktiv ist (Ozzy)
+      if (param.key === 'upgrades.gems_nodes.exodus_powerInnovationCount') {
+        const exodusGem3Key = 'upgrades.gems_nodes.exodus_gem3';
+        
+        // Prüfe aktuellen Override-Status für exodus gem3
+        const exodusGem3Override = localOverrides.value[exodusGem3Key];
+        
+        // Prüfe global state für exodus gem3
+        const exodusGem3Param = parameterData.value
+          .flatMap(cat => cat.params)
+          .find(p => p.key === exodusGem3Key);
+        const exodusGem3GlobalValue = exodusGem3Param?.globalValue || 0;
+        
+        // Bestimme den aktuellen effektiven Wert für exodus gem3
+        const exodusGem3EffectiveValue = (exodusGem3Override !== null && exodusGem3Override !== undefined) 
+          ? exodusGem3Override 
+          : exodusGem3GlobalValue;
+        
+        const isExodusGem3Active = exodusGem3EffectiveValue > 0;
+        
+        return isExodusGem3Active;
+      }
+      
+      // Spezielle Logik für exodus_attractionCreationCount - nur anzeigen wenn exodus_gem5 aktiv ist (Knox)
+      if (param.key === 'upgrades.gems_nodes.exodus_attractionCreationCount') {
+        const exodusGem5Key = 'upgrades.gems_nodes.exodus_gem5';
+        
+        // Prüfe aktuellen Override-Status für exodus gem5
+        const exodusGem5Override = localOverrides.value[exodusGem5Key];
+        
+        // Prüfe global state für exodus gem5
+        const exodusGem5Param = parameterData.value
+          .flatMap(cat => cat.params)
+          .find(p => p.key === exodusGem5Key);
+        const exodusGem5GlobalValue = exodusGem5Param?.globalValue || 0;
+        
+        // Bestimme den aktuellen effektiven Wert für exodus gem5
+        const exodusGem5EffectiveValue = (exodusGem5Override !== null && exodusGem5Override !== undefined) 
+          ? exodusGem5Override 
+          : exodusGem5GlobalValue;
+        
+        const isExodusGem5Active = exodusGem5EffectiveValue > 0;
+        
+        return isExodusGem5Active;
+      }
+      
+      // Alle anderen Parameter immer anzeigen
+      const shouldShow = true;
+      
+      return shouldShow;
+    });
+    
+    const result = {
+      ...category,
+      params: filteredParams.map(param => {
+        // Update exodus_temporalEvolutionCount with calculated value
+        if (param.key === 'upgrades.gems_nodes.exodus_temporalEvolutionCount') {
+          return {
+            ...param,
+            globalValue: calculatedExodusTemporalEvolutionCount.value
+          };
+        }
+        // Update creation_galvTrinketsCount with calculated value
+        else if (param.key === 'upgrades.gems_nodes.creation_galvTrinketsCount') {
+          return {
+            ...param,
+            globalValue: calculatedCreationGalvTrinketsCount.value
+          };
+        }
+        // Update exodus_powerInnovationCount with calculated value
+        else if (param.key === 'upgrades.gems_nodes.exodus_powerInnovationCount') {
+          return {
+            ...param,
+            globalValue: calculatedExodusPowerInnovationCount.value
+          };
+        }
+        // Update exodus_attractionCreationCount with calculated value
+        else if (param.key === 'upgrades.gems_nodes.exodus_attractionCreationCount') {
+          return {
+            ...param,
+            globalValue: calculatedExodusAttractionCreationCount.value
+          };
+        }
+        return param;
+      })
+    };
+    
+    return result;
+  }).filter(category => {
+    const hasParams = category.params.length > 0;
+    
+    return hasParams;
+  });
 });
 
 // NEUE Funktion für ValueControls
@@ -893,7 +1310,6 @@ function getParamCost(param) {
   // Für Gems (Orb-Kosten)
   if (param.key.startsWith('upgrades.gems_nodes.')) {
     const nodeId = param.key.split('.')[2]; // z.B. "attraction_lootBorge"
-    console.log("Node ID:", nodeId);
     
     // Anpassung an die tatsächliche Store-Struktur
     if (nodeId === 'attraction_lootBorge') {
@@ -1025,7 +1441,6 @@ watch(() => props.isVisible, (newValue) => {
     if (props.isImportedBuild) {
       // Bei importierten Builds: Hide Maxed automatisch deaktivieren
       localHideMaxed.value = false;
-      console.log('Imported build detected - Hide Maxed disabled');
     } else {
       // Bei normalen Builds: Einstellung aus LocalStorage laden
       loadHideMaxedSetting();
@@ -1053,7 +1468,6 @@ watch(() => props.isImportedBuild, (newValue) => {
   if (newValue && props.isVisible) {
     // Wenn der Build als importiert markiert wird und das Modal offen ist
     localHideMaxed.value = false;
-    console.log('Build marked as imported - Hide Maxed disabled');
   }
 });
 

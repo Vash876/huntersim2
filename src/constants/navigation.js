@@ -19,7 +19,8 @@ import {
   IconRobot,
   IconChartLine,
   IconSparkles,
-  IconScript
+  IconScript,
+  IconBook
 } from '@tabler/icons-vue';
 
 const IconMilestone = {
@@ -173,6 +174,7 @@ export const NAVIGATION = {
         { label: 'Shard Milestones', path: '/upgrades/milestones', icon: IconHammer },
         { label: 'Researches', path: '/upgrades/researches', icon: IconMicroscope, unlock_gem: 'innovation', unlock_lvl: 2 },
         { label: 'Construction Milest.', path: '/upgrades/cms', icon: IconCrane, unlock_gem: 'power', unlock_lvl: 2 },
+        { label: 'Trinkets', path: '/upgrades/trinkets', icon: IconBook, unlock_gem: 'creation', unlock_lvl: 4, unlock_node: 5 },
       ]
     },
     {
@@ -231,7 +233,7 @@ export const NAVIGATION = {
           id: 'inscryptionplanner',
           name: 'Inscryption Planner',
           path: '/tools/inscryption-planner',
-          icon: IconScript
+          icon: IconWriting
         }
       ]
     },
@@ -329,7 +331,7 @@ export const NAVIGATION = {
       id: 'inscryptionplanner',
       name: 'Inscryption Planner',
       path: '/tools/inscryption-planner',
-      icon: IconScript
+      icon: IconWriting
     }
   ]
 };

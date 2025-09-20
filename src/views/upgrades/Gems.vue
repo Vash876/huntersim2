@@ -329,7 +329,26 @@ function getAvailableUpgrades(gemId) {
   
   // Filter for sim-relevant upgrades if toggle is active
   if (showOnlySimRelevant.value) {
+    // Check for Exodus gem node activations to show related gem upgrades
+    const exodusGemState = gemPlannerStore.getGemState('exodus');
+    const hasExodusNode1 = exodusGemState?.nodes?.[0] || false; // Borge: Temporal + Evolution
+    const hasExodusNode3 = exodusGemState?.nodes?.[2] || false; // Ozzy: Power + Innovation  
+    const hasExodusNode5 = exodusGemState?.nodes?.[4] || false; // Knox: Attraction + Creation
+    
+    // Always show hunter-relevant upgrades for the current gem
     upgrades = upgrades.filter(upgrade => upgrade.hunter === true);
+    
+    // Additionally show upgrades from related gems when Exodus nodes are active
+    if (hasExodusNode1 && (gemId === 'temporal' || gemId === 'evolution')) {
+      // For Temporal/Evolution: Show all upgrades (not just hunter ones) when Exodus Node 1 is active
+      upgrades = gem.upgrades.filter(upgrade => currentLevel >= upgrade.unlock);
+    } else if (hasExodusNode3 && (gemId === 'innovation' || gemId === 'power')) {
+      // For Innovation/Power: Show all upgrades (not just hunter ones) when Exodus Node 3 is active
+      upgrades = gem.upgrades.filter(upgrade => currentLevel >= upgrade.unlock);
+    } else if (hasExodusNode5 && (gemId === 'attraction' || gemId === 'creation')) {
+      // For Attraction/Creation: Show all upgrades (not just hunter ones) when Exodus Node 5 is active
+      upgrades = gem.upgrades.filter(upgrade => currentLevel >= upgrade.unlock);
+    }
   }
   
   return upgrades;

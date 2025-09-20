@@ -437,19 +437,31 @@ const navigation = computed(() => {
   filteredNavigation.upgradeCategories = NAVIGATION.upgradeCategories.map(category => ({
     ...category,
     links: category.links.filter(link => {
-      // Prüfe ob das Link Gem-Anforderungen hat
-      if (link.unlock_gem && link.unlock_lvl) {
-        const gemState = gemPlannerStore.getGemState(link.unlock_gem);
-        const currentGemLevel = gemState?.level || 0;
-        
-        // Verstecke das Link wenn das erforderliche Gem-Level nicht erreicht ist
-        if (currentGemLevel < link.unlock_lvl) {
-          return false;
+      // Prüfe ob das Link Unlock-Bedingungen hat
+      if (!link.unlock_gem || !link.unlock_lvl) {
+        return true; // Zeige Links ohne Unlock-Bedingungen immer an
+      }
+
+      // Hole den Gem-Status
+      const gemState = gemPlannerStore.getGemState(link.unlock_gem);
+      if (!gemState) {
+        return false; // Gem existiert nicht
+      }
+
+      // Prüfe Gem-Level
+      if (gemState.level < link.unlock_lvl) {
+        return false; // Gem-Level zu niedrig
+      }
+
+      // Prüfe Gem-Node (falls angegeben)
+      if (link.unlock_node !== undefined) {
+        const nodeIndex = link.unlock_node - 1; // Node 5 = Index 4
+        if (!gemState.nodes || !gemState.nodes[nodeIndex]) {
+          return false; // Node nicht aktiviert
         }
       }
-      
-      // Zeige das Link an, wenn keine Gem-Anforderungen oder Anforderungen erfüllt sind
-      return true;
+
+      return true; // Alle Bedingungen erfüllt
     })
   }));
   
