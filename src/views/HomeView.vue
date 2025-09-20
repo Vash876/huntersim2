@@ -27,7 +27,7 @@ const changelog =
         text: 'Exodus Level 5 Integration',
         subItems: [
           'Added Exodus Level 5 and all new gem nodes',
-          'Currently only Temporal GN#4 is fully functional - remaining new features will be added gradually',
+          'Currently only Temporal GN#4 is fully functional - remaining new features will be added gradually', 
         ]
       },
       {
