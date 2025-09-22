@@ -212,6 +212,14 @@ function isUpgradeRelevantForHunter(upgrade, hunterUpgrades, categoryKey) {
     if (currentGemLevel < upgrade.unlock_lvl) {
       return false;
     }
+    
+    // Prüfe Gem-Node (falls angegeben)
+    if (upgrade.unlock_node !== undefined) {
+      const nodeIndex = upgrade.unlock_node - 1; // Node 4 = Index 3, Node 5 = Index 4
+      if (!gemState.nodes || !gemState.nodes[nodeIndex]) {
+        return false; // Node nicht aktiviert
+      }
+    }
   }
   
   // Wenn das Upgrade einen hunter-Wert hat, prüfe diesen

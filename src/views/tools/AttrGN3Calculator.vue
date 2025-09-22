@@ -336,7 +336,7 @@
             </div>
             
             <!-- AttrGN#3 Details -->
-            <!-- <div class="mt-4 bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
+            <div class="mt-4 bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
               <h4 class="text-sm font-semibold text-gray-200 mb-2 flex items-center">
                 <IconInfoCircle size="14" class="mr-1.5 text-blue-400" />
                 AttGN#3 Calculation Details
@@ -378,7 +378,7 @@
                   <span class="text-emerald-300">{{ formatDaysInLR(daysInLR) }}</span>
                 </div>
               </div>
-            </div> -->
+            </div>
           </div>
         </div>
 
