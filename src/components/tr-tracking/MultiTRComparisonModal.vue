@@ -123,12 +123,14 @@
               <span class="font-medium">Mouse Controls:</span> 
               Scroll to zoom X-axis • Ctrl+scroll to zoom • Drag to pan • Ctrl+drag for box zoom
             </div>
-            <button
-              @click="resetChartZoom"
-              class="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors"
-            >
-              Reset Zoom
-            </button>
+            <div class="flex gap-2">
+              <button
+                @click="resetChartZoom"
+                class="px-2 py-1 text-xs bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors"
+              >
+                Reset Zoom
+              </button>
+            </div>
           </div>
           
           <div class="h-96 relative">
@@ -138,6 +140,43 @@
               :data="chartData"
               :options="chartOptions"
             />
+            
+            <!-- Crosshair Values Display -->
+            <div 
+              v-if="crosshairValues.length > 0" 
+              class="absolute top-4 right-4 bg-gray-800/90 border border-gray-600 rounded-lg p-2 min-w-64 max-w-80"
+              style="backdrop-filter: blur(8px);"
+            >
+              <div class="text-xs font-medium text-gray-300 mb-1">Current Values:</div>
+              <div class="space-y-1">
+                <div 
+                  v-for="item in crosshairValues.slice().reverse()" 
+                  :key="item.label"
+                  class="flex justify-between items-center text-xs"
+                >
+                  <div class="flex items-center">
+                    <div 
+                      class="w-2 h-2 rounded-full mr-2" 
+                      :style="{ backgroundColor: item.color }"
+                    ></div>
+                    <span class="text-gray-300 truncate">{{ item.label }}</span>
+                  </div>
+                  <div class="flex items-center gap-2 ml-2">
+                    <span class="font-mono text-white">{{ formatResourceValue(item.resourceId, item.value) }}</span>
+                    <span 
+                      class="font-mono text-xs px-1 py-0.5 rounded"
+                      :class="{
+                        'text-green-400 bg-green-900/30': item.difference > 0,
+                        'text-red-400 bg-red-900/30': item.difference < 0,
+                        'text-gray-400 bg-gray-700/30': item.difference === 0
+                      }"
+                    >
+                      {{ item.difference > 0 ? '+' : item.difference < 0 ? '' : '' }}{{ item.difference === 0 ? '0' : formatResourceValue(item.resourceId, item.difference) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -213,6 +252,7 @@ import {
   Legend,
   TimeScale
 } from 'chart.js';
+import { getRelativePosition } from 'chart.js/helpers';
 
 // Register Chart.js plugins
 ChartJS.register(
@@ -250,6 +290,7 @@ const chartRef = ref(null); // Reference to chart instance
 
 // Custom wheel event listener for normal scroll X-axis zoom
 let wheelEventListener = null;
+let mouseEventListeners = { mousedown: null, mousemove: null, mouseup: null };
 
 // Setup custom wheel listener when chart is ready
 function setupCustomWheelListener() {
@@ -296,12 +337,119 @@ function setupCustomWheelListener() {
   }
 }
 
+// Setup mouse listeners for crosshair dragging
+function setupMouseListeners() {
+  if (chartRef.value && chartRef.value.chart && chartRef.value.chart.canvas) {
+    const canvas = chartRef.value.chart.canvas;
+    const chart = chartRef.value.chart;
+    
+    // Remove existing listeners
+    if (mouseEventListeners.mousedown) {
+      canvas.removeEventListener('mousedown', mouseEventListeners.mousedown);
+    }
+    if (mouseEventListeners.mousemove) {
+      canvas.removeEventListener('mousemove', mouseEventListeners.mousemove);
+    }
+    
+    mouseEventListeners.mousedown = (event) => {
+      console.log('Canvas mousedown event!', event);
+      
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      
+      console.log('MouseDown at canvas position:', x, 'crosshair at:', crosshairPosition.value);
+      
+      // Check if mousedown is near existing crosshair
+      if (crosshairPosition.value !== null) {
+        const distance = Math.abs(x - crosshairPosition.value);
+        console.log('Distance to existing crosshair:', distance);
+        if (distance < 15) {
+          console.log('Starting drag mode on canvas mousedown');
+          isDragging.value = true;
+          canvas.style.cursor = 'grabbing';
+          
+          // Setup global drag handlers
+          const handleMouseMove = (e) => {
+            if (isDragging.value) {
+              const rect = canvas.getBoundingClientRect();
+              const mouseX = e.clientX - rect.left;
+              
+              // Clamp to chart area
+              const chartArea = chart.chartArea;
+              const clampedX = Math.max(chartArea.left, Math.min(chartArea.right, mouseX));
+              
+              const dataX = chart.scales.x.getValueForPixel(clampedX);
+              
+              console.log('Dragging to:', clampedX, 'dataX:', dataX);
+              crosshairPosition.value = clampedX;
+              updateCrosshairValues(chart, dataX);
+              chart.update('none');
+            }
+          };
+          
+          const handleMouseUp = () => {
+            console.log('MouseUp - stopping drag');
+            isDragging.value = false;
+            canvas.style.cursor = 'default';
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+          };
+          
+          document.addEventListener('mousemove', handleMouseMove);
+          document.addEventListener('mouseup', handleMouseUp);
+          
+          event.preventDefault();
+          return;
+        }
+      }
+      
+      console.log('MouseDown not near crosshair - ignoring');
+    };
+    
+    mouseEventListeners.mousemove = (event) => {
+      if (!isDragging.value) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        
+        // Change cursor when hovering near crosshair
+        if (crosshairPosition.value !== null) {
+          const distance = Math.abs(mouseX - crosshairPosition.value);
+          if (distance < 15) {
+            canvas.style.cursor = 'grab';
+          } else {
+            canvas.style.cursor = 'default';
+          }
+        } else {
+          canvas.style.cursor = 'default';
+        }
+      }
+    };
+    
+    canvas.addEventListener('mousedown', mouseEventListeners.mousedown);
+    canvas.addEventListener('mousemove', mouseEventListeners.mousemove);
+  }
+}
+
 // Cleanup wheel listener
 function cleanupWheelListener() {
   if (wheelEventListener && chartRef.value?.chart?.canvas) {
     chartRef.value.chart.canvas.removeEventListener('wheel', wheelEventListener);
     wheelEventListener = null;
   }
+}
+
+// Cleanup mouse listeners
+function cleanupMouseListeners() {
+  if (chartRef.value?.chart?.canvas) {
+    const canvas = chartRef.value.chart.canvas;
+    if (mouseEventListeners.mousedown) {
+      canvas.removeEventListener('mousedown', mouseEventListeners.mousedown);
+    }
+    if (mouseEventListeners.mousemove) {
+      canvas.removeEventListener('mousemove', mouseEventListeners.mousemove);
+    }
+  }
+  mouseEventListeners = { mousedown: null, mousemove: null, mouseup: null };
 }
 
 // Initialize chart resources when modal opens
@@ -337,6 +485,25 @@ watch(chartRef, (newRef) => {
   if (newRef && newRef.chart) {
     nextTick(() => {
       setupCustomWheelListener();
+      setupMouseListeners();
+      
+      // Initialize crosshair at 24 hours if modal is open and no crosshair exists
+      if (props.show && crosshairPosition.value === null) {
+        setTimeout(() => {
+          const chart = newRef.chart;
+          if (chart.scales.x) {
+            const targetDataX = 24;
+            const pixelX = chart.scales.x.getPixelForValue(targetDataX);
+            
+            console.log('Chart ready - initializing crosshair at 24h, pixelX:', pixelX);
+            if (pixelX && !isNaN(pixelX)) {
+              crosshairPosition.value = pixelX;
+              updateCrosshairValues(chart, targetDataX);
+              chart.update('none');
+            }
+          }
+        }, 200);
+      }
     });
   }
 }, { immediate: true });
@@ -344,6 +511,7 @@ watch(chartRef, (newRef) => {
 // Cleanup on unmount
 onUnmounted(() => {
   cleanupWheelListener();
+  cleanupMouseListeners();
 });
 
 // Force chart update function
@@ -353,6 +521,7 @@ function forceChartUpdate() {
   nextTick(() => {
     setTimeout(() => {
       setupCustomWheelListener();
+      setupMouseListeners();
     }, 100);
   });
 }
@@ -395,7 +564,169 @@ const getTopResources = () => {
   return [];
 };
 
-// Chart options with dark theme
+const crosshairPosition = ref(null);
+const crosshairValues = ref([]);
+const isDragging = ref(false);
+
+// Crosshair plugin
+const crosshairPlugin = {
+  id: 'crosshair',
+  afterDraw: (chart) => {
+    // Auto-initialize crosshair if not set and modal is open
+    if (crosshairPosition.value === null && props.show && chart.scales.x) {
+      const targetDataX = 24;
+      const pixelX = chart.scales.x.getPixelForValue(targetDataX);
+      
+      if (pixelX && !isNaN(pixelX)) {
+        crosshairPosition.value = pixelX;
+        updateCrosshairValues(chart, targetDataX);
+      }
+    }
+    
+    if (crosshairPosition.value !== null) {
+      const ctx = chart.ctx;
+      const chartArea = chart.chartArea;
+      
+      ctx.save();
+      ctx.strokeStyle = '#ef4444'; // Red crosshair line
+      ctx.lineWidth = 3;
+      ctx.setLineDash([]);
+      
+      // Draw draggable handle at top
+      const handleY = chartArea.top - 10;
+      const handleSize = 6;
+      
+      // Handle background
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(crosshairPosition.value - handleSize/2, handleY - handleSize/2, handleSize, handleSize);
+      
+      // Crosshair line
+      ctx.beginPath();
+      ctx.moveTo(crosshairPosition.value, chartArea.top);
+      ctx.lineTo(crosshairPosition.value, chartArea.bottom);
+      ctx.stroke();
+      
+      ctx.restore();
+    }
+  }
+};
+
+// Register crosshair plugin
+ChartJS.register(crosshairPlugin);
+
+// Calculate interpolated values for crosshair
+function updateCrosshairValues(chart, xValue) {
+  const values = [];
+  
+  // Group datasets by resource for difference calculation
+  const resourceGroups = {};
+  
+  chart.data.datasets.forEach((dataset, datasetIndex) => {
+    if (!dataset.data.length) return;
+    
+    const resourceId = dataset.resourceId;
+    if (!resourceGroups[resourceId]) {
+      resourceGroups[resourceId] = [];
+    }
+    
+    // Find closest data points for interpolation
+    const data = dataset.data;
+    let leftPoint = null;
+    let rightPoint = null;
+    
+    for (let i = 0; i < data.length; i++) {
+      const point = data[i];
+      const pointX = xAxisType.value === 'timeInTR' ? point.x : new Date(point.x).getTime();
+      const targetX = xAxisType.value === 'timeInTR' ? xValue : xValue;
+      
+      if (pointX <= targetX) {
+        leftPoint = { ...point, x: pointX };
+      }
+      if (pointX >= targetX && !rightPoint) {
+        rightPoint = { ...point, x: pointX };
+        break;
+      }
+    }
+    
+    let interpolatedY = null;
+    const targetX = xAxisType.value === 'timeInTR' ? xValue : xValue;
+    
+    if (leftPoint && rightPoint && leftPoint.x !== rightPoint.x) {
+      // Linear interpolation between two points
+      const ratio = (targetX - leftPoint.x) / (rightPoint.x - leftPoint.x);
+      interpolatedY = leftPoint.y + (rightPoint.y - leftPoint.y) * ratio;
+    } else if (leftPoint) {
+      // Use left point if no right point
+      interpolatedY = leftPoint.y;
+    } else if (rightPoint) {
+      // Use right point if no left point
+      interpolatedY = rightPoint.y;
+    }
+    
+    if (interpolatedY !== null) {
+      resourceGroups[resourceId].push({
+        label: dataset.label,
+        value: interpolatedY,
+        resourceId: dataset.resourceId,
+        color: dataset.borderColor,
+        trCount: extractTRCount(dataset.label) // Extract TR count from label
+      });
+    }
+  });
+  
+  // Calculate differences and flatten groups
+  Object.values(resourceGroups).forEach(group => {
+    // Sort by TR count (ascending - oldest first)
+    group.sort((a, b) => (a.trCount || 0) - (b.trCount || 0));
+    
+    // Calculate differences
+    for (let i = 0; i < group.length; i++) {
+      const item = group[i];
+      if (i > 0) {
+        // Calculate difference from previous TR
+        const prevItem = group[i - 1];
+        item.difference = item.value - prevItem.value;
+      } else {
+        // For the oldest TR, set difference to 0
+        item.difference = 0;
+      }
+      values.push(item);
+    }
+  });
+  
+  crosshairValues.value = values;
+}
+
+// Helper function to extract TR count from dataset label
+function extractTRCount(label) {
+  const match = label.match(/TR#(\d+)/);
+  return match ? parseInt(match[1]) : 0;
+}
+
+// Initialize crosshair at 24 hours when modal opens
+watch(() => props.show, (newShow) => {
+  if (newShow) {
+    // Reset crosshair when modal opens
+    crosshairPosition.value = null;
+    crosshairValues.value = [];
+    
+    // Wait for chart to be ready and initialize
+    nextTick(() => {
+      setTimeout(() => {
+        if (chartRef.value?.chart?.scales?.x) {
+          const chart = chartRef.value.chart;
+          const targetDataX = 24;
+          const pixelX = chart.scales.x.getPixelForValue(targetDataX);
+          
+          console.log('Modal opened - initializing crosshair at 24h, pixelX:', pixelX);
+          crosshairPosition.value = pixelX;
+          updateCrosshairValues(chart, targetDataX);
+          chart.update('none');
+        }
+      }, 100);
+    });
+  }
+});
 const darkThemeOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
@@ -427,6 +758,46 @@ const darkThemeOptions = computed(() => ({
       borderWidth: 1,
       cornerRadius: 8,
       displayColors: true,
+      external: function(context) {
+        // Custom tooltip logic for Time in TR mode
+        if (xAxisType.value === 'timeInTR' && context.tooltip.dataPoints?.length > 0) {
+          const chart = context.chart;
+          const activePoint = context.tooltip.dataPoints[0];
+          const activeX = activePoint.parsed.x;
+          const maxDifference = 24; // 24 hours max difference
+          
+          // Find all data points within 24h range across all datasets
+          const nearbyPoints = [];
+          chart.data.datasets.forEach((dataset, datasetIndex) => {
+            dataset.data.forEach((point, pointIndex) => {
+              if (Math.abs(point.x - activeX) <= maxDifference) {
+                nearbyPoints.push({
+                  datasetIndex,
+                  pointIndex,
+                  dataset,
+                  point,
+                  label: dataset.label,
+                  resourceId: dataset.resourceId
+                });
+              }
+            });
+          });
+          
+          // Override the tooltip with nearby points
+          if (nearbyPoints.length > 0) {
+            context.tooltip.dataPoints = nearbyPoints.map(np => ({
+              datasetIndex: np.datasetIndex,
+              dataIndex: np.pointIndex,
+              parsed: { x: np.point.x, y: np.point.y },
+              dataset: np.dataset,
+              label: np.label
+            }));
+          }
+        }
+        
+        // Let Chart.js handle the rest
+        return false;
+      },
       callbacks: {
         title: function(context) {
           if (xAxisType.value === 'timeInTR') {
@@ -543,7 +914,50 @@ const darkThemeOptions = computed(() => ({
   },
   interaction: {
     intersect: false,
-    mode: 'index'
+    mode: 'none' // Disable normal tooltips
+  },
+  plugins: {
+    tooltip: {
+      enabled: false // Disable tooltips completely
+    },
+    legend: {
+      position: 'top',
+      labels: {
+        color: '#e5e7eb',
+        usePointStyle: true,
+        padding: 20,
+        font: {
+          size: 11
+        }
+      }
+    },
+    zoom: {
+      pan: {
+        enabled: true,
+        mode: 'xy',
+        modifierKey: null,
+      },
+      zoom: {
+        wheel: {
+          enabled: true,
+          speed: 0.1,
+          modifierKey: 'ctrl', // Ctrl+wheel for Y-axis zoom
+        },
+        pinch: {
+          enabled: true,
+          mode: 'xy' // Allow both axes for touch devices
+        },
+        drag: {
+          enabled: true,
+          mode: 'xy', // Allow both x and y selection for box zoom
+          modifierKey: 'ctrl', // Ctrl+drag for box zoom on both axes
+        },
+      },
+      limits: {
+        y: {min: 'original', max: 'original'},
+        x: {min: 'original', max: 'original'}
+      }
+    }
   },
   animation: {
     duration: 0

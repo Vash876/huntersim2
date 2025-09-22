@@ -74,7 +74,45 @@
               </div>
             </div>
             
-            <div></div>
+            <!-- Exodus Gem Node #4 Status Display -->
+            <div v-if="exodusNode4Active" class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-medium text-gray-300 text-sm">Exodus Gem Node #4</span>
+                <div class="flex items-center">
+                  <span 
+                    class="px-2 py-1 rounded text-xs font-medium text-white border border-purple-400/30 transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/20"
+                    style="background: linear-gradient(135deg, #5a95f5ff 0%, #6326f1ff 40%, #ec4899 100%)"
+                  >
+                    Active
+                  </span>
+                </div>
+              </div>
+              
+              <div class="space-y-2">
+                <!-- Total P&A Gem Levels Display -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <span class="text-sm text-gray-300">Total P&A Gem Levels</span>
+                    <InfoTooltip 
+                      class="ml-1"
+                      content="Total Power & Attraction gem upgrade levels. Automatically retrieved from your Gem Overview Page."
+                      placement="top"
+                    />
+                  </div>
+                  <span class="text-purple-400 font-medium text-sm">
+                    {{ totalGemLevels.toLocaleString() }}
+                  </span>
+                </div>
+                
+                <!-- Cost Reduction Display -->
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-300">Cost Reduction</span>
+                  <span class="text-yellow-400 font-medium text-sm">
+                    /{{ costReductionFactorFormatted }}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -115,7 +153,7 @@
                         <div class="grid grid-cols-2 gap-1 text-xs">
                           <span class="text-left">Level</span>
                           <span class="text-left flex items-center">
-                            Cost (e)
+                            Cost (Exponent)
                           </span>
                         </div>
                       </div>
@@ -137,7 +175,7 @@
                         <div class="text-left">
                           <span class="text-yellow-400">
                             <img :src="shardsIcon" alt="Shards" :class="`${desktopIconSize} inline mr-0.5 mb-1`" />
-                            {{ getCostForPosition(column, row).exponent }}
+                            {{ getCostForPosition(column, row).rawCost.e }}
                           </span>
                           <span v-if="getCostForPosition(column, row).difference !== null" class="text-gray-400 text-xs ml-1">
                             (+{{ getCostForPosition(column, row).difference }})
@@ -157,7 +195,7 @@
                   <tr class="bg-gray-800 border-b border-gray-700">
                     <th class="px-4 py-2 w-[30%]">Level</th>
                     <th class="px-4 py-2 flex items-center">
-                      Cost (e)
+                      Cost (Exponent)
                     </th>
                   </tr>
                 </thead>
@@ -176,9 +214,9 @@
                     </td>
                     <td class="px-4 py-3">
                       <img :src="shardsIcon" alt="Shards" class="w-4 h-4 inline mr-2" />
-                      <span class="text-yellow-400">{{ cost.exponent }}</span>
+                      <span class="text-yellow-400">{{ cost.rawCost.e }}</span>
                       <span v-if="cost.difference !== null" class="text-gray-400 text-xs ml-2">
-                        (+{{ cost.difference }})
+                        ({{ cost.difference.formatted }})
                       </span>
                     </td>
                   </tr>
@@ -204,15 +242,89 @@ import {
   IconList, 
   IconSearch
 } from '@tabler/icons-vue';
-import { M0_COSTS, getM0Cost, getTotalM0Cost } from '@/constants/m0Costs.js';
+import { getM0Cost, formatM0Cost, getM0CostDecimal } from '@/utils/m0CostUtils.js';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import shardsIcon from '@/assets/general/shards.png';
+import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
+import Decimal from 'break_infinity.js';
 
 // Filter States
 const currentM0Level = ref(1);
 const levelRange = ref(10);
 const currentM0LevelRaw = ref(1);
 const levelRangeRaw = ref(10);
+
+// Initialize gem planner store
+const gemPlannerStore = useGemPlannerStore();
+
+// Exodus Gem Node #4 States (automatically from gem store)
+const exodusNode4Active = computed(() => {
+  const exodusGemState = gemPlannerStore.getGemState('exodus');
+  return exodusGemState?.nodes?.[3] || false; // Node #4 ist Index 3
+});
+
+const totalGemLevels = computed(() => {
+  let total = 0;
+  
+  // Power gem upgrades zählen
+  const powerGemState = gemPlannerStore.getGemState('power');
+  if (powerGemState?.upgrades) {
+    Object.values(powerGemState.upgrades).forEach(level => {
+      total += level || 0;
+    });
+  }
+  
+  // Attraction gem upgrades zählen
+  const attractionGemState = gemPlannerStore.getGemState('attraction');
+  if (attractionGemState?.upgrades) {
+    Object.values(attractionGemState.upgrades).forEach(level => {
+      total += level || 0;
+    });
+  }
+  
+  return total;
+});
+
+// Cost Reduction Factor - korrekte Formel: 30^level für jeden upgrade
+const costReductionFactor = computed(() => {
+  if (!exodusNode4Active.value || totalGemLevels.value === 0) return new Decimal(1);
+  
+  let factor = new Decimal(1);
+  
+  // Power gem upgrades - 30^level für jeden upgrade
+  const powerGemState = gemPlannerStore.getGemState('power');
+  if (powerGemState?.upgrades) {
+    Object.values(powerGemState.upgrades).forEach(level => {
+      if (level > 0) {
+        const upgradeReduction = new Decimal(30).pow(level);
+        factor = factor.mul(upgradeReduction);
+      }
+    });
+  }
+  
+  // Attraction gem upgrades - 30^level für jeden upgrade
+  const attractionGemState = gemPlannerStore.getGemState('attraction');
+  if (attractionGemState?.upgrades) {
+    Object.values(attractionGemState.upgrades).forEach(level => {
+      if (level > 0) {
+        const upgradeReduction = new Decimal(30).pow(level);
+        factor = factor.mul(upgradeReduction);
+      }
+    });
+  }
+  
+  return factor;
+});
+
+// Format cost reduction factor in full E notation
+const costReductionFactorFormatted = computed(() => {
+  const factor = costReductionFactor.value;
+  if (factor.eq(1)) return '1';
+  
+  // Always show full E notation like 1.24e234 (without + sign)
+  return factor.toExponential(2).replace('e+', 'e');
+});
 
 // Handler functions
 function handleCurrentM0LevelUpdate(newVal) {
@@ -256,14 +368,49 @@ const filteredCosts = computed(() => {
   const endLevel = Math.min(startLevel + levelRange.value - 1, 1000);
   
   for (let level = startLevel; level <= endLevel; level++) {
-    const exponent = getM0Cost(level);
-    const prevExponent = level > 1 ? getM0Cost(level - 1) : null;
-    const difference = prevExponent ? exponent - prevExponent : null;
+    let costDecimal = getM0CostDecimal(level);
+    
+    // Apply Exodus Gem Node #4 buff if active
+    if (exodusNode4Active.value && !costReductionFactor.value.eq(1)) {
+      costDecimal = costDecimal.div(costReductionFactor.value);
+    }
+    
+    const formattedCost = formatM0Cost(costDecimal);
+    
+    let prevCostDecimal = level > 1 ? getM0CostDecimal(level - 1) : null;
+    if (prevCostDecimal && exodusNode4Active.value && !costReductionFactor.value.eq(1)) {
+      prevCostDecimal = prevCostDecimal.div(costReductionFactor.value);
+    }
+    
+    let difference = null;
+    if (prevCostDecimal) {
+      if (level <= 10) {
+        // Für Level 1-10: Echte Kostendifferenz
+        const realDifference = costDecimal.sub(prevCostDecimal);
+        difference = {
+          type: 'cost',
+          value: realDifference,
+          formatted: formatM0Cost(realDifference)
+        };
+      } else {
+        // Für Level 11+: Exponentendifferenz mit break_infinity
+        const exponent = costDecimal.e;
+        const prevExponent = prevCostDecimal.e;
+        const expDifference = exponent - prevExponent;
+        difference = {
+          type: 'exponent',
+          value: expDifference,
+          formatted: `+${Math.round(expDifference)}`
+        };
+      }
+    }
     
     result.push({
       level,
-      exponent,
-      difference
+      exponent: costDecimal.e,
+      difference,
+      formattedCost,
+      rawCost: costDecimal
     });
   }
   
@@ -324,14 +471,25 @@ function getCostForPosition(column, row) {
   
   if (level > maxLevel) return null;
   
-  const exponent = getM0Cost(level);
-  const prevExponent = level > 1 ? getM0Cost(level - 1) : null;
-  const difference = prevExponent ? exponent - prevExponent : null;
+  let costDecimal = getM0CostDecimal(level);
+  
+  // Apply Exodus Gem Node #4 buff if active
+  if (exodusNode4Active.value && !costReductionFactor.value.eq(1)) {
+    costDecimal = costDecimal.div(costReductionFactor.value);
+  }
+  
+  let prevCostDecimal = level > 1 ? getM0CostDecimal(level - 1) : null;
+  if (prevCostDecimal && exodusNode4Active.value && !costReductionFactor.value.eq(1)) {
+    prevCostDecimal = prevCostDecimal.div(costReductionFactor.value);
+  }
+  
+  const difference = prevCostDecimal ? costDecimal.e - prevCostDecimal.e : null;
   
   return {
     level,
-    exponent,
-    difference
+    exponent: costDecimal.e,
+    difference,
+    rawCost: costDecimal
   };
 }
 
@@ -351,6 +509,9 @@ function resetFilters() {
   levelRange.value = 10;
   currentM0LevelRaw.value = 1;
   levelRangeRaw.value = 10;
+  exodusNode4Active.value = false;
+  totalGemLevels.value = 0;
+  totalGemLevelsRaw.value = 0;
   saveFilters();
 }
 
@@ -365,6 +526,13 @@ function loadFilters() {
     if (savedFilters.levelRange !== undefined) {
       levelRange.value = Number(savedFilters.levelRange);
       levelRangeRaw.value = levelRange.value;
+    }
+    if (savedFilters.exodusNode4Active !== undefined) {
+      exodusNode4Active.value = Boolean(savedFilters.exodusNode4Active);
+    }
+    if (savedFilters.totalGemLevels !== undefined) {
+      totalGemLevels.value = Number(savedFilters.totalGemLevels);
+      totalGemLevelsRaw.value = totalGemLevels.value;
     }
   } catch (error) {
     console.error('Error loading saved filters:', error);

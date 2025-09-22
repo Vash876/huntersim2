@@ -11,7 +11,11 @@ async function initWasm() {
   
   try {   
     // AssemblyScript Loader verwenden
-    const wasmUrl = `/wasm/release.wasm?v=${__BUILD_TIME__}`;
+    const isDev = import.meta.env.DEV;
+    const wasmUrl = isDev 
+      ? `/build/release.wasm?v=${__BUILD_TIME__}`
+      : `/wasm/release.wasm?v=${__BUILD_TIME__}`;
+    
     wasmModule = await instantiate(fetch(wasmUrl), {
       // Imports falls benötigt
       env: {

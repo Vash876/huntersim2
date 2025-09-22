@@ -2,6 +2,25 @@
 const changelog = 
 [
   {
+    version: '2.8.4',
+    date: '2025-09-22',
+    changes: [
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Added draggable crosshair functionality to multi-TR comparison charts',
+          'Current values panel shows interpolated data at crosshair position with differences between TRs',
+        ]
+      },
+      {
+        text: 'Tools Section',
+        subItems: [
+          'Extended some tools to the new Gem Nodes',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.8.3',
     date: '2025-09-20',
     changes: [

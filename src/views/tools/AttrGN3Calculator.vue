@@ -4,7 +4,7 @@
       <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8 border border-gray-800/80">
         <!-- Header -->
         <h2 class="text-2xl font-bold mb-4 text-center text-white">
-          <span>Attraction GN#3 Calculator</span>
+          <span>AttGN#3 Calculator</span>
         </h2>
         
         <!-- Input Settings -->
@@ -109,6 +109,26 @@
                     class="ml-2"
                   />
                 </div>
+
+                <!-- Studies per Study (Innovation Node 6) -->
+                <div v-if="innovationNode6Active" class="flex items-center justify-between mt-3">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconMicroscope size="16" class="text-yellow-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">Studies per Study</span>
+                  </div>
+                  <ToolValueControls
+                    :value="studiesPerStudy"
+                    @update:value="studiesPerStudy = $event"
+                    :minValue="1"
+                    :step="1"
+                    :fastStep="10"
+                    value-class="text-purple-400 font-medium"
+                    :autoEdit="true"
+                    class="ml-2"
+                  />
+                </div>
               </div>
               
               <!-- Right Column -->
@@ -177,7 +197,7 @@
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
-                      <IconShield size="16" class="text-blue-400" />
+                      <IconShield size="16" class="text-purple-600" />
                     </div>
                     <span class="text-sm text-gray-300">Relic #14</span>
                     <span class="ml-1 text-xs text-gray-500">(max: 8)</span>
@@ -189,7 +209,7 @@
                     :maxValue="8"
                     :step="1"
                     :fastStep="5"
-                    value-class="text-blue-400 font-medium"
+                    value-class="text-purple-500 font-medium"
                     :autoEdit="true"
                     class="ml-2"
                   />
@@ -198,9 +218,9 @@
                 <div class="flex items-center justify-between mt-3">
                   <div class="flex items-center">
                     <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
-                      <IconStar size="16" class="text-pink-400" />
+                      <IconStar size="16" class="text-blue-400" />
                     </div>
-                    <span class="text-sm text-gray-300">Current AttrGN#3 Multi</span>
+                    <span class="text-sm text-gray-300">Current AttGN#3 Multi</span>
                     <InfoTooltip 
                       class="ml-1"
                       content="<b>Supported formats:</b><br/>
@@ -219,7 +239,38 @@
                       @focus="selectAllInput"
                       @click="selectAllInput"
                       type="text"
-                      class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-pink-400 font-medium text-sm w-24 text-right focus:outline-none focus:ring-2 focus:ring-pink-400"
+                      class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-blue-400 font-medium text-sm w-24 text-right focus:outline-none focus:ring-2 focus:ring-pink-400"
+                      placeholder="1e100"
+                    />
+                  </div>
+                </div>
+
+                <!-- Current Innovation Multiplier (Innovation Node 6) -->
+                <div v-if="innovationNode6Active" class="flex items-center justify-between mt-3">
+                  <div class="flex items-center">
+                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                      <IconStar size="16" class="text-yellow-400" />
+                    </div>
+                    <span class="text-sm text-gray-300">Current InnoGN#6 Multi</span>
+                    <InfoTooltip 
+                      class="ml-1"
+                      content="<b>Supported formats:</b><br/>
+                      • Scientific notation: <code>1e100</code>, <code>5.5e50</code><br/>
+                      • Suffixes: <code>1k</code>, <code>2.5m</code>, <code>100b</code>, <code>5t</code><br/>
+                      • Available suffixes: k, m, b, t, qa, qu, sx, sp, oc, n, d<br/>"
+                      placement="top"
+                    />
+                  </div>
+                  
+                  <div class="flex items-center">
+                    <input
+                      v-model="innoMultiplierInput"
+                      @keydown.enter="handleInnoMultiplierSubmit"
+                      @blur="handleInnoInputBlur"
+                      @focus="selectAllInnoInput"
+                      @click="selectAllInnoInput"
+                      type="text"
+                      class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-yellow-400 font-medium text-sm w-24 text-right focus:outline-none focus:ring-2 focus:ring-purple-400"
                       placeholder="1e100"
                     />
                   </div>
@@ -230,11 +281,14 @@
         </div>
         
         <!-- Results Section -->
-        <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
+        <div class="bg-gray-800/50 rounded-lg border border-blue-600/30 overflow-hidden shadow-lg mb-4">
           <div class="header p-3">
             <h3 class="text-lg font-semibold text-white flex items-center">
-              <IconCalculator size="18" class="mr-2 text-green-400" />
-              Calculation Results
+              <div 
+                class="w-4 h-4 rounded-full border border-gray-500 mr-2"
+                style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)"
+              ></div>
+              AttGN#3 Results
             </h3>
           </div>
           <div class="p-3 sm:p-4">
@@ -250,20 +304,20 @@
                 </div>
               </div>
               
-              <!-- Days to 1e333 -->
+              <!-- Days to Cap -->
               <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
                 <div class="text-center">
-                  <div class="text-sm font-semibold text-gray-300 mb-1">Days to 1e333</div>
+                  <div class="text-sm font-semibold text-gray-300 mb-1">Total Days to {{ maxAttrCapString }}</div>
                   <div class="text-2xl font-bold text-blue-400">
                     {{ daysTo1e333 === Infinity ? '∞' : daysTo1e333.toFixed(2) }}
                   </div>
                 </div>
               </div>
 
-              <!-- Days left to 1e333 -->
+              <!-- Days left to Cap -->
               <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
                 <div class="text-center">
-                  <div class="text-sm font-semibold text-gray-300 mb-1">Days left to 1e333</div>
+                  <div class="text-sm font-semibold text-gray-300 mb-1">Days left to {{ maxAttrCapString }}</div>
                   <div class="text-2xl font-bold text-orange-400">
                     {{ daysLeftTo1e333 === Infinity ? '∞' : daysLeftTo1e333.toFixed(2) }}
                   </div>
@@ -281,11 +335,11 @@
               </div>
             </div>
             
-            <!-- Details -->
-            <div class="mt-4 bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
+            <!-- AttrGN#3 Details -->
+            <!-- <div class="mt-4 bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
               <h4 class="text-sm font-semibold text-gray-200 mb-2 flex items-center">
                 <IconInfoCircle size="14" class="mr-1.5 text-blue-400" />
-                Calculation Details
+                AttGN#3 Calculation Details
               </h4>
               
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-300">
@@ -324,6 +378,108 @@
                   <span class="text-emerald-300">{{ formatDaysInLR(daysInLR) }}</span>
                 </div>
               </div>
+            </div> -->
+          </div>
+        </div>
+
+        <!-- Innovation Node 6 Results Section -->
+        <div v-if="innovationNode6Active" class="bg-gray-800/50 rounded-lg border border-yellow-600/30 overflow-hidden shadow-lg mb-4">
+          <div class="header p-3 bg-gradient-to-r from-purple-800/30 to-purple-900/30">
+            <h3 class="text-lg font-semibold text-white flex items-center">
+              <div 
+                class="w-4 h-4 rounded-full border border-gray-500 mr-2"
+                style="background: linear-gradient(135deg, #ff9900ff 0%, #eeb077ff 100%)"
+              ></div>
+              InnoGN#6 Results
+            </h3>
+          </div>
+          <div class="p-3 sm:p-4">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+              
+              <!-- Innovation Multi per Day -->
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-600/20">
+                <div class="text-center">
+                  <div class="text-sm font-semibold text-gray-300 mb-1">Multiplier per Day</div>
+                  <div class="text-2xl font-bold text-yellow-400">
+                    {{ formatMulti(innovationMultiPerDay) }}
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Days to 1e222 -->
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-600/20">
+                <div class="text-center">
+                  <div class="text-sm font-semibold text-gray-300 mb-1">Total Days to 1e222</div>
+                  <div class="text-2xl font-bold text-blue-400">
+                    {{ daysToInnovationCap === Infinity ? '∞' : daysToInnovationCap.toFixed(2) }}
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Days left to 1e222 -->
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-600/20">
+                <div class="text-center">
+                  <div class="text-sm font-semibold text-gray-300 mb-1">Days left to 1e222</div>
+                  <div class="text-2xl font-bold text-orange-400">
+                    {{ daysLeftToInnovationCap === Infinity ? '∞' : daysLeftToInnovationCap.toFixed(2) }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pending Innovation Multiplier -->
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-600/20">
+                <div class="text-center">
+                  <div class="text-sm font-semibold text-gray-300 mb-1">Pending Multiplier</div>
+                  <div class="text-2xl font-bold text-emerald-400">
+                    {{ formatMulti(currentInnovationMultiplier) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Innovation Details -->
+            <div class="mt-4 bg-gray-900/60 rounded-lg p-4 border border-gray-600/30">
+              <h4 class="text-sm font-semibold text-gray-200 mb-2 flex items-center">
+                <IconInfoCircle size="14" class="mr-1.5 text-yellow-400" />
+                Innovation Calculation Details
+              </h4>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-300">
+                <div class="flex justify-between">
+                  <span>Study Cycles per Day:</span> 
+                  <span class="text-cyan-300">{{ formatNumber(ticksPerDay / 4) }}</span>
+                </div>
+                
+                <div class="flex justify-between">
+                  <span>Studies per Study:</span> 
+                  <span class="text-cyan-300">{{ studiesPerStudy }}</span>
+                </div>
+                
+                <div class="flex justify-between">
+                  <span>Studies per Day:</span> 
+                  <span class="text-green-300">{{ formatNumber(studiesPerDay) }}</span>
+                </div>
+                
+                <div class="flex justify-between">
+                  <span>Retained Studies Bonus:</span> 
+                  <span class="text-green-300">{{ retainedStudiesBonus }}%</span>
+                </div>
+                
+                <div class="flex justify-between">
+                  <span>Retained Studies/Day:</span> 
+                  <span class="text-orange-300">{{ formatNumber(retainedStudiesPerDay) }}</span>
+                </div>
+                
+                <div class="flex justify-between">
+                  <span>Studies in LR:</span> 
+                  <span class="text-orange-300">{{ formatNumber(currentStudies) }}</span>
+                </div>
+
+                <div class="flex justify-between">
+                  <span>Retained in LR:</span> 
+                  <span class="text-emerald-300">{{ formatNumber(currentRetainedStudies) }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -346,7 +502,8 @@ import {
   IconInfoCircle,
   IconShield,
   IconTarget,
-  IconStar
+  IconStar,
+  IconMicroscope
 } from '@tabler/icons-vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import InfoTooltip from '@/composables/InfoTooltip.vue';  
@@ -362,21 +519,57 @@ const innovationGemLevel = computed(() => {
   return innovationGem?.level || 0;
 });
 
-// Max Research Points basierend auf Innovation Gem Level
+// Attraction Gem Node 6 für Cap Erhöhung
+const attractionNode6Active = computed(() => {
+  const attractionGem = gemPlannerStore.getGemState('attraction');
+  return attractionGem?.nodes?.[5] || false; // Node 6 ist Index 5
+});
+
+// Innovation Gem Node 6 für Studies per Study Unlock
+const innovationNode6Active = computed(() => {
+  const innovationGem = gemPlannerStore.getGemState('innovation');
+  return innovationGem?.nodes?.[5] || false; // Node 6 ist Index 5
+});
+
+// Dynamic Cap System: 1e333 normal, 1e555 mit Attraction Node 6
+const maxAttrCap = computed(() => {
+  return attractionNode6Active.value ? new Decimal('1e555') : new Decimal('1e333');
+});
+
+const maxAttrCapString = computed(() => {
+  return attractionNode6Active.value ? '1e555' : '1e333';
+});
+
+// Max Research Points basierend auf Innovation Gem Level und Node 6
 const maxResearchPoints = computed(() => {
-  return innovationGemLevel.value >= 3 ? 5900 : 1509;
+  if (innovationNode6Active.value) {
+    // Wenn Innovation Node 6 aktiv ist, verwende researchDataResearch
+    return innovationGemLevel.value >= 3 ? 6250 : 1337;
+  } else {
+    // Standard: verwende researchData
+    return innovationGemLevel.value >= 3 ? 5900 : 1509;
+  }
 });
 
 // Research Steps für ToolValueControls - alle möglichen Research-Kosten
 const researchSteps = computed(() => {
-  // Verfügbare Research basierend auf Innovation Gem Level
-  let availableResearch = [...researchData];
+  let allResearch = [];
+  
+  if (innovationNode6Active.value) {
+    // Wenn Innovation Node 6 aktiv ist, kombiniere beide Listen
+    allResearch = [...researchData, ...researchDataResearch];
+  } else {
+    // Standard: nur researchData
+    allResearch = [...researchData];
+  }
+  
+  // Filter out research91 if Innovation Gem level < 3
   if (innovationGemLevel.value < 3) {
-    availableResearch = availableResearch.filter(research => research.id !== 'research91');
+    allResearch = allResearch.filter(research => research.id !== 'research91');
   }
   
   // Extrahiere alle Kosten und sortiere sie
-  const costs = availableResearch.map(research => parseInt(research.cost));
+  const costs = allResearch.map(research => parseInt(research.cost));
   const uniqueCosts = [...new Set(costs)].sort((a, b) => a - b);
   
   // Füge 0 am Anfang hinzu falls nicht vorhanden
@@ -398,6 +591,10 @@ const currentTicksInLR = ref(0);
 const currentAttrMultiplier = ref(new Decimal(1));
 const attrMultiplierInput = ref('1');
 const inputWasFocused = ref(false);
+const studiesPerStudy = ref(1); // Innovation Node 6 feature
+const currentInnoMultiplier = ref(new Decimal(1)); // Current Innovation Multiplier
+const innoMultiplierInput = ref('1');
+const innoInputWasFocused = ref(false);
 
 // Toggle functions
 function toggleEfficiencyBadge() {
@@ -462,7 +659,159 @@ const multiPerDay = computed(() => {
 
 const daysTo1e333 = computed(() => {
   if (multiPerDay.value <= 1) return Infinity;
-  return Math.log(1e111) / Math.log(multiPerDay.value) * 3;
+  
+  // Use dynamic cap (1e333 or 1e555)
+  const targetExponent = attractionNode6Active.value ? 185 : 111; // 555/3 = 185, 333/3 = 111
+  const targetValue = Math.pow(10, targetExponent);
+  
+  return Math.log(targetValue) / Math.log(multiPerDay.value) * 3;
+});
+
+// ===== INNOVATION NODE 6 MULTIPLIER SYSTEM =====
+// Research for Studies calculation using researchDataResearch
+const affordableStudiesResearch = computed(() => {
+  if (!innovationNode6Active.value) return [];
+  
+  let allResearch = [...researchDataResearch];
+  
+  // Filter out research91 if Innovation Gem level < 3
+  if (innovationGemLevel.value < 3) {
+    allResearch = allResearch.filter(research => research.id !== 'research91');
+  }
+  
+  // Sort by bonus/cost efficiency (most efficient first)
+  allResearch.sort((a, b) => {
+    const efficiencyA = a.bonus / parseFloat(a.cost);
+    const efficiencyB = b.bonus / parseFloat(b.cost);
+    return efficiencyB - efficiencyA;
+  });
+  
+  // Filter only research that we can afford with individual costs
+  return allResearch.filter(research => {
+    const cost = parseFloat(research.cost);
+    return cost <= researchPoints.value;
+  });
+});
+
+const retainedStudiesBonus = computed(() => {
+  if (!innovationNode6Active.value) return 0;
+  // Sum of all bonuses from affordable studies research
+  return affordableStudiesResearch.value.reduce((sum, research) => sum + research.bonus, 0);
+});
+
+// Studies per day calculation (studies per study every 4 ticks)
+const studiesPerDay = computed(() => {
+  if (!innovationNode6Active.value) return 0;
+  // Studies per study every 4 ticks
+  const studyCyclesPerDay = ticksPerDay.value / 4;
+  return studyCyclesPerDay * studiesPerStudy.value;
+});
+
+const retainedStudiesPerDay = computed(() => {
+  if (!innovationNode6Active.value) return 0;
+  return studiesPerDay.value * (retainedStudiesBonus.value / 100);
+});
+
+// Innovation multiplier per day (0.002089270% per 10 retained studies)
+const innovationMultiPerDay = computed(() => {
+  if (!innovationNode6Active.value) return 1;
+  const studyGroups = retainedStudiesPerDay.value / 10; // Every 10 studies
+  const innovationRate = 0.00002; // 0.002089270% - Corrected rate based on real game data
+  return Math.pow(1 + innovationRate, studyGroups);
+});
+
+// Innovation multiplier cap at 1e222
+const maxInnovationCap = new Decimal('1e222');
+
+// Current LR innovations calculations
+const currentStudies = computed(() => {
+  if (!innovationNode6Active.value) return 0;
+  // Studies accumulated in current LR (every 4 ticks)
+  const studyCycles = currentTicksInLR.value / 4;
+  return studyCycles * studiesPerStudy.value;
+});
+
+const currentRetainedStudies = computed(() => {
+  if (!innovationNode6Active.value) return 0;
+  return currentStudies.value * (retainedStudiesBonus.value / 100);
+});
+
+// Innovation days calculations
+const daysToInnovationCap = computed(() => {
+  if (!innovationNode6Active.value || innovationMultiPerDay.value <= 1) return Infinity;
+  
+  // Total days from multiplier 1 to 1e222 (like AttrGN#3)
+  const target = maxInnovationCap; // 1e222
+  const dailyMulti = new Decimal(innovationMultiPerDay.value);
+  
+  if (dailyMulti.lte(1)) return Infinity;
+  
+  // Use Decimal logarithms for large numbers
+  const logTarget = target.ln();
+  const logDaily = dailyMulti.ln();
+  
+  if (logDaily <= 0) return Infinity;
+  
+  return logTarget / logDaily;
+});
+
+// Current Innovation Multiplier (for LR progress)
+const currentInnovationMultiplier = computed(() => {
+  if (!innovationNode6Active.value || currentRetainedStudies.value <= 0) return new Decimal(1);
+  
+  const studyGroups = currentRetainedStudies.value / 10; // Every 10 studies
+  const innovationRate = 0.00002089270; // 0.002089270% - Corrected rate based on real game data
+  const base = new Decimal(1 + innovationRate);
+  const calculatedMultiplier = base.pow(studyGroups);
+  
+  // Calculate the final result (Current * Pending)
+  const finalResult = currentInnoMultiplier.value.mul(calculatedMultiplier);
+  
+  // Check if final result would exceed 1e222 cap
+  if (finalResult.gt(maxInnovationCap)) {
+    // Calculate max pending multiplier: 1e222 / currentInnoMultiplier
+    const maxPendingMultiplier = maxInnovationCap.div(currentInnoMultiplier.value);
+    return maxPendingMultiplier.gte(1) ? maxPendingMultiplier : new Decimal(1);
+  }
+  
+  return calculatedMultiplier;
+});
+
+// Days left to Innovation Cap
+const daysLeftToInnovationCap = computed(() => {
+  if (!innovationNode6Active.value || innovationMultiPerDay.value <= 1 || currentInnoMultiplier.value.lte(0)) return Infinity;
+  
+  try {
+    const target = maxInnovationCap;
+    const current = currentInnoMultiplier.value;
+    const dailyMulti = new Decimal(innovationMultiPerDay.value);
+    
+    if (current.gte(target)) return 0; // Already reached
+    if (dailyMulti.lte(1)) return Infinity;
+    
+    // Use Decimal logarithms for large numbers
+    const ratio = target.dividedBy(current);
+    const logRatio = ratio.ln();
+    const logDaily = dailyMulti.ln();
+    
+    if (logDaily <= 0) return Infinity; // No progress possible
+    
+    const totalDaysNeeded = logRatio / logDaily;
+    
+    // Check if the result is valid
+    if (!isFinite(totalDaysNeeded) || isNaN(totalDaysNeeded) || totalDaysNeeded <= 0) {
+      return Infinity;
+    }
+    
+    // Subtract days already spent in current LR
+    const remainingDays = totalDaysNeeded - daysInLR.value;
+    
+    return Math.max(0, remainingDays);
+    
+  } catch (error) {
+    console.error('Innovation calculation error:', error);
+    return Infinity;
+  }
 });
 
 // Current LR calculations
@@ -484,12 +833,11 @@ const currentMultiplier = computed(() => {
   
   // Calculate the final result (Current * Pending)
   const finalResult = currentAttrMultiplier.value.mul(calculatedMultiplier);
-  const maxValue = new Decimal('1e333');
   
-  // If final result exceeds 1e333, limit the pending multiplier
-  if (finalResult.gt(maxValue)) {
-    // Calculate max pending multiplier: 1e333 / currentAttrMultiplier
-    const maxPendingMultiplier = maxValue.div(currentAttrMultiplier.value);
+  // Use dynamic cap
+  if (finalResult.gt(maxAttrCap.value)) {
+    // Calculate max pending multiplier: maxCap / currentAttrMultiplier
+    const maxPendingMultiplier = maxAttrCap.value.div(currentAttrMultiplier.value);
     return maxPendingMultiplier.gte(1) ? maxPendingMultiplier : new Decimal(1);
   }
   
@@ -515,8 +863,8 @@ const daysLeftTo1e333 = computed(() => {
   if (multiPerDay.value <= 1 || currentAttrMultiplier.value.lte(0)) return Infinity;
   
   try {
-    // Target and current as Decimal
-    const target = new Decimal('1e333');
+    // Use dynamic cap
+    const target = maxAttrCap.value;
     const current = currentAttrMultiplier.value;
     const dailyMulti = new Decimal(multiPerDay.value);
     
@@ -566,7 +914,7 @@ function formatMulti(num) {
   // Handle Decimal instances
   if (num instanceof Decimal) {
     if (num.gte(1000)) {
-      return num.toExponential(2);
+      return num.toExponential(2).replace('e+', 'e');
     }
     return num.toFixed(2);
   }
@@ -590,9 +938,9 @@ function parseSuffixValue(input) {
     // Direct scientific notation 
     if (str.includes('e')) {
       const parsed = new Decimal(str);
-      // Cap at maximum 1e333
-      if (parsed.gt('1e333')) {
-        return new Decimal('1e333');
+      // Cap at dynamic maximum
+      if (parsed.gt(maxAttrCap.value)) {
+        return maxAttrCap.value;
       }
       return parsed;
     }
@@ -629,9 +977,9 @@ function parseSuffixValue(input) {
     const multiplier = suffixMap[suffix] || new Decimal(1);
     const result = number.mul(multiplier);
     
-    // Cap at maximum 1e333
-    if (result.gt('1e333')) {
-      return new Decimal('1e333');
+    // Cap at dynamic maximum
+    if (result.gt(maxAttrCap.value)) {
+      return maxAttrCap.value;
     }
     
     return result;
@@ -667,6 +1015,9 @@ function resetSettings() {
   currentTicksInLR.value = 0; 
   currentAttrMultiplier.value = new Decimal(1);
   attrMultiplierInput.value = '1';
+  currentInnoMultiplier.value = new Decimal(1);
+  innoMultiplierInput.value = '1';
+  studiesPerStudy.value = 1;
   saveSettings();
 }
 
@@ -680,7 +1031,9 @@ function saveSettings() {
       relic14: relic14.value,
       researchPoints: researchPoints.value,
       currentTicksInLR: currentTicksInLR.value,
-      currentAttrMultiplier: currentAttrMultiplier.value.toString() // Store Decimal as string
+      currentAttrMultiplier: currentAttrMultiplier.value.toString(), // Store Decimal as string
+      currentInnoMultiplier: currentInnoMultiplier.value.toString(), // Store Innovation Decimal as string
+      studiesPerStudy: studiesPerStudy.value
     }));
   } catch (error) {
     console.error('Error saving settings:', error);
@@ -702,6 +1055,11 @@ function loadSettings() {
       // Restore Decimal from string
       currentAttrMultiplier.value = new Decimal(savedSettings.currentAttrMultiplier);
     }
+    if (savedSettings.currentInnoMultiplier !== undefined) {
+      // Restore Innovation Decimal from string
+      currentInnoMultiplier.value = new Decimal(savedSettings.currentInnoMultiplier);
+    }
+    if (savedSettings.studiesPerStudy !== undefined) studiesPerStudy.value = savedSettings.studiesPerStudy;
   } catch (error) {
     console.error('Error loading saved settings:', error);
   }
@@ -713,12 +1071,12 @@ function handleAttrMultiplierSubmit() {
   currentAttrMultiplier.value = parsedValue;
   
   // Show warning if value was capped
-  if (parsedValue.eq('1e333')) {
+  if (parsedValue.eq(maxAttrCap.value)) {
     const originalInput = attrMultiplierInput.value;
     const originalParsed = new Decimal(originalInput.includes('e') ? originalInput : '0');
     
-    if (originalParsed.gt('1e333')) {
-      console.log('Input was capped at maximum value of 1e333');
+    if (originalParsed.gt(maxAttrCap.value)) {
+      console.log(`Input was capped at maximum value of ${maxAttrCapString.value}`);
       // Optional: Visual feedback
       setTimeout(() => {
         // Brief visual effect (optional)
@@ -759,6 +1117,67 @@ function formatAttrMultiplierDisplay() {
   }
 }
 
+// Handler for Innovation multiplier input
+function handleInnoMultiplierSubmit() {
+  const parsedValue = parseSuffixValue(innoMultiplierInput.value);
+  currentInnoMultiplier.value = parsedValue;
+  
+  // Innovation cap is 1e222 (fixed cap)
+  const innovationCap = new Decimal('1e222');
+  if (parsedValue.gt(innovationCap)) {
+    currentInnoMultiplier.value = innovationCap;
+    console.log(`Innovation multiplier capped at maximum value of 1e222`);
+    
+    // Visual feedback for capping
+    setTimeout(() => {
+      const inputElement = document.querySelector('input.text-purple-400[placeholder="1e100"]');
+      if (inputElement) {
+        inputElement.style.borderColor = '#f59e0b';
+        setTimeout(() => {
+          inputElement.style.borderColor = '';
+        }, 1000);
+      }
+    }, 100);
+  }
+  
+  formatInnoMultiplierDisplay();
+  saveSettings();
+}
+
+function formatInnoMultiplierDisplay() {
+  try {
+    // Display formatted version in input
+    if (currentInnoMultiplier.value.gte(1000)) {
+      // For very large numbers: scientific notation
+      if (currentInnoMultiplier.value.gte('1e15')) {
+        innoMultiplierInput.value = currentInnoMultiplier.value.toExponential(2);
+      } else {
+        // Normal formatting for smaller large numbers
+        const exponent = Math.floor(currentInnoMultiplier.value.log10());
+        const mantisse = currentInnoMultiplier.value.div(new Decimal(10).pow(exponent));
+        innoMultiplierInput.value = mantisse.toFixed(2) + 'e' + exponent;
+      }
+    } else {
+      innoMultiplierInput.value = currentInnoMultiplier.value.toString();
+    }
+  } catch (error) {
+    console.error('Format error:', error);
+    innoMultiplierInput.value = '1';
+  }
+}
+
+function selectAllInnoInput(event) {
+  event.target.select();
+  innoInputWasFocused.value = true;
+}
+
+function handleInnoInputBlur() {
+  if (innoInputWasFocused.value) {
+    formatInnoMultiplierDisplay();
+    innoInputWasFocused.value = false;
+  }
+}
+
 const researchData = [
   { id: "research44", level: 2, bonus: 0.2, cost: "115" },
   { id: "research44", level: 4, bonus: 0.3, cost: "165" },
@@ -775,6 +1194,24 @@ const researchData = [
   { id: "research91", level: 1, bonus: 0.2, cost: "4500" },
   { id: "research91", level: 3, bonus: 0.6, cost: "5200" },
   { id: "research91", level: 5, bonus: 1, cost: "5900" },
+];
+
+const researchDataResearch = [
+  { id: "research44", level: 1, bonus: 0.2, cost: "90" },
+  { id: "research44", level: 3, bonus: 0.3, cost: "141" },
+  { id: "research44", level: 5, bonus: 0.5, cost: "193" },
+  { id: "research51", level: 1, bonus: 0.2, cost: "251" },
+  { id: "research51", level: 3, bonus: 0.3, cost: "354" },
+  { id: "research51", level: 5, bonus: 0.5, cost: "456" },
+  { id: "research61", level: 1, bonus: 1, cost: "297" },
+  { id: "research61", level: 3, bonus: 3, cost: "429" },
+  { id: "research61", level: 5, bonus: 5, cost: "561" },
+  { id: "research71", level: 1, bonus: 2, cost: "650" },
+  { id: "research71", level: 3, bonus: 4, cost: "994" },
+  { id: "research71", level: 5, bonus: 6, cost: "1337" },
+  { id: "research91", level: 2, bonus: 0.4, cost: "4850" },
+  { id: "research91", level: 4, bonus: 0.8, cost: "5550" },
+  { id: "research91", level: 6, bonus: 1.2, cost: "6250" },
 ];
 
 // Watch for sync between input and value

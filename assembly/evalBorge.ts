@@ -387,7 +387,7 @@ function enemyAttack(isBonus: boolean = false): void {
   // DR Debuff from enemy effect (only if Borge didn't evade)
   
   */
-  if (ck(currentEnemy.effect)) {
+  if (ck(currentEnemy.effect) && !evaded) {
    currentBorge.currentDr = Math.max(0, currentBorge.currentDr - 0.02);
   }
   

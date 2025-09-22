@@ -10864,11 +10864,13 @@
    f64.const 0
   end
   local.set $1
+  i32.const 0
+  local.set $0
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentBorge
-  local.tee $0
+  local.tee $3
   i32.store
-  local.get $0
+  local.get $3
   f64.load offset=48
   local.tee $5
   f64.const 0
@@ -10896,12 +10898,14 @@
   if
    f64.const 0
    local.set $2
+   i32.const 1
+   local.set $0
   else
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentEnemy
-   local.tee $0
+   local.tee $3
    i32.store
-   local.get $0
+   local.get $3
    f64.load offset=24
    local.tee $5
    f64.const 0
@@ -10929,19 +10933,19 @@
    if
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/currentEnemy
-    local.tee $0
+    local.tee $3
     i32.store
-    local.get $0
+    local.get $3
     f64.load offset=32
     local.set $5
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalBorge/currentBorge
-    local.tee $0
+    local.tee $3
     i32.store
     local.get $2
     local.get $5
     f64.const 1
-    local.get $0
+    local.get $3
     i32.load offset=252
     f64.convert_i32_s
     f64.const 0.11
@@ -10956,10 +10960,10 @@
     if
      global.get $~lib/memory/__stack_pointer
      global.get $assembly/evalBorge/currentEnemy
-     local.tee $0
+     local.tee $3
      i32.store
      local.get $1
-     local.get $0
+     local.get $3
      f64.load offset=32
      f64.mul
      local.set $1
@@ -10968,36 +10972,36 @@
   end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentBorge
-  local.tee $0
+  local.tee $3
   i32.store
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentBorge
-  local.tee $3
+  local.tee $4
   i32.store offset=4
-  local.get $0
   local.get $3
+  local.get $4
   f64.load offset=16
   local.get $2
   f64.sub
   f64.store offset=16
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentEnemy
-  local.tee $0
+  local.tee $3
   i32.store
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentEnemy
-  local.tee $3
+  local.tee $4
   i32.store offset=4
-  local.get $3
+  local.get $4
   f64.load offset=8
   local.set $5
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentBorge
-  local.tee $3
+  local.tee $4
   i32.store offset=4
-  local.get $0
-  local.get $5
   local.get $3
+  local.get $5
+  local.get $4
   i32.load offset=244
   f64.convert_i32_s
   f64.const 0.08
@@ -11027,9 +11031,9 @@
   f64.store offset=8
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentEnemy
-  local.tee $0
+  local.tee $3
   i32.store
-  local.get $0
+  local.get $3
   f64.load offset=8
   f64.const 0
   f64.le
@@ -11038,9 +11042,11 @@
   end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalBorge/currentEnemy
-  local.tee $0
+  local.tee $3
   i32.store
   local.get $0
+  i32.const 1
+  local.get $3
   f64.load offset=56
   local.tee $1
   f64.const 0
@@ -11065,6 +11071,8 @@
   else
    i32.const 0
   end
+  select
+  i32.eqz
   if
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentBorge
