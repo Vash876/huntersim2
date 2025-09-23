@@ -64,8 +64,13 @@
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <div class="font-medium text-white text-sm mb-1">Daily HBM Production</div>
               <div class="text-xs text-gray-400 mb-2">Calculated from Build</div>
-              <div class="text-lg font-bold text-red-400">
-                {{ selectedBuildId ? formatNumber(hellishBiomatterPerDay) : '0' }}
+              <div class="flex items-center bg-gray-800/80 py-2 px-3 rounded-lg border border-gray-700">
+                <div class="text-amber-400 text-base font-bold">{{ formatNumber(hellishBiomatterPerDay) }}</div>
+                <div>
+                  <div v-if="!selectedBuildId" class="ml-2 text-gray-400 text-xs">
+                    (select a build)
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1725,6 +1730,10 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.header {
+  background: linear-gradient(to right, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.95));
+}
+
 /* Draggable Animations */
 .flip-list-move {
   transition: transform 0.5s;

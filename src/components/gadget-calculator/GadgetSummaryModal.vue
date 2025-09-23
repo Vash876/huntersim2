@@ -96,7 +96,8 @@
               </div>
               <div class="col-span-3 md:col-span-2 px-2 text-center text-xs flex items-center justify-center">
                 <span v-if="gadget.hasChanges" class="text-blue-400">
-                  {{ formatIndividualTime(gadget.cost) }}
+                  <span v-if="gadget.id === 'anchor' && evaluatingAnchor" class="animate-spin w-3 h-3 border border-blue-300 border-t-transparent rounded-full mr-1"></span>
+                  {{ formatIndividualTime(gadget.id, gadget.cost) }}
                 </span>
                 <span v-else class="text-gray-500">-</span>
               </div>
@@ -164,6 +165,22 @@ const props = defineProps({
   gadgetImages: {
     type: Object,
     default: () => ({})
+  },
+  currentTesseracts: {
+    type: Number,
+    default: 0
+  },
+  anchorEvaluationEnabled: {
+    type: Boolean,
+    default: false
+  },
+  anchorEvaluations: {
+    type: Object,
+    default: () => ({})
+  },
+  evaluatingAnchor: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -217,13 +234,115 @@ const sortedGadgetData = computed(() => {
 });
 
 // Formatiere individuelle Zeiten für einzelne Gadgets
-function formatIndividualTime(cost) {
+function formatIndividualTime(gadgetId, cost) {
+  // Spezielle Behandlung für Anchor of Ages
+  if (gadgetId === 'anchor') {
+    return formatAnchorSaveTime();
+  }
+  
+  // Standard-Behandlung für alle anderen Gadgets
   if (cost <= 0 || props.tessarectsPerDay <= 0) return 'N/A';
   
-  const days = cost / props.tessarectsPerDay;
+  // Berücksichtige bereits verfügbare Tesseracts
+  const remainingCost = Math.max(0, cost - (props.currentTesseracts || 0));
+  if (remainingCost <= 0) return 'Available now';
+  
+  const days = remainingCost / props.tessarectsPerDay;
   
   if (days === Infinity || isNaN(days)) return 'N/A';
   if (days > 36500) return '☠️';
+  
+  if (days > 365) {
+    const years = Math.floor(days / 365);
+    const remainingDays = days % 365;
+    const months = Math.floor(remainingDays / 30);
+    
+    if (months === 0) {
+      return `${years}y`;
+    } else {
+      return `${years}y ${months}m`;
+    }
+  }
+  
+  if (days > 60) {
+    return `${Math.floor(days)}d`;
+  }
+  
+  const fullDays = Math.floor(days);
+  const hours = Math.round((days - fullDays) * 24);
+  
+  if (fullDays === 0) {
+    return `${hours}h`;
+  } else if (hours === 0) {
+    return `${fullDays}d`;
+  } else {
+    return `${fullDays}d ${hours}h`;
+  }
+}
+
+// Berechne individuelle Sparzeit für Anchor of Ages mit Level-by-Level Evaluation (aus GadgetCalculator kopiert)
+function formatAnchorSaveTime() {
+  const currentLevel = props.currentLevels.anchor || 0;
+  const targetLevel = props.targetLevels.anchor || 0;
+  
+  if (targetLevel <= currentLevel) {
+    return 'No upgrade planned';
+  }
+  
+  // Prüfe ob wir Evaluationen haben und diese verwendet werden sollen
+  const hasEvaluations = Object.keys(props.anchorEvaluations).length > 0;
+  const shouldUseEvaluations = hasEvaluations && props.anchorEvaluationEnabled;
+  
+  if (!shouldUseEvaluations) {
+    // Normale Berechnung ohne Evaluation - verwende Standard-Zeitberechnung
+    const cost = calcGadgetCostDifference('anchor', currentLevel, targetLevel);
+    const remainingCost = Math.max(0, cost - (props.currentTesseracts || 0));
+    if (remainingCost <= 0) return 'Available now';
+    
+    const days = remainingCost / props.tessarectsPerDay;
+    return formatTimeValue(days);
+  }
+  
+  // Berechne kumulative Zeit mit steigender Produktion (ähnlich wie im GadgetCalculator)
+  let cumulativeDays = 0;
+  let availableTesseracts = props.currentTesseracts || 0;
+  let currentProduction = props.tessarectsPerDay; // Basis-Produktion
+  
+  for (let level = currentLevel + 1; level <= targetLevel; level++) {
+    // Berechne die Kosten nur für diesen einen Level (nicht kumulativ)
+    const singleLevelCost = getGadgetCost('anchor', level);
+    const remainingCost = Math.max(0, singleLevelCost - availableTesseracts);
+    
+    if (remainingCost > 0 && currentProduction > 0) {
+      const daysForThisLevel = remainingCost / currentProduction;
+      cumulativeDays += daysForThisLevel;
+      
+      // Nach dem Warten haben wir genug produziert + das was wir schon hatten
+      availableTesseracts += daysForThisLevel * currentProduction;
+    }
+    
+    // Nach dem Kauf: Verfügbare Tesseracts um die Kosten dieses Levels reduzieren
+    availableTesseracts -= singleLevelCost;
+    
+    // WICHTIG: Neue Produktion für nächstes Level anwenden
+    const evaluation = props.anchorEvaluations[level];
+    if (evaluation && evaluation.tesseractsPerDay) {
+      const newDailyTesseracts = evaluation.tesseractsPerDay;
+      const tolerance = currentProduction * 0.001; // 0.1% Toleranz
+      if (newDailyTesseracts > (currentProduction + tolerance)) {
+        currentProduction = newDailyTesseracts; // Verwende den genauen Wert
+      }
+    }
+  }
+  
+  return formatTimeValue(cumulativeDays);
+}
+
+// Hilfsfunktion für einheitliche Zeitformatierung
+function formatTimeValue(days) {
+  if (days === Infinity || isNaN(days)) return 'N/A';
+  if (days > 36500) return '☠️';
+  if (days <= 0) return 'Available now';
   
   if (days > 365) {
     const years = Math.floor(days / 365);

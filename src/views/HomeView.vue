@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.8.5',
+    date: '2025-09-23',
+    changes: [
+      {
+        text: 'Gadget Planner',
+        subItems: [
+          'Enhanced time calculations for progressive production increases during Anchor upgrades',
+          'Current Anchor level is now automatically synchronized with the selected reference build',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.8.4',
     date: '2025-09-22',
     changes: [

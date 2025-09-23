@@ -26,38 +26,46 @@
         </div>
         
         <div class="p-2 sm:p-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <!-- Reference Build -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-              <div class="flex justify-between items-center mb-1">
-                <span class="font-medium text-white text-sm">Reference Build</span>
-              </div>
+              <div class="font-medium text-white text-sm mb-1">Reference Build</div>
+              <div class="text-xs text-gray-400 mb-2">Select Borge Build</div>
               
               <select 
                 v-model="selectedBuildId" 
                 @change="updateFromSelectedBuild"
-                class="w-full bg-gray-800 border border-gray-700 rounded text-white py-1 px-2 text-sm"
+                class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
               >
                 <option value="">Select a build...</option>
                 <option v-for="build in knoxBuilds" :key="build.id" :value="build.id">
                   {{ build.name }}
                 </option>
               </select>
-              <p class="text-gray-400 text-xs mt-1">Select a Knox build to calculate Tesseract production</p>
             </div>
+
+            <!-- Current Tesseracts -->
+            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="font-medium text-white text-sm mb-1">Current Tesseracts</div>
+                <div class="text-xs text-gray-400 mb-2">Amount you have saved</div>
+              
+              <SuffixInput
+                v-model="currentTesseracts"
+                placeholder="0"
+                class="w-full text-sm bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none"
+              />
+            </div>     
             
             <!-- Daily Tessarect Rate -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-              <div class="flex justify-between items-center mb-1">
-                <span class="font-medium text-white text-sm">Tesseracts per Day</span>
-              </div>
-              
+              <div class="font-medium text-white text-sm mb-1">Tesseracts per Day</div>
+              <div class="text-xs text-gray-400 mb-2">Calculated from Build</div>
+
               <div class="flex items-center bg-gray-800/80 py-2 px-3 rounded-lg border border-gray-700">
                 <div class="text-amber-400 text-base font-bold">{{ formatGadgetCost(tessarectsPerDay) }}</div>
-                <div v-if="selectedBuild" class="ml-2 text-gray-400 text-xs">
-                  ({{ selectedBuild.name }})
+                <div v-if="!selectedBuild" class="ml-2 text-gray-400 text-xs">
+                  (select a build)
                 </div>
-                <div v-else class="ml-2 text-gray-400 text-xs">(select a build)</div>
               </div>
             </div>
           </div>
@@ -170,22 +178,48 @@
               <div class="relative z-10 gadget-content">
                 <!-- Gadget Header -->
                 <div class="flex flex-wrap justify-between items-center mb-2">
-                  <span class="text-base text-white font-medium flex-grow gadget-title">
-                    <span class="hidden sm:inline">
-                      {{ gadget.label.length > 40 ? gadget.label.substring(0, 31) + '...' : gadget.label }}
+                  <div class="flex-grow">
+                    <span class="text-base text-white font-medium gadget-title">
+                      <span class="hidden sm:inline">
+                        {{ gadget.label.length > 40 ? gadget.label.substring(0, 31) + '...' : gadget.label }}
+                      </span>
+                      <span class="inline sm:hidden">
+                        {{ gadget.label.length > 28 ? gadget.label.substring(0, 25) + '...' : gadget.label }}
+                      </span>
                     </span>
-                    <span class="inline sm:hidden">
-                      {{ gadget.label.length > 28 ? gadget.label.substring(0, 25) + '...' : gadget.label }}
-                    </span>
-                  </span>
+                    
+                    <!-- Anchor Evaluation Button -->
+                    <div v-if="gadget.id === 'anchor' && targetLevels.anchor > (currentLevels.anchor || 0)" class="mt-1">
+                      <button 
+                        v-if="!anchorEvaluationEnabled"
+                        @click="triggerAnchorEvaluation"
+                        :disabled="evaluatingAnchor"
+                        class="text-xs bg-blue-800 hover:bg-blue-600 disabled:bg-gray-600 text-white px-2 py-1 rounded-md transition-colors flex items-center"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-3 h-3 mr-1">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Evaluate for exact time
+                        <InfoTooltip 
+                          content="Click to get more accurate time (may take a while)"
+                          placement="top"
+                          class="ml-1"
+                        />
+                      </button>
+                      <div v-else class="text-xs text-purple-300">
+                        Using evaluation results
+                      </div>
+                    </div>
+                  </div>
                   <div v-if="getGadgetCost(gadget.id) > 0" class="flex flex-col items-end gap-1">
                     <!-- Cost Badge -->
                     <div class="text-amber-400 text-xs font-bold bg-gray-900/90 px-2 py-0.5 rounded-lg border border-amber-700/40">
                       {{ formatGadgetCost(getGadgetCost(gadget.id)) }}
                     </div>
                     <!-- Time Badge -->
-                    <div class="text-xs px-2 py-0.5 rounded-lg bg-blue-900/80 text-blue-200 font-bold border border-blue-700/40">
-                      {{ formatIndividualSaveTime(gadget.id) }}
+                    <div class="text-xs px-2 py-0.5 rounded-lg bg-blue-900/80 text-blue-200 font-bold border border-blue-700/40 flex items-center">
+                      <span v-if="gadget.id === 'anchor' && evaluatingAnchor" class="animate-spin w-3 h-3 border border-blue-300 border-t-transparent rounded-full mr-1"></span>
+                      {{ gadget.id === 'anchor' ? getAnchorTimeDisplay() : formatIndividualSaveTime(gadget.id) }}
                     </div>
                   </div>
                 </div>
@@ -274,6 +308,10 @@
         :build-name="selectedBuild?.name || ''"
         :tessarects-per-day="tessarectsPerDay"
         :gadget-images="gadgetImages"
+        :current-tesseracts="currentTesseracts"
+        :anchor-evaluation-enabled="anchorEvaluationEnabled"
+        :anchor-evaluations="anchorEvaluations"
+        :evaluating-anchor="evaluatingAnchor"
         @close="showSummaryModal = false"
       />
   </div>
@@ -302,10 +340,13 @@ import {
 } from '@/constants/gadgets.js';
 import { useHunterStore } from '@/store/hunterStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
-import { calcGadgetCostDifference, formatGadgetCost } from '@/utils/gadgetCostUtils';
+import { calcGadgetCostDifference, formatGadgetCost, getGadgetCost as getGadgetCostFromUtils } from '@/utils/gadgetCostUtils';
 import { shouldEvaluate } from '@/services/evaluationCacheService';
 import GadgetSummaryModal from '@/components/gadget-calculator/GadgetSummaryModal.vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
+import SuffixInput from '@/composables/SuffixInput.vue';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
+import { useBuildEvaluation } from '@/composables/useBuildEvaluation.js';
 
 // Stores
 const hunterStore = useHunterStore();
@@ -317,9 +358,16 @@ const loadError = ref(null);
 const currentLevels = ref({});
 const targetLevels = ref({});
 const tessarectsPerDay = ref(0);
+const currentTesseracts = ref(0); // Current Tesseracts - ähnlich wie currentHBM im InscryptionPlanner
 const selectedBuildId = ref('');
 const cachedResults = ref({});
 const showMultipliers = ref(true);
+
+// State für Anchor of Ages Evaluationen (ähnlich wie Borge Buff 2 im InscryptionPlanner)
+const anchorEvaluations = ref({});
+const evaluatingAnchor = ref(false);
+const anchorEvaluationProgress = ref({});
+const anchorEvaluationEnabled = ref(false); // Toggle für Evaluation
 
 const showSummaryModal = ref(false);
 
@@ -337,6 +385,365 @@ const selectedBuild = computed(() => {
   return knoxBuilds.value.find(build => String(build.id) === String(selectedBuildId.value));
 });
 
+// Use the build evaluation composable für Knox builds (für Anchor of Ages)
+const { 
+  evaluateBuildWithParams, 
+  isEvaluating
+} = useBuildEvaluation({ hunterId: 'knox', buildData: selectedBuild }, () => {});
+
+// Anchor of Ages Evaluation Functions (ähnlich wie Borge Buff 2 im InscryptionPlanner)
+async function evaluateAnchorOfAgesLevels() {
+  if (!selectedBuild.value || evaluatingAnchor.value) {
+    return;
+  }
+
+  const currentLevel = currentLevels.value.anchor || 0;
+  const targetLevel = targetLevels.value.anchor || 0;
+  
+  if (targetLevel <= currentLevel) {
+    return; // Kein Upgrade geplant
+  }
+
+  try {
+    evaluatingAnchor.value = true;
+    anchorEvaluationProgress.value = {};
+    anchorEvaluations.value = {};
+
+    // Evaluiere jeden Level von current+1 bis target
+    for (let level = currentLevel + 1; level <= targetLevel; level++) {
+      anchorEvaluationProgress.value[level] = 'Evaluating...';
+
+      // Erstelle modifizierten Build mit diesem Anchor Level - DEEP COPY
+      const modifiedBuild = JSON.parse(JSON.stringify(selectedBuild.value));
+      
+      if (!modifiedBuild.overrides) {
+        modifiedBuild.overrides = {};
+      }
+      
+      // Setze Anchor Level in den Overrides
+      modifiedBuild.overrides['upgrades.gadgets.anchor'] = level;
+      
+      // Evaluiere den Build
+      const evaluationResult = await evaluateBuildWithParams(modifiedBuild);
+      
+      if (evaluationResult && evaluationResult.mat3) {
+        // Berechne die tägliche Tesseract-Produktion (wie im InscryptionPlanner)
+        const tesseractsPerRun = evaluationResult.mat3 || 0;
+        const avgRunTimeMinutes = evaluationResult.avgTime || 120;
+        const runsPerDay = 1440 / avgRunTimeMinutes; // 1440 Minuten in einem Tag
+        const dailyTesseracts = tesseractsPerRun * runsPerDay; // NICHT Math.floor hier, das kommt später
+        
+        anchorEvaluations.value[level] = {
+          level: level,
+          tesseractsPerDay: dailyTesseracts, // Speichere die genaue tägliche Produktion
+          evaluationResult: evaluationResult
+        };
+        anchorEvaluationProgress.value[level] = 'Complete';
+      } else {
+        anchorEvaluationProgress.value[level] = 'Failed';
+      }
+    }
+
+    // DETAILLIERTER EVALUATION SUMMARY LOG
+    console.log('='.repeat(80));
+    console.log('🔱 ANCHOR OF AGES EVALUATION COMPLETE 🔱');
+    console.log('='.repeat(80));
+    console.log(`📊 Evaluated Levels: ${currentLevel + 1} to ${targetLevel}`);
+    console.log(`🎯 Total Levels: ${targetLevel - currentLevel}`);
+    console.log(`⚡ Base Production: ${tessarectsPerDay.value} tesseracts/day`);
+    console.log(`💰 Available Tesseracts: ${currentTesseracts.value || 0}`);
+    console.log('');
+    
+    // Zeige alle Evaluation-Ergebnisse
+    console.log('📈 LEVEL-BY-LEVEL EVALUATION RESULTS:');
+    console.log('-'.repeat(50));
+    for (let level = currentLevel + 1; level <= targetLevel; level++) {
+      const evaluation = anchorEvaluations.value[level];
+      const singleCost = calculateSingleLevelCost('anchor', level);
+      
+      if (evaluation) {
+        const mat3PerRun = evaluation.evaluationResult?.mat3 || 0;
+        const avgTime = evaluation.evaluationResult?.avgTime || 120;
+        const runsPerDay = 1440 / avgTime;
+        const calculatedDaily = mat3PerRun * runsPerDay;
+        
+        console.log(`Level ${level}:`);
+        console.log(`  💎 Cost: ${formatGadgetCost(singleCost)} tesseracts`);
+        console.log(`  ⚡ Mat3 per Run: ${formatGadgetCost(mat3PerRun)}`);
+        console.log(`  ⏱️ Avg Time: ${avgTime} min`);
+        console.log(`  🔄 Runs per Day: ${runsPerDay.toFixed(2)}`);
+        console.log(`  🏭 Calculated Daily: ${formatGadgetCost(calculatedDaily)} (stored: ${formatGadgetCost(evaluation.tesseractsPerDay)})`);
+        console.log(`  📊 Avg Stage: ${evaluation.evaluationResult?.avgStage || 'N/A'}`);
+      } else {
+        console.log(`Level ${level}: ❌ EVALUATION FAILED`);
+        console.log(`  💎 Cost: ${formatGadgetCost(singleCost)} tesseracts`);
+      }
+      console.log('');
+    }
+    
+    // Simuliere die Zeitberechnung nochmal für den Log
+    console.log('🧮 TIME CALCULATION SIMULATION:');
+    console.log('-'.repeat(50));
+    let simCumulativeDays = 0;
+    let simAvailableTesseracts = currentTesseracts.value || 0;
+    let simCurrentProduction = tessarectsPerDay.value;
+    
+    for (let level = currentLevel + 1; level <= targetLevel; level++) {
+      const singleLevelCost = calculateSingleLevelCost('anchor', level);
+      const remainingCost = Math.max(0, singleLevelCost - simAvailableTesseracts);
+      
+      console.log(`Level ${level} Calculation:`);
+      console.log(`  💎 Level Cost: ${formatGadgetCost(singleLevelCost)}`);
+      console.log(`  💰 Available: ${formatGadgetCost(simAvailableTesseracts)}`);
+      console.log(`  🔴 Need to Farm: ${formatGadgetCost(remainingCost)}`);
+      console.log(`  ⚡ Current Production: ${formatGadgetCost(simCurrentProduction)}/day`);
+      
+      if (remainingCost > 0 && simCurrentProduction > 0) {
+        const daysForThisLevel = remainingCost / simCurrentProduction;
+        simCumulativeDays += daysForThisLevel;
+        console.log(`  ⏱️ Days to Farm: ${daysForThisLevel.toFixed(2)}`);
+        console.log(`  📅 Cumulative Days: ${simCumulativeDays.toFixed(2)}`);
+        
+        // Nach dem Warten haben wir genug produziert
+        simAvailableTesseracts += daysForThisLevel * simCurrentProduction;
+      } else {
+        console.log(`  ✅ Can afford immediately!`);
+      }
+      
+      // Nach dem Kauf reduzieren
+      simAvailableTesseracts -= singleLevelCost;
+      console.log(`  💰 After Purchase: ${formatGadgetCost(simAvailableTesseracts)}`);
+      
+      // Neue Produktion für nächstes Level
+      const evaluation = anchorEvaluations.value[level];
+      if (evaluation && evaluation.tesseractsPerDay) {
+        const newDailyTesseracts = evaluation.tesseractsPerDay;
+        if (newDailyTesseracts > simCurrentProduction) {
+          const oldProduction = simCurrentProduction;
+          simCurrentProduction = newDailyTesseracts;
+          console.log(`  🚀 Production Upgrade: ${formatGadgetCost(oldProduction)} → ${formatGadgetCost(simCurrentProduction)}/day`);
+        }
+      }
+      console.log('');
+    }
+    
+    console.log('🏁 FINAL SUMMARY:');
+    console.log(`  📅 Total Time Required: ${simCumulativeDays.toFixed(2)} days`);
+    console.log(`  ⚡ Final Production Rate: ${formatGadgetCost(simCurrentProduction)}/day`);
+    console.log('='.repeat(80));
+    
+  } catch (error) {
+    console.error('[GadgetCalculator] Anchor evaluation failed:', error);
+  } finally {
+    evaluatingAnchor.value = false;
+  }
+}
+
+// Anchor Time Display - zeigt Evaluierungsfortschritt oder Zeit
+function getAnchorTimeDisplay() {
+  // Wenn gerade evaluiert wird, zeige Fortschritt
+  if (evaluatingAnchor.value) {
+    const currentLevel = currentLevels.value.anchor || 0;
+    const targetLevel = targetLevels.value.anchor || 0;
+    
+    if (targetLevel <= currentLevel) {
+      return 'No upgrade planned';
+    }
+    
+    // Berechne wie viele Level evaluiert werden müssen
+    const totalLevels = targetLevel - currentLevel;
+    
+    // Zähle wie viele schon fertig sind
+    const completedLevels = Object.keys(anchorEvaluations.value).length;
+    
+    return `${completedLevels}/${totalLevels}`;
+  }
+  
+  // Sonst zeige normale Zeit
+  return formatAnchorSaveTime();
+}
+
+// Berechne individuelle Sparzeit für Anchor of Ages mit Level-by-Level Evaluation
+function formatAnchorSaveTime() {
+  const currentLevel = currentLevels.value.anchor || 0;
+  const targetLevel = targetLevels.value.anchor || 0;
+  
+  console.log('[ANCHOR] formatAnchorSaveTime called:', { currentLevel, targetLevel });
+  
+  if (targetLevel <= currentLevel) {
+    console.log('[ANCHOR] No upgrade planned - target <= current');
+    return 'No upgrade planned';
+  }
+  
+  // Prüfe ob wir Evaluationen haben und diese verwendet werden sollen
+  const hasEvaluations = Object.keys(anchorEvaluations.value).length > 0;
+  const shouldUseEvaluations = hasEvaluations && anchorEvaluationEnabled.value;
+  
+  console.log('[ANCHOR] Evaluation status:', { 
+    hasEvaluations, 
+    anchorEvaluationEnabled: anchorEvaluationEnabled.value, 
+    shouldUseEvaluations,
+    evaluationsCount: Object.keys(anchorEvaluations.value).length,
+    evaluations: anchorEvaluations.value
+  });
+  
+  if (!shouldUseEvaluations) {
+    // Normale Berechnung ohne Evaluation
+    console.log('[ANCHOR] Using normal calculation (no evaluations)');
+    return formatIndividualSaveTime('anchor');
+  }
+  
+  // Berechne kumulative Zeit mit steigender Produktion (ähnlich wie Inscryption Planner)
+  let cumulativeDays = 0;
+  let availableTesseracts = currentTesseracts.value || 0;
+  let currentProduction = tessarectsPerDay.value; // Basis-Produktion
+  
+  console.log('[ANCHOR] Starting calculation:', {
+    initialAvailableTesseracts: availableTesseracts,
+    initialProduction: currentProduction,
+    levelsToProcess: targetLevel - currentLevel
+  });
+  
+  for (let level = currentLevel + 1; level <= targetLevel; level++) {
+    // Berechne die Kosten nur für diesen einen Level (nicht kumulativ)
+    const singleLevelCost = calculateSingleLevelCost('anchor', level);
+    const remainingCost = Math.max(0, singleLevelCost - availableTesseracts);
+    
+    console.log(`[ANCHOR] Level ${level}:`, {
+      singleLevelCost,
+      availableTesseracts,
+      remainingCost,
+      currentProduction
+    });
+    
+    if (remainingCost > 0 && currentProduction > 0) {
+      const daysForThisLevel = remainingCost / currentProduction;
+      cumulativeDays += daysForThisLevel;
+      
+      console.log(`[ANCHOR] Level ${level} - Need to wait:`, {
+        daysForThisLevel,
+        cumulativeDays
+      });
+      
+      // Nach dem Warten haben wir genug produziert + das was wir schon hatten
+      availableTesseracts += daysForThisLevel * currentProduction;
+    }
+    
+    // Nach dem Kauf: Verfügbare Tesseracts um die Kosten dieses Levels reduzieren
+    availableTesseracts -= singleLevelCost;
+    
+    console.log(`[ANCHOR] Level ${level} - After purchase:`, {
+      availableTesseractsAfterPurchase: availableTesseracts
+    });
+    
+    // WICHTIG: Neue Produktion für nächstes Level anwenden (wie InscryptionPlanner)
+    const evaluation = anchorEvaluations.value[level];
+    console.log(`[ANCHOR] Level ${level} - Checking for evaluation:`, {
+      hasEvaluation: !!evaluation,
+      evaluationTesseractsPerDay: evaluation?.tesseractsPerDay,
+      currentProduction,
+      evaluationData: evaluation
+    });
+    
+    if (evaluation && evaluation.tesseractsPerDay) {
+      // Berechne die neue tägliche Tesseract-Produktion aus der Evaluation
+      const newDailyTesseracts = evaluation.tesseractsPerDay; // KEIN Math.floor hier!
+      
+      console.log(`[ANCHOR] Level ${level} - Production comparison:`, {
+        oldProduction: currentProduction,
+        newDailyTesseracts,
+        willUpdate: newDailyTesseracts > currentProduction
+      });
+      
+      // AKTUALISIERE die currentProduction für nachfolgende Level
+      // Füge einen kleinen Toleranzwert hinzu um floating point Vergleichsprobleme zu vermeiden
+      const tolerance = currentProduction * 0.001; // 0.1% Toleranz
+      if (newDailyTesseracts > (currentProduction + tolerance)) {
+        const oldProduction = currentProduction;
+        currentProduction = newDailyTesseracts; // Verwende den genauen Wert
+        console.log(`[ANCHOR] Level ${level} - Production increased:`, {
+          oldProduction,
+          newProduction: currentProduction,
+          evaluationMat3: evaluation.evaluationResult?.mat3,
+          evaluationTime: evaluation.evaluationResult?.avgTime,
+          tolerance,
+          difference: newDailyTesseracts - oldProduction
+        });
+      } else {
+        console.log(`[ANCHOR] Level ${level} - Production NOT increased:`, {
+          newDailyTesseracts,
+          currentProduction,
+          tolerance,
+          difference: newDailyTesseracts - currentProduction,
+          wouldUpdateWithoutTolerance: newDailyTesseracts > currentProduction
+        });
+      }
+    } else {
+      console.log(`[ANCHOR] Level ${level} - No evaluation available for production update`);
+    }
+  }
+  
+  console.log('[ANCHOR] Final calculation result:', {
+    cumulativeDays,
+    finalResult: cumulativeDays <= 0 ? 'Available now' : `${cumulativeDays} days`
+  });
+  
+  // Formatiere die Zeit wie bei anderen Gadgets
+  if (cumulativeDays === Infinity || cumulativeDays > 36500) return '☠️';
+  if (cumulativeDays <= 0) return 'Available now';
+  
+  if (cumulativeDays > 365) {
+    const years = Math.floor(cumulativeDays / 365);
+    const remainingDays = cumulativeDays % 365;
+    const months = Math.floor(remainingDays / 30);
+    
+    if (months === 0) {
+      return `${years}y`;
+    } else {
+      return `${years}y, ${months}mo`;
+    }
+  }
+  
+  if (cumulativeDays > 60) {
+    return `${Math.floor(cumulativeDays)} days`;
+  }
+  
+  const fullDays = Math.floor(cumulativeDays);
+  const hours = Math.round((cumulativeDays - fullDays) * 24);
+  
+  if (fullDays === 0) {
+    return `${hours}h`;
+  } else if (hours === 0) {
+    return `${fullDays}d`;
+  } else {
+    return `${fullDays}d ${hours}h`;
+  }
+}
+
+// Hilfsfunktion: Berechne Kosten für einen spezifischen Level (nur dieser eine Level)
+function calculateSingleLevelCost(gadgetId, level) {
+  if (level <= 0) return 0;
+  
+  // Verwende die echte Kostenfunktion aus gadgetCostUtils.js
+  return getGadgetCostFromUtils(gadgetId, level);
+}
+
+// Hilfsfunktion: Berechne kumulative Kosten von current level bis zu einem level
+function calculateLevelCost(gadgetId, level) {
+  const currentGadgetLevel = currentLevels.value[gadgetId] || 0;
+  
+  // Verwende die echte Kostenfunktion aus gadgetCostUtils.js
+  return calcGadgetCostDifference(gadgetId, currentGadgetLevel, level);
+}
+
+// Trigger Anchor Evaluation nur bei manuellem Aufruf
+function triggerAnchorEvaluation() {
+  if (selectedBuild.value) {
+    anchorEvaluationEnabled.value = true;
+    evaluateAnchorOfAgesLevels();
+  }
+}
+
 const totalCost = computed(() => {
   let cost = 0;
   
@@ -349,7 +756,12 @@ const totalCost = computed(() => {
 
 const daysToSave = computed(() => {
   if (tessarectsPerDay.value <= 0) return Infinity;
-  return totalCost.value / tessarectsPerDay.value;
+  
+  // Berücksichtige bereits verfügbare Tesseracts
+  const remainingCost = Math.max(0, totalCost.value - (currentTesseracts.value || 0));
+  if (remainingCost <= 0) return 0; // Bereits genug Tesseracts verfügbar
+  
+  return remainingCost / tessarectsPerDay.value;
 });
 
 const activeLevelCount = computed(() => {
@@ -447,7 +859,7 @@ function formatTimeToSave(days) {
   } else if (hours === 0) {
     return `${fullDays} days`;
   } else {
-    return `${fullDays} days, ${hours} hours`;
+    return `${fullDays} days ${hours} hours`;
   }
 }
 
@@ -592,6 +1004,7 @@ async function loadGadgetData() {
     const savedCurrentLevels = JSON.parse(localStorage.getItem('gadgetCalculator_currentLevels') || '{}');
     const savedTargetLevels = JSON.parse(localStorage.getItem('gadgetCalculator_targetLevels') || '{}');
     const savedReferenceBuildId = localStorage.getItem('gadgetCalculator_referenceBuildId');
+    const savedCurrentTesseracts = localStorage.getItem('gadgetCalculator_currentTesseracts');
     
     // Lade Multiplier-Ansicht-Einstellung
     const savedShowMultipliers = localStorage.getItem('gadgetCalculator_showMultipliers');
@@ -599,13 +1012,19 @@ async function loadGadgetData() {
       showMultipliers.value = savedShowMultipliers === 'true';
     }
     
+    // Lade Current Tesseracts
+    if (savedCurrentTesseracts !== null) {
+      currentTesseracts.value = Number(savedCurrentTesseracts) || 0;
+    }
+    
     // Initialize with store values for wrench, zaptron, anchor
     const newCurrentLevels = { ...savedCurrentLevels };
     
-    // For wrench, zaptron, and anchor, use store values if available
+    // For wrench and zaptron, use store values if available
+    // Anchor wird aus dem ausgewählten Build geholt, nicht aus dem Store
     if (storeUpgrades.wrench !== undefined) newCurrentLevels.wrench = storeUpgrades.wrench;
     if (storeUpgrades.zaptron !== undefined) newCurrentLevels.zaptron = storeUpgrades.zaptron;
-    if (storeUpgrades.anchor !== undefined) newCurrentLevels.anchor = storeUpgrades.anchor;
+    // Entfernt: if (storeUpgrades.anchor !== undefined) newCurrentLevels.anchor = storeUpgrades.anchor;
     
     // Set the values from localStorage or defaults
     currentLevels.value = newCurrentLevels;
@@ -673,9 +1092,56 @@ function updateFromSelectedBuild() {
       console.log("No cached result found for this build");
       tessarectsPerDay.value = 0;
     }
+    
+    // WICHTIG: Aktualisiere den Current Anchor Level aus dem ausgewählten Build
+    updateCurrentAnchorFromBuild(build);
   } else {
     console.log("Build not found");
     tessarectsPerDay.value = 0;
+  }
+}
+
+// Neue Funktion: Hole den aktuellen Anchor Level aus dem Build
+function updateCurrentAnchorFromBuild(build) {
+  if (!build) return;
+  
+  let anchorLevel = 0;
+  
+  // Prüfe Overrides zuerst (höchste Priorität)
+  if (build.overrides && build.overrides['upgrades.gadgets.anchor'] !== undefined) {
+    anchorLevel = build.overrides['upgrades.gadgets.anchor'];
+    console.log(`[GadgetCalculator] Anchor level from build overrides: ${anchorLevel}`);
+  } 
+  // Sonst schaue in den normalen upgrades des Builds
+  else if (build.upgrades && build.upgrades.gadgets && build.upgrades.gadgets.anchor !== undefined) {
+    anchorLevel = build.upgrades.gadgets.anchor;
+    console.log(`[GadgetCalculator] Anchor level from build upgrades: ${anchorLevel}`);
+  }
+  // Fallback zum hunterStore
+  else {
+    const storeUpgrades = hunterStore.upgrades?.gadgets || {};
+    anchorLevel = storeUpgrades.anchor || 0;
+    console.log(`[GadgetCalculator] Anchor level from hunterStore fallback: ${anchorLevel}`);
+  }
+  
+  // Aktualisiere nur den Anchor Level, behalte andere Gadget-Level bei
+  if (currentLevels.value.anchor !== anchorLevel) {
+    currentLevels.value.anchor = anchorLevel;
+    
+    // Stelle sicher, dass der Target Level nicht unter dem Current Level ist
+    if ((targetLevels.value.anchor || 0) < anchorLevel) {
+      targetLevels.value.anchor = anchorLevel;
+    }
+    
+    console.log(`[GadgetCalculator] Updated current anchor level to: ${anchorLevel}`);
+    
+    // Speichere die Änderungen
+    saveGadgetLevels();
+    
+    // Reset Anchor Evaluation da sich der Current Level geändert hat
+    anchorEvaluationEnabled.value = false;
+    anchorEvaluations.value = {};
+    anchorEvaluationProgress.value = {};
   }
 }
 
@@ -768,9 +1234,14 @@ function finalizeTargetLevel(gadgetId, newVal = null) {
 // Individuelle Sparzeit für ein Gadget
 function formatIndividualSaveTime(gadgetId) {
   const cost = getGadgetCost(gadgetId);
-  if (cost <= 0 || tessarectsPerDay.value <= 0) return 'N/A';
+  if (cost <= 0) return 'N/A';
+  if (tessarectsPerDay.value <= 0) return 'Set production rate';
   
-  const days = cost / tessarectsPerDay.value;
+  // Berücksichtige bereits verfügbare Tesseracts
+  const remainingCost = Math.max(0, cost - (currentTesseracts.value || 0));
+  if (remainingCost <= 0) return 'Available now'; // Bereits genug Tesseracts für dieses Gadget
+  
+  const days = remainingCost / tessarectsPerDay.value;
   
   // Wenn es mehr als 10 Jahre dauert...
   if (days > 36500) { // 100 Jahre = 36500 Tage
@@ -826,13 +1297,34 @@ function resetAllLevels() {
 function saveGadgetLevels() {
   localStorage.setItem('gadgetCalculator_currentLevels', JSON.stringify(currentLevels.value));
   localStorage.setItem('gadgetCalculator_targetLevels', JSON.stringify(targetLevels.value));
+  localStorage.setItem('gadgetCalculator_currentTesseracts', String(currentTesseracts.value || 0));
 }
+
+// Watch für Änderungen am selectedBuildId, um Anchor-Level zu aktualisieren
+watch(selectedBuildId, (newBuildId) => {
+  if (newBuildId && selectedBuild.value) {
+    updateCurrentAnchorFromBuild(selectedBuild.value);
+  }
+});
 
 // Watch für Änderungen am hunterStore
 watch(() => hunterStore.getBuildsForHunter('knox'), () => {
   // Wenn sich die Builds im Store ändern, lade die Ergebnisse neu
   loadCachedResults();
 }, { deep: true });
+
+// Watch für currentTesseracts Änderungen, um automatisch zu speichern
+watch(currentTesseracts, (newValue) => {
+  localStorage.setItem('gadgetCalculator_currentTesseracts', String(newValue || 0));
+});
+
+// Reset Anchor Evaluation wenn sich Level ändern
+watch(() => [targetLevels.value.anchor, currentLevels.value.anchor], () => {
+  // Reset evaluation state when levels change
+  anchorEvaluationEnabled.value = false;
+  anchorEvaluations.value = {};
+  anchorEvaluationProgress.value = {};
+});
 
 // Initialize on mount
 onMounted(async () => {
