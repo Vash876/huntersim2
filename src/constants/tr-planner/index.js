@@ -209,6 +209,10 @@ export const boostCategories = [
     label: 'Researches',
   },
   {
+    id: 'gemUpgrades',
+    label: 'Gem Upgrades',
+  },
+  {
     id: 'trinkets',
     label: 'Trinkets',
   },
@@ -860,6 +864,21 @@ export const allBoosts = [
       
       return 0; // Below Level 2: No research available
     }
+  },
+
+  // Gem Upgrades
+  {
+    id: 36,
+    key: 'orbsBonus',
+    label: 'Orb Bonus',
+    category: 'gemUpgrades',
+    unlock: 'exodus',
+    unlock_level: 5,
+    type: 'number',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: 1.14,
   },
 
   // Trinkets
