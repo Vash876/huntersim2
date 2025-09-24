@@ -1158,7 +1158,7 @@ const buildColumnDefs = () => {
       cellEditorParams: (params) => {
         // Time or camp as text input
         if (resource.format === 'time' || resource.format === 'camp') {
-          return { selectAllOnFocusIn: true, maxLength: 6, value: params.value || '' };
+          return { selectAllOnFocusIn: true, maxLength: 7, value: params.value || '' };
         }
         // For oo-accum, lr-ticks, and attgn3-buff, show suffix input
         if (resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff') {
