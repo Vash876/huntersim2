@@ -2,12 +2,26 @@
 const changelog = 
 [
   {
+    version: '2.8.6',
+    date: '2025-09-25',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Borge no longer receives DR debuff when evading enemy attacks',
+          'Upgrade Comparison Modal efficiency score replaced loot score',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.8.5',
     date: '2025-09-23',
     changes: [
       {
         text: 'Gadget Planner',
         subItems: [
+          'Added Current Tesseracts input field to calculate Time to Save values against current tesseract reserves',
           'Enhanced time calculations for progressive production increases during Anchor upgrades',
           'Current Anchor level is now automatically synchronized with the selected reference build',
         ]

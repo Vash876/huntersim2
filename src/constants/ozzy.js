@@ -174,6 +174,7 @@ export const EVAL_PARAMS = [
   "upgrades.cms.cm48",              // Construction Milestone 48
   "upgrades.cms.cm51",              // Construction Milestone 51
   "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
+  "upgrades.gems_nodes.evolution_gem2", // Evolution Gem Node 2
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
   "upgrades.loopmods.stelzi",       // Stelzi
   "upgrades.inscryptions.i104",
@@ -296,6 +297,7 @@ export const OVERRIDES = {
     "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
     "upgrades.gems_nodes.creation_gem5",      // Creation Gem Node 5
     "upgrades.gems_nodes.creation_gem6",      // Creation Gem Node 6
+    "upgrades.gems_nodes.evolution_gem2", // Evolution Gem Node 2
     "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
     "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
   ],

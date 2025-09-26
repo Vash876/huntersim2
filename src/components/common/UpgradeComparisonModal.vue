@@ -514,9 +514,23 @@
 
         <!-- Results -->
         <div v-if="comparisonResults.length > 0 && !hideResults" class="mt-6 results-container">
-          <div class="text-lg text-white mb-3 flex items-center">
-            <IconChartPie size="20" class="mr-2 text-blue-400" />
-            Results
+          <div class="text-lg text-white mb-3 flex items-center justify-between">
+            <div class="flex items-center">
+              <IconChartPie size="20" class="mr-2 text-blue-400" />
+              Results
+            </div>
+            <div class="flex items-center">
+              <label class="text-sm text-gray-400 mr-2">Efficiency Multiplier (10^x):</label>
+              <ValueControls
+                :value="efficiencyMultiplierExponent"
+                :minValue="0"
+                :maxValue="50"
+                :step="1"
+                :showFastControls="false"
+                @update:value="efficiencyMultiplierExponent = $event"
+                class="w-25"
+              />
+            </div>
           </div>
           
           <!-- Table container with scroll -->
@@ -538,9 +552,49 @@
                 </tr>
               </thead>
               <tbody>
+                <!-- Efficiency Score -->
+                <tr class="border-b border-gray-700">
+                  <td class="pt-3.5 px-4 text-gray-300 flex items-center gap-2">
+                    <IconBolt size="16" :class="`text-${hunterColor}-400 mr-1`" />
+                    <span>Efficiency Score</span>
+                    <InfoTooltip 
+                      content="<div class='text-sm leading-relaxed'>
+                        <div class='font-semibold mb-2 text-blue-300'>Efficiency Score Formula</div>
+                        <div class='mb-2'>
+                        mats/day = (mat1 + mat2 + mat3) / 3 × (1440 / avgTime)
+                        </div>
+                        <div class='mb-2'>
+                        Improvement = Scenario mats/day - Original mats/day
+                        </div>
+                        <div class='mb-2'>
+                        Efficiency = (Improvement / Upgrade cost) × Efficiency Multiplier
+                        </div>
+                      </div>"
+                      placement="right"
+                    />
+                  </td>
+                  <td class="py-2 px-6 text-right bg-gray-800/50">
+                    -
+                  </td>
+                  <td 
+                    v-for="(result, i) in comparisonResults" 
+                    :key="`efficiency-${result.index}`" 
+                    class="py-2 px-6 text-right"
+                    :class="getBestValueClass(result.index, 'efficiency', false)"
+                  >
+                    {{ formatNumber(calculateEfficiencyScore(result, result.index)) }}
+                    <div v-if="originalResults" class="text-xs text-gray-400">
+                      {{ formatCost(scenarioCosts[result.index]) }} cost
+                    </div>
+                  </td>
+                </tr>
+                
                 <!-- Avg Stage -->
                 <tr class="border-b border-gray-700">
-                  <td class="py-2 px-4 text-gray-300">Avg Stage</td>
+                  <td class="pt-3.5 px-4 text-gray-300 flex items-center gap-2">
+                    <IconStairs size="16" class="text-blue-400 mr-1" />
+                    <span>Avg Stage</span>
+                  </td>
                   <td class="py-2 px-6 text-right bg-gray-800/50">
                     {{ originalResults ? originalResults.avgStage.toFixed(1) : '-' }}
                   </td>
@@ -557,21 +611,24 @@
                   </td>
                 </tr>
                 
-                <!-- Loot Score -->
+                <!-- Runtime (Avg Time) -->
                 <tr class="border-b border-gray-700">
-                  <td class="py-2 px-4 text-gray-300">Loot Score</td>
+                  <td class="pt-3.5 px-4 text-gray-300 flex items-center gap-2">
+                    <IconClock size="16" class="text-green-400 mr-1" />
+                    <span>Runtime</span>
+                  </td>
                   <td class="py-2 px-6 text-right bg-gray-800/50">
-                    {{ originalResults ? formatNumber(originalResults.lootPerMin) : '-' }}
+                    {{ originalResults ? formatTime(originalResults.avgTime) : '-' }}
                   </td>
                   <td 
-                    v-for="(result, i) in comparisonResults" 
-                    :key="`loot-${result.index}`" 
+                    v-for="result in comparisonResults" 
+                    :key="`runtime-${result.index}`" 
                     class="py-2 px-6 text-right"
-                    :class="getBestValueClass(result.index, 'lootPerMin', true)"
+                    :class="getBestValueClass(result.index, 'avgTime', true)"
                   >
-                    {{ formatNumber(result.lootPerMin) }}
-                    <div v-if="originalResults" class="text-xs" :class="getDiffClass(result.lootPerMin, originalResults.lootPerMin)">
-                      {{ formatDiffPercent(result.lootPerMin, originalResults.lootPerMin) }}
+                    {{ formatTime(result.avgTime) }}
+                    <div v-if="originalResults" class="text-xs" :class="getDiffClass(result.avgTime, originalResults.avgTime)">
+                      {{ formatDiff(result.avgTime, originalResults.avgTime) }}
                     </div>
                   </td>
                 </tr>
@@ -706,7 +763,10 @@
                 
                 <!-- Costs -->
                 <tr>
-                  <td class="py-2 px-4 text-gray-300">Costs</td>
+                  <td class="pt-3.5 px-4 text-gray-300 flex items-center gap-2">
+                    <IconCoins size="16" class="text-yellow-400 mr-1" />
+                    <span>Costs</span>
+                  </td>
                   <td class="py-2 px-6 text-right bg-gray-800/50">
                     0
                   </td>
@@ -750,11 +810,11 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
 import { 
-  IconX, IconScale, IconChartBar, IconChartPie, IconBulb, 
+  IconX, IconScale, IconChartBar, IconChartPie,
   IconCheck, IconLoader2, IconCircle1, IconCircle2, IconCircle3,
   IconDiamond, IconHexagon, IconHexagons, IconPuzzle,
   IconAlertCircle, IconChevronLeft, IconChevronRight,
-  IconBrightness, IconClock, IconBug
+  IconBrightness, IconClock, IconBug, IconStairs, IconCoins, IconBolt
 } from '@tabler/icons-vue';
 import { useLootIcons } from '../../composables/useLootIcons';
 import { useHunterStore } from '../../store/hunterStore';
@@ -771,6 +831,7 @@ import {
 } from '../../components/builds/utils/BuildComparisonUtils';
 import { useBuildEvaluation } from '../../composables/useBuildEvaluation';
 import ValueControls from '../common/ValueControls.vue';
+import InfoTooltip from '../../composables/InfoTooltip.vue';
 import { getHunterLevelCost, formatLevelCost } from '../../utils/levelCostUtils';
 
 const props = defineProps({
@@ -788,13 +849,12 @@ const hunterStore = useHunterStore();
 const isLoading = ref(true);
 const loadError = ref(null);
 const selectedCurrency = ref('');
+const efficiencyMultiplierExponent = ref(3); // 10^5 = 100000 als Standard
 
 // Szenarien (3 mögliche Upgrade-Pfade)
 const scenarios = ref([{}, {}, {}]);
 const scenarioIncrements = ref([{}, {}, {}]);
 const scenarioCosts = ref([0, 0, 0]);
-const recommendation = ref('');
-const recommendedScenario = ref(null);
 const originalResults = ref(null);
 
 // Hunter und Upgrade-Parameter
@@ -1082,38 +1142,78 @@ function analyzeResults() {
   // Nach Effizienz sortieren
   efficiencies.sort((a, b) => b.lootPerCost - a.lootPerCost);
   
-  // Keine validen Ergebnisse
-  if (efficiencies.length === 0) {
-    recommendation.value = "No valid scenarios found for comparison.";
-    recommendedScenario.value = null;
-    return;
-  }
+  // Funktion steht zur Verfügung für weitere Verwendung der Effizienz-Daten
+  // Aber keine UI-Empfehlungen mehr
+}
+
+// Berechnet den Effizienz-Score für ein Ergebnis
+function calculateEfficiencyScore(result, scenarioIndex) {
+  if (!result) return 0;
   
-  // Bestes Szenario speichern
-  recommendedScenario.value = efficiencies[0].index;
+  // Berechne Material-Durchschnitt pro Run: (mat1 + mat2 + mat3) / 3
+  const mat1 = result.mat1 || 0;
+  const mat2 = result.mat2 || 0;
+  const mat3 = result.mat3 || 0;
+  const avgMaterialPerRun = (mat1 + mat2 + mat3) / 3;
   
-  // Empfehlung formulieren
-  const bestOption = efficiencies[0];
-  const currency = currencyLabels.value[selectedCurrency.value];
+  if (avgMaterialPerRun <= 0) return 0;
   
-  recommendation.value = `Scenario ${bestOption.index + 1} offers the best value with ${formatNumber(bestOption.lootPerMin)} loot per minute at a cost of ${formatCost(bestOption.cost)} ${currency}.`;
+  // Berechne Materialien pro Tag basierend auf avgTime
+  const avgRunTimeMinutes = result.avgTime || 120;
+  const runsPerDay = 1440 / avgRunTimeMinutes; // 1440 Minuten pro Tag
+  const materialsPerDay = avgMaterialPerRun * runsPerDay;
   
-  if (efficiencies.length > 1) {
-    const secondBest = efficiencies[1];
-    const lootDiff = ((bestOption.lootPerMin / secondBest.lootPerMin) - 1) * 100;
-    const costDiff = ((secondBest.cost / bestOption.cost) - 1) * 100;
-    
-    if (lootDiff > 10 || costDiff > 15) {
-      recommendation.value += ` This is significantly better than Scenario ${secondBest.index + 1} (${lootDiff.toFixed(1)}% more loot for ${costDiff > 0 ? costDiff.toFixed(1) + '% less' : Math.abs(costDiff).toFixed(1) + '% more'} cost).`;
-    } else {
-      recommendation.value += ` However, Scenario ${secondBest.index + 1} with ${formatNumber(secondBest.lootPerMin)} loot at ${formatCost(secondBest.cost)} ${currency} is also a good option.`;
-    }
-  }
+  // Für Original-Ergebnis: Zeige absolute Material-Rate pro Tag
+  const cost = scenarioIndex !== undefined ? scenarioCosts.value[scenarioIndex] : 0;
+  if (cost <= 0) return materialsPerDay;
+  
+  // Für Szenarien: Berechne relative Verbesserung gegenüber Original
+  if (!originalResults.value) return 0;
+  
+  // Original Material-Rate berechnen
+  const origMat1 = originalResults.value.mat1 || 0;
+  const origMat2 = originalResults.value.mat2 || 0;
+  const origMat3 = originalResults.value.mat3 || 0;
+  const origAvgMaterialPerRun = (origMat1 + origMat2 + origMat3) / 3;
+  
+  const origAvgRunTimeMinutes = originalResults.value.avgTime || 120;
+  const origRunsPerDay = 1440 / origAvgRunTimeMinutes;
+  const origMaterialsPerDay = origAvgMaterialPerRun * origRunsPerDay;
+  
+  // Verbesserung = Szenario-Rate - Original-Rate
+  const improvement = materialsPerDay - origMaterialsPerDay;
+  
+  // Wenn keine Verbesserung, trotzdem einen kleinen Wert zurückgeben um Division durch 0 zu vermeiden
+  if (improvement <= 0) return 0.001;
+  
+  // Effizienz = Verbesserung / Kosten (zusätzliche Materialien pro Tag pro Kosten-Einheit)
+  const multiplier = Math.pow(10, efficiencyMultiplierExponent.value);
+  return improvement / cost * multiplier;
 }
 
 // Style-Hilfsfunktionen für die Ergebnistabelle
 function getBestValueClass(index, field, includeOriginal = false) {
   if (comparisonResults.value.length === 0) return '';
+  
+  // Spezielle Behandlung für Efficiency Score
+  if (field === 'efficiency') {
+    // Berechne alle Effizienz-Werte
+    const efficiencyValues = comparisonResults.value.map(r => calculateEfficiencyScore(r, r.index));
+    
+    if (efficiencyValues.length === 0) return '';
+    
+    // Finde den maximalen Effizienz-Wert
+    const maxEfficiency = Math.max(...efficiencyValues);
+    
+    // Berechne die aktuelle Effizienz
+    const currentResult = comparisonResults.value.find(r => r.index === index);
+    if (!currentResult) return '';
+    
+    const currentEfficiency = calculateEfficiencyScore(currentResult, index);
+    
+    // Prüfen, ob der aktuelle Wert der höchste ist
+    return Math.abs(currentEfficiency - maxEfficiency) < 0.001 ? 'text-green-400' : '';
+  }
   
   // Für Materialien und XP müssen wir die Tageswerte vergleichen, nicht die Rohwerte
   const isMaterialField = ['mat1', 'mat2', 'mat3', 'xp'].includes(field);

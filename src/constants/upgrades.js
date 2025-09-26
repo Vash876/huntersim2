@@ -660,6 +660,7 @@ export const UPGRADES = {
       maxLevel: 1,
       color: "darkgreen",
       nodes: [
+        { id: 'gem2', name: 'Evolution Gem Node #2', type: 'boolean' }, // Borge, Ozzy, Knox Loot +10%
         { id: 'gem3', name: 'Evolution Gem Node #3', type: 'boolean' },
         { id: 'gem6', name: 'Evolution Gem Node #6', type: 'boolean' }  // Borge, Ozzy, Knox Crit Chance +2%
       ]
