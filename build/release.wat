@@ -564,7 +564,7 @@
    local.get $1
    global.set $~lib/rt/itcms/iter
   end
-  block $__inlined_func$~lib/rt/itcms/Object#unlink$2219
+  block $__inlined_func$~lib/rt/itcms/Object#unlink$2232
    local.get $0
    i32.load offset=4
    i32.const -4
@@ -588,7 +588,7 @@
      call $~lib/builtins/abort
      unreachable
     end
-    br $__inlined_func$~lib/rt/itcms/Object#unlink$2219
+    br $__inlined_func$~lib/rt/itcms/Object#unlink$2232
    end
    local.get $0
    i32.load offset=8
@@ -7985,6 +7985,12 @@
    i32.store offset=4
    local.get $0
    i32.const 0
+   i32.store8 offset=205
+   global.get $~lib/memory/__stack_pointer
+   local.get $0
+   i32.store offset=4
+   local.get $0
+   i32.const 0
    i32.store offset=208
    global.get $~lib/memory/__stack_pointer
    local.get $0
@@ -8458,6 +8464,12 @@
    local.get $0
    i32.const 0
    i32.store8 offset=204
+   global.get $~lib/memory/__stack_pointer
+   local.get $0
+   i32.store offset=4
+   local.get $0
+   i32.const 0
+   i32.store8 offset=205
    global.get $~lib/memory/__stack_pointer
    local.get $0
    i32.store offset=4
@@ -15890,7 +15902,7 @@
     select
     local.set $1
    end
-   block $__inlined_func$~lib/rt/itcms/__renew$2163
+   block $__inlined_func$~lib/rt/itcms/__renew$2174
     local.get $3
     i32.const 20
     i32.sub
@@ -15908,7 +15920,7 @@
      i32.store offset=16
      local.get $3
      local.set $2
-     br $__inlined_func$~lib/rt/itcms/__renew$2163
+     br $__inlined_func$~lib/rt/itcms/__renew$2174
     end
     local.get $1
     local.get $4
@@ -16354,7 +16366,7 @@
    global.get $~lib/memory/__stack_pointer
    local.get $1
    i32.store
-   block $__inlined_func$~lib/string/String#concat$2230
+   block $__inlined_func$~lib/string/String#concat$2243
     local.get $1
     i32.const 20
     i32.sub
@@ -16373,7 +16385,7 @@
      global.set $~lib/memory/__stack_pointer
      i32.const 8176
      local.set $0
-     br $__inlined_func$~lib/string/String#concat$2230
+     br $__inlined_func$~lib/string/String#concat$2243
     end
     global.get $~lib/memory/__stack_pointer
     local.get $0
@@ -25245,6 +25257,7 @@
   (local $4 f64)
   (local $5 f64)
   (local $6 i32)
+  (local $7 i32)
   global.get $~lib/memory/__stack_pointer
   i32.const 8
   i32.sub
@@ -25444,6 +25457,13 @@
   local.tee $2
   i32.store
   local.get $2
+  i32.const 0
+  i32.store8 offset=205
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalKnox/currentKnox
+  local.tee $2
+  i32.store
+  local.get $2
   f64.load offset=72
   local.tee $4
   f64.const 0
@@ -25554,33 +25574,162 @@
     local.get $4
     f64.lt
     if
+     i32.const 0
+     local.set $3
      global.get $~lib/memory/__stack_pointer
-     global.get $assembly/evalKnox/currentKnoxEnemy
-     local.tee $3
+     global.get $assembly/evalKnox/currentKnox
+     local.tee $6
      i32.store
+     local.get $6
+     i32.load offset=276
+     if (result i32)
+      global.get $~lib/memory/__stack_pointer
+      global.get $assembly/evalKnox/currentKnox
+      local.tee $6
+      i32.store
+      local.get $6
+      i32.load8_u offset=205
+     else
+      i32.const 1
+     end
+     i32.eqz
+     if
+      global.get $~lib/memory/__stack_pointer
+      global.get $assembly/evalKnox/currentKnox
+      local.tee $3
+      i32.store
+      local.get $3
+      i32.load8_u offset=204
+      if (result i32)
+       local.get $2
+       f64.convert_i32_s
+       local.tee $5
+       local.get $1
+       f64.const -1
+       f64.add
+       f64.eq
+       local.get $5
+       local.get $1
+       f64.const -2
+       f64.add
+       f64.eq
+       i32.or
+       if (result i32)
+        global.get $~lib/memory/__stack_pointer
+        global.get $assembly/evalKnox/currentKnox
+        local.tee $3
+        i32.store
+        local.get $3
+        f64.load offset=64
+        f64.const 2
+        f64.mul
+        local.tee $5
+        f64.const 0
+        f64.gt
+        if (result i32)
+         global.get $assembly/evalKnox/seed
+         i64.extend_i32_u
+         i64.const 1664525
+         i64.mul
+         i64.const 1013904223
+         i64.add
+         i64.const 4294967295
+         i64.and
+         i32.wrap_i64
+         global.set $assembly/evalKnox/seed
+         local.get $5
+         global.get $assembly/evalKnox/seed
+         f64.convert_i32_u
+         f64.const 2.3283064365386963e-10
+         f64.mul
+         f64.gt
+        else
+         i32.const 0
+        end
+       else
+        i32.const 0
+       end
+      else
+       local.get $2
+       f64.convert_i32_s
+       local.get $1
+       f64.const -1
+       f64.add
+       f64.eq
+       if (result i32)
+        global.get $~lib/memory/__stack_pointer
+        global.get $assembly/evalKnox/currentKnox
+        local.tee $3
+        i32.store
+        local.get $3
+        f64.load offset=64
+        f64.const 2
+        f64.mul
+        local.tee $5
+        f64.const 0
+        f64.gt
+        if (result i32)
+         global.get $assembly/evalKnox/seed
+         i64.extend_i32_u
+         i64.const 1664525
+         i64.mul
+         i64.const 1013904223
+         i64.add
+         i64.const 4294967295
+         i64.and
+         i32.wrap_i64
+         global.set $assembly/evalKnox/seed
+         local.get $5
+         global.get $assembly/evalKnox/seed
+         f64.convert_i32_u
+         f64.const 2.3283064365386963e-10
+         f64.mul
+         f64.gt
+        else
+         i32.const 0
+        end
+       else
+        i32.const 0
+       end
+      end
+      local.tee $3
+      if
+       global.get $~lib/memory/__stack_pointer
+       global.get $assembly/evalKnox/currentKnox
+       local.tee $6
+       i32.store
+       local.get $6
+       i32.const 1
+       i32.store8 offset=205
+      end
+     end
      global.get $~lib/memory/__stack_pointer
      global.get $assembly/evalKnox/currentKnoxEnemy
      local.tee $6
+     i32.store
+     global.get $~lib/memory/__stack_pointer
+     global.get $assembly/evalKnox/currentKnoxEnemy
+     local.tee $7
      i32.store offset=4
-     local.get $6
+     local.get $7
      f64.load offset=8
      local.set $5
      global.get $~lib/memory/__stack_pointer
      global.get $assembly/evalKnox/currentKnoxEnemy
-     local.tee $6
+     local.tee $7
      i32.store offset=4
-     local.get $3
-     local.get $5
      local.get $6
+     local.get $5
+     local.get $7
      f64.load offset=48
      f64.const 0
      f64.gt
      if (result i32)
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalKnox/currentKnoxEnemy
-      local.tee $3
+      local.tee $6
       i32.store offset=4
-      local.get $3
+      local.get $6
       f64.load offset=48
       local.tee $5
       f64.const 0
@@ -25611,65 +25760,7 @@
      if (result f64)
       f64.const 0
      else
-      global.get $~lib/memory/__stack_pointer
-      global.get $assembly/evalKnox/currentKnox
-      local.tee $3
-      i32.store offset=4
       local.get $3
-      i32.load offset=276
-      if (result i32)
-       global.get $~lib/memory/__stack_pointer
-       global.get $assembly/evalKnox/currentKnox
-       local.tee $3
-       i32.store offset=4
-       local.get $2
-       f64.convert_i32_s
-       local.get $1
-       f64.const 2
-       f64.const 1
-       local.get $3
-       i32.load8_u offset=204
-       select
-       f64.sub
-       f64.eq
-      else
-       i32.const 0
-      end
-      if (result i32)
-       global.get $~lib/memory/__stack_pointer
-       global.get $assembly/evalKnox/currentKnox
-       local.tee $3
-       i32.store offset=4
-       local.get $3
-       f64.load offset=64
-       f64.const 2
-       f64.mul
-       local.tee $5
-       f64.const 0
-       f64.gt
-       if (result i32)
-        global.get $assembly/evalKnox/seed
-        i64.extend_i32_u
-        i64.const 1664525
-        i64.mul
-        i64.const 1013904223
-        i64.add
-        i64.const 4294967295
-        i64.and
-        i32.wrap_i64
-        global.set $assembly/evalKnox/seed
-        local.get $5
-        global.get $assembly/evalKnox/seed
-        f64.convert_i32_u
-        f64.const 2.3283064365386963e-10
-        f64.mul
-        f64.gt
-       else
-        i32.const 0
-       end
-      else
-       i32.const 0
-      end
       if (result f64)
        global.get $~lib/memory/__stack_pointer
        global.get $assembly/evalKnox/currentKnox
@@ -25964,6 +26055,7 @@
   (local $0 i32)
   (local $1 f64)
   (local $2 i32)
+  (local $3 i32)
   global.get $~lib/memory/__stack_pointer
   i32.const 8
   i32.sub
@@ -25984,45 +26076,177 @@
   i64.store
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalKnox/currentKnox
-  local.tee $0
+  local.tee $2
   i32.store
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalKnox/currentKnox
-  local.tee $2
+  local.tee $3
   i32.store offset=4
-  local.get $0
   local.get $2
+  local.get $3
   i32.load offset=124
   i32.const 1
   i32.sub
   i32.store offset=124
   global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalKnox/currentKnoxEnemy
-  local.tee $0
+  global.get $assembly/evalKnox/currentKnox
+  local.tee $2
   i32.store
+  local.get $2
+  i32.load offset=276
+  if (result i32)
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalKnox/currentKnox
+   local.tee $2
+   i32.store
+   local.get $2
+   i32.load8_u offset=205
+  else
+   i32.const 1
+  end
+  i32.eqz
+  if
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalKnox/currentKnox
+   local.tee $0
+   i32.store
+   local.get $0
+   i32.load8_u offset=204
+   if (result i32)
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalKnox/currentKnox
+    local.tee $0
+    i32.store
+    local.get $0
+    i32.load offset=124
+    i32.const 1
+    i32.eq
+    if (result i32)
+     i32.const 0
+    else
+     global.get $~lib/memory/__stack_pointer
+     global.get $assembly/evalKnox/currentKnox
+     local.tee $0
+     i32.store
+     local.get $0
+     i32.load offset=124
+    end
+    if (result i32)
+     i32.const 0
+    else
+     global.get $~lib/memory/__stack_pointer
+     global.get $assembly/evalKnox/currentKnox
+     local.tee $0
+     i32.store
+     local.get $0
+     f64.load offset=64
+     f64.const 2
+     f64.mul
+     local.tee $1
+     f64.const 0
+     f64.gt
+     if (result i32)
+      global.get $assembly/evalKnox/seed
+      i64.extend_i32_u
+      i64.const 1664525
+      i64.mul
+      i64.const 1013904223
+      i64.add
+      i64.const 4294967295
+      i64.and
+      i32.wrap_i64
+      global.set $assembly/evalKnox/seed
+      local.get $1
+      global.get $assembly/evalKnox/seed
+      f64.convert_i32_u
+      f64.const 2.3283064365386963e-10
+      f64.mul
+      f64.gt
+     else
+      i32.const 0
+     end
+    end
+   else
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalKnox/currentKnox
+    local.tee $0
+    i32.store
+    local.get $0
+    i32.load offset=124
+    if (result i32)
+     i32.const 0
+    else
+     global.get $~lib/memory/__stack_pointer
+     global.get $assembly/evalKnox/currentKnox
+     local.tee $0
+     i32.store
+     local.get $0
+     f64.load offset=64
+     f64.const 2
+     f64.mul
+     local.tee $1
+     f64.const 0
+     f64.gt
+     if (result i32)
+      global.get $assembly/evalKnox/seed
+      i64.extend_i32_u
+      i64.const 1664525
+      i64.mul
+      i64.const 1013904223
+      i64.add
+      i64.const 4294967295
+      i64.and
+      i32.wrap_i64
+      global.set $assembly/evalKnox/seed
+      local.get $1
+      global.get $assembly/evalKnox/seed
+      f64.convert_i32_u
+      f64.const 2.3283064365386963e-10
+      f64.mul
+      f64.gt
+     else
+      i32.const 0
+     end
+    end
+   end
+   local.tee $0
+   if
+    global.get $~lib/memory/__stack_pointer
+    global.get $assembly/evalKnox/currentKnox
+    local.tee $2
+    i32.store
+    local.get $2
+    i32.const 1
+    i32.store8 offset=205
+   end
+  end
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalKnox/currentKnoxEnemy
   local.tee $2
+  i32.store
+  global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalKnox/currentKnoxEnemy
+  local.tee $3
   i32.store offset=4
-  local.get $2
+  local.get $3
   f64.load offset=8
   local.set $1
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalKnox/currentKnoxEnemy
-  local.tee $2
+  local.tee $3
   i32.store offset=4
-  local.get $0
-  local.get $1
   local.get $2
+  local.get $1
+  local.get $3
   f64.load offset=48
   f64.const 0
   f64.gt
   if (result i32)
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalKnox/currentKnoxEnemy
-   local.tee $0
+   local.tee $2
    i32.store offset=4
-   local.get $0
+   local.get $2
    f64.load offset=48
    local.tee $1
    f64.const 0
@@ -26053,66 +26277,7 @@
   if (result f64)
    f64.const 0
   else
-   global.get $~lib/memory/__stack_pointer
-   global.get $assembly/evalKnox/currentKnox
-   local.tee $0
-   i32.store offset=4
    local.get $0
-   i32.load offset=276
-   if (result i32)
-    global.get $~lib/memory/__stack_pointer
-    global.get $assembly/evalKnox/currentKnox
-    local.tee $0
-    i32.store offset=4
-    local.get $0
-    i32.load offset=124
-    global.get $~lib/memory/__stack_pointer
-    global.get $assembly/evalKnox/currentKnox
-    local.tee $2
-    i32.store offset=4
-    local.get $2
-    i32.load8_u offset=204
-    i32.const 0
-    i32.ne
-    i32.eq
-   else
-    i32.const 0
-   end
-   if (result i32)
-    global.get $~lib/memory/__stack_pointer
-    global.get $assembly/evalKnox/currentKnox
-    local.tee $0
-    i32.store offset=4
-    local.get $0
-    f64.load offset=64
-    f64.const 2
-    f64.mul
-    local.tee $1
-    f64.const 0
-    f64.gt
-    if (result i32)
-     global.get $assembly/evalKnox/seed
-     i64.extend_i32_u
-     i64.const 1664525
-     i64.mul
-     i64.const 1013904223
-     i64.add
-     i64.const 4294967295
-     i64.and
-     i32.wrap_i64
-     global.set $assembly/evalKnox/seed
-     local.get $1
-     global.get $assembly/evalKnox/seed
-     f64.convert_i32_u
-     f64.const 2.3283064365386963e-10
-     f64.mul
-     f64.gt
-    else
-     i32.const 0
-    end
-   else
-    i32.const 0
-   end
    if (result f64)
     global.get $~lib/memory/__stack_pointer
     global.get $assembly/evalKnox/currentKnox
@@ -27370,7 +27535,7 @@
           i32.const 0
           local.set $4
           loop $for-loop|0
-           block $__inlined_func$assembly/evalKnox/knoxTorpedo$2209
+           block $__inlined_func$assembly/evalKnox/knoxTorpedo$2222
             global.get $~lib/memory/__stack_pointer
             global.get $assembly/evalKnox/currentKnox
             local.tee $2
@@ -27454,7 +27619,7 @@
               i32.const 4
               i32.add
               global.set $assembly/evalKnox/leftoverTorpedos
-              br $__inlined_func$assembly/evalKnox/knoxTorpedo$2209
+              br $__inlined_func$assembly/evalKnox/knoxTorpedo$2222
              end
              local.get $4
              i32.const 1

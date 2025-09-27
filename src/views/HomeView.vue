@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.8.8',
+    date: '2025-09-27',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Fixed Knox Finishing Move ability trigger mechanics - Ghost Bullet also can trigger Finishing Move now',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.8.7',
     date: '2025-09-27',
     changes: [

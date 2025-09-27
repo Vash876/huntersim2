@@ -141,6 +141,7 @@ class Knox {
   totalCharge: f64;
   bonusRegen: i32;
   gbHit: boolean;
+  finishTriggeredThisSalvo: boolean;
   
   // Base Stats Record 
   basehp: i32;
@@ -231,6 +232,7 @@ class Knox {
     this.totalCharge = 0;
     this.bonusRegen = 0;
     this.gbHit = false;
+    this.finishTriggeredThisSalvo = false;
     this.basehp = 0;
     this.baseatk = 0;
     this.basesalvo = 0;
@@ -455,7 +457,25 @@ function knoxKillEnemy(extraTime: f64 = 0): void {
 // Bullet function 
 function knoxBullet(): void {
   currentKnox.remainingBullets--;
-  currentKnoxEnemy.hp -= currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade) ? 0 : (currentKnox.finish && (currentKnox.remainingBullets === (currentKnox.gbHit ? 1 : 0)) && ck(currentKnox.effect * 2) ? currentKnox.currentAtk * (1 + currentKnox.finish * 0.2) * currentKnoxEnemy.dr : currentKnox.currentAtk * currentKnoxEnemy.dr);
+  
+  // Finish kann bei Ghost Bullet sowohl beim vorletzten regulären als auch beim Ghost Bullet (letzten) triggern
+  // ABER nur einmal pro Salvo!
+  let finishCanTrigger = false;
+  if (currentKnox.finish && !currentKnox.finishTriggeredThisSalvo) {
+    if (currentKnox.gbHit) {
+      // Mit Ghost Bullet: finish kann bei remainingBullets === 1 (vorletzter) UND remainingBullets === 0 (Ghost Bullet) triggern
+      finishCanTrigger = (currentKnox.remainingBullets === 1 || currentKnox.remainingBullets === 0) && ck(currentKnox.effect * 2);
+    } else {
+      // Ohne Ghost Bullet: finish triggert nur beim letzten Bullet (remainingBullets === 0)
+      finishCanTrigger = (currentKnox.remainingBullets === 0) && ck(currentKnox.effect * 2);
+    }
+    
+    if (finishCanTrigger) {
+      currentKnox.finishTriggeredThisSalvo = true;
+    }
+  }
+  
+  currentKnoxEnemy.hp -= currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade) ? 0 : (finishCanTrigger ? currentKnox.currentAtk * (1 + currentKnox.finish * 0.2) * currentKnoxEnemy.dr : currentKnox.currentAtk * currentKnoxEnemy.dr);
   
   if (currentKnoxEnemy.hp <= 0) {
     knoxKillEnemy();
@@ -484,6 +504,9 @@ function knoxAtk(skipAtkReset: boolean = false): void {
   currentKnox.gbHit = ck(currentKnox.ghost * 0.0667);
   let totalBullets = currentKnox.salvo + (currentKnox.gbHit ? 1 : 0) + (ck(currentKnox.armory * 0.02) ? 3 : 0);
   
+  // Reset finish tracking für neuen Salvo
+  currentKnox.finishTriggeredThisSalvo = false;
+  
   if (ck(currentKnox.charge)) {
     currentKnox.charge1 += currentKnox.chargeGain;
     currentKnox.charge2 += currentKnox.chargeGain;
@@ -493,7 +516,24 @@ function knoxAtk(skipAtkReset: boolean = false): void {
   let nextTime = Math.min(nextKnoxEnemAtk, nextKnoxRegen);
   for (let i = 1; i < totalBullets; i++) {
     if (currentKnoxTime + 0.1 * i < nextTime) {
-      currentKnoxEnemy.hp -= currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade) ? 0 : (currentKnox.finish && i == totalBullets - (currentKnox.gbHit ? 2 : 1) && ck(currentKnox.effect * 2) ? currentKnox.currentAtk * (1 + currentKnox.finish * 0.2) * currentKnoxEnemy.dr : currentKnox.currentAtk * currentKnoxEnemy.dr);
+      // Finish kann bei Ghost Bullet sowohl beim vorletzten regulären als auch beim Ghost Bullet (letzten) triggern
+      // ABER nur einmal pro Salvo!
+      let finishCanTrigger = false;
+      if (currentKnox.finish && !currentKnox.finishTriggeredThisSalvo) {
+        if (currentKnox.gbHit) {
+          // Mit Ghost Bullet: finish kann bei totalBullets-2 (vorletzter) UND totalBullets-1 (Ghost Bullet) triggern
+          finishCanTrigger = (i === totalBullets - 2 || i === totalBullets - 1) && ck(currentKnox.effect * 2);
+        } else {
+          // Ohne Ghost Bullet: finish triggert nur beim letzten Bullet (totalBullets-1)
+          finishCanTrigger = (i === totalBullets - 1) && ck(currentKnox.effect * 2);
+        }
+        
+        if (finishCanTrigger) {
+          currentKnox.finishTriggeredThisSalvo = true;
+        }
+      }
+      
+      currentKnoxEnemy.hp -= currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade) ? 0 : (finishCanTrigger ? currentKnox.currentAtk * (1 + currentKnox.finish * 0.2) * currentKnoxEnemy.dr : currentKnox.currentAtk * currentKnoxEnemy.dr);
       if (currentKnoxEnemy.hp <= 0) {
         knoxKillEnemy(i * 0.1);
       }

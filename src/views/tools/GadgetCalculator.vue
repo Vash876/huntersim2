@@ -30,7 +30,7 @@
             <!-- Reference Build -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <div class="font-medium text-white text-sm mb-1">Reference Build</div>
-              <div class="text-xs text-gray-400 mb-2">Select Borge Build</div>
+              <div class="text-xs text-gray-400 mb-2">Select Knox Build</div>
               
               <select 
                 v-model="selectedBuildId" 
