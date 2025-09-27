@@ -108,7 +108,7 @@ function calcDR(level, hunterType) {
           case 58: return Math.ceil(1.88e18);        // 1,88qu = 1.88 × 10¹⁸
           case 59: return Math.ceil(36.25e18);       // 36,25qu = 36.25 × 10¹⁸
           case 60: return Math.ceil(1.20e21);        // 1,20sx = 1.20 × 10²¹
-          case 61: return Math.ceil(13.83e21);       // 13,83sx = 13.83 × 10²¹
+          case 61: return Math.ceil(39.96e21);       // 39,96sx = 39.96 × 10²¹
           case 62: return Math.ceil(273.33e21);      // 273,33sx = 273.33 × 10²¹
           case 63: return Math.ceil(5.45e24);        // 5,45sp = 5.45 × 10²⁴
           case 64: return Math.ceil(109.43e24);      // 109,43sp = 109.43 × 10²⁴

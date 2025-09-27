@@ -721,6 +721,29 @@ async function resetAllData() {
     // 2. Kompletten localStorage löschen
     console.log('Clearing localStorage...');
     localStorage.clear();
+
+    // Ultima Defaults zurücksetzen
+    ultimaStore.currentLevels = {
+      cells: 0,
+      mp: 0,
+      shards: 0,
+      rp: 0,
+      ap: 0,
+      mats: 0,
+      loot: 0
+    };
+    ultimaStore.targetLevels = { ...ultimaStore.currentLevels };
+    ultimaStore.trCount = 0;
+
+    ultimaStore.upgradeConfigs = {
+      cells: { minTR: 1, base: 100, baseIncrease: 2 },
+      mp: { minTR: 2, base: 200, baseIncrease: 2 },
+      shards: { minTR: 3, base: 200, baseIncrease: 2 },
+      rp: { minTR: 4, base: 200, baseIncrease: 2 },
+      ap: { minTR: 10, base: 200, baseIncrease: 2 },
+      mats: { minTR: 11, base: 300, baseIncrease: 3 },
+      loot: { minTR: 12, base: 800, baseIncrease: 8 }
+    };
     
     // 3. Alle IndexedDB Datenbanken finden und löschen
     console.log('Clearing IndexedDB...');

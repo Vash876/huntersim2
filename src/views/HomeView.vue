@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.8.7',
+    date: '2025-09-27',
+    changes: [
+      {
+        text: 'Ultima Calculator',
+        subItems: [
+          'Fixed issue where the tool would break after using Clear All Data in Settings',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.8.6',
     date: '2025-09-25',
     changes: [
