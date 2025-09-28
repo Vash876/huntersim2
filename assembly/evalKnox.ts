@@ -495,6 +495,9 @@ function knoxBullet(): void {
 
 // Attack function
 function knoxAtk(skipAtkReset: boolean = false): void {
+  // Reset finish tracking für neuen Salvo (auch für Charge-Bonus-Salvos)
+  currentKnox.finishTriggeredThisSalvo = false;
+  
   currentKnoxEnemy.hp -= currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade) ? 0 : currentKnox.currentAtk * currentKnoxEnemy.dr;
   
   if (currentKnoxEnemy.hp <= 0) {
@@ -503,9 +506,6 @@ function knoxAtk(skipAtkReset: boolean = false): void {
   
   currentKnox.gbHit = ck(currentKnox.ghost * 0.0667);
   let totalBullets = currentKnox.salvo + (currentKnox.gbHit ? 1 : 0) + (ck(currentKnox.armory * 0.02) ? 3 : 0);
-  
-  // Reset finish tracking für neuen Salvo
-  currentKnox.finishTriggeredThisSalvo = false;
   
   if (ck(currentKnox.charge)) {
     currentKnox.charge1 += currentKnox.chargeGain;

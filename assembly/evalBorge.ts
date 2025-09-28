@@ -769,7 +769,7 @@ export function EVALBORGE_WASM(
   // Enemies initialisieren
   initEnemies();
   
-  // Gadget/Creature Multipliers 
+  // Gadget/Creation Multipliers 
   const gadgetMulti = Math.pow(1.001, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const gadgetLootMulti = Math.pow(1.005, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const crea4GUMulti = 1.0 + (creaBorgeStat as f64) * 0.01;

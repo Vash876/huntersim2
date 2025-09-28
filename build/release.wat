@@ -25277,6 +25277,13 @@
   i64.const 0
   i64.store
   global.get $~lib/memory/__stack_pointer
+  global.get $assembly/evalKnox/currentKnox
+  local.tee $2
+  i32.store
+  local.get $2
+  i32.const 0
+  i32.store8 offset=205
+  global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalKnox/currentKnoxEnemy
   local.tee $2
   i32.store
@@ -25452,13 +25459,6 @@
   select
   f64.add
   local.set $1
-  global.get $~lib/memory/__stack_pointer
-  global.get $assembly/evalKnox/currentKnox
-  local.tee $2
-  i32.store
-  local.get $2
-  i32.const 0
-  i32.store8 offset=205
   global.get $~lib/memory/__stack_pointer
   global.get $assembly/evalKnox/currentKnox
   local.tee $2

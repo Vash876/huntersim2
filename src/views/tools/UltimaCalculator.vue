@@ -17,7 +17,7 @@
             <div class="flex items-center space-x-3">
               <!-- TR Count TRValueControls -->
               <TRValueControls
-                :value="trCount"
+                :value="ultimaStore.trCount || 54"
                 :maxValue="999"
                 :minValue="1"
                 :step="1"
@@ -99,18 +99,35 @@
                   }"
                 >
                   <td class="px-4 py-3">
-                    <span class="font-medium text-white">{{ upgradeInfo.label }}</span>
+                    <div class="flex items-center">
+                      <div v-if="upgradeType === 'loot'"
+                        class="w-5 h-5 mr-2"
+                        :style="{
+                          backgroundColor: '#CEFF7B',
+                          WebkitMask: `url(/src/assets/general/${getIconName(upgradeType)}.png) no-repeat center`,
+                          mask: `url(/src/assets/general/${getIconName(upgradeType)}.png) no-repeat center`,
+                          WebkitMaskSize: 'contain',
+                          maskSize: 'contain'
+                        }"
+                      ></div>
+                      <img v-else
+                        :src="`/src/assets/general/${getIconName(upgradeType)}.png`" 
+                        :alt="upgradeInfo.label"
+                        class="w-5 h-5 mr-2"
+                      >
+                      <span class="font-medium text-white">{{ upgradeInfo.label }}</span>
+                    </div>
                   </td>
                   <td class="px-4 py-3 text-center">
                     <div>
                       <!-- Current Level TRValueControls -->
                       <TRValueControls
-                        :value="currentLevels[upgradeType]"
-                        :maxValue="typeof upgradeCaps[upgradeType] === 'number' ? upgradeCaps[upgradeType] : 999"
+                        :value="(ultimaStore.currentLevels && ultimaStore.currentLevels[upgradeType]) || 0"
+                        :maxValue="typeof ultimaStore.upgradeCaps[upgradeType] === 'number' ? ultimaStore.upgradeCaps[upgradeType] : 999"
                         :minValue="0"
                         :step="1"
                         :fastStep="10"
-                        :disabled="isUpgradeLocked(upgradeType)"
+                        :disabled="ultimaStore.isUpgradeLocked(upgradeType)"
                         :tabIndex="getTabIndexForCurrentLevel(upgradeType)"
                         @update:value="(newVal) => updateCurrentLevel(upgradeType, newVal)"
                         :autoEdit="true"
@@ -122,19 +139,19 @@
                     <div>
                       <!-- Target Level TRValueControls -->
                       <TRValueControls
-                        :value="targetLevels[upgradeType]"
-                        :maxValue="typeof upgradeCaps[upgradeType] === 'number' ? upgradeCaps[upgradeType] : 999"
+                        :value="(ultimaStore.targetLevels && ultimaStore.targetLevels[upgradeType]) || 0"
+                        :maxValue="typeof ultimaStore.upgradeCaps[upgradeType] === 'number' ? ultimaStore.upgradeCaps[upgradeType] : 999"
                         :minValue="0"  
-                        :buttonMinValue="currentLevels[upgradeType]" 
+                        :buttonMinValue="(ultimaStore.currentLevels && ultimaStore.currentLevels[upgradeType]) || 0" 
                         :step="1"
                         :fastStep="10"
-                        :disabled="isUpgradeLocked(upgradeType)"
+                        :disabled="ultimaStore.isUpgradeLocked(upgradeType)"
                         :tabIndex="getTabIndexForTargetLevel(upgradeType)"
                         @update:value="(newVal) => updateTargetLevel(upgradeType, newVal)"
                         @blur="finalizeTargetLevel(upgradeType)"
-                        :valueClass="targetLevels[upgradeType] > currentLevels[upgradeType] ? 'text-green-400' : 'text-white'"
+                        :valueClass="((ultimaStore.targetLevels && ultimaStore.targetLevels[upgradeType]) || 0) > ((ultimaStore.currentLevels && ultimaStore.currentLevels[upgradeType]) || 0) ? 'text-green-400' : 'text-white'"
                         :autoEdit="true"
-                        :disableDecrement="targetLevels[upgradeType] <= currentLevels[upgradeType]"
+                        :disableDecrement="((ultimaStore.targetLevels && ultimaStore.targetLevels[upgradeType]) || 0) <= ((ultimaStore.currentLevels && ultimaStore.currentLevels[upgradeType]) || 0)"
                         class="mx-auto"
                       />
                     </div>
@@ -142,47 +159,47 @@
                   <td class="px-4 py-3 text-center">
                     <span 
                       :class="{ 
-                        'text-amber-400': typeof upgradeCosts[upgradeType] === 'number' && upgradeCosts[upgradeType] > 0,
-                        'text-gray-500': upgradeCosts[upgradeType] === 0 || upgradeCosts[upgradeType] === 'MAX',
-                        'text-red-400': upgradeCosts[upgradeType] === 'LOCKED'
+                        'text-amber-400': typeof ultimaStore.upgradeCosts[upgradeType] === 'number' && ultimaStore.upgradeCosts[upgradeType] > 0,
+                        'text-gray-500': ultimaStore.upgradeCosts[upgradeType] === 0 || ultimaStore.upgradeCosts[upgradeType] === 'MAX',
+                        'text-red-400': ultimaStore.upgradeCosts[upgradeType] === 'LOCKED'
                       }"
                     >
-                      {{ formatCost(upgradeCosts[upgradeType]) }}
+                      {{ formatCost(ultimaStore.upgradeCosts[upgradeType]) }}
                     </span>
                   </td>
                   <td class="px-4 py-3 text-center">
                     <span 
                       :class="{
-                        'text-green-400': typeof upgradeCaps[upgradeType] === 'number',
-                        'text-red-400': upgradeCaps[upgradeType] === 'LOCKED'
+                        'text-green-400': typeof ultimaStore.upgradeCaps[upgradeType] === 'number',
+                        'text-red-400': ultimaStore.upgradeCaps[upgradeType] === 'LOCKED'
                       }"
                     >
-                      {{ upgradeCaps[upgradeType] }}
+                      {{ ultimaStore.upgradeCaps[upgradeType] }}
                     </span>
                   </td>
                   <td class="px-4 py-3 text-center">
                     <span class="text-blue-400">
-                      {{ formatBonus(currentBonuses[upgradeType]) }}
+                      {{ formatBonus(ultimaStore.currentBonuses[upgradeType]) }}
                     </span>
                   </td>
                   <td class="px-4 py-3 text-center">
                     <span 
                       :class="{
-                        'text-green-400': targetBonuses[upgradeType] > currentBonuses[upgradeType],
-                        'text-blue-400': targetBonuses[upgradeType] === currentBonuses[upgradeType]
+                        'text-green-400': ultimaStore.targetBonuses[upgradeType] > ultimaStore.currentBonuses[upgradeType],
+                        'text-blue-400': ultimaStore.targetBonuses[upgradeType] === ultimaStore.currentBonuses[upgradeType]
                       }"
                     >
-                      {{ formatBonus(targetBonuses[upgradeType]) }}
+                      {{ formatBonus(ultimaStore.targetBonuses[upgradeType]) }}
                     </span>
                   </td>
                   <td class="px-4 py-3 text-center">
                     <span 
                       :class="{
-                        'text-green-400': bonusGains[upgradeType] > 1,
-                        'text-gray-400': bonusGains[upgradeType] === 1
+                        'text-green-400': ultimaStore.bonusGains[upgradeType] > 1,
+                        'text-gray-400': ultimaStore.bonusGains[upgradeType] === 1
                       }"
                     >
-                      {{ formatFactor(bonusGains[upgradeType]) }}
+                      {{ formatFactor(ultimaStore.bonusGains[upgradeType]) }}
                     </span>
                   </td>
                 </tr>
@@ -193,7 +210,7 @@
                     Total Diamond Cost:
                   </td>
                   <td class="px-4 py-3 text-center text-amber-400 font-bold">
-                    {{ formatCost(totalCost) }}
+                    {{ formatCost(ultimaStore.totalCost) }}
                   </td>
                   <td colspan="5" class="px-4 py-3">
                     <!-- Leer lassen -->
@@ -228,12 +245,7 @@ import TRValueControls from '@/composables/TRValueControls.vue';
 // Store
 const ultimaStore = useUltimaStore();
 
-// UI State
-const trCount = ref(ultimaStore.trCount);
-const currentLevels = ref({ ...ultimaStore.currentLevels });
-const targetLevels = ref({ ...ultimaStore.targetLevels });
-
-// Computed Properties aus dem Store
+// Computed Properties aus dem Store verwenden
 const upgradeCaps = computed(() => ultimaStore.upgradeCaps);
 const upgradeCosts = computed(() => ultimaStore.upgradeCosts);
 const currentBonuses = computed(() => ultimaStore.currentBonuses);
@@ -245,8 +257,9 @@ const tempTargetInputs = ref({});
 // Berechnung der Gesamtlevel und Meilensteine
 const totalLevels = computed(() => {
   let sum = 0;
-  for (const type in currentLevels.value) {
-    sum += currentLevels.value[type];
+  const levels = ultimaStore.currentLevels || {};
+  for (const type in levels) {
+    sum += levels[type] || 0;
   }
   return sum;
 });
@@ -266,13 +279,13 @@ const levelsToNextMilestone = computed(() => {
 
 // Loot Progress-Prozentsatz
 const lootProgressPercent = computed(() => {
-  if (typeof currentBonuses.value.loot !== 'number') return 0;
+  if (typeof ultimaStore.currentBonuses.loot !== 'number') return 0;
   
   const baseLoot = 1; // Basis-Multiplier
-  const maxLootMulti = 1 + (0.003 * upgradeCaps.value.loot) * 
+  const maxLootMulti = 1 + (0.003 * ultimaStore.upgradeCaps.loot) * 
                        getMilestoneBonusFactor(true);
   
-  const currentProgress = currentBonuses.value.loot - baseLoot;
+  const currentProgress = ultimaStore.currentBonuses.loot - baseLoot;
   const maxProgress = maxLootMulti - baseLoot;
   
   return (currentProgress / maxProgress) * 100;
@@ -286,10 +299,10 @@ const nextBestUpgrades = computed(() => {
   
   // Sammle alle möglichen Upgrades und deren Kosten
   for (const type in upgradesList) {
-    if (isUpgradeLocked(type)) continue;
+    if (ultimaStore.isUpgradeLocked(type)) continue;
     
-    const currentLevel = currentLevels.value[type];
-    const cap = typeof upgradeCaps.value[type] === 'number' ? upgradeCaps.value[type] : Infinity;
+    const currentLevel = ultimaStore.currentLevels[type] || 0;
+    const cap = typeof ultimaStore.upgradeCaps[type] === 'number' ? ultimaStore.upgradeCaps[type] : Infinity;
     
     if (currentLevel >= cap) continue;
     
@@ -341,7 +354,7 @@ const nextBestUpgradesTotalCost = computed(() => {
   let totalCost = 0;
   
   for (const upgrade of nextBestUpgrades.value) {
-    const currentLevel = currentLevels.value[upgrade.type];
+    const currentLevel = ultimaStore.currentLevels[upgrade.type] || 0;
     const targetLevel = currentLevel + upgrade.count;
     const cost = ultimaStore.calculateCostForLevel(upgrade.type, currentLevel, targetLevel);
     
@@ -366,42 +379,50 @@ const upgradesList = {
 
 // Methoden
 function updateTrCount(newValue) {
+  console.log('updateTrCount called:', newValue);
   // Stelle sicher, dass der Wert zwischen 1 und 999 liegt
   newValue = Math.max(1, Math.min(999, newValue));
   
-  trCount.value = newValue;
-  updateStore();
+  ultimaStore.updateTRCount(newValue);
+  console.log('Store updated. New trCount:', ultimaStore.trCount);
 }
 
 function updateCurrentLevel(type, newValue) {
-  const cap = typeof upgradeCaps.value[type] === 'number' ? upgradeCaps.value[type] : 999;
+  console.log('updateCurrentLevel called:', type, newValue);
+  console.log('ultimaStore:', ultimaStore);
+  console.log('ultimaStore.updateCurrentLevel exists:', typeof ultimaStore.updateCurrentLevel);
+  console.log('Current store currentLevels:', ultimaStore.currentLevels);
+  
+  const cap = typeof ultimaStore.upgradeCaps[type] === 'number' ? ultimaStore.upgradeCaps[type] : 999;
   
   // Stelle sicher, dass der Wert nicht negativ ist und das Cap nicht überschreitet
   newValue = Math.max(0, Math.min(cap, newValue));
   
   // Aktualisiere den aktuellen Level
-  currentLevels.value[type] = newValue;
+  console.log('About to call ultimaStore.updateCurrentLevel with:', type, newValue);
+  ultimaStore.updateCurrentLevel(type, newValue);
+  console.log('Store updated. New currentLevels:', ultimaStore.currentLevels[type]);
   
   // Wenn der Ziellevel niedriger ist als der aktuelle, passe ihn an
-  if (targetLevels.value[type] < newValue) {
-    targetLevels.value[type] = newValue;
+  if ((ultimaStore.targetLevels[type] || 0) < newValue) {
+    ultimaStore.updateTargetLevel(type, newValue);
   }
-  
-  updateStore();
 }
 
 function updateTargetLevel(type, newValue) {
+  console.log('updateTargetLevel called:', type, newValue);
   // Wenn der Wert über der Buttons-Untergrenze (currentLevels) liegt oder
   // wenn wir im Edit-Modus sind und der Benutzer tippt gerade
-  if (newValue >= currentLevels.value[type] || document.activeElement.classList.contains('value-display')) {
+  const currentLevel = ultimaStore.currentLevels[type] || 0;
+  if (newValue >= currentLevel || document.activeElement.classList.contains('value-display')) {
     // Speichere den Wert direkt, ohne Validierung
-    targetLevels.value[type] = newValue;
     ultimaStore.updateTargetLevel(type, newValue);
+    console.log('Store updated. New targetLevels:', ultimaStore.targetLevels[type]);
   } else {
     // Benutzer hat auf Minus-Button geklickt, aber Wert wäre unter Current
     // Wert auf Current begrenzen
-    targetLevels.value[type] = currentLevels.value[type];
-    ultimaStore.updateTargetLevel(type, currentLevels.value[type]);
+    ultimaStore.updateTargetLevel(type, currentLevel);
+    console.log('Store updated to currentLevel:', currentLevel);
   }
 }
 
@@ -409,26 +430,18 @@ function updateTargetLevel(type, newValue) {
 // (wird von TRValueControls über finalize:value aufgerufen)
 function finalizeTargetLevel(type) {
   // Bei Fokus-Verlust oder Enter-Taste validieren
-  const currentValue = currentLevels.value[type];
-  const cap = typeof upgradeCaps.value[type] === 'number' ? upgradeCaps.value[type] : 999;
+  const currentValue = ultimaStore.currentLevels[type] || 0;
+  const cap = typeof ultimaStore.upgradeCaps[type] === 'number' ? ultimaStore.upgradeCaps[type] : 999;
   
   // Validiere den Wert nicht unter dem aktuellen Level
-  targetLevels.value[type] = Math.max(currentValue, Math.min(cap, targetLevels.value[type]));
+  const validatedValue = Math.max(currentValue, Math.min(cap, ultimaStore.targetLevels[type] || 0));
   
   // Update the store with the validated value
-  ultimaStore.updateTargetLevel(type, targetLevels.value[type]);
+  ultimaStore.updateTargetLevel(type, validatedValue);
 }
 
 function updateStore() {
-  ultimaStore.updateTRCount(trCount.value);
-  
-  for (const type in currentLevels.value) {
-    ultimaStore.updateCurrentLevel(type, currentLevels.value[type]);
-  }
-  
-  for (const type in targetLevels.value) {
-    ultimaStore.updateTargetLevel(type, targetLevels.value[type]);
-  }
+  // Diese Funktion ist nicht mehr nötig, da wir direkt mit dem Store arbeiten
 }
 
 function getMilestoneBonusFactor(isLoot = false) {
@@ -444,10 +457,6 @@ function getMilestoneBonusFactor(isLoot = false) {
 
 function applyTargetLevels() {
   ultimaStore.applyTargetLevels();
-  // UI-State aktualisieren
-  for (const type in ultimaStore.currentLevels) {
-    currentLevels.value[type] = ultimaStore.currentLevels[type];
-  }
 }
 
 // Tab-Index Hilfsfunktionen
@@ -469,22 +478,37 @@ function getTabIndexForTargetLevel(upgradeType) {
 
 function resetForm() {
   // Für jedes Upgrade den Target-Level auf den Current-Level zurücksetzen
-  for (const type in currentLevels.value) {
-    targetLevels.value[type] = currentLevels.value[type];
-    // Store aktualisieren
-    ultimaStore.updateTargetLevel(type, currentLevels.value[type]);
-  }
+  const types = ['cells', 'mp', 'shards', 'rp', 'ap', 'mats', 'loot'];
+  types.forEach(type => {
+    const currentLevel = ultimaStore.currentLevels[type] || 0;
+    ultimaStore.updateTargetLevel(type, currentLevel);
+  });
 }
 
 function isUpgradeLocked(type) {
   return ultimaStore.isUpgradeLocked(type);
 }
 
+function getIconName(upgradeType) {
+  // Mapping von upgradeType zu Icon-Dateinamen
+  const iconMap = {
+    cells: 'cells',
+    mp: 'mp',
+    shards: 'shards',
+    rp: 'rp',
+    ap: 'ap',
+    mats: 'mats',
+    loot: 'loot'
+  };
+  
+  return iconMap[upgradeType] || upgradeType;
+}
+
 // Format-Funktionen
 function formatCost(cost) {
   if (typeof cost !== 'number') return cost;
-  if (cost >= 1000000) return Math.floor(cost / 10000) / 100 + 'M';
-  if (cost >= 10000) return Math.floor(cost / 100) / 10 + 'K';
+  if (cost >= 1000000) return Math.floor(cost / 10000) / 100 + 'm';
+  if (cost >= 10000) return Math.floor(cost / 100) / 10 + 'k';
   return cost;
 }
 
@@ -507,7 +531,9 @@ function formatFactor(factor) {
 
 // Initialisierung
 onMounted(() => {
-  // Initialisierung
+  // Store initialisieren
+  ultimaStore.initializeStore();
+  console.log('Store initialized. currentLevels:', ultimaStore.currentLevels);
 });
 </script>
 

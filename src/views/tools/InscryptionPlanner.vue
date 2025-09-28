@@ -1234,25 +1234,53 @@ function truncateDescription(description, maxLength = 40) {
 }
 
 function formatTimeToSave() {
-  const totalCost = store.totalShoppingCost;
-  const dailyProduction = hellishBiomatterPerDay.value;
-  const current = currentHBM.value || 0;
+  if (store.shoppingList.length === 0) return 'No items';
+  if (hellishBiomatterPerDay.value <= 0) return 'Set production rate';
   
-  if (totalCost <= 0) return 'No items';
-  if (dailyProduction <= 0) return 'Set production rate';
+  // Berechne kumulative Zeit basierend auf dynamischen HBM-Produktions-Änderungen
+  let cumulativeDays = 0;
+  let availableHBM = currentHBM.value || 0;
+  let currentDailyProduction = hellishBiomatterPerDay.value;
   
-  // Berücksichtige bereits gesammeltes HBM
-  const remainingCost = Math.max(0, totalCost - current);
-  if (remainingCost <= 0) return 'Available now';
+  // Gehe durch alle Items und berechne die benötigte Zeit
+  for (let i = 0; i < store.shoppingList.length; i++) {
+    const item = store.shoppingList[i];
+    if (!item) continue;
+    
+    // Wie viel HBM brauchen wir noch für dieses Item?
+    const remainingCost = Math.max(0, item.costSci - availableHBM);
+    
+    if (remainingCost > 0) {
+      if (currentDailyProduction <= 0) {
+        return 'Set production rate';
+      }
+      
+      // Berechne die Tage, die wir warten müssen
+      const daysForThisItem = remainingCost / currentDailyProduction;
+      cumulativeDays += daysForThisItem;
+      
+      // Nach dem Warten haben wir genug HBM produziert
+      availableHBM += daysForThisItem * currentDailyProduction;
+    }
+    
+    // Nach dem Kauf dieses Items:
+    // 1. Verfügbares HBM wird um die Kosten reduziert
+    availableHBM -= item.costSci;
+    
+    // 2. Schaue nach, ob dieses Item die Produktion erhöht (Borge Buff 1 oder 2)
+    const itemHBMData = hbmProductionDataMap.value[item.id];
+    if (itemHBMData && itemHBMData.newHBMProduction > currentDailyProduction) {
+      currentDailyProduction = itemHBMData.newHBMProduction;
+    }
+  }
   
-  const days = remainingCost / dailyProduction;
+  if (cumulativeDays === Infinity) return 'Never';
+  if (cumulativeDays > 36500) return '☠️';
+  if (cumulativeDays <= 0) return 'Available now';
   
-  if (days === Infinity) return 'Never';
-  if (days > 36500) return '☠️';
-  
-  if (days > 365) {
-    const years = Math.floor(days / 365);
-    const remainingDays = days % 365;
+  if (cumulativeDays > 365) {
+    const years = Math.floor(cumulativeDays / 365);
+    const remainingDays = cumulativeDays % 365;
     const months = Math.floor(remainingDays / 30);
     
     if (months === 0) {
@@ -1262,12 +1290,12 @@ function formatTimeToSave() {
     }
   }
   
-  if (days > 60) {
-    return `${Math.floor(days)} days`;
+  if (cumulativeDays > 60) {
+    return `${Math.floor(cumulativeDays)} days`;
   }
   
-  const fullDays = Math.floor(days);
-  const hours = Math.round((days - fullDays) * 24);
+  const fullDays = Math.floor(cumulativeDays);
+  const hours = Math.round((cumulativeDays - fullDays) * 24);
   
   if (fullDays === 0) {
     return `${hours}h`;

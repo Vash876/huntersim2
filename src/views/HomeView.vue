@@ -3,12 +3,25 @@ const changelog =
 [
   {
     version: '2.8.8',
-    date: '2025-09-27',
+    date: '2025-09-28',
     changes: [
       {
         text: 'Hunter Simulator',
         subItems: [
           'Fixed Knox Finishing Move ability trigger mechanics - Ghost Bullet also can trigger Finishing Move now',
+          'Improved vertical view header layout',
+        ]
+      },
+      {
+        text: 'Inscryption Planner',
+        subItems: [
+          'Fixed Time to Save calculation',
+        ]
+      },
+      {
+        text: 'Ultima Calculator',
+        subItems: [
+          'Added Resource Icons',
         ]
       }
     ]

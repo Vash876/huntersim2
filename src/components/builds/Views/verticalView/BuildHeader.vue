@@ -1,5 +1,34 @@
 <template>
-  <div class="header-wrapper">
+  <div class="header-wrapper relative">
+    <!-- Floating Level Badge - links neben den anderen Badges -->
+    <div 
+      class="absolute top-2 right-10 z-10 bg-gray-700/80 text-gray-200 rounded-lg px-1 py-1 shadow-lg text-xs font-medium text-center leading-tight w-9 h-12"
+      title="Build Level"
+    >
+      <div>
+        <div class="pb-2">Lvl</div>
+        <div class="font-bold">{{ buildData.level }}</div>
+      </div>
+    </div>
+
+    <!-- Floating Override Badge - rechts oben über dem Header -->
+    <div 
+      v-if="hasOverrides" 
+      class="absolute top-2 right-2 z-10 bg-blue-500/50 text-white rounded-full p-1 shadow-lg transition-colors"
+      title="Build uses custom overrides"
+    >
+      <IconAdjustments size="14" class="text-blue-300" />
+    </div>
+    
+    <!-- Floating Refresh Button - unter dem Override Badge -->
+    <button 
+      @click="emit('reevaluate', buildData)"
+      class="absolute top-8 right-2 z-10 bg-gray-600 text-gray-300 rounded-full p-1 shadow-lg hover:bg-gray-500 hover:text-white transition-colors"
+      title="Re-evaluate Build"
+    >
+      <IconRefresh size="14" />
+    </button>
+    
     <!-- Obere Zeile: Build-Titel und Status -->
     <div class="header-main p-4 flex justify-between items-center">
       <div class="flex items-center flex-1 min-w-0"> <!-- min-width:0 ist wichtig für Truncate -->
@@ -38,40 +67,13 @@
               />
             </div>
             
-            <!-- Level-Badge - immer anzeigen -->
-            <span class="ml-2 text-xs bg-gray-700/50 px-2 py-0.5 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">
-              Lvl {{ buildData.level }}
-            </span>
-            
-            <!-- Overrides Badge - nur anzeigen wenn Overrides vorhanden -->
-            <span 
-              v-if="hasOverrides" 
-              class="ml-2 text-xs pl-2 pr-1  py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center"
-              title="Build uses custom overrides"
-            >
-              <IconAdjustmentsHorizontal size="14" class="mr-1" />
-            </span>
-            
             <span v-if="buildData.isArchived" class="ml-2 text-xs px-2 py-0.5 bg-gray-700/50 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">
               Archived
             </span>
           </div>
         </div>
       </div>
-      
-      <!-- ✅ REFRESH BUTTON - SEPARATER RECHTER BEREICH -->
-      <div class="flex-shrink-0 ml-4">
-        <button 
-          @click="emit('reevaluate', buildData)"
-          class="p-2 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-          title="Re-evaluate Build"
-        >
-          <IconRefresh size="20" />
-        </button>
-      </div>
-    </div>
-    
-    <!-- Untere Zeile: Aktionsleiste -->
+    </div>    <!-- Untere Zeile: Aktionsleiste -->
     <div class="action-bar py-2 px-1 flex justify-between items-center bg-gray-800/70 border-t border-b border-gray-700/50">
       
       <div class="flex items-center gap-1.5 flex-1 justify-center">
