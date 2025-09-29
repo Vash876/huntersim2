@@ -3,7 +3,7 @@ const changelog =
 [
   {
     version: '2.8.9',
-    date: '2025-09-28',
+    date: '2025-09-29',
     changes: [
       {
         text: 'Hunter Simulator',
