@@ -104,14 +104,14 @@
                         class="w-5 h-5 mr-2"
                         :style="{
                           backgroundColor: '#CEFF7B',
-                          WebkitMask: `url(/src/assets/general/${getIconName(upgradeType)}.png) no-repeat center`,
-                          mask: `url(/src/assets/general/${getIconName(upgradeType)}.png) no-repeat center`,
+                          WebkitMask: `url(${getIconUrl(upgradeType)}) no-repeat center`,
+                          mask: `url(${getIconUrl(upgradeType)}) no-repeat center`,
                           WebkitMaskSize: 'contain',
                           maskSize: 'contain'
                         }"
                       ></div>
                       <img v-else
-                        :src="`/src/assets/general/${getIconName(upgradeType)}.png`" 
+                        :src="getIconUrl(upgradeType)" 
                         :alt="upgradeInfo.label"
                         class="w-5 h-5 mr-2"
                       >
@@ -241,6 +241,15 @@ import {
   IconInfoCircle
 } from '@tabler/icons-vue';
 import TRValueControls from '@/composables/TRValueControls.vue';
+
+// Import resource icons
+import cellsIcon from '@/assets/general/cells.png';
+import mpIcon from '@/assets/general/mp.png';
+import shardsIcon from '@/assets/general/shards.png';
+import rpIcon from '@/assets/general/rp.png';
+import apIcon from '@/assets/general/ap.png';
+import matsIcon from '@/assets/general/mats.png';
+import lootIcon from '@/assets/general/loot.png';
 
 // Store
 const ultimaStore = useUltimaStore();
@@ -489,19 +498,19 @@ function isUpgradeLocked(type) {
   return ultimaStore.isUpgradeLocked(type);
 }
 
-function getIconName(upgradeType) {
-  // Mapping von upgradeType zu Icon-Dateinamen
+function getIconUrl(upgradeType) {
+  // Mapping von upgradeType zu importierten Icon-URLs
   const iconMap = {
-    cells: 'cells',
-    mp: 'mp',
-    shards: 'shards',
-    rp: 'rp',
-    ap: 'ap',
-    mats: 'mats',
-    loot: 'loot'
+    cells: cellsIcon,
+    mp: mpIcon,
+    shards: shardsIcon,
+    rp: rpIcon,
+    ap: apIcon,
+    mats: matsIcon,
+    loot: lootIcon
   };
   
-  return iconMap[upgradeType] || upgradeType;
+  return iconMap[upgradeType] || '';
 }
 
 // Format-Funktionen
