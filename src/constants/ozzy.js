@@ -447,6 +447,7 @@ export const CURRENCY_TYPES = {
   FARAHYTE: 'mat1',
   GALVARIUM: 'mat2',
   VECTID: 'mat3',
+  BIOMATTER: 'hbm',
   FRAGS: 'frags',
 };
 
@@ -490,6 +491,19 @@ export const UPGRADES_BY_CURRENCY = {
     { key: 'atkspeed', label: 'ATK Speed', max: 100 },
   ],
 
+  [CURRENCY_TYPES.BIOMATTER]: [
+    { key: "upgrades.inscryptions.i31", label: "Inscryption #31", max: 10 },
+    { key: "upgrades.inscryptions.i32", label: "Inscryption #32", max: 8 },
+    { key: "upgrades.inscryptions.i33", label: "Inscryption #33", max: 6 },
+    { key: "upgrades.inscryptions.i36", label: "Inscryption #36", max: 5 },
+    { key: "upgrades.inscryptions.i37", label: "Inscryption #37", max: 7 },
+    { key: "upgrades.inscryptions.i40", label: "Inscryption #40", max: 10 },
+    { key: "upgrades.inscryptions.i81", label: "Inscryption #81", max: 10 },
+    { key: "upgrades.inscryptions.i86", label: "Inscryption #86", max: 7 },
+    { key: "upgrades.inscryptions.i92", label: "Inscryption #92", max: 7 },
+    { key: "upgrades.inscryptions.i104", label: "Inscryption #104", max: 8 },
+  ],
+
   [CURRENCY_TYPES.FRAGS]: [
     { key: 'upgrades.relics.r4', label: 'Relic #4', max: 100 },
     { key: 'upgrades.relics.r7', label: 'Relic #7', max: 100 },
@@ -502,6 +516,7 @@ export const CURRENCY_LABELS = {
   [CURRENCY_TYPES.FARAHYTE]: 'Farahite Ore',
   [CURRENCY_TYPES.GALVARIUM]: 'Galvarium',
   [CURRENCY_TYPES.VECTID]: 'Vectid Crystals',
+  [CURRENCY_TYPES.BIOMATTER]: 'Hellish Biomatter',
   [CURRENCY_TYPES.FRAGS]: 'Fragments',
 };
 
@@ -509,6 +524,7 @@ export const CURRENCY_LABELS_SHORT = {
   [CURRENCY_TYPES.FARAHYTE]: 'Fara',
   [CURRENCY_TYPES.GALVARIUM]: 'Galv',
   [CURRENCY_TYPES.VECTID]: 'Vectid',
+  [CURRENCY_TYPES.BIOMATTER]: 'HBM',
   [CURRENCY_TYPES.FRAGS]: 'Frags',
 };
 
@@ -516,6 +532,7 @@ export const CURRENCY_LABELS_SHORT = {
 import mat1Icon from '../assets/ozzy/loot_mat1.png';
 import mat2Icon from '../assets/ozzy/loot_mat2.png';
 import mat3Icon from '../assets/ozzy/loot_mat3.png';
+import hbmIcon from '../assets/borge/loot_mat3.png';
 import xpIcon from '../assets/ozzy/loot_xp.png';
 
 // Pfade zu den Loot-Icons mit direkten Imports
@@ -523,5 +540,6 @@ export const LOOT_ICONS = {
   mat1: mat1Icon,
   mat2: mat2Icon,
   mat3: mat3Icon,
+  hbm: hbmIcon,
   xp: xpIcon,
 };

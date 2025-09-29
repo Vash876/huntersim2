@@ -186,7 +186,12 @@
               >
                 <label class="text-gray-400 text-sm mb-1 flex items-center justify-between">
                   <span class="truncate">{{ upgrade.label }}</span>
-                  <span v-if="upgrade.max" class="text-xs text-gray-500 ml-1">(max {{ upgrade.max }})</span>
+                  <span 
+                    v-if="upgrade.max" 
+                    class="px-1 bg-gray-700 text-gray-300 text-xs rounded-full border border-gray-600 ml-2 flex-shrink-0"
+                  >
+                    {{ upgrade.max }}
+                  </span>
                 </label>
                 <div class="flex items-center justify-between">
                   <!-- Build Value Display -->
@@ -199,8 +204,11 @@
                          :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
                       {{ getBaseValue(upgrade.key) }}
                     </div>
-                    <!-- Next Cost Display bleibt gleich -->
-                    <div class="text-[10px] ml-3 text-yellow-400 uppercase">
+                    <!-- Next Cost Display - nur anzeigen wenn max nicht erreicht -->
+                    <div 
+                      v-if="!upgrade.max || getBaseValue(upgrade.key) + (scenarioIncrements[0][upgrade.key] || 0) < upgrade.max"
+                      class="text-[10px] ml-3 text-yellow-400 uppercase"
+                    >
                       next: {{ formatCost(getNextUpgradeCost(upgrade.key, 0)) }}
                     </div>
                   </div>
@@ -241,7 +249,12 @@
               >
                 <label class="text-gray-400 text-sm mb-1 flex items-center justify-between">
                   <span class="truncate">{{ upgrade.label }}</span>
-                  <span v-if="upgrade.max" class="text-xs text-gray-500 ml-1">(max {{ upgrade.max }})</span>
+                  <span 
+                    v-if="upgrade.max" 
+                    class="px-1 bg-gray-700 text-gray-300 text-xs rounded-full border border-gray-600 ml-2 flex-shrink-0"
+                  >
+                    {{ upgrade.max }}
+                  </span>
                 </label>
                 <div class="flex items-center justify-between">
                   <!-- Build Value Display -->
@@ -254,8 +267,11 @@
                          :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
                       {{ getBaseValue(upgrade.key) }}
                     </div>
-                    <!-- Next Cost Display bleibt gleich -->
-                    <div class="text-[10px] ml-3 text-yellow-400 uppercase">
+                    <!-- Next Cost Display - nur anzeigen wenn max nicht erreicht -->
+                    <div 
+                      v-if="!upgrade.max || getBaseValue(upgrade.key) + (scenarioIncrements[1][upgrade.key] || 0) < upgrade.max"
+                      class="text-[10px] ml-3 text-yellow-400 uppercase"
+                    >
                       next: {{ formatCost(getNextUpgradeCost(upgrade.key, 1)) }}
                     </div>
                   </div>
@@ -296,7 +312,12 @@
               >
                 <label class="text-gray-400 text-sm mb-1 flex items-center justify-between">
                   <span class="truncate">{{ upgrade.label }}</span>
-                  <span v-if="upgrade.max" class="text-xs text-gray-500 ml-1">(max {{ upgrade.max }})</span>
+                  <span 
+                    v-if="upgrade.max" 
+                    class="px-1 bg-gray-700 text-gray-300 text-xs rounded-full border border-gray-600 ml-2 flex-shrink-0"
+                  >
+                    {{ upgrade.max }}
+                  </span>
                 </label>
                 <div class="flex items-center justify-between">
                   <!-- Build Value Display -->
@@ -309,8 +330,11 @@
                          :class="isOverrideValue(upgrade.key) ? 'text-blue-300' : 'text-gray-300'">
                       {{ getBaseValue(upgrade.key) }}
                     </div>
-                    <!-- Next Cost Display bleibt gleich -->
-                    <div class="text-[10px] ml-3 text-yellow-400 uppercase">
+                    <!-- Next Cost Display - nur anzeigen wenn max nicht erreicht -->
+                    <div 
+                      v-if="!upgrade.max || getBaseValue(upgrade.key) + (scenarioIncrements[2][upgrade.key] || 0) < upgrade.max"
+                      class="text-[10px] ml-3 text-yellow-400 uppercase"
+                    >
                       next: {{ formatCost(getNextUpgradeCost(upgrade.key, 2)) }}
                     </div>
                   </div>
@@ -334,6 +358,59 @@
               <div class="flex justify-between text-sm">
                 <span class="text-gray-400">Cost:</span>
                 <span class="text-blue-400">{{ formatCost(calculateScenarioCost(2)) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HBM Production Box - nur für Ozzy und HBM-Tab anzeigen -->
+        <div v-if="hunterId === 'ozzy' && selectedCurrency === 'hbm'" 
+             class="bg-gray-850 border border-gray-700 rounded-lg overflow-hidden shadow-lg my-4">
+          <div class="p-3 flex justify-between items-center border-b border-gray-700">
+            <h3 class="text-lg font-semibold text-white flex items-center">
+              <img 
+                v-if="hasIcon('hbm')" 
+                :src="icons.hbm" 
+                class="w-7 h-7 mr-2" 
+                alt="Hellish Biomatter" 
+              />
+              <IconDiamond v-else size="28" class="w-7 h-7 mr-2 text-amber-400" />
+              Hellish-Biomatter Production
+            </h3>
+          </div>
+          
+          <div class="p-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Reference Build -->
+              <div class="bg-gray-800/30 rounded-lg p-3 border border-gray-700/50">
+                <div class="font-medium text-white text-sm mb-1">Reference Build</div>
+                <div class="text-xs text-gray-400 mb-2">Select Borge Build</div>
+                <select 
+                  v-model="selectedBorgeBuildId"
+                  @change="updateHBMFromSelectedBuild"
+                  class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500"
+                >
+                  <option value="">Select a build...</option>
+                  <option 
+                    v-for="build in borgeBuilds" 
+                    :key="build.id" 
+                    :value="build.id"
+                  >
+                    {{ build.name }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Daily HBM Rate -->
+              <div class="bg-gray-800/30 rounded-lg p-3 border border-gray-700/50">
+                <div class="font-medium text-white text-sm mb-1">Daily HBM Production</div>
+                <div class="text-xs text-gray-400 mb-2">Calculated from Build</div>
+                <div class="flex items-center bg-gray-800/80 py-2 px-3 rounded-lg border border-gray-700">
+                  <div class="text-amber-400 text-base font-bold">{{ formatNumber(hellishBiomatterPerDay) }}</div>
+                  <div v-if="!selectedBorgeBuildId" class="ml-2 text-gray-400 text-xs">
+                    (select a build)
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -872,6 +949,11 @@ const hunterColor = computed(() => hunterInfo.value.color);
 // Fragments per day - für Fragment-spezifische Berechnungen
 const fragmentsPerDay = ref(Number(localStorage.getItem('fragments_per_day')) || 100); // Standardwert
 
+// HBM (Hellish Biomatter) Production - für Ozzy's HBM-basierte Upgrades
+const cachedBorgeResults = ref({});
+const selectedBorgeBuildId = ref('');
+const hellishBiomatterPerDay = ref(0);
+
 // Neue reaktive Variablen für den Loot Collection Slider
 const currentCurrencyPercentage = ref(0);
 const currentCurrencyAmount = ref(0);
@@ -918,6 +1000,17 @@ const timeToNextLevel = computed(() => {
   return (xpToNextLevel.value / xpRate.value) * (originalResults.value?.avgTime || 120);
 });
 
+// Computed properties for Borge builds (for HBM production)
+const borgeBuilds = computed(() => {
+  if (props.hunterId !== 'ozzy') return [];
+  return hunterStore.getBuildsForHunter('borge').filter(build => !build.isArchived);
+});
+
+const selectedBorgeBuild = computed(() => {
+  if (!selectedBorgeBuildId.value) return null;
+  return borgeBuilds.value.find(build => String(build.id) === String(selectedBorgeBuildId.value));
+});
+
 function resetModalState() {
   // Ergebnis-bezogene Zustände
   comparisonResults.value = [];
@@ -934,6 +1027,55 @@ function resetModalState() {
   loadError.value = null;
   
   console.log('Modal state has been reset');
+}
+
+// Load cached results for Borge builds (for HBM production)
+async function loadCachedBorgeResults() {
+  if (props.hunterId !== 'ozzy') return;
+  
+  try {
+    // Import the evaluation cache service
+    const { shouldEvaluate } = await import('@/services/evaluationCacheService');
+    const { useGemPlannerStore } = await import('@/store/gemPlannerStore');
+    const gemPlannerStore = useGemPlannerStore();
+    
+    for (const build of borgeBuilds.value) {
+      const cache = await shouldEvaluate({
+        hunterId: 'borge',
+        buildData: build,
+        hunterStore,
+        gemPlannerStore
+      });
+      
+      if (cache?.cachedResult) {
+        cachedBorgeResults.value[build.id] = cache.cachedResult;
+      }
+    }
+  } catch (error) {
+    console.error('[UpgradeComparisonModal] Error loading cached Borge results:', error);
+  }
+}
+
+// Update HBM production from selected Borge build
+function updateHBMFromSelectedBuild() {
+  if (props.hunterId !== 'ozzy' || !selectedBorgeBuildId.value) {
+    hellishBiomatterPerDay.value = 0;
+    return;
+  }
+  
+  const build = selectedBorgeBuild.value;
+  if (build) {
+    const result = cachedBorgeResults.value[build.id];
+    if (result) {
+      const hbmPerRun = result.mat3 || 0;
+      const avgRunTimeMinutes = result.avgTime || 120;
+      const runsPerDay = 1440 / avgRunTimeMinutes;
+      hellishBiomatterPerDay.value = Math.floor(hbmPerRun * runsPerDay);
+      
+      // Save selected build
+      localStorage.setItem('upgrade-comparison-selectedBorgeBuildId', selectedBorgeBuildId.value);
+    }
+  }
 }
 
 // Hunter-Daten und Upgrades laden
@@ -978,6 +1120,22 @@ async function loadHunterData() {
 
     // Dann Szenarien initialisieren
     initializeScenarios();
+    
+    // Für Ozzy: Borge builds laden und HBM-Produktion initialisieren
+    if (props.hunterId === 'ozzy') {
+      // Stelle sicher, dass Borge auch initialisiert ist
+      await hunterStore.initHunterConfig('borge');
+      
+      // Lade cached Borge Ergebnisse
+      await loadCachedBorgeResults();
+      
+      // Lade gespeicherte Build-Selection
+      const savedBorgeBuildId = localStorage.getItem('upgrade-comparison-selectedBorgeBuildId');
+      if (savedBorgeBuildId && borgeBuilds.value.some(build => String(build.id) === String(savedBorgeBuildId))) {
+        selectedBorgeBuildId.value = savedBorgeBuildId;
+        updateHBMFromSelectedBuild();
+      }
+    }
     
     // Ergebnisse erst am Ende setzen und validieren
     if (props.buildData.results && typeof props.buildData.results === 'object') {
@@ -1080,12 +1238,7 @@ function calculateScenarioCost(scenarioIndex) {
         // Inscryption-Kosten
         const inscryptionId = upgrade.key.split('.')[2]; // Extrahiert 'i80'
         
-        // Prüfen ob für diese Inscryption eine Kostenfunktion vorhanden ist
-        const supportedInscryptions = ['i60', 'i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92', 'i103'];
-        
-        if (supportedInscryptions.includes(inscryptionId)) {
-          totalCost += calcInscryptionCostDifference(inscryptionId, baseValue, baseValue + incrementValue);
-        }
+        totalCost += calcInscryptionCostDifference(inscryptionId, baseValue, baseValue + incrementValue);
       } else {
         // Stat-Kosten (basierend auf statCostUtils)
         totalCost += calcCostDifference(
@@ -1494,14 +1647,7 @@ function getNextUpgradeCost(key, scenarioIndex = -1) {
     // Inscryption-Kosten
     const inscryptionId = key.split('.')[2]; // Extrahiert 'i80'
     
-    // Prüfen ob für diese Inscryption eine Kostenfunktion vorhanden ist
-    const supportedInscryptions = ['i60', 'i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92', 'i103'];
-    
-    if (supportedInscryptions.includes(inscryptionId)) {
-      return calcInscryptionCostDifference(inscryptionId, currentValue, currentValue + 1);
-    }
-    
-    return 0; // Keine Kostenfunktion verfügbar
+    return calcInscryptionCostDifference(inscryptionId, currentValue, currentValue + 1);
   } else {
     // Stat-Kosten (basierend auf statCostUtils)
     return calcCostDifference(
@@ -1519,7 +1665,8 @@ function getCurrencyMaterial(currencyType) {
   const currencyMaterials = {
     'mat1': 'mat1',
     'mat2': 'mat2',
-    'mat3': 'mat3'
+    'mat3': 'mat3',
+    'hbm': 'mat3' // HBM wird von Borge's mat3 (Hellish Biomatter) produziert
   };
   
   return currencyMaterials[currencyType];
@@ -1540,6 +1687,13 @@ function getCollectionTimeInMinutes(scenarioIndex) {
   if (currencyType === 'frags') {
     if (!fragmentsPerDay.value || fragmentsPerDay.value <= 0) return Infinity;
     const daysNeeded = remainingCost / fragmentsPerDay.value;
+    return daysNeeded * 1440; // In Minuten umrechnen
+  }
+  
+  // Spezialfall: HBM (Hellish Biomatter) - verwendet Borge's Produktionsrate
+  if (currencyType === 'hbm') {
+    if (!hellishBiomatterPerDay.value || hellishBiomatterPerDay.value <= 0) return Infinity;
+    const daysNeeded = remainingCost / hellishBiomatterPerDay.value;
     return daysNeeded * 1440; // In Minuten umrechnen
   }
   

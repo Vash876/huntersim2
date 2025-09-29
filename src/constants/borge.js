@@ -523,6 +523,13 @@ export const UPGRADES_BY_CURRENCY = {
     { key: 'critpower', label: 'Crit Power', max: 100 },
     { key: 'atkspeed', label: 'ATK Speed', max: 100 },
 
+    { key: 'upgrades.inscryptions.i11', label: 'Inscryption #11', max: 3 },
+    { key: 'upgrades.inscryptions.i13', label: 'Inscryption #13', max: 8 },
+    { key: 'upgrades.inscryptions.i14', label: 'Inscryption #14', max: 5 },
+    { key: 'upgrades.inscryptions.i23', label: 'Inscryption #23', max: 5 },
+    { key: 'upgrades.inscryptions.i24', label: 'Inscryption #24', max: 8 },
+    { key: 'upgrades.inscryptions.i27', label: 'Inscryption #27', max: 10 },
+    { key: 'upgrades.inscryptions.i44', label: 'Inscryption #44', max: 10 },
     { key: 'upgrades.inscryptions.i60', label: 'Inscryption #60', max: 10 },
     { key: 'upgrades.inscryptions.i80', label: 'Inscryption #80', max: 10 },
     { key: 'upgrades.inscryptions.i84', label: 'Inscryption #84', max: 10 },

@@ -51,6 +51,7 @@ export function useLootIcons(hunterId) {
     mat1: lootIcons.value.mat1 || null,
     mat2: lootIcons.value.mat2 || null,
     mat3: lootIcons.value.mat3 || null,
+    hbm: lootIcons.value.hbm || null, // HBM Icon hinzufügen
     xp: lootIcons.value.xp || null,
     frags: lootIcons.value.frags // Füge das Fragment-Icon hinzu
   }));
@@ -59,6 +60,8 @@ export function useLootIcons(hunterId) {
   const hasIcon = (type) => {
     // Fragment-Icon ist immer vorhanden
     if (type === 'frags') return true;
+    // HBM-Icon explizit prüfen
+    if (type === 'hbm') return !!lootIcons.value.hbm;
     return !!lootIcons.value[type];
   };
   

@@ -142,7 +142,7 @@ import { useHunterStore } from '@/store/hunterStore';
 import { getAllUpgradesWithHunterInfo } from '@/utils/upgradeUtils';
 import { HUNTERS } from '@/constants/hunters';
 import { useButtonControls } from '@/utils/useButtonControls.js';
-import { getNextLevelCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils.js';
+import { getNextLevelCost, formatInscryptionCost, INSCRYPTION_CONFIGS } from '@/utils/inscryptionCostUtils.js';
 import UpgradeGrid from '@/components/upgrades/UpgradeGrid.vue';
 import UpgradeCard from '@/components/upgrades/UpgradeCard.vue';
 
@@ -239,6 +239,11 @@ function getNextLevelCostForInscryption(inscryption) {
   
   // Wenn schon auf Max-Level, keine Kosten anzeigen
   if (currentLevel >= maxLevel) {
+    return null;
+  }
+  
+  // Prüfe ob die Inscryption in INSCRYPTION_CONFIGS vorhanden ist
+  if (!INSCRYPTION_CONFIGS[inscryption.id]) {
     return null;
   }
   

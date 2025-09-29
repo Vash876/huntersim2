@@ -629,7 +629,18 @@ function importBuild(build) {
   
   // Check if the build is for the correct hunter type
   if (build.hunter !== route.params.hunterId) {
-    showToastMessage(`This build is for ${build.hunter.charAt(0).toUpperCase() + build.hunter.slice(1)}, not for ${route.params.hunterId.charAt(0).toUpperCase() + route.params.hunterId.slice(1)}`, 'error');
+    // Automatically redirect to the correct hunter and import the build there
+    const correctHunterPath = `/${build.hunter}`;
+    showToastMessage(`Redirecting to ${build.hunter.charAt(0).toUpperCase() + build.hunter.slice(1)} and importing build...`, 'info');
+    
+    // Store the build data in the hunterStore for cross-navigation transfer
+    hunterStore.setPendingBuildImport(build);
+    
+    // Close current modal first
+    closeBuildCodeModal();
+    
+    // Navigate to the correct hunter - the build will be automatically imported there
+    router.push(correctHunterPath);
     return;
   }
   
@@ -847,6 +858,25 @@ onMounted(() => {
     const url = new URL(window.location.href);
     url.searchParams.delete('code');
     window.history.replaceState({}, '', url);
+  }
+  
+  // Prüfe, ob ein pending Build Import vorhanden ist
+  const pendingBuild = hunterStore.getPendingBuildImport();
+  if (pendingBuild && pendingBuild.hunter === route.params.hunterId) {
+    // Import the pending build
+    buildToEdit.value = {
+      ...pendingBuild,
+      hunterId: route.params.hunterId
+    };
+    
+    // Open build modal
+    isBuildModalOpen.value = true;
+    
+    // Clear the pending import
+    hunterStore.clearPendingBuildImport();
+    
+    // Show success message
+    showToastMessage(`Build imported and ready to edit. Click Save to keep it.`, 'info');
   }
 });
 

@@ -2,6 +2,21 @@
 const changelog = 
 [
   {
+    version: '2.8.9',
+    date: '2025-09-28',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added cost calculations for all Inscryptions',
+          'All Inscryptions are now available in the Upgrade Comparison Modal',
+          'Added HBM resource for Ozzy to enable Inscryption comparisons',
+          'Importing Hunter builds on the wrong Hunter page now redirects to the correct Hunter automatically',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.8.8',
     date: '2025-09-28',
     changes: [
@@ -1157,7 +1172,7 @@ const changelog =
 </script>
 
 <template>
-  <main class="p-4">
+  <main class="p-4 sm:p-6 max-w-[1440px] mx-auto">
     <h1 class="text-3xl font-bold mb-6 text-white">Changelog</h1>
     
     <div class="space-y-8">

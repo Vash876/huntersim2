@@ -3,269 +3,152 @@
  */
 
 /**
- * Berechnet die Kosten für Inscryption #60
- * @param {number} level - Das aktuelle Level (1-basiert)
+ * Konfigurationstabelle für alle Inscryption-Kosten
+ * Jede Inscryption hat einen startValue und einen Multiplikator
+ */
+const INSCRYPTION_CONFIGS = {
+  i11: { startValue: 7e1 , multiplier: 4 },
+  i13: { startValue: 3.1e2, multiplier: 1.2419354838709677419354838709677 },
+  i14: { startValue: 6e2, multiplier: 1.7 },
+  i23: { startValue: 3.2e3, multiplier: 1.4 },
+  i24: { startValue: 3.4e3, multiplier: 1.2 },
+  i27: { startValue: 3.5e4, multiplier: 1.05 },
+  i31: { startValue: 8.6e4, multiplier: 1.3 },
+  i32: { startValue: 9e4, multiplier: 3 },
+  i33: { startValue: 9.12e4, multiplier: 5 },
+  i36: { startValue: 9.35e4, multiplier: 1.4 },
+  i37: { startValue: 9.5e4, multiplier: 1.3 },
+  i40: { startValue: 1e5, multiplier: 1.6 },
+  i44: { startValue: 7.77e5, multiplier: 1.75 },
+  i52: { startValue: 3e7, multiplier: 2.4 },
+  i60: { startValue: 4e9, multiplier: 4 },
+  i78: { startValue: 1e16, multiplier: 8 },
+  i80: { startValue: 3e16, multiplier: 6 },
+  i81: { startValue: 4e16, multiplier: 6 },
+  i84: { startValue: 1e17, multiplier: 4 },
+  i86: { startValue: 3e17, multiplier: 3 },
+  i87: { startValue: 4e17, multiplier: 8 },
+  i88: { startValue: 5e17, multiplier: 3 },
+  i89: { startValue: 6e17, multiplier: 3 },
+  i91: { startValue: 2e18, multiplier: 3 },
+  i92: { startValue: 3e18, multiplier: 3 },
+  i101: { startValue: 1e20, multiplier: 4 },
+  i103: { startValue: 3e20, multiplier: 3 },
+  i104: { startValue: 4e20, multiplier: 3 },
+  i105: { startValue: 5e20, multiplier: 3 },
+  // Hier können einfach neue Inscryptions hinzugefügt werden:
+  // i31: { startValue: 50000, multiplier: 2.5 },
+  // i36: { startValue: 75000, multiplier: 3.2 },
+  // i37: { startValue: 120000, multiplier: 2.8 },
+  // i40: { startValue: 200000, multiplier: 3.5 },
+};
+
+/**
+ * Generische Funktion zur Berechnung von Inscryption-Kosten
+ * @param {string} inscryptionId - Die ID der Inscryption (z.B. 'i32', 'i80')
+ * @param {number} level - Das Level (1-basiert)
  * @returns {number} - Die Kosten für dieses Level
  */
+function calculateInscryptionCost(inscryptionId, level) {
+  const config = INSCRYPTION_CONFIGS[inscryptionId];
+  if (!config) {
+    console.error(`Unbekannte Inscryption ID: ${inscryptionId}`);
+    return 0;
+  }
+  
+  if (level <= 1) return config.startValue;
+  return config.startValue * Math.pow(config.multiplier, level - 1);
+}
+
+/**
+ * Wrapper-Funktionen für Abwärtskompatibilität
+ * Diese verwenden die generische calculateInscryptionCost Funktion
+ */
+
+
 function calculateI32(level) {
-  const startValue = 90000;
-  const multi = 3;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i32', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #60
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI33(level) {
-  const startValue = 91200;
-  const multi = 5;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i33', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #52
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI52(level) {
-  const startValue = 91200;
-  const multi = 2.4;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i52', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #60
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI60(level) {
-  const startValue = 4000000000;
-  const multi = 4;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i60', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #78
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI78(level) {
-  const startValue = 10000000000000000;
-  const multi = 8;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i78', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #80
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI80(level) {
-  const startValue = 30000000000000000;
-  const multi = 6;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i80', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #81
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI81(level) {
-  const startValue = 40000000000000000;
-  const multi = 6;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i81', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #84
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI84(level) {
-  const startValue = 100000000000000000;
-  const multi = 4;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i84', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #86
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI86(level) {
-  const startValue = 300000000000000000;
-  const multi = 3;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i86', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #87
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI87(level) {
-  const startValue = 400000000000000000;
-  const multi = 8;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i87', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #88
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI88(level) {
-  const startValue = 500000000000000000;
-  const multi = 3;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i88', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #89
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI89(level) {
-  const startValue = 600000000000000000;
-  const multi = 3;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i89', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #91
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI91(level) {
-  const startValue = 2000000000000000000;
-  const multi = 3;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i91', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #92
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI92(level) {
-  const startValue = 3000000000000000000;
-  const multi = 3;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i92', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #101
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI101(level) {
-  const startValue = 100000000000000000000;
-  const multi = 4;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i101', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #103
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI103(level) {
-  const startValue = 3e20;
-  const multi = 3;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i103', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #104
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI104(level) {
-  const startValue = 4e20;
-  const multi = 3;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i104', level);
 }
 
-/**
- * Berechnet die Kosten für Inscryption #105
- * @param {number} level - Das aktuelle Level (1-basiert)
- * @returns {number} - Die Kosten für dieses Level
- */
 function calculateI105(level) {
-  const startValue = 5e20;
-  const multi = 3;
-  if (level <= 1) return startValue;
-  return startValue * Math.pow(multi, level - 1);
+  return calculateInscryptionCost('i105', level);
 }
 
 /**
  * Berechnet die Kosten für eine bestimmte Inscryption basierend auf der ID und dem Level
- * @param {string} InscryptionId - ID der Inscryption (i80, i81, i84, i86, i87, i88, i89, i91, i92)
+ * @param {string} InscryptionId - ID der Inscryption 
  * @param {number} level - Das Level (1-basiert)
  * @returns {number} - Die berechneten Kosten
  */
 function getInscryptionCost(InscryptionId, level) {
   if (level <= 0) return 0;
   
-  switch (InscryptionId) {
-    case 'i32':
-      return calculateI32(level);
-    case 'i33':
-      return calculateI33(level);
-    case 'i60':
-      return calculateI60(level);
-    case 'i78':
-      return calculateI78(level);
-    case 'i80':
-      return calculateI80(level);
-    case 'i81':
-      return calculateI81(level);
-    case 'i84':
-      return calculateI84(level);
-    case 'i86':
-      return calculateI86(level);
-    case 'i87':
-      return calculateI87(level);
-    case 'i88':
-      return calculateI88(level);
-    case 'i89':
-      return calculateI89(level);
-    case 'i91':
-      return calculateI91(level);
-    case 'i92':
-      return calculateI92(level);
-    case 'i101':
-      return calculateI101(level);
-    case 'i103':
-      return calculateI103(level);
-    case 'i104':
-      return calculateI104(level);
-    case 'i105':
-      return calculateI105(level);
-    default:
-      console.error(`Unbekannte Inscryption ID: ${InscryptionId}`);
-      return 0;
-  }
+  // Verwendet die generische Funktion basierend auf der Konfiguration
+  return calculateInscryptionCost(InscryptionId, level);
 }
 
 /**
@@ -386,9 +269,8 @@ export function getI105Cost(level) {
 function getNextLevelCost(inscryptionId, currentLevel) {
   const nextLevel = currentLevel + 1;
   
-  // Prüfe ob es ein unterstütztes Inscryption ist
-  const supportedInscryptions = ['i32', 'i33', 'i60', 'i78', 'i80', 'i81', 'i84', 'i86', 'i87', 'i88', 'i89', 'i91', 'i92', 'i101', 'i103', 'i104', 'i105'];
-  if (!supportedInscryptions.includes(inscryptionId)) {
+  // Prüfe ob es eine unterstützte Inscryption ist (basierend auf INSCRYPTION_CONFIGS)
+  if (!INSCRYPTION_CONFIGS[inscryptionId]) {
     return null;
   }
   
@@ -397,6 +279,7 @@ function getNextLevelCost(inscryptionId, currentLevel) {
 
 // Hauptexporte
 export {
+  INSCRYPTION_CONFIGS,
   getInscryptionCost,
   calcInscryptionCostDifference,
   formatInscryptionCost,

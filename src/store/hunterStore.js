@@ -34,6 +34,9 @@ export const useHunterStore = defineStore('hunter', () => {
   // Boss Kill by Revive Cache 
   const bossKillsByReviveCache = ref({});
 
+  // Pending Build Import - für Cross-Navigation Build Transfer
+  const pendingBuildImport = ref(null);
+
   /**
    * Generiert die initiale Upgrades-Struktur basierend auf den UPGRADES-Konstanten
    * @param {Object} upgradesConfig - Die UPGRADES-Konstante
@@ -951,6 +954,19 @@ function getDisplaySettings(hunterId) {
   return displaySettings.value[hunterId] || null;
 }
 
+// Pending Build Import Funktionen
+function setPendingBuildImport(buildData) {
+  pendingBuildImport.value = buildData;
+}
+
+function getPendingBuildImport() {
+  return pendingBuildImport.value;
+}
+
+function clearPendingBuildImport() {
+  pendingBuildImport.value = null;
+}
+
 
   // Im return-Statement am Ende des Stores:
   return {
@@ -1018,7 +1034,12 @@ function getDisplaySettings(hunterId) {
     cacheBossKillsByRevive,
     getCachedBossKillsByRevive,
     clearCachedBossKillsByRevive,
-    cleanupOldBossKillsData
+    cleanupOldBossKillsData,
+
+    // Pending Build Import Funktionen
+    setPendingBuildImport,
+    getPendingBuildImport,
+    clearPendingBuildImport
   };
 }, {
   persist: {

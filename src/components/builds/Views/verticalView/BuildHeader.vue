@@ -2,7 +2,7 @@
   <div class="header-wrapper relative">
     <!-- Floating Level Badge - links neben den anderen Badges -->
     <div 
-      class="absolute top-2 right-10 z-10 bg-gray-700/80 text-gray-200 rounded-lg px-1 py-1 shadow-lg text-xs font-medium text-center leading-tight w-9 h-12"
+      class="absolute top-1.5 right-8.5 z-10 bg-gray-700/80 text-gray-200 rounded-lg px-1 py-1 shadow-lg text-xs font-medium text-center leading-tight w-9 h-12"
       title="Build Level"
     >
       <div>
@@ -14,7 +14,7 @@
     <!-- Floating Override Badge - rechts oben über dem Header -->
     <div 
       v-if="hasOverrides" 
-      class="absolute top-2 right-2 z-10 bg-blue-500/50 text-white rounded-full p-1 shadow-lg transition-colors"
+      class="absolute top-1.5 right-2 z-10 bg-blue-500/50 text-white rounded-full p-1 shadow-lg transition-colors"
       title="Build uses custom overrides"
     >
       <IconAdjustments size="14" class="text-blue-300" />
