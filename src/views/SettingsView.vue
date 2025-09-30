@@ -218,6 +218,46 @@
         </div>
       </Transition>
 
+      <!-- Interface Settings -->
+      <!-- <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mt-8">
+        <div class="header p-4 flex justify-between items-center">
+          <h3 class="text-lg font-semibold text-white flex items-center">
+            <IconAdjustments size="20" class="mr-2 text-emerald-400" />
+            Interface Settings
+          </h3>
+        </div>
+        
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h4 class="text-white text-md font-medium">FAQ Help System</h4>
+              <p class="text-gray-300 text-sm mt-1">
+                Show contextual help and FAQ for the current page.
+                The FAQ content adapts to the page you're currently viewing.
+              </p>
+            </div>
+            <div class="flex items-center">
+              <button 
+                @click="faqStore.toggleEnabled" 
+                class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                :class="{
+                  'bg-emerald-600': faqStore.isEnabled,
+                  'bg-gray-600': !faqStore.isEnabled
+                }"
+              >
+                <span 
+                  class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                  :class="{
+                    'translate-x-6': faqStore.isEnabled,
+                    'translate-x-1': !faqStore.isEnabled
+                  }"
+                ></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div> -->
+
       <!-- Enthusiast Mode -->
       <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mt-8">
         <div class="header p-4 flex justify-between items-center">
@@ -265,7 +305,7 @@
         </div>
       </div>
     <!-- Emergency Data Recovery Tool -->
-    <!-- <div class="mt-8 text-center">
+    <div class="mt-8 text-center">
       <button 
         @click="searchIndexedDB"
         class="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded text-sm"
@@ -297,7 +337,7 @@
       <div v-else-if="searchPerformed && !foundData.hasData" class="mt-4 text-red-400 text-sm font-mono">
         no data found
       </div>
-    </div> -->
+    </div> 
 
     </div>
 
@@ -325,6 +365,7 @@ import { useUltimaStore } from '@/store/ultimaStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useSyncStore } from '@/store/syncStore';
 import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
+// import { useFAQStore } from '@/store/faqStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 import { 
@@ -342,7 +383,9 @@ import {
   IconInfoCircle,
   IconCircleCheck,
   IconRefresh,
-  IconCode
+  IconCode,
+  IconAdjustments,
+  IconQuestionMark
 } from '@tabler/icons-vue';
 
 // Stores
@@ -353,6 +396,7 @@ const ultimaStore = useUltimaStore();
 const gemPlannerStore = useGemPlannerStore();
 const syncStore = useSyncStore();
 const inscryptionPlannerStore = useInscryptionPlannerStore();
+// const faqStore = useFAQStore();
 const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBackupRestore();
 
 // UI State
@@ -723,27 +767,27 @@ async function resetAllData() {
     localStorage.clear();
 
     // Ultima Defaults zurücksetzen
-    ultimaStore.currentLevels = {
-      cells: 0,
-      mp: 0,
-      shards: 0,
-      rp: 0,
-      ap: 0,
-      mats: 0,
-      loot: 0
-    };
-    ultimaStore.targetLevels = { ...ultimaStore.currentLevels };
-    ultimaStore.trCount = 0;
+    // ultimaStore.currentLevels = {
+    //   cells: 0,
+    //   mp: 0,
+    //   shards: 0,
+    //   rp: 0,
+    //   ap: 0,
+    //   mats: 0,
+    //   loot: 0
+    // };
+    // ultimaStore.targetLevels = { ...ultimaStore.currentLevels };
+    // ultimaStore.trCount = 0;
 
-    ultimaStore.upgradeConfigs = {
-      cells: { minTR: 1, base: 100, baseIncrease: 2 },
-      mp: { minTR: 2, base: 200, baseIncrease: 2 },
-      shards: { minTR: 3, base: 200, baseIncrease: 2 },
-      rp: { minTR: 4, base: 200, baseIncrease: 2 },
-      ap: { minTR: 10, base: 200, baseIncrease: 2 },
-      mats: { minTR: 11, base: 300, baseIncrease: 3 },
-      loot: { minTR: 12, base: 800, baseIncrease: 8 }
-    };
+    // ultimaStore.upgradeConfigs = {
+    //   cells: { minTR: 1, base: 100, baseIncrease: 2 },
+    //   mp: { minTR: 2, base: 200, baseIncrease: 2 },
+    //   shards: { minTR: 3, base: 200, baseIncrease: 2 },
+    //   rp: { minTR: 4, base: 200, baseIncrease: 2 },
+    //   ap: { minTR: 10, base: 200, baseIncrease: 2 },
+    //   mats: { minTR: 11, base: 300, baseIncrease: 3 },
+    //   loot: { minTR: 12, base: 800, baseIncrease: 8 }
+    // };
     
     // 3. Alle IndexedDB Datenbanken finden und löschen
     console.log('Clearing IndexedDB...');
