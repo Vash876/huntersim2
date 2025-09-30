@@ -19,6 +19,8 @@ export declare enum HunterType {
   OZZY,
   /** @type `i32` */
   KNOX,
+  /** @type `i32` */
+  UNKNOWN,
 }
 /**
  * assembly/index/getWasmBuildTimestamp

@@ -9,7 +9,7 @@ function ck(chance: f64): boolean {
   return chance > 0 && chance > random();
 }
 
-// Multi-Funktion für Knox 
+// Multi-Funktion für Knox Enemies 
 function knoxMulti(enemyNum: i32): f64 {
   return Math.max(1, 1 + (enemyNum - 49) * 0.006 +
     Math.max(0, (enemyNum - 99) * 0.006) +

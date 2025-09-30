@@ -232,7 +232,8 @@ export {
 export enum HunterType {
   BORGE = 0,
   OZZY = 1,
-  KNOX = 2
+  KNOX = 2,
+  UNKNOWN = 99
 }
 
 export function getWasmBuildTimestamp(): i32 {

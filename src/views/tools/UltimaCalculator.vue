@@ -17,7 +17,7 @@
             <div class="flex items-center space-x-3">
               <!-- TR Count TRValueControls -->
               <TRValueControls
-                :value="ultimaStore.trCount || 54"
+                :value="ultimaStore.trCount || 0"
                 :maxValue="999"
                 :minValue="1"
                 :step="1"

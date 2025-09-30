@@ -22,6 +22,7 @@ async function instantiate(module, imports = {}) {
       values[values.BORGE = exports["HunterType.BORGE"].valueOf()] = "BORGE",
       values[values.OZZY = exports["HunterType.OZZY"].valueOf()] = "OZZY",
       values[values.KNOX = exports["HunterType.KNOX"].valueOf()] = "KNOX",
+      values[values.UNKNOWN = exports["HunterType.UNKNOWN"].valueOf()] = "UNKNOWN",
       values
     ))({}),
     getLastProgressString() {
