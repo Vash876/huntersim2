@@ -37,6 +37,9 @@ export const useHunterStore = defineStore('hunter', () => {
   // Pending Build Import - für Cross-Navigation Build Transfer
   const pendingBuildImport = ref(null);
 
+  // Hunter Level Settings - für Advanced Talents Toggle
+  const hunterLevelSettings = ref({});
+
   /**
    * Generiert die initiale Upgrades-Struktur basierend auf den UPGRADES-Konstanten
    * @param {Object} upgradesConfig - Die UPGRADES-Konstante
@@ -313,6 +316,9 @@ export const useHunterStore = defineStore('hunter', () => {
     
     // Füge den Build hinzu
     hunterBuilds.value[hunterId].push(build);
+
+    // Scanne nach höchstem Level nach Build-Hinzufügung
+    scanBuildsForHighestLevel(hunterId);
     
     // Die Persistenz wird durch Pinia's persist-Plugin automatisch gehandhabt
     
@@ -347,6 +353,9 @@ export const useHunterStore = defineStore('hunter', () => {
       // Build existiert nicht, füge ihn hinzu (für den Fall eines geklonten Builds)
       addBuild(hunterId, updatedBuild);
     }
+
+    // Scanne nach höchstem Level nach Build-Update
+    scanBuildsForHighestLevel(hunterId);
     
     return true;
   }
@@ -918,12 +927,17 @@ async function initHunterConfig(hunterId) {
     hunterSeedSettings.value[hunterId] = true;
   }
   
+  // Initialisiere Hunter Level Settings und scanne vorhandene Builds
+  initHunterLevelSettings(hunterId);
+  scanBuildsForHighestLevel(hunterId);
+  
   return { 
     hunterStats: hunterStats.value, 
     upgrades: upgrades.value, 
     hunterBuilds: hunterBuilds.value, 
     hunterIterations: hunterIterations.value,
-    hunterSeedSettings: hunterSeedSettings.value
+    hunterSeedSettings: hunterSeedSettings.value,
+    hunterLevelSettings: hunterLevelSettings.value
   };
 }
 
@@ -965,6 +979,143 @@ function getPendingBuildImport() {
 
 function clearPendingBuildImport() {
   pendingBuildImport.value = null;
+}
+
+// Hunter Level Settings Funktionen
+/**
+ * Initialisiert die Level-Einstellungen für einen Hunter falls noch nicht vorhanden
+ * @param {string} hunterId - Die ID des Hunters
+ */
+function initHunterLevelSettings(hunterId) {
+  if (!hunterId) return;
+  
+  if (!hunterLevelSettings.value[hunterId]) {
+    hunterLevelSettings.value[hunterId] = {
+      highestLevelReached: 0,
+      showAdvancedTalents: false,
+      manualOverride: false
+    };
+  }
+}
+
+/**
+ * Aktualisiert das höchste erreichte Level eines Hunters
+ * @param {string} hunterId - Die ID des Hunters
+ * @param {number} level - Das erreichte Level
+ */
+function updateHighestLevel(hunterId, level) {
+  if (!hunterId || typeof level !== 'number') return;
+  
+  initHunterLevelSettings(hunterId);
+  
+  const currentSettings = hunterLevelSettings.value[hunterId];
+  const currentHighest = currentSettings.highestLevelReached || 0;
+  
+  if (level > currentHighest) {
+    currentSettings.highestLevelReached = level;
+    
+    // Automatisch Advanced Talents aktivieren bei Level >= 70
+    if (level >= 70 && !currentSettings.manualOverride) {
+      currentSettings.showAdvancedTalents = true;
+    }
+  }
+}
+
+/**
+ * Scannt alle Builds eines Hunters nach dem höchsten Level
+ * @param {string} hunterId - Die ID des Hunters
+ */
+function scanBuildsForHighestLevel(hunterId) {
+  if (!hunterId) return;
+  
+  const builds = hunterBuilds.value[hunterId] || [];
+  let highestLevel = 0;
+  let hasUltimaTalent = false;
+  
+  builds.forEach(build => {
+    // Prüfe verschiedene Level-Quellen
+    let buildLevel = 0;
+    
+    // 1. Build overrides (höchste Priorität)
+    if (build.overrides && build.overrides.level) {
+      buildLevel = parseInt(build.overrides.level);
+    }
+    // 2. Direkte build data
+    else if (build.level) {
+      buildLevel = parseInt(build.level);
+    }
+    // 3. Hunter stats (als Fallback)
+    else if (hunterStats.value[hunterId] && hunterStats.value[hunterId].level) {
+      buildLevel = parseInt(hunterStats.value[hunterId].level);
+    }
+    
+    if (buildLevel > highestLevel) {
+      highestLevel = buildLevel;
+    }
+    
+    // KRITISCH: Prüfe ob irgendein Build das Ultima Talent verwendet
+    // Wenn ja, aktiviere automatisch Advanced Talents unabhängig vom Level
+    if (build.talents && build.talents.ultima && build.talents.ultima > 0) {
+      hasUltimaTalent = true;
+    }
+    
+    // Prüfe auch in Overrides nach Ultima
+    if (build.overrides && build.overrides['talents.ultima'] && build.overrides['talents.ultima'] > 0) {
+      hasUltimaTalent = true;
+    }
+  });
+  
+  if (highestLevel > 0) {
+    updateHighestLevel(hunterId, highestLevel);
+  }
+  
+  // SICHERHEITSMASCHNAHME: Wenn Ultima Talent verwendet wird, automatisch aktivieren
+  if (hasUltimaTalent) {
+    const currentSettings = getHunterLevelSettings(hunterId);
+    if (!currentSettings.showAdvancedTalents) {
+      console.log(`[SAFETY] Activating advanced talents for ${hunterId} - Ultima talent detected in builds`);
+      toggleAdvancedTalents(hunterId, true);
+    }
+  }
+}
+
+/**
+ * Manueller Toggle der Advanced Talents Sichtbarkeit
+ * @param {string} hunterId - Die ID des Hunters
+ * @param {boolean} show - Ob Advanced Talents angezeigt werden sollen
+ */
+function toggleAdvancedTalents(hunterId, show) {
+  if (!hunterId) return;
+  
+  initHunterLevelSettings(hunterId);
+  
+  const settings = hunterLevelSettings.value[hunterId];
+  settings.showAdvancedTalents = show;
+  settings.manualOverride = true; // Markiere als manuell überschrieben
+}
+
+/**
+ * Gibt die Level-Einstellungen für einen Hunter zurück
+ * @param {string} hunterId - Die ID des Hunters
+ * @returns {Object} Die Level-Einstellungen
+ */
+function getHunterLevelSettings(hunterId) {
+  if (!hunterId) return null;
+  
+  initHunterLevelSettings(hunterId);
+  return hunterLevelSettings.value[hunterId];
+}
+
+/**
+ * Prüft ob Advanced Talents für einen Hunter angezeigt werden sollen
+ * @param {string} hunterId - Die ID des Hunters
+ * @returns {boolean} Ob Advanced Talents angezeigt werden sollen
+ */
+function shouldShowAdvancedTalents(hunterId) {
+  if (!hunterId) return false;
+  
+  const settings = getHunterLevelSettings(hunterId);
+  return settings ? settings.showAdvancedTalents : false;
 }
 
 
@@ -1039,7 +1190,15 @@ function clearPendingBuildImport() {
     // Pending Build Import Funktionen
     setPendingBuildImport,
     getPendingBuildImport,
-    clearPendingBuildImport
+    clearPendingBuildImport,
+
+    // Hunter Level Settings Funktionen
+    initHunterLevelSettings,
+    updateHighestLevel,
+    scanBuildsForHighestLevel,
+    toggleAdvancedTalents,
+    getHunterLevelSettings,
+    shouldShowAdvancedTalents
   };
 }, {
   persist: {
@@ -1054,7 +1213,8 @@ function clearPendingBuildImport() {
       'evaluationCache', 
       'displaySettings',
       'hunterSeedSettings',
-      'bossKillsByReviveCache'
+      'bossKillsByReviveCache',
+      'hunterLevelSettings'
     ]
   }
 });

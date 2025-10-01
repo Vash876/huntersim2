@@ -897,7 +897,7 @@ import { useLootIcons } from '../../composables/useLootIcons';
 import { useHunterStore } from '../../store/hunterStore';
 import { getHunterById } from '../../constants/hunters';
 import { UPGRADES } from '../../constants/upgrades';
-import { calcCostDifference, formatCost } from '../../utils/statCostUtils';
+import { calcCostDifference, calcKnoxSalvoCostDifference, formatCost } from '../../utils/statCostUtils';
 import { calcRelicCostDifference } from '../../utils/relicCostUtils';
 import { calcGadgetCostDifference } from '../../utils/gadgetCostUtils';
 import { calcInscryptionCostDifference } from '../../utils/inscryptionCostUtils';
@@ -1239,6 +1239,9 @@ function calculateScenarioCost(scenarioIndex) {
         const inscryptionId = upgrade.key.split('.')[2]; // Extrahiert 'i80'
         
         totalCost += calcInscryptionCostDifference(inscryptionId, baseValue, baseValue + incrementValue);
+      } else if (upgrade.key === 'proj' && props.hunterId === 'knox') {
+        // Knox Salvo Multi-Currency-Kosten
+        totalCost += calcKnoxSalvoCostDifference(baseValue, baseValue + incrementValue, currency);
       } else {
         // Stat-Kosten (basierend auf statCostUtils)
         totalCost += calcCostDifference(
@@ -1648,6 +1651,10 @@ function getNextUpgradeCost(key, scenarioIndex = -1) {
     const inscryptionId = key.split('.')[2]; // Extrahiert 'i80'
     
     return calcInscryptionCostDifference(inscryptionId, currentValue, currentValue + 1);
+  } else if (key === 'proj' && props.hunterId === 'knox') {
+    // Knox Salvo Multi-Currency-Kosten - wir müssen die aktuell ausgewählte Währung verwenden
+    const currency = selectedCurrency.value;
+    return calcKnoxSalvoCostDifference(currentValue, currentValue + 1, currency);
   } else {
     // Stat-Kosten (basierend auf statCostUtils)
     return calcCostDifference(

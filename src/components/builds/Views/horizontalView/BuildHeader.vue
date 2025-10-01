@@ -44,14 +44,15 @@
             </span>
             
             <!-- Neuer Overrides-Tag - nur anzeigen wenn Overrides aktiv sind -->
-            <span 
+            <button 
               v-if="hasOverrides" 
-              class="ml-2 text-xs px-2 py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center"
-              title="Build uses custom overrides"
+              @click="emit('overrideCosts')"
+              class="ml-2 text-xs px-2 py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center hover:bg-blue-900/70 transition-colors cursor-pointer"
+              title="View override costs"
             >
               <IconAdjustmentsHorizontal size="12" class="mr-1" />
               Overrides
-            </span>
+            </button>
             
             <span v-if="buildData.isArchived" class="ml-2 text-xs px-2 py-0.5 bg-gray-700/50 rounded-full text-gray-300 whitespace-nowrap">
               Archived
@@ -162,7 +163,7 @@ const props = defineProps({
 const emit = defineEmits([
   'edit', 'clone', 'archive', 'delete', 
   'overridesBuild', 'showCode', 'showDistribution',
-  'nameChanged', 'upgradeComparison', 'reevaluate'
+  'nameChanged', 'upgradeComparison', 'reevaluate', 'overrideCosts'
 ]);
 
 // Name editing state

@@ -148,6 +148,8 @@ export const NAVIGATION = {
       path: '/ozzy',
       icon: IconProng,
       color: 'green',
+      unlock: 'exodus',
+      unlock_lvl: 2,
     },
     {
       id: 'knox',
@@ -155,6 +157,8 @@ export const NAVIGATION = {
       path: '/knox',
       icon: IconAnchor,
       color: 'blue',
+      unlock: 'exodus',
+      unlock_lvl: 4,
     }
   ],
   
@@ -215,12 +219,16 @@ export const NAVIGATION = {
           id: 'gadgetcalculator',
           name: 'Gadget Planner',
           path: '/tools/gadget-calculator',
+          unlock: 'exodus',
+          unlock_lvl: 4,
           icon: IconTool
         },
         {
           id: 'mechplanner',
           name: 'Mech Planner',
           path: '/tools/mech-planner',
+          unlock: 'exodus',
+          unlock_lvl: 2,
           icon: IconRobot
         },
         {
@@ -245,6 +253,9 @@ export const NAVIGATION = {
           id: 'attgn3calculator',
           name: 'AttGN#3 Calculator',
           path: '/tools/attgn3-calculator',
+          unlock: 'attraction',
+          unlock_lvl: 1,
+          unlock_node: 3,
           icon: IconAbacus
         },
         {

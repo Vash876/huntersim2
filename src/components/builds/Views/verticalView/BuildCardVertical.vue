@@ -21,6 +21,7 @@
       @showUploadDialog="showUploadDialog = true" 
       @upgradeComparison="handleUpgradeComparison"
       @liveSimulation="showLiveSimulationModal = true"
+      @overrideCosts="showOverrideCostsModal = true"
     />
     
     <div class="p-4 pb-3">
@@ -132,6 +133,15 @@
         @applyOverrides="handleApplyUpgradeOverrides"
       />
 
+      <!-- Override Costs Modal -->
+      <OverrideCostsModal
+        v-if="showOverrideCostsModal"
+        :isVisible="showOverrideCostsModal"
+        :hunterId="props.hunterId"
+        :buildData="{...buildData, results}"
+        @close="showOverrideCostsModal = false"
+      />
+
       <!-- Live Simulation Modal -->
       <LiveSimulationModal
         v-if="showLiveSimulationModal"
@@ -160,6 +170,7 @@ import BuildBossStats from './BuildBossStats.vue';
 import BuildCodeModal from '../../BuildCodeModal.vue';
 import StatisticsModal from '@/components/common/StatisticsModal.vue'; 
 import UpgradeComparisonModal from '@/components/common/UpgradeComparisonModal.vue';
+import OverrideCostsModal from '@/components/common/OverrideCostsModal.vue';
 import LiveSimulationModal from '@/components/common/LiveSimulationModal.vue';
 
 // Props
@@ -184,6 +195,7 @@ const showCodeModal = ref(false);
 const showDistributionModal = ref(false);
 const showUploadDialog = ref(false);
 const showUpgradeComparisonModal = ref(false);
+const showOverrideCostsModal = ref(false);
 const showLiveSimulationModal = ref(false);
 
 // Build-Evaluierung mit dem Composable

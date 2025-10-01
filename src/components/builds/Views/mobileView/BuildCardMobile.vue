@@ -60,13 +60,14 @@
               </span>
 
               <!-- Overrides Badge - nur anzeigen wenn Overrides aktiv sind -->
-              <span 
+              <button 
                 v-if="hasOverrides" 
-                class="text-xs pl-2 pr-1 py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center"
-                title="Build uses custom overrides"
+                @click="showOverrideCostsModal = true"
+                class="text-xs pl-2 pr-1 py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center hover:bg-blue-900/70 transition-colors cursor-pointer"
+                title="View override costs"
               >
                 <IconAdjustmentsHorizontal size="12" class="mr-1" />
-              </span>
+              </button>
 
               <!-- Level Tag -->
               <span class="text-xs bg-gray-700/50 px-2 py-0.5 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">
@@ -570,6 +571,15 @@
       @close="showUpgradeComparisonModal = false"
       @applyOverrides="handleApplyUpgradeOverrides"
     />
+
+    <!-- Override Costs Modal -->
+    <OverrideCostsModal
+      v-if="showOverrideCostsModal"
+      :isVisible="showOverrideCostsModal"
+      :hunterId="props.hunterId"
+      :buildData="{...buildData, results}"
+      @close="showOverrideCostsModal = false"
+    />
   </div>
 </template>
 
@@ -596,6 +606,7 @@ import {
 import BuildCodeModal from '../../BuildCodeModal.vue';
 import StatisticsModal from '@/components/common/StatisticsModal.vue';
 import UpgradeComparisonModal from '@/components/common/UpgradeComparisonModal.vue';
+import OverrideCostsModal from '@/components/common/OverrideCostsModal.vue';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
 
 // Props
@@ -621,6 +632,7 @@ const showCodeModal = ref(false);
 const showDeleteConfirm = ref(false);
 const showDistributionModal = ref(false);
 const showUpgradeComparisonModal = ref(false);
+const showOverrideCostsModal = ref(false);
 
 // Name editing state
 const isEditingName = ref(false);

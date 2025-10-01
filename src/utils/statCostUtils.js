@@ -321,6 +321,43 @@ function calcATKSpeed(level, hunterType) {
   }
 }
 
+/**
+ * Berechnung der Knox Salvo (Projectiles Per Salvo) Multi-Currency-Kosten
+ * Salvo kostet alle drei Ressourcen mit exponentieller Steigerung:
+ * Level 0→1: 80, 120, 90
+ * Level 1→2: 80k, 120k, 90k (×1000)
+ * Level 2→3: 80m, 120m, 90m (×1000²)
+ * Level 3→4: 80b, 120b, 90b (×1000³)
+ */
+function calcKnoxSalvo(level, currencyType) {
+  if (level <= 0) return 0;
+  
+  const baseCosts = {
+    mat1: 80,    // Glacium
+    mat2: 120,   // Quartz  
+    mat3: 90     // Tesseracts
+  };
+  
+  const baseCost = baseCosts[currencyType];
+  if (!baseCost) return 0;
+  
+  // Exponentielles Wachstum: baseCost × 1000^(level-1)
+  return baseCost * Math.pow(1000, level - 1);
+}
+
+/**
+ * Berechnet die Knox Salvo Kostenunterschiede für eine spezifische Währung
+ */
+function calcKnoxSalvoCostDifference(fromLevel, toLevel, currencyType) {
+  if (toLevel <= fromLevel) return 0;
+  
+  let totalCost = 0;
+  for (let i = fromLevel + 1; i <= toLevel; i++) {
+    totalCost += calcKnoxSalvo(i, currencyType);
+  }
+  return totalCost;
+}
+
 
 
 /**
@@ -378,6 +415,13 @@ function calcCost(statKey, level, hunterType) {
     return calcATKSpeed(level, hunterType);
   }
   
+  // Knox Salvo (Multi-Currency) - special handling
+  else if (statKey === 'proj' && hunterType === 'knox') {
+    // For Knox salvo, we need to specify which currency we want
+    // This will be handled specially in the cost calculation
+    return 0; // Return 0 here, actual calculation done in calcKnoxSalvoCostDifference
+  }
+  
   // Unbekannter Stat
   return 0;
 }
@@ -388,10 +432,16 @@ function calcCost(statKey, level, hunterType) {
  * @param {number} fromLevel - Das Ausgangslevel
  * @param {number} toLevel - Das Ziellevel
  * @param {string} hunterType - Der Hunter-Typ ('borge', 'ozzy', 'knox')
+ * @param {string} currencyType - Für Multi-Currency Upgrades (optional)
  * @returns {number} - Der Kostenunterschied (0 wenn toLevel <= fromLevel)
  */
-function calcCostDifference(statKey, fromLevel, toLevel, hunterType) {
+function calcCostDifference(statKey, fromLevel, toLevel, hunterType, currencyType = null) {
   if (toLevel <= fromLevel) return 0;
+  
+  // Special handling for Knox Salvo
+  if (statKey === 'proj' && hunterType === 'knox' && currencyType) {
+    return calcKnoxSalvoCostDifference(fromLevel, toLevel, currencyType);
+  }
   
   let totalCost = 0;
   for (let i = fromLevel + 1; i <= toLevel; i++) {
@@ -428,4 +478,4 @@ function formatCost(value) {
   return `${scaledValue.toFixed(2)}${suffix}`;
 }
 
-export { calcCost, calcCostDifference, formatCost };
+export { calcCost, calcCostDifference, formatCost, calcKnoxSalvoCostDifference };

@@ -12,13 +12,14 @@
     </div>
 
     <!-- Floating Override Badge - rechts oben über dem Header -->
-    <div 
+    <button 
       v-if="hasOverrides" 
-      class="absolute top-1.5 right-2 z-10 bg-blue-500/50 text-white rounded-full p-1 shadow-lg transition-colors"
-      title="Build uses custom overrides"
+      @click="emit('overrideCosts')"
+      class="absolute top-1.5 right-2 z-10 bg-blue-500/50 text-white rounded-full p-1 shadow-lg transition-colors hover:bg-blue-500/70 cursor-pointer"
+      title="View override costs"
     >
       <IconAdjustments size="14" class="text-blue-300" />
-    </div>
+    </button>
     
     <!-- Floating Refresh Button - unter dem Override Badge -->
     <button 
@@ -169,7 +170,7 @@ const props = defineProps({
 const emit = defineEmits([
   'edit', 'clone', 'archive', 'delete', 'nameChanged', 
   'overrides', 'share', 'reevaluate', 'showDistribution', 
-  'showUploadDialog', 'upgradeComparison', 'liveSimulation'
+  'showUploadDialog', 'upgradeComparison', 'liveSimulation', 'overrideCosts'
 ]);
 
 const isEditingName = ref(false);

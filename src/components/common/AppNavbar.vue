@@ -433,6 +433,67 @@ const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBa
 const navigation = computed(() => {
   const filteredNavigation = { ...NAVIGATION };
   
+  // Filter hunters basierend auf Gem-Unlock-Bedingungen
+  filteredNavigation.hunters = NAVIGATION.hunters.filter(hunter => {
+    // Prüfe ob der Hunter Unlock-Bedingungen hat
+    if (!hunter.unlock || !hunter.unlock_lvl) {
+      return true; // Zeige Hunter ohne Unlock-Bedingungen immer an
+    }
+
+    // Hole den Gem-Status
+    const gemState = gemPlannerStore.getGemState(hunter.unlock);
+    if (!gemState) {
+      return false; // Gem existiert nicht
+    }
+
+    // Prüfe Gem-Level
+    if (gemState.level < hunter.unlock_lvl) {
+      return false; // Gem-Level zu niedrig
+    }
+
+    // Prüfe Gem-Node (falls angegeben)
+    if (hunter.unlock_node !== undefined) {
+      const nodeIndex = hunter.unlock_node - 1; // Node 5 = Index 4
+      if (!gemState.nodes || !gemState.nodes[nodeIndex]) {
+        return false; // Node nicht aktiviert
+      }
+    }
+
+    return true; // Alle Bedingungen erfüllt
+  });
+  
+  // Filter toolCategories
+  filteredNavigation.toolCategories = NAVIGATION.toolCategories.map(category => ({
+    ...category,
+    tools: category.tools.filter(tool => {
+      // Prüfe ob das Tool Unlock-Bedingungen hat
+      if (!tool.unlock || !tool.unlock_lvl) {
+        return true; // Zeige Tools ohne Unlock-Bedingungen immer an
+      }
+
+      // Hole den Gem-Status
+      const gemState = gemPlannerStore.getGemState(tool.unlock);
+      if (!gemState) {
+        return false; // Gem existiert nicht
+      }
+
+      // Prüfe Gem-Level
+      if (gemState.level < tool.unlock_lvl) {
+        return false; // Gem-Level zu niedrig
+      }
+
+      // Prüfe Gem-Node (falls angegeben) - besonders wichtig für AttGN#3 Calculator
+      if (tool.unlock_node !== undefined) {
+        const nodeIndex = tool.unlock_node - 1; // Node 3 = Index 2
+        if (!gemState.nodes || !gemState.nodes[nodeIndex]) {
+          return false; // Node nicht aktiviert
+        }
+      }
+
+      return true; // Alle Bedingungen erfüllt
+    })
+  }));
+  
   // Filter upgradeCategories
   filteredNavigation.upgradeCategories = NAVIGATION.upgradeCategories.map(category => ({
     ...category,

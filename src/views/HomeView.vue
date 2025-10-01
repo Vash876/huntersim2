@@ -2,6 +2,27 @@
 const changelog = 
 [
   {
+    version: '2.8.10',
+    date: '2025-10-01',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Implemented dynamic max level for Borge Lucky Loot based on available gem upgrades',
+          'Ultima talent is now hidden for builds under level 70, auto detects if builds are Lvl70+ and shows Ultima talent accordingly',
+          'Added new Override Costs Modal for detailed cost analysis and collection time calculations (click on Override Badge)',
+        ]
+      },
+      {
+        text: 'Navigation',
+        subItems: [
+          'Hunters are now hidden until the corresponding Gem levels are unlocked',
+          'Tools section now respects gem unlock conditions - advanced tools are hidden until their required gems are available',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.8.9',
     date: '2025-09-29',
     changes: [

@@ -127,111 +127,126 @@
           <h3 class="text-white font-medium py-2 border-b border-gray-600">Talents</h3>
           
           <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 mt-3">
-            <div 
+            <template 
               v-for="talent in talents" 
-              :key="talent.key" 
-              class="bg-gray-700 rounded-lg p-2 border border-gray-600 hover:border-gray-500 transition-colors"
+              :key="talent.key"
             >
-              <!-- Desktop Layout -->
-              <div class="hidden md:block">
-                <div class="flex justify-between items-center mb-2">
-                  <span class="text-xs sm:text-sm font-medium text-white">{{ talent.label }}</span>
-                  <div class="flex items-center">
-                    <span :class="`text-base font-bold text-${hunterColor}-400`">
-                      {{ buildData.talents[talent.key] || 0 }}
-                    </span>
-                    <span class="text-xs text-gray-500 ml-1">
-                      /{{ talent.max }}
-                    </span>
+              <!-- Sichtbares Talent -->
+              <div 
+                v-if="isTalentVisible(talent)"
+                class="bg-gray-700 rounded-lg p-2 border border-gray-600 hover:border-gray-500 transition-colors"
+              >
+                <!-- Desktop Layout -->
+                <div class="hidden md:block">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs sm:text-sm font-medium text-white">{{ talent.label }}</span>
+                    <div class="flex items-center">
+                      <span :class="`text-base font-bold text-${hunterColor}-400`">
+                        {{ buildData.talents[talent.key] || 0 }}
+                      </span>
+                      <span class="text-xs text-gray-500 ml-1">
+                        /{{ getTalentMaxValue(talent) }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Desktop Controls -->
+                  <div class="flex items-center justify-between mt-2">
+                    <ControlButton 
+                      direction="left"
+                      :isFast="false"
+                      :item="getTalentItem(talent)"
+                      :getLevel="getTalentLevel"
+                      :handleStart="handleStart"
+                      :handleEnd="handleEnd"
+                      :handleTouchMove="handleTouchMove"
+                      :increment="increment"
+                      :decrement="decrement"
+                      :incrementFast="incrementFast"
+                      :decrementFast="decrementFast"
+                    />
+
+                    <ProgressBar 
+                      :value="buildData.talents[talent.key] || 0"
+                      :maxValue="getTalentMaxValue(talent)"
+                      :color="hunterColor"
+                      class="flex-1 mx-1.5 h-5"
+                    />
+
+                    <ControlButton 
+                      direction="right"
+                      :isFast="false"
+                      :item="getTalentItem(talent)"
+                      :getLevel="getTalentLevel"
+                      :handleStart="handleStart"
+                      :handleEnd="handleEnd"
+                      :handleTouchMove="handleTouchMove"
+                      :increment="increment"
+                      :decrement="decrement"
+                      :incrementFast="incrementFast"
+                      :decrementFast="decrementFast"
+                    />
                   </div>
                 </div>
+                
+                <!-- Mobile Layout -->
+                <div class="md:hidden">
+                  <span class="text-xs font-medium text-white block mb-1">{{ talent.label }}</span>
+                  
+                  <!-- Mobile Controls -->
+                  <div class="flex items-center justify-between mt-2">
+                    <ControlButton 
+                      direction="left"
+                      :isFast="false"
+                      :item="getTalentItem(talent)"
+                      :getLevel="getTalentLevel"
+                      :handleStart="handleStart"
+                      :handleEnd="handleEnd"
+                      :handleTouchMove="handleTouchMove"
+                      :increment="increment"
+                      :decrement="decrement"
+                      :incrementFast="incrementFast"
+                      :decrementFast="decrementFast"
+                      size="small"
+                    />
 
-                <!-- Desktop Controls -->
-                <div class="flex items-center justify-between mt-2">
-                  <ControlButton 
-                    direction="left"
-                    :isFast="false"
-                    :item="getTalentItem(talent)"
-                    :getLevel="getTalentLevel"
-                    :handleStart="handleStart"
-                    :handleEnd="handleEnd"
-                    :handleTouchMove="handleTouchMove"
-                    :increment="increment"
-                    :decrement="decrement"
-                    :incrementFast="incrementFast"
-                    :decrementFast="decrementFast"
-                  />
+                    <div class="flex items-center justify-center">
+                      <span :class="`text-base font-bold text-${hunterColor}-400 pr-1`">
+                        {{ buildData.talents[talent.key] || 0 }}
+                      </span>
+                      <span class="text-xs text-gray-500">
+                        /{{ getTalentMaxValue(talent) }}
+                      </span>
+                    </div>
 
-                  <ProgressBar 
-                    :value="buildData.talents[talent.key] || 0"
-                    :maxValue="talent.max"
-                    :color="hunterColor"
-                    class="flex-1 mx-1.5 h-5"
-                  />
-
-                  <ControlButton 
-                    direction="right"
-                    :isFast="false"
-                    :item="getTalentItem(talent)"
-                    :getLevel="getTalentLevel"
-                    :handleStart="handleStart"
-                    :handleEnd="handleEnd"
-                    :handleTouchMove="handleTouchMove"
-                    :increment="increment"
-                    :decrement="decrement"
-                    :incrementFast="incrementFast"
-                    :decrementFast="decrementFast"
-                  />
+                    <ControlButton 
+                      direction="right"
+                      :isFast="false"
+                      :item="getTalentItem(talent)"
+                      :getLevel="getTalentLevel"
+                      :handleStart="handleStart"
+                      :handleEnd="handleEnd"
+                      :handleTouchMove="handleTouchMove"
+                      :increment="increment"
+                      :decrement="decrement"
+                      :incrementFast="incrementFast"
+                      :decrementFast="decrementFast"
+                      size="small"
+                    />
+                  </div>
                 </div>
               </div>
               
-              <!-- Mobile Layout -->
-              <div class="md:hidden">
-                <span class="text-xs font-medium text-white block mb-1">{{ talent.label }}</span>
-                
-                <!-- Mobile Controls -->
-                <div class="flex items-center justify-between mt-2">
-                  <ControlButton 
-                    direction="left"
-                    :isFast="false"
-                    :item="getTalentItem(talent)"
-                    :getLevel="getTalentLevel"
-                    :handleStart="handleStart"
-                    :handleEnd="handleEnd"
-                    :handleTouchMove="handleTouchMove"
-                    :increment="increment"
-                    :decrement="decrement"
-                    :incrementFast="incrementFast"
-                    :decrementFast="decrementFast"
-                    size="small"
-                  />
-
-                  <div class="flex items-center justify-center">
-                    <span :class="`text-base font-bold text-${hunterColor}-400 pr-1`">
-                      {{ buildData.talents[talent.key] || 0 }}
-                    </span>
-                    <span class="text-xs text-gray-500">
-                      /{{ talent.max }}
-                    </span>
-                  </div>
-
-                  <ControlButton 
-                    direction="right"
-                    :isFast="false"
-                    :item="getTalentItem(talent)"
-                    :getLevel="getTalentLevel"
-                    :handleStart="handleStart"
-                    :handleEnd="handleEnd"
-                    :handleTouchMove="handleTouchMove"
-                    :increment="increment"
-                    :decrement="decrement"
-                    :incrementFast="incrementFast"
-                    :decrementFast="decrementFast"
-                    size="small"
-                  />
-                </div>
+              <!-- Unsichtbares Talent - Platzhalter für Grid-Layout -->
+              <div 
+                v-else
+                class="bg-transparent"
+                style="visibility: hidden;"
+              >
+                <!-- Leerer Platzhalter mit gleicher Höhe wie ein normales Talent -->
+                <div class="h-16 md:h-20"></div>
               </div>
-            </div>
+            </template>
           </div>
         </div>
         
@@ -434,6 +449,7 @@ import { useButtonControls } from '../../utils/useButtonControls';
 import { IconX, IconPlus } from '@tabler/icons-vue';
 import { getHunterById, HUNTERS } from '../../constants/hunters';
 import { useHunterStore } from '../../store/hunterStore';
+import { useGemPlannerStore } from '../../store/gemPlannerStore';
 import OverrideModal from './OverrideModal.vue';
 
 // Props
@@ -457,6 +473,7 @@ const emit = defineEmits(['close', 'buildCreated', 'buildUpdated']);
 
 // Zentraler Hunter-Store
 const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Hunter-Information aus zentraler Konfiguration abrufen
 const hunterInfo = computed(() => getHunterById(props.hunterType));
@@ -466,6 +483,58 @@ const hunterColor = computed(() => hunterInfo.value.color);
 // Daten für Talente und Attribute
 const talents = ref([]);
 const attributes = ref([]);
+
+// Computed property für sichtbare Talents basierend auf isVisible Funktion
+const visibleTalents = computed(() => {
+  if (!talents.value || talents.value.length === 0) return [];
+  
+  // Context für isVisible Funktionen bereitstellen
+  const context = {
+    hunterStore,
+    gemPlannerStore,
+    hunterId: props.hunterType,
+    buildData: buildData.value
+  };
+  
+  return talents.value.filter(talent => {
+    // Wenn keine isVisible Funktion vorhanden ist, Talent anzeigen
+    if (typeof talent.isVisible !== 'function') {
+      return true;
+    }
+    
+    // isVisible Funktion ausführen
+    try {
+      return talent.isVisible(context);
+    } catch (error) {
+      console.warn(`Error checking visibility for talent ${talent.key}:`, error);
+      return true; // Bei Fehlern sicherheitshalber anzeigen
+    }
+  });
+});
+
+// Funktion um zu prüfen, ob ein einzelnes Talent sichtbar ist
+function isTalentVisible(talent) {
+  // Wenn keine isVisible Funktion vorhanden ist, Talent anzeigen
+  if (typeof talent.isVisible !== 'function') {
+    return true;
+  }
+  
+  // Context für isVisible Funktionen bereitstellen
+  const context = {
+    hunterStore,
+    gemPlannerStore,
+    hunterId: props.hunterType,
+    buildData: buildData.value
+  };
+  
+  // isVisible Funktion ausführen
+  try {
+    return talent.isVisible(context);
+  } catch (error) {
+    console.warn(`Error checking visibility for talent ${talent.key}:`, error);
+    return true; // Bei Fehlern sicherheitshalber anzeigen
+  }
+}
 const attributeDependencies = ref({});
 const attributeMinValues = ref({});
 
@@ -564,6 +633,21 @@ const isEditMode = computed(() => {
   return !!props.buildToEdit && !!buildData.value.id;
 });
 
+// Dynamische Max-Werte für Talents basierend auf Gem-Status
+function getTalentMaxValue(talent) {
+  // Wenn Talent eine getMaxValue Funktion hat, verwende diese
+  if (typeof talent.getMaxValue === 'function') {
+    const context = {
+      gemPlannerStore: gemPlannerStore,
+      buildOverrides: buildData.value.overrides || {}
+    };
+    return talent.getMaxValue(context);
+  }
+  
+  // Ansonsten statischen Max-Wert verwenden
+  return talent.max;
+}
+
 // Lädt die Hunter-spezifischen Daten
 async function loadHunterData() {
   try {
@@ -635,7 +719,9 @@ function initBuildData() {
 
 // Build-Level und Punkte berechnen
 const usedTalentPoints = computed(() => {
-  return Object.values(buildData.value.talents).reduce((sum, val) => sum + val, 0);
+  return visibleTalents.value.reduce((sum, talent) => {
+    return sum + (buildData.value.talents[talent.key] || 0);
+  }, 0);
 });
 
 const usedAttributePoints = computed(() => {
@@ -659,7 +745,7 @@ const maxAttributePoints = computed(() => calculatedLevel.value * 3);
 function getTalentItem(talent) {
   return {
     id: talent.key,
-    maxLevel: talent.max || Infinity
+    maxLevel: getTalentMaxValue(talent) || Infinity
   }
 }
 
@@ -673,7 +759,7 @@ function updateTalentLevel(talentKey, newLevel) {
   const talent = talents.value.find(t => t.key === talentKey);
   if (!talent) return;
   
-  const max = talent.max || Infinity;
+  const max = getTalentMaxValue(talent) || Infinity;
   buildData.value.talents[talentKey] = Math.min(Math.max(0, newLevel), max);
 }
 

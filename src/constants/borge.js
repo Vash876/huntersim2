@@ -17,9 +17,45 @@ export const TALENTS = [
   { key: 'ua', label: 'The Unfair Advantage', max: 5 },
   { key: 'impeccable', label: 'Impeccable Impacts', max: 10 },
   { key: 'omen', label: 'The Omen Of Defeat', max: 10 },
-  { key: 'll', label: 'Call Me Lucky Loot', max: 12 },
+  { 
+    key: 'll', 
+    label: 'Call Me Lucky Loot', 
+    max: 10,
+    getMaxValue: (context = {}) => {
+      // Check for Attraction Gem Node #2 in gem planner or build overrides
+      const gemPlannerState = context.gemPlannerStore?.gemStates?.attraction?.nodes?.[1]; // node index 1 = gem node 2
+      const buildOverride = context.buildOverrides?.['upgrades.gems_nodes.attraction_gem2'];
+      
+      // If Attraction Gem Node #2 is active (either in gem planner or build override)
+      if (gemPlannerState || buildOverride) {
+        return 12;
+      }
+      
+      return 10; // Default max value
+    }
+  },
   { key: 'pog', label: 'Presence Of A God', max: 15 },
-  { key: 'ultima', label: 'The Legacy of Ultima', max: 50 },
+  { 
+    key: 'ultima', 
+    label: 'The Legacy of Ultima', 
+    max: 50,
+    isVisible: (context) => {
+      if (!context || !context.hunterStore) {
+        // SICHERHEITS-FALLBACK: Bei fehlendem Context immer anzeigen
+        console.warn('[SAFETY] Missing context for Ultima talent visibility check - showing talent');
+        return true;
+      }
+      
+      // SICHERHEITS-FALLBACK: Wenn aktueller Build das Ultima Talent verwendet, immer anzeigen
+      if (context.buildData && context.buildData.talents && context.buildData.talents.ultima > 0) {
+        console.log('[SAFETY] Current build uses Ultima talent - showing talent');
+        return true;
+      }
+      
+      // Normale Logik: Prüfe die Advanced Talents Einstellung für Borge
+      return context.hunterStore.shouldShowAdvancedTalents('borge');
+    }
+  },
   { key: 'tfow', label: 'The Fires of War', max: 15 },
 ]
 
@@ -575,3 +611,22 @@ export const LOOT_ICONS = {
   mat3: mat3Icon,
   xp: xpIcon,
 };
+
+/**
+ * Gets the maximum value for a talent, considering dynamic adjustments
+ * @param {string} talentKey - The talent key
+ * @param {Object} context - Context object containing gem states and overrides
+ * @returns {number} Maximum value for the talent
+ */
+export function getTalentMaxValue(talentKey, context = {}) {
+  const talent = TALENTS.find(t => t.key === talentKey);
+  if (!talent) return null;
+  
+  // If talent has a getMaxValue function, use it
+  if (typeof talent.getMaxValue === 'function') {
+    return talent.getMaxValue(context);
+  }
+  
+  // Otherwise use static max property
+  return talent.max;
+}

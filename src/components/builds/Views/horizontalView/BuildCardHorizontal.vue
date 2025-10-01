@@ -23,6 +23,7 @@
         @showDistribution="showDistributionModal = true"
         @reevaluate="handleReevaluate"
         @upgradeComparison="handleUpgradeComparison" 
+        @overrideCosts="showOverrideCostsModal = true" 
       />
       
       <!-- Build-Ergebnisse (Loot, Statistiken) -->
@@ -72,6 +73,15 @@
       @close="showUpgradeComparisonModal = false"
       @applyOverrides="handleApplyUpgradeOverrides"
     />
+
+    <!-- Override Costs Modal -->
+    <OverrideCostsModal
+      v-if="showOverrideCostsModal"
+      :isVisible="showOverrideCostsModal"
+      :hunterId="props.hunterId"
+      :buildData="{...buildData, results}"
+      @close="showOverrideCostsModal = false"
+    />
   </div>
 </template>
 
@@ -85,6 +95,7 @@ import BuildLoot from './BuildLoot.vue';
 import BuildCodeModal from '../../BuildCodeModal.vue';
 import StatisticsModal from '@/components/common/StatisticsModal.vue';
 import UpgradeComparisonModal from '@/components/common/UpgradeComparisonModal.vue';
+import OverrideCostsModal from '@/components/common/OverrideCostsModal.vue';
 
 // Props definieren 
 const props = defineProps({
@@ -109,6 +120,7 @@ const buildElement = ref(null);
 const showCodeModal = ref(false);
 const showDistributionModal = ref(false);
 const showUpgradeComparisonModal = ref(false);
+const showOverrideCostsModal = ref(false);
 
 // Display settings
 const displaySettings = inject('displaySettings', ref({ 

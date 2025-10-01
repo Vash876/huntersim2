@@ -167,6 +167,156 @@
         </div>
       </div>
       
+      <!-- Hunter Level Settings Section -->
+      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-8">
+        <div class="header p-4 flex justify-between items-center">
+          <h3 class="text-lg font-semibold text-white flex items-center">
+            <IconShield size="20" class="mr-2 text-purple-400" />
+            Advanced Talents Settings
+          </h3>
+        </div>
+        
+        <div class="p-6">
+          <p class="text-gray-300 text-sm mb-6">
+            Advanced talents like "The Legacy of Ultima" are only available at Hunter Level 70+.
+            These settings control when those talents are shown to provide a beginner-friendly experience.
+          </p>
+          
+          <!-- Hunter Settings Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Borge Settings -->
+            <div class="bg-gray-900/50 rounded-lg border border-gray-700/30 p-4">
+              <div class="flex items-center gap-3 mb-4">
+                <img src="/src/assets/borge/hunter_small.png" alt="Borge" class="w-8 h-10 rounded-full">
+                <div>
+                  <h4 class="text-white font-medium">Borge</h4>
+                  <p class="text-xs text-gray-400">
+                    Highest Level: {{ getBorgeSettings.highestLevelReached || 0 }}
+                  </p>
+                </div>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-sm text-gray-300">Show Advanced Talents</span>
+                  <p class="text-xs text-gray-500 mt-1">
+                    {{ getBorgeSettings.highestLevelReached >= 70 ? 'Level 70+ reached - can toggle manually' : 'Manual toggle' }}
+                  </p>
+                </div>
+                <button 
+                  @click="toggleHunterAdvancedTalents('borge')"
+                  class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                  :class="{
+                    'bg-red-600': getBorgeSettings.showAdvancedTalents,
+                    'bg-gray-600': !getBorgeSettings.showAdvancedTalents
+                  }"
+                >
+                  <span 
+                    class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                    :class="{
+                      'translate-x-6': getBorgeSettings.showAdvancedTalents,
+                      'translate-x-1': !getBorgeSettings.showAdvancedTalents
+                    }"
+                  />
+                </button>
+              </div>
+            </div>
+
+            <!-- Ozzy Settings -->
+            <div class="bg-gray-900/50 rounded-lg border border-gray-700/30 p-4">
+              <div class="flex items-center gap-3 mb-4">
+                <img src="/src/assets/ozzy/hunter_small.png" alt="Ozzy" class="w-8 h-10 rounded-full">
+                <div>
+                  <h4 class="text-white font-medium">Ozzy</h4>
+                  <p class="text-xs text-gray-400">
+                    Highest Level: {{ getOzzySettings.highestLevelReached || 0 }}
+                  </p>
+                </div>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-sm text-gray-300">Show Advanced Talents</span>
+                  <p class="text-xs text-gray-500 mt-1">
+                    {{ getOzzySettings.highestLevelReached >= 70 ? 'Level 70+ reached - can toggle manually' : 'Manual toggle' }}
+                  </p>
+                </div>
+                <button 
+                  @click="toggleHunterAdvancedTalents('ozzy')"
+                  class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                  :class="{
+                    'bg-green-600': getOzzySettings.showAdvancedTalents,
+                    'bg-gray-600': !getOzzySettings.showAdvancedTalents
+                  }"
+                >
+                  <span 
+                    class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                    :class="{
+                      'translate-x-6': getOzzySettings.showAdvancedTalents,
+                      'translate-x-1': !getOzzySettings.showAdvancedTalents
+                    }"
+                  />
+                </button>
+              </div>
+            </div>
+
+            <!-- Knox Settings -->
+            <div class="bg-gray-900/50 rounded-lg border border-gray-700/30 p-4">
+              <div class="flex items-center gap-3 mb-4">
+                <img src="/src/assets/knox/hunter_small.png" alt="Knox" class="w-8 h-10 rounded-full">
+                <div>
+                  <h4 class="text-white font-medium">Knox</h4>
+                  <p class="text-xs text-gray-400">
+                    Highest Level: {{ getKnoxSettings.highestLevelReached || 0 }}
+                  </p>
+                </div>
+              </div>
+              
+              <div class="flex items-center justify-between">
+                <div>
+                  <span class="text-sm text-gray-300">Show Advanced Talents</span>
+                  <p class="text-xs text-gray-500 mt-1">
+                    {{ getKnoxSettings.highestLevelReached >= 70 ? 'Level 70+ reached - can toggle manually' : 'Manual toggle' }}
+                  </p>
+                </div>
+                <button 
+                  @click="toggleHunterAdvancedTalents('knox')"
+                  class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                  :class="{
+                    'bg-blue-600': getKnoxSettings.showAdvancedTalents,
+                    'bg-gray-600': !getKnoxSettings.showAdvancedTalents
+                  }"
+                >
+                  <span 
+                    class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                    :class="{
+                      'translate-x-6': getKnoxSettings.showAdvancedTalents,
+                      'translate-x-1': !getKnoxSettings.showAdvancedTalents
+                    }"
+                  />
+                </button>
+              </div>
+            </div> 
+          </div>
+          
+          <div class="mt-6 p-4 bg-gray-800/50 rounded-lg border border-gray-600/30">
+            <div class="flex items-start gap-3">
+              <IconInfoCircle size="16" class="text-blue-400 mt-0.5 flex-shrink-0" />
+              <div class="text-sm text-gray-300">
+                <p class="font-medium mb-1">How it works:</p>
+                <ul class="text-xs text-gray-400 space-y-1">
+                  <li>• Advanced talents are automatically shown when you reach Level 70 with any hunter</li>
+                  <li>• You can manually enable or disable this setting at any time</li>
+                  <li>• The setting persists even after reaching Level 70+</li>
+                  <li>• The highest level reached is detected from your existing builds</li>
+                  <li>• Each hunter has individual settings</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <!-- Reset Section -->
       <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
         <div class="header p-4 flex justify-between items-center">
@@ -305,7 +455,7 @@
         </div>
       </div>
     <!-- Emergency Data Recovery Tool -->
-    <div class="mt-8 text-center">
+    <!-- <div class="mt-8 text-center">
       <button 
         @click="searchIndexedDB"
         class="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded text-sm"
@@ -337,7 +487,7 @@
       <div v-else-if="searchPerformed && !foundData.hasData" class="mt-4 text-red-400 text-sm font-mono">
         no data found
       </div>
-    </div> 
+    </div>  -->
 
     </div>
 
@@ -357,7 +507,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useHunterStore } from '@/store/hunterStore';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
@@ -385,7 +535,8 @@ import {
   IconRefresh,
   IconCode,
   IconAdjustments,
-  IconQuestionMark
+  IconQuestionMark,
+  IconShield
 } from '@tabler/icons-vue';
 
 // Stores
@@ -437,7 +588,55 @@ onMounted(() => {
   // High Iterations Mode aus dem localStorage laden
   const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
   highIterationsEnabled.value = highIterationsMode === 'true';
+  
+  // Initialisiere Hunter Level Settings beim Start
+  hunterStore.initHunterLevelSettings('borge');
+  hunterStore.initHunterLevelSettings('ozzy');
+  hunterStore.initHunterLevelSettings('knox');
+  
+  // Scanne alle Hunter nach höchstem Level
+  hunterStore.scanBuildsForHighestLevel('borge');
+  hunterStore.scanBuildsForHighestLevel('ozzy');
+  hunterStore.scanBuildsForHighestLevel('knox');
 });
+
+// Computed properties für Hunter Level Settings
+const getBorgeSettings = computed(() => {
+  return hunterStore.getHunterLevelSettings('borge') || {
+    highestLevelReached: 0,
+    showAdvancedTalents: false,
+    manualOverride: false
+  };
+});
+
+const getOzzySettings = computed(() => {
+  return hunterStore.getHunterLevelSettings('ozzy') || {
+    highestLevelReached: 0,
+    showAdvancedTalents: false,
+    manualOverride: false
+  };
+});
+
+const getKnoxSettings = computed(() => {
+  return hunterStore.getHunterLevelSettings('knox') || {
+    highestLevelReached: 0,
+    showAdvancedTalents: false,
+    manualOverride: false
+  };
+});
+
+// Hunter Level Settings Funktionen
+function toggleHunterAdvancedTalents(hunterId) {
+  const currentSettings = hunterStore.getHunterLevelSettings(hunterId);
+  const newState = !currentSettings.showAdvancedTalents;
+  
+  hunterStore.toggleAdvancedTalents(hunterId, newState);
+  
+  // Toast anzeigen
+  const actionText = newState ? 'enabled' : 'disabled';
+  const hunterName = hunterId.charAt(0).toUpperCase() + hunterId.slice(1);
+  showToast(`Advanced talents ${actionText} for ${hunterName}`, 'success');
+}
 
 // Dialog-Funktionen
 function showDialog(options) {
@@ -765,29 +964,6 @@ async function resetAllData() {
     // 2. Kompletten localStorage löschen
     console.log('Clearing localStorage...');
     localStorage.clear();
-
-    // Ultima Defaults zurücksetzen
-    // ultimaStore.currentLevels = {
-    //   cells: 0,
-    //   mp: 0,
-    //   shards: 0,
-    //   rp: 0,
-    //   ap: 0,
-    //   mats: 0,
-    //   loot: 0
-    // };
-    // ultimaStore.targetLevels = { ...ultimaStore.currentLevels };
-    // ultimaStore.trCount = 0;
-
-    // ultimaStore.upgradeConfigs = {
-    //   cells: { minTR: 1, base: 100, baseIncrease: 2 },
-    //   mp: { minTR: 2, base: 200, baseIncrease: 2 },
-    //   shards: { minTR: 3, base: 200, baseIncrease: 2 },
-    //   rp: { minTR: 4, base: 200, baseIncrease: 2 },
-    //   ap: { minTR: 10, base: 200, baseIncrease: 2 },
-    //   mats: { minTR: 11, base: 300, baseIncrease: 3 },
-    //   loot: { minTR: 12, base: 800, baseIncrease: 8 }
-    // };
     
     // 3. Alle IndexedDB Datenbanken finden und löschen
     console.log('Clearing IndexedDB...');

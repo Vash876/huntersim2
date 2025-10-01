@@ -20,6 +20,27 @@ export const TALENTS = [
   { key: 'omen', label: 'The Omen Of Defeat', max: 10 },
   { key: 'll', label: 'Call Me Lucky Loot', max: 10 },
   { key: 'pog', label: 'Presence Of A God', max: 10 },
+  { 
+    key: 'ultima', 
+    label: 'The Legacy of Ultima', 
+    max: 50,
+    isVisible: (context) => {
+      if (!context || !context.hunterStore) {
+        // SICHERHEITS-FALLBACK: Bei fehlendem Context immer anzeigen
+        console.warn('[SAFETY] Missing context for Ultima talent visibility check - showing talent');
+        return true;
+      }
+      
+      // SICHERHEITS-FALLBACK: Wenn aktueller Build das Ultima Talent verwendet, immer anzeigen
+      if (context.buildData && context.buildData.talents && context.buildData.talents.ultima > 0) {
+        console.log('[SAFETY] Current build uses Ultima talent - showing talent');
+        return true;
+      }
+      
+      // Normale Logik: Prüfe die Advanced Talents Einstellung für Knox
+      return context.hunterStore.shouldShowAdvancedTalents('knox');
+    }
+  },
   { key: 'finish', label: 'Finishing Move', max: 15 },
 ]
 
@@ -366,6 +387,19 @@ export const CURRENCY_TYPES = {
   TESSARECTS: 'mat3',
 };
 
+// Multi-Currency Upgrades - Upgrades die mehrere Währungen kosten
+export const MULTI_CURRENCY_UPGRADES = {
+  proj: {  // Projectiles Per Salvo
+    label: 'Projectiles Per Salvo',
+    max: 5,
+    currencies: {
+      [CURRENCY_TYPES.GLACIUM]: { baseCost: 80, multiplier: 1000 },
+      [CURRENCY_TYPES.QUARTZ]: { baseCost: 120, multiplier: 1000 },
+      [CURRENCY_TYPES.TESSARECTS]: { baseCost: 90, multiplier: 1000 }
+    }
+  }
+};
+
 // Mapping der Upgrades zu ihren Währungen
 export const UPGRADE_CURRENCIES = {
   // Base Stats
@@ -381,6 +415,9 @@ export const UPGRADE_CURRENCIES = {
   chargeGain: CURRENCY_TYPES.TESSARECTS,
   reload: CURRENCY_TYPES.TESSARECTS,
   'upgrades.gadgets.anchor': CURRENCY_TYPES.TESSARECTS,
+  
+  // Multi-currency upgrade - will be handled specially
+  proj: 'multi-currency'
 }
 
 export const UPGRADES_BY_CURRENCY = {
@@ -388,18 +425,21 @@ export const UPGRADES_BY_CURRENCY = {
     { key: 'hp', label: 'MAX HP'},
     { key: 'atk', label: 'ATK Power'},
     { key: 'regen', label: 'HP Regen'},
+    { key: 'proj', label: 'Projectiles Per Salvo', max: 5, isMultiCurrency: true },
   ],
   
   [CURRENCY_TYPES.QUARTZ]: [
     { key: 'dr', label: 'DMG Reduction', max: 50 },
     { key: 'block', label: 'Block Chance', max: 50 },
     { key: 'effect', label: 'Effect Chance', max: 50 },
+    { key: 'proj', label: 'Projectiles Per Salvo', max: 5, isMultiCurrency: true },
   ],
   
   [CURRENCY_TYPES.TESSARECTS]: [
     { key: 'charge', label: 'Charge Chance', max: 100 },
     { key: 'chargeGain', label: 'Charge Gained', max: 100 },
     { key: 'reload', label: 'Reload Time', max: 100 },
+    { key: 'proj', label: 'Projectiles Per Salvo', max: 5, isMultiCurrency: true },
     { key: 'upgrades.gadgets.anchor', label: 'The Anchor of Ages' },
   ],
 };

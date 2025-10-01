@@ -19,7 +19,27 @@ export const TALENTS = [
   { key: 'omen', label: 'The Omen Of Decay', max: 10 },
   { key: 'll', label: 'Call Me Lucky Loot', max: 10 },
   { key: 'crip', label: 'Crippling Shots', max: 15 },
-  { key: 'ultima', label: 'The Legacy Of Ultima', max: 50 },
+  { 
+    key: 'ultima', 
+    label: 'The Legacy Of Ultima', 
+    max: 50,
+    isVisible: (context) => {
+      if (!context || !context.hunterStore) {
+        // SICHERHEITS-FALLBACK: Bei fehlendem Context immer anzeigen
+        console.warn('[SAFETY] Missing context for Ultima talent visibility check - showing talent');
+        return true;
+      }
+      
+      // SICHERHEITS-FALLBACK: Wenn aktueller Build das Ultima Talent verwendet, immer anzeigen
+      if (context.buildData && context.buildData.talents && context.buildData.talents.ultima > 0) {
+        console.log('[SAFETY] Current build uses Ultima talent - showing talent');
+        return true;
+      }
+      
+      // Normale Logik: Prüfe die Advanced Talents Einstellung für Ozzy
+      return context.hunterStore.shouldShowAdvancedTalents('ozzy');
+    }
+  },
   { key: 'echo', label: 'Echo Bullets', max: 20 },
 ];
 
