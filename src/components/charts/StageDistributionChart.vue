@@ -48,42 +48,9 @@
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { getColorRGB } from '../builds/utils/BuildComparisonUtils';
 import { formatNumber } from '@/composables/format.js';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 import { Bar } from 'vue-chartjs';
-
-// Force Chart.js registration for production builds
-let chartRegistered = false;
-function ensureChartRegistration() {
-  if (!chartRegistered) {
-    try {
-      ChartJS.register(
-        CategoryScale,
-        LinearScale,
-        BarElement,
-        Title,
-        Tooltip,
-        Legend
-      );
-      chartRegistered = true;
-    } catch (error) {
-      console.warn('Chart.js components already registered:', error);
-      chartRegistered = true;
-    }
-  }
-}
-
-// Ensure registration on component mount
-onMounted(() => {
-  ensureChartRegistration();
-});
 
 const props = defineProps({
   distribution: {
@@ -298,8 +265,6 @@ const darkThemeOptions = {
 };
 
 const chartOptions = computed(() => {
-  // Ensure Chart.js is properly registered
-  ensureChartRegistration();
   
   return {
     ...darkThemeOptions,
