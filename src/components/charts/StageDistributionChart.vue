@@ -144,8 +144,6 @@ const chartData = computed(() => {
       borderWidth: 2,
       fill: false,
       totalCount: totalCount,
-      // Explicitly set data types
-      parsing: false
     }]
   };
 });
