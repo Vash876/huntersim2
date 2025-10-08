@@ -145,10 +145,7 @@ const chartData = computed(() => {
       fill: false,
       totalCount: totalCount,
       // Explicitly set data types
-      parsing: {
-        xAxisKey: 'x',
-        yAxisKey: 'y'
-      }
+      parsing: false
     }]
   };
 });
