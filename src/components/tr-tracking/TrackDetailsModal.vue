@@ -430,9 +430,12 @@ import AlertDialog from '@/components/common/AlertDialog.vue';
 import TimeDriftStatsModal from '@/components/tr-tracking/TimeDriftStatsModal.vue';
 import NewTRModal from '@/components/tr-tracking/NewTRModal.vue';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
+import { useHunterStore } from '@/store/hunterStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { exportTrack } from '@/utils/trImportExport';
 import { getM0Cost } from '@/constants/m0Costs';
 import { formatNumber, formatSuffixInput, parseSuffixInput } from '@/composables/format.js';
+import { shouldEvaluate } from '@/services/evaluationCacheService';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
 import Decimal from 'break_infinity.js';
 
@@ -453,6 +456,8 @@ const props = defineProps({
 const emit = defineEmits(['close', 'update', 'showProgress']);
 
 const trTrackingStore = useTRTrackingStore();
+const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Local state
 const sortOrder = ref('desc');
@@ -521,6 +526,83 @@ function getHunterMat3Name(hunterId) {
   }
   
   return hunterConstants.EVAL_RESULT_LABELS?.mat3 || 'Mat3';
+}
+
+// NEW: Function to update Mat3 production values automatically
+async function updateHunterMat3Productions() {
+  const hunterBuildSettings = trTrackingStore.hunterBuildSettings;
+  if (!hunterBuildSettings?.enabledHunters || !hunterBuildSettings?.selectedBuilds) {
+    return;
+  }
+
+  const updatedProductions = { ...hunterBuildSettings.hunterProductions || {} };
+  let hasUpdates = false;
+
+  for (const hunter of HUNTERS) {
+    // Only process enabled hunters with selected builds
+    if (!hunterBuildSettings.enabledHunters[hunter.id] || !hunterBuildSettings.selectedBuilds[hunter.id]) {
+      continue;
+    }
+
+    const buildId = hunterBuildSettings.selectedBuilds[hunter.id];
+    
+    try {
+      // Initialize hunter store if needed
+      if (!hunterStore.hunterBuilds || !hunterStore.hunterBuilds[hunter.id] || hunterStore.hunterBuilds[hunter.id].length === 0) {
+        await hunterStore.initHunterConfig(hunter.id);
+      }
+
+      // Get the build
+      const build = hunterStore.getBuildsForHunter(hunter.id).find(b => String(b.id) === String(buildId));
+      if (!build) {
+        console.warn(`Build ${buildId} not found for hunter ${hunter.id}`);
+        continue;
+      }
+
+      // Load cached evaluation result
+      const cache = await shouldEvaluate({
+        hunterId: hunter.id,
+        buildData: build,
+        hunterStore,
+        gemPlannerStore
+      });
+
+      if (cache?.cachedResult) {
+        const result = cache.cachedResult;
+        const mat3PerRun = result.mat3 || 0;
+        const avgRunTimeMinutes = result.avgTime || 120;
+        const runsPerDay = 1440 / avgRunTimeMinutes;
+        const dailyMat3Production = Math.floor(mat3PerRun * runsPerDay);
+
+        // Check if production value has changed
+        const currentProduction = updatedProductions[hunter.id]?.dailyMat3Production || 0;
+        if (currentProduction !== dailyMat3Production) {
+          const buildName = build.name || 'Unknown';
+          
+          updatedProductions[hunter.id] = {
+            buildId,
+            buildName,
+            dailyMat3Production
+          };
+          
+          hasUpdates = true;
+          console.log(`🔄 Updated ${hunter.name} Mat3 production: ${currentProduction} → ${dailyMat3Production}`);
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to update Mat3 production for ${hunter.name}:`, error);
+    }
+  }
+
+  // Save updates to store if there were changes
+  if (hasUpdates) {
+    await trTrackingStore.updateHunterBuildSettings({
+      ...hunterBuildSettings,
+      hunterProductions: updatedProductions
+    });
+    
+    console.log('✅ Mat3 productions updated automatically');
+  }
 }
 
 // Initialize help guide state from localStorage
@@ -2771,7 +2853,11 @@ function getEntryChange(currentEntry, previousEntry, resourceId) {
 }
 
 // New methods for inline editing
-function addNewEntry() {
+async function addNewEntry() {
+  // HINZUGEFÜGT: Automatische Aktualisierung der Mat3-Produktionen vor dem Erstellen des Eintrags
+  console.log('🔄 Updating Mat3 productions before creating new entry...');
+  await updateHunterMat3Productions();
+  
   const now = new Date();
   const dateTimeISO = now.toISOString(); // Full ISO timestamp
   
@@ -2787,7 +2873,7 @@ function addNewEntry() {
     entryToSave.values[resource.id] = 0;
   });
   
-  // Auto-populate Mat3 values for enabled hunters
+  // Auto-populate Mat3 values for enabled hunters (jetzt mit aktuellen Werten)
   const hunterBuildSettings = trTrackingStore.hunterBuildSettings;
   if (hunterBuildSettings?.enabledHunters && hunterBuildSettings?.hunterProductions) {
     HUNTERS.forEach(hunter => {
@@ -2798,6 +2884,7 @@ function addNewEntry() {
           // Set the Mat3 value if this resource is being tracked
           if (entryToSave.values.hasOwnProperty(mat3ResourceId)) {
             entryToSave.values[mat3ResourceId] = production.dailyMat3Production;
+            console.log(`✅ Auto-populated ${hunter.name} Mat3: ${production.dailyMat3Production}`);
           }
         }
       }
@@ -3332,10 +3419,14 @@ onUnmounted(() => {
 });
 
 // Watch for modal show/hide to start/stop timer
-watch(() => props.show, (newShow) => {
+watch(() => props.show, async (newShow) => {
   if (newShow) {
     currentTime.value = new Date(); // Update immediately when opening
     startLiveTimeUpdate();
+    
+    // HINZUGEFÜGT: Automatische Aktualisierung der Mat3-Produktionen beim Öffnen des Modals
+    console.log('🔄 Modal opened - checking Mat3 productions...');
+    await updateHunterMat3Productions();
   } else {
     stopLiveTimeUpdate();
   }
