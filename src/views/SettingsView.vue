@@ -1094,6 +1094,10 @@ function clearCache() {
     console.error('Error clearing cache:', error);
     showToast('Failed to clear cache', 'error');
   }
+
+  setTimeout(() => {
+    window.location.reload();
+  }, 1500);
 }
 
 // Show toast notification
