@@ -25,6 +25,7 @@ export const HUNTERS = [
     image: iconBorge,
     discord_level_image: ':CIFI_EXPHuntBorge:',
     statsModule: () => import('./borge'),
+    buildRepositoryCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuTy7CSusoWz8YNaIhuWJ5QWzOmbt62BQREuwJns96O9GEHuxPW6q47t4-o51m-og4Vn7yvxeqFRFE/pub?gid=1331115213&single=true&output=csv',
   },
   {
     id: 'ozzy',
@@ -36,6 +37,7 @@ export const HUNTERS = [
     image: iconOzzy,
     discord_level_image: ':CIFI_EXPHuntOzzy:',
     statsModule: () => import('./ozzy'),
+    buildRepositoryCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuTy7CSusoWz8YNaIhuWJ5QWzOmbt62BQREuwJns96O9GEHuxPW6q47t4-o51m-og4Vn7yvxeqFRFE/pub?gid=1962166291&single=true&output=csv',
   },
   {
     id: 'knox',
@@ -47,6 +49,7 @@ export const HUNTERS = [
     image: iconKnox,
     discord_level_image: ':CIFI_EXPHuntKnox:',
     statsModule: () => import('./knox'),
+    buildRepositoryCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuTy7CSusoWz8YNaIhuWJ5QWzOmbt62BQREuwJns96O9GEHuxPW6q47t4-o51m-og4Vn7yvxeqFRFE/pub?gid=680484628&single=true&output=csv',
   }
 ];
 

@@ -53,8 +53,9 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
   let effectiveHours = hoursInTR || 0; // Auch bei 0 Stunden weiterrechnen für Research-Boni
   const researchAlltimeValue = allValues.research_alltime || 0;
   
-  // Evolution GN #1 prüfen
+  // Evolution GN #1 und GN #4 prüfen
   let evolutionGN1Active = false;
+  let evolutionGN4Active = false;
   try {
     // Plan-Context prüfen (für TR-Plan Overrides)
     if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
@@ -62,6 +63,7 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
       const evolutionLevel = gemData.levels?.evolution || 0;
       const evolutionNodes = gemData.activeNodes?.evolution || [];
       evolutionGN1Active = evolutionLevel >= 1 && evolutionNodes.includes(0);
+      evolutionGN4Active = evolutionLevel >= 1 && evolutionNodes.includes(3); // Node 4 = Index 3
     } else {
       // Fallback: localStorage
       const userStatsJSON = localStorage.getItem('trplanner_userstats');
@@ -72,11 +74,13 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
           const evolutionLevel = gemData.levels?.evolution || 0;
           const evolutionNodes = gemData.activeNodes?.evolution || [];
           evolutionGN1Active = evolutionLevel >= 1 && evolutionNodes.includes(0);
+          evolutionGN4Active = evolutionLevel >= 1 && evolutionNodes.includes(3); // Node 4 = Index 3
         }
       }
     }
   } catch (e) {
     evolutionGN1Active = false;
+    evolutionGN4Active = false;
   }
   
   // Research 110 & 109 Boni berechnen
@@ -104,14 +108,27 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
   // Effektive Stunden mit Research 110 Bonus
   effectiveHours += totalBonusHours;
   
-  // Speed-Multiplikator mit Research 109 Bonus und Evolution GN #1
+  // Speed-Multiplikator mit Research 109 Bonus, Evolution GN #1 und Evolution GN #4
   let speedMultiplier = 1 + totalSpeedBonus;
   if (evolutionGN1Active) {
     speedMultiplier *= 1.66; // Evolution GN #1: 1.66x schnellerer Catch-Up
   }
   
-  // Maximum-Wert basierend auf Evolution GN #1
-  const maxCatchUp = evolutionGN1Active ? 4 : 2;
+  // Evolution GN #4: Zeitbasierter exponentieller Speed-Multiplier
+  if (evolutionGN4Active) {
+    const timeInSeconds = effectiveHours * 3600; // Stunden zu Sekunden
+    const evoGN4Multiplier = Math.min(1.33, 1.0 * Math.exp(0.00019804 * (timeInSeconds / 900)));
+    speedMultiplier *= evoGN4Multiplier;
+  }
+  
+  // Maximum-Wert basierend auf Evolution GN #1 und GN #4
+  let maxCatchUp = 2; // Standard
+  if (evolutionGN1Active) {
+    maxCatchUp = 4; // Evolution GN #1 erhöht auf 4
+  }
+  if (evolutionGN4Active) {
+    maxCatchUp = 8; // Evolution GN #4 erhöht auf 8 (überschreibt GN #1)
+  }
   
   // KORRIGIERTE Catch-Up Formel: 
   // Original: Math.min(2, Math.max(1, (hoursInTR * 0.00024) / 0.25 + 1))

@@ -148,6 +148,11 @@ const routes = [
     component: () => import('../views/tools/ResearchOverview.vue'),
   },
   {
+    path: '/tools/build-repository',
+    name: 'Build Repository',
+    component: () => import('../views/tools/BuildRepository.vue'),
+  },
+  {
     path: '/tools/m0cost-overview',
     name: 'M0 Cost Overview',
     component: () => import('../views/tools/M0CostOverview.vue'),

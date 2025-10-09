@@ -178,11 +178,11 @@
                 class="bg-gray-900/60 rounded-lg border border-gray-700/50 overflow-hidden"
               >
                 <!-- Mech Header -->
-                <div class="p-3 border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-700 rounded-t-lg">
+                <div class="pr-3 border-b border-gray-700 bg-gradient-to-r from-gray-800 to-gray-700 rounded-t-lg">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center">
                       <!-- Mech Asset Image -->
-                      <div class="w-12 h-12 rounded-lg flex items-center justify-center mr-3 bg-gray-700/50 p-1">
+                      <div class="w-20 h-20  flex items-center justify-center mr-3 p-1">
                         <img 
                           v-if="getMechImagePath(index + 1)"
                           :src="getMechImagePath(index + 1)" 

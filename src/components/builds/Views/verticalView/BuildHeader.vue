@@ -1,5 +1,14 @@
 <template>
   <div class="header-wrapper relative">
+    <!-- Floating Archive Badge - links neben Level Badge -->
+    <div 
+      v-if="buildData.isArchived"
+      class="absolute top-1.5 right-18.5 z-10 bg-gray-700/80 text-amber-200 rounded-lg px-1 py-1 shadow-lg text-xs font-medium text-center leading-tight w-9 h-12 flex items-center justify-center"
+      title="Archived Build"
+    >
+      <IconArchive size="20" />
+    </div>
+
     <!-- Floating Level Badge - links neben den anderen Badges -->
     <div 
       class="absolute top-1.5 right-8.5 z-10 bg-gray-700/80 text-gray-200 rounded-lg px-1 py-1 shadow-lg text-xs font-medium text-center leading-tight w-9 h-12"
@@ -67,10 +76,6 @@
                 class="text-lg font-semibold bg-gray-700 text-white rounded px-2 py-0.5 outline-none w-auto max-w-[170px]"
               />
             </div>
-            
-            <span v-if="buildData.isArchived" class="ml-2 text-xs px-2 py-0.5 bg-gray-700/50 rounded-full text-gray-300 whitespace-nowrap flex-shrink-0">
-              Archived
-            </span>
           </div>
         </div>
       </div>

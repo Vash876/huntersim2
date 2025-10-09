@@ -1,714 +1,92 @@
-{
-  "timestamp": "2025-08-09T15:22:30.140Z",
-  "title": "TR Tracking Store Data",
-  "data": {
-    "store": {
-      "availableResources": [
-        {
-          "id": "hours-in-tr",
-          "name": "Time in TR",
-          "color": "#ffffff",
-          "category": "main",
-          "format": "time"
-        },
-        {
-          "id": "oo-accum",
-          "name": "OO (Accum)",
-          "color": "#a200ff",
-          "category": "main",
-          "format": "number"
-        },
-        {
-          "id": "lr-ticks",
-          "name": "LR Ticks",
-          "color": "#ffffff",
-          "category": "main",
-          "format": "number"
-        },
-        {
-          "id": "lr-count",
-          "name": "LR Count",
-          "color": "#ffffff",
-          "category": "main",
-          "format": "number"
-        },
-        {
-          "id": "loops-filled",
-          "name": "Loops Filled",
-          "color": "#ffffff",
-          "category": "main",
-          "format": "number"
-        },
-        {
-          "id": "loop-mods-purchased",
-          "name": "Loop Mods Purchased",
-          "color": "#ff0000",
-          "category": "main",
-          "format": "number"
-        },
-        {
-          "id": "attgn3-buff",
-          "name": "AttGN3 Buff",
-          "color": "#00d9ff",
-          "category": "main",
-          "format": "number"
-        },
-        {
-          "id": "cells",
-          "name": "Cells",
-          "color": "#00b90f",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "mp",
-          "name": "MP",
-          "color": "#ff0000",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "mp-accum",
-          "name": "MP (Accum)",
-          "color": "#ff0000",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "shards",
-          "name": "Shards",
-          "color": "#00d9ff",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "rp",
-          "name": "RP",
-          "color": "#ffa600ff",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "ap",
-          "name": "AP",
-          "color": "#464cff",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "blueprints",
-          "name": "Blueprints",
-          "color": "#ffffff",
-          "category": "zeus",
-          "format": "number"
-        },
-        {
-          "id": "f1-1-difar",
-          "name": "F1-1 Difar",
-          "color": "#ffffff",
-          "category": "zeus",
-          "format": "number"
-        },
-        {
-          "id": "inno-cores",
-          "name": "Inno Cores",
-          "color": "#ffffff",
-          "category": "zeus",
-          "format": "number"
-        },
-        {
-          "id": "ulti-badge",
-          "name": "Ultima Badges",
-          "color": "#FFDE21",
-          "category": "zeus",
-          "format": "number"
-        },
-        {
-          "id": "current-camp",
-          "name": "Current Camp",
-          "color": "#ffffff",
-          "category": "camp",
-          "format": "camp"
-        },
-        {
-          "id": "camp-timer",
-          "name": "Camp Timer",
-          "color": "#ffffff",
-          "category": "camp",
-          "format": "time"
-        },
-        {
-          "id": "notes",
-          "name": "Notes",
-          "color": "#ffffff",
-          "category": "other",
-          "format": "text"
-        }
-      ],
-      "selectedResources": [
-        {
-          "id": "hours-in-tr",
-          "name": "Time in TR",
-          "color": "#ffffff",
-          "category": "main",
-          "format": "time"
-        },
-        {
-          "id": "oo-accum",
-          "name": "OO (Accum)",
-          "color": "#a200ff",
-          "category": "main",
-          "format": "number"
-        },
-        {
-          "id": "attgn3-buff",
-          "name": "AttGN3 Buff",
-          "color": "#00d9ff",
-          "category": "main",
-          "format": "number"
-        },
-        {
-          "id": "cells",
-          "name": "Cells",
-          "color": "#00b90f",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "mp",
-          "name": "MP",
-          "color": "#ff0000",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "mp-accum",
-          "name": "MP (Accum)",
-          "color": "#ff0000",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "shards",
-          "name": "Shards",
-          "color": "#00d9ff",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "rp",
-          "name": "RP",
-          "color": "#ffa600ff",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "ap",
-          "name": "AP",
-          "color": "#464cff",
-          "category": "resources",
-          "format": "number"
-        },
-        {
-          "id": "notes",
-          "name": "Notes",
-          "color": "#ffffff",
-          "category": "other",
-          "format": "text"
-        },
-        {
-          "id": "inno-cores",
-          "name": "Inno Cores",
-          "color": "#ffffff",
-          "category": "zeus",
-          "format": "number"
-        },
-        {
-          "id": "camp-timer",
-          "name": "Camp Timer",
-          "color": "#ffffff",
-          "category": "camp",
-          "format": "time"
-        },
-        {
-          "id": "current-camp",
-          "name": "Current Camp",
-          "color": "#ffffff",
-          "category": "camp",
-          "format": "camp"
-        },
-        {
-          "id": "lr-ticks",
-          "name": "LR Ticks",
-          "color": "#ffffff",
-          "category": "main",
-          "format": "number"
-        },
-        {
-          "id": "f1-1-difar",
-          "name": "F1-1 Difar",
-          "color": "#ffffff",
-          "category": "zeus",
-          "format": "number"
-        },
-        {
-          "id": "blueprints",
-          "name": "Blueprints",
-          "color": "#ffffff",
-          "category": "zeus",
-          "format": "number"
-        }
-      ],
-      "trTracks": [
-        {
-          "id": "C7wQzYM7Kk8",
-          "name": "TR Plan",
-          "startDate": "2025-07-06T21:10:00.000Z",
-          "endDate": null,
-          "isActive": true,
-          "notes": "TR 52 - Started with goals: OO 15000000000000, Cells 75000e, MP 6000e, RP 4600e",
-          "resourceOrder": [
-            "hours-in-tr",
-            "oo-accum",
-            "lr-ticks",
-            "attgn3-buff",
-            "cells",
-            "mp",
-            "mp-accum",
-            "shards",
-            "rp",
-            "ap",
-            "f1-1-difar",
-            "inno-cores",
-            "current-camp",
-            "camp-timer",
-            "notes",
-            "blueprints"
-          ],
-          "trCount": 52,
-          "initialValues": {
-            "ooLifetime": 12000000000000,
-            "fragsLifetime": 30000000,
-            "tsMilestones": {
-              "level1": 15,
-              "level2": 10,
-              "level3": 10
-            },
-            "borgeLevel": 92,
-            "ozzyLevel": 87,
-            "knoxLevel": 43
-          },
-          "targetGoals": {
-            "ooGoal": 15000000000000,
-            "m0Goal": 187,
-            "cellsGoal": 75000,
-            "mpGoal": 6000,
-            "rpGoal": 4600
-          },
-          "createdAt": "2025-07-29T07:40:24.062Z",
-          "updatedAt": "2025-08-09T11:24:40.645Z",
-          "entries": [
-            {
-              "id": "A18HY74PMTL",
-              "date": "2025-08-06T18:04:35.820Z",
-              "values": {
-                "hours-in-tr": "748:35",
-                "lr-ticks": 182000,
-                "oo-accum": 11320000000000,
-                "attgn3-buff": "1e+333",
-                "cells": 76701,
-                "mp": 6148,
-                "mp-accum": 6151,
-                "shards": 5314,
-                "rp": 4638,
-                "ap": 1256,
-                "f1-1-difar": 382,
-                "inno-cores": 12,
-                "current-camp": 0,
-                "camp-timer": 0,
-                "notes": 0
-              },
-              "notes": "coffee",
-              "createdAt": "2025-08-06T18:04:37.158Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "id": "AkQTtN1sdzK",
-              "date": "2025-07-31T06:58:33.785Z",
-              "values": {
-                "hours-in-tr": "598:37",
-                "lr-ticks": 800800,
-                "oo-accum": 3730000000000,
-                "attgn3-buff": "5.03e+262",
-                "cells": 73574,
-                "mp": 6015,
-                "mp-accum": 6048,
-                "shards": 5187,
-                "rp": 4510,
-                "ap": 1239,
-                "inno-cores": 395,
-                "current-camp": "C4-12",
-                "camp-timer": "221:56",
-                "notes": 0,
-                "f1-1-difar": 377
-              },
-              "notes": "",
-              "createdAt": "2025-07-31T06:59:00.384Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "id": "CTKmXrXG9w9",
-              "date": "2025-08-05T01:37:38.091Z",
-              "values": {
-                "hours-in-tr": "709:18",
-                "lr-ticks": 277000,
-                "oo-accum": 10980000000000,
-                "attgn3-buff": "1e+333",
-                "cells": 76537,
-                "mp": 6127,
-                "mp-accum": 6138,
-                "shards": 5309,
-                "rp": 4632,
-                "ap": 1251,
-                "f1-1-difar": 381,
-                "inno-cores": 5,
-                "current-camp": "",
-                "camp-timer": 0,
-                "notes": 0
-              },
-              "notes": "",
-              "createdAt": "2025-08-05T01:37:39.491Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "id": "EZs3RT9tSp7",
-              "date": "2025-07-31T22:40:27.224Z",
-              "values": {
-                "hours-in-tr": "613:39",
-                "lr-ticks": 1010000,
-                "oo-accum": 4160000000000,
-                "attgn3-buff": "5.03e+262",
-                "cells": 73741,
-                "mp": 6015,
-                "mp-accum": 6055,
-                "shards": 5196,
-                "rp": 4518,
-                "ap": 1240,
-                "f1-1-difar": 378,
-                "inno-cores": 399,
-                "current-camp": "C4-12",
-                "camp-timer": "206:16",
-                "notes": 0
-              },
-              "notes": "",
-              "createdAt": "2025-07-31T22:40:56.294Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "date": "2025-07-27T19:12:57.656Z",
-              "values": {
-                "hours-in-tr": "514:00",
-                "oo-accum": 2740000000000,
-                "attgn3-buff": "1.08e+232",
-                "cells": 72743,
-                "mp": 5966,
-                "mp-accum": 5989,
-                "shards": 5114,
-                "rp": 4453,
-                "ap": 1234,
-                "notes": 0,
-                "lr-ticks": 519000,
-                "inno-cores": 390,
-                "camp-timer": "305:20",
-                "current-camp": "C4-12"
-              },
-              "notes": "",
-              "id": "GcWUaUKvrMW",
-              "trackId": "C7wQzYM7Kk8",
-              "updatedAt": "2025-08-09T08:21:01.858Z"
-            },
-            {
-              "date": "2025-07-29T05:58:30.007Z",
-              "values": {
-                "hours-in-tr": "549:52",
-                "lr-ticks": 157000,
-                "oo-accum": 3570000000000,
-                "attgn3-buff": "5.03e+262",
-                "cells": 73370,
-                "mp": 6012,
-                "mp-accum": 6033,
-                "shards": 5153,
-                "rp": 4487,
-                "ap": 1235,
-                "inno-cores": 391,
-                "current-camp": "C4-12",
-                "camp-timer": "270:48",
-                "notes": 0
-              },
-              "notes": "",
-              "id": "HVdXZF7etNj",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "id": "Hfa7XdWxy8Z",
-              "date": "2025-08-02T05:59:40.249Z",
-              "values": {
-                "hours-in-tr": "643:37",
-                "lr-ticks": 212000,
-                "oo-accum": 9450000000000,
-                "attgn3-buff": "6.27e+307",
-                "cells": 75974,
-                "mp": 6095,
-                "mp-accum": 6116,
-                "shards": 5264,
-                "rp": 4586,
-                "ap": 1246,
-                "f1-1-difar": 376,
-                "inno-cores": 1,
-                "current-camp": 0,
-                "camp-timer": "",
-                "notes": 0
-              },
-              "notes": "",
-              "createdAt": "2025-08-02T05:59:47.479Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "id": "Mq5XpomUGz7",
-              "date": "2025-08-03T05:08:29.546Z",
-              "values": {
-                "hours-in-tr": "666:11",
-                "lr-ticks": 520000,
-                "oo-accum": 9630000000000,
-                "attgn3-buff": "6.27e+307",
-                "cells": 76059,
-                "mp": 6095,
-                "mp-accum": 6123,
-                "shards": 5279,
-                "rp": 4598,
-                "ap": 1247,
-                "f1-1-difar": 379,
-                "inno-cores": 1,
-                "current-camp": "",
-                "camp-timer": "",
-                "notes": 0
-              },
-              "notes": "",
-              "createdAt": "2025-08-03T05:08:37.656Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "date": "2025-07-28T10:37:40.876Z",
-              "values": {
-                "hours-in-tr": "530:10",
-                "lr-ticks": 721500,
-                "oo-accum": 2820000000000,
-                "attgn3-buff": "1.08e+232",
-                "cells": 72780,
-                "mp": 5966,
-                "mp-accum": 5993,
-                "shards": 5122,
-                "rp": 4457,
-                "ap": 1235,
-                "inno-cores": 390,
-                "current-camp": "C4-12",
-                "camp-timer": "289:59",
-                "notes": 0
-              },
-              "notes": "",
-              "id": "TM5cTyPenK2",
-              "trackId": "C7wQzYM7Kk8",
-              "updatedAt": "2025-08-09T08:21:01.858Z"
-            },
-            {
-              "id": "bhb5DuZ2CcR",
-              "date": "2025-07-30T06:04:45.308Z",
-              "values": {
-                "hours-in-tr": "574:51",
-                "lr-ticks": 471000,
-                "oo-accum": 3650000000000,
-                "attgn3-buff": "5.03e+262",
-                "cells": 73490,
-                "mp": 6015,
-                "mp-accum": 6042,
-                "shards": 5176,
-                "rp": 4502,
-                "ap": 1236,
-                "inno-cores": 391,
-                "current-camp": "C4-12",
-                "camp-timer": "246:47",
-                "notes": 0
-              },
-              "notes": "",
-              "createdAt": "2025-07-30T06:04:58.498Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "id": "cfnJL6uXcS8",
-              "date": "2025-08-09T03:51:04.815Z",
-              "values": {
-                "hours-in-tr": "805:45",
-                "oo-accum": 11830000000000,
-                "lr-ticks": 952000,
-                "attgn3-buff": "1e+333",
-                "cells": 76890,
-                "mp": 6150,
-                "mp-accum": 6166,
-                "shards": 5347,
-                "rp": 4662,
-                "ap": 1262,
-                "f1-1-difar": 388,
-                "inno-cores": 25,
-                "current-camp": 0,
-                "camp-timer": 0,
-                "notes": 0
-              },
-              "notes": "",
-              "createdAt": "2025-08-09T03:51:05.634Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "id": "d7nUwPkQnRx",
-              "date": "2025-08-04T04:37:46.694Z",
-              "values": {
-                "hours-in-tr": "688:58",
-                "lr-ticks": 833000,
-                "oo-accum": 9820000000000,
-                "attgn3-buff": "6.27e+307",
-                "cells": 76150,
-                "mp": 6095,
-                "mp-accum": 6132,
-                "shards": 5290,
-                "rp": 4605,
-                "ap": 1250,
-                "f1-1-difar": 381,
-                "inno-cores": 4,
-                "current-camp": 0,
-                "camp-timer": 0,
-                "notes": 0
-              },
-              "notes": "LRd right after and maxed attgn3",
-              "createdAt": "2025-08-04T04:37:52.189Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "id": "j9HmLPiEzx2",
-              "date": "2025-08-01T21:42:20.395Z",
-              "values": {
-                "hours-in-tr": "635:23",
-                "lr-ticks": 102000,
-                "oo-accum": 9380000000000,
-                "attgn3-buff": "6.27e+307",
-                "cells": 75926,
-                "mp": 6095,
-                "mp-accum": 6112,
-                "shards": 5254,
-                "rp": 4579,
-                "ap": 1246,
-                "f1-1-difar": 374,
-                "inno-cores": 1,
-                "current-camp": "",
-                "camp-timer": "",
-                "notes": 0
-              },
-              "notes": "C4-12 finished 10 hours ago",
-              "createdAt": "2025-08-01T21:44:25.594Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "id": "jPr5Nx324So",
-              "date": "2025-08-01T05:41:35.641Z",
-              "values": {
-                "hours-in-tr": "620:31",
-                "lr-ticks": 1100000,
-                "oo-accum": 4179999999999.9995,
-                "attgn3-buff": "5.03e+262",
-                "cells": 74741,
-                "mp": 6015,
-                "mp-accum": 6069,
-                "shards": 5206,
-                "rp": 4532,
-                "ap": 1241,
-                "f1-1-difar": 378,
-                "inno-cores": 0,
-                "current-camp": "C4-12",
-                "camp-timer": "6:43",
-                "notes": 0
-              },
-              "notes": "Achievers Badge",
-              "createdAt": "2025-08-01T05:41:53.445Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "id": "jna6JvNsviH",
-              "date": "2025-08-08T01:38:35.805Z",
-              "values": {
-                "hours-in-tr": "779:52",
-                "oo-accum": 11600000000000,
-                "lr-ticks": 603000,
-                "attgn3-buff": "1e+333",
-                "cells": 76803,
-                "mp": 6150,
-                "mp-accum": 6160,
-                "shards": 5336,
-                "rp": 4652,
-                "ap": 1260,
-                "f1-1-difar": 386,
-                "inno-cores": 0,
-                "current-camp": 0,
-                "camp-timer": 0,
-                "notes": 0
-              },
-              "notes": "",
-              "createdAt": "2025-08-08T01:38:36.798Z",
-              "updatedAt": "2025-08-09T08:21:01.858Z",
-              "trackId": "C7wQzYM7Kk8"
-            },
-            {
-              "date": "2025-07-28T21:58:30.572Z",
-              "values": {
-                "hours-in-tr": "541:40",
-                "lr-ticks": 46330,
-                "oo-accum": 3540000000000,
-                "attgn3-buff": "5.03e+262",
-                "cells": 73313,
-                "mp": 6012,
-                "mp-accum": 6027,
-                "shards": 5140,
-                "rp": 4473,
-                "ap": 1235,
-                "inno-cores": 391,
-                "current-camp": "C4-12",
-                "camp-timer": "278:43",
-                "notes": 0
-              },
-              "notes": "got ts3",
-              "id": "smCcJ8QDeo",
-              "trackId": "C7wQzYM7Kk8",
-              "updatedAt": "2025-08-09T08:21:01.858Z"
-            }
-          ]
-        }
-      ],
-      "isInitialized": true
-    },
-    "localStorage": {
-      "tr_tracking_selected_resources": null,
-      "tr_tracking_tracks": null,
-      "tr_tracking_custom_resources": null,
-      "tr_data_migration_completed": null
-    }
-  }
-}
+Level,Build,Loot Score,Stage (Range),Time (Runs/d),Mat1/Run,Mat1/Day,Mat2/Run,Mat2/Day,Mat3/Run,Mat3/Day,XP/Run,XP/Day,Boss Kill %,Boss HP%,Notes
+6,https://cifi-tools.com/borge?code=MGEpRQ5c9d1TnDf2NZBWfJz7KoMtiwRYt2RCDBVV9,36.2,10.2 (9-11),8.4m (172),105,18.11k,99.8,17.19k,74.9,12.89k,22.9,3.94k,0.00%,0.00%,
+8,https://cifi-tools.com/borge?code=3HbLzYrRmBhnzmuuqaB7WqqA24VHANxvpunXFktdkeWZ4gF,37.2,19.9 (1-22),22.5m (63.9),291,18.61k,277,17.66k,207,13.25k,63.4,4.05k,0.00%,0.00%,
+10,https://cifi-tools.com/borge?code=mY6z8rdzt544TZ3veU692YTQCzxUp9ahSRkt11Pr4QbUjnt6j,48.6,25.5 (22-29),28.0m (51.4),473,24.31k,449,23.08k,337,17.31k,103,5.29k,0.00%,0.00%,
+10,https://cifi-tools.com/borge?code=FxduTeKtSMmQSqUk18oRu1X2MgZd6AzQFtGa2tExSWa26haiXP7m,50.9,26.3 (23-28),29.4m (48.9),520,25.45k,494,24.16k,370,18.12k,113,5.54k,0.00%,0.00%,Higher Stats
+11,https://cifi-tools.com/borge?code=292ZtZUqQNUMnCEQc1uXjGvybmvTkbxUujGBWDiSBYYNpmaKS5zoWo,56.5,3.8 (30-38),44.1m (32.7),865,28.27k,821,26.84k,616,20.13k,118,6.15k,0.00%,0.00%,
+11,https://cifi-tools.com/borge?code=2gtWM5EQdLoo1yuNCpEsYWyJ5S6Z17NiQDeBvNv4P9ec3sCUqjQUBquTWf,58.3,30.5 (27-34),34.0m (42.3),689,29.16k,654,27.68k,491,20.76k,150,6.34k,0.00%,0.00%,Higher Stats
+12,https://cifi-tools.com/borge?code=292by5biUip2WhRwfKVncKqxVT4Wg2ydVYa1NBRXuJ9bEDMwPXHRP5,67.4,39.1 (36-42),43.2m (33.3),1.01k,33.70k,960,31.99k,720,23.99k,220,7.33k,0.00%,0.00%,
+12,https://cifi-tools.com/borge?code=62SLsCnyvRGx88BhMgL2Guzity38Uo6hmXKUZoH7VKtKSgrwsDZcXBD,38.3,56.9 (51-62),1h 59m (12.1),1.58k,19.18k,1.50k,18.21k,1.13k,13.65k,344,4.1k,0.00%,0.00%,Push
+12,https://cifi-tools.com/borge?code=62SKq9NytggMddqpMrFXVoZyWobBwqocKuHc9UxYbgKgxnusViyWbCK,,,,,,,,,,,,,,
+14,https://cifi-tools.com/borge?code=2gtchtvyCioJBNBjDbgdB3irfLTsQv19oexDfcVw3VbynLBMwUdZW2TEJK,,,,,,,,,,,,,,
+14,https://cifi-tools.com/borge?code=292fFXu78zK1hAetqeXcr6oNE3QPGY23bAGgci41V9r2bfEqmXoHpB,,,,,,,,,,,,,,
+14,https://cifi-tools.com/borge?code=PBLn7Vz2zDHgbmCBg22STVw68puXeo6ibZVTUvLYFL7WHMxVt24aEGYf,,,,,,,,,,,,,,
+15,https://cifi-tools.com/borge?code=FxeNmYVgBsuNwpSwEFAuUHkMCy2NvEMDjxGz3AmJ8hZ5AHciTyYT,,,,,,,,,,,,,,
+15,https://cifi-tools.com/borge?code=2gteJ7gvmiFDSdQnNpu7CavEC6h2W36tVXYnXvZ4zm7LjuhWZxFAP2RZfM,,,,,,,,,,,,,,
+16,https://cifi-tools.com/borge?code=292by5c7ic2yC9FfDECJo8Lhzra8HkPLCLwtgBVBBbRqpxzjrsp9fm,,,,,,,,,,,,,,
+16,https://cifi-tools.com/borge?code=292by5c7ic336Y72gjygBfQEm6Bs19BG5tAu25yuiqEsisfeucieGF,,,,,,,,,,,,,,
+16,https://cifi-tools.com/borge?code=8T4wcYXEUvoMdznTf7V8hzaZSwdnszJCQ2oFn5URpJ1SjLuJdKBfhEyHGN3,,,,,,,,,,,,,,
+17,https://cifi-tools.com/borge?code=62SEoRxt4vq5j34u5mQG696Fkt6mmUiPMDqcc2UHWZLyPNj5qGZDLTq,,,,,,,,,,,,,,
+18,https://cifi-tools.com/borge?code=292eeYWEWqY1j4pfo9CYykFWYPCio8xKsKafqE28HFwDpLrW415JV5,,,,,,,,,,,,,,
+19,https://cifi-tools.com/borge?code=2gteCMPEdpz1qDSKV8BezvRZA4sZJSW2cMTtfvzxDFUssfPAuRZ4SZByPu,,,,,,,,,,,,,,
+19,https://cifi-tools.com/borge?code=8T4wB6y9BZGq4e2LyiAJNwXbEPSixfcT4HHhte489R224ysRSkS8CNWJv8X,,,,,,,,,,,,,,
+20,https://cifi-tools.com/borge?code=3HbXdEoNo9uhxZrRGexi1kebnhHCC9fkLER1rsi9sNj5t5D,,,,,,,,,,,,,,
+20,https://cifi-tools.com/borge?code=3HbWgb68EwYg8i3sxVbPmPKyBbfRhJkmKauD7PiWqzpmV5y,,,,,,,,,,,,,,
+20,https://cifi-tools.com/borge?code=PBKgDu2wk1t2mrYLqvCp5mZcsEhFQMCyotPnVupQb7JW8s3MWvSesNVu,,,,,,,,,,,,,,
+20,https://cifi-tools.com/borge?code=Zt3JASpcGPBMmKQBW6GoN3tbFvXpGohes7dbhzaJiDprcuGi2sVsyiLDSYym,,,,,,,,,,,,,,
+21,https://cifi-tools.com/borge?code=PBJxSF3wbrHPwMFEZ2K76wyeKy5hx4Rx1AyWcf3uEXDfGBFAcqLoGHrF,,,,,,,,,,,,,,
+21,https://cifi-tools.com/borge?code=2gtcc8itAKFVh2Wji15MphrBPuobFJvshBK3WbSHRPGoMx5FYcRCRd8dps,,,,,,,,,,,,,,
+22,https://cifi-tools.com/borge?code=62RutV7Ya5siUcER5EM7upvGDFv3v2tTVofoLeqpxohyDssGCsV5xQo,,,,,,,,,,,,,,
+22,https://cifi-tools.com/borge?code=PBJxSF5tM2RbtpZfx67nNsNiWgFHnNRjsQr5C2i7TMfBXW2afP6JF76f,,,,,,,,,,,,,,
+23,https://cifi-tools.com/borge?code=mYAZGuVdQkmfxuZnEhNBajCoyGbz35UB1ssqxefQuGkLgiVEf,,,,,,,,,,,,,,
+23,https://cifi-tools.com/borge?code=2gtWFgRK9iP4so2oD5z4r1eFaz5uxAag18r8ff6Yt7mX4MbaB2hFh9hfBd,,,,,,,,,,,,,,
+23,https://cifi-tools.com/borge?code=8T4L7nzK5T3VfEsKdA7rePRk6Q19VqY63Za21f9iDDSR5WUy2j4WER2cvFR,,,,,,,,,,,,,,
+24,https://cifi-tools.com/borge?code=PBJxSF9mpypHmRyqUnyZRoWUNYxRWrv3ZpeomS4KFUGCwmFo5qxEQoMy,,,,,,,,,,,,,,
+24,https://cifi-tools.com/borge?code=8T4pA55sFrKeTWw4wPDC13gT4Rszcrf7EFLhDsExjCwqrTKkRTSjVUMeEFR,,,,,,,,,,,,,,
+25,https://cifi-tools.com/borge?code=3W8A5E2wsRjDmorzMcQk6DKE7QcxhhH8tvpwbYjHjH6UPjajbsczLjwzqoeTwu,,,,,,,,,,,,,,
+25,https://cifi-tools.com/borge?code=3W8A5E2wrtPUjeDtV5iejiGoaLy6bpmes4J5N7pH11e1STPQcYfp2LuBQLf1qZ,,,,,,,,,,,,,,
+26,https://cifi-tools.com/borge?code=8T4LLWmgbBh1GRptqjipq4m3EBb44bkd36xAZ9kVvxh6wEifeRLoSzwEGf1,,,,,,,,,,,,,,
+27,https://cifi-tools.com/borge?code=8T4L7tmv1o2HpjAVG7ijEYFxu7aEviQ5vVQERwzSsPbJDb3G76ojL4B5WY7,,,,,,,,,,,,,,
+27,https://cifi-tools.com/borge?code=C3ZVfqYveVCRVKsZzLy9foHRCQxDgEmEMShbaVeQmZBYG8ozF14yz4xXfEun29d,,,,,,,,,,,,,,
+28,https://cifi-tools.com/borge?code=3W8MzjiftYK7AESGvnsELSFLLEDWX6Bi65unutQH4335Pyxpe4MuxF3RJpCgQ7,,,,,,,,,,,,,,
+28,https://cifi-tools.com/borge?code=3W8MzjiftYK7AESGvnsELSFLLFheUjQyxGFe5rD3j3b6nTcoVwgzDphNYM8tXH,,,,,,,,,,,,,,
+30,https://cifi-tools.com/borge?code=3W8CZuYKkDXUHo77pFEZKKeZHDsJkzvfnvbf9yNGt3Zb9JQU3wteMDaaMwdDJw,,,,,,,,,,,,,,
+30,https://cifi-tools.com/borge?code=3W8MzjiET2C9Vagcq7JFtib6SC35SrJbcfXdUQ4FCa9rvvjruiGQfR19Cj1rGw,,,,,,,,,,,,,,
+30,https://cifi-tools.com/borge?code=C3ZVfqWzMrGCV9fs9PQxvK8q5s651M3WDYpirmh8qK9fMrKNcQSHLwSUBAue21u,,,,,,,,,,,,,,
+31,https://cifi-tools.com/borge?code=3W8MzjiftYKYmLzKFeHdaZYubtncvMwJxBLfzZxVTbG1sBnQm3LbGGv2P65AUo,,,,,,,,,,,,,,
+31,https://cifi-tools.com/borge?code=3W8MzjiTAnFvMPY8PpSnEpPzesBsraAb4DESX1Yh6T9SKW8uZFcMPSRZxujuVh,,,,,,,,,,,,,,
+32,https://cifi-tools.com/borge?code=3W8LpNrHR3zbteKauSwU8bYDJ4ZiMdVTYquijtxGbA6JtrJ3LLDrrDqcthrfgB,,,,,,,,,,,,,,
+33,https://cifi-tools.com/borge?code=C3Yn425r2HJ1GCjbyrJtbbTQaBaQGNZPHPsUQz8VwJLfFEwupX3mJ6XpwFwJfXM,,,,,,,,,,,,,,
+33,https://cifi-tools.com/borge?code=4i9svYhuKkaQMVV6CvrmKJscBcDKrs3YGh2VVNdVi8hHwMVSJsegjCxrB2vFN94SQo,,,,,,,,,,,,,,
+34,https://cifi-tools.com/borge?code=qkFFrKnPNexwJizbv1F3vKPLGqQcDz7WrP75Tbqbm2PUBVVkGuaH1LVCig9Pod1Z,,,,,,,,,,,,,,
+34,https://cifi-tools.com/borge?code=C3Ygrt54wLA5cTp8ZQYJhhiPQHPEMwDUXYXh69Aox1m3bWVcHLu9fa485ERx5D1,,,,,,,,,,,,,,
+35,https://cifi-tools.com/borge?code=HNfFTwS6pdpcP7iBGAj9MJbAsKc5EsnfWq6KzneRgzvSRUj683N6JwTPLtGwZzCdm9H,,,,,,,,,,,,,,
+36,https://cifi-tools.com/borge?code=2FGbpquFnhFbQyLFGcnnzxQoSD5oFSTpfMofqu3hVShQJJBS37BZKrWvEFPqoTPJyZehV,,,,,,,,,,,,,,
+37,https://cifi-tools.com/borge?code=HNfFTwS6pZbi6SfrBsAtJ3TDvWPQAizj1PfSJiKPZGMYDSubHQ8s5w32BWqWLuBsyc3,,,,,,,,,,,,,,
+37,https://cifi-tools.com/borge?code=2FGc7s6oSucj17wPhXYVoYwSe6h6KwsivaLJs6pJ2tiX5RCAkGytKLay2T6NgfBvMG6vK,,,,,,,,,,,,,,
+38,https://cifi-tools.com/borge?code=2FGbpquFngvxURmurYLs2HRFzYGqo6pKBnU6coTBjAnNAsq3h8RSdWJkoJ6EGGogtipo1,,,,,,,,,,,,,,
+39,https://cifi-tools.com/borge?code=RGuxQiRhW7puHArC4CEVcn3227bgcEb6ekEw2tBJ11qPTCxH1W1SZgJQCxL7dq7j6Ft5Ako,,,,,,,,,,,,,,
+40,https://cifi-tools.com/borge?code=2FGbpquFngw71oBC365FGjyiggJjExVxYTgJq2JGoFfts2a5JJiH4Y8DDUQTwGo3FdmYB,,,,,,,,,,,,,,
+41,https://cifi-tools.com/borge?code=6VyriAqeGfG8QH1iv4ZG2sGQZ3p2P8RYHwPJPdqro2M9TJg31G5FjoxaURyJQgJfHuJtDu,,,,,,,,,,,,,,
+42,https://cifi-tools.com/borge?code=6VyriAqeGfGTG3DU7s7JKeYpge8fAW3BzYubeduYCSeKNdYWfavTnhrbuJCEmP2QwSaMGK,,,,,,,,,,,,,,
+43,https://cifi-tools.com/borge?code=2r9ExBTJ8mHbKpSG4bUjLGHRZac1dEyPTrbxv8YUh8hTA4JqUy2ENqtjqXZTHaTcgSnFdFVAP,,,,,,,,,,,,,,
+44,https://cifi-tools.com/borge?code=99uPYF5ebvYX3bmEP7hpbtNT5CeGhnNDg8rvtBsNWxpSLqnS7MFjP4ZVMT4mQPQBcCGUK8mDa7,,,,,,,,,,,,,,
+44,https://cifi-tools.com/borge?code=2r9FAoEjxVSihTucf69Lr91yz6sBuGqG9y6arr2ZvXGhnRjPS9DbkbuvZVDppwHfZtKTYUo1Z,,,,,,,,,,,,,,
+44,https://cifi-tools.com/borge?code=D66oMu66g5FKBjMvLtfvH8EcoKS8GAEx3rgMDRfyxVxNX5ASrVsuYWhg2F2xX9yBcJKJRcns84xFDh,,,,,,,,,,,,,,
+45,https://cifi-tools.com/borge?code=2r9FAoEjzcquvwwvcicUBkCdEyLK7oHTZog4ciZGevBpuZ3CGDiCkrGqZ1TQeSvQ7sJnmbLT1,,,,,,,,,,,,,,
+46,https://cifi-tools.com/borge?code=czJ61JZZEuCcH336e4HoieTmRDC3ow129SdiJt2PCQydJDe4qKSGH6QPbzV4hpwu1M8wXokzdAF,,,,,,,,,,,,,,
+46,https://cifi-tools.com/borge?code=3jqtR6LWhJMQEhtYHRVAb18orFq4GKZwnnKLbgYSJYEUEyA2ToKxutVT57XqyK7y5uGZHMDvdxJf9,,,,,,,,,,,,,,
+47,https://cifi-tools.com/borge?code=D66mwLX1Aj5AKAuLsaX83GfQEW8SKFyXwqQUtyAf3XfCj732CVTFstctcSVqgSBNnWkSQMzoomxsDh,,,,,,,,,,,,,,
+47,https://cifi-tools.com/borge?code=3jqtR6LWhJMQEiNwJ8UM2cNxhycDfQaAPN8fKMy7Y8bBjuhUYTrQUKnyoHgeVBma6WP9n2A1oZziK,,,,,,,,,,,,,,
+48,https://cifi-tools.com/borge?code=D66mwLVwiepDh2iKtFsNh9LMyVzk2RHijHNYWUrudaWAP5jzdTFt7dxEXUGk5JMPHDVZNrEUfqWYPZ,,,,,,,,,,,,,,
+49,https://cifi-tools.com/borge?code=D66mwLZ8A6J8nbsFk7QoTn6yutyGhkyMH9EFk5JuLTX9XyHa5NVh2hgP4LBfnSGYL1UiUvthhvznc7,,,,,,,,,,,,,,
+49,https://cifi-tools.com/borge?code=D66mwLY4coL6wRYLBtfbPiWTHV3jt4XbjdPF8cmtm1kRbgXLtkSYkeGLFAUFdKppzc1byxqooEVRPu,,,,,,,,,,,,,,
+50,https://cifi-tools.com/borge?code=3jqtR6LWiUwLmKdbD7iGUMpGJ2qE316sbRYPRFYcayd4S5yZfQkyw8sYFHNiAqktdN3mPL6p57esh,,,,,,,,,,,,,,
+50,https://cifi-tools.com/borge?code=czJ61JZZEuGs5ffAtajraNEFZ71TKCZi5nGYDb9m72HgSTFMTNuQUScPSRwsD7cKtCbR7C7uJWj,,,,,,,,,,,,,,
+50,https://cifi-tools.com/borge?code=D66aYrNk75L6gHA9ZGEusGu5KfSUgTffTiRspqwPR2vQEZBSCxLRMNbgLGAfXNpKEgdoAEmKiU4i9d,,,,,,,,,,,,,,
+51,https://cifi-tools.com/borge?code=JvQt79SnBxnQkBWU2VaLEpB7LoFcgteRso9XQtdgf1kLELUSK9vD1cnQEPfBYyHDKJwvNneYwm2GDKbKZ9,,,,,,,,,,,,,,
+55,https://cifi-tools.com/borge?code=JvQt79Sn4DvzcQYkhSkG6qdKMvZKpx75tSiDHzL7FcRac66WcDdEzgFN7HJQ7Bh6Mt5EzicQJy32TgfYST,,,,,,,,,,,,,,
+56,https://cifi-tools.com/borge?code=32GYZ4fgXgZTS4eMQpk6y6QXQorme43ntZyAeKmAGfm2TX2necV9kV7HRZqPiizHX6pvnCdKK1q1vYPmNun1PLw9,,,,,,,,,,,,,,
+58,https://cifi-tools.com/borge?code=54VXA6YDUTxYi9rvfiE6osqJzNJ5ubmywP6uiYL4t8YhNxkk621Wcusz5oczQsrjCce9bFRZK9rmrTDLb,,,,,,,,,,,,,,
+59,https://cifi-tools.com/borge?code=2N6kQa8GmsEQ2Bfb2xnczBv9RwDjVrG3Jd28SCwN5AnSPoFbkrsBQN4J7jbynxp1TG8nXHxYMMhnyGmkN1pb,,,,,,,,,,,,,,
+60,https://cifi-tools.com/borge?code=2N6kjCdE7wHJ8zovqXWEBdypUY7J14xGr5TcX9LWm46vzuyEZEC43wVDgxT1a7p9ZdagJ1tUtPAuftFX7ypj,,,,,,,,,,,,,,
+63,https://cifi-tools.com/borge?code=TZyeYAZzdpsPytBRWdSiDiNyop877R2wGmYBDcboFWzYvCwDzZYfrgnEbmUq4HvsUpgpLMWdePNyRqTAuBeFbm,,,,,,,,,,,,,,
+65,https://cifi-tools.com/borge?code=32GYZ4fgYr5uXN6Zr862VATvPaoRcHrynDjpGLWFTaS31v4MqvKz2pBpPdnD1WPr8S6SoQaoFPJmP7P7sLQnAp1D,,,,,,,,,,,,,,
+66,https://cifi-tools.com/borge?code=TZyeYAa1AV93efK6ybXeRF76wHtQ5FD9ubZ2BthRCguYAuN69Y6fvwbza88UfviajmJYzZaWV7MQWNgCGhP4go,,,,,,,,,,,,,,
+72,https://cifi-tools.com/borge?code=JvQt79Sn1eRCF1W8BSrYwoVMwV5JP4a3xTJ7FHsEMuGfiHTQSMYpLcgdHb7fsHdT3SLBSXKAbnrfxRuCR5,,,,,,,,,,,,,,
+74,https://cifi-tools.com/borge?code=9vbcGXBjURbCU1mSdzxRffsexzVqe6tqjHkFZwUt99gpLSrhVdQrSATBdVsAf4B9d22s3zZRGUv4sBZuKLD794gnT,,,,,,,,,,,,,,
+77,https://cifi-tools.com/borge?code=TZyYHEkPn7hbSL5eP8hBMvbbVeRn5yR1BScUJM9VxGWmv8jq9qvMJ57xGhndwoQyAedWTRqbaAGXfrSpKKUx7H,,,,,,,,,,,,,,
+79,https://cifi-tools.com/borge?code=728Nb3D6d2fzmRcQw8pDi9tJsxCdAcxGjSYEG2MgDPa7zriR79HP7NgZcG1C69LFa7G6n3d2e7LGgsageZtJB,,,,,,,,,,,,,,
+79,https://cifi-tools.com/borge?code=32GYZ4fgXgZpENmJCpjBSFU6m6hNDevFtaNRLYX93RW7Nzuy9pREXZwEqnGTJ5PNTPnQcER4CaKkZK78t1r5L1MZ,,,,,,,,,,,,,,
+79,https://cifi-tools.com/borge?code=32GYZ4fgXgZpENmJH4XURAAtb769zgifhqJSX5oQcZT8XHeq9EzkJLgXyULLyymqARNJyy1QxjZgUfsryRUYRURu,,,,,,,,,,,,,,
+81,https://cifi-tools.com/borge?code=32GYnscThfeiaiNB6ULQU1NVJMTPSYp4TJ64jrDKRQ9YqDJ9xUS2TxaB1uA7GkszGkckNeBpoctd7XuBufJLUHKd,,,,,,,,,,,,,,

@@ -1,7 +1,7 @@
 <template>
   <div 
     v-if="show" 
-    class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-start justify-center p-4"
+    class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-start justify-center p-4 mobile-modal-container"
     @click="handleModalClick"
   >
     <div 
@@ -436,6 +436,12 @@ import { formatNumber, formatSuffixInput, parseSuffixInput } from '@/composables
 import InfoTooltip from '@/composables/InfoTooltip.vue';
 import Decimal from 'break_infinity.js';
 
+// Import hunter constants for dynamic Mat3 columns
+import { HUNTERS, getHunterById } from '@/constants/hunters';
+import * as borgeConstants from '@/constants/borge';
+import * as ozzyConstants from '@/constants/ozzy';
+import * as knoxConstants from '@/constants/knox';
+
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -469,6 +475,53 @@ const isHelpGuideExpanded = ref(true); // Default to expanded
 // Live time tracking
 const currentTime = ref(new Date());
 const liveTimeInterval = ref(null);
+
+// Enabled Hunter Mat3 Resources - computed property that updates when hunter settings change
+const enabledHunterMat3Resources = computed(() => {
+  const hunterBuildSettings = trTrackingStore.hunterBuildSettings;
+  if (!hunterBuildSettings?.enabledHunters) {
+    return [];
+  }
+  
+  const enabledResources = [];
+  HUNTERS.forEach(hunter => {
+    if (hunterBuildSettings.enabledHunters[hunter.id]) {
+      // Find the Mat3 resource for this hunter in available resources
+      const mat3ResourceId = `mat3-${hunter.id}`;
+      const mat3Resource = trTrackingStore.availableResources.find(r => r.id === mat3ResourceId);
+      
+      if (mat3Resource) {
+        enabledResources.push({
+          ...mat3Resource,
+          hunterId: hunter.id,
+          hunterName: hunter.name
+        });
+      }
+    }
+  });
+  
+  return enabledResources;
+});
+
+// Helper function to get Mat3 name from hunter constants
+function getHunterMat3Name(hunterId) {
+  let hunterConstants;
+  switch (hunterId) {
+    case 'borge':
+      hunterConstants = borgeConstants;
+      break;
+    case 'ozzy':
+      hunterConstants = ozzyConstants;
+      break;
+    case 'knox':
+      hunterConstants = knoxConstants;
+      break;
+    default:
+      return 'Mat3'; // fallback
+  }
+  
+  return hunterConstants.EVAL_RESULT_LABELS?.mat3 || 'Mat3';
+}
 
 // Initialize help guide state from localStorage
 const initializeHelpGuideState = () => {
@@ -725,13 +778,25 @@ const buildColumnDefs = () => {
       autoSizeColumn = true; // Enable auto-sizing
       minWidth = isMobile ? 120 : 150; // Minimum width
       maxWidth = isMobile ? 300 : 500; // Maximum width to prevent excessive expansion
+
     } else {
       // Regular resource columns - compact but readable
       columnWidth = isMobile ? 70 : 90;
     }
 
+    // Generate display name for the column
+    let displayName = resource.name;
+    if (resource.id.startsWith('mat3-')) {
+      // For hunter Mat3 resources, use the correct Mat3 name from hunter constants
+      const hunterId = resource.id.replace('mat3-', '');
+      const mat3Name = getHunterMat3Name(hunterId);
+      displayName = `Daily\n${mat3Name}`;
+    } else {
+      displayName = resource.name.replace(/ /g, '\n');
+    }
+
     columns.push({
-      headerName: `⋮⋮\n${resource.name.replace(/ /g, '\n')}`,
+      headerName: `⋮⋮\n${displayName}`,
       field: `resource_${resource.id}`,
       width: columnWidth,
       flex: flexValue, // Only Notes gets flex for expansion
@@ -767,8 +832,8 @@ const buildColumnDefs = () => {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
-        paddingLeft: '8px',
-        paddingRight: '8px',
+        paddingLeft: '5px',
+        paddingRight: '5px',
         paddingTop: '4px',
         paddingBottom: '4px',
         height: 'auto',
@@ -938,15 +1003,15 @@ const buildColumnDefs = () => {
         
         const currentValue = params.value || 0;
         
-        // Only show differences for specific resources: cells, mp, mp-accum, shards, rp, ap, oo-accum
+        // Only show differences for specific resources: cells, mp, mp-accum, shards, rp, ap, oo-accum, and hunter Mat3
         const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum'];
-        const shouldShowDifference = showDifferenceFor.includes(resource.id);
+        const shouldShowDifference = showDifferenceFor.includes(resource.id) || resource.id.startsWith('mat3-');
         
         // Check if this is a whole number and we should show difference
         const isWholeNumber = Number.isInteger(currentValue) && currentValue !== 0;
         
-        // Special display for oo-accum and attgn3-buff - always format with suffix notation
-        if (resource.id === 'oo-accum' || resource.id === 'attgn3-buff') {
+        // Special display for oo-accum, attgn3-buff, and hunter Mat3 - always format with suffix notation
+        if (resource.id === 'oo-accum' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
           let displayValue;
           
           if (resource.id === 'attgn3-buff') {
@@ -962,6 +1027,7 @@ const buildColumnDefs = () => {
               displayValue = formatSuffixInput(currentValue);
             }
           } else {
+            // Use formatSuffixInput for oo-accum and hunter Mat3
             displayValue = formatSuffixInput(currentValue);
           }
           
@@ -1016,6 +1082,7 @@ const buildColumnDefs = () => {
               diffText = difference > 0 ? `+${formatSuffixInput(difference)}` : `-${formatSuffixInput(Math.abs(difference))}`;
             }
           } else {
+            // Use formatSuffixInput for oo-accum and hunter Mat3
             diffText = difference > 0 ? `+${formatSuffixInput(difference)}` : `-${formatSuffixInput(Math.abs(difference))}`;
           }
           
@@ -1302,7 +1369,16 @@ const initializeDraggableResources = () => {
       };
     });
     
-    console.log('Mapped resources:', mappedResources.map(r => r.id));
+    // Add enabled hunter Mat3 resources to mappedResources
+    const hunterMat3Resources = enabledHunterMat3Resources.value;
+    hunterMat3Resources.forEach(hunterResource => {
+      // Only add if not already in mappedResources
+      if (!mappedResources.find(r => r.id === hunterResource.id)) {
+        mappedResources.push(hunterResource);
+      }
+    });
+    
+    console.log('Mapped resources (including hunter Mat3):', mappedResources.map(r => r.id));
     
     // Load column order from localStorage first, then from track data, then default
     const savedColumnOrder = loadColumnOrderFromLocalStorage();
@@ -1509,6 +1585,24 @@ watch(() => trTrackingStore.selectedResources, () => {
     initializeDraggableResources();
     
     // Update the grid with new column definitions (to reflect enabled/disabled resources)
+    nextTick(() => {
+      if (gridApi.value) {
+        const newColumnDefs = buildColumnDefs();
+        gridApi.value.setGridOption('columnDefs', newColumnDefs);
+        initialColumnDefs.value = newColumnDefs;
+      }
+    });
+  }
+}, { deep: true });
+
+// Watch for changes in hunter build settings (when hunters are enabled/disabled)
+watch(() => trTrackingStore.hunterBuildSettings, () => {
+  // Re-initialize draggable resources when hunter settings change
+  if (props.show && gridApi.value) {
+    console.log('Hunter build settings changed, reinitializing resources');
+    initializeDraggableResources();
+    
+    // Update the grid with new column definitions (to reflect enabled/disabled hunters)
     nextTick(() => {
       if (gridApi.value) {
         const newColumnDefs = buildColumnDefs();
@@ -2693,6 +2787,23 @@ function addNewEntry() {
     entryToSave.values[resource.id] = 0;
   });
   
+  // Auto-populate Mat3 values for enabled hunters
+  const hunterBuildSettings = trTrackingStore.hunterBuildSettings;
+  if (hunterBuildSettings?.enabledHunters && hunterBuildSettings?.hunterProductions) {
+    HUNTERS.forEach(hunter => {
+      if (hunterBuildSettings.enabledHunters[hunter.id]) {
+        const mat3ResourceId = `mat3-${hunter.id}`;
+        const production = hunterBuildSettings.hunterProductions[hunter.id];
+        if (production?.dailyMat3Production) {
+          // Set the Mat3 value if this resource is being tracked
+          if (entryToSave.values.hasOwnProperty(mat3ResourceId)) {
+            entryToSave.values[mat3ResourceId] = production.dailyMat3Production;
+          }
+        }
+      }
+    });
+  }
+  
   // Immediately save the entry to the store
   emit('update', {
     action: 'addEntry',
@@ -3566,5 +3677,16 @@ input[type="number"] {
   line-height: 1.2;
   white-space: pre-line;
   color: inherit;
+}
+
+.mobile-modal-container {
+  padding-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .mobile-modal-container {
+    padding-bottom: var(--mobile-safe-bottom, 70px);
+    padding-top: 60px;
+  }
 }
 </style>

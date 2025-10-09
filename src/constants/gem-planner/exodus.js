@@ -173,7 +173,7 @@ export const EXODUS_GEM = {
         calculate: (level, exodusLevel) => {
           const levelDecimal = new Decimal(level);
           const exodusLevelDecimal = new Decimal(exodusLevel);
-          const innerBase = new Decimal(1.4).pow(levelDecimal); // Math.pow(1.6, level)
+          const innerBase = new Decimal(1.4).pow(levelDecimal); // Math.pow(1.4, level)
           const outerExponent = new Decimal(1).add(exodusLevelDecimal.mul(0.1)).sub(0.1); // 1 + (exodusLevel * 0.1) - 0.1
           return innerBase.pow(outerExponent);
         }
@@ -200,7 +200,7 @@ export const EXODUS_GEM = {
         calculate: (level, exodusLevel) => {
           const levelDecimal = new Decimal(level);
           const exodusLevelDecimal = new Decimal(exodusLevel);
-          const innerBase = new Decimal(1.1).pow(levelDecimal); // Math.pow(1.6, level)
+          const innerBase = new Decimal(1.1).pow(levelDecimal); // Math.pow(1.1, level)
           const outerExponent = new Decimal(1).add(exodusLevelDecimal.mul(0.1)).sub(0.1); // 1 + (exodusLevel * 0.1) - 0.1
           return innerBase.pow(outerExponent);
         }

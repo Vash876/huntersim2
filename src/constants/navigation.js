@@ -20,7 +20,8 @@ import {
   IconChartLine,
   IconSparkles,
   IconScript,
-  IconBook
+  IconBook,
+  IconDatabase
 } from '@tabler/icons-vue';
 
 const IconMilestone = {
@@ -242,7 +243,13 @@ export const NAVIGATION = {
           name: 'Inscryption Planner',
           path: '/tools/inscryption-planner',
           icon: IconWriting
-        }
+        },
+        // {
+        //   id: 'buildrepository',
+        //   name: 'Build Repository',
+        //   path: '/tools/build-repository',
+        //   icon: IconDatabase
+        // }
       ]
     },
     {

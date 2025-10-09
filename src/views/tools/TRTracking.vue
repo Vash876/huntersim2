@@ -25,6 +25,15 @@
               <span>Settings</span>
             </button>
 
+            <!-- Hunter Builds -->
+            <button
+              @click="openBuildSelectionModal"
+              class="flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-cyan-700 hover:from-cyan-600 hover:to-cyan-800 text-white font-semibold shadow-lg transition-colors duration-200 text-xs sm:text-sm"
+            >
+              <IconChartLine size="18" />
+              <span>Hunter Builds</span>
+            </button>
+
             <!-- Import -->
             <button
               @click="openImportModal"
@@ -303,6 +312,14 @@
       @close="showMultiTRComparisonModal = false"
     />
 
+    <BuildSelectionModal
+      :show="showBuildSelectionModal"
+      :initial-selected-builds="selectedHunterBuilds"
+      :initial-enabled-hunters="enabledHunters"
+      @close="showBuildSelectionModal = false"
+      @save="handleBuildSelectionSave"
+    />
+
     <AlertDialog
       :is-visible="alertDialog.isVisible"
       :title="alertDialog.title"
@@ -343,6 +360,7 @@ import ProgressModal from '@/components/tr-tracking/ProgressModal.vue';
 import ImportModal from '@/components/tr-tracking/ImportModal.vue';
 import ShareTrackModal from '@/components/tr-tracking/ShareTrackModal.vue';
 import MultiTRComparisonModal from '@/components/tr-tracking/MultiTRComparisonModal.vue';
+import BuildSelectionModal from '@/components/tr-tracking/BuildSelectionModal.vue';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 
 // Store
@@ -357,7 +375,12 @@ const showProgressModal = ref(false);
 const showImportModal = ref(false);
 const showShareTrackModal = ref(false);
 const showMultiTRComparisonModal = ref(false);
+const showBuildSelectionModal = ref(false);
 const currentTrack = ref(null);
+
+// Hunter Build Selection State - connect to store for persistence
+const selectedHunterBuilds = computed(() => trTrackingStore.hunterBuildSettings?.selectedBuilds || {});
+const enabledHunters = computed(() => trTrackingStore.hunterBuildSettings?.enabledHunters || {});
 
 // AlertDialog state
 const alertDialog = ref({
@@ -391,6 +414,10 @@ const hasSelectedResources = computed(() => selectedResources.value.length > 0);
 // Methods
 function openResourceSettingsModal() {
   showResourceSettingsModal.value = true;
+}
+
+function openBuildSelectionModal() {
+  showBuildSelectionModal.value = true;
 }
 
 function openImportModal() {
@@ -645,6 +672,15 @@ function handleImport(trackData) {
   // Add the imported track to the store
   trTrackingStore.createTRTrack(trackData);
   showImportModal.value = false;
+}
+
+// Handle Hunter Build Selection
+function handleBuildSelectionSave(data) {
+  // Update the store with hunter production settings
+  trTrackingStore.updateHunterBuildSettings(data);
+  
+  console.log('Hunter Build Selection saved:', data);
+  showBuildSelectionModal.value = false;
 }
 
 // Lifecycle

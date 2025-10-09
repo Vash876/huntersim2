@@ -563,8 +563,9 @@
                       <thead>
                         <tr class="text-gray-400">
                           <th class="text-left py-1">Source</th>
-                          <th class="text-right py-1">LP</th>
-                          <th class="text-right py-1">Multi</th>
+                          <th class="text-right pr-1 py-1">LP</th>
+                          <th class="text-right pr-1 py-1">Multi</th>
+                          <th v-if="evolutionGemNode2Active" class="text-right py-1">RP Multi</th>
                         </tr>
                       </thead>
                       <tbody class="space-y-1">
@@ -583,10 +584,16 @@
                             +{{ lpFromPlayerLevel }}
                           </td>
                           <td :class="[
-                            'text-right py-0.5 px-1 text-[0.6rem]',
+                            'text-right py-0.5 px-1 text-[0.7rem]',
                             isSelected(2) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromPlayerLevelMultiplier) }}
+                          </td>
+                          <td v-if="evolutionGemNode2Active" :class="[
+                            'text-right py-0.5 px-1 text-[0.7rem]',
+                            isSelected(2) ? 'text-orange-400' : 'text-gray-400'
+                          ]">
+                            x{{ formatMultiplier(rpFromPlayerLevelMultiplier) }}
                           </td>
                         </tr>
                         
@@ -605,10 +612,16 @@
                             +{{ lpFromResearch }}
                           </td>
                           <td :class="[
-                            'text-right py-0.5 px-1 text-[0.6rem]',
+                            'text-right py-0.5 px-1 text-[0.7rem]',
                             isSelected(8) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromResearchMultiplier) }}
+                          </td>
+                          <td v-if="evolutionGemNode2Active" :class="[
+                            'text-right py-0.5 px-1 text-[0.7rem]',
+                            isSelected(8) ? 'text-orange-400' : 'text-gray-400'
+                          ]">
+                            x{{ formatMultiplier(rpFromResearchMultiplier) }}
                           </td>
                         </tr>
                         
@@ -627,10 +640,16 @@
                             +{{ lpFromShipEvolutions }}
                           </td>
                           <td :class="[
-                            'text-right py-0.5 px-1 text-[0.6rem]',
+                            'text-right py-0.5 px-1 text-[0.7rem]',
                             isSelected(15) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromShipEvolutionsMultiplier) }}
+                          </td>
+                          <td v-if="evolutionGemNode2Active" :class="[
+                            'text-right py-0.5 px-1 text-[0.7rem]',
+                            isSelected(15) ? 'text-orange-400' : 'text-gray-400'
+                          ]">
+                            x{{ formatMultiplier(rpFromShipEvolutionsMultiplier) }}
                           </td>
                         </tr>
                         
@@ -649,54 +668,56 @@
                             +{{ lpFromAchievements }}
                           </td>
                           <td :class="[
-                            'text-right py-0.5 px-1 text-[0.6rem]',
+                            'text-right py-0.5 px-1 text-[0.7rem]',
                             isSelected(16) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromAchievementsMultiplier) }}
+                          </td>
+                          <td v-if="evolutionGemNode2Active" :class="[
+                            'text-right py-0.5 px-1 text-[0.7rem]',
+                            isSelected(16) ? 'text-orange-400' : 'text-gray-400'
+                          ]">
+                            x{{ formatMultiplier(rpFromAchievementsMultiplier) }}
                           </td>
                         </tr>
                         
                         <!-- TS#19 -->
                         <tr :class="isSelected(19) ? 'bg-purple-900/30 rounded' : ''">
                           <td :class="[
-                            'py-0.5 px-1',
+                            'pt-0.5 pb-1.5 px-1',
                             isSelected(19) ? 'text-yellow-300 font-medium' : 'text-gray-400'
                           ]">
                             TS#19 
                           </td>
                           <td :class="[
-                            'text-right py-0.5 px-1',
+                            'text-right pt-0.5 pb-1.5 px-1',
                             isSelected(19) ? 'text-yellow-300 font-medium' : 'text-yellow-300'
                           ]">
                             +{{ lpFromPlayerLevelTS19 }}
                           </td>
                           <td :class="[
-                            'text-right py-0.5 px-1 text-[0.6rem]',
+                            'text-right pt-0.5 pb-1.5 px-1 text-[0.7rem]',
                             isSelected(19) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromPlayerLevelTS19Multiplier) }}
                           </td>
+                          <td v-if="evolutionGemNode2Active" :class="[
+                            'text-right pt-0.5 pb-1.5 px-1 text-[0.7rem]',
+                            isSelected(19) ? 'text-orange-400' : 'text-gray-400'
+                          ]">
+                            x{{ formatMultiplier(rpFromPlayerLevelTS19Multiplier) }}
+                          </td>
+                        </tr>
+                        
+                        <!-- Total Row mit Trennstrich -->
+                        <tr class="border-t border-gray-600">
+                          <td class="text-white py-1.5 px-1 font-medium">Total</td>
+                          <td class="text-yellow-400 text-right py-1.5 px-1 font-medium">+{{ totalLPSelected }}</td>
+                          <td class="text-green-400 text-right py-1.5 px-1 font-medium">x{{ formatMultiplier(combinedMultiplierSelected) }}</td>
+                          <td v-if="evolutionGemNode2Active" class="text-orange-400 text-right py-1.5 px-1 font-medium">x{{ formatMultiplier(combinedRPMultiplier) }}</td>
                         </tr>
                       </tbody>
                     </table>
-                    
-                    <!-- Total Section -->
-                    <div class="border-t border-gray-600 pt-2 mt-2">
-                      <table class="w-full text-xs">
-                        <tbody>
-                          <tr class="font-medium">
-                            <td class="text-white py-0.5">Total LP</td>
-                            <td class="text-yellow-400 text-right py-0.5">{{ totalLPSelected }}</td>
-                            <td class="text-right py-0.5"></td>
-                          </tr>
-                          <tr class="font-medium">
-                            <td class="text-white py-0.5">Combined Multi</td>
-                            <td class="text-right py-0.5"></td>
-                            <td class="text-green-400 text-right py-0.5">x{{ formatMultiplier(combinedMultiplierSelected) }}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -737,6 +758,7 @@ import {
   getTraitSphereAtPosition,
   isAdjacentToAnySelected
 } from '@/constants/ts-planner';
+import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
 
 // State for milestone settings
 const startCellMilestones = ref(0);
@@ -759,6 +781,21 @@ const playerLevel = ref(0);
 const researchLevels = ref(0);
 const lpAchievements = ref(0);
 const shipEvolutions = ref(0);
+
+// Initialize gem planner store
+const gemPlannerStore = useGemPlannerStore();
+
+// Evolution Gem Node #2 check
+const evolutionGemNode2Active = computed(() => {
+  const evolutionGemState = gemPlannerStore.getGemState('evolution');
+  return evolutionGemState?.nodes?.[1] || false; // Node #2 ist Index 1
+});
+
+// Evolution Gem Node #5 check
+const evolutionGemNode5Active = computed(() => {
+  const evolutionGemState = gemPlannerStore.getGemState('evolution');
+  return evolutionGemState?.nodes?.[4] || false; // Node #5 ist Index 4
+});
 
 // LP calculations - mit isSelected Bedingungen für aktive Berechnung
 const lpFromPlayerLevelActive = computed(() => {
@@ -792,7 +829,8 @@ const totalLPSelected = computed(() => {
 
 // Kombinierter Multiplikator basierend auf ausgewählten TS
 const combinedMultiplierSelected = computed(() => {
-  return Math.pow(2, Math.floor(totalLPSelected.value / 10));
+  const divisor = evolutionGemNode5Active.value ? 9 : 10;
+  return Math.pow(2, Math.floor(totalLPSelected.value / divisor));
 });
 
 // Die ursprünglichen LP-Berechnungen ohne isSelected Bedingungen für die Anzeige
@@ -818,23 +856,67 @@ const lpFromPlayerLevelTS19 = computed(() => {
 
 // FEHLENDE MULTIPLIKATOR COMPUTED PROPERTIES
 const lpFromPlayerLevelMultiplier = computed(() => {
-  return Math.pow(2, Math.floor(lpFromPlayerLevel.value / 10));
+  const divisor = evolutionGemNode5Active.value ? 9 : 10;
+  return Math.pow(2, Math.floor(lpFromPlayerLevel.value / divisor));
 });
 
 const lpFromResearchMultiplier = computed(() => {
-  return Math.pow(2, Math.floor(lpFromResearch.value / 10));
+  const divisor = evolutionGemNode5Active.value ? 9 : 10;
+  return Math.pow(2, Math.floor(lpFromResearch.value / divisor));
 });
 
 const lpFromShipEvolutionsMultiplier = computed(() => {
-  return Math.pow(2, Math.floor(lpFromShipEvolutions.value / 10));
+  const divisor = evolutionGemNode5Active.value ? 9 : 10;
+  return Math.pow(2, Math.floor(lpFromShipEvolutions.value / divisor));
 });
 
 const lpFromAchievementsMultiplier = computed(() => {
-  return Math.pow(2, Math.floor(lpFromAchievements.value / 10));
+  const divisor = evolutionGemNode5Active.value ? 9 : 10;
+  return Math.pow(2, Math.floor(lpFromAchievements.value / divisor));
 });
 
 const lpFromPlayerLevelTS19Multiplier = computed(() => {
-  return Math.pow(2, Math.floor(lpFromPlayerLevelTS19.value / 10));
+  const divisor = evolutionGemNode5Active.value ? 9 : 10;
+  return Math.pow(2, Math.floor(lpFromPlayerLevelTS19.value / divisor));
+});
+
+// RP Multi für einzelne LP-Quellen (alle 80 LP statt 10 LP)
+const rpFromPlayerLevelMultiplier = computed(() => {
+  if (!evolutionGemNode2Active.value) return 1;
+  const divisor = evolutionGemNode5Active.value ? 70 : 80;
+  return Math.pow(2, Math.floor(lpFromPlayerLevel.value / divisor));
+});
+
+const rpFromResearchMultiplier = computed(() => {
+  if (!evolutionGemNode2Active.value) return 1;
+  const divisor = evolutionGemNode5Active.value ? 70 : 80;
+  return Math.pow(2, Math.floor(lpFromResearch.value / divisor));
+});
+
+const rpFromShipEvolutionsMultiplier = computed(() => {
+  if (!evolutionGemNode2Active.value) return 1;
+  const divisor = evolutionGemNode5Active.value ? 70 : 80;
+  return Math.pow(2, Math.floor(lpFromShipEvolutions.value / divisor));
+});
+
+const rpFromAchievementsMultiplier = computed(() => {
+  if (!evolutionGemNode2Active.value) return 1;
+  const divisor = evolutionGemNode5Active.value ? 70 : 80;
+  return Math.pow(2, Math.floor(lpFromAchievements.value / divisor));
+});
+
+const rpFromPlayerLevelTS19Multiplier = computed(() => {
+  if (!evolutionGemNode2Active.value) return 1;
+  const divisor = evolutionGemNode5Active.value ? 70 : 80;
+  return Math.pow(2, Math.floor(lpFromPlayerLevelTS19.value / divisor));
+});
+
+// Combined RP Multi - alle individuellen RP Multis zusammengerechnet
+const combinedRPMultiplier = computed(() => {
+  if (!evolutionGemNode2Active.value) return 1;
+
+  const divisor = evolutionGemNode5Active.value ? 70 : 80;
+  return Math.pow(2, Math.floor(totalLPSelected.value / divisor));
 });
 
 // Behalte das ursprüngliche totalLP für andere Verwendungen
@@ -862,7 +944,8 @@ function formatMultiplier(value) {
 
 // Kombinierter Multiplikator basierend auf Total LP
 const combinedMultiplier = computed(() => {
-  return Math.pow(2, Math.floor(totalLP.value / 10));
+  const divisor = evolutionGemNode5Active.value ? 9 : 10;
+  return Math.pow(2, Math.floor(totalLP.value / divisor));
 });
 
 // Milestone cost calculations

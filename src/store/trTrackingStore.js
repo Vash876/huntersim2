@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { generateId } from '@/utils/base58';
 import IndexedDBService from '@/services/indexedDBService.js';
+import { HUNTERS, getHunterById } from '@/constants/hunters';
 
 // Default available resources that users can choose from
 const DEFAULT_AVAILABLE_RESOURCES = [
@@ -25,7 +26,45 @@ const DEFAULT_AVAILABLE_RESOURCES = [
   { id: 'current-camp', name: 'Current Camp', color: '#ffffff', category: 'camp', format: 'camp' },
   { id: 'camp-timer', name: 'Camp Timer', color: '#ffffff', category: 'camp', format: 'time' },
   { id: 'notes', name: 'Notes', color: '#ffffff', category: 'other', format: 'text' },
+  // Dynamic Hunter Mat3 Resources - VOLLAUTOMATISCH
+  ...HUNTERS.map(hunter => {
+    // Dynamically import and get Mat3 name from hunter constants
+    let mat3Name = 'Mat3'; // fallback
+    
+    try {
+      // Dynamic import of hunter constants
+      const hunterConstants = require(`@/constants/${hunter.id}`);
+      const { CURRENCY_LABELS_SHORT, CURRENCY_TYPES } = hunterConstants;
+      
+      // Get Mat3 currency type (mat3 is always the third material)
+      const mat3CurrencyKey = Object.keys(CURRENCY_TYPES).find(key => CURRENCY_TYPES[key] === 'mat3');
+      if (mat3CurrencyKey && CURRENCY_LABELS_SHORT) {
+        mat3Name = CURRENCY_LABELS_SHORT[CURRENCY_TYPES[mat3CurrencyKey]] || 'Mat3';
+      }
+    } catch (error) {
+      console.warn(`Could not load Mat3 name for ${hunter.id}, using fallback`);
+    }
+
+    return {
+      id: `mat3-${hunter.id}`,
+      name: `${hunter.name} ${mat3Name}`,
+      color: getHunterColor(hunter.color),
+      category: 'hunter-mat3',
+      format: 'number'
+    };
+  })
 ];
+
+// Helper function to get hunter color in hex format
+function getHunterColor(colorName) {
+  const colorMap = {
+    red: '#ef4444',
+    green: '#22c55e', 
+    blue: '#3b82f6',
+    purple: '#a855f7'
+  };
+  return colorMap[colorName] || '#ffffff';
+}
 
 // Default selected resources for new users
 const DEFAULT_SELECTED_RESOURCES = [
@@ -56,6 +95,14 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
   const isInitialized = ref(false);
   const useIndexedDB = ref(false);
   const idbService = new IndexedDBService();
+  
+  // Hunter Build Settings
+  const hunterBuildSettings = ref({
+    selectedBuilds: {}, // { hunterId: buildId }
+    hunterProductions: {}, // { hunterId: { buildId, buildName, dailyMat3Production } }
+    enabledHunters: {}, // { hunterId: true/false }
+    totalDailyMat3Production: 0
+  });
 
   // Computed
   const activeTracks = computed(() => trTracks.value.filter(track => track.isActive));
@@ -173,6 +220,17 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         await saveToStorage(); // Save defaults
       }
 
+      // Load hunter build settings
+      const savedHunterBuildSettings = await idbService.loadTRSettings('hunterBuildSettings');
+      if (savedHunterBuildSettings) {
+        hunterBuildSettings.value = {
+          selectedBuilds: savedHunterBuildSettings.selectedBuilds || {},
+          hunterProductions: savedHunterBuildSettings.hunterProductions || {},
+          enabledHunters: savedHunterBuildSettings.enabledHunters || {},
+          totalDailyMat3Production: savedHunterBuildSettings.totalDailyMat3Production || 0
+        };
+      }
+
       // Load custom resources
       const savedCustomResources = await idbService.loadTRSettings('customResources');
       if (savedCustomResources) {
@@ -233,6 +291,9 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         resource => !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
       );
       await idbService.saveTRSettings('customResources', customResources);
+      
+      // Save hunter build settings
+      await idbService.saveTRSettings('hunterBuildSettings', hunterBuildSettings.value);
       
       console.log('💾 Saved TR settings to IndexedDB');
     } catch (error) {
@@ -298,6 +359,18 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
 
     await saveToStorage();
     return true;
+  }
+
+  async function updateHunterBuildSettings(buildData) {
+    hunterBuildSettings.value = {
+      selectedBuilds: buildData.selectedBuilds || {},
+      hunterProductions: buildData.hunterProductions || {},
+      enabledHunters: buildData.enabledHunters || {},
+      totalDailyMat3Production: buildData.totalDailyMat3Production || 0
+    };
+    
+    await saveToStorage();
+    console.log('✅ Hunter build settings updated and saved');
   }
 
   async function createTRTrack(trackData) {
@@ -741,6 +814,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     selectedResources,
     trTracks,
     isInitialized,
+    hunterBuildSettings,
 
     // Computed
     activeTracks,
@@ -770,6 +844,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     importTrackData,
     importMultipleTracksData,
     updateStandardResourceColor,
-    updateCustomResource
+    updateCustomResource,
+    updateHunterBuildSettings
   };
 });

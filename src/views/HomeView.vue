@@ -2,6 +2,25 @@
 const changelog = 
 [
   {
+    version: '2.8.11',
+    date: '2025-10-09',
+    changes: [
+      {
+        text: 'TR Tracker',
+        subItems: [
+          'Implemented automatic daily loot tracking - tracks all hunter mat3 production automatically from simulation results',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added Evolution GN#4 to the calculations',
+          'Added End of TR time calculation in Orb Calculator - automatically calculates and displays when your TR will end based on current and target hours',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.10',
     date: '2025-10-01',
     changes: [

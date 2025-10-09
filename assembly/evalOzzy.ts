@@ -390,6 +390,7 @@ function ozzyEnemyAttack(): void {
     currentOzzy.evadeStacks--;
   } else if (ck(currentOzzy.evade)) {
     dmg = 0;
+    evaded = true;
   } else if (currentOzzyEnemy.enrage > 200 || ck(currentOzzyEnemy.critRate)) {
     dmg *= currentOzzyEnemy.critDmg;
     if (ck(currentOzzy.dod * 0.15)) {

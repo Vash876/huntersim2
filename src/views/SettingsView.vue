@@ -4,14 +4,18 @@
       <!-- Überschrift -->
       <h2 class="text-3xl font-bold mb-6 text-center text-white">Settings</h2>
       
-      <!-- Backup & Restore Section -->
-      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-8">
-        <div class="header p-4 flex justify-between items-center">
-          <h3 class="text-lg font-semibold text-white flex items-center">
-            <IconDatabaseExport size="20" class="mr-2 text-blue-400" />
-            Backup & Restore
-          </h3>
-        </div>
+      <!-- Grid Container für Settings Karten -->
+      <div class="space-y-8">
+        <!-- Erste Reihe: Backup & Restore + Cache Management -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Backup & Restore Section -->
+          <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
+            <div class="header p-4 flex justify-between items-center">
+              <h3 class="text-lg font-semibold text-white flex items-center">
+                <IconDatabaseExport size="20" class="mr-2 text-blue-400" />
+                Backup & Restore
+              </h3>
+            </div>
         
         <div class="p-6">
         <!-- Backup Section -->
@@ -139,33 +143,130 @@
         </div>
       </div>
 
+          <!-- Cache Management -->
+          <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
+            <div class="header p-4 flex justify-between items-center">
+              <h3 class="text-lg font-semibold text-white flex items-center">
+                <IconDatabaseOff size="20" class="mr-2 text-amber-400" />
+                Cache Management
+              </h3>
+            </div>
+            
+            <div class="p-6">
+              <p class="text-gray-300 text-sm mb-4">
+                Clear the evaluation cache to free up memory. This won't affect your builds or settings,
+                but may temporarily slow down the application as the cache rebuilds.
+              </p>
+              
+              <div class="flex items-center gap-4">
+                <button 
+                  @click="clearCache"
+                  class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
+                >
+                  <IconRefresh size="18" class="mr-2" />
+                  Clear Evaluation Cache
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <!-- Cache Management -->
-      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-8">
+        <!-- Zweite Reihe: XP Progress Tracking + Enthusiast Mode -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- XP Tracking -->
+          <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
         <div class="header p-4 flex justify-between items-center">
           <h3 class="text-lg font-semibold text-white flex items-center">
-            <IconDatabaseOff size="20" class="mr-2 text-amber-400" />
-            Cache Management
+            <IconTrendingUp size="20" class="mr-2 text-blue-400" />
+            XP Progress Tracking
           </h3>
         </div>
         
         <div class="p-6">
-          <p class="text-gray-300 text-sm mb-4">
-            Clear the evaluation cache to free up memory. This won't affect your builds or settings,
-            but may temporarily slow down the application as the cache rebuilds.
-          </p>
-          
-          <div class="flex items-center gap-4">
-            <button 
-              @click="clearCache"
-              class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors"
-            >
-              <IconRefresh size="18" class="mr-2" />
-              Clear Evaluation Cache
-            </button>
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h4 class="text-white text-md font-medium">Auto-Calculate XP Progress</h4>
+              <p class="text-gray-300 text-sm mt-1">
+                Automatically estimate XP progress based on build performance and elapsed time since last manual update.
+                <span class="text-blue-400">You can still manually override XP values when needed.</span>
+              </p>
+            </div>
+            <div class="flex items-center">
+              <button 
+                @click="toggleXPAutoTracking" 
+                class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                :class="{
+                  'bg-blue-600': xpAutoTrackingEnabled,
+                  'bg-gray-600': !xpAutoTrackingEnabled
+                }"
+              >
+                <span 
+                  class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                  :class="{
+                    'translate-x-6': xpAutoTrackingEnabled,
+                    'translate-x-1': !xpAutoTrackingEnabled
+                  }"
+                ></span>
+              </button>
+            </div>
+          </div>
+
+          <div v-if="xpAutoTrackingEnabled" class="mt-3 p-3 bg-blue-900/30 rounded-lg border border-blue-900/50">
+            <div class="flex items-center text-xs text-blue-300">
+              <IconInfoCircle size="14" class="mr-1.5" />
+              XP auto-tracking is enabled. Progress will be estimated based on build performance and time elapsed.
+            </div>
           </div>
         </div>
       </div>
+
+          <!-- Enthusiast Mode -->
+          <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
+            <div class="header p-4 flex justify-between items-center">
+              <h3 class="text-lg font-semibold text-white flex items-center">
+                <IconCode size="20" class="mr-2 text-purple-400" />
+                Enthusiast Mode
+              </h3>
+            </div>
+            
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-2">
+                <div>
+                  <h4 class="text-white text-md font-medium">Enable High Iterations Mode</h4>
+                  <p class="text-gray-300 text-sm mt-1">
+                    Allows setting iterations up to 100,000 in build evaluation for higher precision results.
+                    <span class="text-amber-400">Note: Higher iterations require significantly more processing time.</span>
+                  </p>
+                </div>
+                <div class="flex items-center">
+                  <button 
+                    @click="toggleHighIterationsMode" 
+                    class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                    :class="{
+                      'bg-purple-600': highIterationsEnabled,
+                      'bg-gray-600': !highIterationsEnabled
+                    }"
+                  >
+                    <span 
+                      class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                      :class="{
+                        'translate-x-6': highIterationsEnabled,
+                        'translate-x-1': !highIterationsEnabled
+                      }"
+                    ></span>
+                  </button>
+                </div>
+              </div>
+
+              <div v-if="highIterationsEnabled" class="mt-3 p-3 bg-purple-900/30 rounded-lg border border-purple-900/50">
+                <div class="flex items-center text-xs text-purple-300">
+                  <IconAlertTriangle size="14" class="mr-1.5" />
+                  High iterations mode is enabled. You can now set up to 100,000 iterations for more accurate evaluations.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       
       <!-- Hunter Level Settings Section -->
       <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-8">
@@ -343,6 +444,7 @@
           </div>
         </div>
       </div>
+      </div> <!-- Ende des space-y-8 Containers -->
       
       <!-- Toast Notification -->
       <Transition name="toast">
@@ -407,53 +509,7 @@
           </div>
         </div>
       </div> -->
-
-      <!-- Enthusiast Mode -->
-      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mt-8">
-        <div class="header p-4 flex justify-between items-center">
-          <h3 class="text-lg font-semibold text-white flex items-center">
-            <IconCode size="20" class="mr-2 text-purple-400" />
-            Enthusiast Mode
-          </h3>
-        </div>
-        
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-2">
-            <div>
-              <h4 class="text-white text-md font-medium">Enable High Iterations Mode</h4>
-              <p class="text-gray-300 text-sm mt-1">
-                Allows setting iterations up to 100,000 in build evaluation for higher precision results.
-                <span class="text-amber-400">Note: Higher iterations require significantly more processing time.</span>
-              </p>
-            </div>
-            <div class="flex items-center">
-              <button 
-                @click="toggleHighIterationsMode" 
-                class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
-                :class="{
-                  'bg-purple-600': highIterationsEnabled,
-                  'bg-gray-600': !highIterationsEnabled
-                }"
-              >
-                <span 
-                  class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
-                  :class="{
-                    'translate-x-6': highIterationsEnabled,
-                    'translate-x-1': !highIterationsEnabled
-                  }"
-                ></span>
-              </button>
-            </div>
-          </div>
-
-          <div v-if="highIterationsEnabled" class="mt-3 p-3 bg-purple-900/30 rounded-lg border border-purple-900/50">
-            <div class="flex items-center text-xs text-purple-300">
-              <IconAlertTriangle size="14" class="mr-1.5" />
-              High iterations mode is enabled. You can now set up to 100,000 iterations for more accurate evaluations.
-            </div>
-          </div>
-        </div>
-      </div>
+      
     <!-- Emergency Data Recovery Tool -->
     <!-- <div class="mt-8 text-center">
       <button 
@@ -536,7 +592,8 @@ import {
   IconCode,
   IconAdjustments,
   IconQuestionMark,
-  IconShield
+  IconShield,
+  IconTrendingUp,
 } from '@tabler/icons-vue';
 
 // Stores
@@ -558,6 +615,7 @@ const showResetConfirmation = ref(false);
 const fileInput = ref(null);
 const toast = ref({ show: false, message: '', type: 'info' });
 const highIterationsEnabled = ref(false);
+const xpAutoTrackingEnabled = ref(false);
 
 // Data Recovery State
 const isSearching = ref(false);
@@ -588,6 +646,15 @@ onMounted(() => {
   // High Iterations Mode aus dem localStorage laden
   const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
   highIterationsEnabled.value = highIterationsMode === 'true';
+  
+  // XP Auto-Tracking aus hunterStore laden
+  if (hunterStore.getXPAutoTracking) {
+    xpAutoTrackingEnabled.value = hunterStore.getXPAutoTracking();
+  } else {
+    // Fallback: Load from localStorage if hunterStore function is not available
+    const xpTracking = localStorage.getItem('huntersim_xp_auto_tracking');
+    xpAutoTrackingEnabled.value = xpTracking === 'true';
+  }
   
   // Initialisiere Hunter Level Settings beim Start
   hunterStore.initHunterLevelSettings('borge');
@@ -865,6 +932,26 @@ function toggleHighIterationsMode() {
     showToast('High iterations mode enabled - Up to 100,000 iterations available', 'info');
   } else {
     showToast('High iterations mode disabled - Max iterations reset to 4,000', 'info');
+  }
+}
+
+// Toggle XP Auto-Tracking
+function toggleXPAutoTracking() {
+  xpAutoTrackingEnabled.value = !xpAutoTrackingEnabled.value;
+  
+  // Store setting in hunterStore for persistence
+  if (hunterStore.updateXPAutoTracking) {
+    hunterStore.updateXPAutoTracking(xpAutoTrackingEnabled.value);
+  } else {
+    // Fallback: Store in localStorage if hunterStore function is not available
+    localStorage.setItem('huntersim_xp_auto_tracking', xpAutoTrackingEnabled.value);
+  }
+  
+  // Show notification
+  if (xpAutoTrackingEnabled.value) {
+    showToast('XP auto-tracking enabled - Progress will be estimated automatically', 'info');
+  } else {
+    showToast('XP auto-tracking disabled - Manual updates only', 'info');
   }
 }
 

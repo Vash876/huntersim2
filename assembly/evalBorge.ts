@@ -382,12 +382,7 @@ function enemyAttack(isBonus: boolean = false): void {
     killEnemy();
   }
   
-  // Only apply debuff if Borge didn't evade the attack
-  /*
-  
   // DR Debuff from enemy effect (only if Borge didn't evade)
-  
-  */
   if (ck(currentEnemy.effect) && !evaded) {
    currentBorge.currentDr = Math.max(0, currentBorge.currentDr - 0.02);
   }
@@ -724,11 +719,11 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
   borge.mat1 += loopLoot * 3 / 10 * arrayAverage(mat1) / normalized * excludedMultis;
   borge.mat2 += loopLoot * 3 / 10 * arrayAverage(mat2) / normalized * excludedMultis;
   borge.mat3 += loopLoot * 3 / 10 * arrayAverage(mat3) / normalized * excludedMultis;
-  borge.xp += loopLoot * 1 / 10 * arrayAverage(xp) / normalized * excludedMultis * excludedXpMultis;
+  borge.xp   += loopLoot * 1 / 10 * arrayAverage(xp) / normalized * excludedMultis * excludedXpMultis;
   borge.loot += loopLoot;
   borge.time += currentTime;
   borge.enem += currentEnem;
-  borge.ls = borge.loot / borge.time;
+  borge.ls   = borge.loot / borge.time;
   borge.iters++;
   
   borge.minEnem = Math.min(borge.minEnem, currentEnem) as i32; 
@@ -841,7 +836,7 @@ export function EVALBORGE_WASM(
   // PrepBorge
   borge.maxHp *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.01 * borge.ares);
   borge.regen *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.009 * borge.ylith);
-  borge.atk *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.002 * borge.ares) * (1 + 0.01 * borge.mino);
+  borge.atk   *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.002 * borge.ares) * (1 + 0.01 * borge.mino);
   borge.dr += 0.015 * borge.spartan;
   borge.critRate += 0.044 * borge.punches + 0.004 * borge.hermes;
   // Evolution Gem 6: +2% Crit Chance für Borge

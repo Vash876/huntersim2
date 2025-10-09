@@ -467,10 +467,17 @@
               {{ formatNumber(targetOrbGains) }}
             </span>
           </div>
+          
+          <div class="h-10 border-l border-gray-600 mx-1"></div>
+          
+          <div class="flex flex-col text-center px-1">
+            <span class="text-xs text-gray-400">End TR</span>
+            <span class="text-xs font-bold text-blue-400">{{ endOfTRFormatted }}</span>
+          </div>
         </div>
         
         <!-- Desktop View (bestehende Version) -->
-        <div class="hidden sm:grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="hidden sm:grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div class="bg-gray-800/70 rounded-lg border border-gray-700 p-2">
             <h3 class="text-xs font-medium text-gray-300 mb-1">TR Requirement</h3>
             <div class="text-lg font-bold text-white">{{ formatNumber(orbRequirement) }}</div>
@@ -500,6 +507,19 @@
               <template v-else>
                 <IconCircleX size="14" class="inline mr-1" />
                 {{ formatNumber(orbRequirement - targetOrbGains) }} orbs missing
+              </template>
+            </div>
+          </div>
+          
+          <div class="bg-gray-800/70 rounded-lg border border-gray-700 p-2">
+            <h3 class="text-xs font-medium text-gray-300 mb-1">End of TR</h3>
+            <div class="text-lg font-bold text-blue-400">{{ endOfTRFormatted }}</div>
+            <div class="mt-0.5 text-xs text-gray-400">
+              <template v-if="endOfTR && targetHoursInTR > hoursInTR">
+                Target: {{ targetHoursInTR }}h total
+              </template>
+              <template v-else>
+                Set target hours to calculate
               </template>
             </div>
           </div>
@@ -628,6 +648,7 @@ const showCreateOptions = ref(false);
 const isPlanValid = ref(false);
 const isEditingAllTimeOrbs = ref(false);
 const allTimeOrbsRawInput = ref("");
+const trStartTimestamp = ref(null);
 
 const trPlannerStore = useTRPlannerStore();
 
@@ -712,7 +733,126 @@ const hoursInTR = computed({
   },
   set(value) {
     currentBoosts.value.hoursInTR = value;
+    // Wenn ein neuer Wert für hoursInTR gesetzt wird, speichere die aktuelle Zeit
+    if (value > 0) {
+      trStartTimestamp.value = Date.now();
+    }
     recalculateAll();
+  }
+});
+
+const targetHoursInTR = computed({
+  get() {
+    return targetBoosts.value.hoursInTR || hoursInTR.value;
+  },
+  set(value) {
+    targetBoosts.value.hoursInTR = value;
+    recalculateAll();
+  }
+});
+
+// Berechne das End of TR basierend auf aktueller Zeit und Target Hours
+const endOfTR = computed(() => {
+  console.log('🔍 EndOfTR Debug:', {
+    trStartTimestamp: trStartTimestamp.value,
+    targetHoursInTR: targetHoursInTR.value,
+    currentHours: hoursInTR.value,
+    targetBoostsHours: targetBoosts.value.hoursInTR,
+    currentBoostsHours: currentBoosts.value.hoursInTR
+  });
+  
+  const currentHours = hoursInTR.value || 0;
+  const targetHours = targetHoursInTR.value;
+  
+  // Wenn noch kein Timestamp gesetzt wurde, aber current hours vorhanden sind, setze jetzt einen
+  if (!trStartTimestamp.value && currentHours > 0) {
+    trStartTimestamp.value = Date.now();
+    console.log('🕐 TR Start timestamp automatisch gesetzt:', trStartTimestamp.value);
+  }
+  
+  // Prüfe Grundvoraussetzungen
+  if (!trStartTimestamp.value) {
+    console.log('❌ Kein trStartTimestamp');
+    return null;
+  }
+  
+  if (!targetHours || targetHours <= 0) {
+    console.log('❌ Keine target hours oder <= 0:', targetHours);
+    return null;
+  }
+  
+  if (targetHours <= currentHours) {
+    console.log('❌ Target hours <= current hours:', targetHours, '<=', currentHours);
+    return null; // Kein zukünftiges Ende, wenn Target bereits erreicht
+  }
+  
+  // Berechne verbleibende Stunden
+  const remainingHours = targetHours - currentHours;
+  
+  // Berechne End-Zeit: Jetzt + verbleibende Stunden
+  const endTimestamp = Date.now() + (remainingHours * 60 * 60 * 1000);
+  
+  console.log('✅ End of TR berechnet:', {
+    remainingHours,
+    endTimestamp: new Date(endTimestamp)
+  });
+  
+  return new Date(endTimestamp);
+});
+
+// Formatiere End of TR Zeit für Anzeige
+const endOfTRFormatted = computed(() => {
+  const currentHours = hoursInTR.value || 0;
+  const targetHours = targetHoursInTR.value;
+  
+  // Debug-Ausgabe
+  console.log('🎯 EndOfTRFormatted Debug:', {
+    endOfTR: endOfTR.value,
+    currentHours,
+    targetHours
+  });
+  
+  if (!endOfTR.value) {
+    // Gebe spezifischere Hinweise zurück
+    if (!currentHours) {
+      return 'Set current hours';
+    }
+    if (!targetHours || targetHours <= 0) {
+      return 'Set target hours';
+    }
+    if (targetHours <= currentHours) {
+      return 'Target reached';
+    }
+    return 'Not calculated';
+  }
+  
+  const now = new Date();
+  const end = endOfTR.value;
+  
+  // Prüfe ob es heute oder morgen ist
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+  const endDate = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  
+  // Verwende die Browser-Locale des Nutzers für automatische Lokalisierung
+  const userLocale = navigator.language || 'en-EN';
+  
+  const timeStr = end.toLocaleTimeString(userLocale, { 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
+  
+  if (endDate.getTime() === today.getTime()) {
+    return `Today ${timeStr}`;
+  } else if (endDate.getTime() === tomorrow.getTime()) {
+    return `Tomorrow ${timeStr}`;
+  } else {
+    return end.toLocaleDateString(userLocale, { 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 });
 
@@ -1075,6 +1215,14 @@ function initData() {
   if (trPlannerStore.orbCalculator.trCount > 0 || Object.keys(trPlannerStore.orbCalculator.currentBoosts).length > 0) {
     // Store hat bereits Daten - diese verwenden
     console.log("OrbCalculator: Loading existing data from store");
+    
+    // HINZUGEFÜGT: Setze Timestamp auch für bestehende Store-Daten wenn hoursInTR vorhanden
+    const existingHours = trPlannerStore.orbCalculator.currentBoosts.hoursInTR;
+    if (existingHours && existingHours > 0 && !trStartTimestamp.value) {
+      trStartTimestamp.value = Date.now();
+      console.log("TR Start timestamp gesetzt für bestehende Store-Daten:", existingHours);
+    }
+    
     return;
   }
   
@@ -1117,6 +1265,12 @@ function initData() {
     // Store nochmal aktualisieren mit ergänzten Werten
     trPlannerStore.updateOrbCalculatorCurrentBoosts(updatedCurrentBoosts);
     trPlannerStore.updateOrbCalculatorTargetBoosts(updatedTargetBoosts);
+    
+    // HINZUGEFÜGT: Setze Startzeit, wenn hoursInTR bereits vorhanden ist
+    if (updatedCurrentBoosts.hoursInTR && updatedCurrentBoosts.hoursInTR > 0) {
+      trStartTimestamp.value = Date.now();
+      console.log("TR Start timestamp gesetzt aufgrund vorhandener hoursInTR:", updatedCurrentBoosts.hoursInTR);
+    }
   }
   
   // Debug-Ausgabe
@@ -1159,8 +1313,13 @@ function updateBoostTarget(boost, newValue) {
     validValue = Math.min(validValue, maxValue);
   }
   
-  // Wert aktualisieren
-  targetBoosts.value[boost.key] = validValue;
+  // Spezialbehandlung für hoursInTR: Verwende das targetHoursInTR computed property
+  if (boost.key === 'hoursInTR') {
+    targetHoursInTR.value = validValue;
+  } else {
+    // Standard: Wert aktualisieren
+    targetBoosts.value[boost.key] = validValue;
+  }
   
   // Berechnungen aktualisieren
   recalculateAll();
@@ -1172,11 +1331,19 @@ function updateRawTargetValue(boost, newValue) {
   // WICHTIG: Stelle sicher, dass der target-Wert nicht unter den current-Wert fallen kann
   if (newValue < currentValue) {
     // Wenn der neue Wert unter dem Current-Wert liegt, direkt auf Current-Wert setzen
-    trPlannerStore.updateOrbCalculatorTargetBoost(boost.key, currentValue);
+    if (boost.key === 'hoursInTR') {
+      targetHoursInTR.value = currentValue;
+    } else {
+      trPlannerStore.updateOrbCalculatorTargetBoost(boost.key, currentValue);
+    }
     console.log(`Verhindere Target-Wert ${newValue} unter Current-Wert ${currentValue} für ${boost.key}`);
   } else {
     // Ansonsten den neuen Wert normal setzen
-    trPlannerStore.updateOrbCalculatorTargetBoost(boost.key, newValue);
+    if (boost.key === 'hoursInTR') {
+      targetHoursInTR.value = newValue;
+    } else {
+      trPlannerStore.updateOrbCalculatorTargetBoost(boost.key, newValue);
+    }
   }
   
   // Berechnungen aktualisieren
@@ -1575,6 +1742,14 @@ watch(() => props.isVisible, (newValue) => {
     nextTick(() => {
       invalidateCalculationCaches();
       recalculateAll();
+      
+      // HINZUGEFÜGT: Stelle sicher, dass Timestamp gesetzt ist wenn hoursInTR vorhanden
+      const currentHours = currentBoosts.value.hoursInTR || 0;
+      if (currentHours > 0 && !trStartTimestamp.value) {
+        trStartTimestamp.value = Date.now();
+        console.log("🕐 TR Start timestamp beim Modal-Öffnen gesetzt:", currentHours);
+      }
+      
       console.log("✅ Modal-Initialisierung abgeschlossen");
     });
   }
