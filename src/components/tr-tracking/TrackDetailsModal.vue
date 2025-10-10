@@ -87,7 +87,7 @@
               
               <!-- Large Numbers -->
               <div class="space-y-1">
-                <p class="font-medium text-purple-300">Large Numbers (OO, LR Ticks, AttGN3):</p>
+                <p class="font-medium text-purple-300">Large Numbers (OO, LR Ticks, AttGN3, Hunter mat3):</p>
                 <p class="text-gray-400">• Supports large values</p>
                 <p class="text-gray-400">• Use suffix notation: 1.5k, 2.3b</p>
                 <p class="text-gray-400">• AttGN3: up to 1e333</p>
@@ -886,7 +886,7 @@ const buildColumnDefs = () => {
       headerClass: `text-center resource-header multi-line-header drag-header`,
       editable: true,
       // Treat lr-ticks as text too for suffix handling
-      cellDataType: (resource.id === 'notes' || resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff' || resource.format === 'time' || resource.format === 'camp') ? 'text' : 'number',
+      cellDataType: (resource.id === 'notes' || resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-') || resource.format === 'time' || resource.format === 'camp') ? 'text' : 'number',
       suppressMovable: false, // Allow these columns to be moved
       suppressSizeToFit: resource.id === 'notes' ? false : false, // Allow auto-sizing for all columns
       // Add custom comparator for time format
@@ -934,10 +934,10 @@ const buildColumnDefs = () => {
         if (resource.id === 'notes') {
           return params.data.notes || '';
         }
-        // For oo-accum, return the formatted value for editing (when in edit mode, it needs the text representation)
-        if (resource.id === 'oo-accum') {
-          const value = params.data.values?.[resource.id] || 0;
-          return value;
+        // For oo-accum, attgn3-buff and mat3, return the raw value
+        if (resource.id === 'oo-accum' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
+          const value = params.data.values?.[resource.id];
+          return value === undefined || value === null ? 0 : value;
         }
         return params.data.values?.[resource.id] || 0;
       },
@@ -1001,8 +1001,8 @@ const buildColumnDefs = () => {
           console.warn('Invalid camp code rejected:', params.newValue);
           return false;
         }
-        // Special handling for oo-accum, lr-ticks, and attgn3-buff to support suffix input
-        if ((resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff') && parseSuffixInput) {
+        // Special handling for oo-accum, lr-ticks, attgn3-buff, and mat3 to support suffix input
+        if (resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
           // For attgn3-buff, also allow exponential notation (e.g., 1e6, 2.5e9)
           if (resource.id === 'attgn3-buff') {
             const inputString = String(params.newValue).toLowerCase().trim();
@@ -1037,7 +1037,8 @@ const buildColumnDefs = () => {
           
           // Use suffix input parsing for all three resources
           const parsedValue = parseSuffixInput(params.newValue);
-          // Higher maximum for attgn3-buff since buff values can be very large
+          console.log(`${resource.id} valueSetter - Input:`, params.newValue, 'Parsed to:', parsedValue);
+          // Higher maximum for attgn3-buff and mat3 since these values can be very large
           let maxValue;
           if (resource.id === 'attgn3-buff') {
             try {
@@ -1051,14 +1052,18 @@ const buildColumnDefs = () => {
             } catch (error) {
               maxValue = 1e30; // Fallback
             }
+          } else if (resource.id.startsWith('mat3-')) {
+            // Mat3 values can be very large, allow up to 1e30
+            maxValue = 1e100;
           } else {
             maxValue = 1e15;
           }
           
           if (isNaN(parsedValue) || !isFinite(parsedValue) || parsedValue < 0 || parsedValue > maxValue) {
-            console.warn(`Invalid ${resource.id} value rejected:`, params.newValue, 'parsed to:', parsedValue);
+            console.warn(`Invalid ${resource.id} value rejected:`, params.newValue, 'parsed to:', parsedValue, `(max allowed: ${maxValue})`);
             return false;
           }
+          console.log(`${resource.id} valueSetter - Success! Setting value:`, parsedValue);
           params.data.values[resource.id] = parsedValue;
           return true;
         }
@@ -1086,7 +1091,7 @@ const buildColumnDefs = () => {
         const currentValue = params.value || 0;
         
         // Only show differences for specific resources: cells, mp, mp-accum, shards, rp, ap, oo-accum, and hunter Mat3
-        const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum'];
+        const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum', 'mat3-borge', 'mat3-ozzy', 'mat3-knox'];
         const shouldShowDifference = showDifferenceFor.includes(resource.id) || resource.id.startsWith('mat3-');
         
         // Check if this is a whole number and we should show difference
@@ -1309,8 +1314,8 @@ const buildColumnDefs = () => {
         if (resource.format === 'time' || resource.format === 'camp') {
           return { selectAllOnFocusIn: true, maxLength: 7, value: params.value || '' };
         }
-        // For oo-accum, lr-ticks, and attgn3-buff, show suffix input
-        if (resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff') {
+        // For oo-accum, lr-ticks, attgn3-buff, and mat3, show suffix input
+        if (resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
           let displayValue;
           
           if (resource.id === 'attgn3-buff') {
@@ -3079,7 +3084,7 @@ function onCellEditingStopped(event) {
     setTimeout(() => {
       // Refresh all cells that show differences to recalculate based on new chronological order
       const columnsToRefresh = [];
-      const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum'];
+      const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum', 'mat3-borge', 'mat3-ozzy', 'mat3-knox'];
       
       showDifferenceFor.forEach(resourceId => {
         columnsToRefresh.push(`resource_${resourceId}`);
@@ -3165,7 +3170,7 @@ function onCellValueChanged(event) {
     setTimeout(() => {
       // Refresh all cells that show differences to recalculate based on new chronological order
       const columnsToRefresh = [];
-      const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum'];
+      const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum', 'mat3-borge', 'mat3-ozzy', 'mat3-knox'];
       
       showDifferenceFor.forEach(resourceId => {
         columnsToRefresh.push(`resource_${resourceId}`);
@@ -3189,8 +3194,8 @@ function updateDifferenceValues(event) {
   const changedResourceId = event.column.getColId().replace('resource_', '');
   
   // Only update differences for resources that show differences
-  const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum'];
-  if (!showDifferenceFor.includes(changedResourceId)) {
+  const showDifferenceFor = ['cells', 'mp', 'mp-accum', 'shards', 'rp', 'ap', 'oo-accum', 'mat3-borge', 'mat3-ozzy', 'mat3-knox'];
+  if (!showDifferenceFor.includes(changedResourceId) && !changedResourceId.startsWith('mat3-')) {
     return;
   }
   

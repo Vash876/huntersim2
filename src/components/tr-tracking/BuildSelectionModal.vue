@@ -43,7 +43,7 @@
               <img 
                 :src="hunter.image" 
                 :alt="hunter.name"
-                class="w-8 h-8 mr-3"
+                class="w-8 h-11 mr-3"
               />
               <div class="flex-1">
                 <h4 class="font-medium text-white">{{ hunter.name }}</h4>

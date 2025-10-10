@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.8.12',
+    date: '2025-10-10',
+    changes: [
+      {
+        text: 'TR Tracker',
+        subItems: [
+          'Fixed manual Hunter mat3 input - suffix notation (1k, 1m, 1b, etc.) now work correctly for manual mat3 entries',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.11',
     date: '2025-10-09',
     changes: [
