@@ -14,7 +14,7 @@ const changelog =
       {
         text: 'Hunter Simulator',
         subItems: [
-          'Improved side panel layout with wider display for better readability',
+          'Improved layout with wider display for better readability',
         ]
       },
       {
