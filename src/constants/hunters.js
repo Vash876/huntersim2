@@ -50,7 +50,7 @@ export const HUNTERS = [
     discord_level_image: ':CIFI_EXPHuntKnox:',
     statsModule: () => import('./knox'),
     buildRepositoryCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuTy7CSusoWz8YNaIhuWJ5QWzOmbt62BQREuwJns96O9GEHuxPW6q47t4-o51m-og4Vn7yvxeqFRFE/pub?gid=680484628&single=true&output=csv',
-  }
+  },
 ];
 
 /**

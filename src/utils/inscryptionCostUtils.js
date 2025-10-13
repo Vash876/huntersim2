@@ -36,6 +36,7 @@ const INSCRYPTION_CONFIGS = {
   i103: { startValue: 3e20, multiplier: 3 },
   i104: { startValue: 4e20, multiplier: 3 },
   i105: { startValue: 5e20, multiplier: 3 },
+  i110: { startValue: 1e21, multiplier: 10 },
   // Hier können einfach neue Inscryptions hinzugefügt werden:
   // i31: { startValue: 50000, multiplier: 2.5 },
   // i36: { startValue: 75000, multiplier: 3.2 },
@@ -137,6 +138,8 @@ function calculateI104(level) {
 function calculateI105(level) {
   return calculateInscryptionCost('i105', level);
 }
+
+
 
 /**
  * Berechnet die Kosten für eine bestimmte Inscryption basierend auf der ID und dem Level

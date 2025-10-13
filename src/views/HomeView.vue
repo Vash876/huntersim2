@@ -2,6 +2,30 @@
 const changelog = 
 [
   {
+    version: '2.8.13',
+    date: '2025-10-13',
+    changes: [
+      {
+        text: 'Trait Sphere Planner',
+        subItems: [
+          'Temporarily removed presets due to inaccurate data',
+        ]
+      },
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Improved side panel layout with wider display for better readability',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added missing cost calculations for various upgrades',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.12',
     date: '2025-10-10',
     changes: [
