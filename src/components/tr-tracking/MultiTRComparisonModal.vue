@@ -140,14 +140,15 @@
               :data="chartData"
               :options="chartOptions"
             />
+          </div>
             
-            <!-- Crosshair Values Display -->
-            <div 
-              v-if="crosshairValues.length > 0" 
-              class="absolute top-4 right-4 bg-gray-800/90 border border-gray-600 rounded-lg p-2 min-w-64 max-w-80"
-              style="backdrop-filter: blur(8px);"
-            >
-              <div class="text-xs font-medium text-gray-300 mb-1">Current Values:</div>
+          <!-- Crosshair Values Display -->
+          <div 
+            v-if="crosshairValues.length > 0" 
+            class="mt-3 bg-gray-800/90 border border-gray-600 rounded-lg p-2 max-w-md ml-auto"
+            style="backdrop-filter: blur(8px);"
+          >
+              <div class="text-xs font-medium text-gray-300 mb-2">Current Values:</div>
               <div class="space-y-1">
                 <div 
                   v-for="item in crosshairValues.slice().reverse()" 
@@ -177,7 +178,6 @@
                 </div>
               </div>
             </div>
-          </div>
         </div>
 
         <!-- TR Tracks Summary -->
@@ -480,6 +480,15 @@ watch([chartSelectedResources, enabledTracks, xAxisType], () => {
   forceChartUpdate();
 }, { deep: true });
 
+// Watch for enabled tracks changes to update crosshair values immediately
+watch(enabledTracks, () => {
+  if (chartRef.value?.chart && crosshairPosition.value !== null) {
+    const chart = chartRef.value.chart;
+    const dataX = chart.scales.x.getValueForPixel(crosshairPosition.value);
+    updateCrosshairValues(chart, dataX);
+  }
+}, { deep: true });
+
 // Watch for chart reference changes to setup wheel listener
 watch(chartRef, (newRef) => {
   if (newRef && newRef.chart) {
@@ -535,7 +544,7 @@ function resetChartZoom() {
 
 // Filter out notes and other non-relevant resources from chartable resources
 const chartableResources = computed(() => {
-  const excludeFromCharts = ['notes', 'hours-in-tr', 'daily-farm-frags', 'current-camp', 'camp-timer'];
+  const excludeFromCharts = ['notes', 'hours-in-tr', 'daily-farm-frags', 'current-camp', 'camp-timer', 'attgn3-buff'];
   return props.selectedResources.filter(resource => !excludeFromCharts.includes(resource.id));
 });
 
@@ -623,6 +632,9 @@ function updateCrosshairValues(chart, xValue) {
   
   chart.data.datasets.forEach((dataset, datasetIndex) => {
     if (!dataset.data.length) return;
+    
+    // Only include datasets for enabled tracks
+    if (!enabledTracks.value.includes(dataset.trackId)) return;
     
     const resourceId = dataset.resourceId;
     if (!resourceGroups[resourceId]) {

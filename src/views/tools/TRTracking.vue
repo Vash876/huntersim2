@@ -337,6 +337,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
+import { formatSuffixInput } from '@/composables/format.js';
+import Decimal from 'break_infinity.js';
 import {
   IconChartLine,
   IconSettings,
@@ -464,10 +466,8 @@ function formatDate(dateString) {
 }
 
 function getHighestValueResources() {
-  // Return specific resources: Cells, MP, Shards, RP for the table columns
-  const targetResourceIds = ['cells', 'mp', 'shards', 'rp'];
-  
-  return targetResourceIds.map(resourceId => {
+  // Return resources that are selected to show in table
+  return trTrackingStore.showInTableResources.map(resourceId => {
     // Get the current resource data from store (which has the latest colors)
     const storeResource = trTrackingStore.availableResources.find(r => r.id === resourceId);
     return storeResource;
@@ -493,7 +493,31 @@ function getHighestValue(track, resourceId) {
   if (values.length === 0) return '0';
   
   const maxValue = Math.max(...values);
-  return maxValue;
+  
+  // Apply same formatting logic as TrackDetailsModal
+  // Only format specific resources: oo-accum, attgn3-buff, and mat3-* resources
+  if (resourceId === 'oo-accum' || resourceId === 'attgn3-buff' || resourceId.startsWith('mat3-')) {
+    
+    if (resourceId === 'attgn3-buff') {
+      // Handle very large numbers for attgn3-buff using Decimal
+      try {
+        const decimal = new Decimal(maxValue);
+        if (decimal.gte('1e15')) {
+          return decimal.toExponential(2).replace('e+', 'e');
+        } else {
+          return formatSuffixInput(maxValue);
+        }
+      } catch (error) {
+        return formatSuffixInput(maxValue);
+      }
+    } else {
+      // Use formatSuffixInput for oo-accum and hunter Mat3
+      return formatSuffixInput(maxValue);
+    }
+  }
+  
+  // For other resources, return as number
+  return maxValue.toString();
 }
 
 function getLastUpdatedTime() {

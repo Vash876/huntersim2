@@ -348,13 +348,13 @@
                 </button>
                 
                 <!-- Presets Button -->
-                <button 
+                <!-- <button 
                   @click="showPresetsModal = true"
                   class="bg-purple-700 hover:bg-purple-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
                 >
                   <IconTarget size="12" class="mr-1" />
                   Presets
-                </button>
+                </button> -->
 
                 <button 
                   @click="clearSelection" 

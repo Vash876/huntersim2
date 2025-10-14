@@ -4,6 +4,34 @@ import { generateId } from '@/utils/base58';
 import IndexedDBService from '@/services/indexedDBService.js';
 import { HUNTERS, getHunterById } from '@/constants/hunters';
 
+// Import hunter constants for Mat3 names
+import * as borgeConstants from '@/constants/borge';
+import * as ozzyConstants from '@/constants/ozzy';
+import * as knoxConstants from '@/constants/knox';
+
+// Helper function to get Mat3 name from hunter constants
+function getHunterMat3Name(hunterId) {
+  let hunterConstants;
+  switch (hunterId) {
+    case 'borge':
+      hunterConstants = borgeConstants;
+      break;
+    case 'ozzy':
+      hunterConstants = ozzyConstants;
+      break;
+    case 'knox':
+      hunterConstants = knoxConstants;
+      break;
+    default:
+      return 'Mat3'; // fallback
+  }
+  
+  return hunterConstants.SHORT_MAT_NAMES?.mat3 || 'Mat3';
+}
+
+// Export helper function for use in other components
+export { getHunterMat3Name };
+
 // Default available resources that users can choose from
 const DEFAULT_AVAILABLE_RESOURCES = [
   { id: 'hours-in-tr', name: 'Time in TR', color: '#ffffff', category: 'main', format: 'time' },
@@ -28,26 +56,12 @@ const DEFAULT_AVAILABLE_RESOURCES = [
   { id: 'notes', name: 'Notes', color: '#ffffff', category: 'other', format: 'text' },
   // Dynamic Hunter Mat3 Resources - VOLLAUTOMATISCH
   ...HUNTERS.map(hunter => {
-    // Dynamically import and get Mat3 name from hunter constants
-    let mat3Name = 'Mat3'; // fallback
-    
-    try {
-      // Dynamic import of hunter constants
-      const hunterConstants = require(`@/constants/${hunter.id}`);
-      const { CURRENCY_LABELS_SHORT, CURRENCY_TYPES } = hunterConstants;
-      
-      // Get Mat3 currency type (mat3 is always the third material)
-      const mat3CurrencyKey = Object.keys(CURRENCY_TYPES).find(key => CURRENCY_TYPES[key] === 'mat3');
-      if (mat3CurrencyKey && CURRENCY_LABELS_SHORT) {
-        mat3Name = CURRENCY_LABELS_SHORT[CURRENCY_TYPES[mat3CurrencyKey]] || 'Mat3';
-      }
-    } catch (error) {
-      console.warn(`Could not load Mat3 name for ${hunter.id}, using fallback`);
-    }
+    // Get the correct Mat3 name from hunter constants
+    const mat3Name = getHunterMat3Name(hunter.id);
 
     return {
       id: `mat3-${hunter.id}`,
-      name: `${hunter.name} ${mat3Name}`,
+      name: `Daily ${mat3Name}`,
       color: getHunterColor(hunter.color),
       category: 'hunter-mat3',
       format: 'number'
@@ -80,6 +94,14 @@ const DEFAULT_SELECTED_RESOURCES = [
   'notes'
 ];
 
+// Default resources to show in the highest value table columns
+const DEFAULT_SHOW_IN_TABLE_RESOURCES = [
+  'cells',
+  'mp', 
+  'shards',
+  'rp'
+];
+
 // Helper function to get default selected resources
 function getDefaultSelectedResources() {
   return DEFAULT_AVAILABLE_RESOURCES.filter(resource => 
@@ -91,6 +113,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
   // State
   const availableResources = ref([...DEFAULT_AVAILABLE_RESOURCES]);
   const selectedResources = ref([]);
+  const showInTableResources = ref([...DEFAULT_SHOW_IN_TABLE_RESOURCES]);
   const trTracks = ref([]);
   const isInitialized = ref(false);
   const useIndexedDB = ref(false);
@@ -220,6 +243,15 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         await saveToStorage(); // Save defaults
       }
 
+      // Load show in table resources
+      const savedShowInTableResources = await idbService.loadTRSettings('showInTableResources');
+      if (savedShowInTableResources) {
+        showInTableResources.value = savedShowInTableResources;
+      } else {
+        showInTableResources.value = [...DEFAULT_SHOW_IN_TABLE_RESOURCES];
+        await saveToStorage(); // Save defaults
+      }
+
       // Load hunter build settings
       const savedHunterBuildSettings = await idbService.loadTRSettings('hunterBuildSettings');
       if (savedHunterBuildSettings) {
@@ -262,6 +294,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       
       // Save settings
       await idbService.saveTRSettings('selectedResources', selectedResources.value);
+      await idbService.saveTRSettings('showInTableResources', showInTableResources.value);
       
       // Save only custom resources (not the defaults)
       const customResources = availableResources.value.filter(
@@ -285,6 +318,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     try {
       // Always use IndexedDB after migration
       await idbService.saveTRSettings('selectedResources', selectedResources.value);
+      await idbService.saveTRSettings('showInTableResources', showInTableResources.value);
       
       // Save only custom resources (not the defaults)
       const customResources = availableResources.value.filter(
@@ -304,6 +338,11 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
 
   async function updateSelectedResources(resources) {
     selectedResources.value = resources;
+    await saveToStorage();
+  }
+
+  async function updateShowInTableResources(resourceIds) {
+    showInTableResources.value = resourceIds;
     await saveToStorage();
   }
 
@@ -738,10 +777,14 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
   }
 
   async function resetToDefaults() {
-    // Only reset selected resources, NOT the tracking plans!
+    // Only reset selected resources and show in table, NOT the tracking plans!
     selectedResources.value = getDefaultSelectedResources();
+    showInTableResources.value = [...DEFAULT_SHOW_IN_TABLE_RESOURCES];
     await saveToStorage();
-    console.log('Reset to default selected resources (tracks preserved):', selectedResources.value.map(r => r.id));
+    console.log('Reset to default settings (tracks preserved):', {
+      selectedResources: selectedResources.value.map(r => r.id),
+      showInTableResources: showInTableResources.value
+    });
   }
 
   // Import/Export methods for sharing between users
@@ -812,6 +855,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     // State
     availableResources,
     selectedResources,
+    showInTableResources,
     trTracks,
     isInitialized,
     hunterBuildSettings,
@@ -824,6 +868,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     init,
     saveToStorage,
     updateSelectedResources,
+    updateShowInTableResources,
     addCustomResource,
     removeCustomResource,
     createTRTrack,

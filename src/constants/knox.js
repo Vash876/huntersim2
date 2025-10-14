@@ -26,18 +26,13 @@ export const TALENTS = [
     max: 50,
     isVisible: (context) => {
       if (!context || !context.hunterStore) {
-        // SICHERHEITS-FALLBACK: Bei fehlendem Context immer anzeigen
-        console.warn('[SAFETY] Missing context for Ultima talent visibility check - showing talent');
         return true;
       }
       
-      // SICHERHEITS-FALLBACK: Wenn aktueller Build das Ultima Talent verwendet, immer anzeigen
       if (context.buildData && context.buildData.talents && context.buildData.talents.ultima > 0) {
-        console.log('[SAFETY] Current build uses Ultima talent - showing talent');
         return true;
       }
-      
-      // Normale Logik: Prüfe die Advanced Talents Einstellung für Knox
+
       return context.hunterStore.shouldShowAdvancedTalents('knox');
     }
   },
@@ -209,6 +204,12 @@ export const EVAL_RESULT_LABELS = {
   mat3: "Tesseracts",     // Material 3 für Borge
   xp: "XP",
   stats: "Stats-Index"
+};
+
+export const SHORT_MAT_NAMES = {
+  mat1: "Glac",
+  mat2: "Quartz",
+  mat3: "Tess"
 };
 
 // Farben für die Evaluierungsergebnisse

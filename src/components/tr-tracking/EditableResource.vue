@@ -38,37 +38,68 @@
         </div>
       </div>
       
-      <div class="flex items-center gap-2">
-        <!-- Toggle Switch (for all resources) -->
-        <div
-          @click="$emit('toggle')"
-          class="relative cursor-pointer"
-        >
+      <div class="flex flex-col items-end gap-1">
+        <!-- Track Toggle and Label -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-gray-400">Track</span>
           <div
-            class="w-8 h-4 rounded-full transition-colors duration-200 ease-in-out"
-            :class="{
-              'bg-green-500': isSelected,
-              'bg-gray-600': !isSelected
-            }"
+            @click="$emit('toggle')"
+            class="relative cursor-pointer"
           >
             <div
-              class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200 ease-in-out"
+              class="w-8 h-4 rounded-full transition-colors duration-200 ease-in-out"
               :class="{
-                'transform translate-x-4': isSelected
+                'bg-green-500': isSelected,
+                'bg-gray-600': !isSelected
               }"
-            ></div>
+            >
+              <div
+                class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200 ease-in-out"
+                :class="{
+                  'transform translate-x-4': isSelected
+                }"
+              ></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Show in Table Toggle and Label -->
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-gray-400">Table</span>
+          <div
+            @click="$emit('toggleTable')"
+            class="relative cursor-pointer"
+            :class="{ 'opacity-50 cursor-not-allowed': !isSelected }"
+            :title="!isSelected ? 'Resource must be tracked to show in table' : 'Show highest value in main table'"
+          >
+            <div
+              class="w-8 h-4 rounded-full transition-colors duration-200 ease-in-out"
+              :class="{
+                'bg-blue-500': showInTable && isSelected,
+                'bg-gray-600': !showInTable || !isSelected
+              }"
+            >
+              <div
+                class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200 ease-in-out"
+                :class="{
+                  'transform translate-x-4': showInTable && isSelected
+                }"
+              ></div>
+            </div>
           </div>
         </div>
         
         <!-- Remove Button (for custom resources) -->
-        <button
-          v-if="resource.category === 'custom'"
-          @click="$emit('remove', resource.id)"
-          class="text-gray-400 hover:text-red-400 transition-colors opacity-70 hover:opacity-100"
-          title="Remove custom resource"
-        >
-          <IconX size="14" />
-        </button>
+        <div class="flex items-center">
+          <button
+            v-if="resource.category === 'custom'"
+            @click="$emit('remove', resource.id)"
+            class="text-gray-400 hover:text-red-400 transition-colors opacity-70 hover:opacity-100"
+            title="Remove custom resource"
+          >
+            <IconX size="14" />
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -87,10 +118,14 @@ const props = defineProps({
   isSelected: {
     type: Boolean,
     default: false
+  },
+  showInTable: {
+    type: Boolean,
+    default: false
   }
 });
 
-const emit = defineEmits(['toggle', 'remove', 'update']);
+const emit = defineEmits(['toggle', 'toggleTable', 'remove', 'update']);
 
 const localResource = ref({ ...props.resource });
 const isEditing = ref(false);

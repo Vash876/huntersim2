@@ -41,18 +41,13 @@ export const TALENTS = [
     max: 50,
     isVisible: (context) => {
       if (!context || !context.hunterStore) {
-        // SICHERHEITS-FALLBACK: Bei fehlendem Context immer anzeigen
-        console.warn('[SAFETY] Missing context for Ultima talent visibility check - showing talent');
         return true;
       }
       
-      // SICHERHEITS-FALLBACK: Wenn aktueller Build das Ultima Talent verwendet, immer anzeigen
       if (context.buildData && context.buildData.talents && context.buildData.talents.ultima > 0) {
-        console.log('[SAFETY] Current build uses Ultima talent - showing talent');
         return true;
       }
-      
-      // Normale Logik: Prüfe die Advanced Talents Einstellung für Borge
+
       return context.hunterStore.shouldShowAdvancedTalents('borge');
     }
   },
@@ -250,6 +245,12 @@ export const EVAL_RESULT_LABELS = {
   mat3: "Hellish-Biomatter",     // Material 3 für Borge
   xp: "XP",
   stats: "Stats-Index"
+};
+
+export const SHORT_MAT_NAMES = {
+  mat1: "Obs",
+  mat2: "Beh",
+  mat3: "HBM"
 };
 
 // Farben für die Evaluierungsergebnisse

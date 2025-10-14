@@ -101,8 +101,7 @@
           </div>
         </div>
 
-        <!-- TEMPORARILY DISABLED - Presets under revision -->
-        <!-- 
+        <!-- Presets Grid - 2 per row -->
         <div v-if="filteredPresets.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div 
             v-for="preset in filteredPresets" 
@@ -110,6 +109,7 @@
             class="bg-gray-700/50 rounded-lg border border-gray-600 hover:border-purple-500 transition-colors cursor-pointer p-3"
             @click="selectPreset(preset)"
           >
+            <!-- Header -->
             <div class="flex justify-between items-start mb-2">
               <div class="flex items-center space-x-2">
                 <span 
@@ -144,10 +144,12 @@
               </div>
             </div>
 
+            <!-- Optional Description -->
             <div v-if="preset.description" class="mb-2">
               <p class="text-xs text-gray-400 italic">{{ preset.description }}</p>
             </div>
             
+            <!-- Miniature Trait Sphere Grid (7x7 like original) -->
             <div class="mb-2 flex justify-center">
               <div class="grid grid-cols-7 gap-0.5" style="width: 140px; height: 140px;">
                 <template v-for="row in 7" :key="`preset-${preset.cores}-${preset.category}-row-${row}`">
@@ -158,6 +160,7 @@
                         :class="getPresetSphereClasses(getSphereAtPosition(col-1, row-1), preset)"
                         class="aspect-square rounded-sm flex items-center justify-center"
                       >
+                        <!-- Mini sphere icon -->
                         <div 
                           v-if="getSphereAtPosition(col-1, row-1).effect === 'locked'"
                           class="w-2 h-2 bg-gray-600 rounded-full"
@@ -178,6 +181,7 @@
               </div>
             </div>
             
+            <!-- Affordability Status -->
             <div class="text-center">
               <span 
                 v-if="getPresetCost(preset) > availableCores"
@@ -195,6 +199,7 @@
           </div>
         </div>
 
+        <!-- No matching presets message -->
         <div v-else class="text-center py-8">
           <IconAlertCircle size="48" class="mx-auto text-gray-500 mb-3" />
           <h3 class="text-lg font-medium text-gray-300 mb-2">No Matching Presets</h3>
@@ -204,20 +209,6 @@
           <p class="text-xs text-gray-500">
             Try increasing the core range filter or adjusting your milestone settings.
           </p>
-        </div>
-        -->
-
-        <!-- Temporary Notice -->
-        <div class="text-center py-12">
-          <h3 class="text-xl font-semibold text-white mb-3">Presets Under Revision</h3>
-          <div class="max-w-md mx-auto space-y-2">
-            <p class="text-gray-300">
-              The trait sphere presets are currently being updated due to some inaccurate data.
-            </p>
-            <p class="text-gray-400 text-sm">
-              Please ask for build recommendations in the Discord community.
-            </p>
-          </div>
         </div>
 
         <!-- Custom preset info -->

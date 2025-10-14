@@ -26,7 +26,19 @@
 
       <!-- Description -->
       <div class="px-3 py-2 border-b border-gray-700">
-        <p class="text-xs text-gray-300">Choose which resources to track in your TR progress</p>
+        <p class="text-xs text-gray-300 mb-2">Choose which resources to track in your TR progress</p>
+        <div class="bg-gray-700/30 rounded-lg p-2 text-xs text-gray-400">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+            <div class="flex items-center">
+              <div class="w-2 h-2 bg-green-500 rounded mr-1.5"></div>
+              <span><strong>Track:</strong> Include resource in TR entries and charts</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-2 h-2 bg-blue-500 rounded mr-1.5"></div>
+              <span><strong>Table:</strong> Show "Highest" column in main overview table</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Content -->
@@ -47,7 +59,9 @@
               :key="resource.id"
               :resource="resource"
               :isSelected="isResourceSelected(resource)"
+              :showInTable="isResourceInTable(resource)"
               @toggle="toggleResource(resource)"
+              @toggleTable="toggleResourceTable(resource)"
               @update="updateResource"
             />
           </div>
@@ -77,7 +91,9 @@
               :key="resource.id"
               :resource="resource"
               :isSelected="isResourceSelected(resource)"
+              :showInTable="isResourceInTable(resource)"
               @toggle="toggleResource(resource)"
+              @toggleTable="toggleResourceTable(resource)"
               @remove="removeCustomResource"
               @update="updateCustomResource"
             />
@@ -138,6 +154,7 @@
         <div class="p-2 bg-gray-700/30 rounded-md">
           <p class="text-xs text-gray-300">
             <strong>{{ enabledResourcesCount }} resources enabled</strong> for tracking in your TR plans.
+            <strong>{{ localShowInTableResources.length }} resources</strong> will show highest values in the main table.
           </p>
         </div>
       </div>
@@ -184,6 +201,7 @@ const trTrackingStore = useTRTrackingStore();
 
 // Local state
 const localSelectedResources = ref([]);
+const localShowInTableResources = ref([]);
 const newResourceName = ref('');
 const newResourceColor = ref('#3B82F6');
 const showAddCustomForm = ref(false);
@@ -225,7 +243,11 @@ watch(() => props.show, (newVal) => {
     trTrackingStore.init();
     // Initialize with current store state when modal opens
     localSelectedResources.value = [...trTrackingStore.selectedResources];
-    console.log('Modal opened, local resources set to:', localSelectedResources.value.map(r => r.id));
+    localShowInTableResources.value = [...trTrackingStore.showInTableResources];
+    console.log('Modal opened, local resources set to:', {
+      selected: localSelectedResources.value.map(r => r.id),
+      showInTable: localShowInTableResources.value
+    });
   }
 });
 
@@ -233,6 +255,7 @@ watch(() => props.show, (newVal) => {
 watch(() => props.selectedResources, (newVal) => {
   if (newVal && newVal.length > 0 && !props.show) {
     localSelectedResources.value = [...newVal];
+    localShowInTableResources.value = [...trTrackingStore.showInTableResources];
   }
 }, { immediate: true });
 
@@ -241,13 +264,35 @@ function isResourceSelected(resource) {
   return localSelectedResources.value.some(selected => selected.id === resource.id);
 }
 
+function isResourceInTable(resource) {
+  return localShowInTableResources.value.includes(resource.id);
+}
+
 function toggleResource(resource) {
   const index = localSelectedResources.value.findIndex(selected => selected.id === resource.id);
   
   if (index > -1) {
     localSelectedResources.value.splice(index, 1);
+    // If resource is deselected, also remove from table
+    const tableIndex = localShowInTableResources.value.indexOf(resource.id);
+    if (tableIndex > -1) {
+      localShowInTableResources.value.splice(tableIndex, 1);
+    }
   } else {
     localSelectedResources.value.push({ ...resource });
+  }
+}
+
+function toggleResourceTable(resource) {
+  // Can only show in table if resource is selected
+  if (!isResourceSelected(resource)) return;
+  
+  const index = localShowInTableResources.value.indexOf(resource.id);
+  
+  if (index > -1) {
+    localShowInTableResources.value.splice(index, 1);
+  } else {
+    localShowInTableResources.value.push(resource.id);
   }
 }
 
@@ -331,12 +376,14 @@ function resetToDefaults() {
   trTrackingStore.resetToDefaults();
   // Update local state to reflect the store change
   localSelectedResources.value = [...trTrackingStore.selectedResources];
+  localShowInTableResources.value = [...trTrackingStore.showInTableResources];
   showAddCustomForm.value = false;
 }
 
 function closeModal() {
   // Automatically save settings to store when closing
   trTrackingStore.updateSelectedResources(localSelectedResources.value);
+  trTrackingStore.updateShowInTableResources(localShowInTableResources.value);
   // Also emit to parent for any additional processing
   emit('close', localSelectedResources.value);
 }

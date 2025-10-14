@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.8.14',
+    date: '2025-10-14',
+    changes: [
+      {
+        text: 'TR Tracker',
+        subItems: [
+          'Added dynamic "Highest" column selection - users can now choose which resources appear as "Highest" columns in the main overview table',
+          'Enhanced Resource Settings Modal with dual toggle system: "Track" for resource tracking and "Table" for main table display',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.13',
     date: '2025-10-13',
     changes: [

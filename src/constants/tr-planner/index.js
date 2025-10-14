@@ -878,7 +878,7 @@ export const allBoosts = [
     orbcalc: true,
     permanent: true,
     tooltip: '0',
-    multiplier: 1.14,
+    multiplier: (value) => Math.pow(1.14, value),
   },
 
   // Trinkets
