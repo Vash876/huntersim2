@@ -12,8 +12,10 @@
               <img 
                 :src="hunterImage" 
                 :alt="currentHunter.name" 
-                class="object-contain rounded-lg"
+                class="object-contain rounded-lg select-none"
                 style="filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5));"
+                @click="handleHunterImageClick"
+                draggable="false"
               />
             </div>
             
@@ -474,6 +476,10 @@ const hunterColor = computed(() => currentHunter.value.color);
 const buildFilterMode = ref('active');
 const buildCode = ref('');
 
+// Easter Egg State
+const clickCount = ref(0);
+const showDancingImage = ref(false);
+
 // Durch den neuen Toast-State im selben Format wie in SettingsView
 const toast = ref({ show: false, message: '', type: 'info' });
 
@@ -510,6 +516,12 @@ const lootFilters = ref({
 const hunterImage = computed(() => {
   const hunterId = route.params.hunterId || 'borge';
   const hunter = getHunterById(hunterId);
+  
+  // Zeige Dancing-Bild wenn Easter Egg aktiviert ist
+  if (showDancingImage.value && hunter?.easter_egg_image) {
+    return hunter.easter_egg_image;
+  }
+  
   return hunter?.image || ''; // Verwende die Icon-URL aus hunters.js
 });
 
@@ -674,6 +686,18 @@ function showToastMessage(message, type = 'success', duration = 3000) {
   }, duration);
 }
 
+// Easter Egg: Hunter Image Click Handler
+function handleHunterImageClick() {
+  if (showDancingImage.value) return; // Bereits aktiviert
+  
+  clickCount.value++;
+  
+  // Easter Egg aktivieren nach 5 Klicks
+  if (clickCount.value >= 5) {
+    showDancingImage.value = true;
+  }
+}
+
 // BuildModal öffnen (für neuen Build)
 function openBuildModal() {
   buildToEdit.value = null;
@@ -817,6 +841,10 @@ watch(
       // Ungültige Hunter-ID, zur Standard-Seite umleiten
       router.replace('/borge');
     }
+    
+    // Reset Easter Egg state when switching hunters
+    clickCount.value = 0;
+    showDancingImage.value = false;
   },
   { immediate: true }
 );

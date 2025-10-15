@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.8.15',
+    date: '2025-10-15',
+    changes: [
+      {
+        text: 'Research Overview',
+        subItems: [
+          'Added Cell Ultima Research costs',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.14',
     date: '2025-10-14',
     changes: [

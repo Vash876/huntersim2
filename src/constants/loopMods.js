@@ -514,8 +514,9 @@ export const ULTIMA_CAP_UPGRADES = [
   { id: "TS11", name: "TS#11", bonus: 2 },
   { id: "TS12", name: "TS#12", bonus: 2 },
   { id: "TS14", name: "TS#14", bonus: 3 },
-  { id: "DarkLoopersBadge", name: "Dark Loopers Badge", bonus: 2 },
-  { id: "BoonJ", name: "Boon J", bonus: 1 }
+  { id: "DarkLoopersBadge", name: "Doopers Badge", bonus: 2 },
+  { id: "BoonJ", name: "Boon J", bonus: 1 },
+  { id: "T2R1", name: "T2R1", bonus: 1, hasLevels: true, maxLevel: 10 }
 ];
 
 // Vorläufige Tier-Definitionen

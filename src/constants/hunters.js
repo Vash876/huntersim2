@@ -14,6 +14,10 @@ import iconBorge from '../assets/borge/hunter_small.png';
 import iconOzzy from '../assets/ozzy/hunter_small.png';
 import iconKnox from '../assets/knox/hunter_small.png';
 
+import iconBorgeDancing from '../assets/borge/hunter_dancing.gif';
+import iconOzzyDancing from '../assets/ozzy/hunter_dancing.gif';
+import iconKnoxDancing from '../assets/knox/hunter_dancing.gif';
+
 export const HUNTERS = [
   {
     id: 'borge',
@@ -23,6 +27,7 @@ export const HUNTERS = [
     unlock_lvl: 1,
     icon: IconTool,
     image: iconBorge,
+    easter_egg_image: iconBorgeDancing,
     discord_level_image: ':CIFI_EXPHuntBorge:',
     statsModule: () => import('./borge'),
     buildRepositoryCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuTy7CSusoWz8YNaIhuWJ5QWzOmbt62BQREuwJns96O9GEHuxPW6q47t4-o51m-og4Vn7yvxeqFRFE/pub?gid=1331115213&single=true&output=csv',
@@ -35,6 +40,7 @@ export const HUNTERS = [
     unlock_lvl: 2,
     icon: IconProng,
     image: iconOzzy,
+    easter_egg_image: iconOzzyDancing,
     discord_level_image: ':CIFI_EXPHuntOzzy:',
     statsModule: () => import('./ozzy'),
     buildRepositoryCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuTy7CSusoWz8YNaIhuWJ5QWzOmbt62BQREuwJns96O9GEHuxPW6q47t4-o51m-og4Vn7yvxeqFRFE/pub?gid=1962166291&single=true&output=csv',
@@ -47,6 +53,7 @@ export const HUNTERS = [
     unlock_lvl: 4,
     icon: IconAnchor,
     image: iconKnox,
+    easter_egg_image: iconKnoxDancing,
     discord_level_image: ':CIFI_EXPHuntKnox:',
     statsModule: () => import('./knox'),
     buildRepositoryCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQuTy7CSusoWz8YNaIhuWJ5QWzOmbt62BQREuwJns96O9GEHuxPW6q47t4-o51m-og4Vn7yvxeqFRFE/pub?gid=680484628&single=true&output=csv',

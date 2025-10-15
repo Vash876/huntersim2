@@ -216,12 +216,12 @@
                     :key="`${research.research}-${research.rank}`"
                     class="border-b hover:bg-gray-750/50 transition-all duration-200 relative research-row"
                     :class="[
-                      getTypeBackgroundClass(research.type),
+                      getTypeBackgroundClass(research.type, research.research),
                       getBorderClass(research, index)
                     ]"
                   >
                     <td class="px-4 py-3 font-medium text-white">
-                      {{ research.research === 'Temporal Research' ? research.research : research.research }}
+                      {{ typeof research.research === 'string' ? research.research : research.research }}
                     </td>
                     <td class="px-4 py-3 text-gray-300">
                       {{ research.rank }}
@@ -280,7 +280,7 @@
               :key="`${research.research}-${research.rank}`"
               class="rounded-lg border p-3 transition-colors relative research-card"
               :class="[
-                getTypeBackgroundClass(research.type),
+                getTypeBackgroundClass(research.type, research.research),
                 'border-gray-700'
               ]"
             >
@@ -288,7 +288,7 @@
               <div class="flex items-start justify-between mb-2">
                 <div class="flex items-center gap-2">
                   <div class="text-white font-bold text-sm">
-                    {{ research.research === 'Temporal Research' ? research.research : `#${research.research}` }}
+                    {{ typeof research.research === 'string' ? research.research : `#${research.research}` }}
                   </div>
                   <div class="bg-gray-900/50 rounded-lg px-2 py-1">
                     <span class="text-xs text-gray-300">Rank {{ research.rank }}</span>
@@ -326,7 +326,9 @@
                 class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
                 :class="{
                   'bg-gradient-to-b from-indigo-500 to-purple-600': research.type === 'Dark',
-                  'bg-gradient-to-b from-red-500 to-red-600': research.type === 'Ultima',
+                  'bg-gradient-to-b from-red-500 to-red-600': research.type === 'Ultima' && research.research === 'Temporal Research',
+                  'bg-gradient-to-b from-green-500 to-green-600': research.type === 'Ultima' && research.research === 'Cell Research',
+                  'bg-gradient-to-b from-red-500 to-red-600': research.type === 'Ultima' && research.research !== 'Temporal Research' && research.research !== 'Cell Research',
                   'bg-gradient-to-b from-yellow-500 to-orange-500': research.type === 'Standard'
                 }"
               ></div>
@@ -539,11 +541,18 @@ function getBorderClass(research, index) {
   return 'border-gray-600/20';
 }
 
-function getTypeBackgroundClass(type) {
+function getTypeBackgroundClass(type, researchName = null) {
   if (type === 'Dark') {
     return 'research-dark';
   } else if (type === 'Ultima') {
-    return 'research-ultima';
+    // Check for special named researches
+    if (researchName === 'Temporal Research') {
+      return 'research-temporal';
+    } else if (researchName === 'Cell Research') {
+      return 'research-cell';
+    } else {
+      return 'research-ultima';
+    }
   } else {
     return 'research-standard';
   }
@@ -651,8 +660,24 @@ onMounted(async () => {
   background: linear-gradient(90deg, rgba(33, 16, 16, 0.6) 0%, rgba(31, 41, 55, 0.1) 100%);
 }
 
+.research-temporal {
+  background: linear-gradient(90deg, rgba(33, 16, 16, 0.6) 0%, rgba(31, 41, 55, 0.1) 100%);
+}
+
+.research-cell {
+  background: linear-gradient(90deg, rgba(16, 33, 16, 0.6) 0%, rgba(31, 41, 55, 0.1) 100%) !important;
+}
+
 .research-ultima::before {
   background: linear-gradient(180deg, #dc2626 0%, #ef4444 100%);
+}
+
+.research-temporal::before {
+  background: linear-gradient(180deg, #dc2626 0%, #ef4444 100%);
+}
+
+.research-cell::before {
+  background: linear-gradient(180deg, #16a34a 0%, #22c55e 100%);
 }
 
 .research-row:hover::before {
@@ -675,6 +700,14 @@ onMounted(async () => {
 
 .research-card.research-ultima {
   background: linear-gradient(90deg, rgba(33, 16, 16, 0.6) 0%, rgba(31, 41, 55, 0.4) 100%);
+}
+
+.research-card.research-temporal {
+  background: linear-gradient(90deg, rgba(33, 16, 16, 0.6) 0%, rgba(31, 41, 55, 0.4) 100%);
+}
+
+.research-card.research-cell {
+  background: linear-gradient(90deg, rgba(16, 33, 16, 0.6) 0%, rgba(31, 41, 55, 0.4) 100%) !important;
 }
 
 /* GEÄNDERT: Besserer Mobile Style ohne Tabellen-Layout zu zerstören */

@@ -105,19 +105,19 @@
                 <span class="font-medium text-white text-sm">Requirements</span>
               </div>
               
-              <!-- Temporal Gem Level 3 Info -->
+              <!-- Temporal Gem Level Info -->
               <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center">
-                  <span class="text-sm text-gray-300">Temporal Gem Level 3</span>
+                  <span class="text-sm text-gray-300">Temporal Gem</span>
                   <InfoTooltip 
                     class="ml-1"
-                    content="Temporal Gem Level 3 is automatically retrieved from your Gem Overview Page."
+                    content="Temporal Gem Level is automatically retrieved from your Gem Overview Page."
                     placement="top"
                   />
                 </div>
                 <div class="flex items-center">
-                  <span class="px-2 py-1 rounded text-xs font-medium" :class="temporalGemLevel >= 3 ? 'bg-red-900/50 text-red-300 border border-red-700' : 'bg-gray-700 text-gray-400'">
-                    {{ temporalGemLevel >= 3 ? 'Available' : 'Not Available' }}
+                  <span class="px-2 py-1 rounded text-xs font-medium bg-red-900/50 text-red-300 border border-red-700">
+                    Level {{ temporalGemLevel }}
                   </span>
                 </div>
               </div>
@@ -173,7 +173,7 @@
             
             <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
               <div 
-                v-for="upgrade in ULTIMA_CAP_UPGRADES" 
+                v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => !u.hasLevels)" 
                 :key="upgrade.id"
                 @click="toggleUltimaCapUpgrade(upgrade.id)"
                 class="px-2 py-1.5 rounded border text-center text-sm cursor-pointer transition-colors"
@@ -183,6 +183,35 @@
               >
                 {{ upgrade.name }} (+{{ upgrade.bonus }})
               </div>
+              
+              <!-- T2R1 Special Level Control -->
+              <!-- <div 
+                v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => u.hasLevels)" 
+                :key="upgrade.id"
+                class="px-1 py-1.5 rounded border text-center text-sm transition-colors flex items-center justify-between"
+                :class="t2r1Level > 0 ? 
+                  'bg-blue-900/50 border-blue-500 text-blue-300' : 
+                  'bg-gray-800 border-gray-700 text-gray-400'"
+              >
+                <button 
+                  @click="adjustT2r1Level(-1)"
+                  :disabled="t2r1Level <= 0"
+                  class="w-5 h-full rounded-l hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <IconChevronLeft size="12" />
+                </button>
+                
+                <span class="flex-1 text-sm">
+                  {{ upgrade.name }} (+{{ t2r1Level }})
+                </span>
+                <button 
+                  @click="adjustT2r1Level(1)"
+                  :disabled="t2r1Level >= upgrade.maxLevel"
+                  class="w-5 h-full rounded-r hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <IconChevronRight size="12" />
+                </button>
+              </div> -->
             </div>
           </div>
         </div>
@@ -250,27 +279,24 @@
                   <span class="font-medium text-white text-sm">New Requirements</span>
                 </div>
                 
-                <!-- Temp3 -->
+                <!-- Temporal Gem Level -->
                 <div class="flex items-center justify-between mb-2">
-                  <label class="text-sm text-gray-300">Temp3 Available</label>
-                  <button 
-                    @click="toggleNewTemp3"
-                    :disabled="temporalGemLevel >= 3 && newTemp3"
-                    class="relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none"
-                    :class="{
-                      'bg-red-600': newTemp3,
-                      'bg-gray-600': !newTemp3,
-                      'opacity-50 cursor-not-allowed': temporalGemLevel >= 3 && newTemp3
-                    }"
-                  >
-                    <span 
-                      class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                      :class="{
-                        'translate-x-5': newTemp3,
-                        'translate-x-1': !newTemp3
-                      }"
-                    ></span>
-                  </button>
+                  <label class="text-sm text-gray-300">Temporal Gem Level</label>
+                  <ToolValueControls
+                    :value="newTemporalGemLevel"
+                    :minValue="temporalGemLevel"
+                    :maxValue="TEMPORAL_GEM.maxLevel"
+                    :step="1"
+                    :showFastControls="false"
+                    :validateOnFinalOnly="true"
+                    @update:value="handleNewTemporalGemLevelUpdate"
+                    @update:raw-value="(val) => newTemporalGemLevelRaw = val"
+                    @finalize:value="finalizeNewTemporalGemLevel"
+                    value-class="text-red-400 font-medium"
+                    :autoEdit="true"
+                    :disableDecrement="newTemporalGemLevel <= temporalGemLevel"
+                    class="ml-2"
+                  />
                 </div>
                 
                 <!-- i61 Level -->
@@ -323,7 +349,7 @@
               
               <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
                 <div 
-                  v-for="upgrade in ULTIMA_CAP_UPGRADES" 
+                  v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => !u.hasLevels)" 
                   :key="`new-${upgrade.id}`"
                   @click="toggleNewUltimaCapUpgrade(upgrade.id)"
                   class="px-2 py-1.5 rounded border text-center text-sm cursor-pointer transition-colors"
@@ -335,6 +361,38 @@
                 >
                   {{ upgrade.name }} (+{{ upgrade.bonus }})
                 </div>
+                
+                <!-- T2R1 New Level Control -->
+                <!-- <div 
+                  v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => u.hasLevels)" 
+                  :key="`new-${upgrade.id}`"
+                  class="px-2 py-1.5 rounded border text-center text-sm transition-colors flex items-center justify-between"
+                  :class="newT2r1Level > t2r1Level ? 
+                    'bg-blue-900/50 border-blue-500 text-blue-300' : 
+                    newT2r1Level > 0 ? 
+                    'bg-gray-700/50 border-gray-600 text-gray-400' :
+                    'bg-gray-800 border-gray-700 text-gray-400'"
+                >
+                  <button 
+                    @click="adjustNewT2r1Level(-1)"
+                    :disabled="newT2r1Level <= t2r1Level"
+                    class="w-5 h-full rounded-l hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <IconChevronLeft size="12" />
+                  </button>
+                  
+                  <span class="flex-1 text-sm px-2">
+                    {{ upgrade.name }} (+{{ newT2r1Level * upgrade.bonus }})
+                  </span>
+                  
+                  <button 
+                    @click="adjustNewT2r1Level(1)"
+                    :disabled="newT2r1Level >= upgrade.maxLevel"
+                    class="w-5 h-full rounded-r hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <IconChevronRight size="12" />
+                  </button>
+                </div> -->
               </div>
             </div>
             
@@ -604,9 +662,12 @@ import {
   IconChevronUp, 
   IconChevronDown,
   IconSortAscending,
-  IconSortDescending
+  IconSortDescending,
+  IconChevronLeft,
+  IconChevronRight
 } from '@tabler/icons-vue';
 import { ULTIMA_CAP_UPGRADES } from '@/constants/loopMods.js';
+import { TEMPORAL_GEM } from '@/constants/gem-planner/temporal.js';
 import { useLoopModData } from '@/composables/useLoopModData.js';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import { vAutoAnimate } from '@formkit/auto-animate/vue';
@@ -635,6 +696,7 @@ const mpRangeEnabled = ref(true);
 const i75Level = ref(0); // Level statt Boolean
 const i61Level = ref(0); // Level statt Boolean
 const selectedUltimaCapUpgrades = ref([]);
+const t2r1Level = ref(0);
 const sortBy = ref('cost');
 const sortDirection = ref('asc');
 const mpValueRaw = ref(mpValue.value);
@@ -646,13 +708,15 @@ const allTimeHighestMPRaw = ref(0);
 
 // NEU: Requirements Panel State
 const showRequirementsPanel = ref(false);
-const newTemp3 = ref(false);
+const newTemporalGemLevel = ref(0);
 const newI61Level = ref(0);
 const newI75Level = ref(0);
 const newSelectedUltimaCapUpgrades = ref([]);
+const newT2r1Level = ref(0);
 const newlyAvailableMods = ref([]);
 const newMpValue = ref(0);
 const newMpValueRaw = ref(0);
+const newTemporalGemLevelRaw = ref(0);
 const newI61LevelRaw = ref(0);
 const newI75LevelRaw = ref(0);
 
@@ -766,12 +830,14 @@ function toggleRequirementsPanel() {
 }
 
 function initializeNewRequirements() {
-  newTemp3.value = temporalGemLevel.value >= 3;
+  newTemporalGemLevel.value = temporalGemLevel.value;
   newI61Level.value = i61Level.value;
   newI75Level.value = i75Level.value;
   newSelectedUltimaCapUpgrades.value = [...selectedUltimaCapUpgrades.value];
+  newT2r1Level.value = t2r1Level.value;
   newMpValue.value = mpValue.value;
   newMpValueRaw.value = mpValue.value;
+  newTemporalGemLevelRaw.value = temporalGemLevel.value;
   newI61LevelRaw.value = i61Level.value;
   newI75LevelRaw.value = i75Level.value;
 
@@ -782,20 +848,24 @@ function checkNewlyAvailableMods() {
   if (!showRequirementsPanel.value) return;
 
   // Berechne neue total Ultima Cap
-  const newTotalUltimaCap = ULTIMA_CAP_UPGRADES
-    .filter(upgrade => newSelectedUltimaCapUpgrades.value.includes(upgrade.id))
+  const newRegularBonus = ULTIMA_CAP_UPGRADES
+    .filter(upgrade => !upgrade.hasLevels && newSelectedUltimaCapUpgrades.value.includes(upgrade.id))
     .reduce((sum, upgrade) => sum + upgrade.bonus, 0);
+  
+  const t2r1Upgrade = ULTIMA_CAP_UPGRADES.find(upgrade => upgrade.id === 'T2R1');
+  const newT2r1Bonus = t2r1Upgrade ? newT2r1Level.value * t2r1Upgrade.bonus : 0;
+  const newTotalUltimaCap = newRegularBonus + newT2r1Bonus;
   
   console.log('=== DEBUG: checkNewlyAvailableMods ===');
   console.log('Old requirements:', {
-    temp3: temporalGemLevel.value >= 3,
+    temporalGemLevel: temporalGemLevel.value,
     i61: i61Level.value,
     i75: i75Level.value,
     ultimaCap: totalUltimaCap.value
   });
   
   console.log('New requirements:', {
-    temp3: newTemp3.value,
+    temporalGemLevel: newTemporalGemLevel.value,
     i61: newI61Level.value,
     i75: newI75Level.value,
     ultimaCap: newTotalUltimaCap
@@ -817,7 +887,7 @@ function checkNewlyAvailableMods() {
   
   // Finde Mods die mit neuen Requirements verfügbar sind UND unter MP Value
   const newAvailableMods = allLoopMods.value.filter(mod => {
-    if (mod.requiresTemp3 && !newTemp3.value) return false;
+    if (mod.requiresTemp3 && newTemporalGemLevel.value < 3) return false;
     if (mod.requiresI61Level && mod.requiresI61Level > newI61Level.value) return false;
     if (mod.requiresI75Level && mod.requiresI75Level > newI75Level.value) return false;
     if (mod.requiresUltimaCap && mod.requiresUltimaCap > newTotalUltimaCap) return false;
@@ -839,15 +909,21 @@ function checkNewlyAvailableMods() {
   console.log('=== END DEBUG ===');
 }
 
-function toggleNewTemp3() {
-  // Kann immer aktiviert werden
-  if (!newTemp3.value) {
-    newTemp3.value = true;
+// NEU: Temporal Gem Level für neuen Bereich
+function handleNewTemporalGemLevelUpdate(newVal) {
+  if (newVal >= temporalGemLevel.value) {
+    newTemporalGemLevel.value = newVal;
+    newTemporalGemLevelRaw.value = newVal;
     checkNewlyAvailableMods();
-  } 
-  // Kann nur deaktiviert werden wenn Temporal Gem Level < 3
-  else if (temporalGemLevel.value < 3) {
-    newTemp3.value = false;
+  }
+}
+
+function finalizeNewTemporalGemLevel() {
+  const numValue = Number(newTemporalGemLevelRaw.value);
+  
+  if (!isNaN(numValue)) {
+    newTemporalGemLevel.value = Math.max(temporalGemLevel.value, Math.min(TEMPORAL_GEM.maxLevel, numValue));
+    newTemporalGemLevelRaw.value = newTemporalGemLevel.value;
     checkNewlyAvailableMods();
   }
 }
@@ -923,9 +999,14 @@ function finalizeNewI75Level() {
 
 // Computed
 const totalUltimaCap = computed(() => {
-  return ULTIMA_CAP_UPGRADES
-    .filter(upgrade => selectedUltimaCapUpgrades.value.includes(upgrade.id))
+  const regularBonus = ULTIMA_CAP_UPGRADES
+    .filter(upgrade => !upgrade.hasLevels && selectedUltimaCapUpgrades.value.includes(upgrade.id))
     .reduce((sum, upgrade) => sum + upgrade.bonus, 0);
+  
+  const t2r1Upgrade = ULTIMA_CAP_UPGRADES.find(upgrade => upgrade.id === 'T2R1');
+  const t2r1Bonus = t2r1Upgrade ? t2r1Level.value * t2r1Upgrade.bonus : 0;
+  
+  return regularBonus + t2r1Bonus;
 });
 
 const filteredLoopMods = computed(() => {
@@ -1085,6 +1166,28 @@ function toggleUltimaCapUpgrade(id) {
   saveFilters();
 }
 
+function adjustT2r1Level(delta) {
+  const t2r1Upgrade = ULTIMA_CAP_UPGRADES.find(upgrade => upgrade.id === 'T2R1');
+  if (!t2r1Upgrade) return;
+  
+  const newLevel = t2r1Level.value + delta;
+  if (newLevel >= 0 && newLevel <= t2r1Upgrade.maxLevel) {
+    t2r1Level.value = newLevel;
+    saveFilters();
+  }
+}
+
+function adjustNewT2r1Level(delta) {
+  const t2r1Upgrade = ULTIMA_CAP_UPGRADES.find(upgrade => upgrade.id === 'T2R1');
+  if (!t2r1Upgrade) return;
+  
+  const newLevel = newT2r1Level.value + delta;
+  if (newLevel >= t2r1Level.value && newLevel <= t2r1Upgrade.maxLevel) {
+    newT2r1Level.value = newLevel;
+    checkNewlyAvailableMods();
+  }
+}
+
 function updateSort(field) {
   if (sortBy.value === field) {
     // Toggle direction if same field
@@ -1105,6 +1208,7 @@ function resetFilters() {
   i75Level.value = 0; // Angepasst
   i61Level.value = 0; // Angepasst
   selectedUltimaCapUpgrades.value = [];
+  t2r1Level.value = 0;
   sortBy.value = 'cost';
   sortDirection.value = 'asc';
   saveFilters();
@@ -1147,6 +1251,7 @@ function loadFilters() {
     if (savedFilters.selectedUltimaCapUpgrades !== undefined) {
       selectedUltimaCapUpgrades.value = savedFilters.selectedUltimaCapUpgrades;
     }
+    if (savedFilters.t2r1Level !== undefined) t2r1Level.value = Number(savedFilters.t2r1Level);
     if (savedFilters.sortBy !== undefined) sortBy.value = savedFilters.sortBy;
     if (savedFilters.sortDirection !== undefined) sortDirection.value = savedFilters.sortDirection;
   } catch (error) {
@@ -1165,6 +1270,7 @@ function saveFilters() {
       i75Level: i75Level.value, // Angepasst
       i61Level: i61Level.value, // Angepasst
       selectedUltimaCapUpgrades: selectedUltimaCapUpgrades.value,
+      t2r1Level: t2r1Level.value,
       sortBy: sortBy.value,
       sortDirection: sortDirection.value
     }));
