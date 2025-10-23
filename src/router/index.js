@@ -147,12 +147,13 @@ const routes = [
     name: 'Research Overview',
     component: () => import('../views/tools/ResearchOverview.vue'),
   },
-  {
+  // Admin Panel - nur in Development verfügbar
+  ...(import.meta.env.DEV ? [{
     path: '/admin',
     name: 'Admin Panel',
     component: () => import('../views/AdminPanel.vue'),
     meta: { requiresAuth: true }
-  },
+  }] : []),
   {
     path: '/tools/build-repository',
     name: 'Build Repository',
