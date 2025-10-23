@@ -127,7 +127,7 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
         const isInShoppingList = shoppingListRanks.includes(rank);
         
         if (!isOwned && !isInShoppingList) {
-          // Find the real price data for this rank from allInscriptionsData
+          // Find the real price data for this rank from allInscryptionsData
           const rankData = allInscryptionsData.value.find(
             item => item.inscryptionId === id && item.rank === rank
           );
@@ -302,7 +302,14 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
       costLabel: formatNumber(inscryption.costSci), // Format using formatNumber
       buffPerRank: inscryption.buffPerRank,
       quantity: quantity,
-      addedAt: new Date().toISOString()
+      addedAt: new Date().toISOString(),
+      // Preserve stat upgrade properties
+      isStatUpgrade: inscryption.isStatUpgrade || false,
+      statKey: inscryption.statKey || null,
+      name: inscryption.name || null,
+      currentLevel: inscryption.currentLevel || null,
+      nextLevel: inscryption.nextLevel || null,
+      maxLevel: inscryption.maxLevel || null
     };
 
     shoppingList.value.push(item);

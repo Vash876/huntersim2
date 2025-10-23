@@ -31,3 +31,10 @@ src/utils/evalOzzy.js
 
 # Local Netlify folder
 .netlify
+
+# Admin Panel (dev only)
+src/views/AdminPanel.vue
+src/components/admin/
+src/store/adminStore.js
+src/services/adminService.js
+netlify/functions/admin-*.js

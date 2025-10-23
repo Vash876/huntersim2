@@ -92,7 +92,7 @@
                 <!-- Total P&A Gem Levels Display -->
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
-                    <span class="text-sm text-gray-300">Total P&A Gem Levels</span>
+                    <span class="text-sm text-gray-300">Total P&A GU Levels</span>
                     <InfoTooltip 
                       class="ml-1"
                       content="Total Power & Attraction gem upgrade levels. Automatically retrieved from your Gem Overview Page."

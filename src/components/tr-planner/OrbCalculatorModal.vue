@@ -979,6 +979,10 @@ const currentOrbGains = computed(() => {
     // Verwende effectiveStats, das bereits die maximierten Boosts enthält
     const planStats = { ...effectiveStats.value };
     
+    // WICHTIG: Stelle sicher, dass gem data explizit verfügbar ist
+    const gemData = getGemDataFromLocalStorage();
+    planStats.gemData = gemData;
+    
     // KORRIGIERT: Nur Boosts mit orbcalc=true UND multiplier verwenden
     const orbCalcBoosts = allBoosts.filter(b => b.orbcalc && b.multiplier !== undefined);
     
@@ -1004,6 +1008,10 @@ const targetOrbGains = computed(() => {
   try {
     // Verwende effectiveTargetStats, das bereits alle maximierten Boosts enthält
     const targetPlan = { ...effectiveTargetStats.value };
+    
+    // WICHTIG: Stelle sicher, dass gem data explizit verfügbar ist
+    const gemData = getGemDataFromLocalStorage();
+    targetPlan.gemData = gemData;
     
     // KORRIGIERT: Nur Boosts mit orbcalc=true UND multiplier verwenden
     const orbCalcBoosts = allBoosts.filter(b => b.orbcalc && b.multiplier !== undefined);

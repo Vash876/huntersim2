@@ -326,20 +326,29 @@ export function useBackupRestore() {
       if (backupData.data.trTrackingStore) {
         console.log('📥 Restoring TR Tracking data from backup...');
         
-        // Restore the data to the store
-        Object.keys(backupData.data.trTrackingStore).forEach(key => {
-          if (key in trTrackingStore.$state) {
-            trTrackingStore.$state[key] = backupData.data.trTrackingStore[key];
-          }
-        });
+        // Import the data to the store
+        const importSuccess = trTrackingStore.importData(backupData.data.trTrackingStore);
         
-        // Initialize TR Tracking store
-        try {
-          await trTrackingStore.init();
-          console.log('✅ TR Tracking store initialized successfully');
-        } catch (error) {
-          console.error('❌ Error initializing TR Tracking store after restore:', error);
-          console.log('💡 Data is available in the store but may not persist until TR Tracking page is visited');
+        if (importSuccess) {
+          console.log('✅ TR Tracking data imported to store successfully');
+          
+          // Ensure the store is initialized and data is persisted
+          try {
+            await trTrackingStore.init();
+            
+            // Force save to IndexedDB
+            if (trTrackingStore.saveToStorage) {
+              await trTrackingStore.saveToStorage();
+              console.log('✅ TR Tracking data persisted to IndexedDB');
+            } else {
+              console.warn('⚠️ trTrackingStore.saveToStorage method not available');
+            }
+          } catch (error) {
+            console.error('❌ Error persisting TR Tracking data after restore:', error);
+            console.log('💡 Data is available in the store but may not persist until TR Tracking page is visited');
+          }
+        } else {
+          console.warn('⚠️ Failed to import TR Tracking data from backup');
         }
       }
       

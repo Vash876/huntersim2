@@ -148,6 +148,12 @@ const routes = [
     component: () => import('../views/tools/ResearchOverview.vue'),
   },
   {
+    path: '/admin',
+    name: 'Admin Panel',
+    component: () => import('../views/AdminPanel.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/tools/build-repository',
     name: 'Build Repository',
     component: () => import('../views/tools/BuildRepository.vue'),

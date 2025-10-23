@@ -230,17 +230,66 @@
           <!-- Inscryptions List - Mobile Compact View -->
           <div v-else class="space-y-2">
             <div 
-              v-for="inscryption in sortedAvailableInscryptions"
-              :key="`${inscryption.inscryptionId}-${inscryption.rank}`"
+              v-for="item in sortedAvailableInscryptions"
+              :key="item.isStatUpgrade ? `stat_${item.statKey}` : `${item.inscryptionId}-${item.rank}`"
               class="bg-gray-700/30 rounded-lg p-3 hover:bg-gray-700/50 transition-colors border border-gray-600/30"
             >
-              <!-- Mobile Layout: Icon left, Content right -->
-              <div class="flex items-start gap-3">
+              <!-- Stat Upgrade Layout -->
+              <div v-if="item.isStatUpgrade" class="flex items-start gap-3">
+                <!-- Stat-specific Icon for stat upgrades -->
+                <div class="w-[50px] h-[50px] bg-amber-900/30 rounded-lg border border-amber-600/50 flex items-center justify-center flex-shrink-0">
+                  <img 
+                    :src="getStatIconUrl(item.statKey)"
+                    :alt="item.name"
+                    class="w-[40px] h-[40px] object-contain"
+                  />
+                </div>
+                
+                <!-- Content area -->
+                <div class="flex-1 min-w-0">
+                  <!-- Header with stat type -->
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
+                      {{ item.statKey.toUpperCase() }}
+                    </span>
+                    <span class="text-xs bg-gray-600/50 px-1.5 py-0.5 rounded-full text-gray-300 font-mono">
+                      {{ item.currentLevel }}/{{ item.maxLevel || 100 }}
+                    </span>
+                  </div>
+                  
+                  <!-- Description -->
+                  <p class="text-sm font-medium text-white mb-2 leading-tight">
+                    {{ item.name }}
+                  </p>
+                  
+                  <!-- Cost and details under description -->
+                  <div class="space-y-1">
+                    <div class="text-xs text-gray-400">
+                      Cost: <span class="text-yellow-400">{{ formatNumber(item.costSci) }}</span>
+                    </div>
+                    <div class="text-xs text-blue-400">
+                      <IconWorld size="12" class="inline mr-1" />
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Buy button on the right -->
+                <button
+                  @click="addToShoppingList(item)"
+                  class="text-xs px-2.5 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                >
+                  <IconPlus size="12" />
+                  Buy {{ item.nextLevel }}
+                </button>
+              </div>
+
+              <!-- Regular Inscryption Layout -->
+              <div v-else class="flex items-start gap-3">
                 <!-- Icon standalone on the left -->
                 <div class="w-[50px] h-[50px] bg-gray-600/30 rounded-lg border border-gray-600/50 flex items-center justify-center flex-shrink-0">
                   <img 
-                    :src="getInscryptionIconUrl(inscryption.icon || 'default')"
-                    :alt="inscryption.description"
+                    :src="getInscryptionIconUrl(item.icon || 'default')"
+                    :alt="item.description"
                     class="w-[40px] h-[40px] object-contain"
                     @error="$event.target.src = getInscryptionIconUrl('default')"
                   />
@@ -251,43 +300,43 @@
                   <!-- Header with ID and rank -->
                   <div class="flex items-center gap-2 mb-1">
                     <span class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
-                      i{{ inscryption.inscryptionId }}
+                      i{{ item.inscryptionId }}
                     </span>
                     <span class="text-xs bg-gray-600/50 px-1.5 py-0.5 rounded-full text-gray-300 font-mono">
-                      {{ inscryption.rank - 1 }}/{{ inscryption.maxRanks }}
+                      {{ item.rank - 1 }}/{{ item.maxRanks }}
                     </span>
                   </div>
                   
                   <!-- Description -->
                   <p class="text-sm font-medium text-white mb-2 leading-tight">
-                    {{ inscryption.description }}
+                    {{ item.description }}
                   </p>
                   
                   <!-- Cost and details under description -->
                   <div class="space-y-1">
                     <div class="text-xs text-gray-400">
-                      Cost: <span class="text-yellow-400">{{ formatNumber(inscryption.costSci) }}</span>
+                      Cost: <span class="text-yellow-400">{{ formatNumber(item.costSci) }}</span>
                     </div>
                     <!-- Hunter-specific Info -->
-                    <div v-if="isHunterSpecificInscryption(inscryption.inscryptionId)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5 inline-block">
+                    <div v-if="isHunterSpecificItem(item)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5 inline-block">
                       <IconWorld size="12" class="inline mr-1" />
                     </div>
-                    <div v-if="inscryption.buffPerRank" class="text-xs text-green-400">
-                      {{ inscryption.buffPerRank }}
+                    <div v-if="item.buffPerRank" class="text-xs text-green-400">
+                      {{ item.buffPerRank }}
                     </div>
-                    <div v-if="getShoppingListRanksDisplay(inscryption.inscryptionId)" class="text-xs text-blue-400">
-                      In shopping: {{ getShoppingListRanksDisplay(inscryption.inscryptionId) }}
+                    <div v-if="getShoppingListRanksDisplay(item.inscryptionId)" class="text-xs text-blue-400">
+                      In shopping: {{ getShoppingListRanksDisplay(item.inscryptionId) }}
                     </div>
                   </div>
                 </div>
                 
                 <!-- Buy button on the right -->
                 <button
-                  @click="addToShoppingList(inscryption)"
+                  @click="addToShoppingList(item)"
                   class="text-xs px-2.5 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
                 >
                   <IconPlus size="12" />
-                  Buy {{ inscryption.rank }}
+                  Buy {{ item.rank }}
                 </button>
               </div>
             </div>
@@ -346,14 +395,23 @@
                       </div>
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
-                          <span class="text-xs font-mono bg-blue-900/50 px-1.5 py-0.5 rounded text-blue-300">
+                          <!-- Stat Upgrade Badge -->
+                          <span v-if="item.isStatUpgrade" class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
+                            Stat Upgrade
+                          </span>
+                          <!-- Regular Inscryption Badge -->
+                          <span v-else class="text-xs font-mono bg-blue-900/50 px-1.5 py-0.5 rounded text-blue-300">
                             i{{ item.inscryptionId }}
                           </span>
                           <span class="text-xs bg-gray-600/50 px-1.5 py-0.5 rounded-full text-gray-300 font-mono">
                             Rank {{ item.rank }}
                           </span>
                         </div>
-                        <p class="text-sm font-medium text-white mt-1 leading-tight">
+                        <!-- Name/Description -->
+                        <p v-if="item.isStatUpgrade" class="text-sm font-medium text-white mt-1 leading-tight">
+                          {{ item.name }}
+                        </p>
+                        <p v-else class="text-sm font-medium text-white mt-1 leading-tight">
                           {{ truncateDescription(item.description) }}
                         </p>
                       </div>
@@ -368,9 +426,10 @@
                       <span v-if="item.buffPerRank" class="text-green-400">{{ item.buffPerRank }}</span>
                     </div>
                     <!-- Hunter-specific Info -->
-                    <div v-if="isHunterSpecificInscryption(item.inscryptionId)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5">
+                    <div v-if="isHunterSpecificItem(item)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5">
                       <IconWorld size="12" class="inline mr-1" />
-                      Automatically updates global Inscryption Rank when purchased
+                      <span v-if="item.isStatUpgrade">Automatically updates global Stat Upgrade Rank when purchased</span>
+                      <span v-else>Automatically updates global Inscryption Rank when purchased</span>
                     </div>
                     
                     <!-- Production Display -->
@@ -400,7 +459,7 @@
                       <button
                         @click="markAsPurchased(item)"
                         class="flex items-center gap-1 px-2 py-1 bg-green-700 hover:bg-green-600 rounded text-xs text-white transition-colors"
-                        :title="isHunterSpecificInscryption(item.inscryptionId) ? 'Mark as purchased (updates global Hunter level)' : 'Mark as purchased'"
+                        :title="isHunterSpecificItem(item) ? 'Mark as purchased (updates global Hunter level)' : 'Mark as purchased'"
                       >
                         <IconCheck size="12" />
                         <span>Purchased</span>
@@ -505,16 +564,62 @@
           <!-- Inscryptions List -->
           <div v-else class="space-y-2">
             <div 
-              v-for="inscryption in sortedAvailableInscryptions"
-              :key="`${inscryption.inscryptionId}-${inscryption.rank}`"
+              v-for="item in sortedAvailableInscryptions"
+              :key="item.isStatUpgrade ? `stat_${item.statKey}` : `${item.inscryptionId}-${item.rank}`"
               class="bg-gray-700/30 rounded-lg p-3 hover:bg-gray-700/50 transition-colors"
             >
-              <div class="flex items-start gap-3">
+              <!-- Stat Upgrade Layout -->
+              <div v-if="item.isStatUpgrade" class="flex items-start gap-3">
+                <!-- Stat-specific Icon for stat upgrades -->
+                <div class="w-[35px] h-[35px] flex items-center justify-center flex-shrink-0">
+                  <img 
+                    :src="getStatIconUrl(item.statKey)"
+                    :alt="item.name"
+                    class="w-[35px] h-[35px] object-contain"
+                  />
+                </div>
+                
+                <!-- Content area -->
+                <div class="flex-1 min-w-0">
+                  <!-- Header with stat type and name -->
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
+                      Stat Upgrade
+                    </span>
+                    <span class="text-sm font-medium text-white truncate">
+                      {{ item.name }}
+                    </span>
+                    <span class="text-xs bg-gray-600/50 px-2 py-1 rounded-full text-gray-300 font-mono ml-auto">
+                      {{ item.currentLevel }}/{{ item.maxLevel || 100 }}
+                    </span>
+                  </div>
+                  
+                  <!-- Cost and details under description -->
+                  <div class="flex items-center gap-4 text-xs text-gray-400">
+                    <span>Cost: <span class="text-yellow-400">{{ formatNumber(item.costSci) }}</span></span>
+                    <span class="text-blue-400">
+                      <IconWorld size="12" class="inline mr-1" />
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Buy Button on the right -->
+                <button
+                  @click="addToShoppingList(item)"
+                  class="text-xs px-3 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                >
+                  <IconPlus size="12" />
+                  Buy {{ item.nextLevel }}
+                </button>
+              </div>
+
+              <!-- Regular Inscryption Layout -->
+              <div v-else class="flex items-start gap-3">
                 <!-- Icon standalone on the left -->
                 <div class="w-[35px] h-[35px] flex items-center justify-center flex-shrink-0">
                   <img 
-                    :src="getInscryptionIconUrl(inscryption.icon || 'default')"
-                    :alt="inscryption.description"
+                    :src="getInscryptionIconUrl(item.icon || 'default')"
+                    :alt="item.description"
                     class="w-[35px] h-[35px] object-contain"
                     @error="$event.target.src = getInscryptionIconUrl('default')"
                   />
@@ -525,39 +630,39 @@
                   <!-- Header with ID and Description -->
                   <div class="flex items-center gap-2 mb-1">
                     <span class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
-                      i{{ inscryption.inscryptionId }}
+                      i{{ item.inscryptionId }}
                     </span>
                     <span class="text-sm font-medium text-white truncate">
-                      {{ inscryption.description }}
+                      {{ item.description }}
                     </span>
                     <span class="text-xs bg-gray-600/50 px-2 py-1 rounded-full text-gray-300 font-mono ml-auto">
-                      {{ inscryption.rank - 1 }}/{{ inscryption.maxRanks }}
+                      {{ item.rank - 1 }}/{{ item.maxRanks }}
                     </span>
                   </div>
                   
                   <!-- Cost and details under description -->
                   <div class="flex items-center gap-4 text-xs text-gray-400">
-                    <span>Cost: <span class="text-yellow-400">{{ formatNumber(inscryption.costSci) }}</span></span>
+                    <span>Cost: <span class="text-yellow-400">{{ formatNumber(item.costSci) }}</span></span>
                     <!-- Hunter-specific Info -->
-                    <span v-if="isHunterSpecificInscryption(inscryption.inscryptionId)" class="text-blue-400 bg-blue-900/20 rounded px-1 py-0.5">
+                    <span v-if="isHunterSpecificItem(item)" class="text-blue-400 bg-blue-900/20 rounded px-1 py-0.5">
                       <IconWorld size="12" class="inline mr-1" />
                     </span>
-                    <span v-if="inscryption.buffPerRank" class="text-green-400">
-                      {{ inscryption.buffPerRank }}
+                    <span v-if="item.buffPerRank" class="text-green-400">
+                      {{ item.buffPerRank }}
                     </span>
-                    <span v-if="getShoppingListRanksDisplay(inscryption.inscryptionId)" class="text-blue-400">
-                      In cart: {{ getShoppingListRanksDisplay(inscryption.inscryptionId) }}
+                    <span v-if="getShoppingListRanksDisplay(item.inscryptionId)" class="text-blue-400">
+                      In cart: {{ getShoppingListRanksDisplay(item.inscryptionId) }}
                     </span>
                   </div>
                 </div>
 
                 <!-- Buy Button on the right -->
                 <button
-                  @click="addToShoppingList(inscryption)"
+                  @click="addToShoppingList(item)"
                   class="text-xs px-3 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
                 >
                   <IconPlus size="12" />
-                  Buy {{ inscryption.rank }}
+                  Buy {{ item.rank }}
                 </button>
               </div>
             </div>
@@ -621,21 +726,34 @@
                       
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-1">
-                          <span class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
+                          <!-- Stat Upgrade Badge -->
+                          <span v-if="item.isStatUpgrade" class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
+                            Stat Upgrade
+                          </span>
+                          <!-- Regular Inscryption Badge -->
+                          <span v-else class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
                             i{{ item.inscryptionId }}
                           </span>
-                          <span class="text-sm font-medium text-white truncate">
+                          
+                          <!-- Name/Description -->
+                          <span v-if="item.isStatUpgrade" class="text-sm font-medium text-white truncate">
+                            {{ item.name }}
+                          </span>
+                          <span v-else class="text-sm font-medium text-white truncate">
                             {{ truncateDescription(item.description) }}
                           </span>
+                          
+                          <!-- Rank Badge -->
                           <span class="text-xs bg-blue-900/50 px-1.5 py-0.5 rounded text-blue-300">
                             Rank {{ item.rank }}
                           </span>
                         </div>
                         <div class="text-xs text-gray-400 mb-1">
                           <!-- Hunter-specific Info -->
-                          <div v-if="isHunterSpecificInscryption(item.inscryptionId)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5 mb-1">
+                          <div v-if="isHunterSpecificItem(item)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5 mb-1">
                             <IconWorld size="12" class="inline mr-1" />
-                            Automatically updates global Inscryption Rank when purchased
+                            <span v-if="item.isStatUpgrade">Automatically updates global Stat Upgrade Rank when purchased</span>
+                            <span v-else>Automatically updates global Inscryption Rank when purchased</span>
                           </div>
                           <span class="text-green-400">{{ item.buffPerRank }}</span>
                         </div>
@@ -702,7 +820,7 @@
                       <button
                         @click="markAsPurchased(item)"
                         class="text-green-400 hover:text-green-300 transition-colors p-1"
-                        :title="isHunterSpecificInscryption(item.inscryptionId) ? 'Mark as purchased (updates global Hunter level)' : 'Mark as purchased'"
+                        :title="isHunterSpecificItem(item) ? 'Mark as purchased (updates global Hunter level)' : 'Mark as purchased'"
                       >
                         <IconCheck size="16" />
                       </button>
@@ -775,14 +893,32 @@ import { shouldEvaluate } from '@/services/evaluationCacheService';
 import { formatNumber } from '@/composables/format';
 import { useBuildEvaluation } from '@/composables/useBuildEvaluation';
 import { getInscryptionIconUrl } from '@/utils/inscryptionIconMapping';
+import { calcCost } from '@/utils/statCostUtils';
 import InscryptionOwnershipModal from '@/components/common/inscryption-planner/InscryptionOwnershipModal.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
 import Draggable from 'vuedraggable';
+
+// Import stat icons
+import critchanceIcon from '@/assets/general/critchance.png';
+import critpowerIcon from '@/assets/general/critpower.png';
+import atkspeedIcon from '@/assets/general/atkspeed.png';
 
 const store = useInscryptionPlannerStore();
 const hunterStore = useHunterStore();
 const gemPlannerStore = useGemPlannerStore();
 const showOwnershipModal = ref(false);
+
+// Function to get stat icon URLs
+function getStatIconUrl(statKey) {
+  // Map stat keys to their imported icons
+  const statIconMap = {
+    'critchance': critchanceIcon,
+    'critpower': critpowerIcon,
+    'atkspeed': atkspeedIcon
+  };
+  
+  return statIconMap[statKey] || '/src/assets/borge/loot_mat3.png'; // fallback to HBM icon
+}
 
 // Mobile state
 const activeMobileTab = ref('available');
@@ -837,19 +973,79 @@ const hellishBiomatterPerDay = computed(() => {
   return 0;
 });
 
-// Sorted Available Inscryptions
+// HBM Stats that can be upgraded
+const hbmStats = computed(() => {
+  const borgeStats = hunterStore.getStats('borge');
+  const statUpgrades = [];
+  
+  const statConfigs = [
+    { key: 'critchance', label: 'Crit Chance', unit: '%', max: 100 },
+    { key: 'critpower', label: 'Crit Power', unit: 'x', max: 100 },
+    { key: 'atkspeed', label: 'ATK Speed', unit: 's', max: 100 }
+  ];
+  
+  statConfigs.forEach(config => {
+    const baseLevel = borgeStats[config.key] || 0;
+    
+    // Count how many of this stat are already in shopping list
+    const shoppingListCount = store.shoppingList.filter(item => 
+      item.isStatUpgrade && item.statKey === config.key
+    ).length;
+    
+    // Current effective level includes shopping list items
+    const currentLevel = baseLevel + shoppingListCount;
+    
+    if (currentLevel < config.max) {
+      const nextLevel = currentLevel + 1;
+      const cost = calcCost(config.key, nextLevel, 'borge');
+      
+      statUpgrades.push({
+        inscryptionId: `stat_${config.key}`,
+        name: `${config.label}`,
+        description: `Increase ${config.label} from ${currentLevel}${config.unit} to ${nextLevel}${config.unit}`,
+        costSci: cost,
+        isStatUpgrade: true,
+        statKey: config.key,
+        currentLevel: currentLevel,
+        nextLevel: nextLevel,
+        maxLevel: config.max,
+        rank: nextLevel
+      });
+    }
+  });
+  
+  return statUpgrades;
+});
+
+// Combined available items (inscryptions + HBM stats)
+const availableItems = computed(() => {
+  const inscryptions = store.availableInscryptions || [];
+  const statUpgrades = hbmStats.value;
+  
+  return [...inscryptions, ...statUpgrades];
+});
+
+// Sorted Available Inscryptions (now includes HBM stats)
 const sortedAvailableInscryptions = computed(() => {
-  if (!store.availableInscryptions || store.availableInscryptions.length === 0) {
+  if (!availableItems.value || availableItems.value.length === 0) {
     return [];
   }
   
-  const sorted = [...store.availableInscryptions].sort((a, b) => {
+  const sorted = [...availableItems.value].sort((a, b) => {
     let comparison = 0;
     
     if (sortBy.value === 'cost') {
       comparison = (a.costSci || 0) - (b.costSci || 0);
     } else { // sortBy.value === 'id'
-      comparison = (a.inscryptionId || 0) - (b.inscryptionId || 0);
+      if (a.isStatUpgrade && b.isStatUpgrade) {
+        comparison = a.statKey.localeCompare(b.statKey);
+      } else if (a.isStatUpgrade) {
+        comparison = -1; // Stats come first
+      } else if (b.isStatUpgrade) {
+        comparison = 1; // Stats come first
+      } else {
+        comparison = (a.inscryptionId || 0) - (b.inscryptionId || 0);
+      }
     }
     
     return sortOrder.value === 'desc' ? -comparison : comparison;
@@ -1063,6 +1259,66 @@ const shoppingListWithAdvancedHBMProduction = computed(() => {
     };
     
     try {
+      // Handle Stat Upgrades (similar to Borge Buff 2 - require evaluation)
+      if (item.isStatUpgrade) {
+        const evaluation = borgeBuff2Evaluations.value[item.id];
+        const isEvaluating = evaluatingItems.value.has(item.id);
+        const progress = evaluationProgress.value[item.id];
+        
+        enhancedItem.needsEvaluation = true;
+        enhancedItem.isEvaluating = isEvaluating;
+        enhancedItem.evaluationProgress = progress;
+        
+        if (evaluation && !isEvaluating) {
+          // Take the mat3 result from evaluation
+          let baseMat3 = evaluation.mat3 || 0;
+          
+          // Find all previous Borge Buff 1 items and calculate their combined multiplier
+          const currentItemIndex = store.shoppingList.findIndex(listItem => listItem.id === item.id);
+          const previousItems = store.shoppingList.slice(0, currentItemIndex);
+          
+          let borgeBuff1Multiplier = 1.0;
+          previousItems.forEach(prevItem => {
+            if (!prevItem.isStatUpgrade) {
+              const prevMetadata = store.inscryptionsData.find(data => data.inscryptionId == prevItem.inscryptionId);
+              if (prevMetadata && prevMetadata.borgeBuff === 1) {
+                const buffString = prevMetadata.buffPerRank || '';
+                const multiplierMatches = buffString.match(/x?(\d+\.?\d*)/g);
+                if (multiplierMatches && multiplierMatches.length > 0) {
+                  let itemMultiplier = 1.0;
+                  multiplierMatches.forEach(match => {
+                    const cleanMatch = match.replace('x', '');
+                    const multiplier = parseFloat(cleanMatch);
+                    if (!isNaN(multiplier)) {
+                      itemMultiplier *= multiplier;
+                    }
+                  });
+                  borgeBuff1Multiplier *= itemMultiplier;
+                }
+              }
+            }
+          });
+          
+          // Apply Borge Buff 1 multiplier to the mat3 result
+          const boostedMat3 = baseMat3 * borgeBuff1Multiplier;
+          
+          // Convert to daily HBM production
+          const avgRunTimeMinutes = evaluation.avgTime || 120;
+          const runsPerDay = 1440 / avgRunTimeMinutes;
+          const itemHBMProduction = Math.floor(boostedMat3 * runsPerDay);
+          
+          // Stat Upgrades replace the current production (like Borge Buff 2)
+          enhancedItem.newHBMProduction = itemHBMProduction;
+          enhancedItem.hbmIncrease = itemHBMProduction - currentHBMProduction;
+          currentHBMProduction = itemHBMProduction;
+        } else if (!evaluation && !isEvaluating && selectedBuild.value) {
+          // Trigger evaluation for this stat upgrade
+          evaluateStatUpgrade(item);
+        }
+        
+        return enhancedItem;
+      }
+      
       // Safety check: ensure inscryptions data is available
       if (!store.inscryptionsData || store.inscryptionsData.length === 0) {
         return enhancedItem;
@@ -1191,7 +1447,128 @@ const hbmProductionDataMap = computed(() => {
 
 // Function to manually trigger evaluation for a specific item
 function triggerEvaluation(item) {
-  evaluateBorgeBuff2Item(item);
+  if (item.isStatUpgrade) {
+    evaluateStatUpgrade(item);
+  } else {
+    evaluateBorgeBuff2Item(item);
+  }
+}
+
+// Evaluation function for Stat Upgrades
+async function evaluateStatUpgrade(item) {
+  if (!selectedBuild.value || !item || !item.isStatUpgrade || evaluatingItems.value.has(item.id)) {
+    return;
+  }
+
+  try {
+    evaluatingItems.value.add(item.id);
+    evaluationProgress.value[item.id] = 'Preparing stat evaluation...';
+
+    // Create modified build with this stat upgrade - DEEP COPY to avoid modifying original
+    const modifiedBuild = JSON.parse(JSON.stringify(selectedBuild.value));
+    
+    // Apply stat upgrade to the build
+    if (!modifiedBuild.overrides) {
+      modifiedBuild.overrides = {};
+    }
+    
+    // Apply ALL items that come before this item in the shopping list
+    const currentItemIndex = store.shoppingList.findIndex(listItem => listItem.id === item.id);
+    const previousItems = store.shoppingList.slice(0, currentItemIndex);
+    
+    // Create a cache key based on actual evaluation parameters
+    const cacheKeyParts = [
+      `stat_${item.statKey}_${item.nextLevel}`,
+      ...previousItems
+        .filter(prevItem => {
+          if (prevItem.isStatUpgrade) return true; // All stat upgrades affect evaluation
+          const prevMetadata = store.inscryptionsData.find(data => data.inscryptionId == prevItem.inscryptionId);
+          return prevMetadata && prevMetadata.borgeBuff !== 1; // Only non-multiplier inscryptions affect evaluation
+        })
+        .map(prevItem => prevItem.isStatUpgrade ? 
+          `prev_stat_${prevItem.statKey}_${prevItem.nextLevel}` : 
+          `prev_i${prevItem.inscryptionId}_rank${prevItem.rank}`)
+    ];
+    const evaluationCacheKey = cacheKeyParts.join('|');
+    
+    // Check if we already have this evaluation cached
+    if (borgeBuff2Evaluations.value[evaluationCacheKey]) {
+      // Copy cached result to current item's ID for template access
+      borgeBuff2Evaluations.value[item.id] = borgeBuff2Evaluations.value[evaluationCacheKey];
+      evaluationProgress.value[item.id] = 'Evaluation complete (cached)';
+      return;
+    }
+    
+    // Apply all previous items that affect evaluation
+    const previousEvaluationItems = previousItems.filter(prevItem => {
+      if (prevItem.isStatUpgrade) return true; // All stat upgrades affect evaluation
+      const prevMetadata = store.inscryptionsData.find(data => data.inscryptionId == prevItem.inscryptionId);
+      return prevMetadata && prevMetadata.borgeBuff !== 1; // Exclude only Borge Buff 1 (multipliers)
+    });
+    
+    // Apply all previous evaluation-affecting items
+    previousEvaluationItems.forEach((prevItem, prevIndex) => {
+      if (prevItem.isStatUpgrade) {
+        // Apply previous stat upgrade
+        modifiedBuild.overrides[prevItem.statKey] = prevItem.nextLevel;
+      } else {
+        // Apply previous inscryption upgrade
+        const prevInscryptionKey = `upgrades.inscryptions.i${prevItem.inscryptionId}`;
+        let prevCurrentLevel = hunterStore.getUpgradeValue('inscryptions', `i${prevItem.inscryptionId}`) || 0;
+        
+        // Account for any items that came before this previous item
+        const itemsBeforePrevItem = previousEvaluationItems.slice(0, prevIndex);
+        const prevSameInscryptionItems = itemsBeforePrevItem.filter(earlierItem => 
+          !earlierItem.isStatUpgrade && earlierItem.inscryptionId === prevItem.inscryptionId
+        );
+        
+        // Each earlier rank of the same inscryption should increase the level by 1
+        prevCurrentLevel += prevSameInscryptionItems.length;
+        
+        // The target level for this previous item
+        const prevTargetLevel = prevCurrentLevel + 1;
+        modifiedBuild.overrides[prevInscryptionKey] = prevTargetLevel;
+      }
+    });
+    
+    // Use base HBM production for evaluation (no Borge Buff 1 multipliers applied)
+    modifiedBuild.overrides['settings.hellishBiomatterProduction'] = store.settings.hellishBiomatterProduction || 0;
+    
+    // Apply the stat upgrade
+    modifiedBuild.overrides[item.statKey] = item.nextLevel;
+
+    evaluationProgress.value[item.id] = 'Running stat evaluation...';
+
+    // Evaluate the modified build
+    const evaluationResult = await evaluateBuildWithParams(modifiedBuild);
+    
+    if (evaluationResult && evaluationResult.mat3) {
+      // Store the evaluation result both by cache key (for reuse) and item.id (for template access)
+      const resultData = {
+        mat3: evaluationResult.mat3,
+        avgTime: evaluationResult.avgTime || 120,
+        evaluatedAt: Date.now()
+      };
+      
+      borgeBuff2Evaluations.value[evaluationCacheKey] = resultData; // Cache by evaluation params
+      borgeBuff2Evaluations.value[item.id] = resultData; // Access by item ID for template
+      
+      evaluationProgress.value[item.id] = 'Stat evaluation complete';
+    } else {
+      throw new Error('Invalid stat evaluation result');
+    }
+    
+  } catch (error) {
+    console.error(`[InscryptionPlanner] Base stat evaluation failed for item ${item.id}:`, error);
+    evaluationProgress.value[item.id] = 'Stat evaluation failed';
+    
+    // Remove failed evaluation after 3 seconds
+    setTimeout(() => {
+      delete evaluationProgress.value[item.id];
+    }, 3000);
+  } finally {
+    evaluatingItems.value.delete(item.id);
+  }
 }
 
 // Initialize store data
@@ -1199,6 +1576,18 @@ onMounted(async () => {
   // Initialize hunter store for Borge first
   if (!hunterStore.hunterBuilds || !hunterStore.hunterBuilds.borge || hunterStore.hunterBuilds.borge.length === 0) {
     await hunterStore.initHunterConfig('borge');
+  }
+  
+  // Ensure Borge stats are initialized with default values if not present
+  const borgeStats = hunterStore.getStats('borge');
+  if (!borgeStats.critchance && borgeStats.critchance !== 0) {
+    hunterStore.updateStat('borge', 'critchance', 0);
+  }
+  if (!borgeStats.critpower && borgeStats.critpower !== 0) {
+    hunterStore.updateStat('borge', 'critpower', 0);
+  }
+  if (!borgeStats.atkspeed && borgeStats.atkspeed !== 0) {
+    hunterStore.updateStat('borge', 'atkspeed', 0);
   }
   
   // Load cached results early (independent of inscryption data)
@@ -1408,6 +1797,26 @@ function addToShoppingList(inscryption) {
   store.addToShoppingList(inscryption);
 }
 
+// Function to purchase stat upgrades directly
+function purchaseStatUpgrade(statUpgrade) {
+  const cost = statUpgrade.costSci || 0;
+  const currentHBMValue = currentHBM.value || 0;
+  
+  if (currentHBMValue < cost) {
+    alert(`Not enough HBM! You need ${formatNumber(cost)} but only have ${formatNumber(currentHBMValue)}.`);
+    return;
+  }
+  
+  // Deduct HBM
+  currentHBM.value = currentHBMValue - cost;
+  
+  // Update the stat in hunterStore
+  hunterStore.updateStat('borge', statUpgrade.statKey, statUpgrade.nextLevel);
+  
+  // Show success message
+  alert(`✅ Successfully purchased ${statUpgrade.name} for ${formatNumber(cost)} HBM!\n\nNew stat value: ${statUpgrade.nextLevel}\nRemaining HBM: ${formatNumber(currentHBM.value)}`);
+}
+
 // Funktionen für Zeitberechnung mit spezifischer HBM Production
 function formatItemTimeToSaveWithProduction(itemCost, hbmProduction) {
   const current = currentHBM.value || 0;
@@ -1572,15 +1981,21 @@ function markAsPurchased(item) {
   const inscryptionId = item.inscryptionId;
   const rank = item.rank;
   
-  // Prüfe ob es eine hunterspezifische Inscryption ist
-  const isHunterSpecific = isHunterSpecificInscryption(inscryptionId);
+  // Prüfe ob es eine hunterspezifische Inscryption oder Stat Upgrade ist
+  const isHunterSpecific = isHunterSpecificItem(item);
   
   if (isHunterSpecific) {
     // Für hunterspezifische Inscryptions: Aktualisiere den globalen Hunter Store
     // Das Planner Modal synct automatisch vom Hunter Store
-    const currentLevel = hunterStore.getUpgradeValue('inscryptions', `i${inscryptionId}`) || 0;
-    const newLevel = Math.max(currentLevel, rank); // Setze auf den höchsten Rang
-    hunterStore.updateUpgrade('inscryptions', `i${inscryptionId}`, newLevel);
+    if (item.isStatUpgrade) {
+      // Für Stat Upgrades: Aktualisiere das Stat direkt
+      hunterStore.updateStat('borge', item.statKey, item.nextLevel);
+    } else {
+      // Für normale hunterspezifische Inscryptions
+      const currentLevel = hunterStore.getUpgradeValue('inscryptions', `i${inscryptionId}`) || 0;
+      const newLevel = Math.max(currentLevel, rank); // Setze auf den höchsten Rang
+      hunterStore.updateUpgrade('inscryptions', `i${inscryptionId}`, newLevel);
+    }
   } else {
     // Für globale Inscryptions: Aktualisiere den Planner Store wie bisher
     const currentOwnedRanks = store.getOwnedRanksForInscryption(inscryptionId);
@@ -1614,6 +2029,17 @@ function isHunterSpecificInscryption(inscryptionId) {
   return hunterSpecificInscryptions.includes(parseInt(inscryptionId));
 }
 
+// Hilfsfunktion um zu prüfen ob ein Item (Inscryption oder Stat Upgrade) hunterspezifisch ist
+function isHunterSpecificItem(item) {
+  // Stat Upgrades sind immer hunterspezifisch
+  if (item.isStatUpgrade) {
+    return true;
+  }
+  
+  // Normale Inscryptions prüfen
+  return isHunterSpecificInscryption(item.inscryptionId);
+}
+
 // Backup der ursprünglichen Liste vor dem Drag
 let dragBackup = [];
 
@@ -1625,23 +2051,53 @@ function onDragStart(evt) {
 // Validiert ob die aktuelle Reihenfolge für jede Inscryption korrekt ist
 function validateInscryptionOrder() {
   const inscryptionGroups = {};
+  const statGroups = {};
   const invalidItems = new Set();
   
-  // Gruppiere Items nach Inscryption ID
+  // Gruppiere Items nach Inscryption ID oder Stat Key
   store.shoppingList.forEach((item, index) => {
-    if (!inscryptionGroups[item.inscryptionId]) {
-      inscryptionGroups[item.inscryptionId] = [];
+    if (item.isStatUpgrade) {
+      // Gruppiere Stat Upgrades nach statKey
+      if (!statGroups[item.statKey]) {
+        statGroups[item.statKey] = [];
+      }
+      statGroups[item.statKey].push({ item, index });
+    } else {
+      // Gruppiere normale Inscryptions nach inscryptionId
+      if (!inscryptionGroups[item.inscryptionId]) {
+        inscryptionGroups[item.inscryptionId] = [];
+      }
+      inscryptionGroups[item.inscryptionId].push({ item, index });
     }
-    inscryptionGroups[item.inscryptionId].push({ item, index });
   });
   
-  // Prüfe jede Gruppe
+  // Prüfe jede Inscryption-Gruppe
   for (const [inscryptionId, items] of Object.entries(inscryptionGroups)) {
     if (items.length > 1) {
       // Sortiere nach Position in der Liste
       items.sort((a, b) => a.index - b.index);
       
       // Prüfe ob die Ranks in aufsteigender Reihenfolge sind
+      for (let i = 1; i < items.length; i++) {
+        const prevRank = items[i - 1].item.rank;
+        const currentRank = items[i].item.rank;
+        
+        if (currentRank <= prevRank) {
+          // Markiere beide betroffenen Items als invalid
+          invalidItems.add(items[i - 1].item.id);
+          invalidItems.add(items[i].item.id);
+        }
+      }
+    }
+  }
+  
+  // Prüfe jede Stat-Gruppe
+  for (const [statKey, items] of Object.entries(statGroups)) {
+    if (items.length > 1) {
+      // Sortiere nach Position in der Liste
+      items.sort((a, b) => a.index - b.index);
+      
+      // Prüfe ob die Ranks (Level) in aufsteigender Reihenfolge sind
       for (let i = 1; i < items.length; i++) {
         const prevRank = items[i - 1].item.rank;
         const currentRank = items[i].item.rank;

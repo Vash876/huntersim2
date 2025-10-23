@@ -2,6 +2,30 @@
 const changelog = 
 [
   {
+    version: '2.8.16',
+    date: '2025-10-23',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added new batch of Construction Milestones to the simulator',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added new batch of Construction Milestones to the TR Planner',
+        ]
+      },
+      {
+        text: 'Inscryption Planner',
+        subItems: [
+          'Added Stat Upgrades (critchance, critpower, atkspeed) to the planner - these can now be purchased with HBM and are fully integrated with evaluation system',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.15',
     date: '2025-10-15',
     changes: [

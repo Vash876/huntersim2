@@ -65,14 +65,14 @@ export const gemNodes = {
     { id: 1, angle: 60 },
     { id: 2, angle: 70 },
     { id: 3, angle: 55 },
-    { id: 4, angle: 65 },
-    { id: 5, angle: 75 }
+    { id: 4, angle: 65, multiplier: 1.1 },
+    { id: 5, angle: 75, multiplier: 1.15 }
   ],
   innovation: [
     { id: 0, angle: 110 },
     { id: 1, angle: 120 },
     { id: 2, angle: 130 },
-    { id: 3, angle: 115 },
+    { id: 3, angle: 115, multiplier: 1.1 },
     { id: 4, angle: 125 },
     { id: 5, angle: 135 }
   ],

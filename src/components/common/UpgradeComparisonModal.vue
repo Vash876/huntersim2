@@ -651,7 +651,6 @@
                     />
                   </td>
                   <td class="py-2 px-6 text-right bg-gray-800/50">
-                    -
                   </td>
                   <td 
                     v-for="(result, i) in comparisonResults" 
@@ -838,15 +837,38 @@
                   </td>
                 </tr>
                 
+                <!-- Upgrades -->
+                <tr class="border-b border-gray-600">
+                  <td class="py-2 px-4 text-gray-300 flex items-center">
+                    <IconChartArrowsVertical size="16" class="mr-2" :class="`text-${hunterColor}-400`" />
+                    Upgrades
+                  </td>
+                  <td class="py-2 px-6 text-right bg-gray-800/50"></td>
+                  <td 
+                    v-for="(result, i) in comparisonResults" 
+                    :key="`upgrades-${result.index}`" 
+                    class="py-2 px-6 text-right"
+                  >
+                    <div class="space-y-1 text-xs">
+                      <div v-for="upgrade in getScenarioUpgrades(result.index)" :key="upgrade.id" class="text-gray-300 flex items-center justify-between">
+                        <span class="truncate mr-2">{{ upgrade.name }}</span>
+                        <span class="text-gray-400 flex-shrink-0">+{{ upgrade.levels }}</span>
+                      </div>
+                      
+                      <div v-if="getScenarioUpgrades(result.index).length === 0" class="text-gray-500 italic">
+                        No upgrades
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
                 <!-- Costs -->
                 <tr>
                   <td class="pt-3.5 px-4 text-gray-300 flex items-center gap-2">
                     <IconCoins size="16" class="text-yellow-400 mr-1" />
                     <span>Costs</span>
                   </td>
-                  <td class="py-2 px-6 text-right bg-gray-800/50">
-                    0
-                  </td>
+                  <td class="py-2 px-6 text-right bg-gray-800/50"></td>
                   <td 
                     v-for="(result, i) in comparisonResults" 
                     :key="`cost-${result.index}`" 
@@ -891,7 +913,8 @@ import {
   IconCheck, IconLoader2, IconCircle1, IconCircle2, IconCircle3,
   IconDiamond, IconHexagon, IconHexagons, IconPuzzle,
   IconAlertCircle, IconChevronLeft, IconChevronRight,
-  IconBrightness, IconClock, IconBug, IconStairs, IconCoins, IconBolt
+  IconBrightness, IconClock, IconBug, IconStairs, IconCoins, IconBolt,
+  IconChartArrowsVertical
 } from '@tabler/icons-vue';
 import { useLootIcons } from '../../composables/useLootIcons';
 import { useHunterStore } from '../../store/hunterStore';
@@ -1371,6 +1394,27 @@ function getBestValueClass(index, field, includeOriginal = false) {
     return Math.abs(currentEfficiency - maxEfficiency) < 0.001 ? 'text-green-400' : '';
   }
   
+  // Spezielle Behandlung für avgTime - hier ist WENIGER besser
+  if (field === 'avgTime') {
+    // Finde das aktuelle result anhand des index
+    const result = comparisonResults.value.find(r => r.index === index);
+    if (!result) return '';
+    
+    // Alle avgTime Werte sammeln
+    const avgTimeValues = comparisonResults.value.map(r => r.avgTime || 120);
+    
+    if (avgTimeValues.length === 0) return '';
+    
+    // Minimalen Wert finden (kürzeste Zeit ist am besten)
+    const minTime = Math.min(...avgTimeValues);
+    
+    // Aktuellen Wert holen
+    const currentTime = result.avgTime || 120;
+    
+    // Prüfen, ob der aktuelle Wert der niedrigste ist
+    return Math.abs(currentTime - minTime) < 0.001 ? 'text-green-400' : '';
+  }
+  
   // Für Materialien und XP müssen wir die Tageswerte vergleichen, nicht die Rohwerte
   const isMaterialField = ['mat1', 'mat2', 'mat3', 'xp'].includes(field);
   
@@ -1611,6 +1655,28 @@ function formatMaterialPerDay(value, resultObj) {
   const valuePerDay = value * runsPerDay;
   
   return formatNumber(valuePerDay);
+}
+
+// Get upgrades for a specific scenario
+function getScenarioUpgrades(scenarioIndex) {
+  const upgrades = [];
+  const increments = scenarioIncrements.value[scenarioIndex] || {};
+  const availableUpgradesList = getAvailableUpgrades(selectedCurrency.value);
+  
+  Object.entries(increments).forEach(([key, levels]) => {
+    if (levels > 0) {
+      const upgrade = availableUpgradesList.find(u => u.key === key);
+      if (upgrade) {
+        upgrades.push({
+          id: key,
+          name: upgrade.label || upgrade.name || key,
+          levels: levels
+        });
+      }
+    }
+  });
+  
+  return upgrades.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // Berechnet die Kosten für ein einzelnes Upgrade-Level, unter Berücksichtigung der Szenario-Inkremente

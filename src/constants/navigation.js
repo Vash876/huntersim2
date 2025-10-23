@@ -21,7 +21,8 @@ import {
   IconSparkles,
   IconScript,
   IconBook,
-  IconDatabase
+  IconDatabase,
+  IconShieldCheck
 } from '@tabler/icons-vue';
 
 const IconMilestone = {
@@ -299,7 +300,7 @@ export const NAVIGATION = {
           color: 'blue'
         }
       ]
-    }
+    },
   ],
 
   tools: [

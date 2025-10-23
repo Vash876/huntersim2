@@ -239,6 +239,14 @@ export function calculateOrbGains(currentStats, planStats, boosts = []) {
   // Catch-Up Multiplier anwenden
   result *= catchUpMultiplier;
 
+  // Gem Node Orb Multiplier hinzufügen
+  const gemNodeMultiplier = calculateGemNodeOrbMultiplier(planStats);
+  if (gemNodeMultiplier > 1) {
+    const beforeGemNodes = result;
+    result *= gemNodeMultiplier;
+    console.log(`✅ Applied Gem Node Orb Multiplier (calculateOrbGains): ${gemNodeMultiplier}x (${beforeGemNodes.toFixed(2)} → ${result.toFixed(2)})`);
+  }
+
   return result;
 }
 
@@ -422,7 +430,103 @@ export function calculateOrbGainsCalc(currentStats, planStats, boosts = []) {
   const beforeCatchUp = result;
   result *= catchUpMultiplier;
 
+  // Gem Node Orb Multiplier hinzufügen
+  const gemNodeMultiplier = calculateGemNodeOrbMultiplier(planStats);
+  if (gemNodeMultiplier > 1) {
+    const beforeGemNodes = result;
+    result *= gemNodeMultiplier;
+    console.log(`✅ Applied Gem Node Orb Multiplier: ${gemNodeMultiplier}x (${beforeGemNodes.toFixed(2)} → ${result.toFixed(2)})`);
+  }
+
   return isNaN(result) ? 0 : result;
+}
+
+/**
+ * Berechnet den Orb-Multiplier aus den 3 spezifischen Gem Nodes
+ * - Temporal Node #5 (ID 4): 1.1x
+ * - Temporal Node #6 (ID 5): 1.15x  
+ * - Innovation Node #4 (ID 3): 1.1x
+ * @param {Object} planStats - Die geplanten Stats mit Gem-Daten
+ * @returns {number} Kombinierter Multiplier aller aktiven Gem Nodes
+ */
+function calculateGemNodeOrbMultiplier(planStats) {
+  let multiplier = 1;
+  
+  // Gem Data laden - VERBESSERT mit Store-Integration
+  let gemData = null;
+  try {
+    // 1. Prüfe zuerst plan context (für TR-Plan Overrides)
+    if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+      console.log('🔄 Using plan context gem data');
+      gemData = window.__PLAN_CONTEXT__.gemData;
+    } 
+    // 2. Direkt aus planStats (wird von Vue-Komponenten übergeben)
+    else if (planStats.gemData) {
+      console.log('🔄 Using planStats gem data');
+      gemData = planStats.gemData;
+    } 
+    // 3. Versuche über globalen Pinia Store (reaktiv)
+    else if (typeof window !== 'undefined' && window.__PINIA__) {
+      console.log('🔄 Trying to get gem data from Pinia store');
+      const stores = window.__PINIA__.state.value;
+      const trPlannerStoreData = stores.trPlannerStore || stores.orbStore;
+      
+      if (trPlannerStoreData && trPlannerStoreData.userStats && trPlannerStoreData.userStats.gemData) {
+        console.log('✅ Found gem data in Pinia store');
+        gemData = trPlannerStoreData.userStats.gemData;
+      }
+    }
+    
+    // 4. Fallback: localStorage (nicht reaktiv)
+    if (!gemData) {
+      console.log('🔄 Falling back to localStorage gem data');
+      const userStats = localStorage.getItem('trplanner_userstats');
+      if (userStats) {
+        const parsed = JSON.parse(userStats);
+        gemData = parsed.gemData;
+      }
+    }
+  } catch (error) {
+    console.warn('Could not load gem data for node multipliers:', error);
+    return multiplier;
+  }
+  
+  if (!gemData || !gemData.activeNodes || !gemData.levels) {
+    return multiplier;
+  }
+  
+  // Temporal Gem Nodes prüfen
+  const temporalLevel = gemData.levels.temporal || 0;
+  const temporalNodes = gemData.activeNodes.temporal || [];
+  
+  if (temporalLevel >= 3) { // Temporal Level 3 erforderlich für Nodes 5&6
+    // Temporal Node #5 (ID 4): 1.1x
+    if (temporalNodes.includes(4)) {
+      multiplier *= 1.1;
+    }
+    
+    // Temporal Node #6 (ID 5): 1.15x
+    if (temporalNodes.includes(5)) {
+      multiplier *= 1.15;
+    }
+  }
+  
+  // Innovation Gem Nodes prüfen
+  const innovationLevel = gemData.levels.innovation || 0;
+  const innovationNodes = gemData.activeNodes.innovation || [];
+  
+  if (innovationLevel >= 2) { // Innovation Level 2 erforderlich für Node 4
+    // Innovation Node #4 (ID 3): 1.1x
+    if (innovationNodes.includes(3)) {
+      multiplier *= 1.1;
+    }
+  }
+  
+  if (multiplier > 1) {
+    console.log(`🎯 Gem Node Orb Multiplier: ${multiplier.toFixed(4)}x`);
+  }
+  
+  return multiplier;
 }
 
 /**

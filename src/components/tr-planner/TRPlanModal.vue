@@ -1792,6 +1792,9 @@ function getStepOrbGains(step) {
 
   /* ---------------- Orb‑Gains berechnen ------------------------ */
   
+  // WICHTIG: Gem-Daten für calculations.js verfügbar machen
+  planStats.gemData = gemDataWithOverrides;
+  
   try {
     const orbCalcBoosts = allBoosts.filter(b => b.orbcalc);
     const result = calculateOrbGains(baseStats, planStats, orbCalcBoosts);
@@ -1938,6 +1941,9 @@ function getStepFragGains(step) {
   }
   
   // Fragment-Gewinne berechnen
+  
+  // WICHTIG: Gem-Daten für calculations.js verfügbar machen
+  planStats.gemData = gemDataWithOverrides;
   
   try {
     const result = calculateCampaignFragGains(baseStatsWithGems, planStats, fragMultiBoosts);
