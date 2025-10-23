@@ -899,7 +899,7 @@ import SuffixInput from '@/composables/SuffixInput.vue';
 import Draggable from 'vuedraggable';
 
 // Import stat icons
-import critchanceIcon from '@/assets/general/critchance.png';
+import critchanceIcon from '@/assets/general/critchance.PNG';
 import critpowerIcon from '@/assets/general/critpower.png';
 import atkspeedIcon from '@/assets/general/atkspeed.png';
 
