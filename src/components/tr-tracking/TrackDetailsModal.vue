@@ -736,13 +736,20 @@ const buildColumnDefs = () => {
           return 'Invalid Date';
         }
         
-        return date.toLocaleString(undefined, {
+        const formattedDate = date.toLocaleString(undefined, {
           year: 'numeric',
           month: '2-digit', 
           day: '2-digit',
           hour: '2-digit',
           minute: '2-digit'
         });
+        
+        // Debug: Log the exact format generated for troubleshooting
+        if (process.env.NODE_ENV === 'development') {
+          console.log('cellRenderer - Generated format:', formattedDate, 'for date:', date.toISOString());
+        }
+        
+        return formattedDate;
       },
       editable: true, // Make timestamp editable
       suppressMovable: true,
@@ -761,8 +768,14 @@ const buildColumnDefs = () => {
         
         console.log('cellEditorParams - Setting initial value to:', localizedValue);
         
+        // Debug: Show exact format for troubleshooting
+        if (process.env.NODE_ENV === 'development') {
+          console.log('cellEditorParams - Locale format generated:', localizedValue, 'Locale:', navigator.language);
+        }
+        
         return {
           placeholder: 'Enter date and time',
+          selectAllOnFocusIn: true,
           value: localizedValue // Set the initial value directly
         };
       },
@@ -2434,119 +2447,178 @@ function parseLocalizedDateTime(inputValue) {
   
   switch (locale) {
     case 'en-US':
-      // MM/DD/YYYY formats with various separators and 12-hour time
+      // MM/DD/YYYY formats with various separators and whitespace variations
       regexPatterns = [
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})\s+(AM|PM)$/i, order: ['month', 'day', 'year', 'hour', 'minute', 'ampm'] },
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})\s+(AM|PM)$/i, order: ['month', 'day', 'year', 'hour', 'minute', 'ampm'] },
-        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})\s+(AM|PM)$/i, order: ['month', 'day', 'year', 'hour', 'minute', 'ampm'] },
-        // 24-hour variants
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['month', 'day', 'year', 'hour', 'minute'] }
+        // 12-hour formats with AM/PM
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})\s+(AM|PM)$/i, order: ['month', 'day', 'year', 'hour', 'minute', 'ampm'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})\s+(AM|PM)$/i, order: ['month', 'day', 'year', 'hour', 'minute', 'ampm'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})\s+(AM|PM)$/i, order: ['month', 'day', 'year', 'hour', 'minute', 'ampm'] },
+        { regex: /^(\d{2})\/(\d{2})\/(\d{4})[,\s]*(\d{2}):(\d{2})\s+(AM|PM)$/i, order: ['month', 'day', 'year', 'hour', 'minute', 'ampm'] },
+        // 24-hour formats
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['month', 'day', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['month', 'day', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['month', 'day', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\/(\d{2})\/(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['month', 'day', 'year', 'hour', 'minute'] }
       ];
       break;
     case 'en-GB':
     case 'en-AU':
     case 'en-NZ':
     case 'en-ZA':
-      // DD/MM/YYYY formats for British English and variants
+      // DD/MM/YYYY formats for British English and variants with all separator and whitespace variations
       regexPatterns = [
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\/(\d{2})\/(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})-(\d{2})-(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\.(\d{2})\.(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4}),\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4}),(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
       ];
       break;
     case 'en-CA':
-      // Canadian format can be DD/MM/YYYY or MM/DD/YYYY, try both
+      // Canadian format can be DD/MM/YYYY or MM/DD/YYYY, try both with all variations
       regexPatterns = [
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\/(\d{2})\/(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        // MM/DD/YYYY fallback patterns
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['month', 'day', 'year', 'hour', 'minute'] }
       ];
       break;
     case 'fr-FR':
     case 'fr-BE':
     case 'fr-CH':
     case 'fr-CA':
-      // French formats DD/MM/YYYY with various separators
+      // French formats DD/MM/YYYY with various separators and whitespace variations
       regexPatterns = [
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2})[h:](\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\/(\d{2})\/(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})-(\d{2})-(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\.(\d{2})\.(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        // French specific with 'h' separator
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2})h(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2})h(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
       ];
       break;
     case 'es-ES':
     case 'es-MX':
     case 'es-AR':
     case 'es-CO':
-      // Spanish formats DD/MM/YYYY
+      // Spanish formats DD/MM/YYYY with all separator and whitespace variations
       regexPatterns = [
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\/(\d{2})\/(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})-(\d{2})-(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\.(\d{2})\.(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4}),\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
       ];
       break;
     case 'it-IT':
     case 'pt-PT':
     case 'pt-BR':
-      // Italian and Portuguese formats DD/MM/YYYY
+      // Italian and Portuguese formats DD/MM/YYYY with all variations
       regexPatterns = [
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\/(\d{2})\/(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})-(\d{2})-(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\.(\d{2})\.(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4}),\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
       ];
       break;
     case 'nl-NL':
     case 'nl-BE':
-      // Dutch formats DD-MM-YYYY
+      // Dutch formats DD-MM-YYYY with all separator and whitespace variations
       regexPatterns = [
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})-(\d{2})-(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\/(\d{2})\/(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\.(\d{2})\.(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4}),\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
       ];
       break;
     case 'da-DK':
     case 'nb-NO':
     case 'nn-NO':
-      // Danish and Norwegian formats DD-MM-YYYY
+      // Danish and Norwegian formats DD-MM-YYYY with all variations
       regexPatterns = [
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})-(\d{2})-(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\.(\d{2})\.(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4}),\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
       ];
       break;
     case 'sv-SE':
     case 'fi-FI':
-      // Swedish and Finnish formats YYYY-MM-DD
+      // Swedish and Finnish formats YYYY-MM-DD with all variations
       regexPatterns = [
-        { regex: /^(\d{4})-(\d{1,2})-(\d{1,2})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        { regex: /^(\d{4})-(\d{1,2})-(\d{1,2})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{4})\/(\d{1,2})\/(\d{1,2})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{4})\.(\d{1,2})\.(\d{1,2})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{4})-(\d{2})-(\d{2})[,\s]*(\d{2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] }
       ];
       break;
     case 'pl-PL':
     case 'cs-CZ':
     case 'sk-SK':
-      // Polish, Czech, Slovak formats DD.MM.YYYY
+      // Polish, Czech, Slovak formats DD.MM.YYYY with all variations
       regexPatterns = [
-        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\.(\d{2})\.(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})-(\d{2})-(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4}),\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
       ];
       break;
     case 'ru-RU':
-      // Russian format DD.MM.YYYY
+      // Russian format DD.MM.YYYY with all variations
       regexPatterns = [
-        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\.(\d{2})\.(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})-(\d{2})-(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
       ];
       break;
     case 'zh-CN':
     case 'zh-TW':
     case 'ja-JP':
     case 'ko-KR':
-      // Asian formats YYYY/MM/DD or YYYY-MM-DD
+      // Asian formats YYYY/MM/DD or YYYY-MM-DD with all variations
       regexPatterns = [
-        { regex: /^(\d{4})\/(\d{1,2})\/(\d{1,2})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
-        { regex: /^(\d{4})-(\d{1,2})-(\d{1,2})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        { regex: /^(\d{4})\/(\d{1,2})\/(\d{1,2})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{4})-(\d{1,2})-(\d{1,2})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{4})\.(\d{1,2})\.(\d{1,2})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{4})\/(\d{2})\/(\d{2})[,\s]*(\d{2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{4})-(\d{2})-(\d{2})[,\s]*(\d{2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{4})\.(\d{2})\.(\d{2})[,\s]*(\d{2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        // Fallback DD/MM/YYYY patterns for mixed locales
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{4})\/(\d{1,2})\/(\d{1,2})\s+(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] },
+        { regex: /^(\d{4})-(\d{1,2})-(\d{1,2})\s+(\d{1,2}):(\d{2})$/i, order: ['year', 'month', 'day', 'hour', 'minute'] }
       ];
       break;
     case 'de':
@@ -2555,11 +2627,31 @@ function parseLocalizedDateTime(inputValue) {
     case 'de-CH':
     case 'de-LU':
     default:
-      // German formats DD.MM.YYYY with various separators
+      // German formats DD.MM.YYYY with various separators and whitespace variations
       regexPatterns = [
-        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
-        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
+        // Standard formats with dot separator
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        // With leading zeros (dot)
+        { regex: /^(\d{2})\.(\d{2})\.(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        // Dash separator formats with all whitespace variations
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})-(\d{2})-(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4}),\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4}),(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})-(\d{1,2})-(\d{4})\s{2,}(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        // Slash separator formats with all whitespace variations
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]*(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{2})\/(\d{2})\/(\d{4})[,\s]*(\d{2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4}),\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4}),(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s{2,}(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        // Dot separator formats (remaining variations)
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4}),\s+(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4}),(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] },
+        { regex: /^(\d{1,2})\.(\d{1,2})\.(\d{4})\s{2,}(\d{1,2}):(\d{2})$/i, order: ['day', 'month', 'year', 'hour', 'minute'] }
       ];
       break;
   }
@@ -2625,7 +2717,40 @@ function parseLocalizedDateTime(inputValue) {
     }
   }
   
-  console.log('parseLocalizedDateTime - No pattern matched, returning null');
+  console.log('parseLocalizedDateTime - No regex pattern matched, trying fallback methods');
+  
+  // Fallback 1: Try browser's native Date parsing
+  try {
+    const nativeDate = new Date(trimmedInput);
+    if (!isNaN(nativeDate.getTime()) && nativeDate.getFullYear() >= 2020) {
+      console.log('parseLocalizedDateTime - Successfully parsed with native Date constructor');
+      return nativeDate;
+    }
+  } catch (error) {
+    console.log('parseLocalizedDateTime - Native Date parsing failed:', error);
+  }
+  
+  // Fallback 2: Try to convert common separators to ISO format
+  try {
+    // Replace dots and slashes with dashes, handle various formats
+    let isoAttempt = trimmedInput
+      .replace(/(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})[,\s]*(\d{1,2}):(\d{2})/, '$3-$2-$1T$4:$5:00')
+      .replace(/(\d{4})[.\/](\d{1,2})[.\/](\d{1,2})[,\s]*(\d{1,2}):(\d{2})/, '$1-$2-$3T$4:$5:00');
+    
+    // Ensure double-digit month and day
+    isoAttempt = isoAttempt.replace(/T(\d):/, 'T0$1:').replace(/-(\d)-/, '-0$1-').replace(/-(\d)T/, '-0$1T');
+    
+    console.log('parseLocalizedDateTime - Trying ISO conversion:', isoAttempt);
+    const isoDate = new Date(isoAttempt);
+    if (!isNaN(isoDate.getTime()) && isoDate.getFullYear() >= 2020) {
+      console.log('parseLocalizedDateTime - Successfully parsed with ISO conversion');
+      return isoDate;
+    }
+  } catch (error) {
+    console.log('parseLocalizedDateTime - ISO conversion failed:', error);
+  }
+  
+  console.log('parseLocalizedDateTime - All parsing methods failed, returning null');
   return null;
 }
 

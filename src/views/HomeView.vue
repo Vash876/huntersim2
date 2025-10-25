@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.8.17',
+    date: '2025-10-25',
+    changes: [
+      {
+        text: 'Inscryption Planner',
+        subItems: [
+          'Fixed cumulative evaluation system - Stat Upgrades and Inscryptions now properly build on each other when evaluating items in shopping list',
+        ]
+      },
+      {
+        text: 'TR Tracker',
+        subItems: [
+          'Fixed timestamp editing in log entries to support all international date and time formats across different browsers and locales',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.16',
     date: '2025-10-23',
     changes: [

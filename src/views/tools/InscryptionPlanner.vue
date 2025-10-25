@@ -1125,10 +1125,13 @@ async function evaluateBorgeBuff2Item(item) {
       `i${item.inscryptionId}_rank${item.rank}`,
       ...previousItems
         .filter(prevItem => {
+          if (prevItem.isStatUpgrade) return true; // Stat upgrades affect evaluation
           const prevMetadata = store.inscryptionsData.find(data => data.inscryptionId == prevItem.inscryptionId);
           return prevMetadata && prevMetadata.borgeBuff !== 1; // Only non-multiplier items affect evaluation
         })
-        .map(prevItem => `prev_i${prevItem.inscryptionId}_rank${prevItem.rank}`)
+        .map(prevItem => prevItem.isStatUpgrade ? 
+          `prev_stat_${prevItem.statKey}_${prevItem.nextLevel}` : 
+          `prev_i${prevItem.inscryptionId}_rank${prevItem.rank}`)
     ];
     const evaluationCacheKey = cacheKeyParts.join('|');
     
@@ -1140,47 +1143,59 @@ async function evaluateBorgeBuff2Item(item) {
       return;
     }
     
-    // Check if any previous Borge Buff 2 items need evaluation first
-    const previousBorgeBuff2Items = previousItems.filter(prevItem => {
+    // Check if any previous items need evaluation first (Borge Buff 2 inscryptions AND stat upgrades)
+    const previousItemsNeedingEvaluation = previousItems.filter(prevItem => {
+      if (prevItem.isStatUpgrade) return true; // Stat upgrades need evaluation
       const prevMetadata = store.inscryptionsData.find(
         data => data.inscryptionId == prevItem.inscryptionId
       );
-      return prevMetadata && prevMetadata.borgeBuff === 2;
+      return prevMetadata && prevMetadata.borgeBuff === 2; // Borge Buff 2 inscryptions need evaluation
     });
     
-    // Evaluate missing previous Borge Buff 2 items first
-    for (const prevBorgeBuff2Item of previousBorgeBuff2Items) {
-      if (!borgeBuff2Evaluations.value[prevBorgeBuff2Item.id] && !evaluatingItems.value.has(prevBorgeBuff2Item.id)) {
-        await evaluateBorgeBuff2Item(prevBorgeBuff2Item);
+    // Evaluate missing previous items first
+    for (const prevItem of previousItemsNeedingEvaluation) {
+      if (!borgeBuff2Evaluations.value[prevItem.id] && !evaluatingItems.value.has(prevItem.id)) {
+        if (prevItem.isStatUpgrade) {
+          await evaluateStatUpgrade(prevItem);
+        } else {
+          await evaluateBorgeBuff2Item(prevItem);
+        }
       }
     }
     
     // Don't include Borge Buff 1 items in the evaluation - they're just multipliers we can apply afterwards
-    // But DO include other Borge Buff 2 items and non-multiplier inscryptions
-    const previousNonMultiplierItems = previousItems.filter(prevItem => {
+    // But DO include Stat Upgrades, Borge Buff 2 items, and other non-multiplier inscryptions
+    const previousEvaluationItems = previousItems.filter(prevItem => {
+      if (prevItem.isStatUpgrade) return true; // All stat upgrades affect evaluation
       const prevMetadata = store.inscryptionsData.find(
         data => data.inscryptionId == prevItem.inscryptionId
       );
       return prevMetadata && prevMetadata.borgeBuff !== 1; // Exclude only Borge Buff 1 (multipliers)
     });
     
-    // Apply all previous non-multiplier inscryption upgrades
-    previousNonMultiplierItems.forEach((prevItem, prevIndex) => {
-      const prevInscryptionKey = `upgrades.inscryptions.i${prevItem.inscryptionId}`;
-      let prevCurrentLevel = hunterStore.getUpgradeValue('inscryptions', `i${prevItem.inscryptionId}`) || 0;
-      
-      // For previous items, we also need to account for any items that came before THEM
-      const itemsBeforePrevItem = previousNonMultiplierItems.slice(0, prevIndex);
-      const prevSameInscryptionItems = itemsBeforePrevItem.filter(earlierItem => 
-        earlierItem.inscryptionId === prevItem.inscryptionId
-      );
-      
-      // Each earlier rank of the same inscryption should increase the level by 1
-      prevCurrentLevel += prevSameInscryptionItems.length;
-      
-      // The target level for this previous item
-      const prevTargetLevel = prevCurrentLevel + 1;
-      modifiedBuild.overrides[prevInscryptionKey] = prevTargetLevel;
+    // Apply all previous evaluation-affecting items (inscryptions and stat upgrades)
+    previousEvaluationItems.forEach((prevItem, prevIndex) => {
+      if (prevItem.isStatUpgrade) {
+        // Apply previous stat upgrade
+        modifiedBuild.overrides[prevItem.statKey] = prevItem.nextLevel;
+      } else {
+        // Apply previous inscryption upgrade
+        const prevInscryptionKey = `upgrades.inscryptions.i${prevItem.inscryptionId}`;
+        let prevCurrentLevel = hunterStore.getUpgradeValue('inscryptions', `i${prevItem.inscryptionId}`) || 0;
+        
+        // For previous items, we also need to account for any items that came before THEM
+        const itemsBeforePrevItem = previousEvaluationItems.slice(0, prevIndex);
+        const prevSameInscryptionItems = itemsBeforePrevItem.filter(earlierItem => 
+          !earlierItem.isStatUpgrade && earlierItem.inscryptionId === prevItem.inscryptionId
+        );
+        
+        // Each earlier rank of the same inscryption should increase the level by 1
+        prevCurrentLevel += prevSameInscryptionItems.length;
+        
+        // The target level for this previous item
+        const prevTargetLevel = prevCurrentLevel + 1;
+        modifiedBuild.overrides[prevInscryptionKey] = prevTargetLevel;
+      }
     });
     
     // Use base HBM production for evaluation (no Borge Buff 1 multipliers applied)
@@ -1499,6 +1514,24 @@ async function evaluateStatUpgrade(item) {
       return;
     }
     
+    // Check if any previous items need evaluation first (Borge Buff 2 inscryptions AND stat upgrades)
+    const previousItemsNeedingEvaluation = previousItems.filter(prevItem => {
+      if (prevItem.isStatUpgrade) return true; // Stat upgrades need evaluation
+      const prevMetadata = store.inscryptionsData.find(data => data.inscryptionId == prevItem.inscryptionId);
+      return prevMetadata && prevMetadata.borgeBuff === 2; // Borge Buff 2 inscryptions need evaluation
+    });
+    
+    // Evaluate missing previous items first
+    for (const prevItem of previousItemsNeedingEvaluation) {
+      if (!borgeBuff2Evaluations.value[prevItem.id] && !evaluatingItems.value.has(prevItem.id)) {
+        if (prevItem.isStatUpgrade) {
+          await evaluateStatUpgrade(prevItem);
+        } else {
+          await evaluateBorgeBuff2Item(prevItem);
+        }
+      }
+    }
+    
     // Apply all previous items that affect evaluation
     const previousEvaluationItems = previousItems.filter(prevItem => {
       if (prevItem.isStatUpgrade) return true; // All stat upgrades affect evaluation
@@ -1537,7 +1570,7 @@ async function evaluateStatUpgrade(item) {
     // Apply the stat upgrade
     modifiedBuild.overrides[item.statKey] = item.nextLevel;
 
-    evaluationProgress.value[item.id] = 'Running stat evaluation...';
+    evaluationProgress.value[item.id] = 'Running evaluation...';
 
     // Evaluate the modified build
     const evaluationResult = await evaluateBuildWithParams(modifiedBuild);
