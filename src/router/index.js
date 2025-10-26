@@ -113,11 +113,6 @@ const routes = [
     component: () => import('../views/tools/TRTracking.vue'),
   },
   {
-    path: '/tools/test',
-    name: 'Test',
-    component: () => import('../views/tools/Test.vue'),
-  },
-  {
     path: '/tools/gem-planner',
     name: 'Gem Planner',
     component: () => import('../views/tools/GemPlanner.vue'),

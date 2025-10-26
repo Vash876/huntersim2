@@ -68,7 +68,7 @@ class Enemy {
     
     // Boss #400 starts with one Infernal Bulk activation already applied
     if (is400) {
-      this.atk += 2780; // Pre-combat Infernal Bulk activation (+2780 ATK)
+      //this.atk += 2780; // Pre-combat Infernal Bulk activation (+2780 ATK)
       this.infernalBulkTimer = 10.0; // First in-combat activation after 10 seconds
     } else {
       this.infernalBulkTimer = 0;

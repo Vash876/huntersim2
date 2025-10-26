@@ -38,7 +38,7 @@
                 <div class="flex items-center gap-2">
                   <span class="font-medium text-gray-300 text-sm">All Time Highest RP (e)</span>
                   <InfoTooltip 
-                    content="This value filters out permanent Researches (Dark type) that you have already purchased. Enter the highest RP you've ever reached to hide Researches you already own."
+                    content="This value filters out permanent Researches (Dark and Ultima type) that you have already purchased. Enter the highest RP you've ever reached to hide Researches you already own."
                     placement="top"
                   />
                 </div>

@@ -136,7 +136,7 @@
             <div
               v-for="upgrade in getAvailableUpgrades(gem.id)"
               :key="upgrade.id"
-              class="bg-gray-800/60 rounded-sm p-2 hover:bg-gray-700/60 transition-colors border-l-3"
+              class="bg-gray-800/60 rounded-sm p-2 pt-1.5 hover:bg-gray-700/60 transition-colors border-l-3"
               :style="{ borderLeftColor: upgrade.color }"
             >
               <!-- Upgrade Header -->
