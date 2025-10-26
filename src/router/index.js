@@ -243,4 +243,10 @@ const router = createRouter({
   }
 })
 
+// Update title on route change: always "CIFI Tools" + " - Dev" on dev server
+router.afterEach(() => {
+  const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  document.title = isDev ? 'CIFI Tools - Dev' : 'CIFI Tools';
+});
+
 export default router

@@ -139,6 +139,54 @@
         </div>
       </div>
 
+      <!-- Storage Issues Section -->
+      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-8">
+        <div class="header p-4 flex justify-between items-center">
+          <h3 class="text-lg font-semibold text-white flex items-center">
+            <IconWand size="20" class="mr-2 text-orange-400" />
+            Storage Issues
+          </h3>
+        </div>
+        
+        <div class="p-6">
+
+            <div class="flex items-start gap-3">
+              <div class="flex-1">
+                <h4 class="text-white text-lg font-semibold mb-2">Quick Fix Storage</h4>
+                <p class="text-gray-300 text-sm mb-3">
+                  If you experience data loss on page refresh or storage warnings, use this quick fix.
+                  It will automatically backup your data, reset the storage, and restore everything - 
+                  often resolving storage quota issues.
+                </p>
+                <button 
+                  @click="quickFixStorage" 
+                  class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-5 py-2.5 rounded-lg flex items-center transition-all shadow-lg font-medium"
+                  :disabled="isQuickFixing"
+                >
+                  <IconWand size="20" class="mr-2" />
+                  <span v-if="!isQuickFixing">Quick Fix Storage Issues</span>
+                  <span v-else class="flex items-center">
+                    <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Fixing... ({{ quickFixStep }})
+                  </span>
+                </button>
+                
+                <!-- Quick Fix Progress -->
+                <div v-if="quickFixProgress" class="mt-3 text-xs text-gray-300 space-y-1">
+                  <div v-for="(step, idx) in quickFixProgress" :key="idx" class="flex items-center gap-2">
+                    <IconCheck v-if="step.done" size="14" class="text-green-400" />
+                    <div v-else class="w-3.5 h-3.5 border-2 border-gray-500 rounded-full animate-spin"></div>
+                    <span>{{ step.text }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+
 
       <!-- Cache Management -->
       <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-8">
@@ -536,7 +584,8 @@ import {
   IconCode,
   IconAdjustments,
   IconQuestionMark,
-  IconShield
+  IconShield,
+  IconWand
 } from '@tabler/icons-vue';
 
 // Stores
@@ -558,6 +607,11 @@ const showResetConfirmation = ref(false);
 const fileInput = ref(null);
 const toast = ref({ show: false, message: '', type: 'info' });
 const highIterationsEnabled = ref(false);
+
+// Quick Fix Storage state
+const isQuickFixing = ref(false);
+const quickFixStep = ref('');
+const quickFixProgress = ref(null);
 
 // Data Recovery State
 const isSearching = ref(false);
@@ -884,10 +938,88 @@ function copyBackupCode() {
   });
 }
 
+// Quick Fix Storage - combines backup, reset, and restore
+// Uses reliable syncStore functions (battle-tested for cloud sync)
+async function quickFixStorage() {
+  if (isQuickFixing.value) return;
+  
+  // Ask for confirmation using custom dialog
+  showDialog({
+    title: 'Quick Fix Storage',
+    message: 'This will backup your data, reset storage, and restore everything.\n\nThis often fixes storage quota issues and data loss problems.\n\nThe page will reload automatically after the process.\n\nContinue?',
+    type: 'warning',
+    confirmText: 'Yes, Fix Storage',
+    cancelText: 'Cancel',
+    onConfirm: executeQuickFix
+  });
+}
+
+async function executeQuickFix() {
+  isQuickFixing.value = true;
+  quickFixProgress.value = [
+    { text: 'Creating backup...', done: false },
+    { text: 'Preparing restore...', done: false },
+    { text: 'Page will reload...', done: false }
+  ];
+  
+  let backupCode = null;
+  
+  try {
+    // Step 1: Create backup using syncStore function
+    quickFixStep.value = 'Backing up';
+    console.log('🔧 Quick Fix: Creating backup with syncStore...');
+    
+    backupCode = await syncStore.createLocalBackup();
+    if (!backupCode || typeof backupCode !== 'string') {
+      throw new Error('Failed to create backup - invalid backup code');
+    }
+    
+    console.log('✅ Backup created:', backupCode.substring(0, 50) + '...');
+    quickFixProgress.value[0].done = true;
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Step 2: Store backup in sessionStorage (survives page reload)
+    quickFixStep.value = 'Preparing restore';
+    console.log('🔧 Quick Fix: Storing backup for restore after reload...');
+    sessionStorage.setItem('quickfix_backup', backupCode);
+    sessionStorage.setItem('quickfix_restore_pending', 'true');
+    
+    quickFixProgress.value[1].done = true;
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Step 3: Clear localStorage and reload
+    quickFixStep.value = 'Resetting';
+    console.log('🔧 Quick Fix: Clearing localStorage and reloading...');
+    
+    localStorage.clear();
+    console.log('✅ localStorage cleared');
+    
+    quickFixProgress.value[2].done = true;
+    
+    // Show message and reload
+    showToast('Reloading page to complete storage fix...', 'info');
+    
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+    
+  } catch (error) {
+    console.error('Quick Fix failed:', error);
+    showToast('Quick fix failed: ' + error.message, 'error');
+    
+    // Clean up
+    sessionStorage.removeItem('quickfix_backup');
+    sessionStorage.removeItem('quickfix_restore_pending');
+    
+    isQuickFixing.value = false;
+    quickFixProgress.value = null;
+  }
+}
+
 function showResetDataDialog() {
   showDialog({
     title: 'Reset All Data',
-    message: 'This will reset all your data including all hunters, builds, TR-Planner data, Gadget Calculator, Mech Planner, Ultima Calculator, AttrGN3 Calculator, TS Planner, Research Overview, Loop Mod Overview, Inscryption Planner, and all related settings. This action cannot be undone.',
+    message: 'This will reset all your data. This action cannot be undone.',
     type: 'error',
     confirmText: 'Yes, Reset Everything',
     cancelText: 'Cancel',

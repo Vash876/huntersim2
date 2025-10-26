@@ -2,13 +2,43 @@
 const changelog = 
 [
   {
+    version: '2.8.18',
+    date: '2025-10-26',
+    changes: [
+      {
+        text: 'Settings',
+        subItems: [
+          'Added Storage Issues section with Quick Fix Storage feature to automatically resolve data loss and storage quota problems',
+          'Quick Fix creates a backup, resets storage, and restores all data.',
+          'Added storage quota monitoring with warning banner when browser storage exceeds 95% capacity',
+        ]
+      },
+      // {
+      //   text: 'AttGN#3 Calculator',
+      //   subItems: [
+      //     'Added Compare Mode to analyze the impact of different settings',
+      //     'Compare Mode shows before/after values with difference calculations for Multiplier per Day and Days to Cap',
+      //   ]
+      // },
+      {
+        text: 'Mech Planner',
+        subItems: [
+          'Completely redesigned "Best Upgrade" recommendation system',
+          'Added Vectid Crystal Production section with Reference Build selection',
+          'Added Current Vectid Crystals input field to factor available resources into upgrade recommendations',
+          'Algorithm now compares best efficiency upgrade against optimal combinations of cheaper upgrades and also factors in time to save',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.17',
     date: '2025-10-25',
     changes: [
       {
         text: 'Inscryption Planner',
         subItems: [
-          'Fixed cumulative evaluation system - Stat Upgrades and Inscryptions now properly build on each other when evaluating items in shopping list',
+          'Fixed cumulative evaluation system. Stat Upgrades and Inscryptions now properly build on each other when evaluating items in shopping list',
         ]
       },
       {
@@ -38,7 +68,7 @@ const changelog =
       {
         text: 'Inscryption Planner',
         subItems: [
-          'Added Stat Upgrades (critchance, critpower, atkspeed) to the planner - these can now be purchased with HBM and are fully integrated with evaluation system',
+          'Added Stat Upgrades (critchance, critpower, atkspeed) to the planner, these can now be purchased with HBM and are fully integrated with evaluation system',
         ]
       },
     ]
@@ -62,7 +92,7 @@ const changelog =
       {
         text: 'TR Tracker',
         subItems: [
-          'Added dynamic "Highest" column selection - users can now choose which resources appear as "Highest" columns in the main overview table',
+          'Added dynamic "Highest" column selection, users can now choose which resources appear as "Highest" columns in the main overview table',
           'Enhanced Resource Settings Modal with dual toggle system: "Track" for resource tracking and "Table" for main table display',
         ]
       },
@@ -99,7 +129,7 @@ const changelog =
       {
         text: 'TR Tracker',
         subItems: [
-          'Fixed manual Hunter mat3 input - suffix notation (1k, 1m, 1b, etc.) now work correctly for manual mat3 entries',
+          'Fixed manual Hunter mat3 input, suffix notation (1k, 1m, 1b, etc.) now work correctly for manual mat3 entries',
         ]
       },
     ]

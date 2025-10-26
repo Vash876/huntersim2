@@ -1,0 +1,14 @@
+# robots.txt for CIFI Tools
+User-agent: *
+Allow: /
+
+# Disallow backend and private routes
+Disallow: /api/
+Disallow: /netlify/
+Disallow: /.netlify/
+
+# Crawl-delay (optional, für höfliche Bots)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://cifi-tools.com/sitemap.xml

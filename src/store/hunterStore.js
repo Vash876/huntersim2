@@ -476,6 +476,52 @@ export const useHunterStore = defineStore('hunter', () => {
     hunterIterations.value[hunterId] = iterations;
   }
 
+  /**
+   * Räumt den Evaluation Cache auf - behält nur die letzten 100 Einträge pro Hunter
+   * Wird automatisch beim Store-Init aufgerufen um Speicher zu sparen
+   */
+  function cleanupEvaluationCache() {
+    try {
+      let totalRemoved = 0;
+      
+      Object.keys(evaluationCache.value).forEach(hunterId => {
+        const cacheEntries = evaluationCache.value[hunterId];
+        if (!cacheEntries || typeof cacheEntries !== 'object') return;
+        
+        // Konvertiere zu Array mit Timestamps
+        const entriesArray = Object.entries(cacheEntries).map(([key, value]) => ({
+          key,
+          value,
+          timestamp: value.timestamp || 0
+        }));
+        
+        // Wenn mehr als 50 Einträge vorhanden sind
+        if (entriesArray.length > 50) {
+          // Sortiere nach Timestamp (neueste zuerst)
+          entriesArray.sort((a, b) => b.timestamp - a.timestamp);
+
+          // Behalte nur die neuesten 50
+          const toKeep = entriesArray.slice(0, 50);
+          const removed = entriesArray.length - 50;
+          totalRemoved += removed;
+          
+          // Erstelle neues Cache-Objekt mit nur den neuesten Einträgen
+          evaluationCache.value[hunterId] = Object.fromEntries(
+            toKeep.map(entry => [entry.key, entry.value])
+          );
+          
+          console.log(`🧹 Cleaned ${removed} old cache entries for ${hunterId}`);
+        }
+      });
+      
+      if (totalRemoved > 0) {
+        console.log(`✅ Evaluation cache cleanup complete: ${totalRemoved} old entries removed`);
+      }
+    } catch (error) {
+      console.error('❌ Evaluation cache cleanup failed:', error);
+    }
+  }
+
 /**
  * Speichert die Reihenfolge der Builds für einen bestimmten Hunter
  * @param {string} hunterId - Die ID des Hunters
@@ -1171,6 +1217,7 @@ function shouldShowAdvancedTalents(hunterId) {
     getCachedEvaluationResult,
     clearEvaluationCache,
     findSimilarCachedResult,
+    cleanupEvaluationCache,
     
     // Display-Einstellungen
     saveDisplaySettings,

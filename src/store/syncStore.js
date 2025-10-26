@@ -226,7 +226,9 @@ export const useSyncStore = defineStore('sync', () => {
       }
 
       if (backupData.data.trTrackingStore) {
-        trTrackingStore.importData(backupData.data.trTrackingStore);
+        console.log('📥 Restoring TR Tracking data from cloud backup...');
+        await trTrackingStore.importData(backupData.data.trTrackingStore);
+        console.log('✅ TR Tracking data restored successfully');
       }
 
       if (backupData.data.ultimaStore) {
@@ -406,6 +408,8 @@ export const useSyncStore = defineStore('sync', () => {
     // Methods
     init,
     updateAuthState,
+    createLocalBackup,
+    restoreLocalBackup,
     syncToServer,
     syncFromServer
   };

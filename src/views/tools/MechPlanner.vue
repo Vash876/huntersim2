@@ -7,6 +7,74 @@
           <span>Mech Planner</span>
         </h2>
         
+        <!-- Vectid Crystal Production Settings -->
+        <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-3">
+          <div class="header p-3 flex justify-between items-center">
+            <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
+              <img src="@/assets/ozzy/loot_mat3.png" class="w-7 h-7 mr-1.5" alt="Vectid Crystals" />
+              Vectid Crystal Production
+            </h3>
+            
+            <div class="flex items-center gap-2">
+              <button 
+                @click="resetProduction" 
+                class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
+              >
+                <IconRefresh size="12" class="mr-1" />
+                Reset
+              </button>
+            </div>
+          </div>
+          
+          <div class="p-2 sm:p-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <!-- Reference Build -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+                <div class="font-medium text-white text-sm mb-1">Reference Build</div>
+                <div class="text-xs text-gray-400 mb-2">Select Ozzy Build</div>
+                
+                <select 
+                  v-model="selectedBuildId" 
+                  @change="updateFromSelectedBuild"
+                  class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:border-green-500"
+                >
+                  <option value="">Select a build...</option>
+                  <option v-for="build in ozzyBuilds" :key="build.id" :value="build.id">
+                    {{ build.name }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Current Vectid Crystals -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+                <div class="font-medium text-white text-sm mb-1">Current Vectid Crystals</div>
+                <div class="text-xs text-gray-400 mb-2">Amount you have saved</div>
+                
+                <SuffixInput
+                  v-model="currentVectidCrystals"
+                  placeholder="0"
+                  :focus-ring-class="'focus:ring-green-500'"
+                  :placeholder-class="'placeholder-green-400'"
+                  class="w-full text-sm bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none"
+                />
+              </div>
+
+              <!-- Daily Vectid Crystal Rate -->
+              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+                <div class="font-medium text-white text-sm mb-1">Vectid Crystals per Day</div>
+                <div class="text-xs text-gray-400 mb-2">Calculated from Build</div>
+
+                <div class="flex items-center bg-gray-800/80 py-2 px-3 rounded-lg border border-gray-700">
+                  <div class="text-green-400 text-base font-bold">{{ formatDecimalNumber(vectidCrystalsPerDay) }}</div>
+                  <div v-if="!selectedBuild" class="ml-2 text-gray-400 text-xs">
+                    (select a build)
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         <!-- Global Settings (unchanged) -->
         <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-3">
           <div class="header p-3 flex justify-between items-center">
@@ -493,6 +561,7 @@ import {
   IconLock
 } from '@tabler/icons-vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
+import SuffixInput from '@/composables/SuffixInput.vue';
 import { formatNumber } from '@/composables/format.js';
 import { 
   mechs, 
@@ -502,9 +571,17 @@ import {
 } from '@/constants/mech-planner/index.js';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
 import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
+import { useHunterStore } from '@/store/hunterStore';
+import { shouldEvaluate } from '@/services/evaluationCacheService';
 
 // Initialize gem planner store
 const gemPlannerStore = useGemPlannerStore();
+const hunterStore = useHunterStore();
+
+// Build Selection State
+const cachedResults = ref({});
+const selectedBuildId = ref('');
+const currentVectidCrystals = ref(0);
 
 // Global Settings (ohne Creation Gem Werte)
 const coorsRelic = ref(0);
@@ -522,6 +599,38 @@ const inputWasFocused = ref({});
 const mechSettings = ref({});
 
 const mechImages = ref({});
+
+// Computed Properties für Ozzy Builds
+const ozzyBuilds = computed(() => {
+  return hunterStore.getBuildsForHunter('ozzy').filter(build => !build.isArchived);
+});
+
+const selectedBuild = computed(() => {
+  if (!selectedBuildId.value) return null;
+  return ozzyBuilds.value.find(build => String(build.id) === String(selectedBuildId.value));
+});
+
+const vectidCrystalsPerDay = computed(() => {
+  if (!selectedBuildId.value) return new Decimal(0);
+  
+  const build = selectedBuild.value;
+  if (build) {
+    const result = cachedResults.value[build.id];
+    if (result) {
+      // mat3 ist Vectid Crystals bei Ozzy
+      const mat3PerRun = result.mat3 || 0;
+      const avgTime = result.avgTime || 120;
+      
+      // Berechne Vectid Crystals pro Tag
+      const runsPerDay = 1440 / avgTime;
+      const crystalsPerDay = mat3PerRun * runsPerDay;
+      
+      return new Decimal(crystalsPerDay);
+    }
+  }
+  
+  return new Decimal(0);
+});
 
 // Computed Properties für Creation Gem Werte (aus Gem Store)
 const creationGemLevel = computed(() => {
@@ -613,6 +722,47 @@ const updateMechSetting = (mechKey, setting, value) => {
       multiUpgrades: 1
     };
   }
+  
+  const oldValue = mechSettings.value[mechKey][setting];
+  const newValue = value;
+  
+  // Wenn Wert erhöht wird, berechne Kosten und ziehe von Current Vectid Crystals ab
+  if (newValue > oldValue) {
+    const upgradeCount = newValue - oldValue;
+    let totalCost = new Decimal(0);
+    
+    // Berechne Gesamtkosten für alle Upgrades
+    for (let i = 0; i < upgradeCount; i++) {
+      const tempSettings = { ...mechSettings.value[mechKey], [setting]: oldValue + i };
+      let cost;
+      
+      if (setting === 'owned') {
+        cost = getNextMechCostForSettings(mechKey, tempSettings);
+      } else if (setting === 'timeUpgrades') {
+        cost = getNextTimeCostForSettings(mechKey, tempSettings);
+      } else if (setting === 'multiUpgrades') {
+        cost = getNextMultiCostForSettings(mechKey, tempSettings);
+      }
+      
+      if (cost && cost !== 'MAX' && !cost.eq(0)) {
+        totalCost = totalCost.plus(cost);
+      }
+    }
+    
+    // Ziehe Kosten von Current Vectid Crystals ab
+    if (totalCost.gt(0)) {
+      const currentCrystals = new Decimal(currentVectidCrystals.value || 0);
+      const newCrystals = currentCrystals.minus(totalCost);
+      currentVectidCrystals.value = newCrystals.gte(0) ? newCrystals.toNumber() : 0;
+      
+      console.log(`[${mechKey}] Bought ${upgradeCount}x ${setting}:`, {
+        totalCost: totalCost.toString(),
+        oldCrystals: currentCrystals.toString(),
+        newCrystals: newCrystals.toString()
+      });
+    }
+  }
+  
   mechSettings.value[mechKey][setting] = value;
   saveSettings();
 };
@@ -1206,6 +1356,68 @@ const getMechImagePath = (index) => {
   return mechImages.value[index] || null;
 };
 
+// Load cached results for Ozzy builds
+async function loadCachedResults() {
+  try {
+    console.log('[MechPlanner] Loading cached results for Ozzy builds...');
+    console.log('[MechPlanner] Available Ozzy builds:', ozzyBuilds.value.map(b => ({ id: b.id, name: b.name })));
+    
+    // Cache für jeden Build einzeln prüfen
+    for (const build of ozzyBuilds.value) {
+      console.log(`[MechPlanner] Checking cache for build "${build.name}" (ID: ${build.id})`);
+      
+      const cache = await shouldEvaluate({
+        hunterId: 'ozzy',
+        buildData: build,
+        hunterStore,
+        gemPlannerStore
+      });
+      
+      console.log(`[MechPlanner] Cache status for build "${build.name}":`, cache);
+      
+      if (cache?.cachedResult) {
+        console.log(`[MechPlanner] Cache found for build "${build.name}":`, {
+          buildId: cache.cachedResult.buildId || 'none',
+          avgStage: cache.cachedResult.avgStage,
+          mat3: cache.cachedResult.mat3
+        });
+        
+        cachedResults.value[build.id] = cache.cachedResult;
+      }
+    }
+    
+    console.log('[MechPlanner] Final cached results:', Object.keys(cachedResults.value).length, 'builds cached');
+  } catch (error) {
+    console.error('[MechPlanner] Error loading cached results:', error);
+  }
+}
+
+// Update from selected build
+function updateFromSelectedBuild() {
+  if (!selectedBuildId.value) {
+    return;
+  }
+  
+  const build = selectedBuild.value;
+  if (build) {
+    const result = cachedResults.value[build.id];
+    if (result) {
+      console.log(`[MechPlanner] Using cached result for build "${build.name}":`, result);
+    }
+  }
+  
+  // Save selection to localStorage
+  localStorage.setItem('mechPlanner_selectedBuildId', selectedBuildId.value);
+}
+
+// Reset production settings
+function resetProduction() {
+  selectedBuildId.value = '';
+  currentVectidCrystals.value = 0;
+  localStorage.removeItem('mechPlanner_selectedBuildId');
+  localStorage.removeItem('mechPlanner_currentVectidCrystals');
+}
+
 // Error handler for missing images
 const handleImageError = (event) => {
   // Fallback zu einem Standard-Icon wenn das Bild nicht gefunden wird
@@ -1483,15 +1695,302 @@ const getOutputPerWeek = (mechKey) => {
   return outputPerWeek;
 };
 
-// Kosten-Nutzen-Analyse Funktionen - NEUE IMPLEMENTATION
+// GREEDY BUDGET OPTIMIZER - Findet beste Upgrade-Kombination für verfügbares Budget
+const getBestUpgradePath = (mechKey, availableBudget) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  const settings = mechSettings.value[mechKey];
+  
+  if (!mech || !settings) return { totalImprovement: new Decimal(0), upgrades: [], remainingBudget: availableBudget };
+  
+  const upgrades = [];
+  let remainingBudget = new Decimal(availableBudget);
+  let currentSettings = { ...settings };
+  let currentOutput = getOutputPerDay(mechKey);
+  let iteration = 0;
+  
+  // Greedy-Algorithmus: Kaufe immer das beste Preis-Leistungs-Upgrade
+  while (remainingBudget.gt(0)) {
+    iteration++;
+    const options = [];
+    
+    // Option 1: Owned Upgrade
+    const mechCost = getNextMechCostForSettings(mechKey, currentSettings);
+    if (mechCost !== 'MAX' && !mechCost.eq(0) && mechCost.lte(remainingBudget)) {
+      const testSettings = { ...currentSettings, owned: currentSettings.owned + 1 };
+      const newOutput = simulateOutputPerDayWithSettings(mechKey, testSettings);
+      const improvement = newOutput.sub(currentOutput);
+      const efficiency = improvement.div(mechCost); // Verbesserung pro ausgegebener Einheit
+      
+      options.push({
+        type: 'owned',
+        cost: mechCost,
+        improvement: improvement,
+        efficiency: efficiency,
+        newSettings: testSettings,
+        newOutput: newOutput
+      });
+    }
+    
+    // Option 2: Time Upgrade
+    const timeCost = getNextTimeCostForSettings(mechKey, currentSettings);
+    const effectiveMaxLevels = getEffectiveTimeMaxLevels(mechKey);
+    if (timeCost !== 'MAX' && !timeCost.eq(0) && timeCost.lte(remainingBudget) && currentSettings.timeUpgrades < effectiveMaxLevels) {
+      const testSettings = { ...currentSettings, timeUpgrades: currentSettings.timeUpgrades + 1 };
+      const newOutput = simulateOutputPerDayWithSettings(mechKey, testSettings);
+      const improvement = newOutput.sub(currentOutput);
+      const efficiency = improvement.div(timeCost);
+      
+      options.push({
+        type: 'time',
+        cost: timeCost,
+        improvement: improvement,
+        efficiency: efficiency,
+        newSettings: testSettings,
+        newOutput: newOutput
+      });
+    }
+    
+    // Option 3: Multi Upgrade
+    const multiCost = getNextMultiCostForSettings(mechKey, currentSettings);
+    if (multiCost !== 'MAX' && !multiCost.eq(0) && multiCost.lte(remainingBudget) && currentSettings.multiUpgrades < mech.multiMaxLevels) {
+      const testSettings = { ...currentSettings, multiUpgrades: currentSettings.multiUpgrades + 1 };
+      const newOutput = simulateOutputPerDayWithSettings(mechKey, testSettings);
+      const improvement = newOutput.sub(currentOutput);
+      const efficiency = improvement.div(multiCost);
+      
+      options.push({
+        type: 'multi',
+        cost: multiCost,
+        improvement: improvement,
+        efficiency: efficiency,
+        newSettings: testSettings,
+        newOutput: newOutput
+      });
+    }
+    
+    // Kein kaufbares Upgrade mehr verfügbar
+    if (options.length === 0) {
+      break;
+    }
+    
+    // Wähle das Upgrade mit der besten Effizienz (improvement/cost)
+    const best = options.sort((a, b) => b.efficiency.minus(a.efficiency).toNumber())[0];
+    
+    upgrades.push({
+      type: best.type,
+      cost: best.cost,
+      improvement: best.improvement,
+      efficiency: best.efficiency
+    });
+    
+    remainingBudget = remainingBudget.minus(best.cost);
+    currentSettings = best.newSettings;
+    currentOutput = best.newOutput;
+  }
+  
+  // Berechne Gesamtverbesserung
+  const totalImprovement = upgrades.reduce((sum, u) => sum.plus(u.improvement), new Decimal(0));
+  
+  return {
+    totalImprovement: totalImprovement,
+    upgrades: upgrades,
+    remainingBudget: remainingBudget,
+    finalSettings: currentSettings
+  };
+};
+
+// Helper: Berechne Kosten für Settings (nicht current mech state)
+// Diese Funktionen müssen die gleiche Logik wie getNextMechCost etc. verwenden
+const getNextMechCostForSettings = (mechKey, settings) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  if (!mech) return new Decimal(0);
+  
+  // Formula: mechCost * (mechCostMulti ^ (owned - 1))
+  const cost = new Decimal(mech.mechCost).mul(
+    new Decimal(mech.mechCostMulti).pow(settings.owned - 1)
+  );
+  
+  return cost;
+};
+
+const getNextTimeCostForSettings = (mechKey, settings) => {
+  const mech = getMechByKey(mechKey);
+  if (!mech) return new Decimal(0);
+  
+  // Verwende die erweiterten Max Levels durch Tulsandstof Kit
+  const effectiveMaxLevels = getEffectiveTimeMaxLevels(mechKey);
+  
+  if (settings.timeUpgrades >= effectiveMaxLevels) {
+    return 'MAX'; // Spezialwert für Max Level
+  }
+  
+  // Verwende Tier-basierte Berechnung wenn Tiers vorhanden, sonst Fallback
+  if (mech.timeCostTiers) {
+    const cost = calculateTierCost(mech.timeCost, settings.timeUpgrades, mech.timeCostTiers);
+    return new Decimal(cost);
+  } else {
+    // Fallback zur alten Methode
+    const cost = new Decimal(mech.timeCost).mul(
+      new Decimal(mech.timeCostMulti).pow(settings.timeUpgrades)
+    );
+    return cost;
+  }
+};
+
+const getNextMultiCostForSettings = (mechKey, settings) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  if (!mech) return new Decimal(0);
+  
+  if (settings.multiUpgrades >= mech.multiMaxLevels) {
+    return 'MAX'; // Spezialwert für Max Level
+  }
+  
+  // Formula: multiCost * (multiCostMulti ^ (multiUpgrades - 1))
+  // WICHTIG: multiUpgrades - 1, genau wie in getNextMultiCost!
+  const cost = new Decimal(mech.multiCost).mul(
+    new Decimal(mech.multiCostMulti).pow(settings.multiUpgrades - 1)
+  );
+  
+  return cost;
+};
+
+const simulateOutputPerDayWithSettings = (mechKey, settings) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  if (!mech) return new Decimal(0);
+  
+  // Spezialbehandlung für Token Unit
+  if (mech.key === 'token_mk1') {
+    // Token Unit verwendet einfache Multiplikation
+    return new Decimal(mech.multiIncrease || 10000).mul(settings.multiUpgrades || 1);
+  }
+  
+  // Berechne Multiplier mit den gegebenen Settings
+  // Formel: 1 + (multiIncrease * multiUpgrades * owned) + baseMulti
+  const baseValue = new Decimal(1);
+  const multiIncreaseValue = new Decimal(mech.multiIncrease || 0);
+  const baseMultiValue = new Decimal(mech.baseMulti || 0);
+  
+  const multiIncreaseBonus = multiIncreaseValue.mul(settings.multiUpgrades || 0);
+  const mechsBonus = multiIncreaseBonus.mul(settings.owned || 0);
+  
+  const totalMultiplier = baseValue.add(mechsBonus).add(baseMultiValue);
+  
+  if (totalMultiplier.eq(0) || settings.owned === 0) {
+    return new Decimal(0);
+  }
+  
+  // Berechne Timer mit den gegebenen Settings
+  let currentTime = mech.timeStart;
+  
+  // Time upgrades: reduce by timeReduce seconds per level
+  currentTime -= settings.timeUpgrades * mech.timeReduce;
+  
+  // Creation Gem Node #1 bonus: -30 minutes (1800 seconds)
+  if (creationGemNode1.value) {
+    currentTime -= 1800;
+  }
+  
+  // Minimum 10 seconds
+  currentTime = Math.max(10, currentTime);
+  
+  if (currentTime === 0) {
+    return new Decimal(0);
+  }
+  
+  // Timer in Tagen umrechnen
+  const timerInDays = currentTime / 86400;
+  
+  // n-te Wurzel: Multi^(1/timerInDays)
+  const outputPerDay = totalMultiplier.pow(1 / timerInDays);
+  
+  return outputPerDay;
+};
+
+// Kosten-Nutzen-Analyse Funktionen - ROI-BASIERTE IMPLEMENTATION
 const getUpgradeEfficiency = (mechKey, upgradeType) => {
   const mech = mechs.find(m => m.key === mechKey);
   const settings = mechSettings.value[mechKey];
   
   if (!mech || !settings) return new Decimal(0);
   
+  // Get daily income from selected build
+  const dailyIncome = vectidCrystalsPerDay.value;
+  
+  // Get current available crystals
+  const availableCrystals = new Decimal(currentVectidCrystals.value || 0);
+  
+  // If no build selected, can't calculate time-based efficiency
+  if (dailyIncome.eq(0)) {
+    // Fallback to old simple cost-based efficiency
+    return getSimpleEfficiency(mechKey, upgradeType);
+  }
+  
   try {
-    // Berechne aktuellen "Per Day" Output
+    // NEUE STRATEGIE: Vergleiche einzelnes Upgrade mit optimalem Budget-Pfad
+    
+    // Was kostet das einzelne Upgrade?
+    let singleCost;
+    if (upgradeType === 'owned') {
+      singleCost = getNextMechCost(mechKey);
+    } else if (upgradeType === 'time') {
+      singleCost = getNextTimeCost(mechKey);
+    } else { // multi
+      singleCost = getNextMultiCost(mechKey);
+    }
+    
+    if (singleCost === 'MAX' || singleCost.eq(0)) return new Decimal(0);
+    
+    // Wenn wir genug Budget haben, vergleiche:
+    // Option A: Nur dieses Upgrade kaufen
+    // Option B: Optimal mehrere günstige Upgrades kaufen
+    
+    if (availableCrystals.gte(singleCost)) {
+      // Budget ist verfügbar - vergleiche die Optionen
+      
+      // Option A: Einzelnes Upgrade
+      const currentPerDayOutput = getOutputPerDay(mechKey);
+      let singleUpgradeSettings;
+      if (upgradeType === 'owned') {
+        singleUpgradeSettings = { ...settings, owned: settings.owned + 1 };
+      } else if (upgradeType === 'time') {
+        singleUpgradeSettings = { ...settings, timeUpgrades: settings.timeUpgrades + 1 };
+      } else {
+        singleUpgradeSettings = { ...settings, multiUpgrades: settings.multiUpgrades + 1 };
+      }
+      const singleUpgradeOutput = simulateOutputPerDay(mechKey, singleUpgradeSettings);
+      const singleImprovement = singleUpgradeOutput.sub(currentPerDayOutput);
+      
+      // Option B: Greedy Budget Path
+      const budgetPath = getBestUpgradePath(mechKey, availableCrystals);
+      const budgetImprovement = budgetPath.totalImprovement;
+      
+      // Wenn das einzelne Upgrade dieses upgradeType ist, vergleiche mit Budget-Path
+      // Die Effizienz ist: wie viel Verbesserung bekomme ich für den selben Preis?
+      // Wenn Budget-Path besser ist, sollte dieses Upgrade NICHT empfohlen werden
+      
+      // Effizienz = Improvement pro verfügbarem Budget
+      // Einzelnes Upgrade: Nutze nur einen Teil des Budgets
+      const singleEfficiency = singleImprovement.div(singleCost);
+      
+      // Budget Path: Nutzt das gesamte Budget optimal
+      const usedBudget = availableCrystals.minus(budgetPath.remainingBudget);
+      const budgetEfficiency = usedBudget.gt(0) ? budgetImprovement.div(usedBudget) : new Decimal(0);
+      
+      // Wenn Budget Path dieses Upgrade NICHT als erstes kauft, ist es suboptimal
+      const firstUpgradeInPath = budgetPath.upgrades.length > 0 ? budgetPath.upgrades[0].type : null;
+      
+      if (firstUpgradeInPath === upgradeType) {
+        // Dieses Upgrade ist tatsächlich das beste - gib hohe Effizienz
+        return budgetEfficiency;
+      } else {
+        // Ein anderes Upgrade wäre besser - gib niedrigere Effizienz
+        // Aber nicht 0, damit es immer noch angezeigt wird
+        return singleEfficiency.mul(0.5); // Reduziere Effizienz um 50%
+      }
+    }
+    
+    // Nicht genug Budget - verwende alte ROI-basierte Logik
+    const evaluationPeriodDays = 365;
     const currentPerDayOutput = getOutputPerDay(mechKey);
     
     if (upgradeType === 'owned') {
@@ -1503,11 +2002,43 @@ const getUpgradeEfficiency = (mechKey, upgradeType) => {
       const newSettings = { ...settings, owned: settings.owned + 1 };
       const newPerDayOutput = simulateOutputPerDay(mechKey, newSettings);
       
-      // Verbesserung berechnen
-      const improvement = newPerDayOutput.sub(currentPerDayOutput);
-      const efficiency = improvement.div(mechCost);
+      // Verbesserung pro Tag
+      const improvementPerDay = newPerDayOutput.sub(currentPerDayOutput);
       
-      return efficiency;
+      // Berechne tatsächlich benötigte Zeit unter Berücksichtigung verfügbarer Crystals
+      let timeToBuyInDays;
+      if (availableCrystals.gte(mechCost)) {
+        // Genug Crystals vorhanden - sofort kaufbar!
+        timeToBuyInDays = new Decimal(0);
+      } else {
+        // Berechne wie viel noch fehlt
+        const remainingCost = mechCost.sub(availableCrystals);
+        timeToBuyInDays = remainingCost.div(dailyIncome);
+      }
+      
+      // Wie viele Tage profitiere ich von der Verbesserung? (Evaluationsperiode - Wartezeit)
+      const benefitDays = Math.max(0, evaluationPeriodDays - timeToBuyInDays.toNumber());
+      
+      // Kumulativer Gewinn über die Benefitzeit
+      const cumulativeGain = improvementPerDay.mul(benefitDays);
+      
+      // ROI: Gewinn / Kosten (je höher, desto besser)
+      const roi = cumulativeGain.div(mechCost);
+      
+      if (mechKey === 'zag_mk2') {
+        console.log(`[${mechKey}] Owned ROI:`, {
+          cost: mechCost.toString(),
+          availableCrystals: availableCrystals.toString(),
+          remainingCost: availableCrystals.gte(mechCost) ? 0 : mechCost.sub(availableCrystals).toString(),
+          timeToBuyDays: timeToBuyInDays.toNumber(),
+          improvementPerDay: improvementPerDay.toString(),
+          benefitDays: benefitDays,
+          cumulativeGain: cumulativeGain.toString(),
+          roi: roi.toString()
+        });
+      }
+      
+      return roi;
     }
     
     if (upgradeType === 'time') {
@@ -1522,11 +2053,43 @@ const getUpgradeEfficiency = (mechKey, upgradeType) => {
       const newSettings = { ...settings, timeUpgrades: settings.timeUpgrades + 1 };
       const newPerDayOutput = simulateOutputPerDay(mechKey, newSettings);
       
-      // Verbesserung berechnen
-      const improvement = newPerDayOutput.sub(currentPerDayOutput);
-      const efficiency = improvement.div(timeCost);
+      // Verbesserung pro Tag
+      const improvementPerDay = newPerDayOutput.sub(currentPerDayOutput);
       
-      return efficiency;
+      // Berechne tatsächlich benötigte Zeit unter Berücksichtigung verfügbarer Crystals
+      let timeToBuyInDays;
+      if (availableCrystals.gte(timeCost)) {
+        // Genug Crystals vorhanden - sofort kaufbar!
+        timeToBuyInDays = new Decimal(0);
+      } else {
+        // Berechne wie viel noch fehlt
+        const remainingCost = timeCost.sub(availableCrystals);
+        timeToBuyInDays = remainingCost.div(dailyIncome);
+      }
+      
+      // Wie viele Tage profitiere ich von der Verbesserung?
+      const benefitDays = Math.max(0, evaluationPeriodDays - timeToBuyInDays.toNumber());
+      
+      // Kumulativer Gewinn über die Benefitzeit
+      const cumulativeGain = improvementPerDay.mul(benefitDays);
+      
+      // ROI: Gewinn / Kosten
+      const roi = cumulativeGain.div(timeCost);
+      
+      if (mechKey === 'zag_mk2') {
+        console.log(`[${mechKey}] Time ROI:`, {
+          cost: timeCost.toString(),
+          availableCrystals: availableCrystals.toString(),
+          remainingCost: availableCrystals.gte(timeCost) ? 0 : timeCost.sub(availableCrystals).toString(),
+          timeToBuyDays: timeToBuyInDays.toNumber(),
+          improvementPerDay: improvementPerDay.toString(),
+          benefitDays: benefitDays,
+          cumulativeGain: cumulativeGain.toString(),
+          roi: roi.toString()
+        });
+      }
+      
+      return roi;
     }
     
     if (upgradeType === 'multi') {
@@ -1540,16 +2103,103 @@ const getUpgradeEfficiency = (mechKey, upgradeType) => {
       const newSettings = { ...settings, multiUpgrades: settings.multiUpgrades + 1 };
       const newPerDayOutput = simulateOutputPerDay(mechKey, newSettings);
       
-      // Verbesserung berechnen
-      const improvement = newPerDayOutput.sub(currentPerDayOutput);
-      const efficiency = improvement.div(multiCost);
+      // Verbesserung pro Tag
+      const improvementPerDay = newPerDayOutput.sub(currentPerDayOutput);
       
-      return efficiency;
+      // Berechne tatsächlich benötigte Zeit unter Berücksichtigung verfügbarer Crystals
+      let timeToBuyInDays;
+      if (availableCrystals.gte(multiCost)) {
+        // Genug Crystals vorhanden - sofort kaufbar!
+        timeToBuyInDays = new Decimal(0);
+      } else {
+        // Berechne wie viel noch fehlt
+        const remainingCost = multiCost.sub(availableCrystals);
+        timeToBuyInDays = remainingCost.div(dailyIncome);
+      }
+      
+      // Wie viele Tage profitiere ich von der Verbesserung?
+      const benefitDays = Math.max(0, evaluationPeriodDays - timeToBuyInDays.toNumber());
+      
+      // Kumulativer Gewinn über die Benefitzeit
+      const cumulativeGain = improvementPerDay.mul(benefitDays);
+      
+      // ROI: Gewinn / Kosten
+      const roi = cumulativeGain.div(multiCost);
+      
+      if (mechKey === 'zag_mk2') {
+        console.log(`[${mechKey}] Multi ROI:`, {
+          cost: multiCost.toString(),
+          availableCrystals: availableCrystals.toString(),
+          remainingCost: availableCrystals.gte(multiCost) ? 0 : multiCost.sub(availableCrystals).toString(),
+          timeToBuyDays: timeToBuyInDays.toNumber(),
+          improvementPerDay: improvementPerDay.toString(),
+          benefitDays: benefitDays,
+          cumulativeGain: cumulativeGain.toString(),
+          roi: roi.toString()
+        });
+      }
+      
+      return roi;
     }
     
     return new Decimal(0);
   } catch (error) {
     console.error('Error calculating efficiency for', mechKey, upgradeType, error);
+    return new Decimal(0);
+  }
+};
+
+// Fallback: Simple cost-based efficiency (when no build selected)
+const getSimpleEfficiency = (mechKey, upgradeType) => {
+  const mech = mechs.find(m => m.key === mechKey);
+  const settings = mechSettings.value[mechKey];
+  
+  if (!mech || !settings) return new Decimal(0);
+  
+  try {
+    const currentPerDayOutput = getOutputPerDay(mechKey);
+    
+    if (upgradeType === 'owned') {
+      const mechCost = getNextMechCost(mechKey);
+      if (mechCost === 'MAX' || mechCost.eq(0)) return new Decimal(0);
+      
+      const newSettings = { ...settings, owned: settings.owned + 1 };
+      const newPerDayOutput = simulateOutputPerDay(mechKey, newSettings);
+      const improvement = newPerDayOutput.sub(currentPerDayOutput);
+      
+      return improvement.div(mechCost);
+    }
+    
+    if (upgradeType === 'time') {
+      const timeCost = getNextTimeCost(mechKey);
+      if (timeCost === 'MAX' || timeCost.eq(0)) return new Decimal(0);
+      
+      const effectiveMaxLevels = getEffectiveTimeMaxLevels(mechKey);
+      if (settings.timeUpgrades >= effectiveMaxLevels) return new Decimal(0);
+      
+      const newSettings = { ...settings, timeUpgrades: settings.timeUpgrades + 1 };
+      const newPerDayOutput = simulateOutputPerDay(mechKey, newSettings);
+      const improvement = newPerDayOutput.sub(currentPerDayOutput);
+      
+      return improvement.div(timeCost);
+    }
+    
+    if (upgradeType === 'multi') {
+      const multiCost = getNextMultiCost(mechKey);
+      if (multiCost === 'MAX' || multiCost.eq(0)) return new Decimal(0);
+      
+      if (settings.multiUpgrades >= mech.multiMaxLevels) return new Decimal(0);
+      
+      const newSettings = { ...settings, multiUpgrades: settings.multiUpgrades + 1 };
+      const newPerDayOutput = simulateOutputPerDay(mechKey, newSettings);
+      const improvement = newPerDayOutput.sub(currentPerDayOutput);
+      
+      return improvement.div(multiCost);
+    }
+    
+    return new Decimal(0);
+  } catch (error) {
+    console.error('Error calculating simple efficiency for', mechKey, upgradeType, error);
     return new Decimal(0);
   }
 };
@@ -1778,6 +2428,17 @@ const loadSettings = () => {
       currentOutputMultiplierInput.value = savedSettings.currentOutputMultiplierInput;
     }
     
+    // Load build selection and current crystals
+    const savedBuildId = localStorage.getItem('mechPlanner_selectedBuildId');
+    if (savedBuildId) {
+      selectedBuildId.value = savedBuildId;
+    }
+    
+    const savedCurrentCrystals = localStorage.getItem('mechPlanner_currentVectidCrystals');
+    if (savedCurrentCrystals !== null) {
+      currentVectidCrystals.value = Number(savedCurrentCrystals) || 0;
+    }
+    
     // Ensure all mechs have settings
     initializeMechSettings();
     initializeCurrentOutputMultiplier();
@@ -1823,17 +2484,41 @@ watch(currentOutputMultiplier, (newValue) => {
   });
 }, { deep: true });
 
+// Watch für currentVectidCrystals
+watch(currentVectidCrystals, (newValue) => {
+  localStorage.setItem('mechPlanner_currentVectidCrystals', String(newValue || 0));
+});
+
+// Watch für hunterStore changes (reload cached results)
+watch(() => hunterStore.getBuildsForHunter('ozzy'), () => {
+  // Wenn sich die Builds im Store ändern, lade die Ergebnisse neu
+  loadCachedResults();
+}, { deep: true });
+
 // Initialize on mount
 onMounted(async () => {
   // Initialize gem planner store
   gemPlannerStore.init();
   
-  // Lade Mech Images zuerst
+  // Initialize hunter store for Ozzy first
+  if (!hunterStore.hunterBuilds || !hunterStore.hunterBuilds.ozzy || hunterStore.hunterBuilds.ozzy.length === 0) {
+    await hunterStore.initHunterConfig('ozzy');
+  }
+  
+  // Load cached results early
+  await loadCachedResults();
+  
+  // Lade Mech Images
   await loadMechImages();
   
   initializeMechSettings();
   initializeCurrentOutputMultiplier();
   loadSettings();
+  
+  // Update from selected build if available
+  if (selectedBuildId.value) {
+    updateFromSelectedBuild();
+  }
 });
 </script>
 
