@@ -4,10 +4,40 @@
  */
 
 /**
- * Checks localStorage quota and returns usage statistics
- * @returns {Object} { available: boolean, sizeKB: number, sizeMB: number, percentage: number, warning: boolean }
+ * Detects actual localStorage limit by attempting to write test data
+ * @returns {number} Limit in KB
  */
-export function checkLocalStorageQuota() {
+function detectLocalStorageLimit() {
+  try {
+    // Try to detect actual limit by binary search
+    const testKey = '__limit_test__';
+    let low = 0;
+    let high = 10 * 1024; // Start with 10MB max
+    let detectedLimit = 5 * 1024; // Default fallback: 5MB
+    
+    // Quick test: try 10MB
+    try {
+      const testData = 'x'.repeat(10 * 1024 * 1024);
+      localStorage.setItem(testKey, testData);
+      localStorage.removeItem(testKey);
+      detectedLimit = 10 * 1024; // 10MB
+    } catch {
+      // 10MB failed, assume 5MB
+      detectedLimit = 5 * 1024;
+    }
+    
+    return detectedLimit;
+  } catch (e) {
+    // If detection fails, return conservative 5MB
+    return 5 * 1024;
+  }
+}
+
+/**
+ * Checks localStorage quota and returns usage statistics
+ * @returns {Promise<Object>} { available: boolean, sizeKB: number, sizeMB: number, percentage: number, warning: boolean, limitMB: number }
+ */
+export async function checkLocalStorageQuota() {
   try {
     // Test if localStorage is available
     const test = '__storage_test__';
@@ -26,23 +56,46 @@ export function checkLocalStorageQuota() {
     const sizeKB = totalSize / 1024;
     const sizeMB = sizeKB / 1024;
     
-    // Most browsers have 5-10MB limit, we'll assume 5MB as conservative estimate
-    const estimatedLimit = 5 * 1024; // 5MB in KB
-    const percentage = (sizeKB / estimatedLimit) * 100;
+    // Try to use StorageManager API (modern browsers)
+    let actualLimitKB = 5 * 1024; // Fallback: 5MB
+    
+    if (navigator.storage && navigator.storage.estimate) {
+      try {
+        const estimate = await navigator.storage.estimate();
+        // estimate.quota is in bytes
+        if (estimate.quota) {
+          // Some browsers report overall quota (includes IndexedDB etc.)
+          // localStorage typically gets 5-10MB of that
+          // If quota is very large (>100MB), assume localStorage gets 10MB
+          // Otherwise use conservative 5MB
+          actualLimitKB = estimate.quota > 100 * 1024 * 1024 ? 10 * 1024 : 5 * 1024;
+        }
+      } catch (e) {
+        console.log('StorageManager API failed, using detection method');
+      }
+    }
+    
+    // If StorageManager API not available, try detection
+    if (actualLimitKB === 5 * 1024) {
+      actualLimitKB = detectLocalStorageLimit();
+    }
+    
+    const percentage = (sizeKB / actualLimitKB) * 100;
     
     const result = {
       available: true,
       sizeKB: parseFloat(sizeKB.toFixed(2)),
       sizeMB: parseFloat(sizeMB.toFixed(2)),
+      limitMB: actualLimitKB / 1024,
       percentage: parseFloat(percentage.toFixed(1)),
-      warning: percentage > 95, // Warn at 95% capacity
-      critical: percentage > 98 // Critical at 98%
+      warning: percentage > 80, // Warn at 80% capacity (more conservative)
+      critical: percentage > 95 // Critical at 95%
     };
     
     if (result.warning) {
-      console.warn(`⚠️ LocalStorage usage: ${result.percentage}% (${result.sizeMB} MB)`);
+      console.warn(`⚠️ LocalStorage usage: ${result.percentage}% (${result.sizeMB} MB / ${result.limitMB} MB limit)`);
     } else {
-      console.log(`✅ LocalStorage usage: ${result.percentage}% (${result.sizeMB} MB)`);
+      console.log(`✅ LocalStorage usage: ${result.percentage}% (${result.sizeMB} MB / ${result.limitMB} MB limit)`);
     }
     
     return result;

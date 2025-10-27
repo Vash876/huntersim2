@@ -153,10 +153,13 @@
             <div class="flex items-start gap-3">
               <div class="flex-1">
                 <h4 class="text-white text-lg font-semibold mb-2">Quick Fix Storage</h4>
-                <p class="text-gray-300 text-sm mb-3">
+                <p class="text-gray-300 text-sm mb-1">
                   If you experience data loss on page refresh or storage warnings, use this quick fix.
                   It will automatically backup your data, reset the storage, and restore everything - 
                   often resolving storage quota issues.
+                </p>
+                <p class="text-gray-400 text-xs mb-3">
+                  Current usage: {{ storageUsageMB.toFixed(2) }} / {{ storageLimitMB }} MB
                 </p>
                 <button 
                   @click="quickFixStorage" 
@@ -565,6 +568,7 @@ import { useSyncStore } from '@/store/syncStore';
 import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
 // import { useFAQStore } from '@/store/faqStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
+import { checkLocalStorageQuota } from '@/utils/storageCheck';
 import AlertDialog from '@/components/common/AlertDialog.vue';
 import { 
   IconDatabaseExport, 
@@ -612,6 +616,8 @@ const highIterationsEnabled = ref(false);
 const isQuickFixing = ref(false);
 const quickFixStep = ref('');
 const quickFixProgress = ref(null);
+const storageUsageMB = ref(0);
+const storageLimitMB = ref(0);
 
 // Data Recovery State
 const isSearching = ref(false);
@@ -636,7 +642,7 @@ const alertDialog = ref({
 });
 
 // Initialisieren der highIterationsEnabled-Variable aus localStorage
-onMounted(() => {
+onMounted(async () => {
   // Bestehendes onMounted-Setup
   
   // High Iterations Mode aus dem localStorage laden
@@ -652,6 +658,15 @@ onMounted(() => {
   hunterStore.scanBuildsForHighestLevel('borge');
   hunterStore.scanBuildsForHighestLevel('ozzy');
   hunterStore.scanBuildsForHighestLevel('knox');
+  
+  // Load current storage usage
+  try {
+    const storageCheck = await checkLocalStorageQuota();
+    storageUsageMB.value = storageCheck.sizeMB || 0;
+    storageLimitMB.value = storageCheck.limitMB || 5;
+  } catch (error) {
+    console.error('Failed to check storage:', error);
+  }
 });
 
 // Computed properties für Hunter Level Settings

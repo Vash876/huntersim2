@@ -70,7 +70,7 @@ onMounted(async () => {
     console.log('✅ All stores initialized successfully (including TR Tracking)');
     
     // Check storage quota after initialization
-    const storageCheck = checkLocalStorageQuota();
+    const storageCheck = await checkLocalStorageQuota();
     if (storageCheck.warning) {
       storageWarning.value = storageCheck;
       showStorageWarning.value = true;
@@ -106,7 +106,7 @@ function dismissWarning() {
                 Storage Almost Full ({{ storageWarning.percentage }}%)
               </div>
               <div class="text-xs sm:text-sm opacity-90 mt-0.5">
-                Your browser storage is running low ({{ storageWarning.sizeMB }} MB used). 
+                Your browser storage is running low ({{ storageWarning.sizeMB }} MB / {{ storageWarning.limitMB }} MB used). 
                 This may cause data loss on refresh.
               </div>
             </div>
