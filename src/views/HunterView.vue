@@ -162,7 +162,10 @@
       @end="onDragEnd"
     >
       <template #item="{ element, index }">
-        <div class="build-card-wrapper">
+        <div 
+          class="build-card-wrapper"
+          :style="{ viewTransitionName: getBuildTransitionName(element.id) }"
+        >
           <BuildCardVertical 
             :build-id="element.id"
             :hunter-id="element.hunterId || route.params.hunterId"
@@ -202,7 +205,10 @@
       @end="onDragEnd"
     >
       <template #item="{ element, index }">
-        <div class="build-compact-wrapper">
+        <div 
+          class="build-compact-wrapper"
+          :style="{ viewTransitionName: getBuildTransitionName(element.id) }"
+        >
           <BuildCardHorizontal 
             :build-id="element.id"
             :hunter-id="element.hunterId || route.params.hunterId"
@@ -251,7 +257,10 @@
       @end="onDragEnd"
     >
       <template #item="{ element, index }">
-        <div class="build-mobile-wrapper">
+        <div 
+          class="build-mobile-wrapper"
+          :style="{ viewTransitionName: getBuildTransitionName(element.id) }"
+        >
           <BuildCardMobile
             :build-id="element.id"
             :hunter-id="element.hunterId || route.params.hunterId"
@@ -454,6 +463,33 @@ const importCodeFromUrl = ref('');
 
 const hunterStore = useHunterStore();
 const gemPlannerStore = useGemPlannerStore();
+
+// Track if we're in an in-page transition (add/delete)
+const isInPageTransition = ref(false);
+
+// Generic smooth transition wrapper
+function withSmoothTransition(updateFn) {
+  if (document.startViewTransition) {
+    isInPageTransition.value = true;
+    document.documentElement.classList.add('in-page-transition');
+    const transition = document.startViewTransition(() => {
+      updateFn();
+    });
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove('in-page-transition');
+      isInPageTransition.value = false;
+    });
+  } else {
+    updateFn();
+  }
+}
+
+// Helper to get view transition name only during in-page transitions
+function getBuildTransitionName(buildId) {
+  // Check if we're in an in-page transition (add/delete), not a route transition
+  const hasAttribute = document.documentElement.hasAttribute('data-in-page-transition');
+  return (isInPageTransition.value || hasAttribute) ? `build-card-${buildId}` : undefined;
+}
 
 // Hunter-spezifische Daten
 const hunterIdMap = {
@@ -1217,6 +1253,25 @@ provide('useSeededEvaluation', useSeededEvaluation);
   transform: translateY(30px);
 }
 
+/* Disable Vue transitions during View Transitions to prevent conflicts */
+html.in-page-transition .flip-list-enter-active,
+html.in-page-transition .flip-list-leave-active {
+  transition: none !important;
+}
+
+html.in-page-transition .flip-list-enter-from,
+html.in-page-transition .flip-list-leave-to {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* CRITICAL: Disable transition-all on build cards during View Transitions */
+html.in-page-transition .build-card-wrapper *,
+html.in-page-transition .build-compact-wrapper *,
+html.in-page-transition .build-mobile-wrapper * {
+  transition: none !important;
+}
+
 .ghost {
   opacity: 0.5;
   background-color: rgba(51, 51, 51, 0.3) !important;
@@ -1237,6 +1292,25 @@ provide('useSeededEvaluation', useSeededEvaluation);
 
 .grip-handle:active {
   cursor: grabbing;
+}
+
+/* Build Card Wrappers - Performance optimization for transitions */
+.build-card-wrapper,
+.build-compact-wrapper,
+.build-mobile-wrapper {
+  contain: layout;
+}
+
+/* Force build cards to maintain their size during View Transitions */
+html.in-page-transition .build-compact-wrapper {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Prevent overflow-hidden from clipping content during View Transition */
+html.in-page-transition .build-compact-wrapper .build-vertical {
+  overflow: visible !important;
 }
 
 /* Toast Animation */

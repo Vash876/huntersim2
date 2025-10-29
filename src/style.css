@@ -28,6 +28,10 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  /* Verhindere weißen Hintergrund während View Transitions */
+  background-color: rgb(17 24 39); /* gray-900 */
+  /* Textfarbe für teleportierte Modals */
+  color: rgba(255, 255, 255, 0.87);
 }
 
 h1 {

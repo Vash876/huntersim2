@@ -133,11 +133,7 @@ function dismissWarning() {
 
     <AppNavbar class="hidden md:block" />
     <main class="flex-1">
-      <router-view v-slot="{ Component, route }">
-        <transition name="page" mode="out-in">
-          <component :is="Component" :key="route.fullPath" />
-        </transition>
-      </router-view>
+      <router-view />
     </main>
     <AppFooter />
     <div class="block md:hidden">
@@ -171,21 +167,165 @@ function dismissWarning() {
 </style>
 
 <style>
-.page-enter-active,
-.page-leave-active {
-  transition: all 0.3s ease;
+/* View Transitions API Styles */
+::view-transition {
+  /* Verhindere weißes Flackern - dunkler Background während Transition */
+  background-color: rgb(17 24 39); /* gray-900 */
 }
 
-.page-enter-from {
-  opacity: 0;
-  transform: translateY(10px); /* Einblenden von unten */
+::view-transition-group(root) {
+  /* Halte die alte Seite länger sichtbar für smootheren Übergang */
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.page-leave-to {
-  opacity: 0;
-  transform: translateY(-10px); /* Ausblenden nach oben */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.5s; /* Schneller = weniger Zeit für Flackern */
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Verhindere Mix-Blend Mode Probleme */
+  mix-blend-mode: normal;
+  /* Vermeide Lücken zwischen Screenshots */
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
+/* Fade out alte Seite */
+::view-transition-old(root) {
+  animation-name: fade-out;
+}
+
+/* Fade in neue Seite */
+::view-transition-new(root) {
+  animation-name: fade-in;
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Schließe Dropdowns von Page Transitions aus */
+/* Diese Elemente sollen nicht im Screenshot für Page-Navigation erscheinen */
+[class*="dropdown"],
+.absolute.top-full {
+  view-transition-name: none !important;
+}
+
+/* In-Page Transitions: Schnelle Animation OHNE sichtbaren Cross-Fade */
+html.in-page-transition::view-transition-old(root),
+html.in-page-transition::view-transition-new(root) {
+  /* Root bleibt stabil, kein Fade der ganzen Seite */
+  animation: none;
+}
+
+html.in-page-transition::view-transition-group(root) {
+  /* Root bleibt stabil */
+  animation: none;
+}
+
+/* Nur die Tabelle/Cards animieren */
+html.in-page-transition::view-transition-old(loop-mod-table),
+html.in-page-transition::view-transition-new(loop-mod-table),
+html.in-page-transition::view-transition-old(loop-mod-cards),
+html.in-page-transition::view-transition-new(loop-mod-cards),
+html.in-page-transition::view-transition-old(research-table),
+html.in-page-transition::view-transition-new(research-table),
+html.in-page-transition::view-transition-old(research-cards),
+html.in-page-transition::view-transition-new(research-cards),
+html.in-page-transition::view-transition-old(m0-table),
+html.in-page-transition::view-transition-new(m0-table),
+html.in-page-transition::view-transition-old(m0-mobile),
+html.in-page-transition::view-transition-new(m0-mobile),
+html.in-page-transition::view-transition-old(available-inscryptions-list),
+html.in-page-transition::view-transition-new(available-inscryptions-list),
+html.in-page-transition::view-transition-old(shopping-list-mobile),
+html.in-page-transition::view-transition-new(shopping-list-mobile),
+html.in-page-transition::view-transition-old(shopping-list-desktop),
+html.in-page-transition::view-transition-new(shopping-list-desktop) {
+  /* Sehr kurzer Fade nur für die animierten Elemente */
+  animation-duration: 0.1s;
+  animation-timing-function: ease-in-out;
+}
+
+html.in-page-transition::view-transition-group(loop-mod-table),
+html.in-page-transition::view-transition-group(loop-mod-cards),
+html.in-page-transition::view-transition-group(research-table),
+html.in-page-transition::view-transition-group(research-cards),
+html.in-page-transition::view-transition-group(m0-table),
+html.in-page-transition::view-transition-group(m0-mobile),
+html.in-page-transition::view-transition-group(available-inscryptions-list),
+html.in-page-transition::view-transition-group(shopping-list-mobile),
+html.in-page-transition::view-transition-group(shopping-list-desktop) {
+  /* Smooth Movement der Elemente */
+  animation-duration: 0.1s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Gadget Card Transitions - für individuelle Karten */
+html.in-page-transition::view-transition-group(root) {
+  animation-duration: 0s; /* Root nicht animieren */
+}
+
+html.in-page-transition [style*="view-transition-name: gadget-"]::view-transition-group(*) {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* AttrGN3 Calculator Results Transitions */
+html.in-page-transition::view-transition-old(attrgn3-results),
+html.in-page-transition::view-transition-new(attrgn3-results),
+html.in-page-transition::view-transition-old(innogn6-results),
+html.in-page-transition::view-transition-new(innogn6-results) {
+  animation-duration: 0.15s;
+  animation-timing-function: ease-in-out;
+}
+
+html.in-page-transition::view-transition-group(attrgn3-results),
+html.in-page-transition::view-transition-group(innogn6-results) {
+  animation-duration: 0.25s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Build Card Transitions - Smooth create/delete */
+/* Prevent size/transform animation on the group - only allow position changes */
+html.in-page-transition [style*="view-transition-name: build-card-"]::view-transition-group(*) {
+  animation: none;
+}
+
+/* Only animate opacity for old (disappearing) cards */
+html.in-page-transition [style*="view-transition-name: build-card-"]::view-transition-old(*) {
+  animation: fade-out-card 0.2s ease-in-out;
+}
+
+/* Only animate opacity for new (appearing) cards - NO size morphing */
+html.in-page-transition [style*="view-transition-name: build-card-"]::view-transition-new(*) {
+  animation: fade-in-card 0.2s ease-in-out;
+}
+
+@keyframes fade-in-card {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out-card {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Slide-Down Animation für andere Elemente */
 @keyframes slide-down {
   from {
     transform: translateY(-100%);
@@ -199,5 +339,22 @@ function dismissWarning() {
 
 .animate-slide-down {
   animation: slide-down 0.4s ease-out;
+}
+
+/* Fix für Teleported Modals - Textfarbe muss explizit gesetzt werden */
+/* Weil body jetzt als Container dient und Tailwind-Klassen die Farbe erben müssen */
+[class*="fixed inset-0 z-50"] {
+  color: rgba(255, 255, 255, 0.87);
+}
+
+/* Sicherstellen, dass Buttons und Icons in Modals sichtbar sind */
+[class*="fixed inset-0 z-50"] button:not([class*="text-"]) {
+  color: rgba(255, 255, 255, 0.87);
+}
+
+/* Tabellen in Modals */
+[class*="fixed inset-0 z-50"] td:not([class*="text-"]),
+[class*="fixed inset-0 z-50"] th:not([class*="text-"]) {
+  color: rgba(255, 255, 255, 0.87);
 }
 </style>

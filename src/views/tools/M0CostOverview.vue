@@ -143,7 +143,7 @@
           <!-- Results table -->
           <div v-else class="overflow-x-auto">
             <!-- Desktop Multi-Column Layout -->
-            <div class="hidden md:block">
+            <div class="hidden md:block m0-table">
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr class="bg-gray-800 border-b border-gray-700">
@@ -189,7 +189,7 @@
             </div>
 
             <!-- Mobile Single-Column Layout -->
-            <div class="md:hidden">
+            <div class="md:hidden m0-mobile">
               <table class="w-full text-left border-collapse">
                 <thead>
                   <tr class="bg-gray-800 border-b border-gray-700">
@@ -257,6 +257,21 @@ const levelRangeRaw = ref(10);
 
 // Initialize gem planner store
 const gemPlannerStore = useGemPlannerStore();
+
+// Generic smooth transition wrapper
+function withSmoothTransition(updateFn) {
+  if (document.startViewTransition) {
+    document.documentElement.classList.add('in-page-transition');
+    const transition = document.startViewTransition(() => {
+      updateFn();
+    });
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove('in-page-transition');
+    });
+  } else {
+    updateFn();
+  }
+}
 
 // Exodus Gem Node #4 States (automatically from gem store)
 const exodusNode4Active = computed(() => {
@@ -328,23 +343,29 @@ const costReductionFactorFormatted = computed(() => {
 
 // Handler functions
 function handleCurrentM0LevelUpdate(newVal) {
-  currentM0Level.value = newVal;
-  currentM0LevelRaw.value = newVal;
+  withSmoothTransition(() => {
+    currentM0Level.value = newVal;
+    currentM0LevelRaw.value = newVal;
+  });
   saveFilters();
 }
 
 function handleLevelRangeUpdate(newVal) {
-  levelRange.value = newVal;
-  levelRangeRaw.value = newVal;
+  withSmoothTransition(() => {
+    levelRange.value = newVal;
+    levelRangeRaw.value = newVal;
+  });
   saveFilters();
 }
 
 function finalizeCurrentM0Level() {
   const numValue = Number(currentM0LevelRaw.value);
   if (!isNaN(numValue)) {
-    // Jeder Level zwischen 1 und 1000 ist erlaubt
-    currentM0Level.value = Math.max(1, Math.min(1000, Math.round(numValue)));
-    currentM0LevelRaw.value = currentM0Level.value;
+    withSmoothTransition(() => {
+      // Jeder Level zwischen 1 und 1000 ist erlaubt
+      currentM0Level.value = Math.max(1, Math.min(1000, Math.round(numValue)));
+      currentM0LevelRaw.value = currentM0Level.value;
+    });
     saveFilters();
   }
 }
@@ -352,10 +373,12 @@ function finalizeCurrentM0Level() {
 function finalizeLevelRange() {
   const numValue = Number(levelRangeRaw.value);
   if (!isNaN(numValue)) {
-    // Range muss durch 10 teilbar sein, mindestens 10
-    const adjustedValue = Math.round(numValue / 10) * 10;
-    levelRange.value = Math.max(10, Math.min(100, adjustedValue));
-    levelRangeRaw.value = levelRange.value;
+    withSmoothTransition(() => {
+      // Range muss durch 10 teilbar sein, mindestens 10
+      const adjustedValue = Math.round(numValue / 10) * 10;
+      levelRange.value = Math.max(10, Math.min(100, adjustedValue));
+      levelRangeRaw.value = levelRange.value;
+    });
     saveFilters();
   }
 }
@@ -505,13 +528,15 @@ function hasLevelEndingInZero(row) {
 }
 
 function resetFilters() {
-  currentM0Level.value = 1;
-  levelRange.value = 10;
-  currentM0LevelRaw.value = 1;
-  levelRangeRaw.value = 10;
-  exodusNode4Active.value = false;
-  totalGemLevels.value = 0;
-  totalGemLevelsRaw.value = 0;
+  withSmoothTransition(() => {
+    currentM0Level.value = 1;
+    levelRange.value = 10;
+    currentM0LevelRaw.value = 1;
+    levelRangeRaw.value = 10;
+    exodusNode4Active.value = false;
+    totalGemLevels.value = 0;
+    totalGemLevelsRaw.value = 0;
+  });
   saveFilters();
 }
 
@@ -564,6 +589,15 @@ onMounted(() => {
 <style scoped>
 .bg-gray-750 {
   background-color: rgba(42, 46, 53, 0.8);
+}
+
+/* View Transition Names für isolierte Animationen */
+.m0-table {
+  view-transition-name: m0-table;
+}
+
+.m0-mobile {
+  view-transition-name: m0-mobile;
 }
 
 /* Mobile responsive */

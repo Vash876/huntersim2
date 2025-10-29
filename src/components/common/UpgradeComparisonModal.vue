@@ -16,7 +16,7 @@
         </h2>
         <button 
           @click="$emit('close')"
-          class="p-1.5 rounded-full hover:bg-gray-700 transition-colors"
+          class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-300 hover:text-white"
         >
           <IconX size="18" />
         </button>

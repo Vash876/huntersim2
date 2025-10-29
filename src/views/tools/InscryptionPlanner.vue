@@ -173,7 +173,7 @@
           <!-- Sort Controls for Mobile -->
           <div class="flex items-center justify-center gap-1 bg-gray-700/50 rounded-lg p-1">
             <button
-              @click="sortBy = 'id'"
+              @click="withSmoothTransition(() => sortBy = 'id')"
               :class="[
                 'px-2 py-1 text-xs rounded transition-colors flex-1',
                 sortBy === 'id' 
@@ -184,7 +184,7 @@
               Sort by ID
             </button>
             <button
-              @click="sortBy = 'cost'"
+              @click="withSmoothTransition(() => sortBy = 'cost')"
               :class="[
                 'px-2 py-1 text-xs rounded transition-colors flex-1',
                 sortBy === 'cost' 
@@ -195,7 +195,7 @@
               Sort by Cost
             </button>
             <button
-              @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+              @click="withSmoothTransition(() => sortOrder = sortOrder === 'asc' ? 'desc' : 'asc')"
               class="px-2 py-1 text-xs text-gray-300 hover:text-white transition-colors"
               :title="sortOrder === 'asc' ? 'Sort Descending' : 'Sort Ascending'"
             >
@@ -214,7 +214,7 @@
           <div v-else-if="store.error" class="text-center py-6 text-red-400">
             <p class="text-sm">{{ store.error }}</p>
             <button 
-              @click="store.loadInscryptionsData()" 
+              @click="loadInscryptionsWithTransition()" 
               class="mt-2 px-3 py-1.5 bg-red-700 hover:bg-red-600 rounded text-sm transition-colors"
             >
               Retry
@@ -228,7 +228,7 @@
           </div>
 
           <!-- Inscryptions List - Mobile Compact View -->
-          <div v-else class="space-y-2">
+          <div v-else class="space-y-2 available-inscryptions-list">
             <div 
               v-for="item in sortedAvailableInscryptions"
               :key="item.isStatUpgrade ? `stat_${item.statKey}` : `${item.inscryptionId}-${item.rank}`"
@@ -377,7 +377,7 @@
               @start="onDragStart"
               @end="onShoppingListDragEnd"
               item-key="id"
-              class="space-y-2"
+              class="space-y-2 shopping-list-mobile"
             >
               <template #item="{ element: item }">
                 <div 
@@ -496,7 +496,7 @@
               <!-- Sort Controls -->
               <div class="flex items-center gap-1 bg-gray-700/50 rounded-lg p-1">
                 <button
-                  @click="sortBy = 'id'"
+                  @click="withSmoothTransition(() => sortBy = 'id')"
                   :class="[
                     'px-2 py-1 text-xs rounded transition-colors',
                     sortBy === 'id' 
@@ -507,7 +507,7 @@
                   ID
                 </button>
                 <button
-                  @click="sortBy = 'cost'"
+                  @click="withSmoothTransition(() => sortBy = 'cost')"
                   :class="[
                     'px-2 py-1 text-xs rounded transition-colors',
                     sortBy === 'cost' 
@@ -518,7 +518,7 @@
                   Cost
                 </button>
                 <button
-                  @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+                  @click="withSmoothTransition(() => sortOrder = sortOrder === 'asc' ? 'desc' : 'asc')"
                   class="px-1 py-1 text-xs text-gray-300 hover:text-white transition-colors"
                   :title="sortOrder === 'asc' ? 'Sort Descending' : 'Sort Ascending'"
                 >
@@ -547,7 +547,7 @@
           <div v-else-if="store.error" class="text-center py-8 text-red-400">
             <p>{{ store.error }}</p>
             <button 
-              @click="store.loadInscryptionsData()" 
+              @click="loadInscryptionsWithTransition()" 
               class="mt-2 px-4 py-2 bg-red-700 hover:bg-red-600 rounded transition-colors"
             >
               Retry
@@ -562,7 +562,7 @@
           </div>
 
           <!-- Inscryptions List -->
-          <div v-else class="space-y-2">
+          <div v-else class="space-y-2 available-inscryptions-list">
             <div 
               v-for="item in sortedAvailableInscryptions"
               :key="item.isStatUpgrade ? `stat_${item.statKey}` : `${item.inscryptionId}-${item.rank}`"
@@ -705,7 +705,7 @@
               ghost-class="ghost"
               chosen-class="chosen"
               drag-class="dragging"
-              class="space-y-2"
+              class="space-y-2 shopping-list-desktop"
               @start="onDragStart"
               @end="onShoppingListDragEnd"
             >
@@ -926,6 +926,21 @@ const activeMobileTab = ref('available');
 // Sorting state for Available Inscryptions
 const sortBy = ref('id'); // 'id' or 'cost'
 const sortOrder = ref('asc'); // 'asc' or 'desc'
+
+// Generic smooth transition helper
+function withSmoothTransition(updateFn) {
+  if (document.startViewTransition) {
+    document.documentElement.classList.add('in-page-transition');
+    const transition = document.startViewTransition(() => {
+      updateFn();
+    });
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove('in-page-transition');
+    });
+  } else {
+    updateFn();
+  }
+}
 
 // New state for HBM production
 const cachedResults = ref({});
@@ -1648,6 +1663,15 @@ function resetProduction() {
   localStorage.removeItem('inscryption-planner-selectedBuildId');
 }
 
+// Wrapper function for loading inscryptions data with smooth transition
+async function loadInscryptionsWithTransition() {
+  withSmoothTransition(() => {
+    // The actual loading happens in the store, 
+    // but we wrap the state change in a transition
+    store.loadInscryptionsData();
+  });
+}
+
 // Truncate description to specified length
 function truncateDescription(description, maxLength = 40) {
   if (!description) return '';
@@ -2249,6 +2273,19 @@ onUnmounted(() => {
 <style scoped>
 .header {
   background: linear-gradient(to right, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.95));
+}
+
+/* View Transition Names */
+.available-inscryptions-list {
+  view-transition-name: available-inscryptions-list;
+}
+
+.shopping-list-mobile {
+  view-transition-name: shopping-list-mobile;
+}
+
+.shopping-list-desktop {
+  view-transition-name: shopping-list-desktop;
 }
 
 /* Draggable Animations */

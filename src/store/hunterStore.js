@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import { HUNTERS } from '../constants/hunters';
 import { UPGRADES } from '../constants/upgrades';
 
@@ -314,8 +314,32 @@ export const useHunterStore = defineStore('hunter', () => {
       build.isImported = false; // Default: false für normale Builds
     }
     
-    // Füge den Build hinzu
-    hunterBuilds.value[hunterId].push(build);
+    // Füge den Build mit smooth transition hinzu
+    if (document.startViewTransition) {
+      // Erst Build hinzufügen
+      hunterBuilds.value[hunterId].push(build);
+      
+      // Setze globales Flag für in-page transition
+      document.documentElement.setAttribute('data-in-page-transition', 'true');
+      
+      // Warte auf Vue's DOM Update PLUS mehr Zeit für Evaluation zu starten
+      nextTick().then(() => {
+        // Gib Knox mehr Zeit - der gestaffelte Delay + Evaluation-Start
+        // Bei index * 100ms brauchen wir mindestens so lange + etwas Buffer
+        return new Promise(resolve => setTimeout(resolve, 50));
+      }).then(() => {
+        document.documentElement.classList.add('in-page-transition');
+        const transition = document.startViewTransition(() => {
+          // DOM ist bereits aktualisiert UND erste Evaluation könnte bereits laufen
+        });
+        transition.finished.finally(() => {
+          document.documentElement.classList.remove('in-page-transition');
+          document.documentElement.removeAttribute('data-in-page-transition');
+        });
+      });
+    } else {
+      hunterBuilds.value[hunterId].push(build);
+    }
 
     // Scanne nach höchstem Level nach Build-Hinzufügung
     scanBuildsForHighestLevel(hunterId);
@@ -370,8 +394,21 @@ export const useHunterStore = defineStore('hunter', () => {
       return;
     }
     
-    // Entferne den Build aus der Liste
-    hunterBuilds.value[hunterId] = hunterBuilds.value[hunterId].filter(build => build.id !== buildId);
+    // Entferne den Build mit smooth transition
+    if (document.startViewTransition) {
+      // Setze globales Flag für in-page transition
+      document.documentElement.setAttribute('data-in-page-transition', 'true');
+      document.documentElement.classList.add('in-page-transition');
+      const transition = document.startViewTransition(() => {
+        hunterBuilds.value[hunterId] = hunterBuilds.value[hunterId].filter(build => build.id !== buildId);
+      });
+      transition.finished.finally(() => {
+        document.documentElement.classList.remove('in-page-transition');
+        document.documentElement.removeAttribute('data-in-page-transition');
+      });
+    } else {
+      hunterBuilds.value[hunterId] = hunterBuilds.value[hunterId].filter(build => build.id !== buildId);
+    }
   
     // Aktualisiere die Build-Reihenfolge
     const orderIds = loadBuildsOrder(hunterId) || [];

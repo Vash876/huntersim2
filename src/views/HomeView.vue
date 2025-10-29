@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.8.19',
+    date: '2025-10-29',
+    changes: [
+      {
+        text: 'UI Improvements',
+        subItems: [
+          'Added smooth page transitions throughout the entire app',
+        ]
+      },
+      {
+        text: 'AttGN#3 Calculator',
+        subItems: [
+          'Added Compare Mode to analyze the impact of different settings',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.18',
     date: '2025-10-26',
     changes: [
@@ -13,13 +31,6 @@ const changelog =
           'Added storage quota monitoring with warning banner when browser storage exceeds 95% capacity',
         ]
       },
-      // {
-      //   text: 'AttGN#3 Calculator',
-      //   subItems: [
-      //     'Added Compare Mode to analyze the impact of different settings',
-      //     'Compare Mode shows before/after values with difference calculations for Multiplier per Day and Days to Cap',
-      //   ]
-      // },
       {
         text: 'Mech Planner',
         subItems: [

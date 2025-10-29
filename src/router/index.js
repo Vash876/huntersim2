@@ -175,7 +175,6 @@ const routes = [
     component: () => import('../views/tools/InscryptionPlanner.vue'),
   },
 
-
   // Settings Route
   {
     path: '/settings',
@@ -242,6 +241,35 @@ const router = createRouter({
     return { top: 0 };
   }
 })
+
+// View Transitions API - Smooth Page Transitions
+router.beforeResolve((to, from) => {
+  // Feature Detection: Prüfe ob Browser View Transitions unterstützt
+  if (!document.startViewTransition) {
+    return true; // Fallback: Normale Navigation ohne Transition
+  }
+
+  // Skip auf erster Navigation (kein 'from')
+  if (!from.name) {
+    return true;
+  }
+
+  // Skip wenn gleiche Route (nur Query/Hash geändert)
+  if (from.path === to.path) {
+    return true;
+  }
+
+  // Warte kurz, damit Dropdowns/Modals schließen können
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      document.startViewTransition(async () => {
+        resolve();
+        // Warte einen Frame, damit Router View updaten kann
+        await new Promise(r => setTimeout(r, 0));
+      });
+    }, 100); // 150ms Delay für Dropdown-Close Animation (duration-100 + Buffer)
+  });
+});
 
 // Update title on route change: always "CIFI Tools" + " - Dev" on dev server
 router.afterEach(() => {

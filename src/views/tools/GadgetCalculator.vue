@@ -164,6 +164,7 @@
               :key="gadget.id"
               class="gadget-card rounded-xl border border-gray-700 bg-gray-800/90 pb-2 p-4 transition-colors hover:border-cyan-600 relative overflow-hidden mb-1"
               :class="{ 'active-gadget': hasLevelChanges(gadget.id) }"
+              :style="{ viewTransitionName: `gadget-${gadget.id}` }"
             >
               <!-- Hintergrundbild - GEFIXT mit dynamischem Import -->
               <img 
@@ -1189,18 +1190,42 @@ function updateTargetLevel(gadgetId, newValue) {
     return;
   }
   
-  // Wenn wir im Bearbeitungsmodus sind ODER der Wert größer/gleich dem Current ist
-  if (isEditing || newValue >= (currentLevels.value[gadgetId] || 0)) {
-    // Aktualisiere den Ziel-Level ohne weitere Validierung
-    targetLevels.value[gadgetId] = newValue;
-  } else {
-    // Benutzer hat auf Minus-Button geklickt, aber Wert wäre unter Current
-    // Wert auf Current begrenzen
-    targetLevels.value[gadgetId] = currentLevels.value[gadgetId] || 0;
-  }
+  // Trigger smooth transition when gadget card will change size
+  const willChangeLevelStatus = hasLevelChanges(gadgetId) !== (newValue > (currentLevels.value[gadgetId] || 0));
   
-  // Speichere die Werte
-  saveGadgetLevels();
+  if (willChangeLevelStatus && document.startViewTransition) {
+    document.documentElement.classList.add('in-page-transition');
+    const transition = document.startViewTransition(() => {
+      // Wenn wir im Bearbeitungsmodus sind ODER der Wert größer/gleich dem Current ist
+      if (isEditing || newValue >= (currentLevels.value[gadgetId] || 0)) {
+        // Aktualisiere den Ziel-Level ohne weitere Validierung
+        targetLevels.value[gadgetId] = newValue;
+      } else {
+        // Benutzer hat auf Minus-Button geklickt, aber Wert wäre unter Current
+        // Wert auf Current begrenzen
+        targetLevels.value[gadgetId] = currentLevels.value[gadgetId] || 0;
+      }
+      
+      // Speichere die Werte
+      saveGadgetLevels();
+    });
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove('in-page-transition');
+    });
+  } else {
+    // Wenn wir im Bearbeitungsmodus sind ODER der Wert größer/gleich dem Current ist
+    if (isEditing || newValue >= (currentLevels.value[gadgetId] || 0)) {
+      // Aktualisiere den Ziel-Level ohne weitere Validierung
+      targetLevels.value[gadgetId] = newValue;
+    } else {
+      // Benutzer hat auf Minus-Button geklickt, aber Wert wäre unter Current
+      // Wert auf Current begrenzen
+      targetLevels.value[gadgetId] = currentLevels.value[gadgetId] || 0;
+    }
+    
+    // Speichere die Werte
+    saveGadgetLevels();
+  }
 }
 
 function finalizeTargetLevel(gadgetId, newVal = null) {
@@ -1210,8 +1235,24 @@ function finalizeTargetLevel(gadgetId, newVal = null) {
     if (!isNaN(newVal)) {
       // Stelle sicher, dass der Wert nicht unter Current ist
       const current = currentLevels.value[gadgetId] || 0;
-      targetLevels.value[gadgetId] = Math.max(current, newVal);
-      saveGadgetLevels();
+      const finalValue = Math.max(current, newVal);
+      
+      // Trigger smooth transition if level status changes
+      const willChangeLevelStatus = hasLevelChanges(gadgetId) !== (finalValue > current);
+      
+      if (willChangeLevelStatus && document.startViewTransition) {
+        document.documentElement.classList.add('in-page-transition');
+        const transition = document.startViewTransition(() => {
+          targetLevels.value[gadgetId] = finalValue;
+          saveGadgetLevels();
+        });
+        transition.finished.finally(() => {
+          document.documentElement.classList.remove('in-page-transition');
+        });
+      } else {
+        targetLevels.value[gadgetId] = finalValue;
+        saveGadgetLevels();
+      }
       return;
     }
   }
@@ -1221,14 +1262,24 @@ function finalizeTargetLevel(gadgetId, newVal = null) {
   const target = targetLevels.value[gadgetId] || 0;
   
   // Validiere den Wert nach der Bearbeitung - stelle sicher, dass er eine Zahl ist
-  if (isNaN(target)) {
-    targetLevels.value[gadgetId] = current;
-  } else {
-    targetLevels.value[gadgetId] = Math.max(current, target);
-  }
+  const finalValue = isNaN(target) ? current : Math.max(current, target);
   
-  // Speichere die Werte
-  saveGadgetLevels();
+  // Trigger smooth transition if level status changes
+  const willChangeLevelStatus = hasLevelChanges(gadgetId) !== (finalValue > current);
+  
+  if (willChangeLevelStatus && document.startViewTransition) {
+    document.documentElement.classList.add('in-page-transition');
+    const transition = document.startViewTransition(() => {
+      targetLevels.value[gadgetId] = finalValue;
+      saveGadgetLevels();
+    });
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove('in-page-transition');
+    });
+  } else {
+    targetLevels.value[gadgetId] = finalValue;
+    saveGadgetLevels();
+  }
 }
 
 // Individuelle Sparzeit für ein Gadget
@@ -1336,6 +1387,11 @@ onMounted(async () => {
 /* Bestehende Styles bleiben gleich */
 .header {
   background: linear-gradient(to right, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.95));
+}
+
+/* View Transition für Gadget Cards */
+.gadget-card {
+  contain: layout;
 }
 
 /* Erweiterte Gadget-Styles mit Hintergrundbildern */

@@ -462,7 +462,7 @@
           </div>
           
           <!-- Results - Desktop Table -->
-          <div v-else-if="enhancedFilteredLoopMods.length > 0" class="hidden lg:block overflow-x-auto">
+          <div v-else-if="enhancedFilteredLoopMods.length > 0" class="hidden lg:block overflow-x-auto loop-mod-table">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-gray-800 border-b border-gray-700">
@@ -571,7 +571,7 @@
           </div>
 
           <!-- Results - Mobile Cards -->
-          <div v-if="enhancedFilteredLoopMods.length > 0" class="lg:hidden space-y-2">
+          <div v-if="enhancedFilteredLoopMods.length > 0" class="lg:hidden space-y-2 loop-mod-cards">
 
             <!-- Mobile Cards -->
             <div 
@@ -728,6 +728,21 @@ const autoAnimateOptions = {
   easing: 'cubic-bezier(0.8, 0, 0.2, 1)'  // Material Design easing
 };
 
+// Generic smooth transition wrapper
+function withSmoothTransition(updateFn) {
+  if (document.startViewTransition) {
+    document.documentElement.classList.add('in-page-transition');
+    const transition = document.startViewTransition(() => {
+      updateFn();
+    });
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove('in-page-transition');
+    });
+  } else {
+    updateFn();
+  }
+}
+
 // Computed - alle Loop Mods mit Tier-Informationen
 const allLoopMods = computed(() => {
   return loopModsData.value.map(mod => {
@@ -745,27 +760,29 @@ const allLoopMods = computed(() => {
 //////////////
 
 function handleMpValueUpdate(newVal) {
-  // Bei Pfeilklicks sofort aktualisieren
-  mpValue.value = newVal;
-  mpValueRaw.value = newVal; // Raw-Wert synchronisieren
+  withSmoothTransition(() => {
+    mpValue.value = newVal;
+    mpValueRaw.value = newVal;
+  });
   saveFilters();
 }
 
 function handleMpRangeUpdate(newVal) {
-  // Bei Pfeilklicks sofort aktualisieren
-  mpRange.value = newVal;
-  mpRangeRaw.value = newVal; // Raw-Wert synchronisieren
+  withSmoothTransition(() => {
+    mpRange.value = newVal;
+    mpRangeRaw.value = newVal;
+  });
   saveFilters();
 }
 
 function finalizeMpValue() {
-  // Konvertiere den Rohwert zu einer Zahl und validiere
   const numValue = Number(mpValueRaw.value);
   
-  // Validiere nur wenn der Wert eine gültige Zahl ist
   if (!isNaN(numValue)) {
-    mpValue.value = Math.max(0, Math.min(99999, numValue));
-    mpValueRaw.value = mpValue.value;
+    withSmoothTransition(() => {
+      mpValue.value = Math.max(0, Math.min(99999, numValue));
+      mpValueRaw.value = mpValue.value;
+    });
     saveFilters();
   }
 }
@@ -776,8 +793,21 @@ function finalizeMpRange() {
   
   // Validiere nur wenn der Wert eine gültige Zahl ist
   if (!isNaN(numValue)) {
-    mpRange.value = Math.max(50, Math.min(10000, numValue));
-    mpRangeRaw.value = mpRange.value;
+    if (document.startViewTransition) {
+      document.documentElement.classList.add('in-page-transition');
+      const transition = document.startViewTransition(() => {
+        mpRange.value = Math.max(50, Math.min(10000, numValue));
+        mpRangeRaw.value = mpRange.value;
+      });
+// Neue i75-Funktionen
+function handleI75LevelUpdate(newVal) {
+  withSmoothTransition(() => {
+    i75Level.value = newVal;
+    i75LevelRaw.value = newVal;
+  });
+  saveFilters();
+}     mpRangeRaw.value = mpRange.value;
+    }
     saveFilters();
   }
 }
@@ -793,16 +823,20 @@ function finalizeI75Level() {
   const numValue = Number(i75LevelRaw.value);
   
   if (!isNaN(numValue)) {
-    i75Level.value = Math.max(0, Math.min(10, numValue));
-    i75LevelRaw.value = i75Level.value;
+    withSmoothTransition(() => {
+      i75Level.value = Math.max(0, Math.min(10, numValue));
+      i75LevelRaw.value = i75Level.value;
+    });
     saveFilters();
   }
 }
 
 // Neue i61-Funktionen
 function handleI61LevelUpdate(newVal) {
-  i61Level.value = newVal;
-  i61LevelRaw.value = newVal;
+  withSmoothTransition(() => {
+    i61Level.value = newVal;
+    i61LevelRaw.value = newVal;
+  });
   saveFilters();
 }
 
@@ -810,8 +844,10 @@ function finalizeI61Level() {
   const numValue = Number(i61LevelRaw.value);
   
   if (!isNaN(numValue)) {
-    i61Level.value = Math.max(0, Math.min(5, numValue));
-    i61LevelRaw.value = i61Level.value;
+    withSmoothTransition(() => {
+      i61Level.value = Math.max(0, Math.min(5, numValue));
+      i61LevelRaw.value = i61Level.value;
+    });
     saveFilters();
   }
 }
@@ -912,9 +948,11 @@ function checkNewlyAvailableMods() {
 // NEU: Temporal Gem Level für neuen Bereich
 function handleNewTemporalGemLevelUpdate(newVal) {
   if (newVal >= temporalGemLevel.value) {
-    newTemporalGemLevel.value = newVal;
-    newTemporalGemLevelRaw.value = newVal;
-    checkNewlyAvailableMods();
+    withSmoothTransition(() => {
+      newTemporalGemLevel.value = newVal;
+      newTemporalGemLevelRaw.value = newVal;
+      checkNewlyAvailableMods();
+    });
   }
 }
 
@@ -922,9 +960,11 @@ function finalizeNewTemporalGemLevel() {
   const numValue = Number(newTemporalGemLevelRaw.value);
   
   if (!isNaN(numValue)) {
-    newTemporalGemLevel.value = Math.max(temporalGemLevel.value, Math.min(TEMPORAL_GEM.maxLevel, numValue));
-    newTemporalGemLevelRaw.value = newTemporalGemLevel.value;
-    checkNewlyAvailableMods();
+    withSmoothTransition(() => {
+      newTemporalGemLevel.value = Math.max(temporalGemLevel.value, Math.min(TEMPORAL_GEM.maxLevel, numValue));
+      newTemporalGemLevelRaw.value = newTemporalGemLevel.value;
+      checkNewlyAvailableMods();
+    });
   }
 }
 
@@ -934,37 +974,45 @@ function toggleNewUltimaCapUpgrade(id) {
     return; // Bereits ausgewählt, kann nicht entfernt werden
   }
   
-  if (newSelectedUltimaCapUpgrades.value.includes(id)) {
-    newSelectedUltimaCapUpgrades.value = newSelectedUltimaCapUpgrades.value.filter(i => i !== id);
-  } else {
-    newSelectedUltimaCapUpgrades.value.push(id);
-  }
-  checkNewlyAvailableMods();
+  withSmoothTransition(() => {
+    if (newSelectedUltimaCapUpgrades.value.includes(id)) {
+      newSelectedUltimaCapUpgrades.value = newSelectedUltimaCapUpgrades.value.filter(i => i !== id);
+    } else {
+      newSelectedUltimaCapUpgrades.value.push(id);
+    }
+    checkNewlyAvailableMods();
+  });
 }
 
 // NEU: MP Value für neuen Bereich
 function handleNewMpValueUpdate(newVal) {
-  newMpValue.value = newVal;
-  newMpValueRaw.value = newVal;
-  checkNewlyAvailableMods();
+  withSmoothTransition(() => {
+    newMpValue.value = newVal;
+    newMpValueRaw.value = newVal;
+    checkNewlyAvailableMods();
+  });
 }
 
 function finalizeNewMpValue() {
   const numValue = Number(newMpValueRaw.value);
   
   if (!isNaN(numValue)) {
-    newMpValue.value = Math.max(0, Math.min(99999, numValue));
-    newMpValueRaw.value = newMpValue.value;
-    checkNewlyAvailableMods();
+    withSmoothTransition(() => {
+      newMpValue.value = Math.max(0, Math.min(99999, numValue));
+      newMpValueRaw.value = newMpValue.value;
+      checkNewlyAvailableMods();
+    });
   }
 }
 
 // NEU: i61 Level für neuen Bereich
 function handleNewI61LevelUpdate(newVal) {
   if (newVal >= i61Level.value) {
-    newI61Level.value = newVal;
-    newI61LevelRaw.value = newVal;
-    checkNewlyAvailableMods();
+    withSmoothTransition(() => {
+      newI61Level.value = newVal;
+      newI61LevelRaw.value = newVal;
+      checkNewlyAvailableMods();
+    });
   }
 }
 
@@ -972,18 +1020,22 @@ function finalizeNewI61Level() {
   const numValue = Number(newI61LevelRaw.value);
   
   if (!isNaN(numValue)) {
-    newI61Level.value = Math.max(i61Level.value, Math.min(5, numValue));
-    newI61LevelRaw.value = newI61Level.value;
-    checkNewlyAvailableMods();
+    withSmoothTransition(() => {
+      newI61Level.value = Math.max(i61Level.value, Math.min(5, numValue));
+      newI61LevelRaw.value = newI61Level.value;
+      checkNewlyAvailableMods();
+    });
   }
 }
 
 // NEU: i75 Level für neuen Bereich
 function handleNewI75LevelUpdate(newVal) {
   if (newVal >= i75Level.value) {
-    newI75Level.value = newVal;
-    newI75LevelRaw.value = newVal;
-    checkNewlyAvailableMods();
+    withSmoothTransition(() => {
+      newI75Level.value = newVal;
+      newI75LevelRaw.value = newVal;
+      checkNewlyAvailableMods();
+    });
   }
 }
 
@@ -991,9 +1043,11 @@ function finalizeNewI75Level() {
   const numValue = Number(newI75LevelRaw.value);
   
   if (!isNaN(numValue)) {
-    newI75Level.value = Math.max(i75Level.value, Math.min(10, numValue));
-    newI75LevelRaw.value = newI75Level.value;
-    checkNewlyAvailableMods();
+    withSmoothTransition(() => {
+      newI75Level.value = Math.max(i75Level.value, Math.min(10, numValue));
+      newI75LevelRaw.value = newI75Level.value;
+      checkNewlyAvailableMods();
+    });
   }
 }
 
@@ -1141,8 +1195,10 @@ const sortedLoopMods = computed(() => {
 });
 
 function handleAllTimeHighestMPUpdate(newVal) {
-  allTimeHighestMP.value = newVal;
-  allTimeHighestMPRaw.value = newVal;
+  withSmoothTransition(() => {
+    allTimeHighestMP.value = newVal;
+    allTimeHighestMPRaw.value = newVal;
+  });
   saveFilters();
 }
 
@@ -1150,19 +1206,23 @@ function finalizeAllTimeHighestMP() {
   const numValue = Number(allTimeHighestMPRaw.value);
   
   if (!isNaN(numValue)) {
-    allTimeHighestMP.value = Math.max(0, Math.min(99999, numValue));
-    allTimeHighestMPRaw.value = allTimeHighestMP.value;
+    withSmoothTransition(() => {
+      allTimeHighestMP.value = Math.max(0, Math.min(99999, numValue));
+      allTimeHighestMPRaw.value = allTimeHighestMP.value;
+    });
     saveFilters();
   }
 }
 
 // Methods
 function toggleUltimaCapUpgrade(id) {
-  if (selectedUltimaCapUpgrades.value.includes(id)) {
-    selectedUltimaCapUpgrades.value = selectedUltimaCapUpgrades.value.filter(i => i !== id);
-  } else {
-    selectedUltimaCapUpgrades.value.push(id);
-  }
+  withSmoothTransition(() => {
+    if (selectedUltimaCapUpgrades.value.includes(id)) {
+      selectedUltimaCapUpgrades.value = selectedUltimaCapUpgrades.value.filter(i => i !== id);
+    } else {
+      selectedUltimaCapUpgrades.value.push(id);
+    }
+  });
   saveFilters();
 }
 
@@ -1172,7 +1232,9 @@ function adjustT2r1Level(delta) {
   
   const newLevel = t2r1Level.value + delta;
   if (newLevel >= 0 && newLevel <= t2r1Upgrade.maxLevel) {
-    t2r1Level.value = newLevel;
+    withSmoothTransition(() => {
+      t2r1Level.value = newLevel;
+    });
     saveFilters();
   }
 }
@@ -1183,34 +1245,38 @@ function adjustNewT2r1Level(delta) {
   
   const newLevel = newT2r1Level.value + delta;
   if (newLevel >= t2r1Level.value && newLevel <= t2r1Upgrade.maxLevel) {
-    newT2r1Level.value = newLevel;
-    checkNewlyAvailableMods();
+    withSmoothTransition(() => {
+      newT2r1Level.value = newLevel;
+      checkNewlyAvailableMods();
+    });
   }
 }
 
 function updateSort(field) {
-  if (sortBy.value === field) {
-    // Toggle direction if same field
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
-  } else {
-    // New field, default to ascending
-    sortBy.value = field;
-    sortDirection.value = 'asc';
-  }
+  withSmoothTransition(() => {
+    if (sortBy.value === field) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortBy.value = field;
+      sortDirection.value = 'asc';
+    }
+  });
   saveFilters();
 }
 
 function resetFilters() {
-  mpValue.value = 0;
-  mpRange.value = 50;
-  allTimeHighestMP.value = 0;
-  mpRangeEnabled.value = true;
-  i75Level.value = 0; // Angepasst
-  i61Level.value = 0; // Angepasst
-  selectedUltimaCapUpgrades.value = [];
-  t2r1Level.value = 0;
-  sortBy.value = 'cost';
-  sortDirection.value = 'asc';
+  withSmoothTransition(() => {
+    mpValue.value = 0;
+    mpRange.value = 50;
+    allTimeHighestMP.value = 0;
+    mpRangeEnabled.value = true;
+    i75Level.value = 0;
+    i61Level.value = 0;
+    selectedUltimaCapUpgrades.value = [];
+    t2r1Level.value = 0;
+    sortBy.value = 'cost';
+    sortDirection.value = 'asc';
+  });
   saveFilters();
 }
 
@@ -1286,8 +1352,11 @@ async function loadLoopModData() {
     error.value = null;
     
     const data = await fetchLoopModData();
-    loopModsData.value = data.loopMods;
-    tierData.value = data.tiers;
+    
+    withSmoothTransition(() => {
+      loopModsData.value = data.loopMods;
+      tierData.value = data.tiers;
+    });
     
     console.log(`Loaded ${data.loopMods.length} loop mods and ${Object.keys(data.tiers).length} tier definitions`);
     
@@ -1314,6 +1383,15 @@ onMounted(async () => {
 <style scoped>
 .bg-gray-750 {
   background-color: rgba(42, 46, 53, 0.8);
+}
+
+/* View Transition Names für isolierte Animationen */
+.loop-mod-table {
+  view-transition-name: loop-mod-table;
+}
+
+.loop-mod-cards {
+  view-transition-name: loop-mod-cards;
 }
 
 /* Responsive Styles */

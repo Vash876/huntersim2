@@ -16,7 +16,7 @@
         </h2>
         <button 
           @click="$emit('close')"
-          class="p-1.5 rounded-full hover:bg-gray-700 transition-colors"
+          class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-300 hover:text-white"
         >
           <IconX size="18" />
         </button>
@@ -47,7 +47,7 @@
               'bg-gray-600 hover:bg-gray-700': !rawCopied,
               'ring-2 ring-blue-400': codeFormat === 'raw'
             }"
-            class="p-2 rounded-md transition-colors flex flex-col justify-center items-center gap-1"
+            class="p-2 rounded-md transition-colors flex flex-col justify-center items-center gap-1 text-white"
           >
             <div class="flex items-center gap-1">
               <IconCheck v-if="rawCopied" size="16" />
@@ -64,7 +64,7 @@
               'bg-blue-600 hover:bg-blue-700': !discordCopied,
               'ring-2 ring-blue-400': codeFormat === 'discord'
             }"
-            class="p-2 rounded-md transition-colors flex flex-col justify-center items-center gap-1"
+            class="p-2 rounded-md transition-colors flex flex-col justify-center items-center gap-1 text-white"
           >
             <div class="flex items-center gap-1">
               <IconCheck v-if="discordCopied" size="16" />
@@ -103,7 +103,7 @@
             <button 
               @click="copyLinkToClipboard"
               :class="{ 'bg-green-600 hover:bg-green-700': linkCopied, 'bg-blue-600 hover:bg-blue-700': !linkCopied }"
-              class="px-3 rounded-r-md transition-colors"
+              class="px-3 rounded-r-md transition-colors text-white"
             >
               <IconCheck v-if="linkCopied" size="18" />
               <IconCopy v-else size="18" />

@@ -43,45 +43,47 @@
       />
     </div>
     
-    <!-- Modals -->
-    <BuildCodeModal :show="showCodeModal" :build="buildData" :results="results" @close="showCodeModal = false" />
-    
-    <!-- Statistics Modal - direkt einbinden ohne verschachteltes Teleport -->
-    <StatisticsModal 
-      :show="showDistributionModal" 
-      :build-name="buildData.name"
-      :hunter-id="hunterId"       
-      :build-id="buildData.id"
-      :distribution="results?.stageDistribution"
-      :death-distribution="results?.deathDistribution"
-      :boss-kills-by-revive="results?.bossKillsByRevive"
-      :avg-stage="results?.avgStage"
-      :max-stage="results?.maxStage"
-      :min-stage="results?.minStage"
-      :sample-size="totalIterations"
-      :build-stats="formattedBuildStats"  
-      :color="hunterColor"
-      @close="closeStatsModal"
-    />
+    <!-- Modals - mit Teleport außerhalb der Build-Card rendern -->
+    <Teleport to="body">
+      <BuildCodeModal :show="showCodeModal" :build="buildData" :results="results" @close="showCodeModal = false" />
+      
+      <!-- Statistics Modal - direkt einbinden ohne verschachteltes Teleport -->
+      <StatisticsModal 
+        :show="showDistributionModal" 
+        :build-name="buildData.name"
+        :hunter-id="hunterId"       
+        :build-id="buildData.id"
+        :distribution="results?.stageDistribution"
+        :death-distribution="results?.deathDistribution"
+        :boss-kills-by-revive="results?.bossKillsByRevive"
+        :avg-stage="results?.avgStage"
+        :max-stage="results?.maxStage"
+        :min-stage="results?.minStage"
+        :sample-size="totalIterations"
+        :build-stats="formattedBuildStats"  
+        :color="hunterColor"
+        @close="closeStatsModal"
+      />
 
-    <!-- UpgradeComparison Modal -->
-    <UpgradeComparisonModal
-      v-if="showUpgradeComparisonModal"
-      :isVisible="showUpgradeComparisonModal"
-      :hunterId="props.hunterId"
-      :buildData="{...buildData, results}"
-      @close="showUpgradeComparisonModal = false"
-      @applyOverrides="handleApplyUpgradeOverrides"
-    />
+      <!-- UpgradeComparison Modal -->
+      <UpgradeComparisonModal
+        v-if="showUpgradeComparisonModal"
+        :isVisible="showUpgradeComparisonModal"
+        :hunterId="props.hunterId"
+        :buildData="{...buildData, results}"
+        @close="showUpgradeComparisonModal = false"
+        @applyOverrides="handleApplyUpgradeOverrides"
+      />
 
-    <!-- Override Costs Modal -->
-    <OverrideCostsModal
-      v-if="showOverrideCostsModal"
-      :isVisible="showOverrideCostsModal"
-      :hunterId="props.hunterId"
-      :buildData="{...buildData, results}"
-      @close="showOverrideCostsModal = false"
-    />
+      <!-- Override Costs Modal -->
+      <OverrideCostsModal
+        v-if="showOverrideCostsModal"
+        :isVisible="showOverrideCostsModal"
+        :hunterId="props.hunterId"
+        :buildData="{...buildData, results}"
+        @close="showOverrideCostsModal = false"
+      />
+    </Teleport>
   </div>
 </template>
 

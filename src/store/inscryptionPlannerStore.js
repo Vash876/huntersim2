@@ -170,12 +170,25 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
       const csvText = await response.text();
       const data = parseCSV(csvText);
       
-      inscryptionsData.value = data;
+      // Wrap the state change in a view transition for smooth appearance
+      if (document.startViewTransition) {
+        document.documentElement.classList.add('in-page-transition');
+        const transition = document.startViewTransition(() => {
+          inscryptionsData.value = data;
+          isLoading.value = false;
+        });
+        transition.finished.finally(() => {
+          document.documentElement.classList.remove('in-page-transition');
+        });
+      } else {
+        // Fallback for browsers without View Transition API
+        inscryptionsData.value = data;
+        isLoading.value = false;
+      }
       
     } catch (err) {
       console.error('Failed to load inscryptions data:', err);
       error.value = 'Failed to load inscryptions data. Please try again.';
-    } finally {
       isLoading.value = false;
     }
   }
@@ -312,13 +325,37 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
       maxLevel: inscryption.maxLevel || null
     };
 
-    shoppingList.value.push(item);
+    // Wrap the state change in a view transition for smooth appearance
+    if (document.startViewTransition) {
+      document.documentElement.classList.add('in-page-transition');
+      const transition = document.startViewTransition(() => {
+        shoppingList.value.push(item);
+      });
+      transition.finished.finally(() => {
+        document.documentElement.classList.remove('in-page-transition');
+      });
+    } else {
+      // Fallback for browsers without View Transition API
+      shoppingList.value.push(item);
+    }
   }
 
   async function removeFromShoppingList(itemId) {
     const index = shoppingList.value.findIndex(item => item.id === itemId);
     if (index !== -1) {
-      shoppingList.value.splice(index, 1);
+      // Wrap the state change in a view transition for smooth removal
+      if (document.startViewTransition) {
+        document.documentElement.classList.add('in-page-transition');
+        const transition = document.startViewTransition(() => {
+          shoppingList.value.splice(index, 1);
+        });
+        transition.finished.finally(() => {
+          document.documentElement.classList.remove('in-page-transition');
+        });
+      } else {
+        // Fallback for browsers without View Transition API
+        shoppingList.value.splice(index, 1);
+      }
     }
   }
 
@@ -330,7 +367,19 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
   }
 
   async function clearShoppingList() {
-    shoppingList.value.length = 0;
+    // Wrap the state change in a view transition for smooth clearing
+    if (document.startViewTransition) {
+      document.documentElement.classList.add('in-page-transition');
+      const transition = document.startViewTransition(() => {
+        shoppingList.value.length = 0;
+      });
+      transition.finished.finally(() => {
+        document.documentElement.classList.remove('in-page-transition');
+      });
+    } else {
+      // Fallback for browsers without View Transition API
+      shoppingList.value.length = 0;
+    }
   }
 
   // Ownership Actions

@@ -168,7 +168,7 @@
           </div>
           
           <!-- Results - Desktop Table -->
-          <div v-else-if="filteredResearches.length > 0" class="hidden lg:block overflow-x-auto">
+          <div v-else-if="filteredResearches.length > 0" class="hidden lg:block overflow-x-auto research-table">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-gray-800 border-b border-gray-700">
@@ -252,7 +252,7 @@
           </div>
 
           <!-- Results - Mobile Cards -->
-          <div v-if="filteredResearches.length > 0" class="lg:hidden space-y-2">
+          <div v-if="filteredResearches.length > 0" class="lg:hidden space-y-2 research-cards">
             <!-- Mobile Sort Controls -->
             <div class="flex items-center justify-between mb-3 px-1">
               <div class="flex items-center gap-2 bg-gray-800 rounded-lg p-2">
@@ -389,24 +389,45 @@ const allTimeHighestRPRaw = ref(0);
 // Google Sheets Integration
 const { fetchResearchData } = useResearchData();
 
+// Generic smooth transition wrapper
+function withSmoothTransition(updateFn) {
+  if (document.startViewTransition) {
+    document.documentElement.classList.add('in-page-transition');
+    const transition = document.startViewTransition(() => {
+      updateFn();
+    });
+    transition.finished.finally(() => {
+      document.documentElement.classList.remove('in-page-transition');
+    });
+  } else {
+    updateFn();
+  }
+}
+
 // Handler functions
 function handleRpValueUpdate(newVal) {
-  rpValue.value = newVal;
-  rpValueRaw.value = newVal;
+  withSmoothTransition(() => {
+    rpValue.value = newVal;
+    rpValueRaw.value = newVal;
+  });
   saveFilters();
 }
 
 function handleRpRangeUpdate(newVal) {
-  rpRange.value = newVal;
-  rpRangeRaw.value = newVal;
+  withSmoothTransition(() => {
+    rpRange.value = newVal;
+    rpRangeRaw.value = newVal;
+  });
   saveFilters();
 }
 
 function finalizeRpValue() {
   const numValue = Number(rpValueRaw.value);
   if (!isNaN(numValue)) {
-    rpValue.value = Math.max(0, Math.min(99999, numValue));
-    rpValueRaw.value = rpValue.value;
+    withSmoothTransition(() => {
+      rpValue.value = Math.max(0, Math.min(99999, numValue));
+      rpValueRaw.value = rpValue.value;
+    });
     saveFilters();
   }
 }
@@ -414,23 +435,29 @@ function finalizeRpValue() {
 function finalizeRpRange() {
   const numValue = Number(rpRangeRaw.value);
   if (!isNaN(numValue)) {
-    rpRange.value = Math.max(50, Math.min(10000, numValue));
-    rpRangeRaw.value = rpRange.value;
+    withSmoothTransition(() => {
+      rpRange.value = Math.max(50, Math.min(10000, numValue));
+      rpRangeRaw.value = rpRange.value;
+    });
     saveFilters();
   }
 }
 
 function handleAllTimeHighestRPUpdate(newVal) {
-  allTimeHighestRP.value = newVal;
-  allTimeHighestRPRaw.value = newVal;
+  withSmoothTransition(() => {
+    allTimeHighestRP.value = newVal;
+    allTimeHighestRPRaw.value = newVal;
+  });
   saveFilters();
 }
 
 function finalizeAllTimeHighestRP() {
   const numValue = Number(allTimeHighestRPRaw.value);
   if (!isNaN(numValue)) {
-    allTimeHighestRP.value = Math.max(0, Math.min(99999, numValue));
-    allTimeHighestRPRaw.value = allTimeHighestRP.value;
+    withSmoothTransition(() => {
+      allTimeHighestRP.value = Math.max(0, Math.min(99999, numValue));
+      allTimeHighestRPRaw.value = allTimeHighestRP.value;
+    });
     saveFilters();
   }
 }
@@ -504,21 +531,25 @@ const sortedResearches = computed(() => {
 
 // Methods
 function updateSort(field) {
-  if (sortBy.value === field) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
-  } else {
-    sortBy.value = field;
-    sortDirection.value = 'asc';
-  }
+  withSmoothTransition(() => {
+    if (sortBy.value === field) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortBy.value = field;
+      sortDirection.value = 'asc';
+    }
+  });
   saveFilters();
 }
 
 function resetFilters() {
-  rpValue.value = 0;
-  rpRange.value = 50;
-  allTimeHighestRP.value = 0;
-  sortBy.value = 'cost';
-  sortDirection.value = 'asc';
+  withSmoothTransition(() => {
+    rpValue.value = 0;
+    rpRange.value = 50;
+    allTimeHighestRP.value = 0;
+    sortBy.value = 'cost';
+    sortDirection.value = 'asc';
+  });
   saveFilters();
 }
 
@@ -611,7 +642,10 @@ async function loadResearchData() {
     error.value = null;
     
     const data = await fetchResearchData();
-    researchData.value = data;
+    
+    withSmoothTransition(() => {
+      researchData.value = data;
+    });
     
     console.log(`Loaded ${data.length} researches`);
     
@@ -638,6 +672,15 @@ onMounted(async () => {
 <style scoped>
 .bg-gray-750 {
   background-color: rgba(42, 46, 53, 0.8);
+}
+
+/* View Transition Names für isolierte Animationen */
+.research-table {
+  view-transition-name: research-table;
+}
+
+.research-cards {
+  view-transition-name: research-cards;
 }
 
 .research-dark {

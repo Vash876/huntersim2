@@ -282,7 +282,7 @@
         
         <!-- Results Section -->
         <div class="bg-gray-800/50 rounded-lg border border-blue-600/30 overflow-hidden shadow-lg mb-4">
-          <div class="header p-3">
+          <div class="header p-3 flex justify-between items-center">
             <h3 class="text-lg font-semibold text-white flex items-center">
               <div 
                 class="w-4 h-4 rounded-full border border-gray-500 mr-2"
@@ -290,36 +290,76 @@
               ></div>
               AttGN#3 Results
             </h3>
+            <button
+              @click="toggleCompareMode"
+              class="px-3 py-1 text-sm rounded-lg transition-all flex items-center gap-2"
+              :class="compareMode 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+            >
+              <IconGitCompare size="16" />
+              {{ compareMode ? 'Stop Comparing' : 'Compare Changes' }}
+            </button>
           </div>
+          
+          <!-- Compare Mode Info Banner -->
+          <div v-if="compareMode" class="bg-blue-900/30 border-t border-blue-800 px-4 py-2">
+            <p class="text-blue-200 text-xs flex items-center">
+              <IconInfoCircle size="14" class="mr-1.5 flex-shrink-0" />
+              <span><strong>Compare Mode Active:</strong> Adjust your settings to see how they affect the results. Click "Stop Comparing" to restore original values.</span>
+            </p>
+          </div>
+          
           <div class="p-3 sm:p-4">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
               
               <!-- Multi per Day -->
-              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50 transition-all"
+                   :class="compareMode && hasComparison ? 'ring-2 ring-blue-500/50' : ''">
                 <div class="text-center">
                   <div class="text-sm font-semibold text-gray-300 mb-1">Multiplier per Day</div>
                   <div class="text-2xl font-bold text-yellow-400">
                     {{ formatMulti(multiPerDay) }}
                   </div>
+                  <div v-if="compareMode && hasComparison" class="mt-2 text-xs">
+                    <div class="text-gray-400">Before: {{ formatMulti(comparisonSnapshot.multiPerDay) }}</div>
+                    <div :class="getDiffClass(multiPerDay, comparisonSnapshot.multiPerDay)">
+                      {{ getDiffText(multiPerDay, comparisonSnapshot.multiPerDay) }}
+                    </div>
+                  </div>
                 </div>
               </div>
               
               <!-- Days to Cap -->
-              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50 transition-all"
+                   :class="compareMode && hasComparison ? 'ring-2 ring-blue-500/50' : ''">
                 <div class="text-center">
                   <div class="text-sm font-semibold text-gray-300 mb-1">Total Days to {{ maxAttrCapString }}</div>
                   <div class="text-2xl font-bold text-blue-400">
-                    {{ daysTo1e333 === Infinity ? '∞' : daysTo1e333.toFixed(2) }}
+                    {{ daysTo1e333 === Infinity ? '∞' : formatDaysAndHours(daysTo1e333) }}
+                  </div>
+                  <div v-if="compareMode && hasComparison" class="mt-2 text-xs">
+                    <div class="text-gray-400">Before: {{ comparisonSnapshot.daysTo1e333 === Infinity ? '∞' : formatDaysAndHours(comparisonSnapshot.daysTo1e333) }}</div>
+                    <div :class="getDiffClassDays(daysTo1e333, comparisonSnapshot.daysTo1e333)">
+                      {{ getDiffTextDays(daysTo1e333, comparisonSnapshot.daysTo1e333) }}
+                    </div>
                   </div>
                 </div>
               </div>
 
               <!-- Days left to Cap -->
-              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-700/50 transition-all"
+                   :class="compareMode && hasComparison ? 'ring-2 ring-blue-500/50' : ''">
                 <div class="text-center">
                   <div class="text-sm font-semibold text-gray-300 mb-1">Days left to {{ maxAttrCapString }}</div>
                   <div class="text-2xl font-bold text-orange-400">
-                    {{ daysLeftTo1e333 === Infinity ? '∞' : daysLeftTo1e333.toFixed(2) }}
+                    {{ daysLeftTo1e333 === Infinity ? '∞' : formatDaysAndHours(daysLeftTo1e333) }}
+                  </div>
+                  <div v-if="compareMode && hasComparison" class="mt-2 text-xs">
+                    <div class="text-gray-400">Before: {{ comparisonSnapshot.daysLeftTo1e333 === Infinity ? '∞' : formatDaysAndHours(comparisonSnapshot.daysLeftTo1e333) }}</div>
+                    <div :class="getDiffClassDays(daysLeftTo1e333, comparisonSnapshot.daysLeftTo1e333)">
+                      {{ getDiffTextDays(daysLeftTo1e333, comparisonSnapshot.daysLeftTo1e333) }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -384,7 +424,7 @@
 
         <!-- Innovation Node 6 Results Section -->
         <div v-if="innovationNode6Active" class="bg-gray-800/50 rounded-lg border border-yellow-600/30 overflow-hidden shadow-lg mb-4">
-          <div class="header p-3 bg-gradient-to-r from-purple-800/30 to-purple-900/30">
+          <div class="header p-3 bg-gradient-to-r from-purple-800/30 to-purple-900/30 flex justify-between items-center">
             <h3 class="text-lg font-semibold text-white flex items-center">
               <div 
                 class="w-4 h-4 rounded-full border border-gray-500 mr-2"
@@ -392,36 +432,76 @@
               ></div>
               InnoGN#6 Results
             </h3>
+            <button
+              @click="toggleInnoCompareMode"
+              class="px-3 py-1 text-sm rounded-lg transition-all flex items-center gap-2"
+              :class="compareInnoMode 
+                ? 'bg-yellow-600 text-white' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+            >
+              <IconGitCompare size="16" />
+              {{ compareInnoMode ? 'Stop Comparing' : 'Compare Changes' }}
+            </button>
           </div>
+          
+          <!-- Compare Mode Info Banner -->
+          <div v-if="compareInnoMode" class="bg-yellow-900/30 border-t border-yellow-800 px-4 py-2">
+            <p class="text-yellow-200 text-xs flex items-center">
+              <IconInfoCircle size="14" class="mr-1.5 flex-shrink-0" />
+              <span><strong>Compare Mode Active:</strong> Adjust your settings to see how they affect the results. Click "Stop Comparing" to restore original values.</span>
+            </p>
+          </div>
+          
           <div class="p-3 sm:p-4">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
               
               <!-- Innovation Multi per Day -->
-              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-600/20">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-600/20 transition-all"
+                   :class="compareInnoMode && hasInnoComparison ? 'ring-2 ring-yellow-500/50' : ''">
                 <div class="text-center">
                   <div class="text-sm font-semibold text-gray-300 mb-1">Multiplier per Day</div>
                   <div class="text-2xl font-bold text-yellow-400">
                     {{ formatMulti(innovationMultiPerDay) }}
                   </div>
+                  <div v-if="compareInnoMode && hasInnoComparison" class="mt-2 text-xs">
+                    <div class="text-gray-400">Before: {{ formatMulti(innoComparisonSnapshot.innovationMultiPerDay) }}</div>
+                    <div :class="getDiffClass(innovationMultiPerDay, innoComparisonSnapshot.innovationMultiPerDay)">
+                      {{ getDiffText(innovationMultiPerDay, innoComparisonSnapshot.innovationMultiPerDay) }}
+                    </div>
+                  </div>
                 </div>
               </div>
               
               <!-- Days to 1e222 -->
-              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-600/20">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-600/20 transition-all"
+                   :class="compareInnoMode && hasInnoComparison ? 'ring-2 ring-yellow-500/50' : ''">
                 <div class="text-center">
                   <div class="text-sm font-semibold text-gray-300 mb-1">Total Days to 1e222</div>
                   <div class="text-2xl font-bold text-blue-400">
-                    {{ daysToInnovationCap === Infinity ? '∞' : daysToInnovationCap.toFixed(2) }}
+                    {{ daysToInnovationCap === Infinity ? '∞' : formatDaysAndHours(daysToInnovationCap) }}
+                  </div>
+                  <div v-if="compareInnoMode && hasInnoComparison" class="mt-2 text-xs">
+                    <div class="text-gray-400">Before: {{ innoComparisonSnapshot.daysToInnovationCap === Infinity ? '∞' : formatDaysAndHours(innoComparisonSnapshot.daysToInnovationCap) }}</div>
+                    <div :class="getDiffClassDays(daysToInnovationCap, innoComparisonSnapshot.daysToInnovationCap)">
+                      {{ getDiffTextDays(daysToInnovationCap, innoComparisonSnapshot.daysToInnovationCap) }}
+                    </div>
                   </div>
                 </div>
               </div>
               
               <!-- Days left to 1e222 -->
-              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-600/20">
+              <div class="bg-gray-900/60 rounded-lg p-4 border border-gray-600/20 transition-all"
+                   :class="compareInnoMode && hasInnoComparison ? 'ring-2 ring-yellow-500/50' : ''">
                 <div class="text-center">
                   <div class="text-sm font-semibold text-gray-300 mb-1">Days left to 1e222</div>
                   <div class="text-2xl font-bold text-orange-400">
-                    {{ daysLeftToInnovationCap === Infinity ? '∞' : daysLeftToInnovationCap.toFixed(2) }}
+                    {{ daysLeftToInnovationCap === Infinity ? '∞' : formatDaysAndHours(daysLeftToInnovationCap) }}
+                  </div>
+                  <div v-if="compareInnoMode && hasInnoComparison" class="mt-2 text-xs">
+                    <div class="text-gray-400">Before: {{ innoComparisonSnapshot.daysLeftToInnovationCap === Infinity ? '∞' : formatDaysAndHours(innoComparisonSnapshot.daysLeftToInnovationCap) }}</div>
+                    <div :class="getDiffClassDays(daysLeftToInnovationCap, innoComparisonSnapshot.daysLeftToInnovationCap)">
+                      {{ getDiffTextDays(daysLeftToInnovationCap, innoComparisonSnapshot.daysLeftToInnovationCap) }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -489,7 +569,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted } from 'vue';
+import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import Decimal from 'break_infinity.js';
 import { 
   IconSettings, 
@@ -503,7 +583,8 @@ import {
   IconShield,
   IconTarget,
   IconStar,
-  IconMicroscope
+  IconMicroscope,
+  IconGitCompare
 } from '@tabler/icons-vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import InfoTooltip from '@/composables/InfoTooltip.vue';  
@@ -595,6 +676,194 @@ const studiesPerStudy = ref(1); // Innovation Node 6 feature
 const currentInnoMultiplier = ref(new Decimal(1)); // Current Innovation Multiplier
 const innoMultiplierInput = ref('1');
 const innoInputWasFocused = ref(false);
+
+// Compare Mode States
+const compareMode = ref(false);
+const comparisonSnapshot = ref({
+  multiPerDay: 0,
+  daysTo1e333: Infinity,
+  daysLeftTo1e333: Infinity
+});
+const hasComparison = ref(false);
+const showCompareBanner = ref(false);
+
+// Store original settings for restore
+const originalSettings = ref({
+  tickSpeed: 0,
+  ticksPerTick: 1,
+  efficiencyBadge: false,
+  ts5: false,
+  relic14: 0,
+  researchPoints: 0,
+  currentTicksInLR: 0,
+  studiesPerStudy: 1
+});
+
+const compareInnoMode = ref(false);
+const innoComparisonSnapshot = ref({
+  innovationMultiPerDay: 0,
+  daysToInnovationCap: Infinity,
+  daysLeftToInnovationCap: Infinity
+});
+const hasInnoComparison = ref(false);
+const showInnoCompareBanner = ref(false);
+
+// Store original settings for innovation compare
+const innoOriginalSettings = ref({
+  tickSpeed: 0,
+  ticksPerTick: 1,
+  researchPoints: 0,
+  currentTicksInLR: 0,
+  studiesPerStudy: 1
+});
+
+// Watch for settings changes to hide banner and show comparisons
+watch([tickSpeed, ticksPerTick, efficiencyBadge, ts5, relic14, researchPoints, currentTicksInLR, studiesPerStudy], () => {
+  if (compareMode.value && showCompareBanner.value) {
+    showCompareBanner.value = false;
+    hasComparison.value = true;
+  }
+  if (compareInnoMode.value && showInnoCompareBanner.value) {
+    showInnoCompareBanner.value = false;
+    hasInnoComparison.value = true;
+  }
+});
+
+// Toggle functions for compare mode with restore
+function toggleCompareMode() {
+  if (!compareMode.value) {
+    // Activating compare mode - save current state
+    originalSettings.value = {
+      tickSpeed: tickSpeed.value,
+      ticksPerTick: ticksPerTick.value,
+      efficiencyBadge: efficiencyBadge.value,
+      ts5: ts5.value,
+      relic14: relic14.value,
+      researchPoints: researchPoints.value,
+      currentTicksInLR: currentTicksInLR.value,
+      studiesPerStudy: studiesPerStudy.value
+    };
+    
+    comparisonSnapshot.value = {
+      multiPerDay: multiPerDay.value,
+      daysTo1e333: daysTo1e333.value,
+      daysLeftTo1e333: daysLeftTo1e333.value
+    };
+    
+    compareMode.value = true;
+    showCompareBanner.value = true;
+    hasComparison.value = false;
+  } else {
+    // Deactivating compare mode - restore original values
+    tickSpeed.value = originalSettings.value.tickSpeed;
+    ticksPerTick.value = originalSettings.value.ticksPerTick;
+    efficiencyBadge.value = originalSettings.value.efficiencyBadge;
+    ts5.value = originalSettings.value.ts5;
+    relic14.value = originalSettings.value.relic14;
+    researchPoints.value = originalSettings.value.researchPoints;
+    currentTicksInLR.value = originalSettings.value.currentTicksInLR;
+    studiesPerStudy.value = originalSettings.value.studiesPerStudy;
+    
+    compareMode.value = false;
+    showCompareBanner.value = false;
+    hasComparison.value = false;
+    
+    // Save restored settings
+    saveSettings();
+  }
+}
+
+function toggleInnoCompareMode() {
+  if (!compareInnoMode.value) {
+    // Activating compare mode - save current state
+    innoOriginalSettings.value = {
+      tickSpeed: tickSpeed.value,
+      ticksPerTick: ticksPerTick.value,
+      researchPoints: researchPoints.value,
+      currentTicksInLR: currentTicksInLR.value,
+      studiesPerStudy: studiesPerStudy.value
+    };
+    
+    innoComparisonSnapshot.value = {
+      innovationMultiPerDay: innovationMultiPerDay.value,
+      daysToInnovationCap: daysToInnovationCap.value,
+      daysLeftToInnovationCap: daysLeftToInnovationCap.value
+    };
+    
+    compareInnoMode.value = true;
+    showInnoCompareBanner.value = true;
+    hasInnoComparison.value = false;
+  } else {
+    // Deactivating compare mode - restore original values
+    tickSpeed.value = innoOriginalSettings.value.tickSpeed;
+    ticksPerTick.value = innoOriginalSettings.value.ticksPerTick;
+    researchPoints.value = innoOriginalSettings.value.researchPoints;
+    currentTicksInLR.value = innoOriginalSettings.value.currentTicksInLR;
+    studiesPerStudy.value = innoOriginalSettings.value.studiesPerStudy;
+    
+    compareInnoMode.value = false;
+    showInnoCompareBanner.value = false;
+    hasInnoComparison.value = false;
+    
+    // Save restored settings
+    saveSettings();
+  }
+}
+
+// Comparison helper functions
+function getDiffClass(current, baseline) {
+  if (current > baseline) return 'text-green-400 font-semibold';
+  if (current < baseline) return 'text-red-400 font-semibold';
+  return 'text-gray-400';
+}
+
+function getDiffText(current, baseline) {
+  if (current === baseline) return 'No change';
+  
+  // Calculate multiplicative difference (how many times bigger/smaller)
+  const multiplicativeDiff = current / baseline;
+  
+  // Format the difference
+  if (multiplicativeDiff >= 1000) {
+    // Use scientific notation for large differences
+    const exponent = Math.floor(Math.log10(multiplicativeDiff));
+    const mantissa = multiplicativeDiff / Math.pow(10, exponent);
+    return `+${mantissa.toFixed(2)}e${exponent}`;
+  } else if (multiplicativeDiff > 1) {
+    return `+${multiplicativeDiff.toFixed(2)}`;
+  } else if (multiplicativeDiff < 1) {
+    const inverseDiff = baseline / current;
+    if (inverseDiff >= 1000) {
+      const exponent = Math.floor(Math.log10(inverseDiff));
+      const mantissa = inverseDiff / Math.pow(10, exponent);
+      return `-${mantissa.toFixed(2)}e${exponent}`;
+    }
+    return `-${inverseDiff.toFixed(2)}`;
+  }
+  
+  return 'No change';
+}
+
+function getDiffClassDays(current, baseline) {
+  // For days: lower is better (green), higher is worse (red)
+  if (current === Infinity && baseline === Infinity) return 'text-gray-400';
+  if (current === Infinity) return 'text-red-400 font-semibold';
+  if (baseline === Infinity) return 'text-green-400 font-semibold';
+  if (current < baseline) return 'text-green-400 font-semibold';
+  if (current > baseline) return 'text-red-400 font-semibold';
+  return 'text-gray-400';
+}
+
+function getDiffTextDays(current, baseline) {
+  if (current === baseline) return 'No change';
+  if (current === Infinity && baseline === Infinity) return 'No change';
+  if (current === Infinity) return 'Much slower';
+  if (baseline === Infinity) return 'Much faster!';
+  
+  const diff = baseline - current;
+  const sign = diff > 0 ? '-' : '+';
+  return `${sign}${formatDaysAndHours(Math.abs(diff))}`;
+}
 
 // Toggle functions
 function toggleEfficiencyBadge() {
@@ -906,6 +1175,17 @@ function formatDaysInLR(days) {
   const remainingMinutes = totalMinutes % 60;
   
   return `${wholeDays}d ${wholeHours}h ${remainingMinutes}m`;
+}
+
+// Format days and hours for total/remaining days
+function formatDaysAndHours(days) {
+  if (days === 0) return '0d 0h';
+  if (days === Infinity) return '∞';
+  
+  const wholeDays = Math.floor(days);
+  const remainingHours = Math.floor((days - wholeDays) * 24);
+  
+  return `${wholeDays}d ${remainingHours}h`;
 }
 
 function formatMulti(num) {
@@ -1231,6 +1511,32 @@ watch(innovationGemLevel, (newLevel) => {
   // Wenn Innovation Gem Level unter 3 fällt, begrenze Research Points auf 1509
   if (newLevel < 3 && researchPoints.value > 1509) {
     researchPoints.value = 1509;
+    saveSettings();
+  }
+});
+
+// Restore original values when leaving page
+onBeforeUnmount(() => {
+  if (compareMode.value) {
+    // Restore original AttGN#3 settings
+    tickSpeed.value = originalSettings.value.tickSpeed;
+    ticksPerTick.value = originalSettings.value.ticksPerTick;
+    efficiencyBadge.value = originalSettings.value.efficiencyBadge;
+    ts5.value = originalSettings.value.ts5;
+    relic14.value = originalSettings.value.relic14;
+    researchPoints.value = originalSettings.value.researchPoints;
+    currentTicksInLR.value = originalSettings.value.currentTicksInLR;
+    studiesPerStudy.value = originalSettings.value.studiesPerStudy;
+    saveSettings();
+  }
+  
+  if (compareInnoMode.value) {
+    // Restore original InnoGN#6 settings
+    tickSpeed.value = innoOriginalSettings.value.tickSpeed;
+    ticksPerTick.value = innoOriginalSettings.value.ticksPerTick;
+    researchPoints.value = innoOriginalSettings.value.researchPoints;
+    currentTicksInLR.value = innoOriginalSettings.value.currentTicksInLR;
+    studiesPerStudy.value = innoOriginalSettings.value.studiesPerStudy;
     saveSettings();
   }
 });

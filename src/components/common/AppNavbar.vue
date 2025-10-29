@@ -77,7 +77,7 @@
             
             <!-- Upgrades Mega Menu (Dropdown) -->
             <div 
-              class="absolute top-full right-0 mt-2 bg-gray-800 rounded-xl shadow-xl transform transition-all duration-200 origin-top-right z-50 border border-gray-700 w-[600px] overflow-hidden" 
+              class="absolute top-full right-0 mt-2 bg-gray-800 rounded-xl shadow-xl transform transition-all duration-100 origin-top-right z-50 border border-gray-700 w-[600px] overflow-hidden" 
               :class="activeCategory === 'Upgrades' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'"
             >                
               <div class="p-4">
@@ -124,7 +124,7 @@
             
             <!-- Tools Dropdown Menu -->
             <div 
-              class="absolute top-full right-0 mt-2 bg-gray-800 rounded-xl shadow-xl transform transition-all duration-200 origin-top-right z-50 border border-gray-700 w-[500px] overflow-hidden" 
+              class="absolute top-full right-0 mt-2 bg-gray-800 rounded-xl shadow-xl transform transition-all duration-100 origin-top-right z-50 border border-gray-700 w-[500px] overflow-hidden" 
               :class="activeCategory === 'Tools' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'"
             >                
               <div class="p-4">
@@ -236,7 +236,7 @@
 
               <!-- Account Dropdown -->
               <div 
-                class="absolute top-full right-0 mt-2 bg-gray-800 rounded-xl shadow-xl transform transition-all duration-200 origin-top-right z-50 border border-gray-700 w-64 overflow-hidden" 
+                class="absolute top-full right-0 mt-2 bg-gray-800 rounded-xl shadow-xl transform transition-all duration-100 origin-top-right z-50 border border-gray-700 w-64 overflow-hidden" 
                 :class="activeCategory === 'Account' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'"
               >
                 <div class="p-4">
@@ -713,6 +713,11 @@ a {
 .opacity-0.max-w-0:hover {
   opacity: 1;
   max-width: 80px;
+}
+
+/* View Transitions: Schließe Dropdowns und Overlays aus dem Screenshot aus */
+header > div > nav > div > div.relative > div.absolute {
+  view-transition-name: none !important;
 }
 
 /* Toast Animation */

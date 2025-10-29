@@ -96,8 +96,10 @@
           </span>
         </div>
       </div>
-      
-      <!-- Modals -->
+    </div>
+    
+    <!-- Modals - mit Teleport außerhalb der Build-Card rendern -->
+    <Teleport to="body">
       <BuildCodeModal
         :show="showCodeModal"
         :build="buildData"
@@ -150,7 +152,7 @@
         :build-data="buildData"
         @close="showLiveSimulationModal = false"
       />
-    </div>
+    </Teleport>
   </div>
 </template>
 
