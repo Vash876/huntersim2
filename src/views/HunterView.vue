@@ -414,7 +414,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, provide, watchEffect } from 'vue';
+import { ref, computed, watch, onMounted, provide, watchEffect, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { NAVIGATION } from '../constants/navigation';
 import { useHunterStore } from '../store/hunterStore';
@@ -669,7 +669,7 @@ function closeBuildCodeModal() {
 }
 
 // Build-Import
-function importBuild(build) {
+async function importBuild(build) {
   if (!build) {
     showToastMessage('Error: Invalid build code', 'error');
     return;
@@ -686,6 +686,9 @@ function importBuild(build) {
     
     // Close current modal first
     closeBuildCodeModal();
+    
+    // Wait a tick to ensure modal is closed and store is updated
+    await nextTick();
     
     // Navigate to the correct hunter - the build will be automatically imported there
     router.push(correctHunterPath);
@@ -895,6 +898,31 @@ onMounted(async () => {
 // Bei Wechsel des Hunters die Konfiguration initialisieren
 watch(() => route.params.hunterId, async (newHunterId) => {
   await hunterStore.initHunterConfig(newHunterId);
+  
+  // Check for pending build import when hunter changes
+  nextTick(() => {
+    const pendingBuild = hunterStore.getPendingBuildImport();
+    
+    if (pendingBuild && pendingBuild.hunter === newHunterId) {
+      // Wait another tick to ensure View Transition is complete
+      nextTick(() => {
+        // Import the pending build
+        buildToEdit.value = {
+          ...pendingBuild,
+          hunterId: newHunterId
+        };
+        
+        // Open build modal
+        isBuildModalOpen.value = true;
+        
+        // Clear the pending import
+        hunterStore.clearPendingBuildImport();
+        
+        // Show success message
+        showToastMessage(`Build imported and ready to edit. Click Save to keep it.`, 'info');
+      });
+    }
+  });
 });
 
 // Lädt Builds beim Mounting
@@ -925,23 +953,30 @@ onMounted(() => {
   }
   
   // Prüfe, ob ein pending Build Import vorhanden ist
-  const pendingBuild = hunterStore.getPendingBuildImport();
-  if (pendingBuild && pendingBuild.hunter === route.params.hunterId) {
-    // Import the pending build
-    buildToEdit.value = {
-      ...pendingBuild,
-      hunterId: route.params.hunterId
-    };
+  // Use nextTick to ensure the component is fully mounted after navigation
+  nextTick(() => {
+    const pendingBuild = hunterStore.getPendingBuildImport();
     
-    // Open build modal
-    isBuildModalOpen.value = true;
-    
-    // Clear the pending import
-    hunterStore.clearPendingBuildImport();
-    
-    // Show success message
-    showToastMessage(`Build imported and ready to edit. Click Save to keep it.`, 'info');
-  }
+    if (pendingBuild && pendingBuild.hunter === route.params.hunterId) {
+      // Wait another tick to ensure View Transition is complete
+      nextTick(() => {
+        // Import the pending build
+        buildToEdit.value = {
+          ...pendingBuild,
+          hunterId: route.params.hunterId
+        };
+        
+        // Open build modal
+        isBuildModalOpen.value = true;
+        
+        // Clear the pending import
+        hunterStore.clearPendingBuildImport();
+        
+        // Show success message
+        showToastMessage(`Build imported and ready to edit. Click Save to keep it.`, 'info');
+      });
+    }
+  });
 });
 
 // Weitere Handler für BuildResultCard-Events
