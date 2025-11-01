@@ -9,6 +9,7 @@ import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { useUltimaStore } from '@/store/ultimaStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
+import { useTSStore } from '@/store/tsStore';
 
 export function useBackupRestore() {
   const hunterStore = useHunterStore();
@@ -17,6 +18,7 @@ export function useBackupRestore() {
   const ultimaStore = useUltimaStore();
   const gemPlannerStore = useGemPlannerStore();
   const inscryptionPlannerStore = useInscryptionPlannerStore();
+  const tsStore = useTSStore();
 
   const isCreatingBackup = ref(false);
   const isRestoring = ref(false);
@@ -85,8 +87,8 @@ export function useBackupRestore() {
       // 6. AttrGN3 Calculator Daten aus localStorage
       const attrGN3Settings = localStorage.getItem('attrGN3Calculator_settings');
       
-      // 7. TS Planner Daten aus localStorage
-      const tsPlannerSettings = localStorage.getItem('traitSpherePlanner_settings');
+      // 7. TS Planner Daten (Pinia Store mit useStorage)
+      const tsPlannerSettings = JSON.parse(JSON.stringify(tsStore.settings));
       
       // 8. Research Overview Daten aus localStorage
       const researchOverviewSettings = localStorage.getItem('researchOverview_filters');
@@ -140,13 +142,13 @@ export function useBackupRestore() {
           ultimaStore: ultimaStoreData,
           gemPlannerStore: gemPlannerData,
           inscryptionPlannerStore: inscryptionPlannerData,
+          tsStore: tsPlannerSettings,
           localStorage: {
             gadgetCalculator_currentLevels: gadgetCurrentLevels ? JSON.parse(gadgetCurrentLevels) : {},
             gadgetCalculator_targetLevels: gadgetTargetLevels ? JSON.parse(gadgetTargetLevels) : {},
             gadgetCalculator_referenceBuildId: gadgetReferenceBuildId,
             mechPlanner_settings: mechPlannerSettings ? JSON.parse(mechPlannerSettings) : {},
             attrGN3Calculator_settings: attrGN3Settings ? JSON.parse(attrGN3Settings) : {},
-            traitSpherePlanner_settings: tsPlannerSettings ? JSON.parse(tsPlannerSettings) : {},
             researchOverview_filters: researchOverviewSettings ? JSON.parse(researchOverviewSettings) : {},
             loopModOverview_filters: loopModOverviewSettings ? JSON.parse(loopModOverviewSettings) : {},
             m0CostOverview_filters: m0CostOverviewSettings ? JSON.parse(m0CostOverviewSettings) : {},
@@ -380,6 +382,26 @@ export function useBackupRestore() {
         });
       }
       
+      // 6.5. Restore TS Planner Store
+      if (backupData.data.tsStore) {
+        console.log('📥 Restoring Trait Sphere Planner data from backup...');
+        Object.keys(backupData.data.tsStore).forEach(key => {
+          if (key in tsStore.settings) {
+            tsStore.settings[key] = backupData.data.tsStore[key];
+          }
+        });
+      }
+      // Backward compatibility: Restore from old localStorage format if present
+      else if (backupData.data.localStorage?.traitSpherePlanner_settings) {
+        console.log('📥 Restoring Trait Sphere Planner data from old localStorage format...');
+        const oldSettings = backupData.data.localStorage.traitSpherePlanner_settings;
+        Object.keys(oldSettings).forEach(key => {
+          if (key in tsStore.settings) {
+            tsStore.settings[key] = oldSettings[key];
+          }
+        });
+      }
+      
       // 7. Restore localStorage data
       if (backupData.data.localStorage) {
         const localStorageData = backupData.data.localStorage;
@@ -426,11 +448,6 @@ export function useBackupRestore() {
         // AttrGN3 Calculator
         if (localStorageData.attrGN3Calculator_settings) {
           localStorage.setItem('attrGN3Calculator_settings', JSON.stringify(localStorageData.attrGN3Calculator_settings));
-        }
-        
-        // TS Planner
-        if (localStorageData.traitSpherePlanner_settings) {
-          localStorage.setItem('traitSpherePlanner_settings', JSON.stringify(localStorageData.traitSpherePlanner_settings));
         }
         
         // Research Overview

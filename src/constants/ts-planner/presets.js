@@ -110,7 +110,8 @@ export const traitSpherePresets = [
     cores: 18,
     milestones: "5/2/2 | 4/2/3",
     category: 'long',
-    spheres: [1, 4, 5, 7, 8],
+    spheres: [1, 5, 7],
+    floating: [9],
   },
 
   // 20 AM Cores - 5/2/3 | 4/3/3 Milestones
@@ -153,6 +154,13 @@ export const traitSpherePresets = [
     milestones: "5/3/4",
     category: 'long',
     spheres: [1, 2, 4, 5, 7, 9],
+  },
+  {
+    cores: 24,
+    milestones: "5/3/4",
+    category: 'long',
+    spheres: [1, 5, 7],
+    floating: [12],
   },
 
   // 26 AM Cores - 6/3/4 Milestones
@@ -220,9 +228,11 @@ export const traitSpherePresets = [
   },
   {
     cores: 34,
-    milestones: "8/4/5 | 7/5/5",
+    milestones: "8/4/5 | 7/5/5 | 8/5/5 | 8/5/6 | 9/5/5",
     category: 'long',
-    spheres: [1, 4, 5, 7, 9, 2, 8, 12],
+    spheres: [1, 4, 5, 7, 9, 2, 6, 12],
+    floating: [11, 3],
+    description: 'first take TS#11, then TS#3',
   },
 
   // 36 AM Cores - 8/5/5 Milestones
@@ -232,12 +242,6 @@ export const traitSpherePresets = [
     category: 'short',
     spheres: [1, 2, 4, 7, 9, 8, 14],
   },
-  {
-    cores: 36,
-    milestones: "8/5/5",
-    category: 'long',
-    spheres: [1, 4, 5, 7, 9, 2, 12, 16],
-  },
 
   // 38 AM Cores - 8/5/6 | 9/5/5 Milestones
   {
@@ -245,12 +249,6 @@ export const traitSpherePresets = [
     milestones: "8/5/6 | 9/5/5",
     category: 'short',
     spheres: [1, 2, 4, 7, 9, 6, 11, 12],
-  },
-  {
-    cores: 38,
-    milestones: "8/5/6 | 9/5/5",
-    category: 'long',
-    spheres: [1, 4, 5, 7, 9, 8, 14],
   },
 
   // 40 AM Cores - 8/6/6 | 9/5/6 Milestones
@@ -262,9 +260,10 @@ export const traitSpherePresets = [
   },
   {
     cores: 40,
-    milestones: "8/6/6 | 9/5/6",
+    milestones: "8/6/6 | 9/5/6 | 9/6/6",
     category: 'long',
     spheres: [1, 4, 5, 7, 9, 2, 8, 14],
+    floating: [12],
   },
 
   // 42 AM Cores - 9/6/6 Milestones
@@ -273,12 +272,6 @@ export const traitSpherePresets = [
     milestones: "9/6/6",
     category: 'short',
     spheres: [1, 2, 4, 7, 9, 6, 8, 11, 12],
-  },
-  {
-    cores: 42,
-    milestones: "9/6/6",
-    category: 'long',
-    spheres: [1, 4, 5, 7, 9, 2, 6, 11, 12],
   },
 
   // 44 AM Cores - 10/6/6 | 9/6/7 Milestones

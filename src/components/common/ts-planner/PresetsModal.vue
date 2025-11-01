@@ -11,7 +11,7 @@
       <!-- Header -->
       <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-4 border-b border-gray-600 flex justify-between items-center">
         <h2 class="text-xl font-bold text-white flex items-center">
-          <IconTarget size="20" class="mr-2 text-purple-400" />
+          <IconStar size="20" class="mr-2 text-purple-400" />
           Trait Sphere Presets
         </h2>
         <button 
@@ -24,30 +24,36 @@
 
       <!-- Modal Content -->
       <div class="p-5 overflow-y-auto max-h-[calc(90vh-120px)]">
-        <p class="text-sm text-gray-300 mb-4">
-          Choose from community-tested trait sphere builds. Filter presets based on your available cores.
-        </p>
+        <div class="bg-yellow-900/30 border border-yellow-700/50 rounded-lg p-3 mb-4">
+          <p class="text-sm text-yellow-200 mb-1">
+            ⚠️ <strong>Testing Phase:</strong> These presets are currently being tested. Please ask in Discord before committing to a build.
+          </p>
+          <p class="text-xs text-yellow-300/80">
+            Found errors in presets? Please ping Vash in Discord.
+          </p>
+        </div>
         
         <!-- Filter Controls -->
         <div class="bg-gray-700/50 rounded-lg p-3 mb-4 border border-gray-600">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center space-x-4">
               <div class="text-sm text-gray-200">
-                Available: <span class="text-purple-300 font-medium">{{ availableCores }}</span> cores
+                Current: <span class="text-purple-300 font-medium">{{ currentCellMilestones }}/{{ currentMPMilestones }}/{{ currentRPMilestones }}</span>
               </div>
               <div class="flex items-center space-x-2">
-                <span class="text-sm text-gray-200">Range: ±</span>
+                <span class="text-sm text-gray-200">Show +</span>
                 <ToolValueControls
-                  :value="coreRangeFilter"
-                  @update:value="coreRangeFilter = $event"
+                  :value="milestoneRangeFilter"
+                  @update:value="milestoneRangeFilter = $event"
                   :minValue="0"
-                  :maxValue="100"
+                  :maxValue="50"
                   :step="1"
-                  :fastStep="5"
+                  :fastStep="1"
                   :showFastControls="false"
                   value-class="text-blue-300 font-medium text-sm"
                   :autoEdit="true"
                 />
+                <span class="text-sm text-gray-400">milestones</span>
               </div>
             </div>
           </div>
@@ -101,12 +107,42 @@
           </div>
         </div>
 
+        <!-- Loading State -->
+        <div v-if="isLoading" class="flex flex-col justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
+          <div class="text-gray-400 text-sm">
+            Loading preset data from Google Sheets...
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div v-else-if="loadError" class="bg-red-900/30 border border-red-700/50 rounded-lg p-4 mb-4">
+          <p class="text-red-300 mb-3">{{ loadError }}</p>
+          <button 
+            @click="loadPresets()" 
+            class="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-md transition-colors text-sm"
+          >
+            Retry
+          </button>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else-if="!isLoading && filteredPresets.length === 0" class="text-center py-12">
+          <p class="text-gray-400 mb-2">No presets match your current filters.</p>
+          <p class="text-gray-500 text-sm">Try adjusting the milestone range or category filter.</p>
+        </div>
+
         <!-- Presets Grid - 2 per row -->
-        <div v-if="filteredPresets.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div v-else-if="filteredPresets.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div 
             v-for="preset in filteredPresets" 
-            :key="preset.id"
-            class="bg-gray-700/50 rounded-lg border border-gray-600 hover:border-purple-500 transition-colors cursor-pointer p-3"
+            :key="preset.milestones + '-' + preset.category"
+            :class="[
+              'bg-gray-700/50 rounded-lg border transition-all cursor-pointer p-3',
+              errorPresetId === (preset.milestones + '-' + preset.category)
+                ? 'border-red-500 animate-error-shake'
+                : 'border-gray-600 hover:border-purple-500'
+            ]"
             @click="selectPreset(preset)"
           >
             <!-- Header -->
@@ -124,8 +160,8 @@
                 >
                   {{ preset.category.toUpperCase() }}
                 </span>
-                <span class="text-xs text-gray-400">{{ preset.cores }} AM Cores</span>
-                <span v-if="preset.milestones" class="text-xs text-gray-500">{{ preset.milestones }}</span>
+                <span v-if="preset.milestones" class="text-xs text-purple-300 font-medium">{{ preset.milestones }}</span>
+                <span v-else class="text-xs text-gray-500 italic">Endgame</span>
               </div>
               <div class="text-right">
                 <div class="flex items-center">
@@ -144,9 +180,18 @@
               </div>
             </div>
 
-            <!-- Optional Description -->
-            <div v-if="preset.description" class="mb-2">
-              <p class="text-xs text-gray-400 italic">{{ preset.description }}</p>
+            <!-- Description and Floating Points Info -->
+            <div v-if="preset.description || (preset.floating && preset.floating.length > 0)" class="mb-2 flex items-center justify-between gap-2">
+              <p v-if="preset.description" class="text-xs text-gray-400 italic flex-1">{{ preset.description }}</p>
+              <div v-else class="flex-1"></div>
+              
+              <!-- Floating Points Info (always on the right) -->
+              <div v-if="preset.floating && preset.floating.length > 0" class="flex items-center gap-1 text-xs shrink-0">
+                <IconTarget size="12" class="text-yellow-400" />
+                <span class="text-yellow-300 whitespace-nowrap">
+                  Floating Points: {{ getPresetRemainingCores(preset) }}, {{ Math.max(0, getPresetFloatingCost(preset) - getPresetRemainingCores(preset)) }} more needed
+                </span>
+              </div>
             </div>
             
             <!-- Miniature Trait Sphere Grid (7x7 like original) -->
@@ -210,39 +255,41 @@
             Try increasing the core range filter or adjusting your milestone settings.
           </p>
         </div>
-
-        <!-- Custom preset info -->
-        <div class="mt-6 p-3 bg-blue-900/20 rounded-lg border border-blue-800/30">
-          <p class="text-xs text-blue-200 flex items-start">
-            <IconInfoCircle size="14" class="mr-1 mt-0.5 flex-shrink-0" />
-            These presets are based on community strategies. You can always manually select trait spheres for custom builds.
-          </p>
-        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { 
+  IconStar,
   IconTarget, 
   IconX, 
   IconHexagon, 
   IconAlertCircle, 
-  IconInfoCircle 
 } from '@tabler/icons-vue';
-import { 
-  traitSpherePresets, 
-  calculatePresetCost 
-} from '@/constants/ts-planner/presets';
+import { calculatePresetCost } from '@/constants/ts-planner/presets';
 import { getTraitSphereById, getTraitSphereAtPosition } from '@/constants/ts-planner/index';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
+import { usePresetData } from '@/composables/usePresetData';
 
 const props = defineProps({
   isVisible: {
     type: Boolean,
     default: false
+  },
+  currentCellMilestones: {
+    type: Number,
+    required: true
+  },
+  currentMPMilestones: {
+    type: Number,
+    required: true
+  },
+  currentRPMilestones: {
+    type: Number,
+    required: true
   },
   availableCores: {
     type: Number,
@@ -253,46 +300,118 @@ const props = defineProps({
 const emit = defineEmits(['close', 'select-preset']);
 
 // Local state
-const coreRangeFilter = ref(10);
+const milestoneRangeFilter = ref(2);
 const selectedCategory = ref('all');
+const errorPresetId = ref(null);
+const presets = ref([]);
+const isLoading = ref(false);
+const loadError = ref(null);
+
+// Load presets from Google Sheets
+const { fetchPresetData } = usePresetData();
+
+async function loadPresets() {
+  // TODO: Re-enable caching after testing
+  // if (presets.value.length > 0) return; // Already loaded - cache for session
+  
+  isLoading.value = true;
+  loadError.value = null;
+  
+  try {
+    const data = await fetchPresetData();
+    presets.value = data;
+    console.log(`Loaded ${data.length} presets from Google Sheets`);
+  } catch (error) {
+    console.error('Failed to load presets:', error);
+    loadError.value = 'Failed to load presets from Google Sheets. Please try again.';
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// Load presets when modal becomes visible
+watch(() => props.isVisible, (newValue) => {
+  if (newValue) {
+    loadPresets();
+  }
+});
+
+// Helper function to parse milestones from preset
+function parsePresetMilestones(milestoneString) {
+  if (!milestoneString || milestoneString.trim() === '') {
+    return []; // No milestones defined
+  }
+  
+  // Split by | to handle multiple milestone combinations
+  const combinations = milestoneString.split('|').map(s => s.trim());
+  
+  return combinations.map(combo => {
+    const [cell, mp, rp] = combo.split('/').map(n => parseInt(n.trim()) || 0);
+    return { cell, mp, rp, total: cell + mp + rp };
+  });
+}
+
+// Check if any milestone combination matches the filter criteria
+function presetMatchesMilestones(preset) {
+  const milestones = parsePresetMilestones(preset.milestones);
+  
+  // If no milestones defined, show it (endgame presets)
+  if (milestones.length === 0) {
+    return true;
+  }
+  
+  // Calculate current total milestones
+  const currentTotal = props.currentCellMilestones + props.currentMPMilestones + props.currentRPMilestones;
+  
+  // Only show presets with equal or higher total milestones (within range)
+  return milestones.some(m => {
+    const diff = m.total - currentTotal; // Positive if preset is higher
+    return diff >= 0 && diff <= milestoneRangeFilter.value;
+  });
+}
 
 // Computed properties
 const filteredPresets = computed(() => {
-  let presets = traitSpherePresets;
+  let filteredList = presets.value;
   
   // Filter by category
   if (selectedCategory.value !== 'all') {
-    presets = presets.filter(preset => preset.category === selectedCategory.value);
+    filteredList = filteredList.filter(preset => {
+      // Handle "short/long" category
+      if (preset.category === 'short/long') {
+        return selectedCategory.value === 'short/long';
+      }
+      return preset.category === selectedCategory.value;
+    });
   }
   
-  // Filter by core range
-  presets = presets.filter(preset => {
-    const cost = getPresetCost(preset);
-    const difference = Math.abs(cost - props.availableCores);
-    return difference <= coreRangeFilter.value;
-  });
+  // Filter by milestone range
+  filteredList = filteredList.filter(preset => presetMatchesMilestones(preset));
   
-  // Sort by cost (closest to available cores first)
-  return presets.sort((a, b) => {
-    const costA = getPresetCost(a);
-    const costB = getPresetCost(b);
-    const diffA = Math.abs(costA - props.availableCores);
-    const diffB = Math.abs(costB - props.availableCores);
+  // Sort by milestone proximity
+  return filteredList.sort((a, b) => {
+    const milestonesA = parsePresetMilestones(a.milestones);
+    const milestonesB = parsePresetMilestones(b.milestones);
     
-    // Primary sort: by difference to available cores
-    if (diffA !== diffB) {
-      return diffA - diffB;
-    }
+    // If no milestones, sort to end
+    if (milestonesA.length === 0 && milestonesB.length === 0) return 0;
+    if (milestonesA.length === 0) return 1;
+    if (milestonesB.length === 0) return -1;
     
-    // Secondary sort: affordable presets first
-    const affordableA = costA <= props.availableCores;
-    const affordableB = costB <= props.availableCores;
+    // Calculate current total milestones
+    const currentTotal = props.currentCellMilestones + props.currentMPMilestones + props.currentRPMilestones;
     
-    if (affordableA && !affordableB) return -1;
-    if (!affordableA && affordableB) return 1;
+    // Calculate minimum distance for each preset based on total
+    const getMinDistance = (milestones) => {
+      return Math.min(...milestones.map(m => {
+        return Math.abs(m.total - currentTotal);
+      }));
+    };
     
-    // Tertiary sort: by cost
-    return costA - costB;
+    const distA = getMinDistance(milestonesA);
+    const distB = getMinDistance(milestonesB);
+    
+    return distA - distB;
   });
 });
 
@@ -302,12 +421,42 @@ function closeModal() {
 }
 
 function selectPreset(preset) {
+  const cost = getPresetCost(preset);
+  
+  // Check if affordable
+  if (cost > props.availableCores) {
+    // Trigger error animation - use milestones + category as unique ID
+    errorPresetId.value = preset.milestones + '-' + preset.category;
+    
+    // Remove error state after animation
+    setTimeout(() => {
+      errorPresetId.value = null;
+    }, 600);
+    
+    return; // Don't close modal or apply preset
+  }
+  
   emit('select-preset', preset);
   closeModal();
 }
 
 function getPresetCost(preset) {
   return calculatePresetCost(preset);
+}
+
+function getPresetFloatingCost(preset) {
+  if (!preset.floating || preset.floating.length === 0) return 0;
+  
+  return preset.floating.reduce((total, sphereId) => {
+    const sphere = getTraitSphereById(sphereId);
+    return total + (sphere?.price || 0);
+  }, 0);
+}
+
+function getPresetRemainingCores(preset) {
+  // Calculate remaining cores after buying selected spheres
+  const selectedCost = getPresetCost(preset);
+  return props.availableCores - selectedCost;
 }
 
 function getSphereEffectClass(sphereId) {
@@ -330,16 +479,20 @@ function getSphereAtPosition(col, row) {
 
 function getPresetSphereClasses(sphere, preset) {
   const isSelected = preset.spheres.includes(sphere.id);
+  const isFloating = preset.floating && preset.floating.includes(sphere.id);
   
   return [
     'bg-gray-900/60 border transition-all duration-200',
-    isSelected ? 'border-purple-400 bg-purple-900/30' : 'border-gray-600/50',
+    isSelected ? 'border-purple-400 bg-purple-900/30' : 
+    isFloating ? 'border-yellow-300 bg-yellow-600/30' :
+    'border-gray-600/50',
     sphere.effect === 'locked' ? 'opacity-50' : ''
   ].filter(Boolean);
 }
 
 function getPresetInnerSphereClasses(sphere, preset) {
   const isSelected = preset.spheres.includes(sphere.id);
+  const isFloating = preset.floating && preset.floating.includes(sphere.id);
   
   if (isSelected) {
     // Selected: filled with effect color
@@ -350,6 +503,16 @@ function getPresetInnerSphereClasses(sphere, preset) {
       case 'ultima': return 'bg-green-500';
       case 'tick': return 'bg-yellow-500';
       default: return 'bg-purple-500';
+    }
+  } else if (isFloating) {
+    // Floating: filled with effect color but slightly dimmed
+    switch (sphere.effect) {
+      case 'lp': return 'bg-purple-400';
+      case 'shards': return 'bg-blue-400';
+      case 'doubler': return 'bg-red-400';
+      case 'ultima': return 'bg-green-400';
+      case 'tick': return 'bg-yellow-400';
+      default: return 'bg-yellow-400';
     }
   } else {
     // Not selected: just border with effect color
@@ -371,6 +534,22 @@ function getPresetInnerSphereClasses(sphere, preset) {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+.animate-error-shake {
+  animation: errorShake 0.6s ease-in-out;
+}
+
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
   }
 }
 </style>

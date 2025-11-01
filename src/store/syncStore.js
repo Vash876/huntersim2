@@ -89,6 +89,7 @@ export const useSyncStore = defineStore('sync', () => {
       const { useUltimaStore } = await import('@/store/ultimaStore');
       const { useGemPlannerStore } = await import('@/store/gemPlannerStore');
       const { useInscryptionPlannerStore } = await import('@/store/inscryptionPlannerStore');
+      const { useTSStore } = await import('@/store/tsStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
@@ -96,6 +97,7 @@ export const useSyncStore = defineStore('sync', () => {
       const ultimaStore = useUltimaStore();
       const gemPlannerStore = useGemPlannerStore();
       const inscryptionPlannerStore = useInscryptionPlannerStore();
+      const tsStore = useTSStore();
 
       // Create backup data (same as Settings createBackup)
       const hunterStoreState = JSON.parse(JSON.stringify(hunterStore.$state));
@@ -111,13 +113,13 @@ export const useSyncStore = defineStore('sync', () => {
           ultimaStore: JSON.parse(JSON.stringify(ultimaStore.$state)),
           gemPlannerStore: gemPlannerStore.exportData(),
           inscryptionPlannerStore: JSON.parse(JSON.stringify(inscryptionPlannerStore.$state)),
+          tsStore: JSON.parse(JSON.stringify(tsStore.settings)),
           localStorage: {
             gadgetCalculator_currentLevels: JSON.parse(localStorage.getItem('gadgetCalculator_currentLevels') || '{}'),
             gadgetCalculator_targetLevels: JSON.parse(localStorage.getItem('gadgetCalculator_targetLevels') || '{}'),
             gadgetCalculator_referenceBuildId: localStorage.getItem('gadgetCalculator_referenceBuildId'),
             mechPlanner_settings: JSON.parse(localStorage.getItem('mechPlanner_settings') || '{}'),
             attrGN3Calculator_settings: JSON.parse(localStorage.getItem('attrGN3Calculator_settings') || '{}'),
-            traitSpherePlanner_settings: JSON.parse(localStorage.getItem('traitSpherePlanner_settings') || '{}'),
             researchOverview_filters: JSON.parse(localStorage.getItem('researchOverview_filters') || '{}'),
             loopModOverview_filters: JSON.parse(localStorage.getItem('loopModOverview_filters') || '{}'),
             m0CostOverview_filters: JSON.parse(localStorage.getItem('m0CostOverview_filters') || '{}'),
@@ -181,6 +183,7 @@ export const useSyncStore = defineStore('sync', () => {
       const { useUltimaStore } = await import('@/store/ultimaStore');
       const { useGemPlannerStore } = await import('@/store/gemPlannerStore');
       const { useInscryptionPlannerStore } = await import('@/store/inscryptionPlannerStore');
+      const { useTSStore } = await import('@/store/tsStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
@@ -188,6 +191,7 @@ export const useSyncStore = defineStore('sync', () => {
       const ultimaStore = useUltimaStore();
       const gemPlannerStore = useGemPlannerStore();
       const inscryptionPlannerStore = useInscryptionPlannerStore();
+      const tsStore = useTSStore();
 
       // Restore stores (same as Settings restoreFromBackup)
       if (backupData.data.hunterStore) {
@@ -258,6 +262,26 @@ export const useSyncStore = defineStore('sync', () => {
         });
       }
 
+      // Restore TS Planner Store
+      if (backupData.data.tsStore) {
+        console.log('📥 Restoring Trait Sphere Planner data from cloud backup...');
+        Object.keys(backupData.data.tsStore).forEach(key => {
+          if (key in tsStore.settings) {
+            tsStore.settings[key] = backupData.data.tsStore[key];
+          }
+        });
+      }
+      // Backward compatibility: Restore from old localStorage format if present
+      else if (backupData.data.localStorage?.traitSpherePlanner_settings) {
+        console.log('📥 Restoring Trait Sphere Planner data from old localStorage format...');
+        const oldSettings = backupData.data.localStorage.traitSpherePlanner_settings;
+        Object.keys(oldSettings).forEach(key => {
+          if (key in tsStore.settings) {
+            tsStore.settings[key] = oldSettings[key];
+          }
+        });
+      }
+
       // Restore localStorage
       if (backupData.data.localStorage) {
         const localStorageData = backupData.data.localStorage;
@@ -277,9 +301,7 @@ export const useSyncStore = defineStore('sync', () => {
         if (localStorageData.attrGN3Calculator_settings) {
           localStorage.setItem('attrGN3Calculator_settings', JSON.stringify(localStorageData.attrGN3Calculator_settings));
         }
-        if (localStorageData.traitSpherePlanner_settings) {
-          localStorage.setItem('traitSpherePlanner_settings', JSON.stringify(localStorageData.traitSpherePlanner_settings));
-        }
+        // Note: traitSpherePlanner_settings is now handled by tsStore, not localStorage
         if (localStorageData.researchOverview_filters) {
           localStorage.setItem('researchOverview_filters', JSON.stringify(localStorageData.researchOverview_filters));
         }

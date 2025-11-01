@@ -49,7 +49,13 @@
 
             <!-- Current HBM -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-              <div class="font-medium text-white text-sm mb-1">Current HBM</div>
+              <div class="font-medium text-white text-sm mb-1 flex items-center gap-1">
+                Current HBM
+                <InfoTooltip 
+                  content="<strong>Auto-updating HBM:</strong><br/>• Grows automatically based on daily production<br/>• Updates live<br/>• Deducted automatically when marking items as purchased"
+                  placement="top"
+                />
+              </div>
               <div class="text-xs text-gray-400 mb-2">Amount you have saved</div>
               <SuffixInput
                 v-model="currentHBM"
@@ -235,109 +241,129 @@
               class="bg-gray-700/30 rounded-lg p-3 hover:bg-gray-700/50 transition-colors border border-gray-600/30"
             >
               <!-- Stat Upgrade Layout -->
-              <div v-if="item.isStatUpgrade" class="flex items-start gap-3">
-                <!-- Stat-specific Icon for stat upgrades -->
-                <div class="w-[50px] h-[50px] bg-amber-900/30 rounded-lg border border-amber-600/50 flex items-center justify-center flex-shrink-0">
-                  <img 
-                    :src="getStatIconUrl(item.statKey)"
-                    :alt="item.name"
-                    class="w-[40px] h-[40px] object-contain"
-                  />
+              <div v-if="item.isStatUpgrade" class="relative">
+                <!-- Max Level Badge - Top Right -->
+                <div class="absolute top-0 right-0 z-10">
+                  <span class="text-xs bg-gray-600/50 px-1.5 py-0.5 rounded-full text-gray-300 font-mono">
+                    {{ item.currentLevel }}/{{ item.maxLevel || 100 }}
+                  </span>
                 </div>
                 
-                <!-- Content area -->
-                <div class="flex-1 min-w-0">
-                  <!-- Header with stat type -->
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
-                      {{ item.statKey.toUpperCase() }}
-                    </span>
-                    <span class="text-xs bg-gray-600/50 px-1.5 py-0.5 rounded-full text-gray-300 font-mono">
-                      {{ item.currentLevel }}/{{ item.maxLevel || 100 }}
-                    </span>
+                <!-- Main Content - Icon and Title -->
+                <div class="flex items-start gap-3 pr-16 mb-2">
+                  <!-- Stat-specific Icon for stat upgrades -->
+                  <div class="w-[50px] h-[50px] bg-gray-600/30 rounded-lg border border-gray-600/50 flex items-center justify-center flex-shrink-0">
+                    <img 
+                      :src="getStatIconUrl(item.statKey)"
+                      :alt="item.name"
+                      class="w-[40px] h-[40px] object-contain"
+                    />
                   </div>
                   
-                  <!-- Description -->
-                  <p class="text-sm font-medium text-white mb-2 leading-tight">
-                    {{ item.name }}
-                  </p>
-                  
-                  <!-- Cost and details under description -->
-                  <div class="space-y-1">
-                    <div class="text-xs text-gray-400">
-                      Cost: <span class="text-yellow-400">{{ formatNumber(item.costSci) }}</span>
+                  <!-- Content area -->
+                  <div class="flex-1 min-w-0">
+                    <!-- Header with stat type -->
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
+                        Stat Upgrade
+                      </span>
                     </div>
+                    
+                    <!-- Description -->
+                    <p class="text-sm font-medium text-white leading-tight">
+                      {{ item.name }}
+                    </p>
+                  </div>
+                </div>
+                
+                <!-- Cost and details - Full Width -->
+                <div class="space-y-1">
+                  <div class="text-xs text-gray-400">
+                    Cost: <span class="text-yellow-400">{{ formatNumber(item.costSci) }}</span>
+                  </div>
+                  <!-- IconWorld and Buy button in same row - No padding restriction -->
+                  <div class="flex items-center justify-between gap-2">
                     <div class="text-xs text-blue-400">
                       <IconWorld size="12" class="inline mr-1" />
                     </div>
+                    <!-- Buy button all the way to the right -->
+                    <button
+                      @click="addToShoppingList(item)"
+                      class="text-xs px-2.5 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                    >
+                      <IconPlus size="12" />
+                      Buy {{ item.nextLevel }}
+                    </button>
                   </div>
                 </div>
-                
-                <!-- Buy button on the right -->
-                <button
-                  @click="addToShoppingList(item)"
-                  class="text-xs px-2.5 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
-                >
-                  <IconPlus size="12" />
-                  Buy {{ item.nextLevel }}
-                </button>
               </div>
 
               <!-- Regular Inscryption Layout -->
-              <div v-else class="flex items-start gap-3">
-                <!-- Icon standalone on the left -->
-                <div class="w-[50px] h-[50px] bg-gray-600/30 rounded-lg border border-gray-600/50 flex items-center justify-center flex-shrink-0">
-                  <img 
-                    :src="getInscryptionIconUrl(item.icon || 'default')"
-                    :alt="item.description"
-                    class="w-[40px] h-[40px] object-contain"
-                    @error="$event.target.src = getInscryptionIconUrl('default')"
-                  />
+              <div v-else class="relative">
+                <!-- Max Rank Badge - Top Right -->
+                <div class="absolute top-0 right-0 z-10">
+                  <span class="text-xs bg-gray-600/50 px-1.5 py-0.5 rounded-full text-gray-300 font-mono">
+                    {{ item.rank - 1 }}/{{ item.maxRanks }}
+                  </span>
                 </div>
                 
-                <!-- Content area -->
-                <div class="flex-1 min-w-0">
-                  <!-- Header with ID and rank -->
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
-                      i{{ item.inscryptionId }}
-                    </span>
-                    <span class="text-xs bg-gray-600/50 px-1.5 py-0.5 rounded-full text-gray-300 font-mono">
-                      {{ item.rank - 1 }}/{{ item.maxRanks }}
-                    </span>
+                <!-- Main Content - Icon and Title -->
+                <div class="flex items-start gap-3 pr-16 mb-2">
+                  <!-- Icon standalone on the left -->
+                  <div class="w-[50px] h-[50px] bg-gray-600/30 rounded-lg border border-gray-600/50 flex items-center justify-center flex-shrink-0">
+                    <img 
+                      :src="getInscryptionIconUrl(item.icon || 'default')"
+                      :alt="item.description"
+                      class="w-[40px] h-[40px] object-contain"
+                      @error="$event.target.src = getInscryptionIconUrl('default')"
+                    />
                   </div>
                   
-                  <!-- Description -->
-                  <p class="text-sm font-medium text-white mb-2 leading-tight">
-                    {{ item.description }}
-                  </p>
-                  
-                  <!-- Cost and details under description -->
-                  <div class="space-y-1">
-                    <div class="text-xs text-gray-400">
-                      Cost: <span class="text-yellow-400">{{ formatNumber(item.costSci) }}</span>
+                  <!-- Content area -->
+                  <div class="flex-1 min-w-0">
+                    <!-- Header with ID -->
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
+                        i{{ item.inscryptionId }}
+                      </span>
                     </div>
-                    <!-- Hunter-specific Info -->
-                    <div v-if="isHunterSpecificItem(item)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5 inline-block">
-                      <IconWorld size="12" class="inline mr-1" />
-                    </div>
-                    <div v-if="item.buffPerRank" class="text-xs text-green-400">
-                      {{ item.buffPerRank }}
-                    </div>
-                    <div v-if="getShoppingListRanksDisplay(item.inscryptionId)" class="text-xs text-blue-400">
-                      In shopping: {{ getShoppingListRanksDisplay(item.inscryptionId) }}
-                    </div>
+                    
+                    <!-- Description -->
+                    <p class="text-sm font-medium text-white leading-tight truncate">
+                      {{ item.description }}
+                    </p>
                   </div>
                 </div>
                 
-                <!-- Buy button on the right -->
-                <button
-                  @click="addToShoppingList(item)"
-                  class="text-xs px-2.5 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
-                >
-                  <IconPlus size="12" />
-                  Buy {{ item.rank }}
-                </button>
+                <!-- Cost and details - Full Width -->
+                <div class="space-y-1">
+                  <div class="text-xs text-gray-400">
+                    Cost: <span class="text-yellow-400">{{ formatNumber(item.costSci) }}</span>
+                  </div>
+                  <!-- buffPerRank, Hunter-specific Info, and Buy Button in one row - No padding restriction -->
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <div v-if="item.buffPerRank" class="text-xs text-green-400">
+                        {{ item.buffPerRank }}
+                      </div>
+                      <div v-if="getShoppingListRanksDisplay(item.inscryptionId)" class="text-xs text-blue-400">
+                        In shopping: {{ getShoppingListRanksDisplay(item.inscryptionId) }}
+                      </div>
+                      <!-- Hunter-specific Info -->
+                      <div v-if="isHunterSpecificItem(item)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5">
+                        <IconWorld size="12" class="inline mr-1" />
+                      </div>
+                    </div>
+                    <!-- Buy button all the way to the right -->
+                    <button
+                      @click="addToShoppingList(item)"
+                      class="text-xs px-2.5 py-1.5 bg-green-700 hover:bg-green-600 rounded transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                    >
+                      <IconPlus size="12" />
+                      Buy {{ item.rank }}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -394,25 +420,28 @@
                         <IconGripVertical size="14" />
                       </div>
                       <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                          <!-- Stat Upgrade Badge -->
-                          <span v-if="item.isStatUpgrade" class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
-                            Stat Upgrade
-                          </span>
-                          <!-- Regular Inscryption Badge -->
-                          <span v-else class="text-xs font-mono bg-blue-900/50 px-1.5 py-0.5 rounded text-blue-300">
-                            i{{ item.inscryptionId }}
-                          </span>
+                        <div class="flex items-center justify-between gap-2">
+                          <div class="flex items-center gap-2">
+                            <!-- Stat Upgrade Badge -->
+                            <span v-if="item.isStatUpgrade" class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
+                              Stat Upgrade
+                            </span>
+                            <!-- Regular Inscryption Badge -->
+                            <span v-else class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
+                              i{{ item.inscryptionId }}
+                            </span>
+                          </div>
+                          <!-- Rank Badge - Right Side -->
                           <span class="text-xs bg-gray-600/50 px-1.5 py-0.5 rounded-full text-gray-300 font-mono">
                             Rank {{ item.rank }}
                           </span>
                         </div>
                         <!-- Name/Description -->
-                        <p v-if="item.isStatUpgrade" class="text-sm font-medium text-white mt-1 leading-tight">
+                        <p v-if="item.isStatUpgrade" class="text-sm font-medium text-white mt-1 leading-tight truncate">
                           {{ item.name }}
                         </p>
-                        <p v-else class="text-sm font-medium text-white mt-1 leading-tight">
-                          {{ truncateDescription(item.description) }}
+                        <p v-else class="text-sm font-medium text-white mt-1 leading-tight truncate">
+                          {{ item.description }}
                         </p>
                       </div>
                     </div>
@@ -428,8 +457,8 @@
                     <!-- Hunter-specific Info -->
                     <div v-if="isHunterSpecificItem(item)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5">
                       <IconWorld size="12" class="inline mr-1" />
-                      <span v-if="item.isStatUpgrade">Automatically updates global Stat Upgrade Rank when purchased</span>
-                      <span v-else>Automatically updates global Inscryption Rank when purchased</span>
+                      <span v-if="item.isStatUpgrade">Automatically updates global when purchased</span>
+                      <span v-else>Automatically updates global when purchased</span>
                     </div>
                     
                     <!-- Production Display -->
@@ -452,6 +481,28 @@
                       <button @click="triggerEvaluation(item)" class="text-red-400 hover:text-red-300">
                         Evaluate Impact
                       </button>
+                    </div>
+                    
+                    <!-- Mobile Time Display -->
+                    <div v-if="hellishBiomatterPerDay > 0" class="flex flex-col gap-1 mt-2 pt-2 border-t border-gray-700/50">
+                      <!-- Individual item time -->
+                      <div 
+                        class="bg-blue-700/30 text-blue-200 px-2 py-1 rounded text-xs flex items-center gap-1" 
+                        title="Time to afford this item alone"
+                      >
+                        <IconClock size="12" />
+                        <span class="font-medium">Individual:</span>
+                        <span class="ml-auto">{{ formatItemTimeToSaveWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}</span>
+                      </div>
+                      <!-- In queue time -->
+                      <div 
+                        class="bg-green-700/30 text-green-200 px-2 py-1 rounded text-xs flex items-center gap-1" 
+                        title="When available in shopping queue"
+                      >
+                        <IconChartDots size="12" />
+                        <span class="font-medium">In Queue:</span>
+                        <span class="ml-auto">{{ formatCumulativeTargetDate(store.shoppingList.findIndex(listItem => listItem.id === item.id)) }}</span>
+                      </div>
                     </div>
                     
                     <!-- Mobile Action Buttons -->
@@ -690,7 +741,7 @@
           <div v-if="store.shoppingList.length === 0" class="text-center py-8 text-gray-400">
             <IconShoppingCart size="48" class="mx-auto mb-4 opacity-50" />
             <p>Shopping list is empty</p>
-            <p class="text-sm">Add some inscryptions to plan your purchases</p>
+            <p class="text-sm">Add some Inscryptions to plan your purchases</p>
           </div>
 
           <!-- Shopping List Items -->
@@ -725,26 +776,28 @@
                       </div>
                       
                       <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-1">
-                          <!-- Stat Upgrade Badge -->
-                          <span v-if="item.isStatUpgrade" class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
-                            Stat Upgrade
-                          </span>
-                          <!-- Regular Inscryption Badge -->
-                          <span v-else class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
-                            i{{ item.inscryptionId }}
-                          </span>
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                          <div class="flex items-center gap-2 min-w-0 flex-1">
+                            <!-- Stat Upgrade Badge -->
+                            <span v-if="item.isStatUpgrade" class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
+                              Stat Upgrade
+                            </span>
+                            <!-- Regular Inscryption Badge -->
+                            <span v-else class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
+                              i{{ item.inscryptionId }}
+                            </span>
+                            
+                            <!-- Name/Description -->
+                            <span v-if="item.isStatUpgrade" class="text-sm font-medium text-white truncate">
+                              {{ item.name }}
+                            </span>
+                            <span v-else class="text-sm font-medium text-white truncate">
+                              {{ truncateDescription(item.description) }}
+                            </span>
+                          </div>
                           
-                          <!-- Name/Description -->
-                          <span v-if="item.isStatUpgrade" class="text-sm font-medium text-white truncate">
-                            {{ item.name }}
-                          </span>
-                          <span v-else class="text-sm font-medium text-white truncate">
-                            {{ truncateDescription(item.description) }}
-                          </span>
-                          
-                          <!-- Rank Badge -->
-                          <span class="text-xs bg-blue-900/50 px-1.5 py-0.5 rounded text-blue-300">
+                          <!-- Rank Badge - Right Side -->
+                          <span class="text-xs bg-blue-900/50 px-1.5 py-0.5 rounded text-blue-300 flex-shrink-0">
                             Rank {{ item.rank }}
                           </span>
                         </div>
@@ -868,7 +921,6 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useStorage } from '@vueuse/core';
 import { 
   IconScript, 
   IconRefresh, 
@@ -895,6 +947,7 @@ import { useBuildEvaluation } from '@/composables/useBuildEvaluation';
 import { getInscryptionIconUrl } from '@/utils/inscryptionIconMapping';
 import { calcCost } from '@/utils/statCostUtils';
 import InscryptionOwnershipModal from '@/components/common/inscryption-planner/InscryptionOwnershipModal.vue';
+import InfoTooltip from '@/composables/InfoTooltip.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
 import Draggable from 'vuedraggable';
 
@@ -945,7 +998,26 @@ function withSmoothTransition(updateFn) {
 // New state for HBM production
 const cachedResults = ref({});
 const selectedBuildId = ref('');
-const currentHBM = useStorage('inscryption-planner-current-hbm', 0);
+
+// Reactive trigger for live updates
+const liveUpdateTrigger = ref(0);
+
+// Computed property for currentHBM that auto-updates based on time (using store)
+const currentHBM = computed({
+  get() {
+    // Force reactivity update with trigger
+    const _ = liveUpdateTrigger.value;
+    
+    return store.getCurrentHBMWithProduction();
+  },
+  set(newValue) {
+    // Manual update - uses store function
+    store.updateCurrentHBM(newValue);
+  }
+});
+
+// Live update interval
+let hbmUpdateInterval = null;
 
 // State for Borge Buff 2 evaluations (similar to UpgradeComparisonModal)
 const borgeBuff2Evaluations = ref({});
@@ -1651,6 +1723,16 @@ onMounted(async () => {
     }
   }
   
+  // Update HBM timestamp on page visit (calculate auto-increase since last visit)
+  // Uses store function to reset timestamp
+  store.resetHBMTimestamp();
+  
+  // Start live update interval (update display every 1 second for testing)
+  hbmUpdateInterval = setInterval(() => {
+    // Force reactivity update by incrementing trigger
+    liveUpdateTrigger.value++;
+  }, 10000); // 10 seconds
+  
   // Initialize inscryption planner store and sync global inscryptions (can be async)
   // This doesn't need to block the HBM production display
   store.initialize(hunterStore);
@@ -1661,6 +1743,9 @@ function resetProduction() {
   store.settings.hellishBiomatterProduction = 0;
   selectedBuildId.value = '';
   localStorage.removeItem('inscryption-planner-selectedBuildId');
+  
+  // Reset HBM data
+  currentHBM.value = 0;
 }
 
 // Wrapper function for loading inscryptions data with smooth transition
@@ -2037,6 +2122,14 @@ function formatCumulativeTargetDate(itemIndex) {
 function markAsPurchased(item) {
   const inscryptionId = item.inscryptionId;
   const rank = item.rank;
+  const itemCost = item.costSci || 0;
+  
+  // Deduct HBM cost from current value
+  const currentValue = currentHBM.value;
+  const newValue = Math.max(0, currentValue - itemCost);
+  
+  // Update HBM with new value and timestamp
+  currentHBM.value = newValue;
   
   // Prüfe ob es eine hunterspezifische Inscryption oder Stat Upgrade ist
   const isHunterSpecific = isHunterSpecificItem(item);
@@ -2267,6 +2360,12 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown);
+  
+  // Clear HBM update interval
+  if (hbmUpdateInterval) {
+    clearInterval(hbmUpdateInterval);
+    hbmUpdateInterval = null;
+  }
 });
 </script>
 

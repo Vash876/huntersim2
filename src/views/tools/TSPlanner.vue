@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="p-0 sm:p-6 max-w-[1440px] mx-auto">
+    <div class="p-0 sm:p-4 max-w-[1440px] mx-auto">
   <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8 border border-gray-800/80">
         <!-- Header -->
         <h2 class="text-xl sm:text-2xl font-bold mb-3 text-center text-white">
@@ -27,83 +27,86 @@
           <div class="p-2 sm:p-3">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Start of TR Milestones -->
-              <div class="bg-gray-900/60 rounded-lg p-2 border border-gray-700/50">
-                <div class="flex justify-between items-center mb-1">
-                  <span class="font-medium text-white text-xs sm:text-sm">Start of TR Milestones</span>
+              <div class="bg-gray-900/60 rounded-lg border border-gray-700/50 overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-900/40 to-blue-800/30 px-3 py-2 border-b border-gray-700/50">
+                  <span class="font-semibold text-white text-sm">Start of TR Milestones</span>
                 </div>
                 
-                <!-- Cell Milestone -->
-                <div class="flex items-center justify-between mb-1.5">
-                  <div class="flex items-center">
-                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
-                      <img src="@/assets/general/cells.png" alt="Cells" class="w-4 h-4" />
+                <div class="p-2">
+                  <!-- Cell Milestone -->
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center">
+                      <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
+                        <img src="@/assets/general/cells.png" alt="Cells" class="w-4 h-4" />
+                      </div>
+                      <span class="text-xs sm:text-sm text-gray-300">Cell Milestones</span>
                     </div>
-                    <span class="text-xs sm:text-sm text-gray-300">Cell Milestones</span>
+                    <ToolValueControls
+                      :value="startCellMilestones"
+                      @update:value="startCellMilestones = $event"
+                      :minValue="0"
+                      :maxValue="99"
+                      :step="1"
+                      :fastStep="5"
+                      value-class="text-green-400 font-medium"
+                      :autoEdit="true"
+                      class="ml-2"
+                    />
                   </div>
-                  <ToolValueControls
-                    :value="startCellMilestones"
-                    @update:value="startCellMilestones = $event"
-                    :minValue="0"
-                    :maxValue="99"
-                    :step="1"
-                    :fastStep="5"
-                    value-class="text-green-400 font-medium"
-                    :autoEdit="true"
-                    class="ml-2"
-                  />
-                </div>
-                
-                <!-- MP Milestone -->
-                <div class="flex items-center justify-between mb-1.5">
-                  <div class="flex items-center">
-                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
-                      <img src="@/assets/general/mp.png" alt="MP" class="w-4 h-4" />
+                  
+                  <!-- MP Milestone -->
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center">
+                      <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
+                        <img src="@/assets/general/mp.png" alt="MP" class="w-4 h-4" />
+                      </div>
+                      <span class="text-xs sm:text-sm text-gray-300">MP Milestones</span>
                     </div>
-                    <span class="text-xs sm:text-sm text-gray-300">MP Milestones</span>
+                    <ToolValueControls
+                      :value="startMPMilestones"
+                      @update:value="startMPMilestones = $event"
+                      :minValue="0"
+                      :maxValue="99"
+                      :step="1"
+                      :fastStep="5"
+                      value-class="text-red-400 font-medium"
+                      :autoEdit="true"
+                      class="ml-2"
+                    />
                   </div>
-                  <ToolValueControls
-                    :value="startMPMilestones"
-                    @update:value="startMPMilestones = $event"
-                    :minValue="0"
-                    :maxValue="99"
-                    :step="1"
-                    :fastStep="5"
-                    value-class="text-red-400 font-medium"
-                    :autoEdit="true"
-                    class="ml-2"
-                  />
-                </div>
-                
-                <!-- RP Milestone -->
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
-                    <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
-                      <img src="@/assets/general/rp.png" alt="RP" class="w-4 h-4" />
+                  
+                  <!-- RP Milestone -->
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
+                        <img src="@/assets/general/rp.png" alt="RP" class="w-4 h-4" />
+                      </div>
+                      <span class="text-xs sm:text-sm text-gray-300">RP Milestones</span>
                     </div>
-                    <span class="text-xs sm:text-sm text-gray-300">RP Milestones</span>
+                    <ToolValueControls
+                      :value="startRPMilestones"
+                      @update:value="startRPMilestones = $event"
+                      :minValue="0"
+                      :maxValue="99"
+                      :step="1"
+                      :fastStep="5"
+                      value-class="text-amber-400 font-medium"
+                      :autoEdit="true"
+                      class="ml-2"
+                    />
                   </div>
-                  <ToolValueControls
-                    :value="startRPMilestones"
-                    @update:value="startRPMilestones = $event"
-                    :minValue="0"
-                    :maxValue="99"
-                    :step="1"
-                    :fastStep="5"
-                    value-class="text-amber-400 font-medium"
-                    :autoEdit="true"
-                    class="ml-2"
-                  />
                 </div>
               </div>
               
               <!-- Current Milestones -->
-              <div class="bg-gray-900/60 rounded-lg p-2 border border-gray-700/50">
-                <div class="flex justify-between items-center mb-1">
-                  <span class="font-medium text-white text-xs sm:text-sm">Current Milestones</span>
+              <div class="bg-gray-900/60 rounded-lg border border-gray-700/50 overflow-hidden">
+                <div class="bg-gradient-to-r from-green-900/40 to-green-800/30 px-3 py-2 border-b border-gray-700/50">
+                  <span class="font-semibold text-white text-sm">Current Milestones</span>
                 </div>
                 
-                <!-- Cell Milestone -->
-                <div class="flex flex-col sm:flex-row sm:items-center mb-1.5">
+                <div class="p-2">
+                  <!-- Cell Milestone -->
+                  <div class="flex flex-col sm:flex-row sm:items-center mb-1.5">
                   <!-- Desktop: rechtsbündig -->
                   <div class="hidden sm:flex items-center justify-between w-full">
                     <div class="flex items-center">
@@ -257,6 +260,7 @@
                     Next Cost: <span class="text-amber-400">1e{{ nextRPMilestoneCost }}</span>
                   </div>
                 </div>
+                </div>
               </div>
             </div>
             
@@ -265,7 +269,7 @@
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
                   <div class="w-5 h-5 flex items-center justify-center rounded-full mr-1.5">
-                    <IconStar size="16" class="text-red-400" />
+                    <IconTarget size="16" class="text-red-400" />
                   </div>
                   <span class="text-xs sm:text-sm text-gray-300">Boon of Ouroboros: Juncture</span>
                   <span class="text-xs text-gray-500 ml-2">(+1 AMC)</span>
@@ -318,19 +322,82 @@
         
         <!-- Trait Sphere Grid -->
         <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-3">
-          <div class="header p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-            <div class="flex items-center justify-between w-full sm:w-auto">
+          <!-- Floating Point Hint Banner -->
+          <div 
+            v-if="!store.settings.hideFloatingPointHint"
+            class="bg-yellow-900/30 border-b border-yellow-700/50 p-3 flex items-start justify-between"
+          >
+            <div class="flex items-start">
+              <IconInfoCircle size="18" class="text-yellow-400 mr-2 mt-0.5 flex-shrink-0" />
+              <div>
+                <p class="text-sm text-yellow-200 font-medium mb-1">
+                  Floating Points
+                </p>
+                <p class="text-xs text-yellow-300/90">
+                  <strong>Long press</strong> (hold for 0.5s) on any Trait Sphere to mark it yellow. 
+                  This lets you plan ahead for TS you want to purchase in your TR without selecting them now.
+                </p>
+              </div>
+            </div>
+            <button 
+              @click="store.settings.hideFloatingPointHint = true"
+              class="ml-3 p-1 rounded hover:bg-yellow-800/30 transition-colors flex-shrink-0"
+            >
+              <IconX size="16" class="text-yellow-400" />
+            </button>
+          </div>
+          
+          <div class="header p-3">
+            <!-- Single Row: Title, Stats, Floating Points, Buttons -->
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2">
+              <!-- Left: Title -->
               <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
                 <IconCircle size="16" class="mr-1.5 text-purple-400" />
                 Trait Spheres
               </h3>
               
-              <span class="text-xs text-gray-300 sm:hidden">Cores Used: {{ usedCores }} / {{ currentCores }}</span>
-            </div>
-            
-            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-              <span class="text-xs text-gray-300 hidden sm:inline">Cores Used: {{ usedCores }} / {{ currentCores }}</span>
+              <!-- Center: Stats Group -->
+              <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                <!-- Cores Used -->
+                <div class="flex items-center gap-1.5 px-2 py-1 rounded border bg-purple-900/20 border-purple-700/50">
+                  <IconCircle size="12" class="text-purple-400" />
+                  <span class="text-xs text-purple-300 font-medium">
+                    Cores Used: {{ usedCores }} / {{ currentCores }}
+                  </span>
+                </div>
+                
+                <!-- Floating Points (immer sichtbar) -->
+                <div class="flex items-center gap-1.5 px-2 py-1 rounded border" :class="[
+                  store.settings.floatingPointSpheres.length > 0 
+                    ? 'bg-yellow-900/20 border-yellow-700/50' 
+                    : 'bg-gray-800/50 border-gray-700/30'
+                ]">
+                  <IconTarget size="12" :class="[
+                    store.settings.floatingPointSpheres.length > 0 
+                      ? 'text-yellow-400' 
+                      : 'text-gray-500'
+                  ]" />
+                  <span class="text-xs" :class="[
+                    store.settings.floatingPointSpheres.length > 0 
+                      ? 'text-yellow-300 font-medium' 
+                      : 'text-gray-500'
+                  ]">
+                    Floating Points: {{ remainingCores }}
+                  </span>
+                  <span v-if="store.settings.floatingPointSpheres.length > 0" class="text-xs text-gray-400">
+                    |
+                  </span>
+                  <span v-if="store.settings.floatingPointSpheres.length > 0" class="text-xs" :class="[
+                    store.floatingPointCost > 0 
+                      ? 'text-yellow-400 font-medium' 
+                      : 'text-green-400 font-medium'
+                  ]">
+                    {{ store.floatingPointCost > 0 ? `${store.floatingPointCost} more needed` : 'Affordable now!' }}
+                  </span>
+                </div>
+              </div>
               
+              <!-- Right: Buttons -->
               <div class="flex items-center gap-2">
                 <!-- Copy Selection Button -->
                 <button 
@@ -347,14 +414,23 @@
                   {{ copyButtonText }}
                 </button>
                 
+                <!-- Import Button -->
+                <button 
+                  @click="showImportModal = true"
+                  class="bg-green-700 hover:bg-green-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
+                >
+                  <IconFileImport size="12" class="mr-1" />
+                  Import
+                </button>
+                
                 <!-- Presets Button -->
-                <!-- <button 
+                <button 
                   @click="showPresetsModal = true"
                   class="bg-purple-700 hover:bg-purple-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
                 >
-                  <IconTarget size="12" class="mr-1" />
+                  <IconStar size="12" class="mr-1" />
                   Presets
-                </button> -->
+                </button>
 
                 <button 
                   @click="clearSelection" 
@@ -370,30 +446,43 @@
           <div class="p-2 sm:p-3">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
               <!-- TS Descriptions Panel (Links) -->
-              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-                <h4 class="text-sm font-semibold text-white mb-2 flex items-center">
-                  <IconCircle size="14" class="mr-1.5 text-purple-400" />
-                  Trait Sphere Effects
-                </h4>
+              <div class="bg-gray-900/60 rounded-lg border border-gray-700/50 overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-900/40 to-purple-800/30 px-3 py-2 border-b border-gray-700/50">
+                  <h4 class="text-sm font-semibold text-white flex items-center">
+                    <IconCircle size="14" class="mr-1.5 text-purple-400" />
+                    Trait Sphere Effects
+                  </h4>
+                </div>
                 
-                <div class="space-y-0.5">
+                <div class="p-3 space-y-0.5">
                   <div 
                     v-for="sphere in availableTraitSpheres" 
                     :key="sphere.id"
                     :class="[
                       'p-1.5 rounded border transition-all duration-200 cursor-pointer',
-                      isSelected(sphere.id) 
-                        ? 'bg-purple-900/50 border-purple-500/50 shadow-md' 
-                        : 'bg-gray-800/30 border-gray-600/30 hover:border-gray-500/50'
+                      hoveredSphereId === sphere.id
+                        ? store.isSelected(sphere.id)
+                          ? 'bg-purple-800/70 border-purple-400 shadow-lg ring-2 ring-purple-400/50'
+                          : store.isFloatingPoint(sphere.id)
+                            ? 'bg-yellow-800/70 border-yellow-400 shadow-lg ring-2 ring-yellow-400/50'
+                            : 'bg-gray-600/60 border-gray-400 shadow-lg ring-2 ring-gray-400/40'
+                        : store.isSelected(sphere.id) 
+                          ? 'bg-purple-900/50 border-purple-500/50 shadow-md'
+                          : store.isFloatingPoint(sphere.id)
+                            ? 'bg-yellow-700/50 border-yellow-600/60 shadow-md'
+                            : 'bg-gray-800/30 border-gray-600/30 hover:border-gray-500/50'
                     ]"
-                    @click="toggleSphere(sphere)"
+                    @mousedown="handleMouseDown(sphere)"
+                    @mouseup="handleMouseUp(); handleSphereClick(sphere)"
+                    @mouseenter="handleSphereHover(sphere.id)"
+                    @mouseleave="handleSphereMouseLeave"
                   >
                     <div class="grid grid-cols-16 gap-2 items-center">
                       <!-- TS# Column -->
                       <div class="col-span-2 flex items-center">
                         <span :class="[
                           'text-xs font-medium',
-                          isSelected(sphere.id) ? 'text-purple-300' : 'text-gray-300'
+                          store.isSelected(sphere.id) ? 'text-purple-300' : 'text-gray-300'
                         ]">
                           TS#{{ sphere.id }}
                         </span>
@@ -411,7 +500,7 @@
                       <div class="col-span-11">
                         <p :class="[
                           'text-xs leading-tight',
-                          isSelected(sphere.id) ? 'text-gray-200' : 'text-gray-400'
+                          store.isSelected(sphere.id) ? 'text-gray-200' : 'text-gray-400'
                         ]">
                           {{ sphere.description }}
                         </p>
@@ -421,12 +510,12 @@
                       <div class="col-span-2 flex items-center justify-end">
                         <span v-if="sphere.price > 0" :class="[
                           'text-xs font-medium mr-0.5',
-                          isSelected(sphere.id) ? 'text-purple-300' : 'text-gray-400'
+                          store.isSelected(sphere.id) ? 'text-purple-300' : 'text-gray-400'
                         ]">
                           {{ sphere.price }}
                         </span>
                         <IconHexagon v-if="sphere.price > 0" size="6" :class="[
-                          isSelected(sphere.id) ? 'text-purple-400' : 'text-gray-500'
+                          store.isSelected(sphere.id) ? 'text-purple-400' : 'text-gray-500'
                         ]" />
                       </div>
                     </div>
@@ -439,7 +528,7 @@
                 <!-- Container für das Grid mit begrenzter Breite -->
                 <div class="max-w-xl mx-auto">
                   <!-- Trait Sphere Grid Layout using our data -->
-                  <div class="grid grid-cols-7 gap-1">
+                  <div class="grid grid-cols-7 gap-1.5">
                     <template v-for="row in 7" :key="`row-${row}`">
                       <template v-for="col in 7" :key="`cell-${row}-${col}`">
                         <!-- Only render if there's a sphere or if it's not empty -->
@@ -447,7 +536,10 @@
                           <div 
                             v-if="getSphereAtPosition(col-1, row-1).id >= 0"
                             :class="sphereClasses(getSphereAtPosition(col-1, row-1))"
-                            @click="toggleSphere(getSphereAtPosition(col-1, row-1))"
+                            @mousedown="handleMouseDown(getSphereAtPosition(col-1, row-1))"
+                            @mouseup="handleMouseUp(); handleSphereClick(getSphereAtPosition(col-1, row-1))"
+                            @mouseenter="handleSphereHover(getSphereAtPosition(col-1, row-1).id)"
+                            @mouseleave="handleSphereMouseLeave"
                           >
                             <!-- Sphere Icon -->
                             <div :class="sphereIconClasses(getSphereAtPosition(col-1, row-1))">
@@ -488,14 +580,17 @@
               </div>
               
               <!-- LP Stats Panel (Rechts) -->
-              <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-                <h4 class="text-sm font-semibold text-white mb-3 flex items-center">
-                  <img src="@/assets/general/lp.png" alt="LP" class="w-4 h-4 mr-2" />
-                  LP Statistics
-                </h4>
+              <div class="bg-gray-900/60 rounded-lg border border-gray-700/50 overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-900/40 to-purple-800/30 px-3 py-2 border-b border-gray-700/50">
+                  <h4 class="text-sm font-semibold text-white flex items-center">
+                    <img src="@/assets/general/lp.png" alt="LP" class="w-4 h-4 mr-2" />
+                    LP Statistics
+                  </h4>
+                </div>
                 
-                <!-- Player Level -->
-                <div class="flex items-center justify-between mb-2">
+                <div class="p-3">
+                  <!-- Player Level -->
+                  <div class="flex items-center justify-between mb-2">
                   <span class="text-xs text-gray-300">Player Level</span>
                   <ToolValueControls
                     :value="playerLevel"
@@ -570,140 +665,140 @@
                       </thead>
                       <tbody class="space-y-1">
                         <!-- TS#2 -->
-                        <tr :class="isSelected(2) ? 'bg-purple-900/30 rounded' : ''">
+                        <tr :class="store.isSelected(2) ? 'bg-purple-900/30 rounded' : ''">
                           <td :class="[
                             'py-0.5 px-1',
-                            isSelected(2) ? 'text-yellow-300 font-medium' : 'text-gray-400'
+                            store.isSelected(2) ? 'text-yellow-300 font-medium' : 'text-gray-400'
                           ]">
                             TS#2
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1',
-                            isSelected(2) ? 'text-yellow-300 font-medium' : 'text-yellow-300'
+                            store.isSelected(2) ? 'text-yellow-300 font-medium' : 'text-yellow-300'
                           ]">
                             +{{ lpFromPlayerLevel }}
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1 text-[0.7rem]',
-                            isSelected(2) ? 'text-green-400 font-medium' : 'text-gray-400'
+                            store.isSelected(2) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromPlayerLevelMultiplier) }}
                           </td>
                           <td v-if="evolutionGemNode2Active" :class="[
                             'text-right py-0.5 px-1 text-[0.7rem]',
-                            isSelected(2) ? 'text-orange-400' : 'text-gray-400'
+                            store.isSelected(2) ? 'text-orange-400' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(rpFromPlayerLevelMultiplier) }}
                           </td>
                         </tr>
                         
                         <!-- TS#8 -->
-                        <tr :class="isSelected(8) ? 'bg-purple-900/30 rounded' : ''">
+                        <tr :class="store.isSelected(8) ? 'bg-purple-900/30 rounded' : ''">
                           <td :class="[
                             'py-0.5 px-1',
-                            isSelected(8) ? 'text-blue-300 font-medium' : 'text-gray-400'
+                            store.isSelected(8) ? 'text-blue-300 font-medium' : 'text-gray-400'
                           ]">
                             TS#8 
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1',
-                            isSelected(8) ? 'text-blue-300 font-medium' : 'text-blue-300'
+                            store.isSelected(8) ? 'text-blue-300 font-medium' : 'text-blue-300'
                           ]">
                             +{{ lpFromResearch }}
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1 text-[0.7rem]',
-                            isSelected(8) ? 'text-green-400 font-medium' : 'text-gray-400'
+                            store.isSelected(8) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromResearchMultiplier) }}
                           </td>
                           <td v-if="evolutionGemNode2Active" :class="[
                             'text-right py-0.5 px-1 text-[0.7rem]',
-                            isSelected(8) ? 'text-orange-400' : 'text-gray-400'
+                            store.isSelected(8) ? 'text-orange-400' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(rpFromResearchMultiplier) }}
                           </td>
                         </tr>
                         
                         <!-- TS#15 -->
-                        <tr :class="isSelected(15) ? 'bg-purple-900/30 rounded' : ''">
+                        <tr :class="store.isSelected(15) ? 'bg-purple-900/30 rounded' : ''">
                           <td :class="[
                             'py-0.5 px-1',
-                            isSelected(15) ? 'text-purple-300 font-medium' : 'text-gray-400'
+                            store.isSelected(15) ? 'text-purple-300 font-medium' : 'text-gray-400'
                           ]">
                             TS#15 
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1',
-                            isSelected(15) ? 'text-purple-300 font-medium' : 'text-purple-300'
+                            store.isSelected(15) ? 'text-purple-300 font-medium' : 'text-purple-300'
                           ]">
                             +{{ lpFromShipEvolutions }}
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1 text-[0.7rem]',
-                            isSelected(15) ? 'text-green-400 font-medium' : 'text-gray-400'
+                            store.isSelected(15) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromShipEvolutionsMultiplier) }}
                           </td>
                           <td v-if="evolutionGemNode2Active" :class="[
                             'text-right py-0.5 px-1 text-[0.7rem]',
-                            isSelected(15) ? 'text-orange-400' : 'text-gray-400'
+                            store.isSelected(15) ? 'text-orange-400' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(rpFromShipEvolutionsMultiplier) }}
                           </td>
                         </tr>
                         
                         <!-- TS#16 -->
-                        <tr :class="isSelected(16) ? 'bg-purple-900/30 rounded' : ''">
+                        <tr :class="store.isSelected(16) ? 'bg-purple-900/30 rounded' : ''">
                           <td :class="[
                             'py-0.5 px-1',
-                            isSelected(16) ? 'text-green-300 font-medium' : 'text-gray-400'
+                            store.isSelected(16) ? 'text-green-300 font-medium' : 'text-gray-400'
                           ]">
                             TS#16 
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1',
-                            isSelected(16) ? 'text-green-300 font-medium' : 'text-green-300'
+                            store.isSelected(16) ? 'text-green-300 font-medium' : 'text-green-300'
                           ]">
                             +{{ lpFromAchievements }}
                           </td>
                           <td :class="[
                             'text-right py-0.5 px-1 text-[0.7rem]',
-                            isSelected(16) ? 'text-green-400 font-medium' : 'text-gray-400'
+                            store.isSelected(16) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromAchievementsMultiplier) }}
                           </td>
                           <td v-if="evolutionGemNode2Active" :class="[
                             'text-right py-0.5 px-1 text-[0.7rem]',
-                            isSelected(16) ? 'text-orange-400' : 'text-gray-400'
+                            store.isSelected(16) ? 'text-orange-400' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(rpFromAchievementsMultiplier) }}
                           </td>
                         </tr>
                         
                         <!-- TS#19 -->
-                        <tr :class="isSelected(19) ? 'bg-purple-900/30 rounded' : ''">
+                        <tr :class="store.isSelected(19) ? 'bg-purple-900/30 rounded' : ''">
                           <td :class="[
                             'pt-0.5 pb-1.5 px-1',
-                            isSelected(19) ? 'text-yellow-300 font-medium' : 'text-gray-400'
+                            store.isSelected(19) ? 'text-yellow-300 font-medium' : 'text-gray-400'
                           ]">
                             TS#19 
                           </td>
                           <td :class="[
                             'text-right pt-0.5 pb-1.5 px-1',
-                            isSelected(19) ? 'text-yellow-300 font-medium' : 'text-yellow-300'
+                            store.isSelected(19) ? 'text-yellow-300 font-medium' : 'text-yellow-300'
                           ]">
                             +{{ lpFromPlayerLevelTS19 }}
                           </td>
                           <td :class="[
                             'text-right pt-0.5 pb-1.5 px-1 text-[0.7rem]',
-                            isSelected(19) ? 'text-green-400 font-medium' : 'text-gray-400'
+                            store.isSelected(19) ? 'text-green-400 font-medium' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(lpFromPlayerLevelTS19Multiplier) }}
                           </td>
                           <td v-if="evolutionGemNode2Active" :class="[
                             'text-right pt-0.5 pb-1.5 px-1 text-[0.7rem]',
-                            isSelected(19) ? 'text-orange-400' : 'text-gray-400'
+                            store.isSelected(19) ? 'text-orange-400' : 'text-gray-400'
                           ]">
                             x{{ formatMultiplier(rpFromPlayerLevelTS19Multiplier) }}
                           </td>
@@ -720,6 +815,7 @@
                     </table>
                   </div>
                 </div>
+                </div>
               </div>
             </div>
           </div>
@@ -730,15 +826,88 @@
     <!-- Presets Modal -->
     <PresetsModal
       :isVisible="showPresetsModal"
+      :currentCellMilestones="startCellMilestones"
+      :currentMPMilestones="startMPMilestones"
+      :currentRPMilestones="startRPMilestones"
       :availableCores="currentCores"
       @close="showPresetsModal = false"
       @select-preset="applyPreset"
     />
+
+    <!-- Import Modal -->
+    <div 
+      v-if="showImportModal" 
+      class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4"
+      @click.self="showImportModal = false"
+    >
+      <div 
+        class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in border border-gray-700"
+        @click.stop
+      >
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-4 border-b border-gray-600 flex justify-between items-center">
+          <h2 class="text-xl font-bold text-white flex items-center">
+            <IconFileImport size="20" class="mr-2 text-green-400" />
+            Import Trait Spheres
+          </h2>
+          <button 
+            @click="showImportModal = false"
+            class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-300 hover:text-white"
+          >
+            <IconX size="18" />
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="p-5">
+          <p class="text-sm text-gray-300 mb-4">
+            Paste a comma-separated list of Trait Sphere IDs to select them.
+          </p>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-300 mb-2">
+              Trait Sphere IDs
+            </label>
+            <textarea
+              v-model="importInput"
+              placeholder="e.g., 1,2,4,5,7,8,9,12,14,16"
+              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div v-if="importError" class="mb-4 p-3 bg-red-900/30 border border-red-700/50 rounded-lg">
+            <p class="text-sm text-red-300">{{ importError }}</p>
+          </div>
+
+          <div class="flex justify-end gap-2">
+            <button
+              @click="showImportModal = false"
+              class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              @click="importSelection"
+              :disabled="!importInput.trim()"
+              :class="[
+                'px-4 py-2 rounded-lg transition-colors',
+                importInput.trim()
+                  ? 'bg-green-700 hover:bg-green-600 text-white'
+                  : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+              ]"
+            >
+              Import
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onBeforeUnmount } from 'vue';
 import { 
   IconSettings, 
   IconRefresh, 
@@ -746,187 +915,150 @@ import {
   IconCircle,
   IconHexagon,
   IconLock,
-  IconTarget,
   IconCopy,
-  IconStar
+  IconTarget,
+  IconStar,
+  IconFileImport,
+  IconX,
+  IconInfoCircle
 } from '@tabler/icons-vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import PresetsModal from '@/components/common/ts-planner/PresetsModal.vue';
 import { 
   traitSpheres, 
-  getTraitSphereById, 
-  getTraitSphereAtPosition,
-  isAdjacentToAnySelected
+  getTraitSphereAtPosition
 } from '@/constants/ts-planner';
-import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
+import { useTSStore } from '@/store/tsStore.js';
 
-// State for milestone settings
-const startCellMilestones = ref(0);
-const startMPMilestones = ref(0);
-const startRPMilestones = ref(0);
+// Initialize TS Store
+const store = useTSStore();
 
-const currentCellMilestones = ref(0);
-const currentMPMilestones = ref(0);
-const currentRPMilestones = ref(0);
-
-// NEUE STATE für Boon of Juncture
-const boonOfJuncture = ref(false);
-
-const selectedTraitSpheres = ref([1]);
-
+// Local UI state (nicht in Store)
 const showPresetsModal = ref(false);
+const showImportModal = ref(false);
+const importInput = ref('');
+const importError = ref('');
+const copyButtonText = ref('Copy');
+const copyTimeoutId = ref(null);
 
-// New LP-related state
-const playerLevel = ref(0);
-const researchLevels = ref(0);
-const lpAchievements = ref(0);
-const shipEvolutions = ref(0);
+// Long press state for floating point toggle
+const longPressTimer = ref(null);
+const longPressDuration = 500; // 500ms für long press
 
-// Initialize gem planner store
-const gemPlannerStore = useGemPlannerStore();
+// Hover state for highlighting corresponding sphere
+const hoveredSphereId = ref(null);
 
-// Evolution Gem Node #2 check
-const evolutionGemNode2Active = computed(() => {
-  const evolutionGemState = gemPlannerStore.getGemState('evolution');
-  return evolutionGemState?.nodes?.[1] || false; // Node #2 ist Index 1
+// Computed Shortcuts für Template-Zugriff (direkt vom Store)
+const startCellMilestones = computed({
+  get: () => store.settings.startCellMilestones,
+  set: (value) => {
+    store.settings.startCellMilestones = value;
+    // Ensure current is never less than start
+    if (store.settings.currentCellMilestones < value) {
+      store.settings.currentCellMilestones = value;
+    }
+  }
 });
 
-// Evolution Gem Node #5 check
-const evolutionGemNode5Active = computed(() => {
-  const evolutionGemState = gemPlannerStore.getGemState('evolution');
-  return evolutionGemState?.nodes?.[4] || false; // Node #5 ist Index 4
+const startMPMilestones = computed({
+  get: () => store.settings.startMPMilestones,
+  set: (value) => {
+    store.settings.startMPMilestones = value;
+    // Ensure current is never less than start
+    if (store.settings.currentMPMilestones < value) {
+      store.settings.currentMPMilestones = value;
+    }
+  }
 });
 
-// LP calculations - mit isSelected Bedingungen für aktive Berechnung
-const lpFromPlayerLevelActive = computed(() => {
-  return isSelected(2) ? Math.floor(playerLevel.value / 10) * 4 : 0;
+const startRPMilestones = computed({
+  get: () => store.settings.startRPMilestones,
+  set: (value) => {
+    store.settings.startRPMilestones = value;
+    // Ensure current is never less than start
+    if (store.settings.currentRPMilestones < value) {
+      store.settings.currentRPMilestones = value;
+    }
+  }
 });
 
-const lpFromResearchActive = computed(() => {
-  return isSelected(8) ? researchLevels.value : 0;
+const currentCellMilestones = computed({
+  get: () => store.settings.currentCellMilestones,
+  set: (value) => store.settings.currentCellMilestones = value
 });
 
-const lpFromShipEvolutionsActive = computed(() => {
-  return isSelected(15) ? shipEvolutions.value * 30 : 0;
+const currentMPMilestones = computed({
+  get: () => store.settings.currentMPMilestones,
+  set: (value) => store.settings.currentMPMilestones = value
 });
 
-const lpFromAchievementsActive = computed(() => {
-  return isSelected(16) ? (lpAchievements.value + 30) : 0;
+const currentRPMilestones = computed({
+  get: () => store.settings.currentRPMilestones,
+  set: (value) => store.settings.currentRPMilestones = value
 });
 
-const lpFromPlayerLevelTS19Active = computed(() => {
-  return isSelected(19) ? playerLevel.value : 0;
+const boonOfJuncture = computed({
+  get: () => store.settings.boonOfJuncture,
+  set: (value) => store.settings.boonOfJuncture = value
 });
 
-// Total LP nur von ausgewählten TS
-const totalLPSelected = computed(() => {
-  return lpFromPlayerLevelActive.value + 
-         lpFromResearchActive.value + 
-         lpFromShipEvolutionsActive.value + 
-         lpFromAchievementsActive.value + 
-         lpFromPlayerLevelTS19Active.value;
+const playerLevel = computed({
+  get: () => store.settings.playerLevel,
+  set: (value) => store.settings.playerLevel = value
 });
 
-// Kombinierter Multiplikator basierend auf ausgewählten TS
-const combinedMultiplierSelected = computed(() => {
-  const divisor = evolutionGemNode5Active.value ? 9 : 10;
-  return Math.pow(2, Math.floor(totalLPSelected.value / divisor));
+const researchLevels = computed({
+  get: () => store.settings.researchLevels,
+  set: (value) => store.settings.researchLevels = value
 });
 
-// Die ursprünglichen LP-Berechnungen ohne isSelected Bedingungen für die Anzeige
-const lpFromPlayerLevel = computed(() => {
-  return Math.floor(playerLevel.value / 10) * 4;
+const lpAchievements = computed({
+  get: () => store.settings.lpAchievements,
+  set: (value) => store.settings.lpAchievements = value
 });
 
-const lpFromResearch = computed(() => {
-  return researchLevels.value;
+const shipEvolutions = computed({
+  get: () => store.settings.shipEvolutions,
+  set: (value) => store.settings.shipEvolutions = value
 });
 
-const lpFromShipEvolutions = computed(() => {
-  return shipEvolutions.value * 30;
-});
+// Store Computed durchreichen
+const selectedTraitSpheres = computed(() => store.settings.selectedTraitSpheres);
+const currentCores = computed(() => store.currentCores);
+const totalCores = computed(() => store.totalCores);
+const usedCores = computed(() => store.usedCores);
+const remainingCores = computed(() => store.remainingCores);
+const nextCellMilestoneCost = computed(() => store.nextCellMilestoneCost);
+const nextMPMilestoneCost = computed(() => store.nextMPMilestoneCost);
+const nextRPMilestoneCost = computed(() => store.nextRPMilestoneCost);
 
-const lpFromAchievements = computed(() => {
-  return lpAchievements.value + 30;
-});
+// Evolution Gem Nodes
+const evolutionGemNode2Active = computed(() => store.evolutionGemNode2Active);
+const evolutionGemNode5Active = computed(() => store.evolutionGemNode5Active);
 
-const lpFromPlayerLevelTS19 = computed(() => {
-  return playerLevel.value;
-});
+// LP Calculations
+const lpFromPlayerLevel = computed(() => store.lpFromPlayerLevel);
+const lpFromResearch = computed(() => store.lpFromResearch);
+const lpFromShipEvolutions = computed(() => store.lpFromShipEvolutions);
+const lpFromAchievements = computed(() => store.lpFromAchievements);
+const lpFromPlayerLevelTS19 = computed(() => store.lpFromPlayerLevelTS19);
+const totalLPSelected = computed(() => store.totalLPSelected);
 
-// FEHLENDE MULTIPLIKATOR COMPUTED PROPERTIES
-const lpFromPlayerLevelMultiplier = computed(() => {
-  const divisor = evolutionGemNode5Active.value ? 9 : 10;
-  return Math.pow(2, Math.floor(lpFromPlayerLevel.value / divisor));
-});
+// LP Multipliers
+const lpFromPlayerLevelMultiplier = computed(() => store.lpFromPlayerLevelMultiplier);
+const lpFromResearchMultiplier = computed(() => store.lpFromResearchMultiplier);
+const lpFromShipEvolutionsMultiplier = computed(() => store.lpFromShipEvolutionsMultiplier);
+const lpFromAchievementsMultiplier = computed(() => store.lpFromAchievementsMultiplier);
+const lpFromPlayerLevelTS19Multiplier = computed(() => store.lpFromPlayerLevelTS19Multiplier);
+const combinedMultiplierSelected = computed(() => store.combinedMultiplierSelected);
 
-const lpFromResearchMultiplier = computed(() => {
-  const divisor = evolutionGemNode5Active.value ? 9 : 10;
-  return Math.pow(2, Math.floor(lpFromResearch.value / divisor));
-});
-
-const lpFromShipEvolutionsMultiplier = computed(() => {
-  const divisor = evolutionGemNode5Active.value ? 9 : 10;
-  return Math.pow(2, Math.floor(lpFromShipEvolutions.value / divisor));
-});
-
-const lpFromAchievementsMultiplier = computed(() => {
-  const divisor = evolutionGemNode5Active.value ? 9 : 10;
-  return Math.pow(2, Math.floor(lpFromAchievements.value / divisor));
-});
-
-const lpFromPlayerLevelTS19Multiplier = computed(() => {
-  const divisor = evolutionGemNode5Active.value ? 9 : 10;
-  return Math.pow(2, Math.floor(lpFromPlayerLevelTS19.value / divisor));
-});
-
-// RP Multi für einzelne LP-Quellen (alle 80 LP statt 10 LP)
-const rpFromPlayerLevelMultiplier = computed(() => {
-  if (!evolutionGemNode2Active.value) return 1;
-  const divisor = evolutionGemNode5Active.value ? 70 : 80;
-  return Math.pow(2, Math.floor(lpFromPlayerLevel.value / divisor));
-});
-
-const rpFromResearchMultiplier = computed(() => {
-  if (!evolutionGemNode2Active.value) return 1;
-  const divisor = evolutionGemNode5Active.value ? 70 : 80;
-  return Math.pow(2, Math.floor(lpFromResearch.value / divisor));
-});
-
-const rpFromShipEvolutionsMultiplier = computed(() => {
-  if (!evolutionGemNode2Active.value) return 1;
-  const divisor = evolutionGemNode5Active.value ? 70 : 80;
-  return Math.pow(2, Math.floor(lpFromShipEvolutions.value / divisor));
-});
-
-const rpFromAchievementsMultiplier = computed(() => {
-  if (!evolutionGemNode2Active.value) return 1;
-  const divisor = evolutionGemNode5Active.value ? 70 : 80;
-  return Math.pow(2, Math.floor(lpFromAchievements.value / divisor));
-});
-
-const rpFromPlayerLevelTS19Multiplier = computed(() => {
-  if (!evolutionGemNode2Active.value) return 1;
-  const divisor = evolutionGemNode5Active.value ? 70 : 80;
-  return Math.pow(2, Math.floor(lpFromPlayerLevelTS19.value / divisor));
-});
-
-// Combined RP Multi - alle individuellen RP Multis zusammengerechnet
-const combinedRPMultiplier = computed(() => {
-  if (!evolutionGemNode2Active.value) return 1;
-
-  const divisor = evolutionGemNode5Active.value ? 70 : 80;
-  return Math.pow(2, Math.floor(totalLPSelected.value / divisor));
-});
-
-// Behalte das ursprüngliche totalLP für andere Verwendungen
-const totalLP = computed(() => {
-  return lpFromPlayerLevel.value + 
-         lpFromResearch.value + 
-         lpFromShipEvolutions.value + 
-         lpFromAchievements.value + 
-         lpFromPlayerLevelTS19.value;
-});
+// RP Multipliers
+const rpFromPlayerLevelMultiplier = computed(() => store.rpFromPlayerLevelMultiplier);
+const rpFromResearchMultiplier = computed(() => store.rpFromResearchMultiplier);
+const rpFromShipEvolutionsMultiplier = computed(() => store.rpFromShipEvolutionsMultiplier);
+const rpFromAchievementsMultiplier = computed(() => store.rpFromAchievementsMultiplier);
+const rpFromPlayerLevelTS19Multiplier = computed(() => store.rpFromPlayerLevelTS19Multiplier);
+const combinedRPMultiplier = computed(() => store.combinedRPMultiplier);
 
 // Formatierungsfunktion für Multiplikatoren
 function formatMultiplier(value) {
@@ -941,32 +1073,6 @@ function formatMultiplier(value) {
     return value.toExponential(2).replace('e+', 'e');
   }
 }
-
-// Kombinierter Multiplikator basierend auf Total LP
-const combinedMultiplier = computed(() => {
-  const divisor = evolutionGemNode5Active.value ? 9 : 10;
-  return Math.pow(2, Math.floor(totalLP.value / divisor));
-});
-
-// Milestone cost calculations
-const nextCellMilestoneCost = computed(() => {
-  const nextLevel = currentCellMilestones.value + 1;
-  if (nextLevel === 1) return 500;
-  if (nextLevel === 2) return 5000;
-  return 5000 + (nextLevel - 2) * 5000;
-});
-
-const nextMPMilestoneCost = computed(() => {
-  const nextLevel = currentMPMilestones.value + 1;
-  if (nextLevel === 1) return 1000;
-  return 1000 + (nextLevel - 1) * 500;
-});
-
-const nextRPMilestoneCost = computed(() => {
-  const nextLevel = currentRPMilestones.value + 1;
-  if (nextLevel === 1) return 800;
-  return 800 + (nextLevel - 1) * 400;
-});
 
 // Color mapping for different sphere effects
 const effectColors = {
@@ -1021,52 +1127,29 @@ const effectColors = {
   }
 };
 
-
-// Computed properties
-const currentCores = computed(() => {
-  return startCellMilestones.value * 2 + 
-         startMPMilestones.value * 2 + 
-         startRPMilestones.value * 2 +
-         (currentCellMilestones.value - startCellMilestones.value) +
-         (currentMPMilestones.value - startMPMilestones.value) +
-         (currentRPMilestones.value - startRPMilestones.value) +
-         (boonOfJuncture.value ? 1 : 0); // +1 Core wenn Boon aktiv
-});
-
-const totalCores = computed(() => {
-  return currentCellMilestones.value * 2 +
-         currentMPMilestones.value * 2 +
-         currentRPMilestones.value * 2 +
-         (boonOfJuncture.value ? 1 : 0); // +1 Core wenn Boon aktiv
-});
-
-const usedCores = computed(() => {
-  return selectedTraitSpheres.value.reduce((sum, sphereId) => {
-    const sphere = getTraitSphereById(sphereId);
-    return sum + (sphere?.price || 0);
-  }, 0);
-});
-
-const remainingCores = computed(() => {
-  return totalCores.value - usedCores.value;
-});
-
 // Sphere styling functions
 function getEffectColors(sphere) {
   return effectColors[sphere.effect] || effectColors.default;
 }
 
 function sphereClasses(sphere) {
-  const selected = isSelected(sphere.id);
-  const selectable = canSelect(sphere);
+  const selected = store.isSelected(sphere.id);
+  const selectable = store.canSelect(sphere);
   const isTS1 = sphere.id === 1;
+  const isFloating = store.isFloatingPoint(sphere.id);
+  const isHovered = hoveredSphereId.value === sphere.id;
   
   return [
     'trait-sphere bg-gray-900/80 rounded-lg p-0.5 flex flex-col items-center justify-center aspect-square cursor-pointer transition-all duration-200',
     // Border-Dicke abhängig von Auswahl und Typ
     sphere.effect === 'locked' ? 'border border-gray-700/50' : 
+    isHovered && selected ? 'border-2 border-purple-400 ring-2 ring-purple-400/60 shadow-xl' :
+    isHovered && isFloating ? 'border-2 border-yellow-400 ring-2 ring-yellow-400/60 shadow-xl' :
+    isHovered && !selected && !isFloating ? 'border-2 border-gray-300 ring-2 ring-gray-300/50 shadow-xl' :
+    isFloating ? 'border-2 border-yellow-500' : // Floating Points - gelber Border
     selected ? 'border-2 border-purple-500' : 'border border-gray-500',
-    selected ? 'shadow-lg shadow-purple-900/30' : '',
+    selected && !isHovered ? 'shadow-lg shadow-purple-900/30' : '',
+    isFloating ? 'shadow-lg shadow-yellow-500/20' : '', // Floating Points - gelber Schatten
     // TS#1 bekommt spezielle Behandlung - immer als selectable anzeigen
     (!selectable && !isTS1) ? 'opacity-50 cursor-not-allowed' : [
       'hover:border-purple-400',
@@ -1080,7 +1163,7 @@ function sphereClasses(sphere) {
 }
 
 function sphereIconClasses(sphere) {
-  const selected = isSelected(sphere.id);
+  const selected = store.isSelected(sphere.id);
   
   return [
     'sphere-icon rounded-full w-5 h-5 flex items-center justify-center transition-all duration-200',
@@ -1091,8 +1174,8 @@ function sphereIconClasses(sphere) {
 
 function innerSphereClasses(sphere) {
   const colors = getEffectColors(sphere);
-  const selected = isSelected(sphere.id);
-  const selectable = canSelect(sphere);
+  const selected = store.isSelected(sphere.id);
+  const selectable = store.canSelect(sphere);
   
   if (selected) {
     // Gekauft: Vollständig gefüllt in der Effekt-Farbe
@@ -1124,24 +1207,11 @@ function hexagonIconClasses(sphere) {
 
 // Methods
 function resetSettings() {
-  startCellMilestones.value = 0;
-  startMPMilestones.value = 0;
-  startRPMilestones.value = 0;
-  currentCellMilestones.value = 0;
-  currentMPMilestones.value = 0;
-  currentRPMilestones.value = 0;
-  boonOfJuncture.value = false; // Reset Boon of Juncture
-  selectedTraitSpheres.value = [1]; // TS#1 immer ausgewählt
-  // Reset LP values
-  playerLevel.value = 0;
-  researchLevels.value = 0;
-  lpAchievements.value = 0;
-  shipEvolutions.value = 0;
-  saveSettings();
+  store.resetSettings();
 }
 
 function clearSelection() {
-  selectedTraitSpheres.value = [1]; // Nur TS#1 beibehalten
+  store.clearSelection();
   saveSettings();
 }
 
@@ -1149,92 +1219,7 @@ function getSphereAtPosition(col, row) {
   return getTraitSphereAtPosition(col, row);
 }
 
-function isSelected(sphereId) {
-  return sphereId !== undefined && selectedTraitSpheres.value.includes(sphereId);
-}
-
-function canSelect(sphere) {
-  if (!sphere || sphere.id < 0) return false;
-  if (sphere.effect === 'locked') return false;
-  
-  // TS#1 ist immer ausgewählt und kann nicht abgewählt werden
-  if (sphere.id === 1) return true;
-  
-  // If already selected, can be deselected
-  if (isSelected(sphere.id)) return true;
-
-  // Prüfen ob die Trait Sphere zu mindestens einer bereits ausgewählten benachbart ist
-  const isAdjacent = isAdjacentToAnySelected(sphere.id, selectedTraitSpheres.value);
-  if (!isAdjacent) return false;
-  
-  // Check if we have enough cores
-  return sphere.price <= remainingCores.value;
-}
-
-function toggleSphere(sphere) {
-  if (!sphere || sphere.id < 0 || sphere.effect === 'locked') return;
-  
-  // TS#1 kann nicht abgewählt werden
-  if (sphere.id === 1) return;
-  
-  const index = selectedTraitSpheres.value.indexOf(sphere.id);
-  
-  if (index === -1) {
-    // Füge nur hinzu, wenn benachbart zu bereits ausgewählten UND genug Cores vorhanden
-    if (isAdjacentToAnySelected(sphere.id, selectedTraitSpheres.value) && 
-        sphere.price <= remainingCores.value) {
-      selectedTraitSpheres.value.push(sphere.id);
-    }
-  } else {
-    // Entfernen wenn bereits ausgewählt
-    // Zusätzliche Prüfung: Wir müssen sicherstellen, dass keine isolierten Spheres entstehen!
-    if (willRemovalBreakConnectivity(sphere.id)) {
-      // Wenn das Entfernen die Konnektivität zerstören würde, erlauben wir es nicht
-      return;
-    }
-    
-    selectedTraitSpheres.value.splice(index, 1);
-  }
-  
-  saveSettings();
-}
-
-function willRemovalBreakConnectivity(sphereIdToRemove) {
-  // Wenn nur TS#1 oder die zu entfernende Trait Sphere ausgewählt sind, kann nichts isoliert werden
-  if (selectedTraitSpheres.value.length <= 2) return false;
-  
-  // Die zu entfernende Sphere aus der Auswahl herausnehmen
-  const remainingSelected = selectedTraitSpheres.value.filter(id => id !== sphereIdToRemove);
-  
-  // BFS zum Prüfen der Konnektivität von TS#1 aus
-  const visited = new Set();
-  const queue = [1]; // Starten bei TS#1
-  
-  while (queue.length > 0) {
-    const currentId = queue.shift();
-    visited.add(currentId);
-    
-    // Alle ausgewählten Nachbarn finden und zur Queue hinzufügen
-    const neighbors = remainingSelected.filter(id => 
-      id !== currentId && isAdjacentToAnySelected(currentId, [id])
-    );
-    
-    for (const neighbor of neighbors) {
-      if (!visited.has(neighbor)) {
-        queue.push(neighbor);
-      }
-    }
-  }
-  
-  // Wenn wir nicht alle ausgewählten erreichen konnten, würde das Entfernen die Konnektivität brechen
-  return visited.size !== remainingSelected.length;
-}
-
-const availableTraitSpheres = computed(() => {
-  return traitSpheres
-    .filter(sphere => sphere.id > 0 && sphere.effect !== 'locked' && sphere.description)
-    .sort((a, b) => a.id - b.id);
-});
+const availableTraitSpheres = computed(() => store.availableTraitSpheres);
 
 // Funktion für Effekt-Farben der kleinen Dots
 function getSphereEffectColorClass(effect) {
@@ -1248,110 +1233,114 @@ function getSphereEffectColorClass(effect) {
   }
 }
 
-function saveSettings() {
-  try {
-    localStorage.setItem('traitSpherePlanner_settings', JSON.stringify({
-      startCellMilestones: startCellMilestones.value,
-      startMPMilestones: startMPMilestones.value,
-      startRPMilestones: startRPMilestones.value,
-      currentCellMilestones: currentCellMilestones.value,
-      currentMPMilestones: currentMPMilestones.value,
-      currentRPMilestones: currentRPMilestones.value,
-      boonOfJuncture: boonOfJuncture.value, // Speichere Boon of Juncture
-      selectedTraitSpheres: selectedTraitSpheres.value,
-      // Save LP values
-      playerLevel: playerLevel.value,
-      researchLevels: researchLevels.value,
-      lpAchievements: lpAchievements.value,
-      shipEvolutions: shipEvolutions.value
-    }));
-  } catch (error) {
-    console.error('Error saving settings:', error);
-  }
-}
+// Long press handlers for floating point toggle
+let isLongPress = false;
 
-function loadSettings() {
-  try {
-    const savedSettings = JSON.parse(localStorage.getItem('traitSpherePlanner_settings') || '{}');
-    
-    if (savedSettings.startCellMilestones !== undefined) startCellMilestones.value = savedSettings.startCellMilestones;
-    if (savedSettings.startMPMilestones !== undefined) startMPMilestones.value = savedSettings.startMPMilestones;
-    if (savedSettings.startRPMilestones !== undefined) startRPMilestones.value = savedSettings.startRPMilestones;
-    if (savedSettings.currentCellMilestones !== undefined) currentCellMilestones.value = savedSettings.currentCellMilestones;
-    if (savedSettings.currentMPMilestones !== undefined) currentMPMilestones.value = savedSettings.currentMPMilestones;
-    if (savedSettings.currentRPMilestones !== undefined) currentRPMilestones.value = savedSettings.currentRPMilestones;
-    
-    // Lade Boon of Juncture
-    if (savedSettings.boonOfJuncture !== undefined) boonOfJuncture.value = savedSettings.boonOfJuncture;
-    
-    // Load LP values
-    if (savedSettings.playerLevel !== undefined) playerLevel.value = savedSettings.playerLevel;
-    if (savedSettings.researchLevels !== undefined) researchLevels.value = savedSettings.researchLevels;
-    if (savedSettings.lpAchievements !== undefined) lpAchievements.value = savedSettings.lpAchievements;
-    if (savedSettings.shipEvolutions !== undefined) shipEvolutions.value = savedSettings.shipEvolutions;
-    
-    if (savedSettings.selectedTraitSpheres !== undefined) {
-      selectedTraitSpheres.value = savedSettings.selectedTraitSpheres;
-      if (!selectedTraitSpheres.value.includes(1)) {
-        selectedTraitSpheres.value.push(1);
-      }
-    }
-  } catch (error) {
-    console.error('Error loading saved settings:', error);
+function handleMouseDown(sphere) {
+  // Clear any existing timer
+  if (longPressTimer.value) {
+    clearTimeout(longPressTimer.value);
   }
-}
-
-// Neue Methode zum Anwenden eines Presets
-function applyPreset(preset) {
-  // Überprüfe nochmals, ob wir uns das Preset leisten können
-  const presetCost = preset.spheres.reduce((total, sphereId) => {
-    const sphere = getTraitSphereById(sphereId);
-    return total + (sphere?.price || 0);
-  }, 0);
   
-  if (presetCost <= currentCores.value) {
-    selectedTraitSpheres.value = [...preset.spheres];
-    saveSettings();
+  isLongPress = false;
+  
+  // Start long press timer
+  longPressTimer.value = setTimeout(() => {
+    isLongPress = true;
+    store.toggleFloatingPoint(sphere);
+    longPressTimer.value = null;
+  }, longPressDuration);
+}
+
+function handleMouseUp() {
+  // Clear timer if still running
+  if (longPressTimer.value) {
+    clearTimeout(longPressTimer.value);
+    longPressTimer.value = null;
   }
 }
 
-// Neue Reactive Variables für Copy-Funktionalität
-const copyButtonText = ref('Copy');
-const copyTimeoutId = ref(null);
-
-// Watch for changes
-watch([
-  startCellMilestones, startMPMilestones, startRPMilestones,
-  currentCellMilestones, currentMPMilestones, currentRPMilestones,
-  boonOfJuncture, // Füge Boon of Juncture zum Watch hinzu
-  selectedTraitSpheres, playerLevel, researchLevels, lpAchievements, shipEvolutions
-], () => {
-  saveSettings();
-});
-
-// Watches für das Minimum der aktuellen Werte
-watch(startCellMilestones, (newValue) => {
-  if (currentCellMilestones.value < newValue) {
-    currentCellMilestones.value = newValue;
+function handleSphereMouseLeave() {
+  // Cancel long press if mouse leaves the sphere
+  if (longPressTimer.value) {
+    clearTimeout(longPressTimer.value);
+    longPressTimer.value = null;
   }
-});
+  isLongPress = false;
+  
+  // Clear hover
+  hoveredSphereId.value = null;
+}
 
-watch(startMPMilestones, (newValue) => {
-  if (currentMPMilestones.value < newValue) {
-    currentMPMilestones.value = newValue;
+function handleSphereClick(sphere) {
+  // Only trigger normal toggle if it wasn't a long press
+  if (!isLongPress) {
+    store.toggleSphere(sphere);
   }
-});
+  isLongPress = false;
+}
 
-watch(startRPMilestones, (newValue) => {
-  if (currentRPMilestones.value < newValue) {
-    currentRPMilestones.value = newValue;
+// Hover handlers for cross-highlighting
+function handleSphereHover(sphereId) {
+  hoveredSphereId.value = sphereId;
+}
+
+// Methode zum Anwenden eines Presets
+function applyPreset(preset) {
+  store.applyPreset(preset);
+}
+
+// Import Selection Methode
+function importSelection() {
+  importError.value = '';
+  
+  try {
+    // Parse den Input (komma-getrennt)
+    const input = importInput.value.trim();
+    if (!input) {
+      importError.value = 'Please enter at least one Trait Sphere ID.';
+      return;
+    }
+    
+    // Split und parse die IDs
+    const ids = input.split(',').map(id => {
+      const parsed = parseInt(id.trim());
+      if (isNaN(parsed)) {
+        throw new Error(`Invalid ID: "${id.trim()}"`);
+      }
+      return parsed;
+    });
+    
+    // Validiere dass alle IDs existieren
+    const validIds = [];
+    const invalidIds = [];
+    
+    ids.forEach(id => {
+      const sphere = traitSpheres.find(s => s.id === id);
+      if (sphere && sphere.id >= 0) {
+        validIds.push(id);
+      } else {
+        invalidIds.push(id);
+      }
+    });
+    
+    if (invalidIds.length > 0) {
+      importError.value = `Invalid Trait Sphere IDs: ${invalidIds.join(', ')}`;
+      return;
+    }
+    
+    // Setze die Selection im Store
+    store.settings.selectedTraitSpheres = validIds;
+    
+    // Schließe Modal und reset Input
+    showImportModal.value = false;
+    importInput.value = '';
+    importError.value = '';
+    
+  } catch (error) {
+    importError.value = error.message || 'Failed to import selection. Please check your input.';
   }
-});
-
-// On component mount
-onMounted(() => {
-  loadSettings();
-});
+}
 
 // Neue Copy-Methode
 async function copySelection() {
@@ -1411,6 +1400,9 @@ onBeforeUnmount(() => {
   if (copyTimeoutId.value) {
     clearTimeout(copyTimeoutId.value);
   }
+  if (longPressTimer.value) {
+    clearTimeout(longPressTimer.value);
+  }
 });
 </script>
 
@@ -1429,5 +1421,20 @@ onBeforeUnmount(() => {
 
 .trait-sphere:hover .sphere-icon {
   transform: scale(1.1);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>

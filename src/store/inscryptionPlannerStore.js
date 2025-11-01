@@ -24,7 +24,12 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
     showTiers: true,
     sortBy: 'inscryptionId',
     sortDirection: 'asc',
-    hideOwned: false
+    hideOwned: false,
+    // HBM tracking with timestamp
+    currentHBM: {
+      value: 0,
+      timestamp: Date.now()
+    }
   });
 
   // Computed
@@ -435,6 +440,35 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
     await loadInscryptionsData();
   }
 
+  // HBM Management Functions
+  function updateCurrentHBM(newValue) {
+    settings.value.currentHBM = {
+      value: Math.max(0, newValue),
+      timestamp: Date.now()
+    };
+  }
+
+  function getCurrentHBMWithProduction() {
+    const now = Date.now();
+    const elapsedMs = now - settings.value.currentHBM.timestamp;
+    const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24);
+    
+    const dailyProduction = settings.value.hellishBiomatterProduction || 0;
+    const producedHBM = elapsedDays * dailyProduction;
+    
+    const totalHBM = settings.value.currentHBM.value + producedHBM;
+    
+    return Math.max(0, totalHBM);
+  }
+
+  function resetHBMTimestamp() {
+    const currentCalculated = getCurrentHBMWithProduction();
+    settings.value.currentHBM = {
+      value: currentCalculated,
+      timestamp: Date.now()
+    };
+  }
+
   return {
     // State
     inscryptionsData,
@@ -461,6 +495,11 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
     getOwnedRanksForInscryption,
     clearAllOwnership,
     syncFromGlobalInscryptions,
-    initialize
+    initialize,
+    
+    // HBM Management
+    updateCurrentHBM,
+    getCurrentHBMWithProduction,
+    resetHBMTimestamp
   };
 });

@@ -1169,8 +1169,8 @@ const sortedLoopMods = computed(() => {
     },
     cost: (a, b) => a.cost - b.cost,
     tier: (a, b) => {
-      // S > A > B > C > D > E
-      const tierOrder = { S: 1, A: 2, B: 3, C: 4, D: 5, E: 6 };
+      // S > A > B > C > D > E > F
+      const tierOrder = { S: 1, A: 2, B: 3, C: 4, D: 5, E: 6, F: 7 };
       const tierResult = tierOrder[a.tier] - tierOrder[b.tier];
       // If tiers are the same, sort by name
       return tierResult !== 0 ? tierResult : a.name.localeCompare(b.name);
@@ -1287,7 +1287,8 @@ function getTierClass(tier) {
     B: 'bg-yellow-900/50 text-yellow-300 border border-yellow-700',
     C: 'bg-green-900/50 text-green-300 border border-green-700',
     D: 'bg-blue-900/50 text-blue-300 border border-blue-700',
-    E: 'bg-gray-900/50 text-gray-300 border border-gray-700'
+    E: 'bg-gray-900/50 text-gray-300 border border-gray-700',
+    F: 'bg-gray-500/50 text-gray-300 border border-gray-400'
   };
   
   return classes[tier] || 'bg-gray-900/50 text-gray-300 border border-gray-700';
@@ -1333,8 +1334,8 @@ function saveFilters() {
       mpRange: mpRange.value,
       allTimeHighestMP: allTimeHighestMP.value,
       mpRangeEnabled: mpRangeEnabled.value,
-      i75Level: i75Level.value, // Angepasst
-      i61Level: i61Level.value, // Angepasst
+      i75Level: i75Level.value, 
+      i61Level: i61Level.value, 
       selectedUltimaCapUpgrades: selectedUltimaCapUpgrades.value,
       t2r1Level: t2r1Level.value,
       sortBy: sortBy.value,

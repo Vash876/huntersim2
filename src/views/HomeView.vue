@@ -2,6 +2,30 @@
 const changelog = 
 [
   {
+    version: '2.8.20',
+    date: '2025-11-01',
+    changes: [
+      {
+        text: 'Trait Sphere Planner',
+        subItems: [
+          'Presets are back online, but in testing phase. Please ask in Discord before committing to a build.',
+          'If you find any errors, pls ping Vash in Discord',
+          'Preset system now supports Floating Points, presets can include pre-planned future purchases',
+          'Added Floating Points system to mark future trait sphere purchases',
+          'Future purchases are visualized with yellow borders in the trait sphere grid',
+        ]
+      },
+      {
+        text: 'Inscryption Planner',
+        subItems: [
+          'Optimized mobile view',
+          'Current HBM balance now updates automatically in real-time based on income rate',
+          'Current HBM balance automatically decreases when marking shopping list items as purchased',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.19',
     date: '2025-10-29',
     changes: [
