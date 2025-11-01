@@ -386,10 +386,64 @@ const filteredPresets = computed(() => {
   }
   
   // Filter by milestone range
-  filteredList = filteredList.filter(preset => presetMatchesMilestones(preset));
+  const milestoneFilteredList = filteredList.filter(preset => presetMatchesMilestones(preset));
   
-  // Sort by milestone proximity
+  // Check if at least one affordable preset exists in filtered list
+  const hasAffordablePreset = milestoneFilteredList.some(preset => {
+    const cost = calculatePresetCost(preset);
+    return cost <= props.availableCores;
+  });
+  
+  // If no affordable preset in milestone range, find the closest affordable preset
+  if (!hasAffordablePreset && milestoneFilteredList.length > 0) {
+    // Find all affordable presets from the category-filtered list
+    const affordablePresets = filteredList.filter(preset => {
+      const cost = calculatePresetCost(preset);
+      return cost <= props.availableCores;
+    });
+    
+    if (affordablePresets.length > 0) {
+      // Calculate current total milestones
+      const currentTotal = props.currentCellMilestones + props.currentMPMilestones + props.currentRPMilestones;
+      
+      // Find the closest affordable preset to current milestones
+      const closestAffordable = affordablePresets.reduce((closest, preset) => {
+        const milestones = parsePresetMilestones(preset.milestones);
+        
+        if (milestones.length === 0) return closest; // Skip endgame presets
+        
+        const minDistance = Math.min(...milestones.map(m => Math.abs(m.total - currentTotal)));
+        
+        if (!closest) return { preset, distance: minDistance };
+        
+        if (minDistance < closest.distance) {
+          return { preset, distance: minDistance };
+        }
+        
+        return closest;
+      }, null);
+      
+      // Add the closest affordable preset if it's not already in the filtered list
+      if (closestAffordable && !milestoneFilteredList.find(p => p === closestAffordable.preset)) {
+        milestoneFilteredList.push(closestAffordable.preset);
+      }
+    }
+  }
+  
+  // Use milestone filtered list
+  filteredList = milestoneFilteredList;
+  
+  // Sort by milestone proximity and affordability
   return filteredList.sort((a, b) => {
+    // Prioritize affordable presets
+    const costA = calculatePresetCost(a);
+    const costB = calculatePresetCost(b);
+    const affordableA = costA <= props.availableCores;
+    const affordableB = costB <= props.availableCores;
+    
+    if (affordableA && !affordableB) return -1;
+    if (!affordableA && affordableB) return 1;
+    
     const milestonesA = parsePresetMilestones(a.milestones);
     const milestonesB = parsePresetMilestones(b.milestones);
     
