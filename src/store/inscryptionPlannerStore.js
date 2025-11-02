@@ -449,6 +449,16 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
   }
 
   function getCurrentHBMWithProduction() {
+    // Ensure currentHBM is properly structured (for backward compatibility with old localStorage data)
+    if (!settings.value.currentHBM || typeof settings.value.currentHBM !== 'object' || !settings.value.currentHBM.timestamp) {
+      // Initialize with default structure if missing or invalid
+      settings.value.currentHBM = {
+        value: typeof settings.value.currentHBM === 'number' ? settings.value.currentHBM : 0,
+        timestamp: Date.now()
+      };
+      return settings.value.currentHBM.value;
+    }
+    
     const now = Date.now();
     const elapsedMs = now - settings.value.currentHBM.timestamp;
     const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24);
@@ -462,6 +472,15 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
   }
 
   function resetHBMTimestamp() {
+    // Ensure currentHBM is properly structured before resetting
+    if (!settings.value.currentHBM || typeof settings.value.currentHBM !== 'object') {
+      settings.value.currentHBM = {
+        value: typeof settings.value.currentHBM === 'number' ? settings.value.currentHBM : 0,
+        timestamp: Date.now()
+      };
+      return;
+    }
+    
     const currentCalculated = getCurrentHBMWithProduction();
     settings.value.currentHBM = {
       value: currentCalculated,

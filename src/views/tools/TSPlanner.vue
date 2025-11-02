@@ -348,25 +348,28 @@
           </div>
           
           <div class="header p-3">
-            <!-- Single Row: Title, Stats, Floating Points, Buttons -->
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-2">
-              <!-- Left: Title -->
-              <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
-                <IconCircle size="16" class="mr-1.5 text-purple-400" />
-                Trait Spheres
-              </h3>
+            <!-- Desktop: 4-Column Grid -->
+            <div class="hidden lg:grid lg:grid-cols-4 gap-4 items-center">
+              <!-- Column 1: Title -->
+              <div class="flex items-center">
+                <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
+                  <IconCircle size="16" class="mr-1.5 text-purple-400" />
+                  Trait Spheres
+                </h3>
+              </div>
               
-              <!-- Center: Stats Group -->
-              <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                <!-- Cores Used -->
+              <!-- Column 2: Cores Used (rechtsbündig) -->
+              <div class="flex justify-end">
                 <div class="flex items-center gap-1.5 px-2 py-1 rounded border bg-purple-900/20 border-purple-700/50">
                   <IconCircle size="12" class="text-purple-400" />
                   <span class="text-xs text-purple-300 font-medium">
                     Cores Used: {{ usedCores }} / {{ currentCores }}
                   </span>
                 </div>
-                
-                <!-- Floating Points (immer sichtbar) -->
+              </div>
+              
+              <!-- Column 3: Floating Points (linksbündig) -->
+              <div class="flex justify-start">
                 <div class="flex items-center gap-1.5 px-2 py-1 rounded border" :class="[
                   store.settings.floatingPointSpheres.length > 0 
                     ? 'bg-yellow-900/20 border-yellow-700/50' 
@@ -397,8 +400,99 @@
                 </div>
               </div>
               
-              <!-- Right: Buttons -->
-              <div class="flex items-center gap-2">
+              <!-- Column 4: Buttons -->
+              <div class="flex items-center justify-end gap-2">
+                <!-- Copy Selection Button -->
+                <button 
+                  @click="copySelection"
+                  :disabled="selectedTraitSpheres.length === 0"
+                  :class="[
+                    'px-2 py-0.5 text-xs rounded-lg flex items-center transition-all duration-200',
+                    selectedTraitSpheres.length > 0 
+                      ? 'bg-blue-700 hover:bg-blue-600 text-white' 
+                      : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  ]"
+                >
+                  <IconCopy size="12" class="mr-1" />
+                  {{ copyButtonText }}
+                </button>
+                
+                <!-- Import Button -->
+                <button 
+                  @click="showImportModal = true"
+                  class="bg-green-700 hover:bg-green-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
+                >
+                  <IconFileImport size="12" class="mr-1" />
+                  Import
+                </button>
+                
+                <!-- Presets Button -->
+                <button 
+                  @click="showPresetsModal = true"
+                  class="bg-purple-700 hover:bg-purple-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
+                >
+                  <IconStar size="12" class="mr-1" />
+                  Presets
+                </button>
+
+                <button 
+                  @click="clearSelection" 
+                  class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
+                >
+                  <IconTrash size="12" class="mr-1" />
+                  Clear
+                </button>
+              </div>
+            </div>
+            
+            <!-- Mobile: Single Column -->
+            <div class="flex flex-col lg:hidden gap-2">
+              <!-- Title -->
+              <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
+                <IconCircle size="16" class="mr-1.5 text-purple-400" />
+                Trait Spheres
+              </h3>
+              
+              <!-- Cores Used -->
+              <div class="flex items-center gap-1.5 px-2 py-1 rounded border bg-purple-900/20 border-purple-700/50 w-fit">
+                <IconCircle size="12" class="text-purple-400" />
+                <span class="text-xs text-purple-300 font-medium">
+                  Cores Used: {{ usedCores }} / {{ currentCores }}
+                </span>
+              </div>
+              
+              <!-- Floating Points -->
+              <div class="flex items-center gap-1.5 px-2 py-1 rounded border w-fit" :class="[
+                store.settings.floatingPointSpheres.length > 0 
+                  ? 'bg-yellow-900/20 border-yellow-700/50' 
+                  : 'bg-gray-800/50 border-gray-700/30'
+              ]">
+                <IconTarget size="12" :class="[
+                  store.settings.floatingPointSpheres.length > 0 
+                    ? 'text-yellow-400' 
+                    : 'text-gray-500'
+                ]" />
+                <span class="text-xs" :class="[
+                  store.settings.floatingPointSpheres.length > 0 
+                    ? 'text-yellow-300 font-medium' 
+                    : 'text-gray-500'
+                ]">
+                  Floating Points: {{ remainingCores }}
+                </span>
+                <span v-if="store.settings.floatingPointSpheres.length > 0" class="text-xs text-gray-400">
+                  |
+                </span>
+                <span v-if="store.settings.floatingPointSpheres.length > 0" class="text-xs" :class="[
+                  store.floatingPointCost > 0 
+                    ? 'text-yellow-400 font-medium' 
+                    : 'text-green-400 font-medium'
+                ]">
+                  {{ store.floatingPointCost > 0 ? `${store.floatingPointCost} more needed` : 'Affordable now!' }}
+                </span>
+              </div>
+              
+              <!-- Buttons -->
+              <div class="flex flex-wrap items-center gap-2">
                 <!-- Copy Selection Button -->
                 <button 
                   @click="copySelection"
