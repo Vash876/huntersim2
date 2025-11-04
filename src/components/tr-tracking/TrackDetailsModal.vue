@@ -898,8 +898,23 @@ const buildColumnDefs = () => {
       cellClass: 'text-center',
       headerClass: `text-center resource-header multi-line-header drag-header`,
       editable: true,
-      // Treat lr-ticks as text too for suffix handling
-      cellDataType: (resource.id === 'notes' || resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-') || resource.format === 'time' || resource.format === 'camp') ? 'text' : 'number',
+      // Determine cellDataType based on resource dataType or format
+      cellDataType: (() => {
+        // Custom resources with dataType
+        if (resource.dataType) {
+          if (resource.dataType === 'text') return 'text';
+          if (resource.dataType === 'boolean') return 'text'; // Treat boolean as text for input
+          if (resource.dataType === 'suffix') return 'text'; // Suffix numbers as text for input
+          if (resource.dataType === 'number') return 'number';
+        }
+        // Legacy format handling
+        if (resource.format === 'text' || resource.format === 'camp' || resource.format === 'time') return 'text';
+        // Specific resources that use suffix notation
+        if (resource.id === 'oo-accum' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) return 'text';
+        // lr-ticks also uses suffix
+        if (resource.id === 'lr-ticks') return 'text';
+        return 'number';
+      })(),
       suppressMovable: false, // Allow these columns to be moved
       suppressSizeToFit: resource.id === 'notes' ? false : false, // Allow auto-sizing for all columns
       // Add custom comparator for time format
@@ -919,11 +934,11 @@ const buildColumnDefs = () => {
         return minutesA - minutesB;
       } : undefined,
       resizable: true, // Enable resizing for better flexibility
-      autoHeight: resource.id === 'notes', // Enable auto-height for notes to handle long content
-      minWidth: resource.id === 'notes' ? minWidth : 70, // Set minimum width
-      maxWidth: resource.id === 'notes' ? maxWidth : undefined, // Set maximum width for notes
-      wrapText: resource.id === 'notes', // Enable text wrapping for notes
-      cellStyle: resource.id === 'notes' ? {
+      autoHeight: resource.id === 'notes' || resource.dataType === 'text', // Enable auto-height for text
+      minWidth: (resource.id === 'notes' || resource.dataType === 'text') ? minWidth : 70, // Set minimum width
+      maxWidth: (resource.id === 'notes' || resource.dataType === 'text') ? maxWidth : undefined, // Set maximum width
+      wrapText: resource.id === 'notes' || resource.dataType === 'text', // Enable text wrapping
+      cellStyle: (resource.id === 'notes' || resource.dataType === 'text') ? {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
@@ -947,12 +962,25 @@ const buildColumnDefs = () => {
         if (resource.id === 'notes') {
           return params.data.notes || '';
         }
-        // For oo-accum, attgn3-buff and mat3, return the raw value
-        if (resource.id === 'oo-accum' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
-          const value = params.data.values?.[resource.id];
+        
+        const value = params.data.values?.[resource.id];
+        
+        // Handle boolean dataType
+        if (resource.dataType === 'boolean') {
+          return value === true || value === 'true' || value === 1 || value === '1';
+        }
+        
+        // Handle text dataType
+        if (resource.dataType === 'text') {
+          return value || '';
+        }
+        
+        // For suffix and numeric resources
+        if (resource.dataType === 'suffix' || resource.id === 'oo-accum' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
           return value === undefined || value === null ? 0 : value;
         }
-        return params.data.values?.[resource.id] || 0;
+        
+        return value || 0;
       },
       valueSetter: (params) => {
         if (resource.id === 'notes') {
@@ -960,6 +988,24 @@ const buildColumnDefs = () => {
           return true;
         }
         if (!params.data.values) params.data.values = {};
+        
+        // Handle boolean dataType
+        if (resource.dataType === 'boolean') {
+          const str = String(params.newValue || '').toLowerCase().trim();
+          if (str === '' || str === 'false' || str === '0' || str === 'no') {
+            params.data.values[resource.id] = false;
+          } else {
+            params.data.values[resource.id] = true;
+          }
+          return true;
+        }
+        
+        // Handle text dataType
+        if (resource.dataType === 'text') {
+          params.data.values[resource.id] = String(params.newValue || '');
+          return true;
+        }
+        
         // Handle time format (HHH:MM or HHH MM)
         if (resource.format === 'time') {
           // Allow empty to clear the cell
@@ -985,6 +1031,7 @@ const buildColumnDefs = () => {
           params.data.values[resource.id] = `${hours}:${mins}`;
           return true;
         }
+        
         // Handle camp code format (C[1-9]-[0-9]{1,2}, case-insensitive)
         if (resource.format === 'camp') {
           // Allow empty/null to clear the cell
@@ -1014,8 +1061,9 @@ const buildColumnDefs = () => {
           console.warn('Invalid camp code rejected:', params.newValue);
           return false;
         }
-        // Special handling for oo-accum, lr-ticks, attgn3-buff, and mat3 to support suffix input
-        if (resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
+        
+        // Handle suffix dataType (custom resources with suffix notation)
+        if (resource.dataType === 'suffix' || resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
           // For attgn3-buff, also allow exponential notation (e.g., 1e6, 2.5e9)
           if (resource.id === 'attgn3-buff') {
             const inputString = String(params.newValue).toLowerCase().trim();
@@ -1048,9 +1096,10 @@ const buildColumnDefs = () => {
             }
           }
           
-          // Use suffix input parsing for all three resources
+          // Use suffix input parsing for all suffix resources
           const parsedValue = parseSuffixInput(params.newValue);
           console.log(`${resource.id} valueSetter - Input:`, params.newValue, 'Parsed to:', parsedValue);
+          
           // Higher maximum for attgn3-buff and mat3 since these values can be very large
           let maxValue;
           if (resource.id === 'attgn3-buff') {
@@ -1065,8 +1114,8 @@ const buildColumnDefs = () => {
             } catch (error) {
               maxValue = 1e30; // Fallback
             }
-          } else if (resource.id.startsWith('mat3-')) {
-            // Mat3 values can be very large, allow up to 1e30
+          } else if (resource.id.startsWith('mat3-') || resource.dataType === 'suffix') {
+            // Mat3 values and custom suffix resources can be very large
             maxValue = 1e100;
           } else {
             maxValue = 1e15;
@@ -1080,7 +1129,8 @@ const buildColumnDefs = () => {
           params.data.values[resource.id] = parsedValue;
           return true;
         }
-        // Numeric default
+        
+        // Numeric default (for number dataType and legacy resources)
         const numericValue = parseFloat(params.newValue);
         if (isNaN(numericValue) || !isFinite(numericValue) || numericValue < 0 || numericValue > 1e12) {
           console.warn('Invalid numeric value rejected:', params.newValue);
@@ -1101,6 +1151,17 @@ const buildColumnDefs = () => {
           return noteText;
         }
         
+        // Handle boolean dataType
+        if (resource.dataType === 'boolean') {
+          const boolValue = params.value === true || params.value === 'true' || params.value === 1 || params.value === '1';
+          return boolValue ? '✓' : '✗';
+        }
+        
+        // Handle text dataType
+        if (resource.dataType === 'text') {
+          return params.value || '-';
+        }
+        
         const currentValue = params.value || 0;
         
         // Only show differences for specific resources: cells, mp, mp-accum, shards, rp, ap, oo-accum, and hunter Mat3
@@ -1110,8 +1171,8 @@ const buildColumnDefs = () => {
         // Check if this is a whole number and we should show difference
         const isWholeNumber = Number.isInteger(currentValue) && currentValue !== 0;
         
-        // Special display for oo-accum, attgn3-buff, and hunter Mat3 - always format with suffix notation
-        if (resource.id === 'oo-accum' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
+        // Special display for suffix dataType or specific resources - always format with suffix notation
+        if (resource.dataType === 'suffix' || resource.id === 'oo-accum' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
           let displayValue;
           
           if (resource.id === 'attgn3-buff') {
@@ -1127,7 +1188,7 @@ const buildColumnDefs = () => {
               displayValue = formatSuffixInput(currentValue);
             }
           } else {
-            // Use formatSuffixInput for oo-accum and hunter Mat3
+            // Use formatSuffixInput for oo-accum, hunter Mat3, and custom suffix resources
             displayValue = formatSuffixInput(currentValue);
           }
           
@@ -1135,7 +1196,7 @@ const buildColumnDefs = () => {
             return displayValue;
           }
           
-          // Calculate difference for oo-accum and attgn3-buff
+          // Calculate difference for suffix resources
           const allEntries = [];
           params.api.forEachNode(node => {
             // Skip temporary entries
@@ -1182,7 +1243,7 @@ const buildColumnDefs = () => {
               diffText = difference > 0 ? `+${formatSuffixInput(difference)}` : `-${formatSuffixInput(Math.abs(difference))}`;
             }
           } else {
-            // Use formatSuffixInput for oo-accum and hunter Mat3
+            // Use formatSuffixInput for oo-accum, hunter Mat3, and custom suffix resources
             diffText = difference > 0 ? `+${formatSuffixInput(difference)}` : `-${formatSuffixInput(Math.abs(difference))}`;
           }
           
@@ -1323,12 +1384,24 @@ const buildColumnDefs = () => {
       },
       // Cell editor parameters to auto-select text
       cellEditorParams: (params) => {
+        // Boolean dataType - show text input for true/false
+        if (resource.dataType === 'boolean') {
+          const boolValue = params.value === true || params.value === 'true' || params.value === 1 || params.value === '1';
+          return { selectAllOnFocusIn: true, value: boolValue ? 'true' : 'false' };
+        }
+        
+        // Text dataType
+        if (resource.dataType === 'text') {
+          return { selectAllOnFocusIn: true, value: params.value || '' };
+        }
+        
         // Time or camp as text input
         if (resource.format === 'time' || resource.format === 'camp') {
           return { selectAllOnFocusIn: true, maxLength: 7, value: params.value || '' };
         }
-        // For oo-accum, lr-ticks, attgn3-buff, and mat3, show suffix input
-        if (resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
+        
+        // For suffix dataType or specific resources, show suffix input
+        if (resource.dataType === 'suffix' || resource.id === 'oo-accum' || resource.id === 'lr-ticks' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) {
           let displayValue;
           
           if (resource.id === 'attgn3-buff') {
@@ -1349,6 +1422,7 @@ const buildColumnDefs = () => {
           
           return { selectAllOnFocusIn: true, value: displayValue };
         }
+        
         // Numeric default
         if (resource.id !== 'notes') {
           return { selectAllOnFocusIn: true, maxLength: 12 };

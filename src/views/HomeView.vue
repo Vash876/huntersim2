@@ -2,6 +2,20 @@
 const changelog = 
 [
   {
+    version: '2.8.21',
+    date: '2025-11-04',
+    changes: [
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Highest resource columns in main overview table are now draggable - reorder columns by dragging the grip icon',
+          'Fixed "Highest Time in TR" display showing 0 instead of proper HH:MM format',
+          'Custom resources now support multiple data types: Number, Suffix Number, Text, and Boolean',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.8.20',
     date: '2025-11-01',
     changes: [

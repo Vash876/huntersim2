@@ -114,24 +114,38 @@
 
           <!-- Add Custom Resource Form -->
           <div v-if="showAddCustomForm" class="mt-2 p-2 border border-gray-700 rounded-md bg-gray-700/30">
-            <div class="flex items-center gap-2">
-              <!-- Color Picker -->
-              <ColorPicker 
-                :modelValue="newResourceColor"
-                @update:modelValue="newResourceColor = $event"
-                class="flex-shrink-0"
-              />
-              
-              <!-- Resource Name -->
-              <input
-                v-model="newResourceName"
-                type="text"
-                placeholder="Resource name"
-                class="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none text-xs w-35 sm:max-w-xs"
-              />
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center gap-2">
+                <!-- Color Picker -->
+                <ColorPicker 
+                  :modelValue="newResourceColor"
+                  @update:modelValue="newResourceColor = $event"
+                  class="flex-shrink-0"
+                />
+                
+                <!-- Resource Name -->
+                <input
+                  v-model="newResourceName"
+                  type="text"
+                  placeholder="Resource name"
+                  class="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none text-xs"
+                />
+                
+                <!-- Data Type Selector -->
+                <select
+                  v-model="newResourceDataType"
+                  class="bg-gray-700 border border-gray-600 text-white text-xs rounded px-2 py-1 focus:outline-none focus:border-purple-500"
+                  title="Select data type"
+                >
+                  <option value="number">Number</option>
+                  <option value="suffix">Suffix</option>
+                  <option value="text">Text</option>
+                  <option value="boolean">Boolean</option>
+                </select>
+              </div>
               
               <!-- Buttons -->
-              <div class="flex gap-1 ml-auto">
+              <div class="flex gap-1 justify-end">
                 <button
                   @click="addCustomResource"
                   :disabled="!newResourceName.trim()"
@@ -204,6 +218,7 @@ const localSelectedResources = ref([]);
 const localShowInTableResources = ref([]);
 const newResourceName = ref('');
 const newResourceColor = ref('#3B82F6');
+const newResourceDataType = ref('number'); // Default to 'number'
 const showAddCustomForm = ref(false);
 
 // Computed properties
@@ -303,7 +318,9 @@ function addCustomResource() {
     id: newResourceName.value.toLowerCase().replace(/[^a-z0-9]/g, '_'),
     name: newResourceName.value.trim(),
     color: newResourceColor.value,
-    category: 'custom'
+    category: 'custom',
+    dataType: newResourceDataType.value,
+    format: 'custom' // Custom resources have format 'custom'
   };
 
   // Check if resource with this ID already exists
@@ -321,6 +338,7 @@ function addCustomResource() {
   // Reset form
   newResourceName.value = '';
   newResourceColor.value = '#3B82F6';
+  newResourceDataType.value = 'number'; // Reset to default
   showAddCustomForm.value = false;
 }
 
@@ -334,6 +352,7 @@ function removeCustomResource(resourceId) {
 function cancelAddCustom() {
   newResourceName.value = '';
   newResourceColor.value = '#3B82F6';
+  newResourceDataType.value = 'number'; // Reset to default
   showAddCustomForm.value = false;
 }
 
@@ -355,20 +374,23 @@ function updateResource(resourceData) {
 }
 
 function updateCustomResource(resourceData) {
-  const { id, name, color } = resourceData;
+  const { id, name, color, dataType } = resourceData;
   
   // Update custom resource in store
-  trTrackingStore.updateCustomResource(id, { name, color });
+  trTrackingStore.updateCustomResource(id, { name, color, dataType });
   
   // Also update in local selected resources if it's selected
   const localResource = localSelectedResources.value.find(r => r.id === id);
   if (localResource) {
     localResource.name = name;
     localResource.color = color;
+    if (dataType !== undefined) {
+      localResource.dataType = dataType;
+    }
   }
   
   // Emit update to parent
-  emit('updateCustomResource', { id, name, color });
+  emit('updateCustomResource', { id, name, color, dataType });
 }
 
 function resetToDefaults() {

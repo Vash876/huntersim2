@@ -33,27 +33,29 @@ function getHunterMat3Name(hunterId) {
 export { getHunterMat3Name };
 
 // Default available resources that users can choose from
+// dataType options: 'number', 'suffix', 'text', 'boolean'
+// format is for backwards compatibility (time, camp, etc.)
 const DEFAULT_AVAILABLE_RESOURCES = [
-  { id: 'hours-in-tr', name: 'Time in TR', color: '#ffffff', category: 'main', format: 'time' },
-  { id: 'oo-accum', name: 'OO (Accum)', color: '#a200ff', category: 'main', format: 'number' },
-  { id: 'lr-ticks', name: 'LR Ticks', color: '#ffffff', category: 'main', format: 'number' },
-  { id: 'lr-count', name: 'LR Count', color: '#ffffff', category: 'main', format: 'number' },
-  { id: 'loops-filled', name: 'Loops Filled', color: '#ffffff', category: 'main', format: 'number' },
-  { id: 'loop-mods-purchased', name: 'Loop Mods Purchased', color: '#ff0000', category: 'main', format: 'number' },
-  { id: 'attgn3-buff', name: 'AttGN3 Buff', color: '#00d9ff', category: 'main', format: 'number' },
-  { id: 'cells', name: 'Cells', color: '#00b90f', category: 'resources', format: 'number' },
-  { id: 'mp', name: 'MP', color: '#ff0000', category: 'resources', format: 'number' },
-  { id: 'mp-accum', name: 'MP (Accum)', color: '#ff0000', category: 'resources', format: 'number' },
-  { id: 'shards', name: 'Shards', color: '#00d9ff', category: 'resources', format: 'number' },
-  { id: 'rp', name: 'RP', color: '#ffa600ff', category: 'resources', format: 'number' },
-  { id: 'ap', name: 'AP', color: '#464cff', category: 'resources', format: 'number' },
-  { id: 'blueprints', name: 'Blueprints', color: '#ffffff', category: 'zeus', format: 'number' },
-  { id: 'f1-1-difar', name: 'F1-1 Difar', color: '#ffffff', category: 'zeus', format: 'number' },
-  { id: 'inno-cores', name: 'Inno Cores', color: '#ffffff', category: 'zeus', format: 'number' },
-  { id: 'ulti-badge', name: 'Ultima Badges', color: '#FFDE21', category: 'zeus', format: 'number' },
-  { id: 'current-camp', name: 'Current Camp', color: '#ffffff', category: 'camp', format: 'camp' },
-  { id: 'camp-timer', name: 'Camp Timer', color: '#ffffff', category: 'camp', format: 'time' },
-  { id: 'notes', name: 'Notes', color: '#ffffff', category: 'other', format: 'text' },
+  { id: 'hours-in-tr', name: 'Time in TR', color: '#ffffff', category: 'main', format: 'time', dataType: 'number' },
+  { id: 'oo-accum', name: 'OO (Accum)', color: '#a200ff', category: 'main', format: 'number', dataType: 'suffix' },
+  { id: 'lr-ticks', name: 'LR Ticks', color: '#ffffff', category: 'main', format: 'number', dataType: 'number' },
+  { id: 'lr-count', name: 'LR Count', color: '#ffffff', category: 'main', format: 'number', dataType: 'number' },
+  { id: 'loops-filled', name: 'Loops Filled', color: '#ffffff', category: 'main', format: 'number', dataType: 'number' },
+  { id: 'loop-mods-purchased', name: 'Loop Mods Purchased', color: '#ff0000', category: 'main', format: 'number', dataType: 'number' },
+  { id: 'attgn3-buff', name: 'AttGN3 Buff', color: '#00d9ff', category: 'main', format: 'number', dataType: 'suffix' },
+  { id: 'cells', name: 'Cells', color: '#00b90f', category: 'resources', format: 'number', dataType: 'number' },
+  { id: 'mp', name: 'MP', color: '#ff0000', category: 'resources', format: 'number', dataType: 'number' },
+  { id: 'mp-accum', name: 'MP (Accum)', color: '#ff0000', category: 'resources', format: 'number', dataType: 'number' },
+  { id: 'shards', name: 'Shards', color: '#00d9ff', category: 'resources', format: 'number', dataType: 'number' },
+  { id: 'rp', name: 'RP', color: '#ffa600ff', category: 'resources', format: 'number', dataType: 'number' },
+  { id: 'ap', name: 'AP', color: '#464cff', category: 'resources', format: 'number', dataType: 'number' },
+  { id: 'blueprints', name: 'Blueprints', color: '#ffffff', category: 'zeus', format: 'number', dataType: 'number' },
+  { id: 'f1-1-difar', name: 'F1-1 Difar', color: '#ffffff', category: 'zeus', format: 'number', dataType: 'number' },
+  { id: 'inno-cores', name: 'Inno Cores', color: '#ffffff', category: 'zeus', format: 'number', dataType: 'number' },
+  { id: 'ulti-badge', name: 'Ultima Badges', color: '#FFDE21', category: 'zeus', format: 'number', dataType: 'number' },
+  { id: 'current-camp', name: 'Current Camp', color: '#ffffff', category: 'camp', format: 'camp', dataType: 'text' },
+  { id: 'camp-timer', name: 'Camp Timer', color: '#ffffff', category: 'camp', format: 'time', dataType: 'number' },
+  { id: 'notes', name: 'Notes', color: '#ffffff', category: 'other', format: 'text', dataType: 'text' },
   // Dynamic Hunter Mat3 Resources - VOLLAUTOMATISCH
   ...HUNTERS.map(hunter => {
     // Get the correct Mat3 name from hunter constants
@@ -64,7 +66,8 @@ const DEFAULT_AVAILABLE_RESOURCES = [
       name: `Daily ${mat3Name}`,
       color: getHunterColor(hunter.color),
       category: 'hunter-mat3',
-      format: 'number'
+      format: 'number',
+      dataType: 'suffix'
     };
   })
 ];
@@ -346,11 +349,22 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     await saveToStorage();
   }
 
+  async function updateShowInTableResourcesOrder(resourceIds) {
+    // Update the order of resources shown in table
+    showInTableResources.value = resourceIds;
+    console.log('📊 Updated table resource order:', resourceIds);
+    await saveToStorage();
+  }
+
   async function addCustomResource(resource) {
     const newResource = {
       ...resource,
       id: resource.id || generateId(),
-      category: resource.category || 'custom'
+      category: resource.category || 'custom',
+      // Default to 'number' if no dataType is specified (backwards compatibility)
+      dataType: resource.dataType || 'number',
+      // Keep format for backwards compatibility
+      format: resource.format || 'number'
     };
     
     availableResources.value.push(newResource);
@@ -388,7 +402,12 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     // Don't allow updating default resources' names, only custom ones
     const isDefault = DEFAULT_AVAILABLE_RESOURCES.find(res => res.id === resourceId);
     if (isDefault && updates.name) {
-      delete updates.name; // Remove name update for default resources
+      delete updates.name;
+    }
+
+    // Ensure dataType is set (default to 'number' for backwards compatibility)
+    if (updates.dataType === undefined && !availableResources.value[resourceIndex].dataType) {
+      updates.dataType = 'number';
     }
 
     availableResources.value[resourceIndex] = {
@@ -710,10 +729,12 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
   function exportData() {
     return {
       selectedResources: selectedResources.value,
+      showInTableResources: showInTableResources.value,
       customResources: availableResources.value.filter(
         resource => !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
       ),
-      trTracks: trTracks.value
+      trTracks: trTracks.value,
+      hunterBuildSettings: hunterBuildSettings.value
     };
   }
 
@@ -726,10 +747,22 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         console.log(`📥 Imported ${data.selectedResources.length} selected resources`);
       }
       
+      // Import showInTableResources
+      if (data.showInTableResources) {
+        showInTableResources.value = data.showInTableResources;
+        console.log(`📥 Imported ${data.showInTableResources.length} show-in-table resources`);
+      }
+      
       if (data.customResources) {
         const allResources = [...DEFAULT_AVAILABLE_RESOURCES, ...data.customResources];
         availableResources.value = allResources;
         console.log(`📥 Imported ${data.customResources.length} custom resources`);
+      }
+      
+      // Import hunterBuildSettings
+      if (data.hunterBuildSettings) {
+        hunterBuildSettings.value = data.hunterBuildSettings;
+        console.log(`📥 Imported hunter build settings`);
       }
       
       if (data.trTracks) {
@@ -869,6 +902,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     saveToStorage,
     updateSelectedResources,
     updateShowInTableResources,
+    updateShowInTableResourcesOrder,
     addCustomResource,
     removeCustomResource,
     createTRTrack,

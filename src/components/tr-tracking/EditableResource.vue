@@ -6,7 +6,7 @@
       'bg-gray-700/30': !isSelected
     }"
   >
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between gap-2">
       <div class="flex items-center gap-2 flex-1">
         <!-- Color Picker -->
         <ColorPicker 
@@ -35,6 +35,21 @@
           >
             {{ localResource.name }}
           </div>
+        </div>
+        
+        <!-- Data Type Selector (for custom resources) -->
+        <div v-if="resource.category === 'custom'" class="flex items-center gap-1">
+          <select
+            v-model="localDataType"
+            @change="updateDataType"
+            class="bg-gray-700 border border-gray-600 text-white text-xs rounded px-2 py-1 focus:outline-none focus:border-blue-500"
+            title="Select data type"
+          >
+            <option value="number">Number</option>
+            <option value="suffix">Suffix</option>
+            <option value="text">Text</option>
+            <option value="boolean">Boolean</option>
+          </select>
         </div>
       </div>
       
@@ -131,15 +146,23 @@ const localResource = ref({ ...props.resource });
 const isEditing = ref(false);
 const editName = ref('');
 const nameInput = ref(null);
+// Default to 'number' for backwards compatibility
+const localDataType = ref(props.resource.dataType || 'number');
 
 // Watch for prop changes
 watch(() => props.resource, (newVal) => {
   localResource.value = { ...newVal };
+  localDataType.value = newVal.dataType || 'number';
 }, { deep: true });
 
 // Methods
 function updateColor(newColor) {
   localResource.value.color = newColor;
+  emit('update', localResource.value);
+}
+
+function updateDataType() {
+  localResource.value.dataType = localDataType.value;
   emit('update', localResource.value);
 }
 

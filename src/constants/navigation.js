@@ -103,6 +103,25 @@ const IconShards = {
   }
 };
 
+const IconTRPlanner = {
+  template: `
+    <svg 
+      :width="size || 20" 
+      :height="size || 20" 
+      viewBox="0 0 32 35" 
+      xmlns="http://www.w3.org/2000/svg"
+      :class="className"
+      fill="currentColor"
+    >
+      <path d="M 11.943008,34.166335 C -2.2835223,30.385503 -4.1502623,10.548025 9.1207876,4.1751087 c 1.3581904,-0.652221 3.0652104,-1.72196 3.7933704,-2.377197 2.48346,-2.23473497 6.238211,-1.59209393 3.967129,0.678989 -1.683599,1.683595 -1.656349,4.634703 0.05211,5.643727 1.854389,1.0952141 -1.459956,1.2966571 -3.399416,0.206614 l -1.32732,-0.745995 -1.60065,0.938043 C -0.70702924,15.149169 5.3808607,32.150044 18.204814,29.739527 28.802142,27.747549 30.730947,12.769336 20.962417,8.3252487 17.482401,6.7420527 17.593834,6.8348737 17.476495,5.4215617 17.026159,-0.00260327 27.103082,4.8142117 30.358019,11.57899 36.183974,23.687147 24.845042,37.595167 11.943011,34.166335 Z"/>
+    </svg>
+  `,
+  props: {
+    size: { type: [Number, String], default: 20 },
+    className: { type: String, default: '' }
+  }
+};
+
 const IconResearch = {
   template: `
     <svg 
@@ -203,7 +222,7 @@ export const NAVIGATION = {
           id: 'trplanner',
           name: 'TR Planner',
           path: '/tools/tr-planner',
-          icon: IconClockFilled
+          icon: IconTRPlanner
         },
         {
           id: 'trtracking',
@@ -308,7 +327,7 @@ export const NAVIGATION = {
       id: 'trplanner',
       name: 'TR Planner',
       path: '/tools/tr-planner',
-      icon: IconClockFilled
+      icon: IconTRPlanner
     },
     {
       id: 'gadgetcalculator',

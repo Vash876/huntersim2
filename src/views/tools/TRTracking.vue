@@ -140,15 +140,30 @@
               <tr>
                 <th class="text-left py-3 px-4 text-gray-300 font-medium text-sm">TR#</th>
                 <th class="text-center py-3 px-4 text-gray-300 font-medium text-sm">Entries</th>
-                <th 
-                  v-for="resource in getHighestValueResources()" 
-                  :key="resource.id"
-                  class="text-center py-3 px-4 text-gray-300 font-medium text-sm"
+                
+                <!-- Draggable Resource Columns Header -->
+                <Draggable
+                  v-model="draggableResources"
+                  item-key="id"
+                  tag="th"
+                  handle=".grip-handle"
+                  :animation="200"
+                  ghost-class="ghost-column"
+                  class="contents"
                 >
-                  <span class="flex items-center justify-center gap-1">
-                    <span>Highest {{ resource.name }}</span>
-                  </span>
-                </th>
+                  <template #item="{ element }">
+                    <th class="text-center py-3 px-4 text-gray-300 font-medium text-sm">
+                      <div class="flex items-center justify-center gap-1">
+                        <IconGripVertical 
+                          size="14" 
+                          class="grip-handle text-gray-500 hover:text-gray-300 transition-colors cursor-grab active:cursor-grabbing" 
+                        />
+                        <span>Highest {{ element.name }}</span>
+                      </div>
+                    </th>
+                  </template>
+                </Draggable>
+                
                 <th class="text-center py-3 px-4 text-gray-300 font-medium text-sm">Status</th>
                 <th class="text-center py-3 px-4 text-gray-300 font-medium text-sm">Actions</th>
               </tr>
@@ -176,9 +191,9 @@
                   {{ track.entries.length }}
                 </td>
 
-                <!-- Highest Values for Selected Resources -->
+                <!-- Highest Values for Selected Resources (same order as draggableResources) -->
                 <td 
-                  v-for="resource in getHighestValueResources()"
+                  v-for="resource in draggableResources"
                   :key="resource.id"
                   class="py-4 px-4 text-center font-mono font-bold"
                   :style="{ color: resource.color }"
@@ -351,7 +366,8 @@ import {
   IconCopy,
   IconEdit,
   IconDownload,
-  IconTrendingUp
+  IconTrendingUp,
+  IconGripVertical
 } from '@tabler/icons-vue';
 
 // Components
@@ -364,6 +380,7 @@ import ShareTrackModal from '@/components/tr-tracking/ShareTrackModal.vue';
 import MultiTRComparisonModal from '@/components/tr-tracking/MultiTRComparisonModal.vue';
 import BuildSelectionModal from '@/components/tr-tracking/BuildSelectionModal.vue';
 import AlertDialog from '@/components/common/AlertDialog.vue';
+import Draggable from 'vuedraggable';
 
 // Store
 const trTrackingStore = useTRTrackingStore();
@@ -398,6 +415,18 @@ const alertDialog = ref({
 
 // Computed
 const selectedResources = computed(() => trTrackingStore.selectedResources);
+
+// Draggable resources for table columns (reactive ref based on store)
+const draggableResources = computed({
+  get: () => getHighestValueResources(),
+  set: (newOrder) => {
+    // Extract resource IDs in new order
+    const newResourceOrder = newOrder.map(r => r.id);
+    // Save to store
+    trTrackingStore.updateShowInTableResourcesOrder(newResourceOrder);
+  }
+});
+
 const trTracks = computed(() => {
   return [...trTrackingStore.trTracks].sort((a, b) => {
     // 1. Aktive Tracks zuerst
@@ -486,6 +515,67 @@ function getSelectedResourcesWithCurrentColors() {
 function getHighestValue(track, resourceId) {
   if (track.entries.length === 0) return '0';
   
+  // Get the resource to check its format and dataType
+  const resource = trTrackingStore.availableResources.find(r => r.id === resourceId);
+  
+  // Handle boolean dataType
+  if (resource && resource.dataType === 'boolean') {
+    const boolValues = track.entries
+      .map(entry => entry.values[resourceId])
+      .filter(value => value !== undefined && value !== null);
+    
+    if (boolValues.length === 0) return '✗';
+    
+    // Show the most recent boolean value
+    const latestValue = boolValues[0];
+    const boolResult = latestValue === true || latestValue === 'true' || latestValue === 1 || latestValue === '1';
+    return boolResult ? '✓' : '✗';
+  }
+  
+  // Special handling for time format resources (e.g., hours-in-tr)
+  if (resource && resource.format === 'time') {
+    const timeValues = track.entries
+      .map(entry => entry.values[resourceId])
+      .filter(value => value && value !== '');
+    
+    if (timeValues.length === 0) return '0:00';
+    
+    // Convert time strings to minutes for comparison
+    const timeInMinutes = timeValues.map(timeStr => {
+      if (!timeStr || typeof timeStr !== 'string') return 0;
+      const parts = timeStr.split(':');
+      if (parts.length !== 2) return 0;
+      const hours = parseInt(parts[0], 10) || 0;
+      const mins = parseInt(parts[1], 10) || 0;
+      return hours * 60 + mins;
+    });
+    
+    const maxMinutes = Math.max(...timeInMinutes);
+    const hours = Math.floor(maxMinutes / 60);
+    const mins = maxMinutes % 60;
+    
+    // Format as HH:MM (or HHH:MM or HHHH:MM for very high hours)
+    return `${hours}:${String(mins).padStart(2, '0')}`;
+  }
+  
+  // For camp format, just return the last value (most recent camp)
+  if (resource && resource.format === 'camp') {
+    const campValues = track.entries
+      .map(entry => entry.values[resourceId])
+      .filter(value => value && value !== '');
+    
+    if (campValues.length === 0) return '-';
+    
+    // Return the most recent camp value (first entry since sorted by date desc)
+    return campValues[0];
+  }
+  
+  // For text format (notes or text dataType), return dash
+  if (resource && (resource.format === 'text' || resource.dataType === 'text')) {
+    return '-';
+  }
+  
+  // For numeric resources (including suffix dataType)
   const values = track.entries
     .map(entry => entry.values[resourceId] || 0)
     .filter(value => value > 0);
@@ -494,9 +584,8 @@ function getHighestValue(track, resourceId) {
   
   const maxValue = Math.max(...values);
   
-  // Apply same formatting logic as TrackDetailsModal
-  // Only format specific resources: oo-accum, attgn3-buff, and mat3-* resources
-  if (resourceId === 'oo-accum' || resourceId === 'attgn3-buff' || resourceId.startsWith('mat3-')) {
+  // Apply suffix formatting for suffix dataType or specific resources
+  if ((resource && resource.dataType === 'suffix') || resourceId === 'oo-accum' || resourceId === 'attgn3-buff' || resourceId.startsWith('mat3-')) {
     
     if (resourceId === 'attgn3-buff') {
       // Handle very large numbers for attgn3-buff using Decimal
@@ -511,7 +600,7 @@ function getHighestValue(track, resourceId) {
         return formatSuffixInput(maxValue);
       }
     } else {
-      // Use formatSuffixInput for oo-accum and hunter Mat3
+      // Use formatSuffixInput for oo-accum, hunter Mat3, and custom suffix resources
       return formatSuffixInput(maxValue);
     }
   }
@@ -714,5 +803,22 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Custom styles if needed */
+/* Draggable column styles */
+.ghost-column {
+  opacity: 0.5;
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.grip-handle {
+  cursor: grab;
+}
+
+.grip-handle:active {
+  cursor: grabbing;
+}
+
+/* Smooth transition for column reordering */
+.flip-list-move {
+  transition: transform 0.3s ease;
+}
 </style>
