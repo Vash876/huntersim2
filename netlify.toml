@@ -7,6 +7,11 @@
   command = "npm run dev -- --host 0.0.0.0"
   targetPort = 5173
   port = 8888
+
+# Edge Function für Discord Build Previews
+[[edge_functions]]
+  path = "/:hunter"
+  function = "discord-preview"
   
 # Cache-busting für WASM-Dateien
 [[headers]]

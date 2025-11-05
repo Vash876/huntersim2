@@ -434,8 +434,11 @@ const trTracks = computed(() => {
       return b.isActive - a.isActive;
     }
     
-    // 2. Dann nach Erstellungsdatum (neueste zuerst)
-    return new Date(b.createdAt) - new Date(a.createdAt);
+    // 2. Dann nach End-Datum (neueste zuerst)
+    // Für aktive Tracks verwende createdAt als Fallback
+    const dateA = a.endDate ? new Date(a.endDate) : new Date(a.createdAt);
+    const dateB = b.endDate ? new Date(b.endDate) : new Date(b.createdAt);
+    return dateB - dateA;
   });
 });
 const activeTracks = computed(() => trTrackingStore.activeTracks);

@@ -8,7 +8,7 @@ const changelog =
       {
         text: 'TR Tracking',
         subItems: [
-          'Highest resource columns in main overview table are now draggable - reorder columns by dragging the grip icon',
+          'Highest resource columns in main overview table are now draggable',
           'Fixed "Highest Time in TR" display showing 0 instead of proper HH:MM format',
           'Custom resources now support multiple data types: Number, Suffix Number, Text, and Boolean',
         ]
