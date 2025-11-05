@@ -38,7 +38,7 @@ export { getHunterMat3Name };
 const DEFAULT_AVAILABLE_RESOURCES = [
   { id: 'hours-in-tr', name: 'Time in TR', color: '#ffffff', category: 'main', format: 'time', dataType: 'number' },
   { id: 'oo-accum', name: 'OO (Accum)', color: '#a200ff', category: 'main', format: 'number', dataType: 'suffix' },
-  { id: 'lr-ticks', name: 'LR Ticks', color: '#ffffff', category: 'main', format: 'number', dataType: 'number' },
+  { id: 'lr-ticks', name: 'LR Ticks', color: '#ffffff', category: 'main', format: 'suffix', dataType: 'suffix' },
   { id: 'lr-count', name: 'LR Count', color: '#ffffff', category: 'main', format: 'number', dataType: 'number' },
   { id: 'loops-filled', name: 'Loops Filled', color: '#ffffff', category: 'main', format: 'number', dataType: 'number' },
   { id: 'loop-mods-purchased', name: 'Loop Mods Purchased', color: '#ff0000', category: 'main', format: 'number', dataType: 'number' },
