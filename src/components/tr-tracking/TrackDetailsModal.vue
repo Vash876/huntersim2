@@ -898,8 +898,11 @@ const buildColumnDefs = () => {
       cellClass: 'text-center',
       headerClass: `text-center resource-header multi-line-header drag-header`,
       editable: true,
-      // Determine cellDataType based on resource dataType or format
+      // Determine cellDataType based on resource format or dataType
       cellDataType: (() => {
+        // Format has priority (internal types for time, camp, etc.)
+        if (resource.format === 'text' || resource.format === 'camp' || resource.format === 'time') return 'text';
+        
         // Custom resources with dataType
         if (resource.dataType) {
           if (resource.dataType === 'text') return 'text';
@@ -907,8 +910,7 @@ const buildColumnDefs = () => {
           if (resource.dataType === 'suffix') return 'text'; // Suffix numbers as text for input
           if (resource.dataType === 'number') return 'number';
         }
-        // Legacy format handling
-        if (resource.format === 'text' || resource.format === 'camp' || resource.format === 'time') return 'text';
+        
         // Specific resources that use suffix notation
         if (resource.id === 'oo-accum' || resource.id === 'attgn3-buff' || resource.id.startsWith('mat3-')) return 'text';
         // lr-ticks also uses suffix
@@ -989,24 +991,7 @@ const buildColumnDefs = () => {
         }
         if (!params.data.values) params.data.values = {};
         
-        // Handle boolean dataType
-        if (resource.dataType === 'boolean') {
-          const str = String(params.newValue || '').toLowerCase().trim();
-          if (str === '' || str === 'false' || str === '0' || str === 'no') {
-            params.data.values[resource.id] = false;
-          } else {
-            params.data.values[resource.id] = true;
-          }
-          return true;
-        }
-        
-        // Handle text dataType
-        if (resource.dataType === 'text') {
-          params.data.values[resource.id] = String(params.newValue || '');
-          return true;
-        }
-        
-        // Handle time format (HHH:MM or HHH MM)
+        // Handle time format FIRST (internal type, has priority)
         if (resource.format === 'time') {
           // Allow empty to clear the cell
           const raw = String(params.newValue || '').trim();
@@ -1032,7 +1017,7 @@ const buildColumnDefs = () => {
           return true;
         }
         
-        // Handle camp code format (C[1-9]-[0-9]{1,2}, case-insensitive)
+        // Handle camp code format FIRST (internal type, has priority)
         if (resource.format === 'camp') {
           // Allow empty/null to clear the cell
           if (params.newValue === null || params.newValue === undefined || String(params.newValue).trim() === '') {
@@ -1060,6 +1045,23 @@ const buildColumnDefs = () => {
           
           console.warn('Invalid camp code rejected:', params.newValue);
           return false;
+        }
+        
+        // Handle boolean dataType
+        if (resource.dataType === 'boolean') {
+          const str = String(params.newValue || '').toLowerCase().trim();
+          if (str === '' || str === 'false' || str === '0' || str === 'no') {
+            params.data.values[resource.id] = false;
+          } else {
+            params.data.values[resource.id] = true;
+          }
+          return true;
+        }
+        
+        // Handle text dataType
+        if (resource.dataType === 'text') {
+          params.data.values[resource.id] = String(params.newValue || '');
+          return true;
         }
         
         // Handle suffix dataType (custom resources with suffix notation)
