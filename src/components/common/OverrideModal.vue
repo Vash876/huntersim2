@@ -390,7 +390,10 @@ function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
       upgrades: {
         'borge-loot-bonus': 'attraction_lootBorge',
         'ozzy-loot-bonus': 'attraction_lootOzzy',
-        'catch-up-power': 'attraction_catchUp'
+        'knox-loot-bonus': 'attraction_lootKnox',
+        'catch-up-power': 'attraction_catchUp',
+        'catch-up-power2': 'attraction_catchUp2',
+
       }
     },
     innovation: {
@@ -632,7 +635,9 @@ async function loadOverrideData() {
                       const propertyToNodeMap = {
                         'lootBorge': 'lootBorge',
                         'lootOzzy': 'lootOzzy',
+                        'lootKnox': 'lootKnox',
                         'catchUp': 'catchUp',
+                        'catchUp2': 'catchUp2',
                         'borgeGU': 'borgeGU',
                         'ozzyGU': 'ozzyGU',
                         'knoxGU': 'knoxGU',
@@ -653,7 +658,9 @@ async function loadOverrideData() {
                       const upgradeNameMap = {
                         'lootBorge': 'Loot (Borge)',
                         'lootOzzy': 'Loot (Ozzy)',
-                        'catchUp': 'Catch-Up Power',
+                        'lootKnox': 'Loot (Knox)',
+                        'catchUp': 'Catch-Up Power (Borge/Ozzy)',
+                        'catchUp2': 'Catch-Up Power (Knox)',
                         'borgeGU': 'Borge Stat Bonus',
                         'ozzyGU': 'Ozzy Stat Bonus',
                         'knoxGU': 'Knox Stat Bonus',
@@ -1071,6 +1078,30 @@ const visibleCategories = computed(() => {
         return isExodusGem5Active;
       }
       
+      // Spezielle Logik für lootKnox und catchUp2 - nur anzeigen wenn attraction gem level >= 4
+      if (param.key === 'upgrades.gems_nodes.attraction_lootKnox' || 
+          param.key === 'upgrades.gems_nodes.attraction_catchUp2') {
+        const attractionLevelKey = 'upgrades.gems_nodes.attraction_level';
+        
+        // Prüfe aktuellen Override-Status für attraction level
+        const attractionLevelOverride = localOverrides.value[attractionLevelKey];
+        
+        // Prüfe global state für attraction level
+        const attractionLevelParam = parameterData.value
+          .flatMap(cat => cat.params)
+          .find(p => p.key === attractionLevelKey);
+        const attractionLevelGlobalValue = attractionLevelParam?.globalValue || 0;
+        
+        // Bestimme den aktuellen effektiven Wert für attraction level
+        const attractionLevelEffectiveValue = (attractionLevelOverride !== null && attractionLevelOverride !== undefined) 
+          ? attractionLevelOverride 
+          : attractionLevelGlobalValue;
+        
+        const isAttractionLevel4 = attractionLevelEffectiveValue >= 4;
+        
+        return isAttractionLevel4;
+      }
+      
       // Alle anderen Parameter immer anzeigen
       const shouldShow = true;
       
@@ -1316,8 +1347,12 @@ function getParamCost(param) {
       return calcOrbCostDifference('lootBorge', fromLevel, toLevel);
     } else if (nodeId === 'attraction_lootOzzy') {
       return calcOrbCostDifference('lootOzzy', fromLevel, toLevel);
+    } else if (nodeId === 'attraction_lootKnox') {
+      return calcOrbCostDifference('lootKnox', fromLevel, toLevel);
     } else if (nodeId === 'attraction_catchUp') {
       return calcOrbCostDifference('catchUp', fromLevel, toLevel);
+    } else if (nodeId === 'attraction_catchUp2') {
+      return calcOrbCostDifference('catchUp2', fromLevel, toLevel);
     } else if (nodeId === 'creation_borgeGU') {
       return calcOrbCostDifference('borgeGU', fromLevel, toLevel);
     } else if (nodeId === 'creation_ozzyGU') {

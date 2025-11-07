@@ -54,7 +54,7 @@ export function useOrbOptimizer() {
       const sortedResults = this.results.sort((a, b) => b.duration - a.duration);
       
       let report = `\n🔍 PERFORMANCE REPORT\n`;
-      report += `Total Time: ${totalTime}ms (${(totalTime/1000).toFixed(2)}s)\n`;
+      report += `Total Time: ${totalTime}ms (${(totalTime/1000).toFixed(3)}s)\n`;
       report += `Operations: ${this.operationCount}\n\n`;
       
       report += `📊 TIME BREAKDOWN:\n`;
@@ -889,9 +889,9 @@ export function useOrbOptimizer() {
     // Show the actual final efficiency value (as shown in debug log)
     // Use scientific notation for very large/small numbers, otherwise fixed decimal
     if (Math.abs(efficiency) >= 1000 || (Math.abs(efficiency) < 0.01 && efficiency !== 0)) {
-      return efficiency.toExponential(2);
+      return efficiency.toExponential(3);
     } else {
-      return efficiency.toFixed(2);
+      return efficiency.toFixed(3);
     }
   }
 
@@ -902,9 +902,9 @@ export function useOrbOptimizer() {
     if (value === 0 || value == null || value === undefined) return '0.00';
     
     if (Math.abs(value) >= 1000 || (Math.abs(value) < 0.01 && value !== 0)) {
-      return value.toExponential(2);
+      return value.toExponential(3);
     } else {
-      return value.toFixed(2);
+      return value.toFixed(3);
     }
   }
 

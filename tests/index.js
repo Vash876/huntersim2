@@ -61,20 +61,14 @@ const html = `
      </html>
    `;
 
-// Mit AGGRESSIVEM Cache zurückgeben
+// Mit Cache-Kontrolle zurückgeben (24 Stunden)
 return new Response(html, {
 headers: { 
 'Content-Type': 'text/html',
-// Browser Cache: 7 Tage (604800 Sekunden)
-'Cache-Control': 'public, max-age=604800, immutable',
-// CDN Cache (Netlify Edge): 7 Tage
-'Netlify-CDN-Cache-Control': 'public, max-age=604800, immutable, stale-while-revalidate=86400',
-// Cache-Key basierend auf Hunter + BuildCode
-'Cache-Tag': `build-${hunterId}-${buildCode}`,
-// Vary nur auf wichtigen Headern
-'Vary': 'User-Agent',
-// ETag für effizientes Caching
-'ETag': `"${hunterId}-${buildCode}-v1"`
+'Cache-Control': 'public, max-age=86400, s-maxage=86400', // 24 Stunden
+'Surrogate-Control': 'public, max-age=86400, s-maxage=86400',
+'Cache-Tag': `discord-preview-${hunterId}-${buildCode}`,
+'Vary': 'User-Agent'
 }
 });
 }
@@ -213,5 +207,4 @@ level: talentSum > 0 ? talentSum : 1
 } catch (error) {
 console.error("Error calculating level:", error);
 return { isValid: false, level: 0 };
-}
 }

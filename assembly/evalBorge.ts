@@ -1068,5 +1068,3 @@ export function getDeathsByStageAndReviveString(): string {
   result += "}";
   return result;
 }
-
-

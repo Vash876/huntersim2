@@ -33,12 +33,37 @@ function calculateLootOzzy(level) {
 }
 
 /**
+ * Knox Loot Kosten berechnen (Attraction Gem Node)
+ * @param {number} level - Das aktuelle Level
+ * @returns {number} - Die berechneten Kosten
+ */
+function calculateLootKnox(level) {
+  const value = 1.2e11 * 
+                Math.pow(2.66, level) * 
+                Math.pow(1.2, Math.max(0, level - 9)) * 
+                Math.pow(1.3, Math.max(0, level - 19)) * 
+                Math.pow(1.4, Math.max(0, level - 29)) * 
+                Math.pow(2, Math.max(0, level - 39));
+  return Math.floor(value);
+}
+
+/**
  * Catch-Up Power Kosten berechnen (Attraction Gem Node)
  * @param {number} level - Das aktuelle Level
  * @returns {number} - Die berechneten Kosten
  */
 function calculateCatchUp(level) {
   const value = 1 * Math.pow(100, level);
+  return Math.floor(value);
+}
+
+/**
+ * Catch-Up Power Kosten berechnen (Attraction Gem Node)
+ * @param {number} level - Das aktuelle Level
+ * @returns {number} - Die berechneten Kosten
+ */
+function calculateCatchUp2(level) {
+  const value = 4e11 * Math.pow(100, level);
   return Math.floor(value);
 }
 
@@ -90,8 +115,12 @@ function getOrbCost(upgradeType, level) {
       return calculateLootBorge(level - 1);
     case 'lootOzzy':
       return calculateLootOzzy(level - 1);
+    case 'lootKnox':
+      return calculateLootKnox(level - 1);
     case 'catchUp':
       return calculateCatchUp(level - 1);
+    case 'catchUp2':
+      return calculateCatchUp2(level - 1);
     
     // ✅ NEUE GU UPGRADES: Berechnen Kosten für das vorherige Level (Level 1 kostet was für Level 0 steht)
     case 'borgeGU':
@@ -156,8 +185,16 @@ export function getLootOzzyCost(lvl) {
   return getOrbCost('lootOzzy', lvl);
 }
 
+export function getLootKnoxCost(lvl) {
+  return getOrbCost('lootKnox', lvl);
+}
+
 export function getCatchUpCost(lvl) {
   return getOrbCost('catchUp', lvl);
+}
+
+export function getCatchUp2Cost(lvl) {
+  return getOrbCost('catchUp2', lvl);
 }
 
 export function getBorgeGUCost(lvl) {

@@ -643,14 +643,16 @@ export const UPGRADES = {
       id: 'attraction',
       name: 'Attraction Gem',
       type: 'level',
-      maxLevel: 3,
+      maxLevel: 4,
       color: "blue",
       nodes: [
         { id: 'lootBorge', name: 'Loot (Borge)', type: 'level', maxLevel: 50, },
         { id: 'lootOzzy', name: 'Loot (Ozzy)', type: 'level', maxLevel: 50 },
-        { id: 'catchUp', name: 'Catch-Up Power', type: 'level', maxLevel: 5 },
+        { id: 'lootKnox', name: 'Loot (Knox)', type: 'level', maxLevel: 50, minGemLevel: 4 },
+        { id: 'catchUp', name: 'Catch-Up Power (Borge/Ozzy)', type: 'level', maxLevel: 5 },
+        { id: 'catchUp2', name: 'Catch-Up Power (Knox)', type: 'level', maxLevel: 5, minGemLevel: 4 },
         { id: 'gem2', name: 'Attraction Gem Node #2', type: 'boolean' },
-        { id: 'gem3', name: 'Attraction Gem Node #3', type: 'boolean' }
+        { id: 'gem3', name: 'Attraction Gem Node #3', type: 'boolean' },
       ]
     },
     {

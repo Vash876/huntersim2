@@ -893,7 +893,7 @@ function formatMultiplier(multiplier) {
   if (multiplier && typeof multiplier === 'object' && 
       multiplier.mantissa !== undefined && multiplier.exponent !== undefined) {
     const value = multiplier.mantissa * Math.pow(10, multiplier.exponent);
-    if (value < 10) return 'x' + value.toFixed(2);
+    if (value < 10) return 'x' + value.toFixed(3);
     if (value < 1000) return 'x' + value.toFixed(2);
     return 'x' + formatNumberDecimal(multiplier);
   }

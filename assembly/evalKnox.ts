@@ -302,6 +302,9 @@ let nextKnoxTorpedo: f64 = 0;
 let nextKnoxEnemAtk: f64 = 0;
 let nextKnoxRegen: f64 = 0;
 let currentKnoxRespec: i32 = 0;
+let currentKnoxAttr: i32 = 0;
+let currentKnoxCatchup99gu: i32 = 0;
+let currentKnoxLootgu: i32 = 0;
 let currentKnoxCreaGem4: i32 = 0;
 let currentKnoxInnoGem5: i32 = 0;
 let currentKnoxPowGem6: i32 = 0;
@@ -410,6 +413,11 @@ function knoxKillEnemy(extraTime: f64 = 0): void {
     currentKnoxEnem++;
   }
   
+  // Reset ATK bei Stage 100 
+  if (currentKnoxEnem === 1000) {
+    currentKnox.currentAtk = currentKnox.atk * currentKnox.soulmult;
+  }
+  
   if (currentKnoxEnem % 10 === 0) {
     currentKnoxEnemy = KNOX_ENEMIES[Math.floor(currentKnoxEnem / 10) as i32];
   }
@@ -423,11 +431,17 @@ function knoxKillEnemy(extraTime: f64 = 0): void {
   
   currentKnoxEnemy.enrage = 0;
   
+  // Catchup-Multiplier berechnen
+  let catchupMult: f64 = 1;
+  if (currentKnoxEnem < 1000 && currentKnoxAttr > 0) {
+    catchupMult = Math.pow(Math.pow(1.08, currentKnoxCatchup99gu as f64), 1 + currentKnoxAttr * 0.1 - 0.1);
+  }
+  
   if (currentKnox.calyp && currentKnoxEnem % 10 === 0 && ck(currentKnox.effect * 2.5)) {
     currentKnox.souls = Math.min(currentKnox.soulCap, currentKnox.souls + currentKnox.calyp);
     currentKnox.soulmult = knoxSoulmult();
     currentKnox.currentMaxHp = currentKnox.maxHp * currentKnox.soulmult;
-    currentKnox.currentAtk = currentKnox.atk * currentKnox.soulmult;
+    currentKnox.currentAtk = currentKnox.atk * currentKnox.soulmult * catchupMult;
     currentKnox.currentRegen = currentKnox.regen * currentKnox.soulmult;
   }
   
@@ -435,7 +449,7 @@ function knoxKillEnemy(extraTime: f64 = 0): void {
     currentKnox.souls++;
     currentKnox.soulmult = knoxSoulmult();
     currentKnox.currentMaxHp = currentKnox.maxHp * currentKnox.soulmult;
-    currentKnox.currentAtk = currentKnox.atk * currentKnox.soulmult;
+    currentKnox.currentAtk = currentKnox.atk * currentKnox.soulmult * catchupMult;
     currentKnox.currentRegen = currentKnox.regen * currentKnox.soulmult;
   }
   
@@ -545,7 +559,13 @@ function knoxAtk(skipAtkReset: boolean = false): void {
   }
   
   if (!skipAtkReset) {
-    nextKnoxAtk = currentKnoxTime + currentKnox.reload;
+    let divisor: f64 = 1;
+    
+    if (currentKnoxEnem < 1000 && currentKnoxAttr > 0) {
+      divisor = Math.pow(Math.pow(1.08, currentKnoxCatchup99gu as f64), 1 + currentKnoxAttr * 0.1 - 0.1);
+    }
+    
+    nextKnoxAtk = currentKnoxTime + currentKnox.reload / divisor;
     if (currentKnox.charger) {
       currentKnox.charge1 += currentKnox.charger * 0.02 * currentKnox.reload;
       currentKnox.charge2 += currentKnox.charger * 0.02 * currentKnox.reload;
@@ -566,7 +586,7 @@ function knoxAtk(skipAtkReset: boolean = false): void {
 }
 
 // Simulation-Funktion
-function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64, 
+function knoxSim(knox: Knox, maxStage: i32, respec: i32, attr: i32, catchup99gu: i32, lootgu: i32, gadgetLootMulti: f64, 
                  reviveCd: i32, special: f64, iap: boolean, ultima: f64, 
                  research81: i32, research95: i32, research105: i32, evo_gem2: i32, evoGN3: boolean, cm46: i32, 
                  cm47: i32, cm48: i32, cm51: i32, cm53: i32, cm54: i32, iters: i32, stelzi: i32, i105: i32, exodus_gem5: i32, exodus_attractionCreationCount: i32, exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32, inno_gem5: i32, pow_gem6: i32, crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32): void {
@@ -575,6 +595,9 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
   currentKnoxEnem = 0;
   currentKnoxTime = 0;
   currentKnoxRespec = respec;
+  currentKnoxAttr = attr;
+  currentKnoxCatchup99gu = catchup99gu;
+  currentKnoxLootgu = lootgu;
   currentKnoxCreaGem4 = crea_gem4;
   currentKnoxInnoGem5 = inno_gem5;
   currentKnoxPowGem6 = pow_gem6;
@@ -590,7 +613,7 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
   
   knox.hp = knox.maxHp;
   knox.currentMaxHp = knox.maxHp;
-  knox.currentAtk = knox.atk;
+  knox.currentAtk = knox.atk * (attr > 0 ? Math.pow(Math.pow(1.08, catchup99gu as f64), 1 + attr * 0.1 - 0.1) : 1);
   knox.currentRegen = knox.regen;
   knox.souls = 0;
   knox.revives = knox.revival;
@@ -669,7 +692,7 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, gadgetLootMulti: f64,
     research95Multi *= (1 + (i + 1) * 0.01);
   }
   
-  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * (research81 >= 3 ? 1.1 : 1) * (research81 >= 6 ? 1.2 : 1) * research95Multi * (research105 >= 3 ? 1.2 : 1) * (research105 >= 6 ? 1.3 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1) * (cm53 > 0 ? 1.02 : 1) * (cm54 > 0 ? 1.02 : 1) * Math.pow(1.02, stelzi as f64) * Math.pow(1.08, i105 as f64) * (1 + exodus_attractionCreationCount * 0.003) * (evo_gem2 > 0 ? 1.1 : 1) * (inno_gem5 > 0 ? 1.3 : 1);
+  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * (Math.pow(Math.pow(1.05, lootgu as f64), 1 + attr * 0.1 - 0.1)) * (research81 >= 3 ? 1.1 : 1) * (research81 >= 6 ? 1.2 : 1) * research95Multi * (research105 >= 3 ? 1.2 : 1) * (research105 >= 6 ? 1.3 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1) * (cm53 > 0 ? 1.02 : 1) * (cm54 > 0 ? 1.02 : 1) * Math.pow(1.02, stelzi as f64) * Math.pow(1.08, i105 as f64) * (1 + exodus_attractionCreationCount * 0.003) * (evo_gem2 > 0 ? 1.1 : 1) * (inno_gem5 > 0 ? 1.3 : 1);
   
   let loopLoot = normalized * ((Math.pow(stageGrowth, Math.floor(Math.min(currentKnoxEnem, enemiesInSection - 10) / 10) as f64) - 1) / (stageGrowth - 1) * 10 + (Math.min(currentKnoxEnem, enemiesInSection - 10) - Math.floor(Math.min(currentKnoxEnem, enemiesInSection - 10) / 10) * 10) * Math.pow(stageGrowth, Math.floor(Math.min(currentKnoxEnem, enemiesInSection - 10) / 10) as f64)) * includedMultis * (1 + knox.ll * 0.2 * knox.effect);
   
@@ -741,7 +764,7 @@ export function EVALKNOX_WASM(
   stelzi: i32, i105: i32, exodus_gem5: i32, exodus_attractionCreationCount: i32,
   exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32,
   inno_gem5: i32, pow_gem6: i32, crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32,
-  evo_gem6: i32
+  evo_gem6: i32, attr: i32, catchup99gu: i32, lootgu: i32
 ): f64 {
   
   // Enemies initialisieren
@@ -843,7 +866,7 @@ export function EVALKNOX_WASM(
   
   // Simulation laufen lassen
   for (let i = 0; i < iters; i++) {
-    knoxSim(knox, maxStage, respec, gadgetLootMulti, reviveCd, special, iap > 0, ultima, research81, research95, research105, evo_gem2, evoGN3 > 0, cm46, cm47, cm48, cm51, cm53, cm54, iters, stelzi, i105, exodus_gem5, exodus_attractionCreationCount, exodus_gem4, exodus_constructionMilestoneCount, temp_gem6, inno_gem5, pow_gem6, crea_gem4, crea_gem5, crea_galvTrinketsCount);
+    knoxSim(knox, maxStage, respec, attr, catchup99gu, lootgu, gadgetLootMulti, reviveCd, special, iap > 0, ultima, research81, research95, research105, evo_gem2, evoGN3 > 0, cm46, cm47, cm48, cm51, cm53, cm54, iters, stelzi, i105, exodus_gem5, exodus_attractionCreationCount, exodus_gem4, exodus_constructionMilestoneCount, temp_gem6, inno_gem5, pow_gem6, crea_gem4, crea_gem5, crea_galvTrinketsCount);
   }
   
   // lastKnox für Export-Funktionen setzen
