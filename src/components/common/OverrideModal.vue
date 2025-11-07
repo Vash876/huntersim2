@@ -218,6 +218,7 @@ import { useHunterStore } from '../../store/hunterStore';
 import { useGemPlannerStore } from '../../store/gemPlannerStore';
 import { HUNTERS } from '../../constants/hunters';
 import { UPGRADES } from '../../constants/upgrades';
+import { GEM_UPGRADE_MAPPING } from '../../constants/gemUpgradeMappings';
 import { calcCostDifference, formatCost } from '../../utils/statCostUtils';
 import { getRelicCost, calcRelicCostDifference, formatRelicCost } from '../../utils/relicCostUtils';
 import { getGadgetCost, calcGadgetCostDifference, formatGadgetCost } from '../../utils/gadgetCostUtils';
@@ -387,14 +388,7 @@ function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
         gem5: 'attraction_gem5',
         gem6: 'attraction_gem6',
       },
-      upgrades: {
-        'borge-loot-bonus': 'attraction_lootBorge',
-        'ozzy-loot-bonus': 'attraction_lootOzzy',
-        'knox-loot-bonus': 'attraction_lootKnox',
-        'catch-up-power': 'attraction_catchUp',
-        'catch-up-power2': 'attraction_catchUp2',
-
-      }
+      upgrades: GEM_UPGRADE_MAPPING // Verwende zentrales Mapping
     },
     innovation: {
       level: 'innovation_level',
@@ -420,11 +414,7 @@ function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
         gem6: 'creation_gem6',
         galvTrinketsCount: 'creation_galvTrinketsCount'
       },
-      upgrades: {
-        'borge-stat-bonus': 'creation_borgeGU',
-        'ozzy-stat-bonus': 'creation_ozzyGU',
-        'knox-stat-bonus': 'creation_knoxGU'
-      }
+      upgrades: GEM_UPGRADE_MAPPING // Verwende zentrales Mapping
     },
     evolution: {
       level: 'evolution_level',

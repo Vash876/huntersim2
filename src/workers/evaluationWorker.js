@@ -1,5 +1,6 @@
 import * as Comlink from 'comlink';
 import { HUNTERS } from '../constants/hunters';
+import { GEM_UPGRADE_MAPPING } from '../constants/gemUpgradeMappings';
 
 // Direkte Imports der Eval-Funktionen
 import { EVALBORGE_WASM } from './wasmBorge.js';  // WASM für Borge
@@ -467,14 +468,7 @@ function extractParamValue(storeData, hunterId, buildData, param) {
         }
         // Upgrades (lootBorge, catchUp, borgeGU etc.)
         else {
-          const upgradeMapping = {
-            'lootBorge': 'borge-loot-bonus',
-            'lootOzzy': 'ozzy-loot-bonus', 
-            'catchUp': 'catch-up-power',
-            'borgeGU': 'borge-stat-bonus'
-          };
-          
-          const storeUpgradeKey = upgradeMapping[gemProperty] || gemProperty;
+          const storeUpgradeKey = GEM_UPGRADE_MAPPING[gemProperty] || gemProperty;
           const upgrades = storeData.gemPlannerStore?.gemStates?.[gemType]?.upgrades || {};
           const upgradeValue = upgrades[storeUpgradeKey] || 0;
           return upgradeValue;

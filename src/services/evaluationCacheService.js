@@ -6,6 +6,7 @@
  */
 
 import { getHunterById } from '../constants/hunters';
+import { GEM_UPGRADE_MAPPING } from '../constants/gemUpgradeMappings';
 
 // In-Memory Cache mit LRU (Least Recently Used) System
 let memoryCache = {};
@@ -234,14 +235,7 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPl
               const upgrades = gemState.upgrades || {};
               
               // Map die Parameter-Namen auf die Store-Namen
-              const upgradeMapping = {
-                'lootBorge': 'borge-loot-bonus',
-                'lootOzzy': 'ozzy-loot-bonus', 
-                'catchUp': 'catch-up-power',
-                'borgeGU': 'borge-stat-bonus'
-              };
-              
-              const storeUpgradeKey = upgradeMapping[gemProperty] || gemProperty;
+              const storeUpgradeKey = GEM_UPGRADE_MAPPING[gemProperty] || gemProperty;
               if (!gemValues[gemType].upgrades) gemValues[gemType].upgrades = {};
               gemValues[gemType].upgrades[gemProperty] = upgrades[storeUpgradeKey] || 0;
             }
@@ -828,14 +822,7 @@ export async function shouldUpdateOnGemChange(hunterId, oldGemStates, newGemStat
               const currentUpgrades = currentGemState.upgrades || {};
               
               // Map die Parameter-Namen auf die Store-Namen
-              const upgradeMapping = {
-                'lootBorge': 'borge-loot-bonus',
-                'lootOzzy': 'ozzy-loot-bonus', 
-                'catchUp': 'catch-up-power',
-                'borgeGU': 'borge-gem-upgrade' // Falls nötig
-              };
-              
-              const storeUpgradeKey = upgradeMapping[gemProperty] || gemProperty;
+              const storeUpgradeKey = GEM_UPGRADE_MAPPING[gemProperty] || gemProperty;
               const currentUpgradeValue = currentUpgrades[storeUpgradeKey] || 0;
               
               if (currentUpgradeValue > 0) {

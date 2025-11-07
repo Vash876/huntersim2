@@ -121,6 +121,7 @@ import { BuildCodeHandler } from '../../utils/BuildCodeHandler';
 import { getHunterById, HUNTERS } from '../../constants/hunters';
 import { useHunterStore } from '../../store/hunterStore';
 import { useGemPlannerStore } from '../../store/gemPlannerStore';
+import { GEM_UPGRADE_MAPPING } from '../../constants/gemUpgradeMappings';
 
 // Importiere die Gem-Konvertierungsfunktion aus useBuildEvaluation
 // Erstelle eine vereinfachte Version hier
@@ -146,16 +147,7 @@ function convertGemStatesToUpgrades(gemStates, upgrades) {
     if (gemState.upgrades) {
       Object.entries(gemState.upgrades).forEach(([upgradeId, level]) => {
         // Mapping für bekannte Upgrades
-        const upgradeMapping = {
-          'borge-loot-bonus': 'attraction_lootBorge',
-          'ozzy-loot-bonus': 'attraction_lootOzzy', 
-          'catch-up-power': 'attraction_catchUp',
-          'borge-stat-bonus': 'creation_borgeGU',
-          'ozzy-stat-bonus': 'creation_ozzyGU',
-          'knox-stat-bonus': 'creation_knoxGU',
-        };
-        
-        const mappedKey = upgradeMapping[upgradeId];
+        const mappedKey = GEM_UPGRADE_MAPPING[upgradeId];
         if (mappedKey) {
           upgrades.gems_nodes[mappedKey] = level;
         } else {

@@ -123,6 +123,7 @@ import { useHunterStore } from '../../store/hunterStore';
 import { useGemPlannerStore } from '../../store/gemPlannerStore';
 import { formatNumber } from '@/composables/format';
 import { getHunterById } from '@/constants/hunters';
+import { GEM_UPGRADE_MAPPING } from '../../constants/gemUpgradeMappings';
 
 // Props
 const props = defineProps({
@@ -153,19 +154,6 @@ function convertGemStatesToUpgrades(gemStates, upgrades) {
   // Stelle sicher dass gems_nodes existiert und leere es komplett
   upgrades.gems_nodes = {};
   
-  // Mapping von gemPlannerStore upgrade IDs zu upgrades.gems_nodes keys
-  const upgradeMapping = {
-    // Attraction Gem Upgrades
-    'borge-loot-bonus': 'attraction_lootBorge',
-    'ozzy-loot-bonus': 'attraction_lootOzzy', 
-    'catch-up-power': 'attraction_catchUp',
-    
-    // Creation Gem Upgrades
-    'borge-stat-bonus': 'creation_borgeGU',
-    'ozzy-stat-bonus': 'creation_ozzyGU',
-    'knox-stat-bonus': 'creation_knoxGU',
-  };
-  
   // Konvertiere alle Gem-Daten
   Object.entries(gemStates).forEach(([gemId, gemState]) => {
     if (!gemState) return;
@@ -187,7 +175,7 @@ function convertGemStatesToUpgrades(gemStates, upgrades) {
     // Konvertiere Gem Upgrades
     if (gemState.upgrades) {
       Object.entries(gemState.upgrades).forEach(([upgradeId, level]) => {
-        const mappedKey = upgradeMapping[upgradeId];
+        const mappedKey = GEM_UPGRADE_MAPPING[upgradeId];
         if (mappedKey) {
           upgrades.gems_nodes[mappedKey] = level;
         } else {
