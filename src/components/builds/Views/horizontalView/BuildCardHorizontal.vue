@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="build-vertical border-l-4 bg-gray-800 rounded-lg shadow-md mb-2 overflow-hidden transition-all duration-200 hover:shadow-xl"
+    class="build-vertical border-l-4 bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-200 hover:shadow-xl"
     :class="[
       isReferenceBuild ? 'border-yellow-500' : `border-${hunterColor}-500`,
     ]"

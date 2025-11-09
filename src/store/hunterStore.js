@@ -40,6 +40,15 @@ export const useHunterStore = defineStore('hunter', () => {
   // Hunter Level Settings - für Advanced Talents Toggle
   const hunterLevelSettings = ref({});
 
+  // Build Categories - verschachtelte Kategorien mit parentId
+  const buildCategories = ref({});
+
+  // Reference Builds per Category - { hunterId: { categoryId: buildId } }
+  const categoryReferenceBuild = ref({});
+  
+  // Category Override Update Counter - wird inkrementiert wenn Category-Overrides geändert werden
+  const categoryOverrideUpdateCounter = ref(0);
+
   /**
    * Generiert die initiale Upgrades-Struktur basierend auf den UPGRADES-Konstanten
    * @param {Object} upgradesConfig - Die UPGRADES-Konstante
@@ -1213,6 +1222,10 @@ function shouldShowAdvancedTalents(hunterId) {
     displaySettings,
     hunterSeedSettings, 
     bossKillsByReviveCache,
+    pendingBuildImport,
+    hunterLevelSettings,
+    buildCategories,
+    categoryOverrideUpdateCounter, // NEU: Export des Counters
     
     // Hunter Stats Funktionen
     initHunterStats,
@@ -1282,8 +1295,525 @@ function shouldShowAdvancedTalents(hunterId) {
     scanBuildsForHighestLevel,
     toggleAdvancedTalents,
     getHunterLevelSettings,
-    shouldShowAdvancedTalents
-  };
+    shouldShowAdvancedTalents,
+
+    // Build Categories Funktionen
+    buildCategories,
+    categoryReferenceBuild,
+    initBuildCategories,
+    createCategory,
+    updateCategory,
+    updateCategoryOrder,
+    deleteCategory,
+    getCategories,
+    moveBuildToCategory,
+    copyBuildToCategory,
+    getBuildCategory,
+    getBuildsByCategory,
+    getSubCategories,
+    setCategoryReferenceBuild,
+    getCategoryReferenceBuild,
+    getCategoryReferenceBuildData,
+    updateCategoryOverrides,
+    getCategoryOverrides,
+    getEffectiveBuildOverrides,
+    getCategoryReferenceBuildData
+  }
+
+  // ========================
+  // BUILD CATEGORIES - Verschachtelte Kategorien
+  // ========================
+
+  /**
+   * Initialisiert die Build-Kategorien für einen Hunter
+   * @param {string} hunterId - Die ID des Hunters
+   */
+  function initBuildCategories(hunterId) {
+    if (!buildCategories.value[hunterId]) {
+      buildCategories.value[hunterId] = {
+        categories: [
+          { id: 'active', name: 'Active', color: 'blue', isSystem: true, parentId: null, order: 0, overrides: {} },
+          { id: 'archived', name: 'Archived', color: 'gray', isSystem: true, parentId: null, order: 1, overrides: {} }
+        ],
+        buildCategoryMap: {} // buildId -> categoryId
+      };
+    }
+    
+    // Ensure all existing categories have an overrides object
+    buildCategories.value[hunterId].categories.forEach(cat => {
+      if (!cat.overrides) {
+        cat.overrides = {};
+      }
+    });
+    
+    // Rückwärtskompatibilität: Migriere bereits archivierte Builds (läuft bei jedem Init)
+    const builds = hunterBuilds.value[hunterId];
+    if (builds && builds.length > 0) {
+      builds.forEach(build => {
+        // Nur migrieren, wenn noch nicht in der Map
+        if (build.isArchived && !buildCategories.value[hunterId].buildCategoryMap[build.id]) {
+          buildCategories.value[hunterId].buildCategoryMap[build.id] = 'archived';
+        }
+      });
+    }
+    
+    // Initialize reference builds map for this hunter
+    if (!categoryReferenceBuild.value[hunterId]) {
+      categoryReferenceBuild.value[hunterId] = {};
+    }
+    
+    return buildCategories.value[hunterId];
+  }
+
+  /**
+   * Erstellt eine neue Kategorie
+   * @param {string} hunterId - Die ID des Hunters  
+   * @param {Object} category - { name, color, parentId }
+   */
+  function createCategory(hunterId, category) {
+    initBuildCategories(hunterId);
+    
+    const newCategory = {
+      id: `custom-${Date.now()}`,
+      name: category.name,
+      color: category.color || 'purple',
+      parentId: category.parentId || null,
+      isSystem: false,
+      order: buildCategories.value[hunterId].categories.length,
+      overrides: {} // NEU: Jede Kategorie hat eigene Overrides
+    };
+    
+    buildCategories.value[hunterId].categories.push(newCategory);
+    return newCategory;
+  }
+
+  /**
+   * Aktualisiert eine Kategorie (nur custom categories)
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} categoryId - Die ID der Kategorie
+   * @param {Object} updates - { name?, color?, parentId? }
+   */
+  function updateCategory(hunterId, categoryId, updates) {
+    const categories = buildCategories.value[hunterId]?.categories;
+    if (!categories) return;
+    
+    const category = categories.find(c => c.id === categoryId);
+    if (!category) return;
+    
+    // System categories can only update parentId (for nesting), not name/color
+    if (category.isSystem) {
+      if (updates.parentId !== undefined) {
+        category.parentId = updates.parentId;
+      }
+      return;
+    }
+    
+    // Custom categories can update everything
+    Object.assign(category, updates);
+  }
+
+  /**
+   * Aktualisiert die Reihenfolge von Kategorien
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {Array} orderedCategories - Array von Kategorien in neuer Reihenfolge
+   * @param {string|null} parentId - Die ID der Parent-Kategorie (null für Root, undefined = nicht ändern)
+   * @param {boolean} updateParent - Ob der parentId aktualisiert werden soll (default: true für Kompatibilität)
+   */
+  function updateCategoryOrder(hunterId, orderedCategories, parentId = null, updateParent = true) {
+    const data = buildCategories.value[hunterId];
+    if (!data) return;
+    
+    console.log('updateCategoryOrder called:', {
+      hunterId,
+      parentId,
+      updateParent,
+      orderedCategories: orderedCategories.map(c => ({ id: c.id, name: c.name, currentOrder: c.order }))
+    });
+    
+    // Update order property for each category
+    orderedCategories.forEach((category, index) => {
+      const cat = data.categories.find(c => c.id === category.id);
+      if (cat) {
+        console.log(`Updating ${cat.name}: order ${cat.order} -> ${index}, parentId ${cat.parentId}${updateParent ? ` -> ${parentId}` : ' (unchanged)'}`);
+        cat.order = index;
+        // Only update parentId if updateParent is true
+        if (updateParent) {
+          cat.parentId = parentId;
+        }
+      } else {
+        console.warn(`Category ${category.id} not found in store!`);
+      }
+    });
+    
+    // Trigger reactivity by creating a new array reference
+    data.categories = [...data.categories];
+    
+    console.log('Categories after update:', data.categories.map(c => ({ 
+      id: c.id, 
+      name: c.name, 
+      order: c.order,
+      parentId: c.parentId 
+    })));
+  }
+
+  /**
+   * Löscht eine Kategorie (nur custom categories)
+   * Verschiebt alle Builds in dieser Kategorie zu 'active'
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} categoryId - Die ID der Kategorie
+   */
+  function deleteCategory(hunterId, categoryId) {
+    const data = buildCategories.value[hunterId];
+    if (!data) return;
+    
+    const category = data.categories.find(c => c.id === categoryId);
+    if (!category || category.isSystem) {
+      console.warn('Cannot delete system category');
+      return;
+    }
+    
+    // Verschiebe alle Builds zu 'active'
+    Object.keys(data.buildCategoryMap).forEach(buildId => {
+      if (data.buildCategoryMap[buildId] === categoryId) {
+        data.buildCategoryMap[buildId] = 'active';
+      }
+    });
+    
+    // Lösche auch alle Sub-Kategorien
+    const subCategories = data.categories.filter(c => c.parentId === categoryId);
+    subCategories.forEach(subCat => deleteCategory(hunterId, subCat.id));
+    
+    // Entferne die Kategorie
+    data.categories = data.categories.filter(c => c.id !== categoryId);
+  }
+
+  /**
+   * Aktualisiert die Overrides einer Kategorie
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} categoryId - Die ID der Kategorie
+   * @param {Object} overrides - Die neuen Overrides
+   */
+  function updateCategoryOverrides(hunterId, categoryId, overrides) {
+    initBuildCategories(hunterId);
+    
+    const category = buildCategories.value[hunterId].categories.find(c => c.id === categoryId);
+    if (!category) {
+      console.warn(`Category ${categoryId} not found`);
+      return;
+    }
+    
+    category.overrides = { ...overrides };
+    
+    // Inkrementiere den Counter um Re-Evaluation zu triggern
+    categoryOverrideUpdateCounter.value++;
+  }
+
+  /**
+   * Gibt die Overrides einer Kategorie zurück
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} categoryId - Die ID der Kategorie
+   * @returns {Object} Die Overrides der Kategorie
+   */
+  function getCategoryOverrides(hunterId, categoryId) {
+    initBuildCategories(hunterId);
+    
+    const category = buildCategories.value[hunterId].categories.find(c => c.id === categoryId);
+    return category?.overrides || {};
+  }
+
+  /**
+   * Gibt die effektiven Overrides für einen Build zurück (Category + Build)
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} buildId - Die ID des Builds
+   * @returns {Object} Merged Overrides (Category-Overrides + Build-Overrides)
+   */
+  function getEffectiveBuildOverrides(hunterId, buildId) {
+    const build = getBuildsForHunter(hunterId).find(b => b.id === buildId);
+    if (!build) return {};
+    
+    const categoryId = getBuildCategory(hunterId, buildId);
+    const categoryOverrides = getCategoryOverrides(hunterId, categoryId);
+    const buildOverrides = build.overrides || {};
+    
+    // Build-Overrides überschreiben Category-Overrides
+    return {
+      ...categoryOverrides,
+      ...buildOverrides
+    };
+  }
+
+  /**
+   * Gibt alle Kategorien zurück, sortiert nach order
+   * @param {string} hunterId - Die ID des Hunters
+   * @returns {Array} Array von Kategorien
+   */
+  function getCategories(hunterId) {
+    initBuildCategories(hunterId);
+    return buildCategories.value[hunterId].categories.sort((a, b) => a.order - b.order);
+  }
+
+  /**
+   * Verschiebt einen Build in eine Kategorie
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} buildId - Die ID des Builds
+   * @param {string} categoryId - Die ID der Kategorie
+   */
+  function moveBuildToCategory(hunterId, buildId, categoryId) {
+    initBuildCategories(hunterId);
+    
+    const data = buildCategories.value[hunterId];
+    const oldCategoryId = data.buildCategoryMap[buildId];
+    
+    // Update builds array
+    const builds = hunterBuilds.value[hunterId];
+    if (!builds) return;
+    
+    // Nur Reihenfolge ändern, wenn Kategorie gewechselt wurde
+    if (oldCategoryId !== categoryId) {
+      const buildIndex = builds.findIndex(b => b.id === buildId);
+      if (buildIndex === -1) return;
+      
+      console.log('\n=== MOVE BUILD DEBUG ===');
+      console.log('Moving build:', builds[buildIndex].name, 'from index:', buildIndex);
+      console.log('From category:', oldCategoryId, 'to:', categoryId);
+      console.log('Array BEFORE move (with OLD categories):', builds.map((b, i) => {
+        const cat = data.buildCategoryMap[b.id] || (b.isArchived ? 'archived' : 'active');
+        return `[${i}] ${b.name} (${cat})`;
+      }));
+      
+      // Finde den letzten Build in der Ziel-Kategorie (AUSSER dem moved Build selbst!)
+      let lastTargetIndex = -1;
+      for (let i = builds.length - 1; i >= 0; i--) {
+        // Überspringe den Build, der verschoben wird (nach ID, nicht Index!)
+        if (builds[i].id === buildId) {
+          console.log('Skipping moved build at index:', i);
+          continue;
+        }
+        
+        const bCategoryId = data.buildCategoryMap[builds[i].id] || (builds[i].isArchived ? 'archived' : 'active');
+        if (bCategoryId === categoryId) {
+          lastTargetIndex = i;
+          console.log('Found last build in target category at index:', i, '(', builds[i].name, ')');
+          break;
+        }
+      }
+      
+      // Berechne Insert-Position
+      let insertIndex;
+      if (lastTargetIndex === -1) {
+        // Kategorie ist leer: Füge am Ende ein
+        insertIndex = builds.length - 1;
+        console.log('Target category is EMPTY, insertIndex:', insertIndex);
+      } else if (buildIndex < lastTargetIndex) {
+        // Build kommt von LINKS: Nach Entfernen wird lastTargetIndex zu lastTargetIndex-1, also einfügen bei lastTargetIndex
+        insertIndex = lastTargetIndex;
+        console.log('Build comes from LEFT, insertIndex:', insertIndex);
+      } else {
+        // Build kommt von RECHTS: lastTargetIndex bleibt gleich, einfügen bei lastTargetIndex+1
+        insertIndex = lastTargetIndex + 1;
+        console.log('Build comes from RIGHT, insertIndex:', insertIndex);
+      }
+      
+      // Jetzt entfernen
+      const [movedBuild] = builds.splice(buildIndex, 1);
+      console.log('After removal, array length:', builds.length);
+      
+      // Jetzt erst die Kategorie updaten (NACH dem Entfernen, VOR dem Einfügen)
+      data.buildCategoryMap[buildId] = categoryId;
+      if (movedBuild) {
+        movedBuild.isArchived = categoryId === 'archived';
+      }
+      
+      // Und an korrigierter Position einfügen
+      builds.splice(insertIndex, 0, movedBuild);
+      console.log('After insert at', insertIndex, ', array:', builds.map((b, i) => {
+        const cat = data.buildCategoryMap[b.id] || (b.isArchived ? 'archived' : 'active');
+        return `[${i}] ${b.name} (${cat}${b.id === buildId ? ' <- MOVED' : ''})`;
+      }));
+      console.log('=== END DEBUG ===\n');
+      
+      // Speichere die neue Reihenfolge
+      saveBuildsOrder(hunterId, builds);
+    } else {
+      // Kategorie ist gleich geblieben, nur Mapping sicherstellen
+      data.buildCategoryMap[buildId] = categoryId;
+      const build = builds.find(b => b.id === buildId);
+      if (build) {
+        build.isArchived = categoryId === 'archived';
+      }
+    }
+  }
+
+  /**
+   * Kopiert einen Build in eine neue Kategorie (erstellt eine Kopie)
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} buildId - Die ID des zu kopierenden Builds
+   * @param {string} categoryId - Die ID der Ziel-Kategorie
+   */
+  function copyBuildToCategory(hunterId, buildId, categoryId) {
+    initBuildCategories(hunterId);
+    
+    const builds = hunterBuilds.value[hunterId];
+    if (!builds) return;
+    
+    const originalBuild = builds.find(b => b.id === buildId);
+    if (!originalBuild) return;
+    
+    // Erstelle eine tiefe Kopie des Builds
+    const buildCopy = JSON.parse(JSON.stringify(originalBuild));
+    
+    // Generiere neue ID für die Kopie
+    buildCopy.id = Date.now().toString();
+    buildCopy.name = `${originalBuild.name} (Copy)`;
+    
+    // Setze Kategorie für die Kopie
+    const data = buildCategories.value[hunterId];
+    data.buildCategoryMap[buildCopy.id] = categoryId;
+    buildCopy.isArchived = categoryId === 'archived';
+    
+    // Finde Position zum Einfügen (am Ende der Ziel-Kategorie)
+    let insertIndex = -1;
+    for (let i = builds.length - 1; i >= 0; i--) {
+      const bCategoryId = data.buildCategoryMap[builds[i].id] || (builds[i].isArchived ? 'archived' : 'active');
+      if (bCategoryId === categoryId) {
+        insertIndex = i + 1;
+        break;
+      }
+    }
+    
+    // Wenn Kategorie leer ist, füge am Ende ein
+    if (insertIndex === -1) {
+      insertIndex = builds.length;
+    }
+    
+    // Füge die Kopie ein
+    builds.splice(insertIndex, 0, buildCopy);
+    
+    console.log('Build copied:', originalBuild.name, '→', buildCopy.name, 'to category:', categoryId);
+    
+    // Speichere die neue Reihenfolge
+    saveBuildsOrder(hunterId, builds);
+  }
+
+  /**
+   * Gibt die Kategorie eines Builds zurück
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} buildId - Die ID des Builds
+   * @returns {string} Die Kategorie-ID
+   */
+  function getBuildCategory(hunterId, buildId) {
+    initBuildCategories(hunterId);
+    
+    const categoryId = buildCategories.value[hunterId].buildCategoryMap[buildId];
+    if (categoryId) return categoryId;
+    
+    // Fallback: Wenn nicht gemappt, prüfe isArchived Flag
+    const builds = hunterBuilds.value[hunterId];
+    if (builds) {
+      const build = builds.find(b => b.id === buildId);
+      if (build && build.isArchived) {
+        return 'archived';
+      }
+    }
+    
+    return 'active';
+  }
+
+  /**
+   * Gibt alle Builds in einer Kategorie zurück (inkl. Sub-Kategorien)
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} categoryId - Die ID der Kategorie
+   * @param {boolean} includeSubCategories - Inkludiere Sub-Kategorien (default: false)
+   * @returns {Array} Array von Builds
+   */
+  function getBuildsByCategory(hunterId, categoryId, includeSubCategories = false) {
+    initBuildCategories(hunterId);
+    
+    // WICHTIG: Nutze geordnete Builds, nicht ungeordnete!
+    const allBuilds = getOrderedBuildsForHunter(hunterId) || [];
+    const categoryIds = [categoryId];
+    
+    // Füge Sub-Kategorien hinzu wenn gewünscht
+    if (includeSubCategories) {
+      const subCategories = getSubCategories(hunterId, categoryId);
+      categoryIds.push(...subCategories.map(c => c.id));
+    }
+    
+    const filteredBuilds = allBuilds.filter(build => {
+      const buildCategoryId = getBuildCategory(hunterId, build.id);
+      return categoryIds.includes(buildCategoryId);
+    });
+    
+    return filteredBuilds;
+  }
+
+  /**
+   * Gibt alle Sub-Kategorien einer Kategorie zurück (rekursiv)
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} parentId - Die ID der Parent-Kategorie
+   * @returns {Array} Array von Sub-Kategorien
+   */
+  function getSubCategories(hunterId, parentId) {
+    const categories = getCategories(hunterId);
+    const direct = categories.filter(c => c.parentId === parentId);
+    const all = [...direct];
+    
+    // Rekursiv alle Sub-Kategorien sammeln
+    direct.forEach(cat => {
+      all.push(...getSubCategories(hunterId, cat.id));
+    });
+    
+    return all;
+  }
+
+  /**
+   * Setzt den Reference Build für eine Kategorie
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} categoryId - Die ID der Kategorie
+   * @param {string} buildId - Die ID des Builds
+   */
+  function setCategoryReferenceBuild(hunterId, categoryId, buildId) {
+    if (!categoryReferenceBuild.value[hunterId]) {
+      categoryReferenceBuild.value[hunterId] = {};
+    }
+    categoryReferenceBuild.value[hunterId][categoryId] = buildId;
+  }
+
+  /**
+   * Gibt den Reference Build für eine Kategorie zurück
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} categoryId - Die ID der Kategorie
+   * @returns {string|null} Build ID oder null
+   */
+  function getCategoryReferenceBuild(hunterId, categoryId) {
+    const refBuild = categoryReferenceBuild.value[hunterId]?.[categoryId];
+    
+    // Wenn kein Reference Build gesetzt ist, nimm den ersten Build der Kategorie
+    if (!refBuild) {
+      const builds = getBuildsByCategory(hunterId, categoryId, false);
+      if (builds.length > 0) {
+        return builds[0].id;
+      }
+      return null;
+    }
+    
+    return refBuild;
+  }
+
+  /**
+   * Gibt den Reference Build für die aktuelle Kategorie zurück (computed helper)
+   * @param {string} hunterId - Die ID des Hunters
+   * @param {string} categoryId - Die ID der Kategorie
+   * @returns {Object|null} Build Objekt oder null
+   */
+  function getCategoryReferenceBuildData(hunterId, categoryId) {
+    const refBuildId = getCategoryReferenceBuild(hunterId, categoryId);
+    if (!refBuildId) return null;
+    
+    const builds = getBuildsForHunter(hunterId);
+    return builds?.find(b => b.id === refBuildId) || null;
+  }
+
 }, {
   persist: {
     key: 'hunter-data',
@@ -1298,7 +1828,9 @@ function shouldShowAdvancedTalents(hunterId) {
       'displaySettings',
       'hunterSeedSettings',
       'bossKillsByReviveCache',
-      'hunterLevelSettings'
+      'hunterLevelSettings',
+      'buildCategories',
+      'categoryReferenceBuild'
     ]
   }
 });

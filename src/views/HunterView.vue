@@ -65,31 +65,40 @@
           
           <!-- Iterations -->
           <button
-            class="flex items-center gap-2 px-1 py-1.5 rounded-md hover:bg-gray-700 transition-colors"
+            class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors"
             @click="openIterationsModal"
           >
-            <IconRepeat size="16" class="text-blue-400" />
+            <IconRepeat size="14" class="text-blue-400" />
             <span>{{ iterationValue }} iterations</span>
+          </button>
+          
+          <!-- Manage Categories Button -->
+          <button 
+            @click="openCategoryManagementModal"
+            class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors"
+          >
+            <IconFolder size="14" class="text-blue-400" />
+            <span>Manage Categories</span>
           </button>
           
           <!-- Statistics -->
           <div class="hidden md:flex items-center gap-2">
             <button
               @click="setDisplayMode('Vertical')"
-              class="flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors"
-              :class="displaySettings.displayMode === 'Vertical' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors"
+              :class="displaySettings.displayMode === 'Vertical' ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'"
               title="Vertical View"
             >
-              <IconLayoutDistributeVertical size="16" class="text-blue-400" />
+              <IconLayoutDistributeVertical size="14" class="text-blue-400" />
               <span>Vertical</span>
             </button>
             <button
               @click="setDisplayMode('Horizontal')"
-              class="flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors"
-              :class="displaySettings.displayMode === 'Horizontal' ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors"
+              :class="displaySettings.displayMode === 'Horizontal' ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'"
               title="Horizontal View"
             >
-              <IconLayoutDistributeHorizontal size="16" class="text-blue-400" />
+              <IconLayoutDistributeHorizontal size="14" class="text-blue-400" />
               <span>Horizontal</span>
             </button>
           </div>
@@ -107,25 +116,6 @@
           
           <!-- View Controls -->
           <div class="flex items-center gap-2 w-full sm:w-auto">
-            <span class="text-sm text-gray-400">View:</span>
-            <div class="flex gap-2">
-            <button 
-              @click="buildFilterMode = 'active'"
-              class="flex items-center space-x-1 px-3 py-1.5 rounded-full transition-colors duration-200 text-xs sm:text-sm"
-              :class="buildFilterMode === 'active' ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'"
-            >
-              <span>Active</span>
-              <span class="text-xs opacity-75">({{ activeBuildsCount }})</span>
-            </button>
-            <button 
-              @click="buildFilterMode = 'archived'"
-              class="flex items-center space-x-1 px-3 py-1.5 rounded-full transition-colors duration-200 text-xs sm:text-sm"
-              :class="buildFilterMode === 'archived' ? 'bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold shadow-lg' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'"
-            >
-              <span>Archived</span>
-              <span class="text-xs opacity-75">({{ archivedBuildsCount }})</span>
-            </button>
-          </div>
             <button 
               @click="showLootFilterModal = true"
               class="md:hidden flex items-center space-x-1 px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors duration-200 text-xs sm:text-sm"
@@ -138,33 +128,331 @@
       </div>
     </div>
     
-    <!-- Neue Build-Resultate -->
+    <!-- Category Tabs - Horizontal Scrollable -->
+    <div v-if="builds.length > 0 && buildFilterMode === 'active'" class="mb-4">
+      <!-- Main Categories -->
+      <div class="flex items-stretch bg-gray-900 border-b border-gray-700 rounded-t-lg overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+        <!-- System Categories -->
+        <template v-for="category in systemCategories" :key="category.id">
+          <div
+            @drop="onCategoryDrop($event, category.id)"
+            @dragover="onCategoryDragOver($event, category.id)"
+            @dragenter="onCategoryDragEnter($event, category.id)"
+            @dragleave="onCategoryDragLeave($event, category.id)"
+            class="category-drop-zone relative flex-shrink-0"
+            :data-category-id="category.id"
+          >
+            <!-- Drag Action Indicators -->
+            <div v-if="draggedBuildId && dropTargetCategoryId === category.id" class="absolute inset-0 flex pointer-events-none z-20">
+              <!-- Left Half - Move -->
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'move'" class="bg-blue-500/90 text-white px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                  <IconArrowBarToDown size="14" />
+                  <span class="font-semibold text-xs">Move</span>
+                </div>
+              </div>
+              <!-- Right Half - Copy -->
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'copy'" class="bg-green-500/90 text-white px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                  <IconCopy size="14" />
+                  <span class="font-semibold text-xs">Copy</span>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              @click="selectCategory(category.id)"
+              class="relative px-4 py-3 font-semibold text-sm transition-all duration-200 border-r border-gray-800 group whitespace-nowrap"
+              :class="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId)
+                ? `bg-gray-800 text-white` 
+                : `text-gray-500 hover:text-gray-300 hover:bg-${category.color}-900/20`"
+            >
+              <div class="flex items-center gap-2">
+                <IconFolder 
+                  size="18" 
+                  :class="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId) 
+                    ? `text-${category.color}-400` 
+                    : 'text-gray-600 group-hover:text-gray-500'" 
+                />
+                <span>{{ category.name }}</span>
+                <div 
+                  class="ml-2 px-2.5 py-0.5 text-xs font-bold rounded-md"
+                  :class="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId)
+                    ? `bg-${category.color}-500/20 text-${category.color}-300 border border-${category.color}-500/30` 
+                    : 'bg-gray-800 text-gray-600 border border-gray-700'"
+                >
+                  {{ getCategoryBuildCount(category.id) }}
+                </div>
+              </div>
+              
+              <!-- Bottom accent line -->
+              <div 
+                v-if="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId)"
+                class="absolute bottom-0 left-0 right-0 h-1 rounded-t-sm"
+                :class="`bg-${category.color}-500`"
+              ></div>
+            </button>
+          </div>
+        </template>
+        
+        <!-- Spacer -->
+        <div v-if="customRootCategories.length > 0" class="w-px bg-gray-700"></div>
+        
+        <!-- Custom Categories -->
+        <template v-for="category in customRootCategories" :key="category.id">
+          <div
+            @drop="onCategoryDrop($event, category.id)"
+            @dragover="onCategoryDragOver($event, category.id)"
+            @dragenter="onCategoryDragEnter($event, category.id)"
+            @dragleave="onCategoryDragLeave($event, category.id)"
+            class="category-drop-zone relative flex-shrink-0"
+            :data-category-id="category.id"
+          >
+            <!-- Drag Action Indicators -->
+            <div v-if="draggedBuildId && dropTargetCategoryId === category.id" class="absolute inset-0 flex pointer-events-none z-20">
+              <!-- Left Half - Move -->
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'move'" class="bg-blue-500/90 text-white px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                  <IconArrowBarToDown size="14" />
+                  <span class="font-semibold text-xs">Move</span>
+                </div>
+              </div>
+              <!-- Right Half - Copy -->
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'copy'" class="bg-green-500/90 text-white px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                  <IconCopy size="14" />
+                  <span class="font-semibold text-xs">Copy</span>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              @click="selectCategory(category.id)"
+              class="relative px-4 py-3 font-semibold text-sm transition-all duration-200 border-r border-gray-800 group whitespace-nowrap"
+              :class="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId)
+                ? `bg-gray-800 text-white` 
+                : `text-gray-500 hover:text-gray-300 hover:bg-${category.color}-900/20`"
+            >
+              <div class="flex items-center gap-2">
+                <IconFolder 
+                  size="18" 
+                  :class="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId) 
+                    ? `text-${category.color}-400` 
+                    : 'text-gray-600 group-hover:text-gray-500'" 
+                />
+                <span>{{ category.name }}</span>
+                <div 
+                  class="ml-2 px-2.5 py-0.5 text-xs font-bold rounded-md"
+                  :class="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId)
+                    ? `bg-${category.color}-500/20 text-${category.color}-300 border border-${category.color}-500/30` 
+                    : 'bg-gray-800 text-gray-600 border border-gray-700'"
+                >
+                  {{ getCategoryBuildCount(category.id) }}
+                </div>
+                
+                <!-- Override Icon -->
+                <button
+                  @click.stop="openCategoryOverrideModal(category)"
+                  class="ml-auto p-1 rounded hover:bg-gray-700/50 transition-colors"
+                  :title="`Category Overrides for ${category.name}`"
+                >
+                  <IconAdjustmentsHorizontal 
+                    size="14" 
+                    :class="categoryHasOverrides(category.id) ? 'text-purple-400' : 'text-gray-500'"
+                  />
+                </button>
+              </div>
+              
+              <!-- Bottom accent line -->
+              <div 
+                v-if="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId)"
+                class="absolute bottom-0 left-0 right-0 h-1 rounded-t-sm"
+                :class="`bg-${category.color}-500`"
+              ></div>
+            </button>
+          </div>
+        </template>
+        
+        <!-- Flex spacer -->
+        <div class="flex-1 bg-gray-900"></div>
+      </div>
+      
+      <!-- Sub-Categories (only when parent selected and has direct children) -->
+      <div 
+        v-if="selectedParentCategory && getDirectChildCategories(selectedParentCategory.id).length > 0" 
+        class="flex items-stretch bg-gray-850 border-b border-gray-800 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-850"
+      >
+        <div class="flex items-stretch">
+          <div
+            v-for="subCat in getDirectChildCategories(selectedParentCategory.id)"
+            :key="subCat.id"
+            @drop="onCategoryDrop($event, subCat.id)"
+            @dragover="onCategoryDragOver($event, subCat.id)"
+            @dragenter="onCategoryDragEnter($event, subCat.id)"
+            @dragleave="onCategoryDragLeave($event, subCat.id)"
+            class="category-drop-zone relative flex-shrink-0"
+            :data-category-id="subCat.id"
+          >
+            <!-- Drag Action Indicators -->
+            <div v-if="draggedBuildId && dropTargetCategoryId === subCat.id" class="absolute inset-0 flex pointer-events-none z-20">
+              <!-- Left Half - Move -->
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'move'" class="bg-blue-500/90 text-white px-1.5 py-0.5 rounded shadow-lg flex items-center gap-1">
+                  <IconArrowBarToDown size="12" />
+                  <span class="font-semibold text-xs">Move</span>
+                </div>
+              </div>
+              <!-- Right Half - Copy -->
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'copy'" class="bg-green-500/90 text-white px-1.5 py-0.5 rounded shadow-lg flex items-center gap-1">
+                  <IconCopy size="12" />
+                  <span class="font-semibold text-xs">Copy</span>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              @click="selectCategory(subCat.id)"
+              class="relative px-4 py-2.5 font-semibold text-sm transition-all duration-200 border-r border-gray-800 group whitespace-nowrap"
+              :class="(selectedCategoryId === subCat.id || getSubCategories(subCat.id).some(sub => sub.id === selectedCategoryId))
+                ? `bg-gray-800 text-white` 
+                : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'"
+            >
+              <div class="flex items-center gap-2">
+                <IconFolder 
+                  size="16" 
+                  :class="(selectedCategoryId === subCat.id || getSubCategories(subCat.id).some(sub => sub.id === selectedCategoryId))
+                    ? `text-${subCat.color}-400` 
+                    : 'text-gray-600 group-hover:text-gray-500'" 
+                />
+                <span>{{ subCat.name }}</span>
+                <div 
+                  class="ml-1.5 px-2 py-0.5 text-xs font-bold rounded-md"
+                  :class="(selectedCategoryId === subCat.id || getSubCategories(subCat.id).some(sub => sub.id === selectedCategoryId))
+                    ? `bg-${subCat.color}-500/20 text-${subCat.color}-300 border border-${subCat.color}-500/30` 
+                    : 'bg-gray-800 text-gray-600 border border-gray-700'"
+                >
+                  {{ getCategoryBuildCount(subCat.id) }}
+                </div>
+              </div>
+              
+              <!-- Bottom accent line -->
+              <div 
+                v-if="selectedCategoryId === subCat.id || getSubCategories(subCat.id).some(sub => sub.id === selectedCategoryId)"
+                class="absolute bottom-0 left-0 right-0 h-1 rounded-t-sm"
+                :class="`bg-${subCat.color}-500`"
+              ></div>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Sub-Sub-Categories (only when sub-category selected and has children) -->
+      <div 
+        v-if="selectedSubCategory && getDirectChildCategories(selectedSubCategory.id).length > 0" 
+        class="flex items-stretch bg-gray-800 border-b border-gray-700 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
+      >
+        <div class="flex items-stretch">
+          <div
+            v-for="subSubCat in getDirectChildCategories(selectedSubCategory.id)"
+            :key="subSubCat.id"
+            @drop="onCategoryDrop($event, subSubCat.id)"
+            @dragover="onCategoryDragOver($event, subSubCat.id)"
+            @dragenter="onCategoryDragEnter($event, subSubCat.id)"
+            @dragleave="onCategoryDragLeave($event, subSubCat.id)"
+            class="category-drop-zone relative flex-shrink-0"
+            :data-category-id="subSubCat.id"
+          >
+            <!-- Drag Action Indicators -->
+            <div v-if="draggedBuildId && dropTargetCategoryId === subSubCat.id" class="absolute inset-0 flex pointer-events-none z-20">
+              <!-- Left Half - Move -->
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'move'" class="bg-blue-500/90 text-white px-1 py-0.5 rounded shadow-lg flex items-center gap-0.5">
+                  <IconArrowBarToDown size="10" />
+                  <span class="font-semibold" style="font-size: 10px;">Move</span>
+                </div>
+              </div>
+              <!-- Right Half - Copy -->
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'copy'" class="bg-green-500/90 text-white px-1 py-0.5 rounded shadow-lg flex items-center gap-0.5">
+                  <IconCopy size="10" />
+                  <span class="font-semibold" style="font-size: 10px;">Copy</span>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              @click="selectCategory(subSubCat.id)"
+              class="relative px-3 py-2 font-medium text-xs transition-all duration-200 border-r border-gray-700 group whitespace-nowrap"
+              :class="selectedCategoryId === subSubCat.id 
+                ? `bg-gray-750 text-white` 
+                : 'text-gray-500 hover:text-gray-300 hover:bg-gray-750'"
+            >
+              <div class="flex items-center gap-1.5">
+                <IconFolder 
+                  size="14" 
+                  :class="selectedCategoryId === subSubCat.id 
+                    ? `text-${subSubCat.color}-400` 
+                    : 'text-gray-600 group-hover:text-gray-500'" 
+                />
+                <span>{{ subSubCat.name }}</span>
+                <div 
+                  class="ml-1 px-1.5 py-0.5 text-xs font-bold rounded"
+                  :class="selectedCategoryId === subSubCat.id 
+                    ? `bg-${subSubCat.color}-500/20 text-${subSubCat.color}-300 border border-${subSubCat.color}-500/30` 
+                    : 'bg-gray-700 text-gray-600 border border-gray-700'"
+                >
+                  {{ getCategoryBuildCount(subSubCat.id) }}
+                </div>
+              </div>
+              
+              <!-- Bottom accent line -->
+              <div 
+                v-if="selectedCategoryId === subSubCat.id"
+                class="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-sm"
+                :class="`bg-${subSubCat.color}-500`"
+              ></div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Active/Archived Builds View -->
     <div v-if="builds.length > 0">
   <!-- Nur auf Desktop anzeigen: Vertikale Ansicht oder Horizontale Ansicht -->
   <div class="hidden md:block">
-    <!-- Vertikale Ansicht Draggable -->
-    <Draggable 
-      v-if="displaySettings.displayMode === 'Vertical'"
-      v-model="builds"
-      :componentData="{
-        tag: 'div',
-        type: 'transition-group',
-        name: 'flip-list',
-        class: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
-      }"
-      handle=".grip-handle"
-      :group="{ name: 'builds' }"
-      itemKey="id"
-      :animation="200"
-      ghostClass="ghost"
-      chosenClass="chosen"
-      dragClass="dragging"
-      @end="onDragEnd"
-    >
+    <!-- Transition wrapper für smooth category switch -->
+    <Transition name="build-list-fade" mode="out-in">
+      <div :key="selectedCategoryId || buildFilterMode">
+        <!-- Vertikale Ansicht Draggable -->
+        <Draggable 
+          v-if="displaySettings.displayMode === 'Vertical'"
+          v-model="visibleBuilds"
+          :componentData="{
+            tag: 'div',
+            type: 'transition-group',
+            name: 'flip-list',
+            class: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
+          }"
+          handle=".grip-handle"
+          :group="{ name: 'builds' }"
+          itemKey="id"
+          :animation="200"
+          :scroll="true"
+          :scrollSensitivity="100"
+          :scrollSpeed="20"
+          ghostClass="ghost"
+          chosenClass="chosen"
+          dragClass="dragging"
+          @end="onDragEnd"
+        >
       <template #item="{ element, index }">
         <div 
           class="build-card-wrapper"
           :style="{ viewTransitionName: getBuildTransitionName(element.id) }"
+          @dragstart="onBuildDragStart($event, element.id)"
+          @dragend="onBuildDragEnd"
         >
           <BuildCardVertical 
             :build-id="element.id"
@@ -188,7 +476,7 @@
     <!-- Horizontale Ansicht Draggable -->
     <Draggable 
       v-else
-      v-model="builds"
+      v-model="visibleBuilds"
       :componentData="{
         tag: 'div',
         type: 'transition-group',
@@ -199,6 +487,9 @@
       :group="{ name: 'builds' }"
       itemKey="id"
       :animation="200"
+      :scroll="true"
+      :scrollSensitivity="100"
+      :scrollSpeed="20"
       ghostClass="ghost"
       chosenClass="chosen"
       dragClass="dragging"
@@ -208,6 +499,8 @@
         <div 
           class="build-compact-wrapper"
           :style="{ viewTransitionName: getBuildTransitionName(element.id) }"
+          @dragstart="onBuildDragStart($event, element.id)"
+          @dragend="onBuildDragEnd"
         >
           <BuildCardHorizontal 
             :build-id="element.id"
@@ -235,12 +528,14 @@
         </div>
       </template>
     </Draggable>
+      </div>
+    </Transition>
   </div>
 
   <!-- Mobile Ansicht: Immer die Mobile-Karte anzeigen -->
   <div class="md:hidden">
     <Draggable 
-      v-model="builds"
+      v-model="visibleBuilds"
       :componentData="{
         tag: 'div',
         type: 'transition-group',
@@ -251,6 +546,9 @@
       :group="{ name: 'builds' }"
       itemKey="id"
       :animation="200"
+      :scroll="true"
+      :scrollSensitivity="100"
+      :scrollSpeed="20"
       ghostClass="ghost"
       chosenClass="chosen"
       dragClass="dragging"
@@ -260,6 +558,8 @@
         <div 
           class="build-mobile-wrapper"
           :style="{ viewTransitionName: getBuildTransitionName(element.id) }"
+          @dragstart="onBuildDragStart($event, element.id)"
+          @dragend="onBuildDragEnd"
         >
           <BuildCardMobile
             :build-id="element.id"
@@ -379,6 +679,7 @@
       :isVisible="isBuildModalOpen"
       :hunterType="route.params.hunterId"
       :buildToEdit="buildToEdit"
+      :currentCategoryId="selectedCategoryId"
       @close="closeBuildModal"
       @buildCreated="onBuildCreated"
       @buildUpdated="onBuildUpdated"
@@ -410,6 +711,27 @@
       :builds="builds"
       @close="closeGadgetCostModal"
     />
+
+    <!-- Category Management Modal -->
+    <CategoryManagementModal
+      :show="isCategoryModalOpen"
+      :hunterId="route.params.hunterId"
+      @close="closeCategoryManagementModal"
+    />
+    
+    <!-- Category Override Modal -->
+    <OverrideModal
+      v-if="selectedCategoryForOverrides"
+      :isVisible="isCategoryOverrideModalOpen"
+      :mode="'category'"
+      :hunterType="route.params.hunterId"
+      :hunterColor="hunterColor"
+      :categoryName="selectedCategoryForOverrides.name"
+      :categoryId="selectedCategoryForOverrides.id"
+      :currentOverrides="hunterStore.getCategoryOverrides(route.params.hunterId, selectedCategoryForOverrides.id)"
+      @close="closeCategoryOverrideModal"
+      @categoryOverridesUpdated="onCategoryOverridesUpdated"
+    />
   </div>
 </template>
 
@@ -439,7 +761,10 @@ import {
   IconLayoutDistributeHorizontal,
   IconFilter,
   IconCalculator,
-  IconSeedling
+  IconSeedling,
+  IconFolder,
+  IconArrowBarToDown,
+  IconCopy
 } from '@tabler/icons-vue';
 
 import StatsModal from '../components/common/StatsModal.vue';
@@ -448,6 +773,7 @@ import IterationsModal from '@/components/common/IterationsModal.vue';
 import Draggable from 'vuedraggable';
 import OverrideModal from '../components/common/OverrideModal.vue';
 import BuildImportModal from '@/components/builds/BuildImportModal.vue';
+import CategoryManagementModal from '@/components/builds/CategoryManagementModal.vue';
 import StatisticsDisplayModal from '@/components/common/StatisticsDisplayModal.vue';
 import BuildCardVertical from '@/components/builds/Views/verticalView/BuildCardVertical.vue'; 
 import BuildCardHorizontal from '@/components/builds/Views/horizontalView/BuildCardHorizontal.vue';
@@ -537,7 +863,59 @@ const buildToEdit = ref(null);
 const isOverrideModalOpen = ref(false);
 const selectedBuildForOverrides = ref(null);
 
+// Category Management Modal State
+const isCategoryModalOpen = ref(false);
+
+// Category Override Modal State
+const isCategoryOverrideModalOpen = ref(false);
+const selectedCategoryForOverrides = ref(null);
+
 const builds = ref([]);
+
+// Category Selection
+const selectedCategoryId = ref(null);
+
+// Sichtbare Builds für Vuedraggable (gefiltert nach Kategorie)
+const visibleBuilds = computed({
+  get() {
+    if (!selectedCategoryId.value) return builds.value;
+    
+    // Filtere nur die Builds, die direkt in der ausgewählten Kategorie sind
+    return builds.value.filter(build => {
+      const buildCategoryId = hunterStore.getBuildCategory(route.params.hunterId, build.id);
+      return buildCategoryId === selectedCategoryId.value;
+    });
+  },
+  set(newValue) {
+    // Wenn Vuedraggable die Reihenfolge ändert, aktualisiere das komplette builds Array
+    // Wir müssen die neuen Positionen in das Haupt-Array übertragen
+    
+    // Erstelle eine Map der neuen Reihenfolge innerhalb der Kategorie
+    const newOrder = new Map(newValue.map((build, index) => [build.id, index]));
+    
+    // Sortiere das gesamte builds Array
+    const sorted = [...builds.value].sort((a, b) => {
+      const aCat = hunterStore.getBuildCategory(route.params.hunterId, a.id);
+      const bCat = hunterStore.getBuildCategory(route.params.hunterId, b.id);
+      
+      // Beide in der aktuellen Kategorie: Nutze neue Reihenfolge
+      if (aCat === selectedCategoryId.value && bCat === selectedCategoryId.value) {
+        return (newOrder.get(a.id) ?? 0) - (newOrder.get(b.id) ?? 0);
+      }
+      
+      // Nur a in aktueller Kategorie
+      if (aCat === selectedCategoryId.value) return -1;
+      
+      // Nur b in aktueller Kategorie  
+      if (bCat === selectedCategoryId.value) return 1;
+      
+      // Beide nicht in aktueller Kategorie: Behalte ursprüngliche Reihenfolge
+      return builds.value.indexOf(a) - builds.value.indexOf(b);
+    });
+    
+    builds.value = sorted;
+  }
+});
 
 // Refs für Mobile Filter Modal
 const showLootFilterModal = ref(false);
@@ -755,6 +1133,96 @@ function closeBuildModal() {
   buildToEdit.value = null;
 }
 
+// Category-related computed properties
+const availableCategories = computed(() => {
+  const hunterId = route.params.hunterId;
+  const allCategories = hunterStore.getCategories(hunterId);
+  // Only show root categories (no parentId)
+  return allCategories.filter(c => !c.parentId);
+});
+
+const systemCategories = computed(() => {
+  const hunterId = route.params.hunterId;
+  const allCategories = hunterStore.getCategories(hunterId);
+  // Only show root system categories
+  return allCategories.filter(c => c.isSystem && !c.parentId);
+});
+
+const customRootCategories = computed(() => {
+  const hunterId = route.params.hunterId;
+  const allCategories = hunterStore.getCategories(hunterId);
+  // Only show root custom categories
+  return allCategories.filter(c => !c.isSystem && !c.parentId);
+});
+
+const selectedParentCategory = computed(() => {
+  if (!selectedCategoryId.value) return null;
+  
+  const hunterId = route.params.hunterId;
+  const allCategories = hunterStore.getCategories(hunterId);
+  const selectedCat = allCategories.find(c => c.id === selectedCategoryId.value);
+  
+  if (!selectedCat) return null;
+  
+  // Wenn die ausgewählte Kategorie ein Parent (keine parentId) ist, return sie
+  if (!selectedCat.parentId) {
+    return selectedCat;
+  }
+  
+  // Wenn es eine Sub-Category ist, finde den obersten Parent (ohne parentId)
+  let parent = allCategories.find(c => c.id === selectedCat.parentId);
+  while (parent && parent.parentId) {
+    parent = allCategories.find(c => c.id === parent.parentId);
+  }
+  return parent;
+});
+
+const selectedSubCategory = computed(() => {
+  if (!selectedCategoryId.value) return null;
+  
+  const hunterId = route.params.hunterId;
+  const allCategories = hunterStore.getCategories(hunterId);
+  const selectedCat = allCategories.find(c => c.id === selectedCategoryId.value);
+  
+  if (!selectedCat) return null;
+  
+  // Wenn die ausgewählte Kategorie ein Root ist, keine Sub-Category
+  if (!selectedCat.parentId) return null;
+  
+  // Wenn die ausgewählte Kategorie eine direkte Child des Root ist
+  const parent = allCategories.find(c => c.id === selectedCat.parentId);
+  if (parent && !parent.parentId) {
+    return selectedCat;
+  }
+  
+  // Wenn es eine Sub-Sub-Category ist, finde die Sub-Category (Ebene 2)
+  return parent;
+});
+
+function getSubCategories(parentId) {
+  return hunterStore.getSubCategories(route.params.hunterId, parentId);
+}
+
+function getDirectChildCategories(parentId) {
+  const hunterId = route.params.hunterId;
+  const allCategories = hunterStore.getCategories(hunterId);
+  return allCategories.filter(c => c.parentId === parentId);
+}
+
+function getCategoryBuildCount(categoryId) {
+  // Get builds ONLY in this category (not sub-categories)
+  const categoryBuilds = hunterStore.getBuildsByCategory(route.params.hunterId, categoryId, false);
+  return categoryBuilds.length;
+}
+
+function isBuildInSelectedCategory(build) {
+  if (!selectedCategoryId.value) return true;
+  
+  // Only show builds that are DIRECTLY in the selected category (not in sub-categories)
+  const categoryBuilds = hunterStore.getBuildsByCategory(route.params.hunterId, selectedCategoryId.value, false);
+  return categoryBuilds.some(b => b.id === build.id);
+}
+
 // Event-Handler für erstellten Build
 function onBuildCreated(build) {
   // Aktualisiere die lokale Liste der Builds
@@ -871,6 +1339,47 @@ function deleteBuild(build) {
   }
 }
 
+function openCategoryManagementModal() {
+  isCategoryModalOpen.value = true;
+}
+
+function closeCategoryManagementModal() {
+  isCategoryModalOpen.value = false;
+}
+
+// Category Override Modal Functions
+function openCategoryOverrideModal(category) {
+  selectedCategoryForOverrides.value = category;
+  isCategoryOverrideModalOpen.value = true;
+}
+
+function closeCategoryOverrideModal() {
+  isCategoryOverrideModalOpen.value = false;
+  selectedCategoryForOverrides.value = null;
+}
+
+function onCategoryOverridesUpdated(payload) {
+  const { categoryId, overrides } = payload;
+  
+  // Update category overrides in store
+  hunterStore.updateCategoryOverrides(route.params.hunterId, categoryId, overrides);
+  
+  // Show toast
+  const category = hunterStore.getCategories(route.params.hunterId).find(c => c.id === categoryId);
+  showToastMessage(`Category "${category?.name}" overrides updated`, 'success');
+  
+  // Force re-evaluation of all builds in this category
+  const categoryBuilds = hunterStore.getBuildsByCategory(route.params.hunterId, categoryId, false);
+  categoryBuilds.forEach(build => {
+    handleBuildReevaluate(build.id);
+  });
+}
+
+function categoryHasOverrides(categoryId) {
+  const overrides = hunterStore.getCategoryOverrides(route.params.hunterId, categoryId);
+  return Object.keys(overrides).length > 0;
+}
+
 
 // Reagiere auf Änderungen der Route, um den richtigen Hunter anzuzeigen
 watch(
@@ -891,6 +1400,12 @@ watch(
 // Lifecycle hooks
 onMounted(async () => {
   await hunterStore.initHunterConfig(route.params.hunterId);
+  // Initialisiere Build-Kategorien
+  hunterStore.initBuildCategories(route.params.hunterId);
+  
+  // Wähle standardmäßig "active" Kategorie (für Desktop UND Mobile)
+  selectedCategoryId.value = 'active';
+  
   // Initialisiere auch den gemPlannerStore
   gemPlannerStore.init();
 });
@@ -898,6 +1413,11 @@ onMounted(async () => {
 // Bei Wechsel des Hunters die Konfiguration initialisieren
 watch(() => route.params.hunterId, async (newHunterId) => {
   await hunterStore.initHunterConfig(newHunterId);
+  // Initialisiere Build-Kategorien für den neuen Hunter
+  hunterStore.initBuildCategories(newHunterId);
+  
+  // Wähle standardmäßig "active" Kategorie (für Desktop UND Mobile)
+  selectedCategoryId.value = 'active';
   
   // Check for pending build import when hunter changes
   nextTick(() => {
@@ -998,26 +1518,31 @@ function handleNameChanged(data) {
 function archiveBuild(build) {
   if (!build || !build.id) return;
   
+  const hunterId = route.params.hunterId;
+  const newIsArchived = !build.isArchived;
+  
   // Toggle the archived status
   const updatedBuild = {
     ...build,
-    isArchived: !build.isArchived
+    isArchived: newIsArchived
   };
   
   // Update the build in the store
   hunterStore.updateBuild(updatedBuild);
   
-  // Update local list
-  const buildIndex = builds.value.findIndex(b => b.id === build.id);
-  if (buildIndex !== -1) {
-    // Remove the build from the current view when archiving/unarchiving
-    builds.value.splice(buildIndex, 1);
-  }
+  // WICHTIG: Auch die Kategorie aktualisieren!
+  // Wenn archiviert → 'archived' Kategorie
+  // Wenn unarchiviert → 'active' Kategorie
+  const newCategoryId = newIsArchived ? 'archived' : 'active';
+  hunterStore.moveBuildToCategory(hunterId, build.id, newCategoryId);
+  
+  // Reload builds mit der neuen Reihenfolge
+  builds.value = [...hunterStore.getOrderedBuildsForHunter(hunterId) || []];
   
   // Show toast message
-  showToastMessage(updatedBuild.isArchived ? 
+  showToastMessage(newIsArchived ? 
     `Build "${build.name}" archived` : 
-    `Build "${build.name}" restored`,
+    `Build "${build.name}" unarchived`, 
     'success'
   );
 }
@@ -1025,11 +1550,26 @@ function archiveBuild(build) {
 // Computed Properties für die gefilterten Builds
 const filteredBuilds = computed(() => {
   const allBuilds = hunterStore.getOrderedBuildsForHunter(route.params.hunterId) || [];
+  
+  // Im Category-System (wenn eine Kategorie ausgewählt ist): zeige ALLE Builds
+  // Die Filterung erfolgt über isBuildInSelectedCategory() im Template
+  if (selectedCategoryId.value) {
+    return allBuilds;
+  }
+  
+  // Im Active/Archived-Modus (alte Buttons): filtere nach isArchived Flag
   return allBuilds.filter(build => 
     (buildFilterMode.value === 'active' && !build.isArchived) || 
     (buildFilterMode.value === 'archived' && build.isArchived)
   );
 });
+
+// Wenn auf Active/Archived Button geklickt wird, deselektiere die Kategorie
+function switchToBuildFilterMode(mode) {
+  // Direkter Update ohne View Transition API
+  buildFilterMode.value = mode;
+  selectedCategoryId.value = null; // Deaktiviere Category-System
+}
 
 
 function updateLootFilters(newFilters) {
@@ -1065,17 +1605,40 @@ provide('referenceBuildResults', referenceBuildResults);
 // Stelle den Zähler bereit
 provide('referenceUpdateCounter', referenceUpdateCounter);
 
-// Wenn die Builds geladen werden, setze den ersten als Referenz
-watchEffect(() => {
-  if (builds.value && builds.value.length > 0) {
-    const firstBuild = builds.value[0];
-    if (referenceBuildId.value !== firstBuild.id) {
-      referenceBuildId.value = firstBuild.id;
-      // Erhöhe den Zähler, wenn sich der Referenzbuild ändert
-      referenceUpdateCounter.value++;
-    }
-  }
+// Computed: Erster Build in der aktuellen Kategorie ist Reference Build
+const categoryReferenceBuildId = computed(() => {
+  // Finde den ersten SICHTBAREN Build (nach Filterung durch isBuildInSelectedCategory)
+  const visibleBuilds = builds.value.filter(build => isBuildInSelectedCategory(build));
+  
+  // Erster sichtbarer Build ist Reference
+  return visibleBuilds.length > 0 ? visibleBuilds[0].id : null;
 });
+
+// Synchronisiere referenceBuildId mit categoryReferenceBuildId
+watch(categoryReferenceBuildId, (newRefId) => {
+  if (newRefId && referenceBuildId.value !== newRefId) {
+    referenceBuildId.value = newRefId;
+    
+    // Suche nach Ergebnissen für den neuen Referenz-Build im Cache
+    const refBuildKey = Object.keys(evaluationCache.value).find(key => {
+      try {
+        const cachedData = JSON.parse(key);
+        return cachedData.buildId === newRefId;
+      } catch {
+        return false;
+      }
+    });
+    
+    if (refBuildKey && evaluationCache.value[refBuildKey]) {
+      referenceBuildResults.value = { ...evaluationCache.value[refBuildKey] };
+    } else {
+      referenceBuildResults.value = {};
+    }
+    
+    // Erhöhe den Zähler, wenn sich der Referenzbuild ändert
+    referenceUpdateCounter.value++;
+  }
+}, { immediate: true });
 
 // Handler für das Drag-Ende-Event - aktualisiert
 function onDragEnd(event) {
@@ -1094,32 +1657,9 @@ function onDragEnd(event) {
   // Speichere die neue Reihenfolge im Store und localStorage
   hunterStore.saveBuildsOrder(route.params.hunterId, builds.value);
   
-  // Aktualisiere den Referenz-Build nach dem Drag & Drop
-  if (builds.value && builds.value.length > 0) {
-    const newReferenceId = builds.value[0].id;
-    
-    // Wenn sich der Referenz-Build geändert hat
-    if (referenceBuildId.value !== newReferenceId) {
-      referenceBuildId.value = newReferenceId;
-      
-      // Suche nach Ergebnissen für den neuen Referenz-Build im Cache
-      const firstBuildKey = Object.keys(evaluationCache.value).find(key => {
-        try {
-          const cachedData = JSON.parse(key);
-          return cachedData.buildId === newReferenceId;
-        } catch {
-          return false;
-        }
-      });
-      
-      if (firstBuildKey && evaluationCache.value[firstBuildKey]) {
-        referenceBuildResults.value = { ...evaluationCache.value[firstBuildKey] };
-      }
-      
-      // Wichtig: Erhöhe den Aktualisierungszähler, um alle Builds zu aktualisieren
-      referenceUpdateCounter.value++;
-    }
-  }
+  // Der Reference Build wird automatisch durch categoryReferenceBuildId aktualisiert
+  // Triggere eine Neuberechnung
+  referenceUpdateCounter.value++;
 }
 
 // Der Handler für das evaluated Event
@@ -1209,6 +1749,14 @@ function onBuildReevaluate(buildId) {
   };
 }
 
+// Category-Wechsel mit Smooth Transition
+function selectCategory(categoryId) {
+  // WICHTIG: Keine View Transition API für Category-Wechsel
+  // Das führt zu Layout-Problemen bei gefilterten Builds
+  // Stattdessen: Direkter Update mit CSS-Transitions
+  selectedCategoryId.value = categoryId;
+}
+
 // Handler für temporäre Upgrade-Änderungen
 function handleUpgradeChanged(changeData) {
   // Prüfe ob eine Neuevaluierung ausgelöst werden soll
@@ -1267,10 +1815,184 @@ const useSeededEvaluation = computed({
 
 // Stelle den Wert über provide/inject bereit
 provide('useSeededEvaluation', useSeededEvaluation);
+
+// Category Drag & Drop State
+const draggedBuildId = ref(null);
+const dropTargetCategoryId = ref(null);
+const dragAction = ref(null); // 'move' oder 'copy'
+
+// Category Drag & Drop Handlers
+function onBuildDragStart(event, buildId) {
+  draggedBuildId.value = buildId;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', buildId);
+}
+
+function onCategoryDragEnter(event, categoryId) {
+  if (draggedBuildId.value) {
+    dropTargetCategoryId.value = categoryId;
+    event.currentTarget.classList.add('category-drag-over');
+  }
+}
+
+function onCategoryDragOver(event, categoryId) {
+  event.preventDefault();
+  
+  if (!draggedBuildId.value) return;
+  
+  // Berechne ob Maus in linker oder rechter Hälfte ist
+  const rect = event.currentTarget.getBoundingClientRect();
+  const midpoint = rect.left + rect.width / 2;
+  const isLeftHalf = event.clientX < midpoint;
+  
+  // Setze die Aktion basierend auf der Position
+  const action = isLeftHalf ? 'move' : 'copy';
+  dragAction.value = action;
+  
+  // Setze data-attribute für CSS styling
+  event.currentTarget.dataset.dragAction = action;
+}
+
+function onCategoryDragLeave(event, categoryId) {
+  // Nur entfernen, wenn wir das Element wirklich verlassen (nicht nur zu einem Kind)
+  const rect = event.currentTarget.getBoundingClientRect();
+  const x = event.clientX;
+  const y = event.clientY;
+  
+  if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
+    event.currentTarget.classList.remove('category-drag-over');
+    delete event.currentTarget.dataset.dragAction;
+    dragAction.value = null;
+    if (dropTargetCategoryId.value === categoryId) {
+      dropTargetCategoryId.value = null;
+    }
+  }
+}
+
+function onCategoryDrop(event, categoryId) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('category-drag-over');
+  delete event.currentTarget.dataset.dragAction;
+  
+  if (!draggedBuildId.value) return;
+  
+  const buildId = draggedBuildId.value;
+  const hunterId = route.params.hunterId;
+  const action = dragAction.value || 'move'; // Fallback auf move
+  
+  const categoryName = hunterStore.getCategories(hunterId).find(c => c.id === categoryId)?.name;
+  
+  if (action === 'copy') {
+    // Build kopieren
+    hunterStore.copyBuildToCategory(hunterId, buildId, categoryId);
+    
+    // WICHTIG: Force reactivity mit neuem Array und nextTick
+    nextTick(() => {
+      const orderedBuilds = hunterStore.getOrderedBuildsForHunter(hunterId) || [];
+      builds.value = [...orderedBuilds];
+    });
+    
+    showToastMessage(`Build copied to ${categoryName}`, 'success', 2000);
+  } else {
+    // Build verschieben
+    hunterStore.moveBuildToCategory(hunterId, buildId, categoryId);
+    
+    // WICHTIG: Force reactivity mit neuem Array und nextTick
+    nextTick(() => {
+      const orderedBuilds = hunterStore.getOrderedBuildsForHunter(hunterId) || [];
+      builds.value = [...orderedBuilds];
+      
+      console.log('UI builds updated to:', builds.value.map((b, i) => {
+        const cat = hunterStore.getBuildCategory(hunterId, b.id);
+        return `[${i}] ${b.name} (${cat})`;
+      }));
+    });
+    
+    showToastMessage(`Build moved to ${categoryName}`, 'success', 2000);
+  }
+  
+  // Reset state
+  draggedBuildId.value = null;
+  dropTargetCategoryId.value = null;
+  dragAction.value = null;
+  
+  // Triggere Reference Build Update (auch nach nextTick)
+  nextTick(() => {
+    referenceUpdateCounter.value++;
+  });
+}
+
+function onBuildDragEnd() {
+  draggedBuildId.value = null;
+  dropTargetCategoryId.value = null;
+  dragAction.value = null;
+  
+  // Alle drag-over Klassen und data-attributes entfernen
+  document.querySelectorAll('.category-drag-over').forEach(el => {
+    el.classList.remove('category-drag-over');
+    delete el.dataset.dragAction;
+  });
+}
 </script>
 
 <style scoped>
 /* Bestehende Grid-Styles... */
+
+/* Category Drop Zone Styles */
+.category-drop-zone {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.category-drop-zone.category-drag-over {
+  background: rgba(59, 130, 246, 0.1);
+  outline: 2px dashed rgba(59, 130, 246, 0.5);
+  outline-offset: -2px;
+}
+
+.category-drop-zone.category-drag-over button {
+  opacity: 0.8;
+}
+
+/* Split Zone Indicators - Move (Left) and Copy (Right) */
+.category-drop-zone[data-drag-action="move"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(to right, rgba(59, 130, 246, 0.2), transparent);
+  border: 2px solid rgba(59, 130, 246, 0.6);
+  border-right: none;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.category-drop-zone[data-drag-action="copy"]::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: linear-gradient(to left, rgba(34, 197, 94, 0.2), transparent);
+  border: 2px solid rgba(34, 197, 94, 0.6);
+  border-left: none;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Smooth fade transition for category switches */
+.build-list-fade-enter-active,
+.build-list-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.build-list-fade-enter-from,
+.build-list-fade-leave-to {
+  opacity: 0;
+}
 
 /* Neue Animation-Klassen für vuedraggable 4.x */
 .flip-list-move {
@@ -1337,14 +2059,18 @@ html.in-page-transition .build-mobile-wrapper * {
 }
 
 /* Force build cards to maintain their size during View Transitions */
-html.in-page-transition .build-compact-wrapper {
+html.in-page-transition .build-card-wrapper,
+html.in-page-transition .build-compact-wrapper,
+html.in-page-transition .build-mobile-wrapper {
   width: 100% !important;
   min-width: 100% !important;
   max-width: 100% !important;
 }
 
 /* Prevent overflow-hidden from clipping content during View Transition */
-html.in-page-transition .build-compact-wrapper .build-vertical {
+html.in-page-transition .build-card-wrapper > *,
+html.in-page-transition .build-compact-wrapper > *,
+html.in-page-transition .build-mobile-wrapper > * {
   overflow: visible !important;
 }
 

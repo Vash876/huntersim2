@@ -12,10 +12,17 @@
       <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-2.5 border-b border-gray-600 sticky top-0 z-10">
         <!-- Erste Zeile: Titel und Action Buttons -->
         <div class="flex justify-between items-center mb-2 sm:mb-0">
-          <h2 class="text-base sm:text-lg font-bold text-white truncate mr-2">
-            <span :class="`text-${hunterColor}-400`">{{ buildName }}</span>
-            <span class=""> - Overrides</span>
-          </h2>
+          <div class="flex-1">
+            <h2 class="text-base sm:text-lg font-bold text-white truncate mr-2">
+              <span :class="`text-${hunterColor}-400`">{{ modalTitle }}</span>
+              <span class=""> - {{ modalSubtitle }}</span>
+            </h2>
+            <!-- Info-Badge für Category-Mode -->
+            <div v-if="mode === 'category'" class="text-xs text-blue-300 mt-0.5 flex items-center gap-1">
+              <IconInfoCircle size="12" />
+              <span>Applies to all builds in this category</span>
+            </div>
+          </div>
           <div class="flex items-center gap-2">
             <!-- Hide Maxed Toggle - nur auf Desktop in der ersten Zeile -->
             <div class="hidden sm:block bg-gray-800/50 rounded-lg border border-gray-700/50 p-2">
@@ -212,7 +219,7 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
 import { 
-  IconX, IconChevronLeft, IconChevronRight, IconAlertCircle 
+  IconX, IconChevronLeft, IconChevronRight, IconAlertCircle, IconInfoCircle
 } from '@tabler/icons-vue';
 import { useHunterStore } from '../../store/hunterStore';
 import { useGemPlannerStore } from '../../store/gemPlannerStore';
@@ -230,17 +237,48 @@ const props = defineProps({
   isVisible: { type: Boolean, default: false },
   hunterType: { type: String, required: true },
   hunterColor: { type: String, required: true },
+  
+  // MODE SWITCH: 'build' oder 'category'
+  mode: { 
+    type: String, 
+    default: 'build',
+    validator: (value) => ['build', 'category'].includes(value)
+  },
+  
+  // Build-Mode Props:
   buildName: { type: String, default: 'Build' },
   buildId: { type: String, default: null },
+  isImportedBuild: { type: Boolean, default: false },
+  
+  // Category-Mode Props:
+  categoryName: { type: String, default: '' },
+  categoryId: { type: String, default: null },
+  
+  // Shared: currentOverrides wird für beide Modi verwendet
   currentOverrides: { type: Object, default: () => ({}) },
-  isImportedBuild: { type: Boolean, default: false }, // NEU: Flag für importierte Builds
 });
 
-const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'overridesBuild', 'close', 'overridesUpdated']);
+const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'overridesBuild', 'close', 'overridesUpdated', 'categoryOverridesUpdated']);
 
 // Store
 const hunterStore = useHunterStore();
 const gemPlannerStore = useGemPlannerStore();
+
+// Computed für dynamischen Titel
+const modalTitle = computed(() => {
+  if (props.mode === 'category') {
+    return props.categoryName;
+  }
+  return props.buildName;
+});
+
+// Computed für Subtitle
+const modalSubtitle = computed(() => {
+  if (props.mode === 'category') {
+    return 'Category Overrides';
+  }
+  return 'Overrides';
+});
 
 // Local state
 const isLoading = ref(true);
@@ -1445,15 +1483,24 @@ function handleClose() {
     overridesToSave[param] = value;
   }
   
-  // Wenn buildId vorhanden ist, im neuen Format emittieren
-  if (props.buildId) {
-    emit('overridesUpdated', {
-      buildId: props.buildId,
+  // MODE SWITCH: Emit basierend auf dem Modus
+  if (props.mode === 'category') {
+    // Category-Mode: Emit category overrides
+    emit('categoryOverridesUpdated', {
+      categoryId: props.categoryId,
       overrides: overridesToSave
     });
   } else {
-    // Kein buildId -> direkt die Overrides emittieren (für neue Builds)
-    emit('overridesUpdated', overridesToSave);
+    // Build-Mode: Emit build overrides
+    if (props.buildId) {
+      emit('overridesUpdated', {
+        buildId: props.buildId,
+        overrides: overridesToSave
+      });
+    } else {
+      // Kein buildId -> direkt die Overrides emittieren (für neue Builds)
+      emit('overridesUpdated', overridesToSave);
+    }
   }
   
   emit('close');

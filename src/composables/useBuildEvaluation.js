@@ -225,8 +225,11 @@ export function useBuildEvaluation(props, emit) {
       // Konvertiere gemPlannerStore-Daten in das upgrades.gems_nodes Format
       convertGemStatesToUpgrades(store.gemPlannerStore.gemStates, store.upgrades);
       
-      if (props.buildData.overrides && Object.keys(props.buildData.overrides).length > 0) {
-        console.log('🔧 [Override] Applying overrides, filtering old gem data');
+      // Hole effektive Overrides (Category + Build Overrides merged)
+      const effectiveOverrides = hunterStore.getEffectiveBuildOverrides(props.hunterId, props.buildId);
+      
+      if (effectiveOverrides && Object.keys(effectiveOverrides).length > 0) {
+        console.log('🔧 [Override] Applying effective overrides (category + build), filtering old gem data');
         
         store = {
           hunterStats: JSON.parse(JSON.stringify(store.hunterStats)),
@@ -245,7 +248,7 @@ export function useBuildEvaluation(props, emit) {
           store.hunterStats[props.hunterId] = {};
         }
         
-        for (const [key, value] of Object.entries(props.buildData.overrides)) {
+        for (const [key, value] of Object.entries(effectiveOverrides)) {
           // Filtere alte Gem-Overrides heraus
           if (key.includes('gems_nodes') && (
             key.includes('temporal_') || 
@@ -431,12 +434,28 @@ export function useBuildEvaluation(props, emit) {
       () => [
         props.buildData.talents, 
         props.buildData.attributes,
-        props.buildData.overrides
+        props.buildData.overrides // Build-spezifische Overrides
       ], 
       () => {
         evaluateBuild();
       },
       { deep: true }
+    );
+    
+    // Watch für Category-Overrides Änderungen
+    // Nutze den categoryOverrideUpdateCounter als Trigger
+    watch(
+      () => hunterStore.categoryOverrideUpdateCounter,
+      () => {
+        // Prüfe ob dieser Build zu einer Kategorie gehört
+        const categoryId = hunterStore.getBuildCategory(props.hunterId, props.buildId);
+        if (!categoryId) return;
+        
+        // IMMER evaluieren wenn Counter sich ändert
+        // (auch beim Reset der Overrides, um gecachte Werte mit Overrides zu entfernen)
+        console.log('🔧 CATEGORY OVERRIDES CHANGED (via counter) - TRIGGERING EVALUATION');
+        evaluateBuild();
+      }
     );
     
     // Watch für Änderungen der Level-Property
@@ -600,8 +619,15 @@ export function useBuildEvaluation(props, emit) {
       const useSeeded = hunterStore.getHunterSeedSetting(props.hunterId);
       console.log(`Evaluating build params with seed mode: ${useSeeded ? 'Seeded' : 'Random'}`);
       
+      // Hole effektive Overrides (Category + Build Overrides merged)
+      // Wenn buildParams eine ID hat, verwende getEffectiveBuildOverrides
+      // Sonst fallback auf buildParams.overrides (z.B. bei Upgrade Comparison)
+      const effectiveOverrides = buildParams.id 
+        ? hunterStore.getEffectiveBuildOverrides(props.hunterId, buildParams.id)
+        : (buildParams.overrides || {});
+      
       // Wenn die Build-Parameter Overrides enthalten, diese anwenden
-      if (buildParams.overrides && Object.keys(buildParams.overrides).length > 0) {
+      if (effectiveOverrides && Object.keys(effectiveOverrides).length > 0) {
         // Deep-Copy erstellen
         const storeWithOverrides = {
           hunterStats: JSON.parse(JSON.stringify(store.hunterStats)),
@@ -621,8 +647,8 @@ export function useBuildEvaluation(props, emit) {
           storeWithOverrides.hunterStats[props.hunterId] = {};
         }
         
-        // Alle Overrides auf den Store anwenden
-        for (const [key, value] of Object.entries(buildParams.overrides)) {
+        // Alle effektiven Overrides auf den Store anwenden
+        for (const [key, value] of Object.entries(effectiveOverrides)) {
           if (key.includes('.')) {
             const parts = key.split('.');
             

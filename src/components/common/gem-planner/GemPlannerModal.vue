@@ -345,11 +345,11 @@
                 </div>
                 
                 <!-- Gem Level Efficiency -->
-                <div v-if="getPlanGemLevel(gem.id) < gem.maxLevel && props.weights" class="mt-1">
+                <!-- <div v-if="getPlanGemLevel(gem.id) < gem.maxLevel && props.weights" class="mt-1">
                   <div class="text-xs text-purple-400 font-mono">
                     Eff: {{ formatEfficiency(getPlanGemLevelEfficiency(gem.id)) }}
                   </div>
-                </div>
+                </div> -->
                 
                 <!-- Purchased Levels Display -->
                 <div v-if="getPurchasedGemLevels(gem.id) > 0" class="mt-1 pt-1 border-t border-gray-500/30">
@@ -452,7 +452,7 @@
                   </div>
                   
                   <!-- Value & Efficiency Display -->
-                  <div v-if="getPlanUpgradeLevel(gem.id, upgrade.id) < upgrade.maxLevel && calculateUpgradeEfficiencyLocal(gem.id, upgrade.id).value !== 0" class="mt-1 pt-1 border-t border-gray-500/30">
+                  <!-- <div v-if="getPlanUpgradeLevel(gem.id, upgrade.id) < upgrade.maxLevel && calculateUpgradeEfficiencyLocal(gem.id, upgrade.id).value !== 0" class="mt-1 pt-1 border-t border-gray-500/30">
                     <div class="flex justify-between text-xs font-mono">
                       <div class="text-blue-400">
                         Val: {{ formatValue(calculateUpgradeEfficiencyLocal(gem.id, upgrade.id).value) }}
@@ -461,7 +461,7 @@
                         Eff: {{ formatEfficiency(calculateUpgradeEfficiencyLocal(gem.id, upgrade.id).efficiency) }}
                       </div>
                     </div>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>

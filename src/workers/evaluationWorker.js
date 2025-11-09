@@ -1,6 +1,6 @@
 import * as Comlink from 'comlink';
 import { HUNTERS } from '../constants/hunters';
-import { GEM_UPGRADE_MAPPING } from '../constants/gemUpgradeMappings';
+import { GEM_UPGRADE_MAPPING, REVERSE_GEM_UPGRADE_MAPPING, UPGRADE_NAME_TO_STORE_ID } from '../constants/gemUpgradeMappings';
 
 // Direkte Imports der Eval-Funktionen
 import { EVALBORGE_WASM } from './wasmBorge.js';  // WASM für Borge
@@ -422,7 +422,8 @@ function extractParamValue(storeData, hunterId, buildData, param) {
           borgeGU: 'borge-stat-bonus',
           ozzyGU: 'ozzy-stat-bonus', 
           knoxGU: 'knox-stat-bonus',
-          catchUp: 'catch-up-power',
+          catchUp: 'catch-up-power-borge-ozzy',
+          catchUp2: 'catch-up-power-knox',
           lootBorge: 'borge-loot-bonus',
           lootOzzy: 'ozzy-loot-bonus',
           lootKnox: 'knox-loot-bonus'
@@ -439,14 +440,15 @@ function extractParamValue(storeData, hunterId, buildData, param) {
   if (param.startsWith('upgrades.')) {
     const parts = param.split('.');
     
-    // Spezielle Behandlung für gems_nodes Format: upgrades.gems_nodes.attraction_level
-    if (parts.length === 4 && parts[1] === 'gems_nodes') {
-      const [_, __, gemNodeParam] = parts;
+    // Spezielle Behandlung für gems_nodes Format: upgrades.gems_nodes.attraction_catchUp
+    // WICHTIG: parts.length === 3, nicht 4! (upgrades, gems_nodes, attraction_catchUp)
+    if (parts.length === 3 && parts[1] === 'gems_nodes') {
+      const gemNodeParam = parts[2]; // z.B. "attraction_catchUp"
       const underscoreIndex = gemNodeParam.indexOf('_');
       
       if (underscoreIndex > 0) {
         const gemType = gemNodeParam.substring(0, underscoreIndex); // attraction, creation, etc.
-        const gemProperty = gemNodeParam.substring(underscoreIndex + 1); // level, lootBorge, etc.
+        const gemProperty = gemNodeParam.substring(underscoreIndex + 1); // level, lootBorge, catchUp etc.
         
         // Reduziertes Logging nur bei fehlenden Daten
         if (!storeData.gemPlannerStore?.gemStates?.[gemType]) {
@@ -468,9 +470,28 @@ function extractParamValue(storeData, hunterId, buildData, param) {
         }
         // Upgrades (lootBorge, catchUp, borgeGU etc.)
         else {
-          const storeUpgradeKey = GEM_UPGRADE_MAPPING[gemProperty] || gemProperty;
+          const storeUpgradeKey = UPGRADE_NAME_TO_STORE_ID[gemProperty] || gemProperty;
           const upgrades = storeData.gemPlannerStore?.gemStates?.[gemType]?.upgrades || {};
           const upgradeValue = upgrades[storeUpgradeKey] || 0;
+          
+          // Debug logging für catchUp - ERWEITERT
+          if (gemProperty === 'catchUp' || gemProperty === 'catchUp2' || gemProperty === 'lootBorge' || gemProperty === 'lootOzzy') {
+            console.log(`🔍 [Worker] Extracting ${gemType}_${gemProperty}:`, {
+              gemProperty,
+              storeUpgradeKey,
+              hasGemPlannerStore: !!storeData.gemPlannerStore,
+              hasGemStates: !!storeData.gemPlannerStore?.gemStates,
+              hasGemType: !!storeData.gemPlannerStore?.gemStates?.[gemType],
+              upgradesObject: upgrades,
+              upgradesType: typeof upgrades,
+              upgradesIsArray: Array.isArray(upgrades),
+              upgradeValue,
+              allUpgradeKeys: Object.keys(upgrades),
+              UPGRADE_NAME_TO_STORE_ID_has_key: gemProperty in UPGRADE_NAME_TO_STORE_ID,
+              UPGRADE_NAME_TO_STORE_ID_value: UPGRADE_NAME_TO_STORE_ID[gemProperty]
+            });
+          }
+          
           return upgradeValue;
         }
       }

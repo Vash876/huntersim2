@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-850/40 p-2 flex items-center border-b border-gray-700/30">
+  <div class="bg-gray-850/40 p-1.5 flex items-center border-b border-gray-700/30">
     <!-- Grip Handle (links) -->
     <div class="grip-handle p-1.5 cursor-grab rounded-md text-gray-500 hover:bg-gray-700 hover:text-gray-300 transition-colors">
       <IconGripVertical size="16" />

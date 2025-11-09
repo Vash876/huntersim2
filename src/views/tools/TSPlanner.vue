@@ -353,7 +353,7 @@
               <!-- Column 1: Title -->
               <div class="flex items-center">
                 <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
-                  <IconCircle size="16" class="mr-1.5 text-purple-400" />
+                  <IconHexagon size="16" class="mr-1.5 text-purple-400" />
                   Trait Spheres
                 </h3>
               </div>
@@ -361,7 +361,7 @@
               <!-- Column 2: Cores Used (rechtsbündig) -->
               <div class="flex justify-end">
                 <div class="flex items-center gap-1.5 px-2 py-1 rounded border bg-purple-900/20 border-purple-700/50">
-                  <IconCircle size="12" class="text-purple-400" />
+                  <IconHexagon size="12" class="text-purple-400" />
                   <span class="text-xs text-purple-300 font-medium">
                     Cores Used: {{ usedCores }} / {{ currentCores }}
                   </span>
@@ -449,13 +449,13 @@
             <div class="flex flex-col lg:hidden gap-2">
               <!-- Title -->
               <h3 class="text-base sm:text-lg font-semibold text-white flex items-center">
-                <IconCircle size="16" class="mr-1.5 text-purple-400" />
+                <IconHexagon size="16" class="mr-1.5 text-purple-400" />
                 Trait Spheres
               </h3>
               
               <!-- Cores Used -->
               <div class="flex items-center gap-1.5 px-2 py-1 rounded border bg-purple-900/20 border-purple-700/50 w-fit">
-                <IconCircle size="12" class="text-purple-400" />
+                <IconHexagon size="12" class="text-purple-400" />
                 <span class="text-xs text-purple-300 font-medium">
                   Cores Used: {{ usedCores }} / {{ currentCores }}
                 </span>
@@ -543,7 +543,7 @@
               <div class="bg-gray-900/60 rounded-lg border border-gray-700/50 overflow-hidden">
                 <div class="bg-gradient-to-r from-purple-900/40 to-purple-800/30 px-3 py-2 border-b border-gray-700/50">
                   <h4 class="text-sm font-semibold text-white flex items-center">
-                    <IconCircle size="14" class="mr-1.5 text-purple-400" />
+                    <IconHexagon size="14" class="mr-1.5 text-purple-400" />
                     Trait Sphere Effects
                   </h4>
                 </div>
@@ -558,7 +558,7 @@
                         ? store.isSelected(sphere.id)
                           ? 'bg-purple-800/70 border-purple-400 shadow-lg ring-2 ring-purple-400/50'
                           : store.isFloatingPoint(sphere.id)
-                            ? 'bg-yellow-800/70 border-yellow-400 shadow-lg ring-2 ring-yellow-400/50'
+                            ? 'bg-yellow-800/70 border-green-400 shadow-lg ring-2 ring-green-400/50'
                             : 'bg-gray-600/60 border-gray-400 shadow-lg ring-2 ring-gray-400/40'
                         : store.isSelected(sphere.id) 
                           ? 'bg-purple-900/50 border-purple-500/50 shadow-md'
@@ -582,12 +582,9 @@
                         </span>
                       </div>
                       
-                      <!-- Effect Dot Column -->
+                      <!-- Effect Icon Column -->
                       <div class="col-span-1 flex justify-center">
-                        <div :class="[
-                          'w-1.5 h-1.5 rounded-full',
-                          getSphereEffectColorClass(sphere.effect)
-                        ]"></div>
+                        <IconHexagonFilled size="10" :class="getSphereEffectColorClass(sphere.effect)" />
                       </div>
                       
                       <!-- Description Column -->
@@ -636,18 +633,23 @@
                             @mouseleave="handleSphereMouseLeave"
                           >
                             <!-- Sphere Icon -->
-                            <div :class="sphereIconClasses(getSphereAtPosition(col-1, row-1))">
+                            <div :class="sphereIconClasses(getSphereAtPosition(col-1, row-1))" :style="!store.canSelect(getSphereAtPosition(col-1, row-1)) && getSphereAtPosition(col-1, row-1).id !== 1 ? 'opacity: 0.5' : ''">
                               <!-- Lock icon for locked trait spheres -->
                               <template v-if="getSphereAtPosition(col-1, row-1).effect === 'locked'">
-                                <IconLock size="14" class="text-gray-400" />
+                                <IconLock size="20" class="text-gray-400" />
+                              </template>
+                              <template v-else-if="store.isSelected(getSphereAtPosition(col-1, row-1).id)">
+                                <IconHexagonFilled size="20" :class="innerSphereIconClasses(getSphereAtPosition(col-1, row-1))" />
                               </template>
                               <template v-else>
-                                <div :class="innerSphereClasses(getSphereAtPosition(col-1, row-1))"></div>
+                                <IconHexagon size="20" :class="innerSphereIconClasses(getSphereAtPosition(col-1, row-1))" />
                               </template>
                             </div>
                             
                             <!-- Sphere Info -->
-                            <div class="sphere-info mt-1 text-center h-8 flex flex-col justify-center">
+                            <div :class="[
+                              'sphere-info mt-1 text-center h-8 flex flex-col justify-center'
+                            ]" :style="!store.canSelect(getSphereAtPosition(col-1, row-1)) && getSphereAtPosition(col-1, row-1).id !== 1 ? 'opacity: 0.5' : ''">
                               <div class="text-[0.7rem] text-gray-300">
                                 <span>TS#{{ getSphereAtPosition(col-1, row-1).id }}</span>
                               </div>
@@ -1006,8 +1008,8 @@ import {
   IconSettings, 
   IconRefresh, 
   IconTrash,
-  IconCircle,
   IconHexagon,
+  IconHexagonFilled,
   IconLock,
   IconCopy,
   IconTarget,
@@ -1245,7 +1247,7 @@ function sphereClasses(sphere) {
     selected && !isHovered ? 'shadow-lg shadow-purple-900/30' : '',
     isFloating ? 'shadow-lg shadow-yellow-500/20' : '', // Floating Points - gelber Schatten
     // TS#1 bekommt spezielle Behandlung - immer als selectable anzeigen
-    (!selectable && !isTS1) ? 'opacity-50 cursor-not-allowed' : [
+    (!selectable && !isTS1) ? 'cursor-not-allowed' : [
       'hover:border-purple-400',
       'hover:shadow-md hover:scale-105',
       'hover:shadow-purple-500/20'
@@ -1260,31 +1262,22 @@ function sphereIconClasses(sphere) {
   const selected = store.isSelected(sphere.id);
   
   return [
-    'sphere-icon rounded-full w-5 h-5 flex items-center justify-center transition-all duration-200',
-    // Hintergrund des äußeren Kreises - immer grau
-    'bg-gray-800'
+    'sphere-icon flex items-center justify-center transition-all duration-200'
   ].filter(Boolean);
 }
 
-function innerSphereClasses(sphere) {
+function innerSphereIconClasses(sphere) {
   const colors = getEffectColors(sphere);
   const selected = store.isSelected(sphere.id);
   const selectable = store.canSelect(sphere);
   
-  if (selected) {
-    // Gekauft: Vollständig gefüllt in der Effekt-Farbe
-    return [
-      'w-4 h-4 rounded-full transition-all duration-200',
-      colors.fillColor
-    ].filter(Boolean);
-  } else {
-    // Nicht gekauft: Nur Border in der Effekt-Farbe
-    return [
-      'w-4 h-4 rounded-full border-2 bg-transparent transition-all duration-200',
-      colors.borderColor,
-      selectable ? colors.hoverFill : ''
-    ].filter(Boolean);
-  }
+  // Für IconHexagonFilled (selected) oder IconHexagon (not selected)
+  return [
+    'transition-all duration-200',
+    colors.icon, // Farbe des Icons
+    // Nur hover-Effekt wenn nicht bereits selected
+    (selectable && !selected) ? colors.hoverFill : ''
+  ].filter(Boolean);
 }
 
 function priceTextClasses(sphere) {  
@@ -1315,15 +1308,15 @@ function getSphereAtPosition(col, row) {
 
 const availableTraitSpheres = computed(() => store.availableTraitSpheres);
 
-// Funktion für Effekt-Farben der kleinen Dots
+// Funktion für Effekt-Farben der kleinen Hexagon Icons
 function getSphereEffectColorClass(effect) {
   switch (effect) {
-    case 'lp': return 'bg-purple-500';
-    case 'shards': return 'bg-blue-500';
-    case 'doubler': return 'bg-red-500';
-    case 'ultima': return 'bg-green-500';
-    case 'tick': return 'bg-yellow-500';
-    default: return 'bg-gray-500';
+    case 'lp': return 'text-purple-500';
+    case 'shards': return 'text-blue-500';
+    case 'doubler': return 'text-red-500';
+    case 'ultima': return 'text-green-500';
+    case 'tick': return 'text-yellow-500';
+    default: return 'text-gray-500';
   }
 }
 

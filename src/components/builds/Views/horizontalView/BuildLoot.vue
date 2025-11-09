@@ -1,6 +1,6 @@
 <!-- filepath: c:\Users\igorn\projects\huntersim2\src\components\verticalView\BuildLoot.vue -->
 <template>
-  <div class="p-3">
+  <div class="p-2">
     <!-- Loading-Zustand -->
     <div v-if="isLoading" class="flex items-center justify-center py-6 space-x-3">
       <!-- Spinner -->

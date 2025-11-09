@@ -206,15 +206,23 @@
                         class="aspect-square rounded-sm flex items-center justify-center"
                       >
                         <!-- Mini sphere icon -->
-                        <div 
+                        <IconLock 
                           v-if="getSphereAtPosition(col-1, row-1).effect === 'locked'"
-                          class="w-2 h-2 bg-gray-600 rounded-full"
-                        ></div>
-                        <div 
-                          v-else
-                          :class="getPresetInnerSphereClasses(getSphereAtPosition(col-1, row-1), preset)"
-                          class="w-2 h-2 rounded-full"
-                        ></div>
+                          size="10"
+                          class="text-gray-500"
+                        />
+                        <template v-else-if="preset.spheres.includes(getSphereAtPosition(col-1, row-1).id)">
+                          <IconHexagonFilled 
+                            size="10"
+                            :class="getPresetInnerSphereIconClasses(getSphereAtPosition(col-1, row-1), preset)"
+                          />
+                        </template>
+                        <template v-else>
+                          <IconHexagon 
+                            size="10"
+                            :class="getPresetInnerSphereIconClasses(getSphereAtPosition(col-1, row-1), preset)"
+                          />
+                        </template>
                       </div>
                       <div v-else class="aspect-square"></div>
                     </template>
@@ -266,7 +274,9 @@ import {
   IconStar,
   IconTarget, 
   IconX, 
-  IconHexagon, 
+  IconHexagon,
+  IconHexagonFilled,
+  IconLock, 
   IconAlertCircle, 
 } from '@tabler/icons-vue';
 import { calculatePresetCost } from '@/constants/ts-planner/presets';
@@ -544,33 +554,33 @@ function getPresetSphereClasses(sphere, preset) {
   ].filter(Boolean);
 }
 
-function getPresetInnerSphereClasses(sphere, preset) {
+function getPresetInnerSphereIconClasses(sphere, preset) {
   const isSelected = preset.spheres.includes(sphere.id);
   const isFloating = preset.floating && preset.floating.includes(sphere.id);
   
   if (isSelected) {
-    // Selected: filled with effect color
+    // Selected: filled icon with effect color
     switch (sphere.effect) {
-      case 'lp': return 'bg-purple-500';
-      case 'shards': return 'bg-blue-500';
-      case 'doubler': return 'bg-red-500';
-      case 'ultima': return 'bg-green-500';
-      case 'tick': return 'bg-yellow-500';
-      default: return 'bg-purple-500';
+      case 'lp': return 'text-purple-500';
+      case 'shards': return 'text-blue-500';
+      case 'doubler': return 'text-red-500';
+      case 'ultima': return 'text-green-500';
+      case 'tick': return 'text-yellow-500';
+      default: return 'text-purple-500';
     }
   } else if (isFloating) {
-    // Floating: filled with effect color but slightly dimmed
+    // Floating: icon with effect color but slightly dimmed
     switch (sphere.effect) {
-      case 'lp': return 'bg-purple-400';
-      case 'shards': return 'bg-blue-400';
-      case 'doubler': return 'bg-red-400';
-      case 'ultima': return 'bg-green-400';
-      case 'tick': return 'bg-yellow-400';
-      default: return 'bg-yellow-400';
+      case 'lp': return 'text-purple-400';
+      case 'shards': return 'text-blue-400';
+      case 'doubler': return 'text-red-400';
+      case 'ultima': return 'text-green-400';
+      case 'tick': return 'text-yellow-400';
+      default: return 'text-yellow-400';
     }
   } else {
-    // Not selected: just border with effect color
-    return 'bg-transparent border border-gray-500';
+    // Not selected: outline icon with gray color
+    return 'text-gray-500';
   }
 }
 </script>

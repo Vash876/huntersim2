@@ -466,6 +466,10 @@ const props = defineProps({
   buildToEdit: {
     type: Object,
     default: null
+  },
+  currentCategoryId: {
+    type: String,
+    default: null
   }
 });
 
@@ -949,6 +953,13 @@ function saveBuild() {
     } else {
       // Neuen Build erstellen
       hunterStore.addBuild(props.hunterType, buildCopy); // Zwei Parameter-Version
+      
+      // WICHTIG: Setze die Kategorie des neuen Builds
+      // Wenn currentCategoryId übergeben wurde, verwende diese
+      // Ansonsten fällt es auf 'active' zurück (Standard im Store)
+      if (props.currentCategoryId) {
+        hunterStore.moveBuildToCategory(props.hunterType, buildCopy.id, props.currentCategoryId);
+      }
     }
     
     emit(props.buildToEdit && props.buildToEdit.id ? 'buildUpdated' : 'buildCreated', buildCopy);

@@ -42,6 +42,7 @@
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-plugin-zoom": "^2.2.0",
     "comlink": "^4.4.2",
+    "fluid-dnd": "^2.6.2",
     "lodash": "^4.17.21",
     "pako": "^2.1.0",
     "pinia": "^3.0.1",

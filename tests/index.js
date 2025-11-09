@@ -1,210 +1,325 @@
-export default async function handler(request, context) {
-const url = new URL(request.url);
-const userAgent = request.headers.get('user-agent') || '';
+let GameDB = {
+  version: 3,
+  academy: {
+    personnel: ['pods', 'fireteams', 'titans', 'corvettes'],
+    planets: 4,
+    materials: [
+      'Difar',
+      'Kento',
+      'Chromium',
+      'Exon',
+      'Organium',
+      'Adamorphium',
+      'Moskom',
+      'Darkseid',
+    ],
+    // baseTimes are in minutes
+    farms: [
+      {
+        id: 11,
+        baseTime: 30,
+        maxPop: 20,
+        baseAP: 5,
+        // Difar
+        baseMats: [38, 0, 0, 0, 0, 0, 0, 0],
+        isTimeRounded: false,
+      },
+      {
+        id: 12,
+        baseTime: 360,
+        maxPop: 60,
+        baseAP: 150,
+        // Kento
+        baseMats: [0, 320, 0, 0, 0, 0, 0, 0],
+        isTimeRounded: false,
+      },
+      {
+        id: 13,
+        baseTime: 2400,
+        maxPop: 100,
+        baseAP: 1200,
+        // Difar, Kento, Chromium
+        baseMats: [1350, 280, 760, 0, 0, 0, 0, 0],
+        isTimeRounded: false,
+      },
+      {
+        id: 21,
+        baseTime: 150,
+        maxPop: 80,
+        baseAP: 35,
+        // Exon
+        baseMats: [0, 0, 0, 35, 0, 0, 0, 0],
+        isTimeRounded: true,
+      },
+      {
+        id: 22,
+        baseTime: 2400,
+        maxPop: 160,
+        baseAP: 170,
+        // Chromium, Organium
+        baseMats: [0, 0, 560, 0, 80, 0, 0, 0],
+        isTimeRounded: true,
+      },
+      {
+        id: 23,
+        baseTime: 72000,
+        maxPop: 500,
+        baseAP: 11500,
+        // Exon, Organium, Adamorphium
+        baseMats: [0, 0, 0, 2200, 320, 260, 0, 0],
+        isTimeRounded: true,
+      },
+      {
+        id: 31,
+        baseTime: 3000,
+        maxPop: 150,
+        baseAP: 2000,
+        // Moskom
+        baseMats: [0, 0, 0, 0, 0, 0, 19, 0],
+        isTimeRounded: true,
+      },
+      {
+        id: 32,
+        baseTime: 975000,
+        maxPop: 2000,
+        baseAP: 1000000,
+        // Darkseid
+        baseMats: [0, 0, 0, 0, 0, 0, 0, 80],
+        isTimeRounded: true,
+      },
+      {
+        id: 33,
+        baseTime: 1875000,
+        maxPop: 4000,
+        baseAP: 2000000,
+        // Organium, Adamorphium, Moskom, Darkseid
+        baseMats: [0, 0, 0, 0, 5200, 2440, 3980, 160],
+        isTimeRounded: true,
+      },
+      {
+        id: 41,
+        baseTime: 21000,
+        maxPop: 1000,
+        baseAP: 17000,
+        // Difar, Kento, Organium
+        baseMats: [40, 60, 0, 0, 50, 0, 0, 0],
+        isTimeRounded: true,
+      },
+      {
+        id: 42,
+        baseTime: 4875000,
+        maxPop: 10000,
+        baseAP: 3300000,
+        // Chromium, Adamorphium, Darkseid
+        baseMats: [0, 0, 8000, 0, 0, 7000, 0, 2000],
+        isTimeRounded: true,
+      },
+      {
+        id: 43,
+        baseTime: 9750000,
+        maxPop: 20000,
+        baseAP: 6700000,
+        // Exon, Moskom, Darkseid
+        baseMats: [0, 0, 0, 30000, 0, 0, 20000, 5000],
+        isTimeRounded: true,
+      },
+    ], // END .farms
+    projects: [
+      {
+        name: 'Storage Facility',
+        baseCosts: [600, 200, 0, 0, 0, 0, 0, 0],
+        costScalar: 1.25,
+        costBump: 0.016,
+        costBumpOuro: 0.136,
+        bpCount: 1,
+      },
+      {
+        name: 'Transfer Wires',
+        baseCosts: [2750, 1500, 500, 0, 0, 0, 0, 0],
+        costScalar: 1.4,
+        costBump: 0.05,
+        costBumpOuro: 0.1873,
+        costBumpOuroDivider: 184.57,
+        bpCount: 1,
+      },
+      {
+        name: 'Bio-Mechanics Lab',
+        baseCosts: [0, 0, 2400, 1000, 500, 0, 0, 0],
+        costScalar: 1.7,
+        costBump: 0.09,
+        costBumpOuro: 0.2712,
+        costBumpOuroDivider: 509.32,
+        bpCount: 1,
+      },
+      {
+        name: 'Exo-Energy',
+        baseCosts: [0, 7000, 5000, 1500, 1500, 0, 0, 0],
+        costScalar: 1.4,
+        costBump: 0.07,
+        costBumpOuro: 0.2675, // TODO: to confirm
+        bpCount: 1,
+      },
+      {
+        name: 'Defensive Research',
+        baseCosts: [0, 0, 0, 0, 0, 1000, 200, 0],
+        costScalar: 1.6,
+        costBump: 0.08,
+        costBumpOuro: 0.309, // TODO: to confirm
+        bpCount: 1,
+      },
+      {
+        name: 'Warp-Drive Lab',
+        baseCosts: [0, 0, 0, 0, 260000, 120000, 28000, 28000],
+        costScalar: 2,
+        costBump: 0.11,
+        bpCount: 1,
+      },
+      {
+        name: 'Fuel Compression',
+        baseCosts: [1e38, 0, 0, 4e37, 0, 0, 7e36, 0],
+        costScalar: 3,
+        costBump: 0.2,
+        bpCount: 2,
+      },
+      {
+        name: 'Quantum Weaponry',
+        baseCosts: [0, 2e45, 0, 0, 5e44, 0, 0, 0],
+        costScalar: 3.2,
+        costBump: 0.25,
+        bpCount: 2,
+      },
+      {
+        name: 'Robo-Douglett',
+        baseCosts: [0, 0, 3e55, 0, 0, 6e55, 0, 8e54],
+        costScalar: 18,
+        costBump: 0.5,
+        costBumpLvInterval: 10,
+        bpCount: 3,
+      },
+    ],
+    bpRequirements: [
+      10, // cm1-3
+      20, // cm4-6
+      30, // cm7-9
+      40, // cm10-12
+      50, // cm13-15
+      60, // cm16-18
+      80, // cm19-21
+      100, // cm22-24
+      120, // cm25-27
+      140, // cm28-30
+      160, // cm31-33
+    ].reduce((acc, c) => {
+      acc.push(c, c, c)
+      return acc
+    }, []),
+    badgeRequirement: [
+      // worker 50, in 50, tink 50, looper 75, eff 75, eng 100; total 400
+      // c1 50 cores, c2 55 cores, c3 65 cores, 100 instant cores; total 270
+      // need more 130 cores to complete first 6 badges
+      [130 * 4], // up till engi
+      [150 * 4, 'Momentum Badge'], // mom
+      [75 * 4, 'The 8th Badge'], // 8th
+      [75 * 4, 'The 9th Badge'], // 9th
+      [300 * 4, 'The 10th Badge'], // 10th
+      [300 * 4, 'The 11th Badge'], // 11th
+    ],
+    projectNextLevelCost(projectID, level, costDiv, ouroEnabled) {
+      let project = this.projects[projectID]
 
-// Discord Bot oder Entwicklungsmodus erkennen
-const isDiscordBot = userAgent.includes('Discordbot');
-const isDevelopmentMode = url.searchParams.has('preview');
+      const baseCosts = project.baseCosts
+      const costScalar = project.costScalar
+      const costBump = (ouroEnabled && project.costBumpOuro) || project.costBump
+      const bumpTimes = Math.floor(level / (project.costBumpLvInterval || 100))
+      const ouroDivider =
+        ouroEnabled && project.costBumpOuroDivider && bumpTimes > 0
+          ? project.costBumpOuroDivider
+          : 1
 
-// Prüfen, ob es ein Build-Link ist
-if (url.pathname.match(/\/[a-zA-Z0-9]+/) && 
-url.searchParams.has('code')) {
+      const costMultiplier =
+        Math.pow(costScalar + costBump * bumpTimes, level) /
+        costDiv /
+        ouroDivider
 
-// Hunter-ID aus der URL extrahieren
-const hunterId = url.pathname.substring(1);
-const buildCode = url.searchParams.get('code');
-
-// Für normale Browser direkt zur eigentlichen App weiterleiten (ohne Edge Function zu belasten)
-if (!isDiscordBot && !isDevelopmentMode) {
-return new Response('Redirecting...', {
-status: 302,
-headers: {
-'Location': `https://hunter-sim2.netlify.app${url.pathname}?code=${buildCode}`,
-'Cache-Control': 'public, max-age=86400'
+      return baseCosts.map((mat) => mat * costMultiplier)
+    }, // END .projects
+  },
+  fleet: {
+    zeus: {
+      // prettier-ignore
+      rankRequirements: [
+        1, 5, 9, 25, 33, 41, 73, 85, 97, 145, // 10
+        201, 221, 301, 326, 351, 451, 481, 511, 631, 666, // 20
+        877, 1052, 1102, 1152, 1352, 1408, 1464, 1689, 1752, 1814, // 30
+        2580, 2666, 2752, 3096, 3189, 3283, 3658, 3760, 3861, 4268, // 40
+        5471, 5608, 6155, 6301, 6448, 7034, 7190, 7346, 7971, 8137, // 50
+        10379, 11209, 11429, 11649, 12527, 12759, 12991, 13919, 14163, 14407, // 60
+        19230, 19550, 19871, 21152, 21488, 21824, 23167, 23518, 23869, 25272, // 70
+        32048, 32506, 34337, 34814, 35291, 37198, 37694, 38190, 40174, 40689, // 80
+        51504, 54079, 54747, 55414, 58085, 58776, 59468, 62233, 62948, 63664, // 90
+        83156, 84080, 85004, 88699, 89653, 90607, 94421, 95405, 96388, 100322, // 100
+        126669, 127936, 133002, 134306, 135610, 140825, 142166, 143507, 148872, 150250, // 110
+        151629, 157142, 158558, 159973, 165636, 167089, 168541, 174353, 175843, 177333, // 120
+        183294, 184821, 186348, 192458, 194022, 195587, 201846, 203447, 205049, 211457, // 130
+        213096, 214735, 221292, 222968, 224644, 231350, 233063, 234777, 241632, 243383, // 140
+        245133, 252137, 253925, 255713, 262866, 264691, 266517, 273818, 275681, 277543, // 150
+        284994, 286894, 288794, 296393, 298331, 300268, 308016, 309991, 311965, 319863, // 160
+      ],
+    },
+  },
 }
-});
-}
 
-// Ab hier nur Discord Bot und Preview-Modus (Entwicklung)
-// Level aus Code berechnen oder "Invalid Build Code" anzeigen
-const buildInfo = calculateBuildLevel(buildCode, hunterId);
-const levelText = buildInfo.isValid ? `Level ${buildInfo.level}` : 'Invalid Build Code';
+function parseBigNum(value) {
+  // k, m, b, t, qa, qu, sx, sp, o, n, d
+  value = value.toLowerCase()
+  if (value.includes('k')) {
+    value = parseFloat(value.slice(0, -1))
+    if (isNaN(value)) return value
+    value *= 1e3
+  } else if (value.includes('m')) {
+    value = parseFloat(value.slice(0, -1))
+    if (isNaN(value)) return value
+    value *= 1e6
+  } else if (value.includes('b')) {
+    value = parseFloat(value.slice(0, -1))
+    if (isNaN(value)) return value
+    value *= 1e9
+  } else if (value.includes('t')) {
+    value = parseFloat(value.slice(0, -1))
+    if (isNaN(value)) return value
+    value *= 1e12
+  } else if (value.includes('qa')) {
+    value = parseFloat(value.slice(0, -2))
+    if (isNaN(value)) return value
+    value *= 1e15
+  } else if (value.includes('qu')) {
+    value = parseFloat(value.slice(0, -2))
+    if (isNaN(value)) return value
+    value *= 1e18
+  } else if (value.includes('sx')) {
+    value = parseFloat(value.slice(0, -2))
+    if (isNaN(value)) return value
+    value *= 1e21
+  } else if (value.includes('sp')) {
+    value = parseFloat(value.slice(0, -2))
+    if (isNaN(value)) return value
+    value *= 1e24
+  } else if (value.includes('o')) {
+    value = parseFloat(value.slice(0, -1))
+    if (isNaN(value)) return value
+    value *= 1e27
+  } else if (value.includes('n')) {
+    value = parseFloat(value.slice(0, -1))
+    if (isNaN(value)) return value
+    value *= 1e30
+  } else if (value.includes('d')) {
+    value = parseFloat(value.slice(0, -1))
+    if (isNaN(value)) return value
+    value *= 1e33
+  } else {
+    value = parseFloat(value)
+    if (isNaN(value)) return value
+  }
 
-// Statische Hunter-Daten
-const hunters = {
-borge: { name: 'Borge', color: '#ef4444' },
-ozzy: { name: 'Ozzy', color: '#22c55e' },
-knox: { name: 'Knox', color: '#3b82f6' }
-};
-
-const hunter = hunters[hunterId] || { name: 'Hunter', color: '#9ca3af' };
-
-// HTML mit Meta-Tags zurückgeben (unverändert)
-const html = `
-     <!DOCTYPE html>
-     <html>
-       <head>
-         <title>Hunter Simulator 2 - ${hunter.name} ${levelText}</title>
-         <meta property="og:title" content="${hunter.name} ${levelText}" />
-         <meta property="og:description" content="Check out this ${hunter.name} build on Hunter Simulator." />
-         <meta property="og:url" content="${url.href}" />
-         <meta property="og:type" content="website" />
-         <meta property="og:site_name" content="Hunter Simulator" />
-         <meta property="theme-color" content="${hunter.color}" />
-         
-          <!-- Weiterleitung für normale Browser zur Hauptanwendung -->
-          <meta http-equiv="refresh" content="0;url=https://hunter-sim2.netlify.app${url.pathname}?code=${buildCode}">
-       </head>
-       <body>
-         <p>Redirecting to Hunter Simulator...</p>
-       </body>
-     </html>
-   `;
-
-// Mit Cache-Kontrolle zurückgeben (24 Stunden)
-return new Response(html, {
-headers: { 
-'Content-Type': 'text/html',
-'Cache-Control': 'public, max-age=86400, s-maxage=86400', // 24 Stunden
-'Surrogate-Control': 'public, max-age=86400, s-maxage=86400',
-'Cache-Tag': `discord-preview-${hunterId}-${buildCode}`,
-'Vary': 'User-Agent'
-}
-});
-}
-
-// Für alle anderen Anfragen: normale Seite anzeigen
-return context.next();
-}
-// ========== Build-Code Parsing Logik ==========
-
-// Base58-Alphabet für die Codierung
-const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-
-// Base58-Dekodierung
-function decodeBase58(str) {
-const base = BASE58_ALPHABET.length;
-const lookup = {};
-for (let i = 0; i < BASE58_ALPHABET.length; i++) {
-lookup[BASE58_ALPHABET[i]] = i;
-}
-
-let bytes = [0];
-for (let i = 0; i < str.length; i++) {
-const c = str[i];
-if (lookup[c] === undefined) {
-throw new Error(`Invalid character: ${c}`);
-}
-let carry = lookup[c];
-for (let j = 0; j < bytes.length; j++) {
-carry += bytes[j] * base;
-bytes[j] = carry & 0xff;
-carry >>= 8;
-}
-while (carry > 0) {
-bytes.push(carry & 0xff);
-carry >>= 8;
-}
-}
-
-// Führende Nullen
-for (let i = 0; i < str.length && str[i] === '1'; i++) {
-bytes.push(0);
-}
-
-return new Uint8Array(bytes.reverse());
-}
-
-// Build-Code dekodieren
-function fromCode(code) {
-try {
-const buffer = decodeBase58(code);
-if (!buffer || buffer.length < 2) return null;
-
-// Header-Bytes lesen
-const magicByte = buffer[0];
-const kindVersionByte = buffer[1];
-
-// Wenn magicByte nicht 101 ist, handelt es sich möglicherweise nicht um einem gültigen Build-Code
-if (magicByte !== 101) {
-console.warn(`Unexpected magic byte: ${magicByte}`);
-}
-
-const kind = kindVersionByte >> 5;
-const version = kindVersionByte & 7;
-
-const levels = [];
-let pos = 2;
-
-// Daten aus dem Buffer lesen
-while (pos < buffer.length) {
-const controlByte = buffer[pos++];
-
-// Extrahiert 4 Werte (je 2 Bits) aus dem Control-Byte
-for (let i = 6; i >= 0; i -= 2) {
-if (pos >= buffer.length) break;
-
-const type = (controlByte >> i) & 3;
-
-if (type === 0 || type === 1) {
-// Direkte Werte 0 oder 1
-levels.push(type);
-} else if (type === 2) {
-// 1-Byte-Wert
-if (pos < buffer.length) {
-levels.push(buffer[pos++]);
-}
-} else if (type === 3) {
-// 2-Byte-Wert
-if (pos + 1 < buffer.length) {
-const value = (buffer[pos++] << 8) | buffer[pos++];
-levels.push(value);
-}
-}
-}
-}
-
-return { kind, version, levels };
-} catch (error) {
-console.error("Error decoding build code:", error);
-return null;
-}
-}
-
-// Parameter-Positionen für die Level-Berechnung (korrekte Indizes)
-const TALENT_INDICES = {
-'borge': [0, 1, 2, 3, 4, 5, 6, 7, 53],
-'ozzy':  [0, 1, 2, 3, 4, 5, 6, 7, 41],
-'knox':  [0, 1, 2, 3, 4, 5, 6, 7, 8]
-};
-
-// Build-Level berechnen
-function calculateBuildLevel(code, hunterId) {
-try {
-// Versuchen, den Code zu decodieren
-const data = fromCode(code);
-
-if (!data || !data.levels || !data.levels.length) {
-return { isValid: false, level: 0 };
-}
-
-// Die Indizes für den Hunter-Typ abrufen
-const talentIndices = TALENT_INDICES[hunterId] || TALENT_INDICES.borge;
-
-// Talent-Punkte summieren
-let talentSum = 0;
-for (const index of talentIndices) {
-if (index < data.levels.length) {
-talentSum += (data.levels[index] || 0);
-}
-}
-
-// Level einfach als Summe der Talent-Punkte zurückgeben
-return { 
-isValid: true, 
-level: talentSum > 0 ? talentSum : 1
-};
-} catch (error) {
-console.error("Error calculating level:", error);
-return { isValid: false, level: 0 };
+  return value
 }

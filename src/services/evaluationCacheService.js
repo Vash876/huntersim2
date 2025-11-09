@@ -269,12 +269,18 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPl
       gemValues = sortObjectProperties(gemValues);
     }
     
+    // Hole effektive Overrides (Category + Build) wenn buildData eine ID hat
+    let effectiveOverrides = buildData.overrides || {};
+    if (buildData.id && hunterStore.getEffectiveBuildOverrides) {
+      effectiveOverrides = hunterStore.getEffectiveBuildOverrides(hunterId, buildData.id);
+    }
+    
     // Relevante Build-Daten extrahieren
     const relevantBuildData = {
       level: buildData.level || 0,
       talents: sortObjectProperties(buildData.talents || {}),
       attributes: sortObjectProperties(buildData.attributes || {}),
-      overrides: sortObjectProperties(buildData.overrides || {})
+      overrides: sortObjectProperties(effectiveOverrides)
     };
     
     // Relevante Store-Daten extrahieren
