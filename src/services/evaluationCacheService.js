@@ -6,7 +6,7 @@
  */
 
 import { getHunterById } from '../constants/hunters';
-import { GEM_UPGRADE_MAPPING } from '../constants/gemUpgradeMappings';
+import { GEM_UPGRADE_MAPPING, REVERSE_GEM_UPGRADE_MAPPING } from '../constants/gemUpgradeMappings';
 
 // In-Memory Cache mit LRU (Least Recently Used) System
 let memoryCache = {};
@@ -36,16 +36,20 @@ function manageCacheSize() {
 
 /**
  * Updates access order for LRU management
+ * Alle Cache Keys werden als Strings gespeichert für konsistente indexOf() Checks
  */
 function updateCacheAccess(cacheKey) {
+  // Konvertiere zu String für konsistente Type-Checks
+  const keyStr = String(cacheKey);
+  
   // Remove from current position if exists
-  const existingIndex = cacheAccessOrder.indexOf(cacheKey);
+  const existingIndex = cacheAccessOrder.indexOf(keyStr);
   if (existingIndex !== -1) {
     cacheAccessOrder.splice(existingIndex, 1);
   }
   
   // Add to end (most recently used)
-  cacheAccessOrder.push(cacheKey);
+  cacheAccessOrder.push(keyStr);
   
   // Manage cache size
   manageCacheSize();
@@ -78,14 +82,20 @@ export function stringToHash(str) {
  * @returns {Object} Das sortierte Objekt
  */
 export function sortObjectProperties(obj) {
-  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return obj;
+  // Null/Undefined direkt zurückgeben
+  if (!obj || typeof obj !== 'object') return obj;
   
+  // Arrays direkt zurückgeben (nicht konvertieren!)
+  if (Array.isArray(obj)) {
+    // Rekursiv sortiere Array-Elemente die Objekte sind
+    return obj.map(item => sortObjectProperties(item));
+  }
+  
+  // Objekte alphabetisch sortieren
   return Object.keys(obj)
     .sort()
     .reduce((result, key) => {
-      result[key] = typeof obj[key] === 'object' && obj[key] !== null 
-        ? sortObjectProperties(obj[key]) 
-        : obj[key];
+      result[key] = sortObjectProperties(obj[key]);
       return result;
     }, {});
 }
@@ -202,6 +212,8 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPl
       // Nur relevante Gem-Daten basierend auf den Hunter-spezifischen Parametern einbeziehen
       const gemStates = gemPlannerStore.gemStates || {};
       
+      console.log('[EVAL] 🔑 gemPlannerStore.gemStates (RAW):', JSON.stringify(gemStates, null, 2));
+      
       for (const param of gemParams) {
         const parts = param.split('.');
         
@@ -219,6 +231,9 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPl
             
             const gemState = gemStates[gemType] || {};
             
+            console.log(`[EVAL] 🔑 Reading gem param: ${param}, gemType: ${gemType}, gemProperty: ${gemProperty}`);
+            console.log(`[EVAL] 🔑 gemState for ${gemType}:`, JSON.stringify(gemState, null, 2));
+            
             // Level
             if (gemProperty === 'level') {
               gemValues[gemType].level = gemState.level || 0;
@@ -234,8 +249,14 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPl
             else {
               const upgrades = gemState.upgrades || {};
               
-              // Map die Parameter-Namen auf die Store-Namen
-              const storeUpgradeKey = GEM_UPGRADE_MAPPING[gemProperty] || gemProperty;
+              // Map die Parameter-Namen (upgrades.gems_nodes format) zu Store-Namen (gemPlannerStore format)
+              // z.B. 'lootBorge' -> 'borge-loot-bonus'
+              const paramKey = `${gemType}_${gemProperty}`; // z.B. 'attraction_lootBorge'
+              const storeUpgradeKey = REVERSE_GEM_UPGRADE_MAPPING[paramKey] || gemProperty;
+              console.log(`[EVAL] 🔑 Looking for upgrade: ${gemProperty}, paramKey: ${paramKey}, mapped to: ${storeUpgradeKey}`);
+              console.log(`[EVAL] 🔑 Available upgrades:`, Object.keys(upgrades));
+              console.log(`[EVAL] 🔑 Value for ${storeUpgradeKey}:`, upgrades[storeUpgradeKey]);
+              
               if (!gemValues[gemType].upgrades) gemValues[gemType].upgrades = {};
               gemValues[gemType].upgrades[gemProperty] = upgrades[storeUpgradeKey] || 0;
             }
@@ -271,6 +292,7 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPl
     
     // Hole effektive Overrides (Category + Build) wenn buildData eine ID hat
     let effectiveOverrides = buildData.overrides || {};
+    
     if (buildData.id && hunterStore.getEffectiveBuildOverrides) {
       effectiveOverrides = hunterStore.getEffectiveBuildOverrides(hunterId, buildData.id);
     }
@@ -295,12 +317,17 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPl
       buildData: relevantBuildData,
       storeData: relevantStoreData,
       upgrades: upgradeValues, // Upgrade-Werte
-      gems: gemValues // Gem-Werte hinzufügen
+      gems: gemValues // Gem-Werte
+      // categoryId und categoryHierarchy NICHT mehr im Cache-Key!
+      // Die Category-Overrides sind bereits in effectiveOverrides enthalten
     };
     
     // Hash des JSON-Strings als Cache-Key
     const jsonStr = JSON.stringify(dataToHash);
     const hash = stringToHash(jsonStr);
+    
+    console.log(`[EVAL] 🔑 Cache key generated for ${hunterId}:`, hash);
+    console.log(`[EVAL] 🔑 Gem values in cache key:`, JSON.stringify(gemValues, null, 2));
     
     return hash;
   } catch (error) {
@@ -513,6 +540,12 @@ export async function cacheResult({ hunterId, buildData, hunterStore, gemPlanner
       console.warn('[Cache] Could not save to localStorage:', e);
     }
     
+    // WICHTIG: Wenn der Cache-Key erfolgreich gespeichert wurde,
+    // entferne ihn aus der Invalid-Liste (falls vorhanden)
+    if (invalidCacheKeys[hunterId] && invalidCacheKeys[hunterId].has(key)) {
+      invalidCacheKeys[hunterId].delete(key);
+    }
+    
   } catch (error) {
     console.error('[Cache] Error saving to cache:', error);
   }
@@ -532,12 +565,15 @@ export async function invalidateCache({ hunterId, buildData, hunterStore, gemPla
   try {
     const cacheKey = await generateCacheKey({ hunterId, buildData, hunterStore, gemPlannerStore });
     
+    // Konvertiere zu String für konsistente Type-Checks
+    const keyStr = String(cacheKey);
+    
     // Aus Memory-Cache löschen
-    if (memoryCache[cacheKey]) {
-      delete memoryCache[cacheKey];
+    if (memoryCache[keyStr]) {
+      delete memoryCache[keyStr];
       
       // Auch aus Access Order entfernen
-      const accessIndex = cacheAccessOrder.indexOf(cacheKey);
+      const accessIndex = cacheAccessOrder.indexOf(keyStr);
       if (accessIndex !== -1) {
         cacheAccessOrder.splice(accessIndex, 1);
       }
@@ -546,13 +582,13 @@ export async function invalidateCache({ hunterId, buildData, hunterStore, gemPla
     // Aus Store-Cache löschen
     if (hunterStore.evaluationCache && 
         hunterStore.evaluationCache[hunterId] && 
-        hunterStore.evaluationCache[hunterId][cacheKey]) {
-      delete hunterStore.evaluationCache[hunterId][cacheKey];
+        hunterStore.evaluationCache[hunterId][keyStr]) {
+      delete hunterStore.evaluationCache[hunterId][keyStr];
     }
     
     // Aus localStorage löschen
     try {
-      const storageKey = `huntersim_cache_${hunterId}_${cacheKey}`;
+      const storageKey = `huntersim_cache_${hunterId}_${keyStr}`;
       localStorage.removeItem(storageKey);
     } catch (e) {
       console.warn('[Cache] Could not remove from localStorage:', e);
@@ -577,25 +613,28 @@ export async function clearCache(hunterId, cacheKey) {
       return false;
     }
     
+    // Konvertiere zu String für konsistente Type-Checks
+    const keyStr = String(cacheKey);
+    
     // In-Memory-Cache löschen (direkt nach Schlüssel)
-    if (memoryCache[cacheKey]) {
-      delete memoryCache[cacheKey];
+    if (memoryCache[keyStr]) {
+      delete memoryCache[keyStr];
       
       // Auch aus Access Order entfernen
-      const accessIndex = cacheAccessOrder.indexOf(cacheKey);
+      const accessIndex = cacheAccessOrder.indexOf(keyStr);
       if (accessIndex !== -1) {
         cacheAccessOrder.splice(accessIndex, 1);
       }
     }
     
     // Auch im hunter-spezifischen Memory-Cache nachsehen
-    if (memoryCache[hunterId] && memoryCache[hunterId][cacheKey]) {
-      delete memoryCache[hunterId][cacheKey];
+    if (memoryCache[hunterId] && memoryCache[hunterId][keyStr]) {
+      delete memoryCache[hunterId][keyStr];
     }
     
     // LocalStorage-Cache löschen
     try {
-      const localStorageKey = `huntersim_cache_${hunterId}_${cacheKey}`;
+      const localStorageKey = `huntersim_cache_${hunterId}_${keyStr}`;
       localStorage.removeItem(localStorageKey);
     } catch (e) {
       console.warn('[Cache] Error clearing localStorage cache:', e);
@@ -695,10 +734,50 @@ export async function invalidateCacheKey(hunterId, cacheKey) {
     }
     invalidCacheKeys[hunterId].add(cacheKey);
     
+    // Cleanup: Wenn zu viele ungültige Keys, automatisch alte entfernen
+    cleanupInvalidCacheKeys(hunterId);
+    
     return true;
   } catch (error) {
     console.error('Error invalidating cache key:', error);
     return false;
+  }
+}
+
+/**
+ * Bereinigt die Liste der ungültigen Cache-Keys für einen Hunter
+ * Entfernt Keys die älter als 1 Stunde sind oder wenn mehr als 100 Keys vorhanden sind
+ * 
+ * @param {string} hunterId - Die ID des Hunters
+ */
+function cleanupInvalidCacheKeys(hunterId) {
+  if (!invalidCacheKeys[hunterId]) return;
+  
+  const maxInvalidKeys = 100;
+  const currentSize = invalidCacheKeys[hunterId].size;
+  
+  // Wenn zu viele Keys, lösche die ältesten (FIFO)
+  if (currentSize > maxInvalidKeys) {
+    const keysToRemove = currentSize - maxInvalidKeys;
+    const keysArray = Array.from(invalidCacheKeys[hunterId]);
+    
+    // Entferne die ersten N Keys (älteste)
+    for (let i = 0; i < keysToRemove; i++) {
+      invalidCacheKeys[hunterId].delete(keysArray[i]);
+    }
+    
+    console.log(`[Cache] Cleaned up ${keysToRemove} old invalid cache keys for ${hunterId}`);
+  }
+}
+
+/**
+ * Löscht alle ungültigen Cache-Keys für einen Hunter
+ * 
+ * @param {string} hunterId - Die ID des Hunters
+ */
+export function clearInvalidCacheKeys(hunterId) {
+  if (invalidCacheKeys[hunterId]) {
+    invalidCacheKeys[hunterId].clear();
   }
 }
 

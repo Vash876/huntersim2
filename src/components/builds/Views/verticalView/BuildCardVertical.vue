@@ -24,7 +24,7 @@
       @overrideCosts="showOverrideCostsModal = true"
     />
     
-    <div class="p-4 pb-3">
+    <div class="p-4 pb-3 pt-2">
       <!-- Loading-Zustand -->
       <div v-if="isLoading" class="flex flex-col items-center justify-center py-12 space-y-4">
         <!-- Spinner -->
@@ -57,7 +57,7 @@
       </div>
       
       <!-- Ergebnisse -->
-      <div v-else-if="results" class="space-y-5">
+      <div v-else-if="results" class="space-y-2">
         <!-- Hauptstatistiken -->
         <BuildStatistics 
           :results="results"
@@ -130,7 +130,7 @@
         v-if="showUpgradeComparisonModal"
         :isVisible="showUpgradeComparisonModal"
         :hunterId="props.hunterId"
-        :buildData="{...buildData, results}"
+        :buildData="buildDataWithEffectiveOverrides"
         @close="showUpgradeComparisonModal = false"
         @applyOverrides="handleApplyUpgradeOverrides"
       />
@@ -140,7 +140,7 @@
         v-if="showOverrideCostsModal"
         :isVisible="showOverrideCostsModal"
         :hunterId="props.hunterId"
-        :buildData="{...buildData, results}"
+        :buildData="buildDataWithEffectiveOverrides"
         @close="showOverrideCostsModal = false"
       />
 
@@ -253,15 +253,21 @@ function handleBuildUploaded() {
   if (window.toast) window.toast.success('Build uploaded to database successfully');
 }
 
+// Computed: Build-Daten mit effektiven Overrides (Category + Build)
+const buildDataWithEffectiveOverrides = computed(() => {
+  // Hole die effektiven Overrides (Category + Build merged)
+  const effectiveOverrides = hunterStore.getEffectiveBuildOverrides(props.hunterId, props.buildId);
+  
+  return {
+    ...props.buildData,
+    overrides: effectiveOverrides || props.buildData.overrides,
+    results: getCurrentResults()
+  };
+});
+
 // Handler für Upgrade-Vergleich
 function handleUpgradeComparison() {
-  // Den Build mit den aktuellen Ergebnissen vorbereiten
-  const buildWithResults = {
-    ...props.buildData,
-    results: getCurrentResults() // Verwende die neue Funktion aus dem Composable
-  };
-  
-  // Das Modal anzeigen und den erweiterten Build übergeben
+  // Das Modal anzeigen
   showUpgradeComparisonModal.value = true;
 }
 

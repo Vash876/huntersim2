@@ -121,28 +121,31 @@
             <div class="flex flex-col gap-2">
               <!-- Parent Category Dropdown -->
               <div>
-                <label class="text-xs text-gray-400 mb-1 block">Parent Category</label>
+                <label class="text-xs text-gray-400 mb-1 block">
+                  Parent Category 
+                  <span class="text-gray-500">(max 3 levels: Root → Sub → Sub-Sub)</span>
+                </label>
                 <select
                   v-model="addCategoryParentId"
                   class="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-white text-xs focus:border-purple-500 focus:outline-none"
                 >
                   <option :value="null">Top Level (no parent)</option>
-                  <optgroup label="System Categories">
+                  <optgroup label="System Categories" v-if="availableParentSystemCategories.length > 0">
                     <option 
-                      v-for="category in systemCategories" 
+                      v-for="category in availableParentSystemCategories" 
                       :key="category.id" 
                       :value="category.id"
                     >
-                      {{ category.name }}
+                      {{ getCategoryDepth(category.id) > 0 ? '  └─ ' : '' }}{{ category.name }}
                     </option>
                   </optgroup>
-                  <optgroup label="Custom Categories" v-if="customCategories.length > 0">
+                  <optgroup label="Custom Categories" v-if="availableParentCustomCategories.length > 0">
                     <option 
-                      v-for="category in customCategories" 
+                      v-for="category in availableParentCustomCategories" 
                       :key="category.id" 
                       :value="category.id"
                     >
-                      {{ category.name }}
+                      {{ getCategoryDepth(category.id) > 0 ? '  └─ ' : '' }}{{ category.name }}
                     </option>
                   </optgroup>
                 </select>
@@ -293,6 +296,29 @@ const customCategories = computed(() => {
 
 const rootCustomCategories = computed(() => {
   return customCategories.value.filter(c => !c.parentId);
+});
+
+// Helper function to calculate category depth (0 = root, 1 = sub, 2 = sub-sub)
+function getCategoryDepth(categoryId) {
+  let depth = 0;
+  let currentCat = allCategories.value.find(c => c.id === categoryId);
+  
+  while (currentCat?.parentId) {
+    depth++;
+    currentCat = allCategories.value.find(c => c.id === currentCat.parentId);
+  }
+  
+  return depth;
+}
+
+// Only allow categories up to depth 1 (sub-categories) as parents
+// This prevents creating sub-sub-sub categories (max depth is 2)
+const availableParentSystemCategories = computed(() => {
+  return systemCategories.value.filter(c => getCategoryDepth(c.id) < 2);
+});
+
+const availableParentCustomCategories = computed(() => {
+  return customCategories.value.filter(c => getCategoryDepth(c.id) < 2);
 });
 
 // Get build count for a category

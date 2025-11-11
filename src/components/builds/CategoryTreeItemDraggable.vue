@@ -104,9 +104,9 @@
             </button>
           </template>
           <template v-else>
-            <!-- Add Sub-Category Button -->
+            <!-- Add Sub-Category Button (only if depth < 2) -->
             <button
-              v-if="!isSystem"
+              v-if="!isSystem && canAddSubCategory"
               @click="emit('add-sub', category.id)"
               class="p-1 rounded hover:bg-purple-600/20 text-purple-400 transition-colors"
               title="Add sub-category"
@@ -218,6 +218,24 @@ const buildCount = computed(() => {
   return categoryBuilds.length;
 });
 
+// Calculate category depth in hierarchy
+const categoryDepth = computed(() => {
+  let depth = 0;
+  let currentCat = props.allCategories.find(c => c.id === props.category.id);
+  
+  while (currentCat?.parentId) {
+    depth++;
+    currentCat = props.allCategories.find(c => c.id === currentCat.parentId);
+  }
+  
+  return depth;
+});
+
+// Can add sub-category only if depth < 2 (max depth is 2: Root → Sub → Sub-Sub)
+const canAddSubCategory = computed(() => {
+  return categoryDepth.value < 2;
+});
+
 // Available parent categories (exclude self and own descendants)
 const availableParentCategories = computed(() => {
   const isDescendantOf = (categoryId, potentialAncestorId) => {
@@ -229,11 +247,25 @@ const availableParentCategories = computed(() => {
     return false;
   };
   
+  const getCategoryDepth = (categoryId) => {
+    let depth = 0;
+    let currentCat = props.allCategories.find(c => c.id === categoryId);
+    
+    while (currentCat?.parentId) {
+      depth++;
+      currentCat = props.allCategories.find(c => c.id === currentCat.parentId);
+    }
+    
+    return depth;
+  };
+  
   const available = props.allCategories.filter(c => {
     // Exclude self
     if (c.id === props.category.id) return false;
     // Exclude own descendants (prevent circular nesting)
     if (isDescendantOf(c.id, props.category.id)) return false;
+    // Only allow categories with depth < 2 as parents (max depth is 2)
+    if (getCategoryDepth(c.id) >= 2) return false;
     return true;
   });
   

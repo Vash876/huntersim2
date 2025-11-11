@@ -201,10 +201,19 @@ const buildCode = computed(() => {
     convertGemStatesToUpgrades(gemPlannerStore.gemStates, storeData.upgrades);
   }
   
-  // Apply build-specific overrides to storeData for correct export
-  if (props.build.overrides) {
-    Object.entries(props.build.overrides).forEach(([key, value]) => {
+  // Apply EFFECTIVE overrides (Category + Build) to storeData for correct export
+  let effectiveOverrides = props.build.overrides || {};
+  
+  // Get effective overrides including category overrides
+  if (props.build.id && hunterStore.getEffectiveBuildOverrides) {
+    const hunterId = props.build.hunter || props.build.hunterId;
+    effectiveOverrides = hunterStore.getEffectiveBuildOverrides(hunterId, props.build.id);
+  }
+  
+  if (effectiveOverrides && Object.keys(effectiveOverrides).length > 0) {
+    Object.entries(effectiveOverrides).forEach(([key, value]) => {
       if (key.startsWith('upgrades.')) {
+        // Handle upgrade overrides
         const parts = key.split('.');
         
         if (parts.length === 3) {
@@ -223,6 +232,13 @@ const buildCode = computed(() => {
           }
           storeData.upgrades[category][subcategory][itemKey] = value;
         }
+      } else {
+        // Handle base stats overrides (hp, atk, regen, dr, etc.)
+        const hunterId = props.build.hunter || props.build.hunterId;
+        if (!storeData.hunterStats[hunterId]) {
+          storeData.hunterStats[hunterId] = {};
+        }
+        storeData.hunterStats[hunterId][key] = value;
       }
     });
   }

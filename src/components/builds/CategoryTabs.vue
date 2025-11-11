@@ -4,9 +4,9 @@
     <!-- Category Tabs Header -->
     <div class="tabs-header bg-gray-900/50 rounded-t-lg border border-gray-700 border-b-0">
       <div class="flex items-center overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-        <!-- Category Tabs -->
+        <!-- Category Tabs (excluding Archived on desktop) -->
         <button
-          v-for="category in categories"
+          v-for="category in nonArchivedCategories"
           :key="category.id"
           @click="selectCategory(category.id)"
           :class="[
@@ -44,10 +44,91 @@
           />
         </button>
 
+        <!-- Archived Tab on Mobile (inline) -->
+        <button
+          v-if="archivedCategory"
+          :key="archivedCategory.id"
+          @click="selectCategory(archivedCategory.id)"
+          :class="[
+            'tab-button flex-shrink-0 px-4 py-3 flex items-center gap-2 border-b-2 transition-all md:hidden',
+            activeCategory === archivedCategory.id
+              ? `border-${archivedCategory.color}-500 bg-${archivedCategory.color}-900/20 text-white`
+              : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
+          ]"
+          :data-category-id="archivedCategory.id"
+          @dragover.prevent="onTabDragOver(archivedCategory.id)"
+          @dragleave="onTabDragLeave(archivedCategory.id)"
+          @drop="onTabDrop($event, archivedCategory.id)"
+        >
+          <IconFolder 
+            size="16" 
+            :class="activeCategory === archivedCategory.id ? `text-${archivedCategory.color}-400` : 'text-gray-500'"
+          />
+          <span class="text-sm font-medium">{{ archivedCategory.name }}</span>
+          <span 
+            v-if="getCategoryBuildsCount(archivedCategory.id) > 0"
+            :class="[
+              'px-2 py-0.5 text-xs rounded-full',
+              activeCategory === archivedCategory.id
+                ? `bg-${archivedCategory.color}-500/30 text-${archivedCategory.color}-300`
+                : 'bg-gray-700 text-gray-400'
+            ]"
+          >
+            {{ getCategoryBuildsCount(archivedCategory.id) }}
+          </span>
+          
+          <!-- Drop indicator -->
+          <div
+            v-if="dragOverTab === archivedCategory.id"
+            class="absolute inset-0 bg-blue-500/20 border-2 border-blue-500 rounded-t-lg pointer-events-none"
+          />
+        </button>
+
+        <!-- Archived Tab on Desktop (pushed to right) -->
+        <button
+          v-if="archivedCategory"
+          :key="`${archivedCategory.id}-desktop`"
+          @click="selectCategory(archivedCategory.id)"
+          :class="[
+            'tab-button flex-shrink-0 px-4 py-3 items-center gap-2 border-b-2 transition-all hidden md:flex ml-auto',
+            activeCategory === archivedCategory.id
+              ? `border-${archivedCategory.color}-500 bg-${archivedCategory.color}-900/20 text-white`
+              : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
+          ]"
+          :data-category-id="archivedCategory.id"
+          @dragover.prevent="onTabDragOver(archivedCategory.id)"
+          @dragleave="onTabDragLeave(archivedCategory.id)"
+          @drop="onTabDrop($event, archivedCategory.id)"
+        >
+          <IconFolder 
+            size="16" 
+            :class="activeCategory === archivedCategory.id ? `text-${archivedCategory.color}-400` : 'text-gray-500'"
+          />
+          <span class="text-sm font-medium">{{ archivedCategory.name }}</span>
+          <span 
+            v-if="getCategoryBuildsCount(archivedCategory.id) > 0"
+            :class="[
+              'px-2 py-0.5 text-xs rounded-full',
+              activeCategory === archivedCategory.id
+                ? `bg-${archivedCategory.color}-500/30 text-${archivedCategory.color}-300`
+                : 'bg-gray-700 text-gray-400'
+            ]"
+          >
+            {{ getCategoryBuildsCount(archivedCategory.id) }}
+          </span>
+          
+          <!-- Drop indicator -->
+          <div
+            v-if="dragOverTab === archivedCategory.id"
+            class="absolute inset-0 bg-blue-500/20 border-2 border-blue-500 rounded-t-lg pointer-events-none"
+          />
+        </button>
+
         <!-- Settings Button -->
         <button
           @click="emit('open-settings')"
-          class="tab-button flex-shrink-0 px-4 py-3 flex items-center gap-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 ml-auto"
+          class="tab-button flex-shrink-0 px-4 py-3 flex items-center gap-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-800/50"
+          :class="archivedCategory ? '' : 'ml-auto'"
           title="Manage Categories"
         >
           <IconSettings size="16" />
@@ -238,6 +319,15 @@ watch(() => props.categories, (newCategories) => {
 // Computed
 const activeCategoryData = computed(() => {
   return props.categories.find(c => c.id === activeCategory.value) || null;
+});
+
+// Separate archived category from regular categories
+const archivedCategory = computed(() => {
+  return props.categories.find(c => c.id === 'archived') || null;
+});
+
+const nonArchivedCategories = computed(() => {
+  return props.categories.filter(c => c.id !== 'archived');
 });
 
 const subCategories = computed(() => {

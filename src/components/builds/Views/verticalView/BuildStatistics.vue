@@ -117,7 +117,7 @@ const props = defineProps({
 <style scoped>
 .section-title {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: rgba(229, 231, 235, 1);
   border-bottom: 1px solid rgba(75, 85, 99, 0.4);
   padding-bottom: 0.5rem;

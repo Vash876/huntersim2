@@ -1523,23 +1523,58 @@ function shouldShowAdvancedTalents(hunterId) {
 
   /**
    * Gibt die effektiven Overrides für einen Build zurück (Category + Build)
+   * Berücksichtigt auch Parent-Category-Overrides (hierarchisch)
    * @param {string} hunterId - Die ID des Hunters
    * @param {string} buildId - Die ID des Builds
-   * @returns {Object} Merged Overrides (Category-Overrides + Build-Overrides)
+   * @returns {Object} Merged Overrides (Parent-Category-Overrides + Category-Overrides + Build-Overrides)
    */
   function getEffectiveBuildOverrides(hunterId, buildId) {
     const build = getBuildsForHunter(hunterId).find(b => b.id === buildId);
     if (!build) return {};
     
     const categoryId = getBuildCategory(hunterId, buildId);
-    const categoryOverrides = getCategoryOverrides(hunterId, categoryId);
-    const buildOverrides = build.overrides || {};
+    if (!categoryId) return build.overrides || {};
     
-    // Build-Overrides überschreiben Category-Overrides
-    return {
-      ...categoryOverrides,
+    // Sammle alle Overrides von der Wurzel bis zur aktuellen Kategorie
+    const allCategories = getCategories(hunterId);
+    const currentCategory = allCategories.find(c => c.id === categoryId);
+    if (!currentCategory) return build.overrides || {};
+    
+    // Baue die Kategorie-Hierarchie auf (von Root zu aktueller Kategorie)
+    const categoryHierarchy = [];
+    let category = currentCategory;
+    
+    while (category) {
+      categoryHierarchy.unshift(category); // Am Anfang einfügen (damit Root zuerst kommt)
+      
+      if (category.parentId) {
+        category = allCategories.find(c => c.id === category.parentId);
+      } else {
+        category = null;
+      }
+    }
+    
+    // Merge Overrides: Root -> Sub -> Sub-Sub -> ... -> Build
+    // Spätere Overrides überschreiben frühere
+    let effectiveOverrides = {};
+    
+    // 1. Parent-Category-Overrides (von Root bis zur direkten Parent)
+    for (const cat of categoryHierarchy) {
+      const catOverrides = cat.overrides || {};
+      effectiveOverrides = {
+        ...effectiveOverrides,
+        ...catOverrides
+      };
+    }
+    
+    // 2. Build-Overrides (höchste Priorität)
+    const buildOverrides = build.overrides || {};
+    effectiveOverrides = {
+      ...effectiveOverrides,
       ...buildOverrides
     };
+    
+    return effectiveOverrides;
   }
 
   /**
@@ -1664,7 +1699,50 @@ function shouldShowAdvancedTalents(hunterId) {
     
     // Generiere neue ID für die Kopie
     buildCopy.id = Date.now().toString();
-    buildCopy.name = `${originalBuild.name} (Copy)`;
+    
+    // Intelligente Namens-Logik (wie bei cloneBuild)
+    let baseName = originalBuild.name;
+    let copyNumber = 1;
+    
+    // Prüfe, ob der Name bereits "(Copy)" oder "(Copy X)" enthält
+    const copyRegex = /\s*\(Copy(?:\s+(\d+))?\)\s*$/;
+    const match = baseName.match(copyRegex);
+    
+    if (match) {
+      // Entferne den "(Copy X)" Teil vom Namen
+      baseName = baseName.replace(copyRegex, '');
+      
+      // Wenn eine Zahl in den Klammern war, verwende sie als Startpunkt
+      if (match[1]) {
+        copyNumber = parseInt(match[1]) + 1;
+      } else {
+        copyNumber = 2; // Wenn es nur "(Copy)" war, starte mit "(Copy 2)"
+      }
+    }
+    
+    // Suche nach existierenden Kopien mit dem gleichen Basisnamen in ALLEN Builds
+    const existingCopies = builds.filter(b => {
+      const existingMatch = b.name.match(new RegExp(`^${escapeRegExp(baseName)}\\s*\\(Copy(?:\\s+(\\d+))?\\)\\s*$`));
+      return existingMatch !== null;
+    });
+    
+    // Finde die höchste existierende Kopienummer
+    existingCopies.forEach(b => {
+      const existingMatch = b.name.match(/\(Copy\s+(\d+)\)/);
+      if (existingMatch && existingMatch[1]) {
+        const num = parseInt(existingMatch[1]);
+        if (num >= copyNumber) {
+          copyNumber = num + 1;
+        }
+      }
+    });
+    
+    // Setze den neuen Namen
+    if (copyNumber === 1) {
+      buildCopy.name = `${baseName} (Copy)`;
+    } else {
+      buildCopy.name = `${baseName} (Copy ${copyNumber})`;
+    }
     
     // Setze Kategorie für die Kopie
     const data = buildCategories.value[hunterId];
@@ -1693,6 +1771,11 @@ function shouldShowAdvancedTalents(hunterId) {
     
     // Speichere die neue Reihenfolge
     saveBuildsOrder(hunterId, builds);
+  }
+  
+  // Hilfsfunktion zum Escapen von speziellen Zeichen in RegExp
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   /**

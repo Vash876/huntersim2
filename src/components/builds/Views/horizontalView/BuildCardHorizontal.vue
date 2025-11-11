@@ -70,7 +70,7 @@
         v-if="showUpgradeComparisonModal"
         :isVisible="showUpgradeComparisonModal"
         :hunterId="props.hunterId"
-        :buildData="{...buildData, results}"
+        :buildData="buildDataWithEffectiveOverrides"
         @close="showUpgradeComparisonModal = false"
         @applyOverrides="handleApplyUpgradeOverrides"
       />
@@ -80,7 +80,7 @@
         v-if="showOverrideCostsModal"
         :isVisible="showOverrideCostsModal"
         :hunterId="props.hunterId"
-        :buildData="{...buildData, results}"
+        :buildData="buildDataWithEffectiveOverrides"
         @close="showOverrideCostsModal = false"
       />
     </Teleport>
@@ -90,6 +90,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, inject } from 'vue';
 import { useBuildEvaluation } from '@/composables/useBuildEvaluation';
+import { useHunterStore } from '@/store/hunterStore';
 
 // Komponenten importieren
 import BuildHeader from './BuildHeader.vue';  
@@ -114,6 +115,9 @@ const emit = defineEmits([
   'overrides', 'share', 'overridesBuild', 'evaluated', 'reevaluate',
   'updateBuild'
 ]);
+
+// Store
+const hunterStore = useHunterStore();
 
 // DOM-Refs
 const buildElement = ref(null);
@@ -162,9 +166,21 @@ function closeStatsModal() {
   showDistributionModal.value = false;
 }
 
+// Computed: Build-Daten mit effektiven Overrides (Category + Build)
+const buildDataWithEffectiveOverrides = computed(() => {
+  // Hole die effektiven Overrides (Category + Build merged)
+  const effectiveOverrides = hunterStore.getEffectiveBuildOverrides(props.hunterId, props.buildId);
+  
+  return {
+    ...props.buildData,
+    overrides: effectiveOverrides || props.buildData.overrides,
+    results: getCurrentResults()
+  };
+});
+
 // Handler für Upgrade-Vergleich
 function handleUpgradeComparison() {
-  // Das Modal anzeigen und den Build mit Ergebnissen übergeben
+  // Das Modal anzeigen
   showUpgradeComparisonModal.value = true;
 }
 

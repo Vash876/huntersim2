@@ -17,7 +17,7 @@
     >
       <!-- Color Picker Modal (Centered) -->
       <div
-        class="bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-4 w-72 animate-fade-in"
+        class="bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-4 w-80 max-h-[80vh] overflow-y-auto animate-fade-in"
         @click.stop
       >
         <!-- Header -->
@@ -34,7 +34,7 @@
         </div>
         
         <!-- Tailwind Color Grid -->
-        <div class="grid grid-cols-4 gap-3">
+        <div class="grid grid-cols-5 gap-2">
           <button
             v-for="color in availableColors"
             :key="color.name"
@@ -71,18 +71,28 @@ const showPicker = ref(false);
 
 // Available Tailwind colors with their background classes
 const availableColors = [
-  { name: 'blue', bgClass: 'bg-blue-500' },
-  { name: 'purple', bgClass: 'bg-purple-500' },
-  { name: 'pink', bgClass: 'bg-pink-500' },
   { name: 'red', bgClass: 'bg-red-500' },
   { name: 'orange', bgClass: 'bg-orange-500' },
+  { name: 'amber', bgClass: 'bg-amber-500' },
   { name: 'yellow', bgClass: 'bg-yellow-500' },
+  { name: 'lime', bgClass: 'bg-lime-500' },
   { name: 'green', bgClass: 'bg-green-500' },
+  { name: 'emerald', bgClass: 'bg-emerald-500' },
   { name: 'teal', bgClass: 'bg-teal-500' },
   { name: 'cyan', bgClass: 'bg-cyan-500' },
+  { name: 'sky', bgClass: 'bg-sky-500' },
+  { name: 'blue', bgClass: 'bg-blue-500' },
   { name: 'indigo', bgClass: 'bg-indigo-500' },
   { name: 'violet', bgClass: 'bg-violet-500' },
-  { name: 'gray', bgClass: 'bg-gray-500' }
+  { name: 'purple', bgClass: 'bg-purple-500' },
+  { name: 'fuchsia', bgClass: 'bg-fuchsia-500' },
+  { name: 'pink', bgClass: 'bg-pink-500' },
+  { name: 'rose', bgClass: 'bg-rose-500' },
+  { name: 'gray', bgClass: 'bg-gray-500' },
+  { name: 'slate', bgClass: 'bg-slate-500' },
+  { name: 'zinc', bgClass: 'bg-zinc-500' },
+  { name: 'neutral', bgClass: 'bg-neutral-500' },
+  { name: 'stone', bgClass: 'bg-stone-500' }
 ];
 
 const colorClass = computed(() => {

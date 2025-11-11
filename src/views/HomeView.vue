@@ -2,6 +2,32 @@
 const changelog = 
 [
   {
+    version: '2.9.0',
+    date: '2025-11-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added Attraction Gem Level 4 upgrades',
+        ]
+      },
+      {
+        text: '<b class="text-yellow-400">NEW:</b> Advanced Category System for Hunter Builds',
+        subItems: [
+          'Implemented hierarchical category organization with support for nested sub-categories and sub-sub-categories',
+          'Drag & drop builds between categories with visual feedback - hold builds over category tabs to move or copy them',
+          'Category-specific overrides allow applying upgrades to entire groups of builds at once',
+        ]
+      },
+      {
+        text: 'TS Planner',
+        subItems: [
+          'Changed Circle Icon to Hexogon Icon',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.8.21',
     date: '2025-11-04',
     changes: [

@@ -60,7 +60,8 @@
       
       <!-- Settings Bar -->
       <div class="bg-gray-800 py-3 px-4 flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-2">
+        <!-- Desktop Settings -->
+        <div class="hidden md:flex items-center gap-2">
           <span class="text-sm text-gray-400">Settings:</span>
           
           <!-- Iterations -->
@@ -82,7 +83,7 @@
           </button>
           
           <!-- Statistics -->
-          <div class="hidden md:flex items-center gap-2">
+          <div class="flex items-center gap-2">
             <button
               @click="setDisplayMode('Vertical')"
               class="flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors"
@@ -104,6 +105,36 @@
           </div>
         </div>
         
+        <!-- Mobile Settings - Compact buttons in a row -->
+        <div class="flex md:hidden items-center gap-2 w-full">
+          <!-- Iterations Button - Mobile (nur Zahl) -->
+          <button
+            class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors text-xs"
+            @click="openIterationsModal"
+          >
+            <IconRepeat size="14" class="text-blue-400" />
+            <span>{{ iterationValue }}</span>
+          </button>
+          
+          <!-- Manage Categories Button - Mobile (nur "Categories") -->
+          <button 
+            @click="openCategoryManagementModal"
+            class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors text-xs"
+          >
+            <IconFolder size="14" class="text-blue-400" />
+            <span>Categories</span>
+          </button>
+          
+          <!-- Loot Filter Button - Mobile -->
+          <button 
+            @click="showLootFilterModal = true"
+            class="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors text-xs"
+          >
+            <IconFilter size="14" class="text-blue-400" />
+            <span>Filter</span>
+          </button>
+        </div>
+        
         <!-- Build Filter Switch -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
           <!-- Temporary Upgrades Dropdown - Mobile: eigene Zeile, Desktop: inline -->
@@ -113,27 +144,16 @@
               @upgradeChanged="handleUpgradeChanged"
             />
           </div>
-          
-          <!-- View Controls -->
-          <div class="flex items-center gap-2 w-full sm:w-auto">
-            <button 
-              @click="showLootFilterModal = true"
-              class="md:hidden flex items-center space-x-1 px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors duration-200 text-xs sm:text-sm"
-            >
-              <IconFilter size="14" class="text-blue-400" />
-              <span>Loot Filter</span>
-            </button>        
-          </div>
         </div>
       </div>
     </div>
     
     <!-- Category Tabs - Horizontal Scrollable -->
-    <div v-if="builds.length > 0 && buildFilterMode === 'active'" class="mb-4">
+    <div v-if="builds.length > 0 || selectedCategoryId" class="mb-4">
       <!-- Main Categories -->
       <div class="flex items-stretch bg-gray-900 border-b border-gray-700 rounded-t-lg overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-        <!-- System Categories -->
-        <template v-for="category in systemCategories" :key="category.id">
+        <!-- System Categories (excluding Archived) -->
+        <template v-for="category in nonArchivedSystemCategories" :key="category.id">
           <div
             @drop="onCategoryDrop($event, category.id)"
             @dragover="onCategoryDragOver($event, category.id)"
@@ -163,9 +183,7 @@
             <button
               @click="selectCategory(category.id)"
               class="relative px-4 py-3 font-semibold text-sm transition-all duration-200 border-r border-gray-800 group whitespace-nowrap"
-              :class="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId)
-                ? `bg-gray-800 text-white` 
-                : `text-gray-500 hover:text-gray-300 hover:bg-${category.color}-900/20`"
+              :class="getCategoryHoverClasses(category.color, selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId))"
             >
               <div class="flex items-center gap-2">
                 <IconFolder 
@@ -178,7 +196,7 @@
                 <div 
                   class="ml-2 px-2.5 py-0.5 text-xs font-bold rounded-md"
                   :class="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId)
-                    ? `bg-${category.color}-500/20 text-${category.color}-300 border border-${category.color}-500/30` 
+                    ? getBadgeActiveClasses(category.color)
                     : 'bg-gray-800 text-gray-600 border border-gray-700'"
                 >
                   {{ getCategoryBuildCount(category.id) }}
@@ -229,9 +247,7 @@
             <button
               @click="selectCategory(category.id)"
               class="relative px-4 py-3 font-semibold text-sm transition-all duration-200 border-r border-gray-800 group whitespace-nowrap"
-              :class="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId)
-                ? `bg-gray-800 text-white` 
-                : `text-gray-500 hover:text-gray-300 hover:bg-${category.color}-900/20`"
+              :class="getCategoryHoverClasses(category.color, selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId))"
             >
               <div class="flex items-center gap-2">
                 <IconFolder 
@@ -244,7 +260,7 @@
                 <div 
                   class="ml-2 px-2.5 py-0.5 text-xs font-bold rounded-md"
                   :class="selectedCategoryId === category.id || getSubCategories(category.id).some(sub => sub.id === selectedCategoryId)
-                    ? `bg-${category.color}-500/20 text-${category.color}-300 border border-${category.color}-500/30` 
+                    ? getBadgeActiveClasses(category.color)
                     : 'bg-gray-800 text-gray-600 border border-gray-700'"
                 >
                   {{ getCategoryBuildCount(category.id) }}
@@ -256,9 +272,10 @@
                   class="ml-auto p-1 rounded hover:bg-gray-700/50 transition-colors"
                   :title="`Category Overrides for ${category.name}`"
                 >
-                  <IconAdjustmentsHorizontal 
+                  <component 
+                    :is="overrideIcon"
                     size="14" 
-                    :class="categoryHasOverrides(category.id) ? 'text-purple-400' : 'text-gray-500'"
+                    :class="getOverrideIconClass(category.id)"
                   />
                 </button>
               </div>
@@ -273,8 +290,126 @@
           </div>
         </template>
         
+        <!-- Archived Tab on Mobile (inline, as last tab) -->
+        <template v-if="archivedCategory">
+          <div
+            :key="archivedCategory.id"
+            @drop="onCategoryDrop($event, archivedCategory.id)"
+            @dragover="onCategoryDragOver($event, archivedCategory.id)"
+            @dragenter="onCategoryDragEnter($event, archivedCategory.id)"
+            @dragleave="onCategoryDragLeave($event, archivedCategory.id)"
+            class="category-drop-zone relative flex-shrink-0 md:hidden"
+            :data-category-id="archivedCategory.id"
+          >
+            <!-- Drag Action Indicators -->
+            <div v-if="draggedBuildId && dropTargetCategoryId === archivedCategory.id" class="absolute inset-0 flex pointer-events-none z-20">
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'move'" class="bg-blue-500/90 text-white px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                  <IconArrowBarToDown size="14" />
+                  <span class="font-semibold text-xs">Move</span>
+                </div>
+              </div>
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'copy'" class="bg-green-500/90 text-white px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                  <IconCopy size="14" />
+                  <span class="font-semibold text-xs">Copy</span>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              @click="selectCategory(archivedCategory.id)"
+              class="relative px-4 py-3 font-semibold text-sm transition-all duration-200 border-r border-gray-800 group whitespace-nowrap"
+              :class="getCategoryHoverClasses(archivedCategory.color, selectedCategoryId === archivedCategory.id || getSubCategories(archivedCategory.id).some(sub => sub.id === selectedCategoryId))"
+            >
+              <div class="flex items-center gap-2">
+                <IconFolder 
+                  size="18" 
+                  :class="selectedCategoryId === archivedCategory.id || getSubCategories(archivedCategory.id).some(sub => sub.id === selectedCategoryId) 
+                    ? `text-${archivedCategory.color}-400` 
+                    : 'text-gray-600 group-hover:text-gray-500'" 
+                />
+                <span>{{ archivedCategory.name }}</span>
+                <div 
+                  class="ml-2 px-2.5 py-0.5 text-xs font-bold rounded-md"
+                  :class="selectedCategoryId === archivedCategory.id || getSubCategories(archivedCategory.id).some(sub => sub.id === selectedCategoryId)
+                    ? getBadgeActiveClasses(archivedCategory.color)
+                    : 'bg-gray-800 text-gray-600 border border-gray-700'"
+                >
+                  {{ getCategoryBuildCount(archivedCategory.id) }}
+                </div>
+              </div>
+              
+              <div 
+                v-if="selectedCategoryId === archivedCategory.id || getSubCategories(archivedCategory.id).some(sub => sub.id === selectedCategoryId)"
+                class="absolute bottom-0 left-0 right-0 h-1 rounded-t-sm"
+                :class="`bg-${archivedCategory.color}-500`"
+              ></div>
+            </button>
+          </div>
+        </template>
+        
         <!-- Flex spacer -->
         <div class="flex-1 bg-gray-900"></div>
+        
+        <!-- Archived Tab on Desktop (pushed to right) -->
+        <template v-if="archivedCategory">
+          <div
+            :key="`${archivedCategory.id}-desktop`"
+            @drop="onCategoryDrop($event, archivedCategory.id)"
+            @dragover="onCategoryDragOver($event, archivedCategory.id)"
+            @dragenter="onCategoryDragEnter($event, archivedCategory.id)"
+            @dragleave="onCategoryDragLeave($event, archivedCategory.id)"
+            class="category-drop-zone relative flex-shrink-0 hidden md:block"
+            :data-category-id="archivedCategory.id"
+          >
+            <!-- Drag Action Indicators -->
+            <div v-if="draggedBuildId && dropTargetCategoryId === archivedCategory.id" class="absolute inset-0 flex pointer-events-none z-20">
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'move'" class="bg-blue-500/90 text-white px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                  <IconArrowBarToDown size="14" />
+                  <span class="font-semibold text-xs">Move</span>
+                </div>
+              </div>
+              <div class="w-1/2 flex items-center justify-center">
+                <div v-if="dragAction === 'copy'" class="bg-green-500/90 text-white px-2 py-1 rounded shadow-lg flex items-center gap-1">
+                  <IconCopy size="14" />
+                  <span class="font-semibold text-xs">Copy</span>
+                </div>
+              </div>
+            </div>
+            
+            <button
+              @click="selectCategory(archivedCategory.id)"
+              class="relative px-4 py-3 font-semibold text-sm transition-all duration-200 border-r border-gray-800 group whitespace-nowrap"
+              :class="getCategoryHoverClasses(archivedCategory.color, selectedCategoryId === archivedCategory.id || getSubCategories(archivedCategory.id).some(sub => sub.id === selectedCategoryId))"
+            >
+              <div class="flex items-center gap-2">
+                <IconFolder 
+                  size="18" 
+                  :class="selectedCategoryId === archivedCategory.id || getSubCategories(archivedCategory.id).some(sub => sub.id === selectedCategoryId) 
+                    ? `text-${archivedCategory.color}-400` 
+                    : 'text-gray-600 group-hover:text-gray-500'" 
+                />
+                <span>{{ archivedCategory.name }}</span>
+                <div 
+                  class="ml-2 px-2.5 py-0.5 text-xs font-bold rounded-md"
+                  :class="selectedCategoryId === archivedCategory.id || getSubCategories(archivedCategory.id).some(sub => sub.id === selectedCategoryId)
+                    ? getBadgeActiveClasses(archivedCategory.color)
+                    : 'bg-gray-800 text-gray-600 border border-gray-700'"
+                >
+                  {{ getCategoryBuildCount(archivedCategory.id) }}
+                </div>
+              </div>
+              
+              <div 
+                v-if="selectedCategoryId === archivedCategory.id || getSubCategories(archivedCategory.id).some(sub => sub.id === selectedCategoryId)"
+                class="absolute bottom-0 left-0 right-0 h-1 rounded-t-sm"
+                :class="`bg-${archivedCategory.color}-500`"
+              ></div>
+            </button>
+          </div>
+        </template>
       </div>
       
       <!-- Sub-Categories (only when parent selected and has direct children) -->
@@ -314,9 +449,10 @@
             <button
               @click="selectCategory(subCat.id)"
               class="relative px-4 py-2.5 font-semibold text-sm transition-all duration-200 border-r border-gray-800 group whitespace-nowrap"
-              :class="(selectedCategoryId === subCat.id || getSubCategories(subCat.id).some(sub => sub.id === selectedCategoryId))
-                ? `bg-gray-800 text-white` 
-                : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'"
+              :class="getCategoryHoverClasses(
+                subCat.color, 
+                selectedCategoryId === subCat.id || getSubCategories(subCat.id).some(sub => sub.id === selectedCategoryId)
+              )"
             >
               <div class="flex items-center gap-2">
                 <IconFolder 
@@ -327,13 +463,26 @@
                 />
                 <span>{{ subCat.name }}</span>
                 <div 
-                  class="ml-1.5 px-2 py-0.5 text-xs font-bold rounded-md"
+                  class="ml-2 px-2.5 py-0.5 text-xs font-bold rounded-md"
                   :class="(selectedCategoryId === subCat.id || getSubCategories(subCat.id).some(sub => sub.id === selectedCategoryId))
-                    ? `bg-${subCat.color}-500/20 text-${subCat.color}-300 border border-${subCat.color}-500/30` 
+                    ? getBadgeActiveClasses(subCat.color)
                     : 'bg-gray-800 text-gray-600 border border-gray-700'"
                 >
                   {{ getCategoryBuildCount(subCat.id) }}
                 </div>
+                
+                <!-- Override Icon -->
+                <button
+                  @click.stop="openCategoryOverrideModal(subCat)"
+                  class="ml-auto p-1 rounded hover:bg-gray-700/50 transition-colors"
+                  :title="`Category Overrides for ${subCat.name}`"
+                >
+                  <component 
+                    :is="overrideIcon"
+                    size="12" 
+                    :class="getOverrideIconClass(subCat.id)"
+                  />
+                </button>
               </div>
               
               <!-- Bottom accent line -->
@@ -350,7 +499,7 @@
       <!-- Sub-Sub-Categories (only when sub-category selected and has children) -->
       <div 
         v-if="selectedSubCategory && getDirectChildCategories(selectedSubCategory.id).length > 0" 
-        class="flex items-stretch bg-gray-800 border-b border-gray-700 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
+        class="flex items-stretch bg-gray-900 border-b border-gray-700 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
       >
         <div class="flex items-stretch">
           <div
@@ -384,9 +533,7 @@
             <button
               @click="selectCategory(subSubCat.id)"
               class="relative px-3 py-2 font-medium text-xs transition-all duration-200 border-r border-gray-700 group whitespace-nowrap"
-              :class="selectedCategoryId === subSubCat.id 
-                ? `bg-gray-750 text-white` 
-                : 'text-gray-500 hover:text-gray-300 hover:bg-gray-750'"
+              :class="getCategoryHoverClasses(subSubCat.color, selectedCategoryId === subSubCat.id)"
             >
               <div class="flex items-center gap-1.5">
                 <IconFolder 
@@ -397,13 +544,26 @@
                 />
                 <span>{{ subSubCat.name }}</span>
                 <div 
-                  class="ml-1 px-1.5 py-0.5 text-xs font-bold rounded"
+                  class="ml-2 px-2.5 py-0.5 text-xs font-bold rounded-md"
                   :class="selectedCategoryId === subSubCat.id 
-                    ? `bg-${subSubCat.color}-500/20 text-${subSubCat.color}-300 border border-${subSubCat.color}-500/30` 
-                    : 'bg-gray-700 text-gray-600 border border-gray-700'"
+                    ? getBadgeActiveClasses(subSubCat.color)
+                    : 'bg-gray-800 text-gray-600 border border-gray-700'"
                 >
                   {{ getCategoryBuildCount(subSubCat.id) }}
                 </div>
+                
+                <!-- Override Icon -->
+                <button
+                  @click.stop="openCategoryOverrideModal(subSubCat)"
+                  class="ml-auto p-0.5 rounded hover:bg-gray-700/50 transition-colors"
+                  :title="`Category Overrides for ${subSubCat.name}`"
+                >
+                  <component 
+                    :is="overrideIcon"
+                    size="10" 
+                    :class="getOverrideIconClass(subSubCat.id)"
+                  />
+                </button>
               </div>
               
               <!-- Bottom accent line -->
@@ -590,29 +750,39 @@
   </div>
 </div>
     
-    <!-- Leerer State wenn keine Builds vorhanden -->
+    <!-- Leerer State wenn Kategorie leer ist (aber Hunter hat Builds) -->
     <div 
-      v-if="filteredBuilds.length === 0" 
+      v-if="allHunterBuilds.length > 0 && visibleBuilds.length === 0" 
+      class="col-span-full p-8 text-center bg-gray-800 border border-gray-700 rounded-lg"
+    >
+      <IconRobot size="75" class="mx-auto mb-4 text-gray-600" />
+      <h3 class="text-xl font-semibold mb-2">No builds in this category</h3>
+      <p class="text-gray-400 mb-4">
+        You don't have any builds in this category yet.
+      </p>
+      <button
+        @click="openBuildModal"
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+      >
+        Create a build
+      </button>
+    </div>
+    
+    <!-- Leerer State wenn gar keine Builds für den Hunter vorhanden -->
+    <div 
+      v-if="allHunterBuilds.length === 0" 
       class="col-span-full p-8 text-center bg-gray-800 border border-gray-700 rounded-lg"
     >
       <IconRobot size="75" class="mx-auto mb-4 text-gray-600" />
       <h3 class="text-xl font-semibold mb-2">No builds found</h3>
       <p class="text-gray-400 mb-4">
-        {{ buildFilterMode === 'active' ? 'You don\'t have any active builds for this hunter yet.' : 'You don\'t have any archived builds for this hunter.' }}
+        You don't have any builds for this hunter yet.
       </p>
       <button
-        v-if="buildFilterMode === 'active'"
         @click="openBuildModal"
         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
       >
         Create your first build
-      </button>
-      <button
-        v-else
-        @click="buildFilterMode = 'active'"
-        class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors"
-      >
-        Back to active builds
       </button>
     </div>
     
@@ -691,6 +861,7 @@
       :hunterColor="hunterColor"
       :buildName="selectedBuildForOverrides?.name || ''"
       :buildId="selectedBuildForOverrides?.id"
+      :displayMode="displaySettings.displayMode"
       :currentOverrides="selectedBuildForOverrides?.overrides || {}"
       @close="closeOverrideModal"
       @overridesUpdated="onOverridesUpdated"
@@ -728,6 +899,7 @@
       :hunterColor="hunterColor"
       :categoryName="selectedCategoryForOverrides.name"
       :categoryId="selectedCategoryForOverrides.id"
+      :displayMode="displaySettings.displayMode"
       :currentOverrides="hunterStore.getCategoryOverrides(route.params.hunterId, selectedCategoryForOverrides.id)"
       @close="closeCategoryOverrideModal"
       @categoryOverridesUpdated="onCategoryOverridesUpdated"
@@ -749,6 +921,7 @@ import {
   IconRepeat, 
   IconChartDonut,
   IconAdjustmentsHorizontal,
+  IconAdjustments,
   IconFolderOff,
   IconDownload,
   IconRobot,
@@ -878,42 +1051,12 @@ const selectedCategoryId = ref(null);
 // Sichtbare Builds für Vuedraggable (gefiltert nach Kategorie)
 const visibleBuilds = computed({
   get() {
-    if (!selectedCategoryId.value) return builds.value;
-    
-    // Filtere nur die Builds, die direkt in der ausgewählten Kategorie sind
-    return builds.value.filter(build => {
-      const buildCategoryId = hunterStore.getBuildCategory(route.params.hunterId, build.id);
-      return buildCategoryId === selectedCategoryId.value;
-    });
+    // builds.value ist bereits durch filteredBuilds nach Kategorie gefiltert
+    return builds.value;
   },
   set(newValue) {
-    // Wenn Vuedraggable die Reihenfolge ändert, aktualisiere das komplette builds Array
-    // Wir müssen die neuen Positionen in das Haupt-Array übertragen
-    
-    // Erstelle eine Map der neuen Reihenfolge innerhalb der Kategorie
-    const newOrder = new Map(newValue.map((build, index) => [build.id, index]));
-    
-    // Sortiere das gesamte builds Array
-    const sorted = [...builds.value].sort((a, b) => {
-      const aCat = hunterStore.getBuildCategory(route.params.hunterId, a.id);
-      const bCat = hunterStore.getBuildCategory(route.params.hunterId, b.id);
-      
-      // Beide in der aktuellen Kategorie: Nutze neue Reihenfolge
-      if (aCat === selectedCategoryId.value && bCat === selectedCategoryId.value) {
-        return (newOrder.get(a.id) ?? 0) - (newOrder.get(b.id) ?? 0);
-      }
-      
-      // Nur a in aktueller Kategorie
-      if (aCat === selectedCategoryId.value) return -1;
-      
-      // Nur b in aktueller Kategorie  
-      if (bCat === selectedCategoryId.value) return 1;
-      
-      // Beide nicht in aktueller Kategorie: Behalte ursprüngliche Reihenfolge
-      return builds.value.indexOf(a) - builds.value.indexOf(b);
-    });
-    
-    builds.value = sorted;
+    // Wenn Vuedraggable die Reihenfolge ändert, setze die neue Reihenfolge direkt
+    builds.value = newValue;
   }
 });
 
@@ -1148,6 +1291,15 @@ const systemCategories = computed(() => {
   return allCategories.filter(c => c.isSystem && !c.parentId);
 });
 
+// Separate archived category from other system categories
+const archivedCategory = computed(() => {
+  return systemCategories.value.find(c => c.id === 'archived') || null;
+});
+
+const nonArchivedSystemCategories = computed(() => {
+  return systemCategories.value.filter(c => c.id !== 'archived');
+});
+
 const customRootCategories = computed(() => {
   const hunterId = route.params.hunterId;
   const allCategories = hunterStore.getCategories(hunterId);
@@ -1210,17 +1362,9 @@ function getDirectChildCategories(parentId) {
 }
 
 function getCategoryBuildCount(categoryId) {
-  // Get builds ONLY in this category (not sub-categories)
-  const categoryBuilds = hunterStore.getBuildsByCategory(route.params.hunterId, categoryId, false);
+  // Get builds in this category AND all sub-categories (recursive)
+  const categoryBuilds = hunterStore.getBuildsByCategory(route.params.hunterId, categoryId, true);
   return categoryBuilds.length;
-}
-
-function isBuildInSelectedCategory(build) {
-  if (!selectedCategoryId.value) return true;
-  
-  // Only show builds that are DIRECTLY in the selected category (not in sub-categories)
-  const categoryBuilds = hunterStore.getBuildsByCategory(route.params.hunterId, selectedCategoryId.value, false);
-  return categoryBuilds.some(b => b.id === build.id);
 }
 
 // Event-Handler für erstellten Build
@@ -1378,6 +1522,86 @@ function onCategoryOverridesUpdated(payload) {
 function categoryHasOverrides(categoryId) {
   const overrides = hunterStore.getCategoryOverrides(route.params.hunterId, categoryId);
   return Object.keys(overrides).length > 0;
+}
+
+// Dynamisches Override-Icon basierend auf Display Mode
+const overrideIcon = computed(() => {
+  return displaySettings.value.displayMode === 'Vertical' 
+    ? IconAdjustments 
+    : IconAdjustmentsHorizontal;
+});
+
+// Override-Icon-Farbe: Hunter-Farbe wenn Overrides aktiv, sonst gray
+function getOverrideIconClass(categoryId) {
+  return categoryHasOverrides(categoryId) 
+    ? `text-${hunterColor.value}-400` 
+    : 'text-gray-500';
+}
+
+// Helper function to get category hover classes
+function getCategoryHoverClasses(color, isSelected) {
+  if (isSelected) {
+    return 'bg-gray-800 text-white';
+  }
+  
+  // Mapping für alle möglichen Farben mit vollständigen Tailwind-Klassen
+  // Für graue Farben verwenden wir einen helleren Hover-Effekt für bessere Sichtbarkeit
+  const hoverClassMap = {
+    'red': 'text-gray-500 hover:text-gray-300 hover:bg-red-900/20',
+    'green': 'text-gray-500 hover:text-gray-300 hover:bg-green-900/20',
+    'blue': 'text-gray-500 hover:text-gray-300 hover:bg-blue-900/20',
+    'yellow': 'text-gray-500 hover:text-gray-300 hover:bg-yellow-900/20',
+    'purple': 'text-gray-500 hover:text-gray-300 hover:bg-purple-900/20',
+    'pink': 'text-gray-500 hover:text-gray-300 hover:bg-pink-900/20',
+    'indigo': 'text-gray-500 hover:text-gray-300 hover:bg-indigo-900/20',
+    'cyan': 'text-gray-500 hover:text-gray-300 hover:bg-cyan-900/20',
+    'teal': 'text-gray-500 hover:text-gray-300 hover:bg-teal-900/20',
+    'orange': 'text-gray-500 hover:text-gray-300 hover:bg-orange-900/20',
+    'lime': 'text-gray-500 hover:text-gray-300 hover:bg-lime-900/20',
+    'emerald': 'text-gray-500 hover:text-gray-300 hover:bg-emerald-900/20',
+    'sky': 'text-gray-500 hover:text-gray-300 hover:bg-sky-900/20',
+    'violet': 'text-gray-500 hover:text-gray-300 hover:bg-violet-900/20',
+    'fuchsia': 'text-gray-500 hover:text-gray-300 hover:bg-fuchsia-900/20',
+    'rose': 'text-gray-500 hover:text-gray-300 hover:bg-rose-900/20',
+    'amber': 'text-gray-500 hover:text-gray-300 hover:bg-amber-900/20',
+    'gray': 'text-gray-500 hover:text-gray-300 hover:bg-gray-700/40',
+    'slate': 'text-gray-500 hover:text-gray-300 hover:bg-slate-700/40',
+    'zinc': 'text-gray-500 hover:text-gray-300 hover:bg-zinc-700/40',
+    'neutral': 'text-gray-500 hover:text-gray-300 hover:bg-neutral-700/40',
+    'stone': 'text-gray-500 hover:text-gray-300 hover:bg-stone-700/40',
+  };
+  
+  return hoverClassMap[color] || 'text-gray-500 hover:text-gray-300 hover:bg-gray-700/40';
+}
+
+// Helper function to get badge classes (active state)
+function getBadgeActiveClasses(color) {
+  const badgeClassMap = {
+    'red': 'bg-red-500 text-red-100 border border-red-400',
+    'green': 'bg-green-500 text-green-100 border border-green-400',
+    'blue': 'bg-blue-500 text-blue-100 border border-blue-400',
+    'yellow': 'bg-yellow-500 text-yellow-100 border border-yellow-400',
+    'purple': 'bg-purple-500 text-purple-100 border border-purple-400',
+    'pink': 'bg-pink-500 text-pink-100 border border-pink-400',
+    'indigo': 'bg-indigo-500 text-indigo-100 border border-indigo-400',
+    'cyan': 'bg-cyan-500 text-cyan-100 border border-cyan-400',
+    'teal': 'bg-teal-500 text-teal-100 border border-teal-400',
+    'orange': 'bg-orange-500 text-orange-100 border border-orange-400',
+    'lime': 'bg-lime-500 text-lime-100 border border-lime-400',
+    'emerald': 'bg-emerald-500 text-emerald-100 border border-emerald-400',
+    'sky': 'bg-sky-500 text-sky-100 border border-sky-400',
+    'violet': 'bg-violet-500 text-violet-100 border border-violet-400',
+    'fuchsia': 'bg-fuchsia-500 text-fuchsia-100 border border-fuchsia-400',
+    'rose': 'bg-rose-500 text-rose-100 border border-rose-400',
+    'amber': 'bg-amber-500 text-amber-100 border border-amber-400',
+    'gray': 'bg-gray-500 text-gray-100 border border-gray-400',
+    'slate': 'bg-slate-500 text-slate-100 border border-slate-400',
+    'zinc': 'bg-zinc-500 text-zinc-100 border border-zinc-400',
+    'neutral': 'bg-neutral-500 text-neutral-100 border border-neutral-400',
+    'stone': 'bg-stone-500 text-stone-100 border border-stone-400',
+  };
+  
+  return badgeClassMap[color] || 'bg-gray-500 text-gray-100 border border-gray-400';
 }
 
 
@@ -1547,14 +1771,22 @@ function archiveBuild(build) {
   );
 }
 
+// Computed: Alle Builds für diesen Hunter (ungefiltert)
+const allHunterBuilds = computed(() => {
+  return hunterStore.getOrderedBuildsForHunter(route.params.hunterId) || [];
+});
+
 // Computed Properties für die gefilterten Builds
 const filteredBuilds = computed(() => {
-  const allBuilds = hunterStore.getOrderedBuildsForHunter(route.params.hunterId) || [];
+  const allBuilds = allHunterBuilds.value;
   
-  // Im Category-System (wenn eine Kategorie ausgewählt ist): zeige ALLE Builds
-  // Die Filterung erfolgt über isBuildInSelectedCategory() im Template
+  // Im Category-System (wenn eine Kategorie ausgewählt ist):
+  // Zeige nur Builds der aktuellen Kategorie für Performance
   if (selectedCategoryId.value) {
-    return allBuilds;
+    return allBuilds.filter(build => {
+      const buildCategoryId = hunterStore.getBuildCategory(route.params.hunterId, build.id);
+      return buildCategoryId === selectedCategoryId.value;
+    });
   }
   
   // Im Active/Archived-Modus (alte Buttons): filtere nach isArchived Flag
@@ -1604,14 +1836,14 @@ provide('referenceBuildId', referenceBuildId);
 provide('referenceBuildResults', referenceBuildResults);
 // Stelle den Zähler bereit
 provide('referenceUpdateCounter', referenceUpdateCounter);
+// Provide selected category for evaluation guards
+provide('selectedCategoryId', selectedCategoryId);
 
 // Computed: Erster Build in der aktuellen Kategorie ist Reference Build
 const categoryReferenceBuildId = computed(() => {
-  // Finde den ersten SICHTBAREN Build (nach Filterung durch isBuildInSelectedCategory)
-  const visibleBuilds = builds.value.filter(build => isBuildInSelectedCategory(build));
-  
-  // Erster sichtbarer Build ist Reference
-  return visibleBuilds.length > 0 ? visibleBuilds[0].id : null;
+  // builds.value ist bereits nach Kategorie gefiltert durch filteredBuilds
+  // Erster Build ist Reference
+  return builds.value.length > 0 ? builds.value[0].id : null;
 });
 
 // Synchronisiere referenceBuildId mit categoryReferenceBuildId
@@ -1656,6 +1888,16 @@ function onDragEnd(event) {
   
   // Speichere die neue Reihenfolge im Store und localStorage
   hunterStore.saveBuildsOrder(route.params.hunterId, builds.value);
+  
+  // Wichtig: Nach dem Speichern müssen wir builds.value neu aus filteredBuilds laden,
+  // damit leere Kategorien auch wirklich leer angezeigt werden
+  nextTick(() => {
+    const newFilteredBuilds = filteredBuilds.value;
+    builds.value = newFilteredBuilds.map(build => ({
+      ...build,
+      hunterId: build.hunterId || route.params.hunterId
+    }));
+  });
   
   // Der Reference Build wird automatisch durch categoryReferenceBuildId aktualisiert
   // Triggere eine Neuberechnung
@@ -1886,10 +2128,12 @@ function onCategoryDrop(event, categoryId) {
     // Build kopieren
     hunterStore.copyBuildToCategory(hunterId, buildId, categoryId);
     
-    // WICHTIG: Force reactivity mit neuem Array und nextTick
+    // WICHTIG: Nach dem Kopieren filteredBuilds neu laden
     nextTick(() => {
-      const orderedBuilds = hunterStore.getOrderedBuildsForHunter(hunterId) || [];
-      builds.value = [...orderedBuilds];
+      builds.value = filteredBuilds.value.map(build => ({
+        ...build,
+        hunterId: build.hunterId || hunterId
+      }));
     });
     
     showToastMessage(`Build copied to ${categoryName}`, 'success', 2000);
@@ -1897,14 +2141,12 @@ function onCategoryDrop(event, categoryId) {
     // Build verschieben
     hunterStore.moveBuildToCategory(hunterId, buildId, categoryId);
     
-    // WICHTIG: Force reactivity mit neuem Array und nextTick
+    // WICHTIG: Nach dem Verschieben filteredBuilds neu laden
+    // Dies zeigt die korrekte gefilterte Liste für die aktuelle Kategorie
     nextTick(() => {
-      const orderedBuilds = hunterStore.getOrderedBuildsForHunter(hunterId) || [];
-      builds.value = [...orderedBuilds];
-      
-      console.log('UI builds updated to:', builds.value.map((b, i) => {
-        const cat = hunterStore.getBuildCategory(hunterId, b.id);
-        return `[${i}] ${b.name} (${cat})`;
+      builds.value = filteredBuilds.value.map(build => ({
+        ...build,
+        hunterId: build.hunterId || hunterId
       }));
     });
     

@@ -13,7 +13,8 @@
         <!-- Erste Zeile: Titel und Action Buttons -->
         <div class="flex justify-between items-center mb-2 sm:mb-0">
           <div class="flex-1">
-            <h2 class="text-base sm:text-lg font-bold text-white truncate mr-2">
+            <h2 class="text-base sm:text-lg font-bold text-white truncate mr-2 flex items-center">
+              <component :is="overrideIcon" size="16" class="mr-2" :class="`text-${hunterColor}-400`" />
               <span :class="`text-${hunterColor}-400`">{{ modalTitle }}</span>
               <span class=""> - {{ modalSubtitle }}</span>
             </h2>
@@ -219,7 +220,8 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
 import { 
-  IconX, IconChevronLeft, IconChevronRight, IconAlertCircle, IconInfoCircle
+  IconX, IconChevronLeft, IconChevronRight, IconAlertCircle, IconInfoCircle,
+  IconAdjustments, IconAdjustmentsHorizontal
 } from '@tabler/icons-vue';
 import { useHunterStore } from '../../store/hunterStore';
 import { useGemPlannerStore } from '../../store/gemPlannerStore';
@@ -253,6 +255,7 @@ const props = defineProps({
   // Category-Mode Props:
   categoryName: { type: String, default: '' },
   categoryId: { type: String, default: null },
+  displayMode: { type: String, default: 'Horizontal' }, // 'Vertical' oder 'Horizontal'
   
   // Shared: currentOverrides wird für beide Modi verwendet
   currentOverrides: { type: Object, default: () => ({}) },
@@ -278,6 +281,13 @@ const modalSubtitle = computed(() => {
     return 'Category Overrides';
   }
   return 'Overrides';
+});
+
+// Computed für dynamisches Icon basierend auf displayMode
+const overrideIcon = computed(() => {
+  return props.displayMode === 'Vertical' 
+    ? IconAdjustments 
+    : IconAdjustmentsHorizontal;
 });
 
 // Local state

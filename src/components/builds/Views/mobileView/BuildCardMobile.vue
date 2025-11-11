@@ -568,7 +568,7 @@
         v-if="showUpgradeComparisonModal"
         :isVisible="showUpgradeComparisonModal"
         :hunterId="props.hunterId"
-        :buildData="{...buildData, results}"
+        :buildData="buildDataWithEffectiveOverrides"
         @close="showUpgradeComparisonModal = false"
         @applyOverrides="handleApplyUpgradeOverrides"
       />
@@ -578,7 +578,7 @@
         v-if="showOverrideCostsModal"
         :isVisible="showOverrideCostsModal"
         :hunterId="props.hunterId"
-        :buildData="{...buildData, results}"
+        :buildData="buildDataWithEffectiveOverrides"
         @close="showOverrideCostsModal = false"
       />
     </Teleport>
@@ -596,6 +596,7 @@ import {
 } from '@tabler/icons-vue';
 import { useRoute } from 'vue-router';
 import { useBuildEvaluation } from '@/composables/useBuildEvaluation';
+import { useHunterStore } from '@/store/hunterStore';
 import { useLootIcons } from '@/composables/useLootIcons'; // Importiere useLootIcons
 import { 
   formatNumber, formatStage, formatTime, formatPercent, getColorRGB,
@@ -625,6 +626,9 @@ const emit = defineEmits([
   'overrides', 'share', 'overridesBuild', 'evaluated', 'reevaluate',
   'updateBuild'
 ]);
+
+// Store
+const hunterStore = useHunterStore();
 
 // Route und Refs
 const route = useRoute();
@@ -686,8 +690,21 @@ const {
   handleReevaluate,
   loadHunterLabels,
   setupWatches,
-  showToastMessage
+  showToastMessage,
+  getCurrentResults
 } = useBuildEvaluation(props, emit);
+
+// Computed: Build-Daten mit effektiven Overrides (Category + Build)
+const buildDataWithEffectiveOverrides = computed(() => {
+  // Hole die effektiven Overrides (Category + Build merged)
+  const effectiveOverrides = hunterStore.getEffectiveBuildOverrides(props.hunterId, props.buildId);
+  
+  return {
+    ...props.buildData,
+    overrides: effectiveOverrides || props.buildData.overrides,
+    results: getCurrentResults()
+  };
+});
 
 // Handler für Upgrade-Vergleich
 function handleUpgradeComparison() {
