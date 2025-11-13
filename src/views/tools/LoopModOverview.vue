@@ -836,8 +836,8 @@ function handleI61LevelUpdate(newVal) {
   withSmoothTransition(() => {
     i61Level.value = newVal;
     i61LevelRaw.value = newVal;
+    saveFilters();
   });
-  saveFilters();
 }
 
 function finalizeI61Level() {
@@ -1198,8 +1198,8 @@ function handleAllTimeHighestMPUpdate(newVal) {
   withSmoothTransition(() => {
     allTimeHighestMP.value = newVal;
     allTimeHighestMPRaw.value = newVal;
+    saveFilters();
   });
-  saveFilters();
 }
 
 function finalizeAllTimeHighestMP() {
@@ -1209,8 +1209,8 @@ function finalizeAllTimeHighestMP() {
     withSmoothTransition(() => {
       allTimeHighestMP.value = Math.max(0, Math.min(99999, numValue));
       allTimeHighestMPRaw.value = allTimeHighestMP.value;
+      saveFilters();
     });
-    saveFilters();
   }
 }
 
@@ -1222,8 +1222,8 @@ function toggleUltimaCapUpgrade(id) {
     } else {
       selectedUltimaCapUpgrades.value.push(id);
     }
+    saveFilters();
   });
-  saveFilters();
 }
 
 function adjustT2r1Level(delta) {
@@ -1234,8 +1234,8 @@ function adjustT2r1Level(delta) {
   if (newLevel >= 0 && newLevel <= t2r1Upgrade.maxLevel) {
     withSmoothTransition(() => {
       t2r1Level.value = newLevel;
+      saveFilters();
     });
-    saveFilters();
   }
 }
 
@@ -1260,8 +1260,8 @@ function updateSort(field) {
       sortBy.value = field;
       sortDirection.value = 'asc';
     }
+    saveFilters();
   });
-  saveFilters();
 }
 
 function resetFilters() {
@@ -1276,8 +1276,8 @@ function resetFilters() {
     t2r1Level.value = 0;
     sortBy.value = 'cost';
     sortDirection.value = 'asc';
+    saveFilters();
   });
-  saveFilters();
 }
 
 function getTierClass(tier) {
@@ -1313,8 +1313,17 @@ function loadFilters() {
       mpRange.value = Number(savedFilters.mpRange);
     }
     if (savedFilters.mpRangeEnabled !== undefined) mpRangeEnabled.value = savedFilters.mpRangeEnabled;
-    if (savedFilters.i75Level !== undefined) i75Level.value = Number(savedFilters.i75Level); // Angepasst
-    if (savedFilters.i61Level !== undefined) i61Level.value = Number(savedFilters.i61Level); // Angepasst
+    
+    if (savedFilters.i75Level !== undefined && savedFilters.i75Level !== null) {
+      i75Level.value = Number(savedFilters.i75Level);
+      i75LevelRaw.value = i75Level.value;
+    }
+    
+    if (savedFilters.i61Level !== undefined && savedFilters.i61Level !== null) {
+      i61Level.value = Number(savedFilters.i61Level);
+      i61LevelRaw.value = i61Level.value;
+    }
+    
     if (savedFilters.selectedUltimaCapUpgrades !== undefined) {
       selectedUltimaCapUpgrades.value = savedFilters.selectedUltimaCapUpgrades;
     }
