@@ -302,21 +302,20 @@
                 </div>
               </div>
               
-              <!-- Effect -->
-              <div class="mb-2">
-                <div class="text-gray-300 text-xs leading-relaxed">
+              <!-- Effect and Requirements in one row -->
+              <div class="flex items-start justify-between gap-2">
+                <!-- Effect (left) -->
+                <div class="text-gray-300 text-xs leading-relaxed flex-1">
                   {{ research.effect }}
                 </div>
-              </div>
-              
-              <!-- Requirements -->
-              <div v-if="research.requiresInnovation > 0">
-                <div class="flex flex-wrap gap-1">
+                
+                <!-- Requirements (right-aligned) -->
+                <div v-if="research.requiresInnovation > 0" class="flex-shrink-0">
                   <span 
-                    class="px-1.5 py-0.5 text-xs border rounded"
+                    class="px-1.5 py-0.5 text-xs border rounded whitespace-nowrap"
                     :class="getInnovationClass(research.requiresInnovation)"
                   >
-                    Innovation {{ research.requiresInnovation }}
+                    Inno{{ research.requiresInnovation }}
                   </span>
                 </div>
               </div>
@@ -326,9 +325,8 @@
                 class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg"
                 :class="{
                   'bg-gradient-to-b from-indigo-500 to-purple-600': research.type === 'Dark',
-                  'bg-gradient-to-b from-red-500 to-red-600': research.type === 'Ultima' && research.research === 'Temporal Research',
                   'bg-gradient-to-b from-green-500 to-green-600': research.type === 'Ultima' && research.research === 'Cell Research',
-                  'bg-gradient-to-b from-red-500 to-red-600': research.type === 'Ultima' && research.research !== 'Temporal Research' && research.research !== 'Cell Research',
+                  'bg-gradient-to-b from-red-400 to-red-600': research.type === 'Ultima',
                   'bg-gradient-to-b from-yellow-500 to-orange-500': research.type === 'Standard'
                 }"
               ></div>
@@ -406,19 +404,13 @@ function withSmoothTransition(updateFn) {
 
 // Handler functions
 function handleRpValueUpdate(newVal) {
-  withSmoothTransition(() => {
-    rpValue.value = newVal;
-    rpValueRaw.value = newVal;
-  });
-  saveFilters();
+  rpValue.value = newVal;
+  rpValueRaw.value = newVal;
 }
 
 function handleRpRangeUpdate(newVal) {
-  withSmoothTransition(() => {
-    rpRange.value = newVal;
-    rpRangeRaw.value = newVal;
-  });
-  saveFilters();
+  rpRange.value = newVal;
+  rpRangeRaw.value = newVal;
 }
 
 function finalizeRpValue() {
@@ -427,8 +419,8 @@ function finalizeRpValue() {
     withSmoothTransition(() => {
       rpValue.value = Math.max(0, Math.min(99999, numValue));
       rpValueRaw.value = rpValue.value;
+      saveFilters();
     });
-    saveFilters();
   }
 }
 
@@ -438,17 +430,14 @@ function finalizeRpRange() {
     withSmoothTransition(() => {
       rpRange.value = Math.max(50, Math.min(10000, numValue));
       rpRangeRaw.value = rpRange.value;
+      saveFilters();
     });
-    saveFilters();
   }
 }
 
 function handleAllTimeHighestRPUpdate(newVal) {
-  withSmoothTransition(() => {
-    allTimeHighestRP.value = newVal;
-    allTimeHighestRPRaw.value = newVal;
-  });
-  saveFilters();
+  allTimeHighestRP.value = newVal;
+  allTimeHighestRPRaw.value = newVal;
 }
 
 function finalizeAllTimeHighestRP() {
@@ -457,8 +446,8 @@ function finalizeAllTimeHighestRP() {
     withSmoothTransition(() => {
       allTimeHighestRP.value = Math.max(0, Math.min(99999, numValue));
       allTimeHighestRPRaw.value = allTimeHighestRP.value;
+      saveFilters();
     });
-    saveFilters();
   }
 }
 
@@ -538,8 +527,8 @@ function updateSort(field) {
       sortBy.value = field;
       sortDirection.value = 'asc';
     }
+    saveFilters();
   });
-  saveFilters();
 }
 
 function resetFilters() {
@@ -549,8 +538,8 @@ function resetFilters() {
     allTimeHighestRP.value = 0;
     sortBy.value = 'cost';
     sortDirection.value = 'asc';
+    saveFilters();
   });
-  saveFilters();
 }
 
 // Funktion für dicke Linien zwischen Research-Gruppen

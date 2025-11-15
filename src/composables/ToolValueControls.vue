@@ -228,6 +228,7 @@ const isEditing = ref(false);
 const inputValue = ref(props.value);
 
 const isIncrementing = ref(false);
+const isHolding = ref(false); // Track if user is holding button
 
 // When external value changes, update inputValue as well
 watchEffect(() => {
@@ -348,9 +349,10 @@ function increment() {
       newValue = Math.min(props.maxValue, props.value + props.step);
     }
     
-    // Always trigger both events, regardless of validateOnFinalOnly
+    // Always trigger update:value for immediate UI update
     emit('update:value', newValue);
     
+    // Only emit raw-value during hold, finalize will be called on release
     if (props.validateOnFinalOnly) {
       emit('update:raw-value', newValue);
     }
@@ -382,9 +384,10 @@ function decrement() {
       newValue = Math.max(props.minValue, props.value - props.step);
     }
     
-    // Always trigger both events
+    // Always trigger update:value for immediate UI update
     emit('update:value', newValue);
     
+    // Only emit raw-value during hold, finalize will be called on release
     if (props.validateOnFinalOnly) {
       emit('update:raw-value', newValue);
     }
@@ -406,9 +409,10 @@ function incrementFast() {
       newValue = Math.min(props.maxValue, props.value + props.fastStep);
     }
     
-    // Always trigger both events
+    // Always trigger update:value for immediate UI update
     emit('update:value', newValue);
     
+    // Only emit raw-value during hold, finalize will be called on release
     if (props.validateOnFinalOnly) {
       emit('update:raw-value', newValue);
     }
@@ -432,9 +436,10 @@ function decrementFast() {
       newValue = Math.max(props.minValue, props.value - props.fastStep);
     }
     
-    // Always trigger both events
+    // Always trigger update:value for immediate UI update
     emit('update:value', newValue);
     
+    // Only emit raw-value during hold, finalize will be called on release
     if (props.validateOnFinalOnly) {
       emit('update:raw-value', newValue);
     }
@@ -450,11 +455,15 @@ function onButtonDown(action) {
     finishEditing();
   }
   
+  isHolding.value = false; // Single click initially
+  
   // Execute immediately
   action();
   
   // After 200ms, repetition begins
   buttonTimeout.value = setTimeout(() => {
+    isHolding.value = true; // Now we're holding
+    
     // Check before setting interval if action is still executable
     // (i.e., if value is not at limits)
     const isIncrementAction = action === increment || action === incrementFast;
@@ -487,6 +496,13 @@ function onButtonUp() {
   clearTimeout(buttonTimeout.value);
   clearInterval(buttonInterval.value);
   removeListeners();
+  
+  // Emit finalize when user releases button (only for validateOnFinalOnly mode)
+  if (isHolding.value && props.validateOnFinalOnly) {
+    emit('finalize:value', props.value);
+  }
+  
+  isHolding.value = false;
 }
 
 function removeListeners() {
@@ -507,12 +523,15 @@ function onTouchStart(action) {
   }
   
   touchAction = action;
+  isHolding.value = false; // Single tap initially
   
   // Execute immediately
   action();
   
   // After 500ms, repetition begins
   buttonTimeout.value = setTimeout(() => {
+    isHolding.value = true; // Now we're holding
+    
     // Check before setting interval if action is still executable
     const isIncrementAction = action === increment || action === incrementFast;
     const isDecrementAction = action === decrement || action === decrementFast;
@@ -549,6 +568,13 @@ function onTouchEnd() {
   touchAction = null;
   clearTimeout(buttonTimeout.value);
   clearInterval(buttonInterval.value);
+  
+  // Emit finalize when user releases button (only for validateOnFinalOnly mode)
+  if (isHolding.value && props.validateOnFinalOnly) {
+    emit('finalize:value', props.value);
+  }
+  
+  isHolding.value = false;
 }
 
 // Clean-up

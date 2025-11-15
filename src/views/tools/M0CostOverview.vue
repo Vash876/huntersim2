@@ -153,7 +153,7 @@
                         <div class="grid grid-cols-2 gap-1 text-xs">
                           <span class="text-left">Level</span>
                           <span class="text-left flex items-center">
-                            Cost (Exponent)
+                            Cost
                           </span>
                         </div>
                       </div>
@@ -343,19 +343,13 @@ const costReductionFactorFormatted = computed(() => {
 
 // Handler functions
 function handleCurrentM0LevelUpdate(newVal) {
-  withSmoothTransition(() => {
-    currentM0Level.value = newVal;
-    currentM0LevelRaw.value = newVal;
-  });
-  saveFilters();
+  currentM0Level.value = newVal;
+  currentM0LevelRaw.value = newVal;
 }
 
 function handleLevelRangeUpdate(newVal) {
-  withSmoothTransition(() => {
-    levelRange.value = newVal;
-    levelRangeRaw.value = newVal;
-  });
-  saveFilters();
+  levelRange.value = newVal;
+  levelRangeRaw.value = newVal;
 }
 
 function finalizeCurrentM0Level() {
@@ -365,8 +359,8 @@ function finalizeCurrentM0Level() {
       // Jeder Level zwischen 1 und 1000 ist erlaubt
       currentM0Level.value = Math.max(1, Math.min(1000, Math.round(numValue)));
       currentM0LevelRaw.value = currentM0Level.value;
+      saveFilters();
     });
-    saveFilters();
   }
 }
 
@@ -378,8 +372,8 @@ function finalizeLevelRange() {
       const adjustedValue = Math.round(numValue / 10) * 10;
       levelRange.value = Math.max(10, Math.min(100, adjustedValue));
       levelRangeRaw.value = levelRange.value;
+      saveFilters();
     });
-    saveFilters();
   }
 }
 
@@ -536,8 +530,8 @@ function resetFilters() {
     exodusNode4Active.value = false;
     totalGemLevels.value = 0;
     totalGemLevelsRaw.value = 0;
+    saveFilters();
   });
-  saveFilters();
 }
 
 function loadFilters() {

@@ -597,46 +597,49 @@
                 </div>
               </div>
               
-              <!-- Buffs - Condensed -->
-              <div class="mb-2">
-                <div class="flex flex-wrap gap-1">
-                  <span 
-                    v-for="(buff, index) in mod.buffs" 
-                    :key="index" 
-                    class="px-1.5 py-0.5 text-xs bg-gray-700 text-blue-300 rounded"
-                  >
-                    {{ buff }}
-                  </span>
+              <!-- Buffs and Requirements - Mobile: stacked, Tablet+: side by side -->
+              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                <!-- Buffs -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap gap-1">
+                    <span 
+                      v-for="(buff, index) in mod.buffs" 
+                      :key="index" 
+                      class="px-1.5 py-0.5 text-xs bg-gray-700 text-blue-300 rounded"
+                    >
+                      {{ buff }}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              
-              <!-- Requirements - Condensed -->
-              <div v-if="mod.requiresTemp3 || mod.requiresI61Level > 0 || mod.requiresI75Level > 0 || mod.requiresUltimaCap > 0">
-                <div class="flex flex-wrap gap-1">
-                  <span 
-                    v-if="mod.requiresTemp3" 
-                    class="px-1.5 py-0.5 text-xs bg-red-900/50 text-red-300 border border-red-700 rounded"
-                  >
-                    Temp3
-                  </span>
-                  <span 
-                    v-if="mod.requiresI61Level > 0" 
-                    class="px-1.5 py-0.5 text-xs bg-purple-900/50 text-purple-300 border border-purple-700 rounded"
-                  >
-                    i61-{{ mod.requiresI61Level }}
-                  </span>
-                  <span 
-                    v-if="mod.requiresI75Level > 0" 
-                    class="px-1.5 py-0.5 text-xs bg-amber-900/50 text-amber-300 border border-amber-700 rounded"
-                  >
-                    i75-{{ mod.requiresI75Level }}
-                  </span>
-                  <span 
-                    v-if="mod.requiresUltimaCap > 0" 
-                    class="px-1.5 py-0.5 text-xs bg-blue-900/50 text-blue-300 border border-blue-700 rounded"
-                  >
-                    +{{ mod.requiresUltimaCap }} Ultima Cap
-                  </span>
+                
+                <!-- Requirements (right-aligned on tablet+) -->
+                <div v-if="mod.requiresTemp3 || mod.requiresI61Level > 0 || mod.requiresI75Level > 0 || mod.requiresUltimaCap > 0" class="flex-shrink-0">
+                  <div class="flex flex-wrap gap-1 md:justify-end">
+                    <span 
+                      v-if="mod.requiresTemp3" 
+                      class="px-1.5 py-0.5 text-xs bg-red-900/50 text-red-300 border border-red-700 rounded whitespace-nowrap"
+                    >
+                      Temp3
+                    </span>
+                    <span 
+                      v-if="mod.requiresI61Level > 0" 
+                      class="px-1.5 py-0.5 text-xs bg-purple-900/50 text-purple-300 border border-purple-700 rounded whitespace-nowrap"
+                    >
+                      i61-{{ mod.requiresI61Level }}
+                    </span>
+                    <span 
+                      v-if="mod.requiresI75Level > 0" 
+                      class="px-1.5 py-0.5 text-xs bg-amber-900/50 text-amber-300 border border-amber-700 rounded whitespace-nowrap"
+                    >
+                      i75-{{ mod.requiresI75Level }}
+                    </span>
+                    <span 
+                      v-if="mod.requiresUltimaCap > 0" 
+                      class="px-1.5 py-0.5 text-xs bg-blue-900/50 text-blue-300 border border-blue-700 rounded whitespace-nowrap"
+                    >
+                      +{{ mod.requiresUltimaCap }} Ultima Cap
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -760,19 +763,13 @@ const allLoopMods = computed(() => {
 //////////////
 
 function handleMpValueUpdate(newVal) {
-  withSmoothTransition(() => {
-    mpValue.value = newVal;
-    mpValueRaw.value = newVal;
-  });
-  saveFilters();
+  mpValue.value = newVal;
+  mpValueRaw.value = newVal;
 }
 
 function handleMpRangeUpdate(newVal) {
-  withSmoothTransition(() => {
-    mpRange.value = newVal;
-    mpRangeRaw.value = newVal;
-  });
-  saveFilters();
+  mpRange.value = newVal;
+  mpRangeRaw.value = newVal;
 }
 
 function finalizeMpValue() {
@@ -782,8 +779,8 @@ function finalizeMpValue() {
     withSmoothTransition(() => {
       mpValue.value = Math.max(0, Math.min(99999, numValue));
       mpValueRaw.value = mpValue.value;
+      saveFilters();
     });
-    saveFilters();
   }
 }
 
@@ -793,22 +790,11 @@ function finalizeMpRange() {
   
   // Validiere nur wenn der Wert eine gültige Zahl ist
   if (!isNaN(numValue)) {
-    if (document.startViewTransition) {
-      document.documentElement.classList.add('in-page-transition');
-      const transition = document.startViewTransition(() => {
-        mpRange.value = Math.max(50, Math.min(10000, numValue));
-        mpRangeRaw.value = mpRange.value;
-      });
-// Neue i75-Funktionen
-function handleI75LevelUpdate(newVal) {
-  withSmoothTransition(() => {
-    i75Level.value = newVal;
-    i75LevelRaw.value = newVal;
-  });
-  saveFilters();
-}     mpRangeRaw.value = mpRange.value;
-    }
-    saveFilters();
+    withSmoothTransition(() => {
+      mpRange.value = Math.max(50, Math.min(10000, numValue));
+      mpRangeRaw.value = mpRange.value;
+      saveFilters();
+    });
   }
 }
 
@@ -816,7 +802,6 @@ function handleI75LevelUpdate(newVal) {
 function handleI75LevelUpdate(newVal) {
   i75Level.value = newVal;
   i75LevelRaw.value = newVal;
-  saveFilters();
 }
 
 function finalizeI75Level() {
@@ -826,18 +811,15 @@ function finalizeI75Level() {
     withSmoothTransition(() => {
       i75Level.value = Math.max(0, Math.min(10, numValue));
       i75LevelRaw.value = i75Level.value;
+      saveFilters();
     });
-    saveFilters();
   }
 }
 
 // Neue i61-Funktionen
 function handleI61LevelUpdate(newVal) {
-  withSmoothTransition(() => {
-    i61Level.value = newVal;
-    i61LevelRaw.value = newVal;
-    saveFilters();
-  });
+  i61Level.value = newVal;
+  i61LevelRaw.value = newVal;
 }
 
 function finalizeI61Level() {
@@ -847,8 +829,8 @@ function finalizeI61Level() {
     withSmoothTransition(() => {
       i61Level.value = Math.max(0, Math.min(5, numValue));
       i61LevelRaw.value = i61Level.value;
+      saveFilters();
     });
-    saveFilters();
   }
 }
 
@@ -948,11 +930,8 @@ function checkNewlyAvailableMods() {
 // NEU: Temporal Gem Level für neuen Bereich
 function handleNewTemporalGemLevelUpdate(newVal) {
   if (newVal >= temporalGemLevel.value) {
-    withSmoothTransition(() => {
-      newTemporalGemLevel.value = newVal;
-      newTemporalGemLevelRaw.value = newVal;
-      checkNewlyAvailableMods();
-    });
+    newTemporalGemLevel.value = newVal;
+    newTemporalGemLevelRaw.value = newVal;
   }
 }
 
@@ -986,11 +965,8 @@ function toggleNewUltimaCapUpgrade(id) {
 
 // NEU: MP Value für neuen Bereich
 function handleNewMpValueUpdate(newVal) {
-  withSmoothTransition(() => {
-    newMpValue.value = newVal;
-    newMpValueRaw.value = newVal;
-    checkNewlyAvailableMods();
-  });
+  newMpValue.value = newVal;
+  newMpValueRaw.value = newVal;
 }
 
 function finalizeNewMpValue() {
@@ -1008,11 +984,8 @@ function finalizeNewMpValue() {
 // NEU: i61 Level für neuen Bereich
 function handleNewI61LevelUpdate(newVal) {
   if (newVal >= i61Level.value) {
-    withSmoothTransition(() => {
-      newI61Level.value = newVal;
-      newI61LevelRaw.value = newVal;
-      checkNewlyAvailableMods();
-    });
+    newI61Level.value = newVal;
+    newI61LevelRaw.value = newVal;
   }
 }
 
@@ -1031,11 +1004,8 @@ function finalizeNewI61Level() {
 // NEU: i75 Level für neuen Bereich
 function handleNewI75LevelUpdate(newVal) {
   if (newVal >= i75Level.value) {
-    withSmoothTransition(() => {
-      newI75Level.value = newVal;
-      newI75LevelRaw.value = newVal;
-      checkNewlyAvailableMods();
-    });
+    newI75Level.value = newVal;
+    newI75LevelRaw.value = newVal;
   }
 }
 
@@ -1195,11 +1165,8 @@ const sortedLoopMods = computed(() => {
 });
 
 function handleAllTimeHighestMPUpdate(newVal) {
-  withSmoothTransition(() => {
-    allTimeHighestMP.value = newVal;
-    allTimeHighestMPRaw.value = newVal;
-    saveFilters();
-  });
+  allTimeHighestMP.value = newVal;
+  allTimeHighestMPRaw.value = newVal;
 }
 
 function finalizeAllTimeHighestMP() {
