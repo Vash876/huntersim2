@@ -1028,7 +1028,7 @@ const hunterIterations = computed(() => hunterStore.hunterIterations[route.param
 
 // Material Stats vom Reference Build (erster Build in der Liste)
 const materialStatsForModal = computed(() => {
-  const builds = filteredAndSortedBuilds.value;
+  const builds = visibleBuilds.value;
   if (!builds || builds.length === 0) return null;
   
   const firstBuildId = builds[0].id;
@@ -1261,6 +1261,13 @@ async function importBuild(build) {
   
   // Check if the build is for the correct hunter type
   if (build.hunter !== route.params.hunterId) {
+    // Validate that the target hunter is valid
+    const validHunterIds = ['borge', 'ozzy', 'knox'];
+    if (!validHunterIds.includes(build.hunter)) {
+      showToastMessage('Error: Invalid hunter type in build code', 'error');
+      return;
+    }
+    
     // Automatically redirect to the correct hunter and import the build there
     const correctHunterPath = `/${build.hunter}`;
     showToastMessage(`Redirecting to ${build.hunter.charAt(0).toUpperCase() + build.hunter.slice(1)} and importing build...`, 'info');
@@ -1684,10 +1691,10 @@ watch(
   { immediate: true }
 );
 
-// Lifecycle hooks
+// Lifecycle hooks - Consolidated onMounted
 onMounted(async () => {
+  // Initialize hunter config and categories
   await hunterStore.initHunterConfig(route.params.hunterId);
-  // Initialisiere Build-Kategorien
   hunterStore.initBuildCategories(route.params.hunterId);
   
   // Wähle standardmäßig "active" Kategorie (für Desktop UND Mobile)
@@ -1695,56 +1702,7 @@ onMounted(async () => {
   
   // Initialisiere auch den gemPlannerStore
   gemPlannerStore.init();
-});
-
-// Bei Wechsel des Hunters die Konfiguration initialisieren
-watch(() => route.params.hunterId, async (newHunterId) => {
-  await hunterStore.initHunterConfig(newHunterId);
-  // Initialisiere Build-Kategorien für den neuen Hunter
-  hunterStore.initBuildCategories(newHunterId);
   
-  // Wähle standardmäßig "active" Kategorie (für Desktop UND Mobile)
-  selectedCategoryId.value = 'active';
-  
-  // Check for pending build import when hunter changes
-  nextTick(() => {
-    const pendingBuild = hunterStore.getPendingBuildImport();
-    
-    if (pendingBuild && pendingBuild.hunter === newHunterId) {
-      // Wait another tick to ensure View Transition is complete
-      nextTick(() => {
-        // Import the pending build
-        buildToEdit.value = {
-          ...pendingBuild,
-          hunterId: newHunterId
-        };
-        
-        // Open build modal
-        isBuildModalOpen.value = true;
-        
-        // Clear the pending import
-        hunterStore.clearPendingBuildImport();
-        
-        // Show success message
-        showToastMessage(`Build imported and ready to edit. Click Save to keep it.`, 'info');
-      });
-    }
-  });
-});
-
-// Lädt Builds beim Mounting
-onMounted(async () => {
-  // Hier Builds aus dem Store oder API laden
-  // builds.value = await loadBuilds();
-});
-
-const sortableOpts = {
-  scroll: true,
-  scrollSensitivity: 60,
-  scrollSpeed: 10
-}
-
-onMounted(() => {
   // Prüfe, ob ein code-Parameter in der URL vorhanden ist
   if (route.query.code) {
     // Code für das Modal speichern
@@ -1776,7 +1734,7 @@ onMounted(() => {
         // Open build modal
         isBuildModalOpen.value = true;
         
-        // Clear the pending import
+        // Clear the pending import IMMEDIATELY to prevent loops
         hunterStore.clearPendingBuildImport();
         
         // Show success message
@@ -1785,6 +1743,47 @@ onMounted(() => {
     }
   });
 });
+
+// Bei Wechsel des Hunters die Konfiguration initialisieren
+watch(() => route.params.hunterId, async (newHunterId) => {
+  await hunterStore.initHunterConfig(newHunterId);
+  // Initialisiere Build-Kategorien für den neuen Hunter
+  hunterStore.initBuildCategories(newHunterId);
+  
+  // Wähle standardmäßig "active" Kategorie (für Desktop UND Mobile)
+  selectedCategoryId.value = 'active';
+  
+  // Check for pending build import when hunter changes
+  nextTick(() => {
+    const pendingBuild = hunterStore.getPendingBuildImport();
+    
+    if (pendingBuild && pendingBuild.hunter === newHunterId) {
+      // Wait another tick to ensure View Transition is complete
+      nextTick(() => {
+        // Import the pending build
+        buildToEdit.value = {
+          ...pendingBuild,
+          hunterId: newHunterId
+        };
+        
+        // Open build modal
+        isBuildModalOpen.value = true;
+        
+        // Clear the pending import IMMEDIATELY to prevent loops
+        hunterStore.clearPendingBuildImport();
+        
+        // Show success message
+        showToastMessage(`Build imported and ready to edit. Click Save to keep it.`, 'info');
+      });
+    }
+  });
+});
+
+const sortableOpts = {
+  scroll: true,
+  scrollSensitivity: 60,
+  scrollSpeed: 10
+}
 
 // Weitere Handler für BuildResultCard-Events
 function handleNameChanged(data) {
