@@ -147,21 +147,26 @@
               
               <!-- Controls -->
               <div class="flex items-center justify-between">
-                <!-- Global Value Badge -->
+                <!-- Base Value Badge (Category oder Global) -->
                 <div class="flex items-center">
-                  <div class="text-[10px] mr-2 text-gray-400 uppercase">global</div>
-                  
-                  <!-- Boolean Global Value -->
-                  <div v-if="param.type === 'boolean'" 
-                       class="text-xs px-1.5 py-0.5 rounded"
-                       :class="param.globalValue ? 'bg-green-900/50 text-green-300' : 'bg-red-900/50 text-red-300'"
+                  <div 
+                    class="text-[10px] mr-2 uppercase"
+                    :class="getBaseLabel(param.key) === 'category' ? 'text-purple-400' : 'text-gray-400'"
                   >
-                    {{ param.globalValue ? 'ON' : 'OFF' }}
+                    {{ getBaseLabel(param.key) }}
                   </div>
                   
-                  <!-- Numeric Global Value -->
+                  <!-- Boolean Base Value -->
+                  <div v-if="param.type === 'boolean'" 
+                       class="text-xs px-1.5 py-0.5 rounded"
+                       :class="getBaseValue(param.key, param.globalValue) ? 'bg-green-900/50 text-green-300' : 'bg-red-900/50 text-red-300'"
+                  >
+                    {{ getBaseValue(param.key, param.globalValue) ? 'ON' : 'OFF' }}
+                  </div>
+                  
+                  <!-- Numeric Base Value -->
                   <div v-else class="text-xs text-gray-300">
-                    {{ param.globalValue }}
+                    {{ getBaseValue(param.key, param.globalValue) }}
                   </div>
                 </div>
                   <!-- Cost Display für Stats -->
@@ -174,8 +179,8 @@
                 <!-- Boolean Type Controls (überarbeitet) -->
                 <div v-if="param.type === 'boolean'" class="flex">
                   <button 
-                    v-if="param.globalValue === 0 || param.globalValue === false"
-                    @click="toggleBooleanOverride(param.key, true)"
+                    v-if="getBaseValue(param.key, param.globalValue) === 0 || getBaseValue(param.key, param.globalValue) === false"
+                    @click="toggleBooleanOverride(param.key, true, param)"
                     class="text-xs px-2 py-0.5 rounded"
                     :class="localOverrides[param.key] === 1 ? 'bg-green-700 text-green-100' : 'bg-gray-700 hover:bg-green-800/50 text-white'"
                   >
@@ -183,7 +188,7 @@
                   </button>
                   <button 
                     v-else
-                    @click="toggleBooleanOverride(param.key, false)"
+                    @click="toggleBooleanOverride(param.key, false, param)"
                     class="text-xs px-2 py-0.5 rounded"
                     :class="localOverrides[param.key] === 0 ? 'bg-red-700 text-red-100' : 'bg-gray-700 hover:bg-red-800/50 text-white'"
                   >
@@ -194,12 +199,12 @@
                 <!-- Numeric Type Controls mit ValueControls -->
                 <div v-else class="flex items-center">
                   <ValueControls
-                    :value="localOverrides[param.key] === null ? param.globalValue : localOverrides[param.key]"
+                    :value="localOverrides[param.key] === null ? getBaseValue(param.key, param.globalValue) : localOverrides[param.key]"
                     :minValue="0"
                     :maxValue="param.maxValue || 999"
                     :showFastControls="true"
                     :step="1"
-                    :valueClass="getValueColorClass(param.key, param.globalValue)"
+                    :valueClass="getValueColorClass(param.key, getBaseValue(param.key, param.globalValue))"
                     @update:value="(newVal) => updateOverrideValue(param.key, newVal, param)"
                   />
                 </div>
@@ -259,6 +264,9 @@ const props = defineProps({
   
   // Shared: currentOverrides wird für beide Modi verwendet
   currentOverrides: { type: Object, default: () => ({}) },
+  
+  // Category Overrides für Builds in Kategorien
+  categoryOverrides: { type: Object, default: () => ({}) },
 });
 
 const emit = defineEmits(['edit', 'clone', 'archive', 'delete', 'nameChanged', 'overrides', 'share', 'overridesBuild', 'close', 'overridesUpdated', 'categoryOverridesUpdated']);
@@ -303,6 +311,35 @@ const localHideMaxed = ref(false);
 // NEU: LocalStorage Key für Hide Maxed Einstellung
 const HIDE_MAXED_KEY = 'overrideModal_hideMaxed';
 
+// Computed: Basis-Wert für Parameter (Category Override oder Global)
+const getBaseValue = (paramKey, globalValue) => {
+  // Debug-Logging
+  if (paramKey === 'atk') {
+    console.log('getBaseValue for atk:', {
+      paramKey,
+      globalValue,
+      categoryOverrides: props.categoryOverrides,
+      categoryValue: props.categoryOverrides?.[paramKey],
+      hasValue: props.categoryOverrides && props.categoryOverrides[paramKey] !== undefined && props.categoryOverrides[paramKey] !== null
+    });
+  }
+  
+  // Wenn Category Overrides existieren und einen Wert für diesen Parameter haben
+  if (props.categoryOverrides && props.categoryOverrides[paramKey] !== undefined && props.categoryOverrides[paramKey] !== null) {
+    return props.categoryOverrides[paramKey];
+  }
+  // Ansonsten den globalen Wert verwenden
+  return globalValue;
+};
+
+// Computed: Label für den Basis-Wert (zeigt ob Category oder Global)
+const getBaseLabel = (paramKey) => {
+  if (props.categoryOverrides && props.categoryOverrides[paramKey] !== undefined && props.categoryOverrides[paramKey] !== null) {
+    return 'category';
+  }
+  return 'global';
+};
+
 // NEU: Toggle-Funktion für Hide Maxed
 function toggleHideMaxed() {
   localHideMaxed.value = !localHideMaxed.value;
@@ -333,10 +370,13 @@ function loadHideMaxedSetting() {
 
 //  Prüft ob ein Parameter "maxed" ist
 function isParameterMaxed(param) {
+  // Verwende Basis-Wert (Category Override oder Global)
+  const baseValue = getBaseValue(param.key, param.globalValue);
+  
   // Prüfe zuerst, ob ein Override existiert
   const overrideValue = localOverrides.value[param.key];
   
-  // Wenn ein Override existiert, prüfe ob er unter dem globalen/max Wert liegt
+  // Wenn ein Override existiert, prüfe ob er unter dem Basis/max Wert liegt
   if (overrideValue !== null && overrideValue !== undefined) {
     // Boolean Parameter: Wenn Override auf OFF (0/false) gesetzt ist, zeige es an
     if (param.type === 'boolean') {
@@ -345,29 +385,29 @@ function isParameterMaxed(param) {
       }
     }
     
-    // Numeric Parameter: Wenn Override unter global oder max Wert liegt, zeige es an
+    // Numeric Parameter: Wenn Override unter Basis oder max Wert liegt, zeige es an
     if (param.maxValue !== null && param.maxValue !== Infinity) {
-      if (overrideValue < param.globalValue || overrideValue < param.maxValue) {
+      if (overrideValue < baseValue || overrideValue < param.maxValue) {
         return false; // Zeige an, weil Override ist unter max
       }
     }
     
-    // Wenn Override unter global Wert liegt, zeige es an
-    if (overrideValue < param.globalValue) {
-      return false; // Zeige an, weil Override ist niedriger als global
+    // Wenn Override unter Basis-Wert liegt, zeige es an
+    if (overrideValue < baseValue) {
+      return false; // Zeige an, weil Override ist niedriger als Basis
     }
   }
   
-  // Jetzt prüfe den globalen "maxed" Status nur wenn KEIN relevanter Override existiert
+  // Jetzt prüfe den Basis "maxed" Status nur wenn KEIN relevanter Override existiert
   
-  // Boolean Parameter: Wenn global ON (true/1), dann ist es maxed
+  // Boolean Parameter: Wenn Basis ON (true/1), dann ist es maxed
   if (param.type === 'boolean') {
-    return param.globalValue === true || param.globalValue === 1;
+    return baseValue === true || baseValue === 1;
   }
   
-  // Numeric Parameter: Wenn global value >= max value, dann ist es maxed
+  // Numeric Parameter: Wenn Basis value >= max value, dann ist es maxed
   if (param.maxValue !== null && param.maxValue !== Infinity) {
-    return param.globalValue >= param.maxValue;
+    return baseValue >= param.maxValue;
   }
   
   // Wenn kein Max-Wert definiert ist, kann es nicht maxed sein
@@ -1191,13 +1231,14 @@ const visibleCategories = computed(() => {
 
 // NEUE Funktion für ValueControls
 function updateOverrideValue(paramKey, newValue, param) {
-  const globalValue = param.globalValue;
+  // Verwende Basis-Wert (Category Override oder Global)
+  const baseValue = getBaseValue(paramKey, param.globalValue);
   
   // Runde den Wert, da wir mit ganzen Zahlen arbeiten
   newValue = Math.floor(newValue);
   
-  // Wenn der neue Wert dem globalen Wert entspricht, setze auf null zurück
-  if (Math.floor(newValue) === Math.floor(globalValue)) {
+  // Wenn der neue Wert dem Basis-Wert entspricht, setze auf null zurück
+  if (Math.floor(newValue) === Math.floor(baseValue)) {
     localOverrides.value[paramKey] = null;
   } else {
     localOverrides.value[paramKey] = newValue;
@@ -1281,12 +1322,22 @@ function increaseOverride(param, maxValue) {
 }
 
 // Toggle boolean parameters
-function toggleBooleanOverride(param, value) {
-  // Set to the new value or reset if it's the same as the current override
-  if (localOverrides.value[param] === (value ? 1 : 0)) {
-    localOverrides.value[param] = null;
-  } else {
-    localOverrides.value[param] = value ? 1 : 0;
+function toggleBooleanOverride(paramKey, value, param) {
+  // Verwende Basis-Wert (Category Override oder Global)
+  const baseValue = getBaseValue(paramKey, param.globalValue);
+  const targetValue = value ? 1 : 0;
+  
+  // Wenn der Zielwert dem Basis-Wert entspricht, setze auf null zurück
+  if (targetValue === baseValue) {
+    localOverrides.value[paramKey] = null;
+  } 
+  // Wenn bereits ein Override mit diesem Wert existiert, setze auf null zurück (Toggle)
+  else if (localOverrides.value[paramKey] === targetValue) {
+    localOverrides.value[paramKey] = null;
+  } 
+  // Ansonsten setze den neuen Override
+  else {
+    localOverrides.value[paramKey] = targetValue;
   }
   
   // Update cost calculation
@@ -1300,34 +1351,37 @@ function showCostForParam(param) {
     return false;
   }
   
-  // Für Basis-Stats nur wenn Override höher als global
+  // Verwende Basis-Wert (Category Override oder Global)
+  const baseValue = getBaseValue(param.key, param.globalValue);
+  
+  // Für Basis-Stats nur wenn Override höher als Basis
   if (param.category === 'baseStats') {
     return localOverrides.value[param.key] !== null &&
-           localOverrides.value[param.key] > param.globalValue;
+           localOverrides.value[param.key] > baseValue;
   }
   
-  // Für Relics nur wenn Override höher als global
+  // Für Relics nur wenn Override höher als Basis
   if (param.key.startsWith('upgrades.relics.')) {
     return localOverrides.value[param.key] !== null &&
-           localOverrides.value[param.key] > param.globalValue;
+           localOverrides.value[param.key] > baseValue;
   }
   
-  // Für Gadgets nur wenn Override höher als global
+  // Für Gadgets nur wenn Override höher als Basis
   if (param.key.startsWith('upgrades.gadgets.')) {
     return localOverrides.value[param.key] !== null &&
-           localOverrides.value[param.key] > param.globalValue;
+           localOverrides.value[param.key] > baseValue;
   }
 
-  // Für Inscryptions nur wenn Override höher als global
+  // Für Inscryptions nur wenn Override höher als Basis
   if (param.key.startsWith('upgrades.inscryptions.')) {
   return localOverrides.value[param.key] !== null &&
-         localOverrides.value[param.key] > param.globalValue;
+         localOverrides.value[param.key] > baseValue;
   }
 
-  // Für Gems (Orb-Kosten) nur wenn Override höher als global
+  // Für Gems (Orb-Kosten) nur wenn Override höher als Basis
   if (param.key.startsWith('upgrades.gems_nodes.')) {
     return localOverrides.value[param.key] !== null &&
-           localOverrides.value[param.key] > param.globalValue;
+           localOverrides.value[param.key] > baseValue;
   }
   
   return false;
@@ -1337,7 +1391,9 @@ function showCostForParam(param) {
 function getParamCost(param) {
   if (!showCostForParam(param)) return 0;
   
-  const fromLevel = Math.floor(param.globalValue);
+  // Verwende Basis-Wert (Category Override oder Global)
+  const baseValue = getBaseValue(param.key, param.globalValue);
+  const fromLevel = Math.floor(baseValue);
   const toLevel = localOverrides.value[param.key];
   
   // Für Relics
@@ -1472,7 +1528,7 @@ function resetAllOverrides() {
 }
 
 function handleClose() {
-  // Filter out null values AND values that equal the global value
+  // Filter out null values AND values that equal the base value
   const overridesToSave = {};
   
   for (const [param, value] of Object.entries(localOverrides.value)) {
@@ -1484,12 +1540,15 @@ function handleClose() {
       .flatMap(category => category.params)
       .find(p => p.key === param);
     
-    // If parameter data is not found or the override equals global value, skip it
-    if (!paramData || Math.floor(value) === Math.floor(paramData.globalValue)) {
+    // Get the base value (category override or global)
+    const baseValue = getBaseValue(param, paramData?.globalValue || 0);
+    
+    // If parameter data is not found or the override equals base value, skip it
+    if (!paramData || Math.floor(value) === Math.floor(baseValue)) {
       continue;
     }
     
-    // Only save values that differ from global
+    // Only save values that differ from base
     overridesToSave[param] = value;
   }
   

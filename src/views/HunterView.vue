@@ -863,6 +863,7 @@
       :buildId="selectedBuildForOverrides?.id"
       :displayMode="displaySettings.displayMode"
       :currentOverrides="selectedBuildForOverrides?.overrides || {}"
+      :categoryOverrides="categoryOverridesForSelectedBuild"
       @close="closeOverrideModal"
       @overridesUpdated="onOverridesUpdated"
     />
@@ -872,6 +873,7 @@
       :isVisible="showLootFilterModal"
       :filters="lootFilters"
       :hunterId="route.params.hunterId"
+      :hunterColor="hunterColor"
       @close="showLootFilterModal = false"
       @update:filters="updateLootFilters"
     />
@@ -1024,6 +1026,32 @@ const evaluationResults = ref({});
 
 const hunterIterations = computed(() => hunterStore.hunterIterations[route.params.hunterId] || 1000);
 
+// Material Stats vom Reference Build (erster Build in der Liste)
+const materialStatsForModal = computed(() => {
+  const builds = filteredAndSortedBuilds.value;
+  if (!builds || builds.length === 0) return null;
+  
+  const firstBuildId = builds[0].id;
+  const firstBuildResults = evaluationResults.value[firstBuildId];
+  
+  if (!firstBuildResults || !firstBuildResults.results) return null;
+  
+  return {
+    mat1: firstBuildResults.results.mat1,
+    mat2: firstBuildResults.results.mat2,
+    mat3: firstBuildResults.results.mat3,
+    xp: firstBuildResults.results.xp,
+    minMat1: firstBuildResults.results.minMat1,
+    maxMat1: firstBuildResults.results.maxMat1,
+    minMat2: firstBuildResults.results.minMat2,
+    maxMat2: firstBuildResults.results.maxMat2,
+    minMat3: firstBuildResults.results.minMat3,
+    maxMat3: firstBuildResults.results.maxMat3,
+    minXp: firstBuildResults.results.minXp,
+    maxXp: firstBuildResults.results.maxXp
+  };
+});
+
 // Modale Status
 const showStatsModal = ref(false);
 const isIterationsModalOpen = ref(false);
@@ -1035,6 +1063,41 @@ const buildToEdit = ref(null);
 // Refs für das Override-Modal
 const isOverrideModalOpen = ref(false);
 const selectedBuildForOverrides = ref(null);
+
+// Computed: Category Overrides für den aktuell ausgewählten Build
+const categoryOverridesForSelectedBuild = computed(() => {
+  if (!selectedBuildForOverrides.value) {
+    return {};
+  }
+  
+  // Debug: Zeige alle buildCategoryMap Einträge
+  const allCategories = hunterStore.getCategories(route.params.hunterId);
+  const buildCategoryMap = hunterStore.buildCategories?.value?.[route.params.hunterId]?.buildCategoryMap || {};
+  
+  console.log('DEBUG buildCategoryMap:', buildCategoryMap);
+  console.log('DEBUG all categories:', allCategories);
+  
+  // Finde die Kategorie des Builds über getBuildCategory
+  const buildCategoryId = hunterStore.getBuildCategory(route.params.hunterId, selectedBuildForOverrides.value.id);
+  
+  console.log('categoryOverridesForSelectedBuild:', {
+    buildName: selectedBuildForOverrides.value.name,
+    buildId: selectedBuildForOverrides.value.id,
+    buildCategoryId,
+    hunterId: route.params.hunterId
+  });
+  
+  if (!buildCategoryId || buildCategoryId === 'active' || buildCategoryId === 'archived') {
+    console.log('Build is in default category (active/archived), no category overrides');
+    return {};
+  }
+  
+  // Hole die Category Overrides für diese Kategorie
+  const overrides = hunterStore.getCategoryOverrides(route.params.hunterId, buildCategoryId) || {};
+  console.log('Category Overrides from store:', overrides);
+  
+  return overrides;
+});
 
 // Category Management Modal State
 const isCategoryModalOpen = ref(false);
@@ -1510,7 +1573,7 @@ function onCategoryOverridesUpdated(payload) {
   
   // Show toast
   const category = hunterStore.getCategories(route.params.hunterId).find(c => c.id === categoryId);
-  showToastMessage(`Category "${category?.name}" overrides updated`, 'success');
+  // showToastMessage(`Category "${category?.name}" overrides updated`, 'success');
   
   // Force re-evaluation of all builds in this category
   const categoryBuilds = hunterStore.getBuildsByCategory(route.params.hunterId, categoryId, false);
@@ -1935,7 +1998,7 @@ function handleBuildReevaluate(buildId) {
   };
   
   // Toast Message anzeigen
-  showToastMessage(`Build "${buildName}" re-evaluated`, 'success');
+  // showToastMessage(`Build "${buildName}" re-evaluated`, 'success');
 }
 
 // Füge auch die Funktion zum Aktualisieren der Display-Einstellungen hinzu

@@ -160,7 +160,6 @@ export function useBuildEvaluation(props, emit) {
       return null;
     }
     
-    console.log(`🎯 [EVAL][${categoryName}][${props.hunterId.toUpperCase()}] "${buildName}" wird evaluiert`);
     
     isLoading.value = true;
     hasError.value = false;
@@ -185,8 +184,6 @@ export function useBuildEvaluation(props, emit) {
         cachedResult = cacheResult.cachedResult;
         cacheKey = cacheResult.cacheKey;
         
-        console.log(`[EVAL] 📦 Cache check - shouldEvaluate: ${shouldEvaluate}, hasCachedResult: ${!!cachedResult}, cacheKey: ${cacheKey}`);
-        
         currentCacheKey.value = cacheKey;
       } else {
         const newCacheKey = await EvaluationCacheService.generateCacheKey({
@@ -200,7 +197,6 @@ export function useBuildEvaluation(props, emit) {
       }
       
       if (!shouldEvaluate && !forceEvaluation && cachedResult) {
-        console.log(`[EVAL] 📦 Using cached result - skipping evaluation`);
         results.value = cachedResult;
         
         emit('evaluated', {
@@ -457,7 +453,6 @@ export function useBuildEvaluation(props, emit) {
         props.buildData.overrides // Build-spezifische Overrides
       ], 
       () => {
-        console.log('[EVAL] 🔧 Build data changed - triggering evaluation');
         evaluateBuild();
       },
       { deep: true }
@@ -474,13 +469,11 @@ export function useBuildEvaluation(props, emit) {
         
         // GUARD: Nur evaluieren wenn der Build zur aktuell sichtbaren Kategorie gehört
         if (selectedCategoryId.value && categoryId !== selectedCategoryId.value) {
-          console.log('[EVAL] 🔧 CATEGORY OVERRIDE WATCH SKIPPED - Build nicht in sichtbarer Kategorie');
           return;
         }
         
         // IMMER evaluieren wenn Counter sich ändert
         // (auch beim Reset der Overrides, um gecachte Werte mit Overrides zu entfernen)
-        console.log('[EVAL] 🔧 CATEGORY OVERRIDES CHANGED (via counter) - TRIGGERING EVALUATION');
         evaluateBuild();
       }
     );
@@ -490,7 +483,6 @@ export function useBuildEvaluation(props, emit) {
       () => props.buildData.level,
       (newLevel, oldLevel) => {
         if (newLevel !== oldLevel) {
-          console.log('[EVAL] 🔧 Level changed - triggering evaluation');
           evaluateBuild();
         }
       }
@@ -500,7 +492,6 @@ export function useBuildEvaluation(props, emit) {
     watch(
       () => hunterStore.upgrades,
       async (newUpgrades, oldUpgrades) => {
-        console.log('[EVAL] 🔧 UPGRADE WATCH TRIGGERED for hunter:', props.buildData?.hunterId);
         
         if (!props.buildData?.hunterId) {
           console.warn('[EVAL] 🔧 No hunterId in buildData!');
@@ -510,7 +501,6 @@ export function useBuildEvaluation(props, emit) {
         // GUARD: Nur evaluieren wenn der Build zur aktuell sichtbaren Kategorie gehört
         const buildCategoryId = hunterStore.getBuildCategory(props.hunterId, props.buildId);
         if (selectedCategoryId.value && buildCategoryId !== selectedCategoryId.value) {
-          console.log('[EVAL] 🔧 UPGRADE WATCH SKIPPED - Build nicht in sichtbarer Kategorie');
           return;
         }
         
@@ -522,16 +512,12 @@ export function useBuildEvaluation(props, emit) {
             hunterStore
           );
           
-          console.log('[EVAL] 🔧 shouldUpdateOnUpgradesChange result:', needsUpdate);
           
           if (needsUpdate) {
-            console.log('[EVAL] 🔧 UPGRADE CHANGE DETECTED - TRIGGERING EVALUATION');
             evaluateBuild();
           } else {
-            console.log('[EVAL] 🔧 No relevant upgrade changes detected');
           }
         } catch (error) {
-          console.error('[EVAL] 🔧 Error in upgrade change detection:', error);
           evaluateBuild();
         }
       },
@@ -542,17 +528,14 @@ export function useBuildEvaluation(props, emit) {
     watch(
       () => gemPlannerStore.gemStates,
       async (newGemStates, oldGemStates) => {
-        console.log('[EVAL] 💎 GEM WATCH TRIGGERED for hunter:', props.buildData?.hunterId);
         
         if (!props.buildData?.hunterId) {
-          console.warn('[EVAL] 💎 No hunterId in buildData!');
           return;
         }
         
         // GUARD: Nur evaluieren wenn der Build zur aktuell sichtbaren Kategorie gehört
         const buildCategoryId = hunterStore.getBuildCategory(props.hunterId, props.buildId);
         if (selectedCategoryId.value && buildCategoryId !== selectedCategoryId.value) {
-          console.log('[EVAL] 💎 GEM WATCH SKIPPED - Build nicht in sichtbarer Kategorie');
           return;
         }
         
@@ -562,18 +545,12 @@ export function useBuildEvaluation(props, emit) {
             oldGemStates, // OLD states first
             newGemStates, // NEW states second
             hunterStore
-          );
-          
-          console.log('[EVAL] 💎 shouldUpdateOnGemChange result:', needsUpdate);
+          );         
           
           if (needsUpdate) {
-            console.log('[EVAL] 💎 GEM CHANGE DETECTED - TRIGGERING EVALUATION');
             evaluateBuild();
-          } else {
-            console.log('[EVAL] 💎 No relevant gem changes detected');
           }
         } catch (error) {
-          console.error('[EVAL] 💎 Error in gem change detection:', error);
           evaluateBuild();
         }
       },
@@ -585,7 +562,6 @@ export function useBuildEvaluation(props, emit) {
       () => hunterStore.hunterIterations[props.hunterId],
       (newIterations, oldIterations) => {
         if (newIterations > oldIterations) {
-          console.log('[EVAL] 🔧 Iterations increased - triggering evaluation');
           evaluateBuild();
         }
       }

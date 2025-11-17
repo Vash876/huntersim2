@@ -47,7 +47,7 @@
             <button 
               v-if="hasOverrides" 
               @click="emit('overrideCosts')"
-              class="ml-2 text-xs px-2 py-0.5 bg-blue-900/50 rounded-full text-blue-300 whitespace-nowrap flex-shrink-0 flex items-center hover:bg-blue-900/70 transition-colors cursor-pointer"
+              :class="overrideBadgeClasses"
               title="View override costs"
             >
               <IconAdjustmentsHorizontal size="12" class="mr-1" />
@@ -146,6 +146,10 @@ const props = defineProps({
     type: Object, 
     required: true 
   },
+  hunterColor: {
+    type: String,
+    required: true
+  },
   enabledStats: { 
     type: Array, 
     default: () => ['lootPerMin', 'avgStage', 'avgTime', 'stageDistribution'] 
@@ -176,6 +180,21 @@ const hasOverrides = computed(() => {
   // Prüfe, ob Overrides existieren und aktiv sind
   return props.buildData.overrides && 
          Object.keys(props.buildData.overrides).length > 0;
+});
+
+// Computed für Override Badge Klassen
+const overrideBadgeClasses = computed(() => {
+  const baseClasses = 'ml-2 text-xs px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 flex items-center transition-colors cursor-pointer';
+  
+  if (props.hunterColor === 'red') {
+    return `${baseClasses} bg-red-900/50 text-red-300 hover:bg-red-900/70`;
+  } else if (props.hunterColor === 'green') {
+    return `${baseClasses} bg-green-900/50 text-green-300 hover:bg-green-900/70`;
+  } else if (props.hunterColor === 'blue') {
+    return `${baseClasses} bg-blue-900/50 text-blue-300 hover:bg-blue-900/70`;
+  }
+  
+  return `${baseClasses} bg-blue-900/50 text-blue-300 hover:bg-blue-900/70`;
 });
 
 // Start name editing

@@ -53,7 +53,15 @@ async function EVALKNOX_WASM(...params) {
       mat1: wasm.exports.getLastKnoxMat1(),        
       mat2: wasm.exports.getLastKnoxMat2(),        
       mat3: wasm.exports.getLastKnoxMat3(),        
-      xp: wasm.exports.getLastKnoxXp(),           
+      xp: wasm.exports.getLastKnoxXp(),
+      minMat1: wasm.exports.getLastMinKnoxMat1(),
+      maxMat1: wasm.exports.getLastMaxKnoxMat1(),
+      minMat2: wasm.exports.getLastMinKnoxMat2(),
+      maxMat2: wasm.exports.getLastMaxKnoxMat2(),
+      minMat3: wasm.exports.getLastMinKnoxMat3(),
+      maxMat3: wasm.exports.getLastMaxKnoxMat3(),
+      minXp: wasm.exports.getLastMinKnoxXp(),
+      maxXp: wasm.exports.getLastMaxKnoxXp(),
       stats: "",
       progress: "{}",
       deathTracking: "{}" // NEU: Death Tracking
@@ -157,7 +165,15 @@ async function EVALKNOX_WASM(...params) {
       debugResults.xp,            // 10: XP
       debugResults.stats,         // 11: Stats
       debugResults.progress,      // 12: Progress
-      debugResults.deathTracking  // 13: NEU - Detaillierte Death Info
+      debugResults.deathTracking, // 13: NEU - Detaillierte Death Info
+      debugResults.minMat1,       // 14: Min Mat1
+      debugResults.maxMat1,       // 15: Max Mat1
+      debugResults.minMat2,       // 16: Min Mat2
+      debugResults.maxMat2,       // 17: Max Mat2
+      debugResults.minMat3,       // 18: Min Mat3
+      debugResults.maxMat3,       // 19: Max Mat3
+      debugResults.minXp,         // 20: Min XP
+      debugResults.maxXp          // 21: Max XP
     ]];
     
     return result;

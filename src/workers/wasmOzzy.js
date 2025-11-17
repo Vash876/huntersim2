@@ -54,6 +54,14 @@ async function EVALOZZY_WASM(...params) {
       mat2: wasm.exports.getLastOzzyMat2(),
       mat3: wasm.exports.getLastOzzyMat3(),
       xp: wasm.exports.getLastOzzyXp(),
+      minMat1: wasm.exports.getLastMinOzzyMat1(),
+      maxMat1: wasm.exports.getLastMaxOzzyMat1(),
+      minMat2: wasm.exports.getLastMinOzzyMat2(),
+      maxMat2: wasm.exports.getLastMaxOzzyMat2(),
+      minMat3: wasm.exports.getLastMinOzzyMat3(),
+      maxMat3: wasm.exports.getLastMaxOzzyMat3(),
+      minXp: wasm.exports.getLastMinOzzyXp(),
+      maxXp: wasm.exports.getLastMaxOzzyXp(),
       stats: "",
       progress: "{}",
       deathTracking: "{}" // NEU: Death Tracking
@@ -193,7 +201,15 @@ async function EVALOZZY_WASM(...params) {
       debugResults.stats,         // 11: Stats
       debugResults.progress,      // 12: Progress
       debugResults.deathTracking,  // 13: Detaillierte Death Info
-      debugResults.bossKillsByRevive // 14: Boss Kills by Revive
+      debugResults.minMat1,       // 14: Min Mat1
+      debugResults.maxMat1,       // 15: Max Mat1
+      debugResults.minMat2,       // 16: Min Mat2
+      debugResults.maxMat2,       // 17: Max Mat2
+      debugResults.minMat3,       // 18: Min Mat3
+      debugResults.maxMat3,       // 19: Max Mat3
+      debugResults.minXp,         // 20: Min XP
+      debugResults.maxXp,         // 21: Max XP
+      debugResults.bossKillsByRevive // 22: Boss Kills by Revive
     ]];
     
     return result;

@@ -10,6 +10,7 @@
       <!-- Header mit Build-Info und Aktionen -->
       <BuildHeader 
         :buildData="buildData"
+        :hunterColor="hunterColor"
         :enabledStats="enabledStats"
         :results="results"
         :is-loading="isLoading"
@@ -61,6 +62,8 @@
         :min-stage="results?.minStage"
         :sample-size="totalIterations"
         :build-stats="formattedBuildStats"  
+        :material-stats="results"
+        :result-labels="resultLabels"
         :color="hunterColor"
         @close="closeStatsModal"
       />

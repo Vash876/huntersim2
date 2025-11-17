@@ -75,7 +75,7 @@
             <div class="flex items-center">
               <div class="w-1.5 h-5 bg-purple-500 rounded-r mr-2"></div>
               <h4 class="font-medium text-sm text-purple-200">Custom Categories</h4>
-              <span class="text-xs text-gray-400 ml-2">({{ rootCustomCategories.length }})</span>
+              <span class="text-xs text-gray-400 ml-2">({{ customCategories.length }})</span>
             </div>
             <button
               @click="openAddCategoryForm(null)"
@@ -121,34 +121,38 @@
             <div class="flex flex-col gap-2">
               <!-- Parent Category Dropdown -->
               <div>
-                <label class="text-xs text-gray-400 mb-1 block">
+                <label class="text-xs text-gray-400 mb-1 flex items-center gap-1.5">
+                  <IconFolder size="12" class="text-purple-400" />
                   Parent Category 
                   <span class="text-gray-500">(max 3 levels: Root → Sub → Sub-Sub)</span>
                 </label>
-                <select
-                  v-model="addCategoryParentId"
-                  class="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-white text-xs focus:border-purple-500 focus:outline-none"
-                >
-                  <option :value="null">Top Level (no parent)</option>
-                  <optgroup label="System Categories" v-if="availableParentSystemCategories.length > 0">
-                    <option 
-                      v-for="category in availableParentSystemCategories" 
-                      :key="category.id" 
-                      :value="category.id"
-                    >
-                      {{ getCategoryDepth(category.id) > 0 ? '  └─ ' : '' }}{{ category.name }}
-                    </option>
-                  </optgroup>
-                  <optgroup label="Custom Categories" v-if="availableParentCustomCategories.length > 0">
-                    <option 
-                      v-for="category in availableParentCustomCategories" 
-                      :key="category.id" 
-                      :value="category.id"
-                    >
-                      {{ getCategoryDepth(category.id) > 0 ? '  └─ ' : '' }}{{ category.name }}
-                    </option>
-                  </optgroup>
-                </select>
+                <div class="relative">
+                  <select
+                    v-model="addCategoryParentId"
+                    class="w-full bg-gray-900/70 border border-purple-500/30 rounded px-2 py-1.5 pr-8 text-white text-xs focus:border-purple-500 focus:outline-none appearance-none cursor-pointer transition-colors"
+                  >
+                    <option :value="null">Top Level (no parent)</option>
+                    <optgroup label="System Categories" v-if="availableParentSystemCategories.length > 0">
+                      <option 
+                        v-for="category in availableParentSystemCategories" 
+                        :key="category.id" 
+                        :value="category.id"
+                      >
+                        {{ getCategoryDepth(category.id) > 0 ? '  └─ ' : '' }}{{ category.name }}
+                      </option>
+                    </optgroup>
+                    <optgroup label="Custom Categories" v-if="availableParentCustomCategories.length > 0">
+                      <option 
+                        v-for="category in availableParentCustomCategories" 
+                        :key="category.id" 
+                        :value="category.id"
+                      >
+                        {{ getCategoryDepth(category.id) > 0 ? '  └─ ' : '' }}{{ category.name }}
+                      </option>
+                    </optgroup>
+                  </select>
+                  <IconChevronDown size="14" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
               </div>
               
               <div class="flex items-center gap-2">
@@ -230,7 +234,7 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue';
 import { useHunterStore } from '@/store/hunterStore';
-import { IconX, IconFolder, IconPlus, IconFolderOff } from '@tabler/icons-vue';
+import { IconX, IconFolder, IconPlus, IconFolderOff, IconChevronDown } from '@tabler/icons-vue';
 import CategoryTreeItemDraggable from './CategoryTreeItemDraggable.vue';
 import TailwindColorPicker from '@/components/common/TailwindColorPicker.vue';
 import AlertDialog from '@/components/common/AlertDialog.vue';

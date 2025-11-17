@@ -192,9 +192,9 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
   "upgrades.gems_nodes.creation_galvTrinketsCount", // Creation Galv Trinkets Count
   "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
-  "upgrades.gems_nodes.attraction_level",     // Attraction Gem Level
-  "upgrades.gems_nodes.attraction_catchUp2",      // Catch-Up Power (Knox)
-  "upgrades.gems_nodes.attraction_lootKnox",      // Attraction Loot (Knox)
+  // "upgrades.gems_nodes.attraction_level",     // Attraction Gem Level
+  // "upgrades.gems_nodes.attraction_catchUp2",      // Catch-Up Power (Knox)
+  // "upgrades.gems_nodes.attraction_lootKnox",      // Attraction Loot (Knox)
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -293,13 +293,13 @@ export const OVERRIDES = {
   gemUpgrades: [
     "upgrades.gems_nodes.creation_knoxGU", // Knox Gem Upgrade
     "upgrades.gems_nodes.exodus_attractionCreationCount", // Attraction & Creation Upgrades Count
-    "upgrades.gems_nodes.attraction_lootKnox",      // Attraction Loot (Knox)
-    "upgrades.gems_nodes.attraction_catchUp2",      // Catch-Up Power (Knox)
+    // "upgrades.gems_nodes.attraction_lootKnox",      // Attraction Loot (Knox)
+    // "upgrades.gems_nodes.attraction_catchUp2",      // Catch-Up Power (Knox)
   ],
 
   // Gem Levels
   gemLevels: [
-    "upgrades.gems_nodes.attraction_level",     // Attraction Gem Level
+  //   "upgrades.gems_nodes.attraction_level",     // Attraction Gem Level
   ],
 
   trinkets: [
@@ -383,7 +383,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.power_gem6",         // Power Gem Node 6
   "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
   "upgrades.gems_nodes.attraction_level",     // Attraction Gem Level
-  "upgrades.gems_nodes.attraction_catchUp2",      // Catch-Up Power (Knox)
+  // "upgrades.gems_nodes.attraction_catchUp2",      // Catch-Up Power (Knox)
 ];
 
 export const STATS_RESULT_LABELS = [

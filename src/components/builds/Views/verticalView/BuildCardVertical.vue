@@ -121,6 +121,8 @@
         :min-stage="results?.minStage"
         :sample-size="totalIterations"
         :build-stats="formattedBuildStats"  
+        :material-stats="results"
+        :result-labels="resultLabels"
         :color="hunterColor"
         @close="showDistributionModal = false"
       />

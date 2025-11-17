@@ -203,16 +203,18 @@
                 </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat1 && results.mat1"
-                  :class="[
-                    getDiffClasses(results.mat1, referenceResults.mat1, true, true),
-                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
-                    isLowResolution ? 'text-2xs' : 'text-xs'
-                  ]"
+                  class="w-full flex justify-center mt-1"
                 >
-                  <component :is="getDiffIcon(results.mat1, referenceResults.mat1)" 
-                            :size="isLowResolution ? 10 : 11" 
-                            class="mr-0.5" />
-                  <span>{{ getDiffText(results.mat1, referenceResults.mat1) }}</span>
+                  <div :class="[
+                    getDiffClasses(results.mat1, referenceResults.mat1, true, true),
+                    'whitespace-nowrap inline-flex items-center',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]">
+                    <component :is="getDiffIcon(results.mat1, referenceResults.mat1)" 
+                              :size="isLowResolution ? 10 : 11" 
+                              class="mr-0.5" />
+                    <span>{{ getDiffText(results.mat1, referenceResults.mat1) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -229,31 +231,33 @@
                 </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat1 && referenceResults?.avgTime"
-                  :class="[
+                  class="w-full flex justify-center mt-1"
+                >
+                  <div :class="[
                     getDiffClasses(
                       calculatePerDay(results.mat1, results.avgTime), 
                       calculatePerDay(referenceResults.mat1, referenceResults.avgTime), 
                       true, 
                       true
                     ),
-                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    'whitespace-nowrap inline-flex items-center',
                     isLowResolution ? 'text-2xs' : 'text-xs'
-                  ]"
-                >
-                  <component 
-                    :is="getDiffIcon(
-                      calculatePerDay(results.mat1, results.avgTime), 
-                      calculatePerDay(referenceResults.mat1, referenceResults.avgTime)
-                    )" 
-                    :size="isLowResolution ? 10 : 11"
-                    class="mr-0.5" 
-                  />
-                  <span>{{ 
-                    getDiffText(
-                      calculatePerDay(results.mat1, results.avgTime), 
-                      calculatePerDay(referenceResults.mat1, referenceResults.avgTime)
-                    )
-                  }}</span>
+                  ]">
+                    <component 
+                      :is="getDiffIcon(
+                        calculatePerDay(results.mat1, results.avgTime), 
+                        calculatePerDay(referenceResults.mat1, referenceResults.avgTime)
+                      )" 
+                      :size="isLowResolution ? 10 : 11"
+                      class="mr-0.5" 
+                    />
+                    <span>{{ 
+                      getDiffText(
+                        calculatePerDay(results.mat1, results.avgTime), 
+                        calculatePerDay(referenceResults.mat1, referenceResults.avgTime)
+                      )
+                    }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -288,16 +292,18 @@
                 </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat2 && results.mat2"
-                  :class="[
-                    getDiffClasses(results.mat2, referenceResults.mat2, true, true),
-                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
-                    isLowResolution ? 'text-2xs' : 'text-xs'
-                  ]"
+                  class="w-full flex justify-center mt-1"
                 >
-                  <component :is="getDiffIcon(results.mat2, referenceResults.mat2)" 
-                            :size="isLowResolution ? 10 : 11" 
-                            class="mr-0.5" />
-                  <span>{{ getDiffText(results.mat2, referenceResults.mat2) }}</span>
+                  <div :class="[
+                    getDiffClasses(results.mat2, referenceResults.mat2, true, true),
+                    'whitespace-nowrap inline-flex items-center',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]">
+                    <component :is="getDiffIcon(results.mat2, referenceResults.mat2)" 
+                              :size="isLowResolution ? 10 : 11" 
+                              class="mr-0.5" />
+                    <span>{{ getDiffText(results.mat2, referenceResults.mat2) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -314,31 +320,33 @@
                 </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat2 && referenceResults?.avgTime"
-                  :class="[
+                  class="w-full flex justify-center mt-1"
+                >
+                  <div :class="[
                     getDiffClasses(
                       calculatePerDay(results.mat2, results.avgTime), 
                       calculatePerDay(referenceResults.mat2, referenceResults.avgTime), 
                       true, 
                       true
                     ),
-                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    'whitespace-nowrap inline-flex items-center',
                     isLowResolution ? 'text-2xs' : 'text-xs'
-                  ]"
-                >
-                  <component 
-                    :is="getDiffIcon(
-                      calculatePerDay(results.mat2, results.avgTime), 
-                      calculatePerDay(referenceResults.mat2, referenceResults.avgTime)
-                    )" 
-                    :size="isLowResolution ? 10 : 11"
-                    class="mr-0.5" 
-                  />
-                  <span>{{ 
-                    getDiffText(
-                      calculatePerDay(results.mat2, results.avgTime), 
-                      calculatePerDay(referenceResults.mat2, referenceResults.avgTime)
-                    )
-                  }}</span>
+                  ]">
+                    <component 
+                      :is="getDiffIcon(
+                        calculatePerDay(results.mat2, results.avgTime), 
+                        calculatePerDay(referenceResults.mat2, referenceResults.avgTime)
+                      )" 
+                      :size="isLowResolution ? 10 : 11"
+                      class="mr-0.5" 
+                    />
+                    <span>{{ 
+                      getDiffText(
+                        calculatePerDay(results.mat2, results.avgTime), 
+                        calculatePerDay(referenceResults.mat2, referenceResults.avgTime)
+                      )
+                    }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -373,16 +381,18 @@
                 </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat3 && results.mat3"
-                  :class="[
-                    getDiffClasses(results.mat3, referenceResults.mat3, true, true),
-                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
-                    isLowResolution ? 'text-2xs' : 'text-xs'
-                  ]"
+                  class="w-full flex justify-center mt-1"
                 >
-                  <component :is="getDiffIcon(results.mat3, referenceResults.mat3)" 
-                            :size="isLowResolution ? 10 : 11" 
-                            class="mr-0.5" />
-                  <span>{{ getDiffText(results.mat3, referenceResults.mat3) }}</span>
+                  <div :class="[
+                    getDiffClasses(results.mat3, referenceResults.mat3, true, true),
+                    'whitespace-nowrap inline-flex items-center',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]">
+                    <component :is="getDiffIcon(results.mat3, referenceResults.mat3)" 
+                              :size="isLowResolution ? 10 : 11" 
+                              class="mr-0.5" />
+                    <span>{{ getDiffText(results.mat3, referenceResults.mat3) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -399,31 +409,33 @@
                 </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.mat3 && referenceResults?.avgTime"
-                  :class="[
+                  class="w-full flex justify-center mt-1"
+                >
+                  <div :class="[
                     getDiffClasses(
                       calculatePerDay(results.mat3, results.avgTime), 
                       calculatePerDay(referenceResults.mat3, referenceResults.avgTime), 
                       true, 
                       true
                     ),
-                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    'whitespace-nowrap inline-flex items-center',
                     isLowResolution ? 'text-2xs' : 'text-xs'
-                  ]"
-                >
-                  <component 
-                    :is="getDiffIcon(
-                      calculatePerDay(results.mat3, results.avgTime), 
-                      calculatePerDay(referenceResults.mat3, referenceResults.avgTime)
-                    )" 
-                    :size="isLowResolution ? 10 : 11"
-                    class="mr-0.5" 
-                  />
-                  <span>{{ 
-                    getDiffText(
-                      calculatePerDay(results.mat3, results.avgTime), 
-                      calculatePerDay(referenceResults.mat3, referenceResults.avgTime)
-                    )
-                  }}</span>
+                  ]">
+                    <component 
+                      :is="getDiffIcon(
+                        calculatePerDay(results.mat3, results.avgTime), 
+                        calculatePerDay(referenceResults.mat3, referenceResults.avgTime)
+                      )" 
+                      :size="isLowResolution ? 10 : 11"
+                      class="mr-0.5" 
+                    />
+                    <span>{{ 
+                      getDiffText(
+                        calculatePerDay(results.mat3, results.avgTime), 
+                        calculatePerDay(referenceResults.mat3, referenceResults.avgTime)
+                      )
+                    }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -458,16 +470,18 @@
                 </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.xp && results.xp"
-                  :class="[
-                    getDiffClasses(results.xp, referenceResults.xp, true, true),
-                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
-                    isLowResolution ? 'text-2xs' : 'text-xs'
-                  ]"
+                  class="w-full flex justify-center mt-1"
                 >
-                  <component :is="getDiffIcon(results.xp, referenceResults.xp)" 
-                            :size="isLowResolution ? 10 : 11" 
-                            class="mr-0.5" />
-                  <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
+                  <div :class="[
+                    getDiffClasses(results.xp, referenceResults.xp, true, true),
+                    'whitespace-nowrap inline-flex items-center',
+                    isLowResolution ? 'text-2xs' : 'text-xs'
+                  ]">
+                    <component :is="getDiffIcon(results.xp, referenceResults.xp)" 
+                              :size="isLowResolution ? 10 : 11" 
+                              class="mr-0.5" />
+                    <span>{{ getDiffText(results.xp, referenceResults.xp) }}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -484,31 +498,33 @@
                 </div>
                 <div 
                   v-if="!isReferenceBuild && referenceResults?.xp && referenceResults?.avgTime"
-                  :class="[
+                  class="w-full flex justify-center mt-1"
+                >
+                  <div :class="[
                     getDiffClasses(
                       calculatePerDay(results.xp, results.avgTime), 
                       calculatePerDay(referenceResults.xp, referenceResults.avgTime), 
                       true, 
                       true
                     ),
-                    'whitespace-nowrap flex items-center mt-0.5 justify-center mt-1',
+                    'whitespace-nowrap inline-flex items-center',
                     isLowResolution ? 'text-2xs' : 'text-xs'
-                  ]"
-                >
-                  <component 
-                    :is="getDiffIcon(
-                      calculatePerDay(results.xp, results.avgTime), 
-                      calculatePerDay(referenceResults.xp, referenceResults.avgTime)
-                    )" 
-                    :size="isLowResolution ? 10 : 11"
-                    class="mr-0.5" 
-                  />
-                  <span>{{ 
-                    getDiffText(
-                      calculatePerDay(results.xp, results.avgTime), 
-                      calculatePerDay(referenceResults.xp, referenceResults.avgTime)
-                    )
-                  }}</span>
+                  ]">
+                    <component 
+                      :is="getDiffIcon(
+                        calculatePerDay(results.xp, results.avgTime), 
+                        calculatePerDay(referenceResults.xp, referenceResults.avgTime)
+                      )" 
+                      :size="isLowResolution ? 10 : 11"
+                      class="mr-0.5" 
+                    />
+                    <span>{{ 
+                      getDiffText(
+                        calculatePerDay(results.xp, results.avgTime), 
+                        calculatePerDay(referenceResults.xp, referenceResults.avgTime)
+                      )
+                    }}</span>
+                  </div>
                 </div>
               </div>
             </div>

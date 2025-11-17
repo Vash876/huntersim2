@@ -11,7 +11,11 @@
       <!-- Header mit Schließen-Button -->
       <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-4 border-b border-gray-600 flex justify-between items-center">
         <h2 class="text-xl font-bold text-white flex items-center">
-          <IconFilter size="20" class="mr-2 text-blue-400" />
+          <IconFilter 
+            size="20" 
+            class="mr-2"
+            :class="hunterColor === 'red' ? 'text-red-400' : hunterColor === 'green' ? 'text-green-400' : 'text-blue-400'"
+          />
           Loot Filter
         </h2>
         <button 
@@ -25,54 +29,78 @@
       <!-- Modal-Inhalt -->
       <div class="p-5">
         <p class="text-sm text-gray-300 mb-4">
-          Choose which materials should be displayed in the build cards.
+          Choose which loot should be displayed in the build cards.
         </p>
 
         <!-- Material 1 -->
         <div class="mb-3 flex items-center justify-between bg-gray-700/50 p-3 rounded-lg">
           <label class="text-gray-200 flex items-center gap-2">
-            <IconDiamond size="16" class="text-red-300" />
+            <img 
+              v-if="hasIcon('mat1')" 
+              :src="icons.mat1" 
+              alt="Material 1" 
+              class="w-5 h-5"
+            />
+            <IconDiamond v-else size="16" class="text-red-300" />
             <span>{{ materialLabels[0] || 'Material 1' }}</span>
           </label>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" v-model="localFilters.mat1" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+            <div :class="['w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full after:content-[\'\'] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all', toggleActiveClass]"></div>
           </label>
         </div>
         
         <!-- Material 2 -->
         <div class="mb-3 flex items-center justify-between bg-gray-700/50 p-3 rounded-lg">
           <label class="text-gray-200 flex items-center gap-2">
-            <IconHexagon size="16" class="text-orange-300" />
+            <img 
+              v-if="hasIcon('mat2')" 
+              :src="icons.mat2" 
+              alt="Material 2" 
+              class="w-5 h-5"
+            />
+            <IconHexagon v-else size="16" class="text-orange-300" />
             <span>{{ materialLabels[1] || 'Material 2' }}</span>
           </label>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" v-model="localFilters.mat2" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+            <div :class="['w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full after:content-[\'\'] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all', toggleActiveClass]"></div>
           </label>
         </div>
         
         <!-- Material 3 -->
         <div class="mb-3 flex items-center justify-between bg-gray-700/50 p-3 rounded-lg">
           <label class="text-gray-200 flex items-center gap-2">
-            <IconHexagons size="16" class="text-amber-300" />
+            <img 
+              v-if="hasIcon('mat3')" 
+              :src="icons.mat3" 
+              alt="Material 3" 
+              class="w-5 h-5"
+            />
+            <IconHexagons v-else size="16" class="text-amber-300" />
             <span>{{ materialLabels[2] || 'Material 3' }}</span>
           </label>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" v-model="localFilters.mat3" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+            <div :class="['w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full after:content-[\'\'] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all', toggleActiveClass]"></div>
           </label>
         </div>
         
         <!-- XP -->
         <div class="mb-3 flex items-center justify-between bg-gray-700/50 p-3 rounded-lg">
           <label class="text-gray-200 flex items-center gap-2">
-            <IconBrightness size="16" class="text-blue-300" />
+            <img 
+              v-if="hasIcon('xp')" 
+              :src="icons.xp" 
+              alt="XP" 
+              class="w-5 h-5"
+            />
+            <IconBrightness v-else size="16" class="text-blue-300" />
             <span>XP</span>
           </label>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" v-model="localFilters.xp" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+            <div :class="['w-11 h-6 bg-gray-700 rounded-full peer peer-checked:after:translate-x-full after:content-[\'\'] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all', toggleActiveClass]"></div>
           </label>
         </div>
       </div>
@@ -87,6 +115,7 @@ import {
   IconDiamond, IconHexagon, IconHexagons
 } from '@tabler/icons-vue';
 import { getHunterById } from '../../constants/hunters';
+import { useLootIcons } from '@/composables/useLootIcons';
 
 const props = defineProps({
   isVisible: {
@@ -105,10 +134,30 @@ const props = defineProps({
   hunterId: {
     type: String,
     required: true
+  },
+  hunterColor: {
+    type: String,
+    default: 'blue'
   }
 });
 
 const emit = defineEmits(['close', 'update:filters']);
+
+// Loot-Icons für den aktuellen Hunter laden - reaktiv mit toRef
+const hunterId = computed(() => props.hunterId);
+const { icons, hasIcon } = useLootIcons(hunterId);
+
+// Computed für Toggle-Farbe basierend auf Hunter
+const toggleActiveClass = computed(() => {
+  if (props.hunterColor === 'red') {
+    return 'peer-checked:bg-red-600';
+  } else if (props.hunterColor === 'green') {
+    return 'peer-checked:bg-green-600';
+  } else if (props.hunterColor === 'blue') {
+    return 'peer-checked:bg-blue-600';
+  }
+  return 'peer-checked:bg-blue-600';
+});
 
 // Lokale Kopie der Filter für die Bearbeitung
 const localFilters = ref({...props.filters});
@@ -182,10 +231,5 @@ onMounted(() => {
     opacity: 1;
     transform: scale(1);
   }
-}
-
-/* Styling für den Toggle-Schalter */
-input[type="checkbox"]:checked + div {
-  background-color: #3B82F6;
 }
 </style>

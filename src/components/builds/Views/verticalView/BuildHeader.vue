@@ -24,10 +24,10 @@
     <button 
       v-if="hasOverrides" 
       @click="emit('overrideCosts')"
-      class="absolute top-1.5 right-2 z-10 bg-blue-500/50 text-white rounded-full p-1 shadow-lg transition-colors hover:bg-blue-500/70 cursor-pointer"
+      :class="overrideBadgeClasses"
       title="View override costs"
     >
-      <IconAdjustments size="14" class="text-blue-300" />
+      <IconAdjustments size="14" :class="overrideIconClasses" />
     </button>
     
     <!-- Floating Refresh Button - unter dem Override Badge -->
@@ -189,6 +189,33 @@ const hasOverrides = computed(() => {
   // Prüfe, ob Overrides existieren und aktiv sind
   return props.buildData.overrides && 
          Object.keys(props.buildData.overrides).length > 0;
+});
+
+// Computed für Override Badge Klassen
+const overrideBadgeClasses = computed(() => {
+  const baseClasses = 'absolute top-1.5 right-2 z-10 text-white rounded-full p-1 shadow-lg transition-colors cursor-pointer';
+  
+  if (props.hunterColor === 'red') {
+    return `${baseClasses} bg-red-500/50 hover:bg-red-500/70`;
+  } else if (props.hunterColor === 'green') {
+    return `${baseClasses} bg-green-500/50 hover:bg-green-500/70`;
+  } else if (props.hunterColor === 'blue') {
+    return `${baseClasses} bg-blue-500/50 hover:bg-blue-500/70`;
+  }
+  
+  return `${baseClasses} bg-blue-500/50 hover:bg-blue-500/70`;
+});
+
+const overrideIconClasses = computed(() => {
+  if (props.hunterColor === 'red') {
+    return 'text-red-300';
+  } else if (props.hunterColor === 'green') {
+    return 'text-green-300';
+  } else if (props.hunterColor === 'blue') {
+    return 'text-blue-300';
+  }
+  
+  return 'text-blue-300';
 });
 
 // Name editing functions

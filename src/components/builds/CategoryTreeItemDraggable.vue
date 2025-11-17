@@ -48,30 +48,33 @@
           </div>
           <div v-else class="flex-1 flex flex-col gap-1.5">
             <!-- Parent Category Dropdown -->
-            <select
-              v-model="editParentId"
-              class="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-xs focus:border-purple-500 focus:outline-none"
-            >
-              <option :value="null">Top Level (no parent)</option>
-              <optgroup label="System Categories">
-                <option 
-                  v-for="cat in availableParentCategories.system" 
-                  :key="cat.id" 
-                  :value="cat.id"
-                >
-                  {{ cat.name }}
-                </option>
-              </optgroup>
-              <optgroup label="Custom Categories" v-if="availableParentCategories.custom.length > 0">
-                <option 
-                  v-for="cat in availableParentCategories.custom" 
-                  :key="cat.id" 
-                  :value="cat.id"
-                >
-                  {{ cat.name }}
-                </option>
-              </optgroup>
-            </select>
+            <div class="relative">
+              <select
+                v-model="editParentId"
+                class="w-full bg-gray-900/70 border border-purple-500/30 rounded px-2 py-1 pr-8 text-white text-xs focus:border-purple-500 focus:outline-none appearance-none cursor-pointer transition-colors"
+              >
+                <option :value="null">Top Level (no parent)</option>
+                <optgroup label="System Categories">
+                  <option 
+                    v-for="cat in availableParentCategories.system" 
+                    :key="cat.id" 
+                    :value="cat.id"
+                  >
+                    {{ cat.name }}
+                  </option>
+                </optgroup>
+                <optgroup label="Custom Categories" v-if="availableParentCategories.custom.length > 0">
+                  <option 
+                    v-for="cat in availableParentCategories.custom" 
+                    :key="cat.id" 
+                    :value="cat.id"
+                  >
+                    {{ cat.name }}
+                  </option>
+                </optgroup>
+              </select>
+              <IconChevronDown size="14" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            </div>
             
             <!-- Category Name Input -->
             <input

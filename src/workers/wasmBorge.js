@@ -54,6 +54,15 @@ async function EVALBORGE_WASM(...params) {
       mat2: wasm.exports.getLastMat2(),
       mat3: wasm.exports.getLastMat3(),
       xp: wasm.exports.getLastXp(),
+      // Min/Max Material und XP Werte
+      minMat1: wasm.exports.getLastMinMat1(),
+      maxMat1: wasm.exports.getLastMaxMat1(),
+      minMat2: wasm.exports.getLastMinMat2(),
+      maxMat2: wasm.exports.getLastMaxMat2(),
+      minMat3: wasm.exports.getLastMinMat3(),
+      maxMat3: wasm.exports.getLastMaxMat3(),
+      minXp: wasm.exports.getLastMinXp(),
+      maxXp: wasm.exports.getLastMaxXp(),
       stats: "",
       progress: "{}",
       deathTracking: "{}" // Death Tracking
@@ -159,7 +168,15 @@ async function EVALBORGE_WASM(...params) {
       debugResults.xp,                   // 10
       debugResults.stats,                // 11
       debugResults.progress,             // 12
-      debugResults.deathTracking         // 13: Detaillierte Death Info
+      debugResults.deathTracking,        // 13: Detaillierte Death Info
+      debugResults.minMat1,              // 14
+      debugResults.maxMat1,              // 15
+      debugResults.minMat2,              // 16
+      debugResults.maxMat2,              // 17
+      debugResults.minMat3,              // 18
+      debugResults.maxMat3,              // 19
+      debugResults.minXp,                // 20
+      debugResults.maxXp                 // 21
     ]];
     
     return result;

@@ -187,6 +187,46 @@ export declare function getLastMat3(): number;
  */
 export declare function getLastXp(): number;
 /**
+ * assembly/evalBorge/getLastMinMat1
+ * @returns `f64`
+ */
+export declare function getLastMinMat1(): number;
+/**
+ * assembly/evalBorge/getLastMaxMat1
+ * @returns `f64`
+ */
+export declare function getLastMaxMat1(): number;
+/**
+ * assembly/evalBorge/getLastMinMat2
+ * @returns `f64`
+ */
+export declare function getLastMinMat2(): number;
+/**
+ * assembly/evalBorge/getLastMaxMat2
+ * @returns `f64`
+ */
+export declare function getLastMaxMat2(): number;
+/**
+ * assembly/evalBorge/getLastMinMat3
+ * @returns `f64`
+ */
+export declare function getLastMinMat3(): number;
+/**
+ * assembly/evalBorge/getLastMaxMat3
+ * @returns `f64`
+ */
+export declare function getLastMaxMat3(): number;
+/**
+ * assembly/evalBorge/getLastMinXp
+ * @returns `f64`
+ */
+export declare function getLastMinXp(): number;
+/**
+ * assembly/evalBorge/getLastMaxXp
+ * @returns `f64`
+ */
+export declare function getLastMaxXp(): number;
+/**
  * assembly/evalBorge/getLastProgressString
  * @returns `~lib/string/String`
  */
@@ -422,6 +462,46 @@ export declare function getLastOzzyMat3(): number;
  * @returns `f64`
  */
 export declare function getLastOzzyXp(): number;
+/**
+ * assembly/evalOzzy/getLastMinOzzyMat1
+ * @returns `f64`
+ */
+export declare function getLastMinOzzyMat1(): number;
+/**
+ * assembly/evalOzzy/getLastMaxOzzyMat1
+ * @returns `f64`
+ */
+export declare function getLastMaxOzzyMat1(): number;
+/**
+ * assembly/evalOzzy/getLastMinOzzyMat2
+ * @returns `f64`
+ */
+export declare function getLastMinOzzyMat2(): number;
+/**
+ * assembly/evalOzzy/getLastMaxOzzyMat2
+ * @returns `f64`
+ */
+export declare function getLastMaxOzzyMat2(): number;
+/**
+ * assembly/evalOzzy/getLastMinOzzyMat3
+ * @returns `f64`
+ */
+export declare function getLastMinOzzyMat3(): number;
+/**
+ * assembly/evalOzzy/getLastMaxOzzyMat3
+ * @returns `f64`
+ */
+export declare function getLastMaxOzzyMat3(): number;
+/**
+ * assembly/evalOzzy/getLastMinOzzyXp
+ * @returns `f64`
+ */
+export declare function getLastMinOzzyXp(): number;
+/**
+ * assembly/evalOzzy/getLastMaxOzzyXp
+ * @returns `f64`
+ */
+export declare function getLastMaxOzzyXp(): number;
 /**
  * assembly/evalOzzy/getLastOzzyMaxHp
  * @returns `f64`
@@ -672,6 +752,46 @@ export declare function getLastKnoxMat3(): number;
  * @returns `f64`
  */
 export declare function getLastKnoxXp(): number;
+/**
+ * assembly/evalKnox/getLastMinKnoxMat1
+ * @returns `f64`
+ */
+export declare function getLastMinKnoxMat1(): number;
+/**
+ * assembly/evalKnox/getLastMaxKnoxMat1
+ * @returns `f64`
+ */
+export declare function getLastMaxKnoxMat1(): number;
+/**
+ * assembly/evalKnox/getLastMinKnoxMat2
+ * @returns `f64`
+ */
+export declare function getLastMinKnoxMat2(): number;
+/**
+ * assembly/evalKnox/getLastMaxKnoxMat2
+ * @returns `f64`
+ */
+export declare function getLastMaxKnoxMat2(): number;
+/**
+ * assembly/evalKnox/getLastMinKnoxMat3
+ * @returns `f64`
+ */
+export declare function getLastMinKnoxMat3(): number;
+/**
+ * assembly/evalKnox/getLastMaxKnoxMat3
+ * @returns `f64`
+ */
+export declare function getLastMaxKnoxMat3(): number;
+/**
+ * assembly/evalKnox/getLastMinKnoxXp
+ * @returns `f64`
+ */
+export declare function getLastMinKnoxXp(): number;
+/**
+ * assembly/evalKnox/getLastMaxKnoxXp
+ * @returns `f64`
+ */
+export declare function getLastMaxKnoxXp(): number;
 /**
  * assembly/evalKnox/getLastKnoxMaxHp
  * @returns `f64`

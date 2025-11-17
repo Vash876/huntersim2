@@ -14,7 +14,7 @@
           <IconCurrencyDollar size="16" class="mr-2 sm:mr-2" :class="`text-${hunterColor}-400`" />
           <span class="hidden sm:inline">Override Costs: </span>
           <span class="sm:hidden">Costs: </span>
-          <span class="truncate">{{ buildName }}</span>
+          <span class="truncate pl-1">{{ buildName }}</span>
         </h2>
         <button @click="$emit('close')" class="p-1.5 rounded-full hover:bg-gray-700 transition-colors flex-shrink-0">
           <IconX size="16" />

@@ -188,6 +188,14 @@ class Knox {
   mat2: f64;
   mat3: f64;
   xp: f64;
+  minMat1: f64;
+  maxMat1: f64;
+  minMat2: f64;
+  maxMat2: f64;
+  minMat3: f64;
+  maxMat3: f64;
+  minXp: f64;
+  maxXp: f64;
   ls: f64;
   bossKill: i32;
   bossHp: f64;
@@ -271,6 +279,14 @@ class Knox {
     this.mat2 = 0;
     this.mat3 = 0;
     this.xp = 0;
+    this.minMat1 = 1e308;
+    this.maxMat1 = 0;
+    this.minMat2 = 1e308;
+    this.maxMat2 = 0;
+    this.minMat3 = 1e308;
+    this.maxMat3 = 0;
+    this.minXp = 1e308;
+    this.maxXp = 0;
     this.ls = 0;
     this.bossKill = 0;
     this.bossHp = 0;
@@ -699,16 +715,32 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, attr: i32, catchup99gu:
   let bonusMulti: f64 = 1;
   let tempEnem = currentKnoxEnem;
   
+  // Track bonus materials from while loop
+  let bonusMat1: f64 = 0;
+  let bonusMat2: f64 = 0;
+  let bonusMat3: f64 = 0;
+  let bonusXp: f64 = 0;
+  
   while (tempEnem >= enemiesInSection) {
     tempEnem -= enemiesInSection;
     enemiesInSection = 1000;
 
     bonusMulti *= Math.pow(stageGrowth, 100);
 
-    knox.mat1 += bonusMulti * mat1[mat1.length - 1] * 800 * includedMultis * excludedMultis;
-    knox.mat2 += bonusMulti * mat2[mat2.length - 1] * 600 * includedMultis * excludedMultis;
-    knox.mat3 += bonusMulti * mat3[mat3.length - 1] * 400 * includedMultis * excludedMultis;
-    knox.xp += bonusMulti * xp[xp.length - 1] * 300 * includedMultis * excludedMultis * excludedXpMultis;
+    let mat1Bonus = bonusMulti * mat1[mat1.length - 1] * 800 * includedMultis * excludedMultis;
+    let mat2Bonus = bonusMulti * mat2[mat2.length - 1] * 600 * includedMultis * excludedMultis;
+    let mat3Bonus = bonusMulti * mat3[mat3.length - 1] * 400 * includedMultis * excludedMultis;
+    let xpBonus = bonusMulti * xp[xp.length - 1] * 300 * includedMultis * excludedMultis * excludedXpMultis;
+    
+    bonusMat1 += mat1Bonus;
+    bonusMat2 += mat2Bonus;
+    bonusMat3 += mat3Bonus;
+    bonusXp += xpBonus;
+    
+    knox.mat1 += mat1Bonus;
+    knox.mat2 += mat2Bonus;
+    knox.mat3 += mat3Bonus;
+    knox.xp += xpBonus;
 
     knox.loot += bonusMulti * mat1[mat1.length - 1] * 800 * includedMultis;
     knox.loot += bonusMulti * mat2[mat2.length - 1] * 600 * includedMultis;
@@ -720,10 +752,24 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, attr: i32, catchup99gu:
     loopLoot += bonusMulti * normalized * stageGrowth * ((Math.pow(stageGrowth, Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) as f64) - 1) / (stageGrowth - 1) * 10 + (Math.min(tempEnem, enemiesInSection - 10) - Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) * 10) * Math.pow(stageGrowth, Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) as f64)) * includedMultis * (1 + knox.ll * 0.2 * knox.effect);
   }
   
+  let currentMat1 = loopLoot * 3 / 10 * knoxArrayAverage(mat1) / normalized * excludedMultis + bonusMat1;
+  let currentMat2 = loopLoot * 3 / 10 * knoxArrayAverage(mat2) / normalized * excludedMultis + bonusMat2;
+  let currentMat3 = loopLoot * 3 / 10 * knoxArrayAverage(mat3) / normalized * excludedMultis + bonusMat3;
+  let currentXp = loopLoot * 1 / 10 * knoxArrayAverage(xp) / normalized * excludedMultis * excludedXpMultis + bonusXp;
+  
   knox.mat1 += loopLoot * 3 / 10 * knoxArrayAverage(mat1) / normalized * excludedMultis;
   knox.mat2 += loopLoot * 3 / 10 * knoxArrayAverage(mat2) / normalized * excludedMultis;
   knox.mat3 += loopLoot * 3 / 10 * knoxArrayAverage(mat3) / normalized * excludedMultis;
   knox.xp += loopLoot * 1 / 10 * knoxArrayAverage(xp) / normalized * excludedMultis * excludedXpMultis;
+  
+  knox.minMat1 = Math.min(knox.minMat1, currentMat1);
+  knox.maxMat1 = Math.max(knox.maxMat1, currentMat1);
+  knox.minMat2 = Math.min(knox.minMat2, currentMat2);
+  knox.maxMat2 = Math.max(knox.maxMat2, currentMat2);
+  knox.minMat3 = Math.min(knox.minMat3, currentMat3);
+  knox.maxMat3 = Math.max(knox.maxMat3, currentMat3);
+  knox.minXp = Math.min(knox.minXp, currentXp);
+  knox.maxXp = Math.max(knox.maxXp, currentXp);
   knox.loot += loopLoot;
   knox.time += currentKnoxTime;
   knox.enem += currentKnoxEnem;
@@ -956,6 +1002,38 @@ export function getLastKnoxMat3(): f64 {
 export function getLastKnoxXp(): f64 { 
   if (lastKnox.iters === 0) return 0;
   return lastKnox.xp / (lastKnox.iters as f64); 
+}
+
+export function getLastMinKnoxMat1(): f64 {
+  return lastKnox.minMat1;
+}
+
+export function getLastMaxKnoxMat1(): f64 {
+  return lastKnox.maxMat1;
+}
+
+export function getLastMinKnoxMat2(): f64 {
+  return lastKnox.minMat2;
+}
+
+export function getLastMaxKnoxMat2(): f64 {
+  return lastKnox.maxMat2;
+}
+
+export function getLastMinKnoxMat3(): f64 {
+  return lastKnox.minMat3;
+}
+
+export function getLastMaxKnoxMat3(): f64 {
+  return lastKnox.maxMat3;
+}
+
+export function getLastMinKnoxXp(): f64 {
+  return lastKnox.minXp;
+}
+
+export function getLastMaxKnoxXp(): f64 {
+  return lastKnox.maxXp;
 }
 
 // Numerische Stats-Exports

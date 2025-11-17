@@ -3,14 +3,8 @@ const changelog =
 [
   {
     version: '2.9.0',
-    date: '2025-11-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+    date: '2025-11-17',
     changes: [
-      {
-        text: 'Hunter Simulator',
-        subItems: [
-          'Added Attraction Gem Level 4 upgrades',
-        ]
-      },
       {
         text: '<b class="text-yellow-400">NEW:</b> Advanced Category System for Hunter Builds',
         subItems: [
@@ -20,11 +14,12 @@ const changelog =
         ]
       },
       {
-        text: 'TS Planner',
+        text: 'Hunter Simulator',
         subItems: [
-          'Changed Circle Icon to Hexogon Icon',
+          'Fixed Helltouch damage calculation when Temporary GN#4 is active',
+          'Optimized horizontal and vertical view layouts for more compact and efficient display',
         ]
-      }
+      },
     ]
   },
   {

@@ -116,6 +116,120 @@
                 No build statistics available.
               </div>
             </div>
+
+            <!-- Materials Tab -->
+            <div v-if="activeTab === 'materials'">
+              <div v-if="materialStats" class="space-y-4">
+                <div class="bg-gray-700 rounded-lg p-4 border border-gray-600">
+                  <h3 class="text-lg font-bold text-white mb-4">
+                    Loot Statistics 
+                    <span class="text-sm font-normal text-gray-400">per run</span>
+                  </h3>
+                  
+                  <!-- Material Grid -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Mat1 -->
+                    <div class="bg-gray-750 rounded-lg p-3 border border-gray-600">
+                      <div class="text-sm font-medium text-gray-400 mb-2 flex items-center">
+                        <img v-if="hasIcon('mat1')" :src="icons.mat1" alt="Material 1" class="w-6 h-6 mr-2" />
+                        <IconDiamond v-else :size="22" class="mr-2 text-red-300" />
+                        {{ getMaterialLabel('mat1') }}
+                      </div>
+                      <div class="space-y-2">
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Min:</span>
+                          <span class="text-sm font-mono text-blue-400">{{ formatNumber(materialStats.minMat1) }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Avg:</span>
+                          <span :class="`text-sm font-mono font-bold text-red-400`">{{ formatNumber(materialStats.mat1) }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Max:</span>
+                          <span class="text-sm font-mono text-green-400">{{ formatNumber(materialStats.maxMat1) }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Mat2 -->
+                    <div class="bg-gray-750 rounded-lg p-3 border border-gray-600">
+                      <div class="text-sm font-medium text-gray-400 mb-2 flex items-center">
+                        <img v-if="hasIcon('mat2')" :src="icons.mat2" alt="Material 2" class="w-6 h-6 mr-2" />
+                        <IconHexagon v-else :size="22" class="mr-2 text-orange-300" />
+                        {{ getMaterialLabel('mat2') }}
+                      </div>
+                      <div class="space-y-2">
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Min:</span>
+                          <span class="text-sm font-mono text-blue-400">{{ formatNumber(materialStats.minMat2) }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Avg:</span>
+                          <span :class="`text-sm font-mono font-bold text-red-400`">{{ formatNumber(materialStats.mat2) }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Max:</span>
+                          <span class="text-sm font-mono text-green-400">{{ formatNumber(materialStats.maxMat2) }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Mat3 -->
+                    <div class="bg-gray-750 rounded-lg p-3 border border-gray-600">
+                      <div class="text-sm font-medium text-gray-400 mb-2 flex items-center">
+                        <img v-if="hasIcon('mat3')" :src="icons.mat3" alt="Material 3" class="w-6 h-6 mr-2" />
+                        <IconHexagons v-else :size="22" class="mr-2 text-amber-300" />
+                        {{ getMaterialLabel('mat3') }}
+                      </div>
+                      <div class="space-y-2">
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Min:</span>
+                          <span class="text-sm font-mono text-blue-400">{{ formatNumber(materialStats.minMat3) }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Avg:</span>
+                          <span :class="`text-sm font-mono font-bold text-red-400`">{{ formatNumber(materialStats.mat3) }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Max:</span>
+                          <span class="text-sm font-mono text-green-400">{{ formatNumber(materialStats.maxMat3) }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- XP -->
+                    <div class="bg-gray-750 rounded-lg p-3 border border-gray-600">
+                      <div class="text-sm font-medium text-gray-400 mb-2 flex items-center">
+                        <img v-if="hasIcon('xp')" :src="icons.xp" alt="XP" class="w-6 h-6 mr-2" />
+                        <IconBrightness v-else :size="22" class="mr-2 text-blue-300" />
+                        {{ getMaterialLabel('xp') }}
+                      </div>
+                      <div class="space-y-2">
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Min:</span>
+                          <span class="text-sm font-mono text-blue-400">{{ formatNumber(materialStats.minXp) }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Avg:</span>
+                          <span :class="`text-sm font-mono font-bold text-red-400`">{{ formatNumber(materialStats.xp) }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-xs text-gray-500">Max:</span>
+                          <span class="text-sm font-mono text-green-400">{{ formatNumber(materialStats.maxXp) }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="flex items-center justify-center h-[300px] text-gray-400">
+                <div class="text-center">
+                  <IconPackage size="48" class="mx-auto mb-4 text-gray-500" />
+                  <p class="text-lg font-medium mb-2">No Loot Data</p>
+                  <p class="text-sm">Run an evaluation to see loot statistics.</p>
+                </div>
+              </div>
+            </div>
             
             <!-- Leerer Zustand wenn keine Daten vorhanden -->
             <div v-if="(activeTab === 'distribution' && !distribution) || (activeTab === 'stats' && (!buildStats || buildStats.length === 0))" 
@@ -131,30 +245,12 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { IconChartBar, IconX, IconGraph, IconRuler, IconHeart, IconTrophy } from '@tabler/icons-vue';
+import { IconChartBar, IconX, IconGraph, IconRuler, IconHeart, IconTrophy, IconPackage, IconDiamond, IconHexagon, IconHexagons, IconBrightness } from '@tabler/icons-vue';
 import StageDistributionChart from '@/components/charts/StageDistributionChart.vue';
 import ReviveDistributionChart from '@/components/charts/ReviveDistributionChart.vue';
 import BossKillByReviveChart from '@/components/charts/BossKillByReviveChart.vue';
-
-// Verfügbare Tabs
-const tabs = computed(() => {
-  const baseTabs = [
-    { id: 'distribution', label: 'Stage Distribution', icon: IconGraph },
-    { id: 'revive', label: 'Revive Distribution', icon: IconHeart }
-  ];
-  
-  // Boss Analysis nur wenn echte Boss-Kill-Daten vorhanden
-  if (props.bossKillsByRevive && props.bossKillsByRevive.length > 0) {
-    baseTabs.push({ id: 'boss', label: 'Boss Analysis', icon: IconTrophy });
-  }
-  
-  baseTabs.push({ id: 'stats', label: 'Build Stats', icon: IconRuler });
-  
-  return baseTabs;
-});
-
-// Aktiver Tab
-const activeTab = ref('distribution');
+import { formatNumber } from '@/composables/format.js';
+import { useLootIcons } from '@/composables/useLootIcons';
 
 const props = defineProps({
   show: {
@@ -210,6 +306,14 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
+  materialStats: {
+    type: Object,
+    default: null
+  },
+  resultLabels: {
+    type: Object,
+    default: () => ({})
+  },
   color: {
     type: String,
     default: 'blue'
@@ -217,6 +321,36 @@ const props = defineProps({
 });
 
 defineEmits(['close']);
+
+// Aktiver Tab
+const activeTab = ref('distribution');
+
+// Loot-Icons für den aktuellen Hunter laden
+const { icons, hasIcon } = useLootIcons(props.hunterId);
+
+// Material Labels aus resultLabels holen (wie in BuildLoot.vue)
+const getMaterialLabel = (key) => {
+  return props.resultLabels[key] || key.toUpperCase();
+};
+
+// Verfügbare Tabs
+const tabs = computed(() => {
+  const baseTabs = [
+    { id: 'distribution', label: 'Stage Distribution', icon: IconGraph },
+    { id: 'revive', label: 'Revive Distribution', icon: IconHeart }
+  ];
+  
+  // Boss Analysis nur wenn echte Boss-Kill-Daten vorhanden
+  if (props.bossKillsByRevive && props.bossKillsByRevive.length > 0) {
+    baseTabs.push({ id: 'boss', label: 'Boss Analysis', icon: IconTrophy });
+  }
+
+  //baseTabs.push({ id: 'materials', label: 'Loot', icon: IconPackage });
+  
+  baseTabs.push({ id: 'stats', label: 'Build Stats', icon: IconRuler });
+  
+  return baseTabs;
+});
 
 // Formatierungsfunktion für verschiedene Stattypen
 function formatStatValue(stat) {
@@ -237,6 +371,7 @@ function formatStatValue(stat) {
   // Standardformatierung
   return typeof value === 'number' ? value.toLocaleString('en-US') : value;
 }
+
 </script>
 
 <style scoped>

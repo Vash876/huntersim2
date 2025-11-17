@@ -48,7 +48,7 @@ function calculateLootKnox(level) {
 }
 
 /**
- * Catch-Up Power Kosten berechnen (Attraction Gem Node)
+ * Catch-Up Power Kosten berechnen (Attraction Gem Node) Borge/Ozzy
  * @param {number} level - Das aktuelle Level
  * @returns {number} - Die berechneten Kosten
  */
@@ -58,12 +58,12 @@ function calculateCatchUp(level) {
 }
 
 /**
- * Catch-Up Power Kosten berechnen (Attraction Gem Node)
+ * Catch-Up Power Kosten berechnen (Attraction Gem Node) Knox
  * @param {number} level - Das aktuelle Level
  * @returns {number} - Die berechneten Kosten
  */
 function calculateCatchUp2(level) {
-  const value = 4e11 * Math.pow(100, level);
+  const value = 4e10 * Math.pow(100, level);
   return Math.floor(value);
 }
 

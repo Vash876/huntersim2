@@ -190,6 +190,16 @@ class Borge {
   xp: f64;
   ls: f64;
   
+  // Min/Max tracking for materials and XP
+  minMat1: f64;
+  maxMat1: f64;
+  minMat2: f64;
+  maxMat2: f64;
+  minMat3: f64;
+  maxMat3: f64;
+  minXp: f64;
+  maxXp: f64;
+  
   // Boss Stats Array
   bossStats: StaticArray<BossStats>;
   
@@ -256,6 +266,16 @@ class Borge {
     this.mat3 = 0;
     this.xp = 0;
     this.ls = 0;
+    
+    // Min/Max initialisieren
+    this.minMat1 = 1e308;
+    this.maxMat1 = 0;
+    this.minMat2 = 1e308;
+    this.maxMat2 = 0;
+    this.minMat3 = 1e308;
+    this.maxMat3 = 0;
+    this.minXp = 1e308;
+    this.maxXp = 0;
     
     // Boss Stats initialisieren
     this.bossStats = new StaticArray<BossStats>(10);
@@ -353,30 +373,34 @@ function enemyAttack(isBonus: boolean = false): void {
     nextEnemAtk = currentTime + currentEnemy.atkSpd;
   }
   
-  // Calculate base damage for Helltouch before applying evasion/crit modifiers
-  let helltouchBaseDamage = currentTempGN4 > 0 ? currentEnemy.atk * (1 - 0.01 * currentBorge.mino - 0.03 * currentCreaGem4) : 0;
-  
   let evaded = false;
   if (ck(currentBorge.evade)) {
     dmg = 0;
     evaded = true;
   } else if (ck(currentEnemy.critRate)) {
     dmg *= currentEnemy.critDmg * (1 - 0.11 * currentBorge.weakspot);
-    // If tempGN4 is active, apply crit to Helltouch base damage as well
-    if (currentTempGN4 > 0) {
-      helltouchBaseDamage *= currentEnemy.critDmg;
-    }
-  }
-  
-  // If tempGN4 is not active, use the final damage for Helltouch
-  if (currentTempGN4 <= 0) {
-    helltouchBaseDamage = dmg;
   }
   
   currentBorge.hp -= dmg;
   
-  // Helltouch damage calculation
-  currentEnemy.hp -= 0.08 * currentBorge.helltouch * helltouchBaseDamage * (currentEnem > 0 && currentEnem % 1000 === 0 ? 0.1 : 1);
+  // Helltouch damage calculation (only if not evaded)
+  if (!evaded) {
+    let helltouchBaseDamage: f64 = 0;
+    
+    if (currentTempGN4 > 0) {
+      // tempGN4 active: use raw enemy attack before any DR or Mino
+      helltouchBaseDamage = currentEnemy.atk;
+      // Apply crit if enemy crit happened
+      if (ck(currentEnemy.critRate)) {
+        helltouchBaseDamage *= currentEnemy.critDmg;
+      }
+    } else {
+      // tempGN4 not active: use final damage (after all reductions)
+      helltouchBaseDamage = dmg;
+    }
+    
+    currentEnemy.hp -= 0.08 * currentBorge.helltouch * helltouchBaseDamage * (currentEnem > 0 && currentEnem % 1000 === 0 ? 0.1 : 1);
+  }
   
   if (currentEnemy.hp <= 0) {
     killEnemy();
@@ -695,16 +719,27 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
   let bonusMulti: f64 = 1;
   let tempEnem = currentEnem;
   
+  // Track bonus materials separately for accurate min/max tracking
+  let bonusMat1: f64 = 0;
+  let bonusMat2: f64 = 0;
+  let bonusMat3: f64 = 0;
+  let bonusXp: f64 = 0;
+  
   while (tempEnem >= enemiesInSection) {
     tempEnem -= enemiesInSection;
     enemiesInSection = 1000;
 
     bonusMulti *= Math.pow(stageGrowth, 100);
 
-    borge.mat1 += bonusMulti * mat1[mat1.length - 1] * 800 * includedMultis * excludedMultis;
-    borge.mat2 += bonusMulti * mat2[mat2.length - 1] * 600 * includedMultis * excludedMultis;
-    borge.mat3 += bonusMulti * mat3[mat3.length - 1] * 400 * includedMultis * excludedMultis;
-    borge.xp += bonusMulti * xp[xp.length - 1] * 300 * includedMultis * excludedMultis * excludedXpMultis;
+    let mat1Bonus = bonusMulti * mat1[mat1.length - 1] * 800 * includedMultis * excludedMultis;
+    let mat2Bonus = bonusMulti * mat2[mat2.length - 1] * 600 * includedMultis * excludedMultis;
+    let mat3Bonus = bonusMulti * mat3[mat3.length - 1] * 400 * includedMultis * excludedMultis;
+    let xpBonus = bonusMulti * xp[xp.length - 1] * 300 * includedMultis * excludedMultis * excludedXpMultis;
+    
+    bonusMat1 += mat1Bonus;
+    bonusMat2 += mat2Bonus;
+    bonusMat3 += mat3Bonus;
+    bonusXp += xpBonus;
 
     borge.loot += bonusMulti * mat1[mat1.length - 1] * 800 * includedMultis;
     borge.loot += bonusMulti * mat2[mat2.length - 1] * 600 * includedMultis;
@@ -716,10 +751,27 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
     loopLoot += bonusMulti * normalized * stageGrowth * ((Math.pow(stageGrowth, Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) as f64) - 1) / (stageGrowth - 1) * 10 + (Math.min(tempEnem, enemiesInSection - 10) - Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) * 10) * Math.pow(stageGrowth, Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) as f64)) * includedMultis * (1 + borge.ll * 0.2 * borge.effect);
   }
   
-  borge.mat1 += loopLoot * 3 / 10 * arrayAverage(mat1) / normalized * excludedMultis;
-  borge.mat2 += loopLoot * 3 / 10 * arrayAverage(mat2) / normalized * excludedMultis;
-  borge.mat3 += loopLoot * 3 / 10 * arrayAverage(mat3) / normalized * excludedMultis;
-  borge.xp   += loopLoot * 1 / 10 * arrayAverage(xp) / normalized * excludedMultis * excludedXpMultis;
+  // Calculate average materials for accumulation
+  let currentMat1 = loopLoot * 3 / 10 * arrayAverage(mat1) / normalized * excludedMultis + bonusMat1;
+  let currentMat2 = loopLoot * 3 / 10 * arrayAverage(mat2) / normalized * excludedMultis + bonusMat2;
+  let currentMat3 = loopLoot * 3 / 10 * arrayAverage(mat3) / normalized * excludedMultis + bonusMat3;
+  let currentXp = loopLoot * 1 / 10 * arrayAverage(xp) / normalized * excludedMultis * excludedXpMultis + bonusXp;
+  
+  borge.mat1 += currentMat1;
+  borge.mat2 += currentMat2;
+  borge.mat3 += currentMat3;
+  borge.xp   += currentXp;
+  
+  // Track min/max by comparing current iteration values
+  borge.minMat1 = Math.min(borge.minMat1, currentMat1);
+  borge.maxMat1 = Math.max(borge.maxMat1, currentMat1);
+  borge.minMat2 = Math.min(borge.minMat2, currentMat2);
+  borge.maxMat2 = Math.max(borge.maxMat2, currentMat2);
+  borge.minMat3 = Math.min(borge.minMat3, currentMat3);
+  borge.maxMat3 = Math.max(borge.maxMat3, currentMat3);
+  borge.minXp = Math.min(borge.minXp, currentXp);
+  borge.maxXp = Math.max(borge.maxXp, currentXp);
+  
   borge.loot += loopLoot;
   borge.time += currentTime;
   borge.enem += currentEnem;
@@ -952,6 +1004,46 @@ export function getLastMat3(): f64 {
 export function getLastXp(): f64 { 
   if (lastBorge.iters === 0) return 0;
   return lastBorge.xp / (lastBorge.iters as f64); 
+}
+
+export function getLastMinMat1(): f64 {
+  if (lastBorge.iters === 0) return 0;
+  return lastBorge.minMat1;
+}
+
+export function getLastMaxMat1(): f64 {
+  if (lastBorge.iters === 0) return 0;
+  return lastBorge.maxMat1;
+}
+
+export function getLastMinMat2(): f64 {
+  if (lastBorge.iters === 0) return 0;
+  return lastBorge.minMat2;
+}
+
+export function getLastMaxMat2(): f64 {
+  if (lastBorge.iters === 0) return 0;
+  return lastBorge.maxMat2;
+}
+
+export function getLastMinMat3(): f64 {
+  if (lastBorge.iters === 0) return 0;
+  return lastBorge.minMat3;
+}
+
+export function getLastMaxMat3(): f64 {
+  if (lastBorge.iters === 0) return 0;
+  return lastBorge.maxMat3;
+}
+
+export function getLastMinXp(): f64 {
+  if (lastBorge.iters === 0) return 0;
+  return lastBorge.minXp;
+}
+
+export function getLastMaxXp(): f64 {
+  if (lastBorge.iters === 0) return 0;
+  return lastBorge.maxXp;
 }
 
 export function getLastProgressString(): string {

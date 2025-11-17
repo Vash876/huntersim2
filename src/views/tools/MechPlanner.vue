@@ -538,7 +538,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import Decimal from 'break_infinity.js';
 import { 
   IconSettings, 
@@ -570,33 +570,76 @@ import {
 import InfoTooltip from '@/composables/InfoTooltip.vue';
 import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
 import { useHunterStore } from '@/store/hunterStore';
+import { useMechPlannerStore } from '@/store/mechPlannerStore.js';
 import { shouldEvaluate } from '@/services/evaluationCacheService';
 
-// Initialize gem planner store
+// Initialize stores
 const gemPlannerStore = useGemPlannerStore();
 const hunterStore = useHunterStore();
+const mechPlannerStore = useMechPlannerStore();
 
 // Build Selection State
 const cachedResults = ref({});
-const selectedBuildId = ref('');
-const currentVectidCrystals = ref(0);
 
-// Global Settings (ohne Creation Gem Werte)
-const coorsRelic = ref(0);
-const tulsandstofKit = ref(0);
-const mechEngineerToolPants = ref(0);
-const transmissionAmplifierTier = ref(0);
-const transmissionAmplifierLevel = ref(0);
-
-// Current Output Multiplier Settings - pro Mech
-const currentOutputMultiplier = ref({});
-const currentOutputMultiplierInput = ref({});
+// Lokale UI State (nicht im Store)
 const inputWasFocused = ref({});
-
-// Mech Settings - Reactive object für alle Mechs
-const mechSettings = ref({});
-
 const mechImages = ref({});
+
+// Store-Referenzen (Aliases für einfachere Nutzung)
+const selectedBuildId = computed({
+  get: () => mechPlannerStore.selectedBuildId,
+  set: (value) => { mechPlannerStore.selectedBuildId = value; mechPlannerStore.saveToStorage(); }
+});
+
+const currentVectidCrystals = computed({
+  get: () => mechPlannerStore.currentVectidCrystals,
+  set: (value) => { mechPlannerStore.currentVectidCrystals = value; mechPlannerStore.saveToStorage(); }
+});
+
+const coorsRelic = computed({
+  get: () => mechPlannerStore.coorsRelic,
+  set: (value) => { mechPlannerStore.coorsRelic = value; mechPlannerStore.saveToStorage(); }
+});
+
+const tulsandstofKit = computed({
+  get: () => mechPlannerStore.tulsandstofKit,
+  set: (value) => { mechPlannerStore.tulsandstofKit = value; mechPlannerStore.saveToStorage(); }
+});
+
+const mechEngineerToolPants = computed({
+  get: () => mechPlannerStore.mechEngineerToolPants,
+  set: (value) => { mechPlannerStore.mechEngineerToolPants = value; mechPlannerStore.saveToStorage(); }
+});
+
+const transmissionAmplifierTier = computed({
+  get: () => mechPlannerStore.transmissionAmplifierTier,
+  set: (value) => { mechPlannerStore.transmissionAmplifierTier = value; mechPlannerStore.saveToStorage(); }
+});
+
+const transmissionAmplifierLevel = computed({
+  get: () => mechPlannerStore.transmissionAmplifierLevel,
+  set: (value) => { mechPlannerStore.transmissionAmplifierLevel = value; mechPlannerStore.saveToStorage(); }
+});
+
+const mechSettings = computed({
+  get: () => mechPlannerStore.mechSettings,
+  set: (value) => { mechPlannerStore.mechSettings = value; mechPlannerStore.saveToStorage(); }
+});
+
+const currentOutputMultiplier = computed({
+  get: () => mechPlannerStore.currentOutputMultiplier,
+  set: (value) => { mechPlannerStore.currentOutputMultiplier = value; mechPlannerStore.saveToStorage(); }
+});
+
+const currentOutputMultiplierInput = computed({
+  get: () => mechPlannerStore.currentOutputMultiplierInput,
+  set: (value) => { mechPlannerStore.currentOutputMultiplierInput = value; mechPlannerStore.saveToStorage(); }
+});
+
+const currentOutputTimestamps = computed({
+  get: () => mechPlannerStore.currentOutputTimestamps,
+  set: (value) => { mechPlannerStore.currentOutputTimestamps = value; mechPlannerStore.saveToStorage(); }
+});
 
 // Computed Properties für Ozzy Builds
 const ozzyBuilds = computed(() => {
@@ -676,13 +719,7 @@ const lockedMechs = computed(() => {
 const initializeMechSettings = () => {
   // Initialisiere alle Mechs (auch die noch nicht sichtbaren)
   mechs.forEach(mech => {
-    if (!mechSettings.value[mech.key]) {
-      mechSettings.value[mech.key] = {
-        owned: 1,
-        timeUpgrades: 0,
-        multiUpgrades: 1
-      };
-    }
+    mechPlannerStore.initializeMechSettings(mech.key);
   });
 };
 
@@ -690,12 +727,7 @@ const initializeMechSettings = () => {
 const initializeCurrentOutputMultiplier = () => {
   // Initialisiere alle Mechs (auch die noch nicht sichtbaren)
   mechs.forEach(mech => {
-    if (!currentOutputMultiplier.value[mech.key]) {
-      currentOutputMultiplier.value[mech.key] = new Decimal(1);
-    }
-    if (!currentOutputMultiplierInput.value[mech.key]) {
-      currentOutputMultiplierInput.value[mech.key] = '1';
-    }
+    mechPlannerStore.initializeMechSettings(mech.key);
     if (!inputWasFocused.value[mech.key]) {
       inputWasFocused.value[mech.key] = false;
     }
@@ -761,17 +793,15 @@ const updateMechSetting = (mechKey, setting, value) => {
     }
   }
   
-  mechSettings.value[mechKey][setting] = value;
-  saveSettings();
+  mechPlannerStore.updateMechSettings(mechKey, { [setting]: value });
 };
 
 // Update current output multiplier
 const updateCurrentOutputMultiplier = (mechKey, value) => {
-  if (!currentOutputMultiplier.value[mechKey]) {
-    currentOutputMultiplier.value[mechKey] = 0;
-  }
-  currentOutputMultiplier.value[mechKey] = value;
-  saveSettings();
+  const decimalValue = value instanceof Decimal ? value : new Decimal(value);
+  const inputString = currentOutputMultiplierInput.value[mechKey] || '1';
+  
+  mechPlannerStore.updateCurrentOutput(mechKey, decimalValue, inputString);
 };
 
 const getCurrentMultiplier = (mechKey) => {
@@ -1404,16 +1434,12 @@ function updateFromSelectedBuild() {
     }
   }
   
-  // Save selection to localStorage
-  localStorage.setItem('mechPlanner_selectedBuildId', selectedBuildId.value);
+  // Store speichert automatisch via computed setter
 }
 
 // Reset production settings
 function resetProduction() {
-  selectedBuildId.value = '';
-  currentVectidCrystals.value = 0;
-  localStorage.removeItem('mechPlanner_selectedBuildId');
-  localStorage.removeItem('mechPlanner_currentVectidCrystals');
+  mechPlannerStore.resetProduction();
 }
 
 // Error handler for missing images
@@ -1479,25 +1505,18 @@ const getCyclesPerDay = (mechKey) => {
 
 // Settings management
 const resetSettings = () => {
-  // Nur noch die lokalen Einstellungen zurücksetzen
-  // Creation Gem Werte werden auf der Gem-Seite verwaltet  
-  coorsRelic.value = 0;
-  tulsandstofKit.value = 0;
-  mechEngineerToolPants.value = 0;
-  transmissionAmplifierTier.value = 0;
-  transmissionAmplifierLevel.value = 0;
-
+  // Reset via Store
+  mechPlannerStore.resetAll();
+  
+  // Re-initialisiere Mech Settings
   mechs.forEach(mech => {
-    mechSettings.value[mech.key] = {
+    mechPlannerStore.initializeMechSettings(mech.key);
+    mechPlannerStore.updateMechSettings(mech.key, {
       owned: 1,
       timeUpgrades: 0,
       multiUpgrades: 1
-    };
-    currentOutputMultiplier.value[mech.key] = new Decimal(1);
-    currentOutputMultiplierInput.value[mech.key] = '1';
+    });
   });
-  
-  saveSettings();
 };
 
 // Get current output multiplier as input value (string)
@@ -1629,14 +1648,13 @@ function handleOutputMultiplierSubmit(mechKey) {
   // Stelle sicher, dass der Wert mindestens 1 ist
   const finalValue = parsedValue.lt(1) ? new Decimal(1) : parsedValue;
   
-  currentOutputMultiplier.value[mechKey] = finalValue;
+  // Update via Store (speichert automatisch)
+  mechPlannerStore.updateCurrentOutput(mechKey, finalValue, inputValue);
   
   // Formatiere die Anzeige nur wenn das Input nicht fokussiert ist
   if (!inputWasFocused.value[mechKey]) {
     formatOutputMultiplierDisplay(mechKey);
   }
-  
-  saveSettings();
 }
 
 function formatOutputMultiplierDisplay(mechKey) {
@@ -2378,96 +2396,15 @@ const getBestUpgradeClass = (mechKey, upgradeType) => {
   return 'border-gray-700/50';
 };
 
-const saveSettings = () => {
-  try {
-    // Konvertiere Decimal-Werte zu Strings für localStorage
-    const currentOutputMultiplierForSave = {};
-    Object.keys(currentOutputMultiplier.value).forEach(key => {
-      currentOutputMultiplierForSave[key] = currentOutputMultiplier.value[key].toString();
-    });
-    
-    localStorage.setItem('mechPlanner_settings', JSON.stringify({
-      // Creation Gem Werte werden nicht mehr gespeichert - kommen von der Gem-Seite
-      coorsRelic: coorsRelic.value,
-      tulsandstofKit: tulsandstofKit.value,
-      mechEngineerToolPants: mechEngineerToolPants.value,
-      transmissionAmplifierTier: transmissionAmplifierTier.value,
-      transmissionAmplifierLevel: transmissionAmplifierLevel.value,
-      mechSettings: mechSettings.value,
-      currentOutputMultiplier: currentOutputMultiplierForSave,
-      currentOutputMultiplierInput: currentOutputMultiplierInput.value
-    }));
-  } catch (error) {
-    console.error('Error saving settings:', error);
-  }
-};
+// saveSettings ist nicht mehr nötig - Store speichert automatisch via computed setters
+// Alte Funktion entfernt, alle Änderungen werden direkt im Store gespeichert
 
-// Aktualisierte loadSettings Funktion
-const loadSettings = () => {
-  try {
-    const savedSettings = JSON.parse(localStorage.getItem('mechPlanner_settings') || '{}');
-    
-    // Creation Gem Werte werden nicht mehr geladen - kommen von der Gem-Seite
-    if (savedSettings.coorsRelic !== undefined) coorsRelic.value = savedSettings.coorsRelic;
-    if (savedSettings.tulsandstofKit !== undefined) tulsandstofKit.value = savedSettings.tulsandstofKit;
-    if (savedSettings.mechEngineerToolPants !== undefined) mechEngineerToolPants.value = savedSettings.mechEngineerToolPants;
-    if (savedSettings.transmissionAmplifierTier !== undefined) transmissionAmplifierTier.value = savedSettings.transmissionAmplifierTier;
-    if (savedSettings.transmissionAmplifierLevel !== undefined) transmissionAmplifierLevel.value = savedSettings.transmissionAmplifierLevel;
-    if (savedSettings.mechSettings !== undefined) mechSettings.value = savedSettings.mechSettings;
-    
-    if (savedSettings.currentOutputMultiplier !== undefined) {
-      // Konvertiere Strings zurück zu Decimal
-      Object.keys(savedSettings.currentOutputMultiplier).forEach(key => {
-        currentOutputMultiplier.value[key] = new Decimal(savedSettings.currentOutputMultiplier[key]);
-      });
-    }
-    
-    if (savedSettings.currentOutputMultiplierInput !== undefined) {
-      currentOutputMultiplierInput.value = savedSettings.currentOutputMultiplierInput;
-    }
-    
-    // Load build selection and current crystals
-    const savedBuildId = localStorage.getItem('mechPlanner_selectedBuildId');
-    if (savedBuildId) {
-      selectedBuildId.value = savedBuildId;
-    }
-    
-    const savedCurrentCrystals = localStorage.getItem('mechPlanner_currentVectidCrystals');
-    if (savedCurrentCrystals !== null) {
-      currentVectidCrystals.value = Number(savedCurrentCrystals) || 0;
-    }
-    
-    // Ensure all mechs have settings
-    initializeMechSettings();
-    initializeCurrentOutputMultiplier();
-  } catch (error) {
-    console.error('Error loading saved settings:', error);
-    initializeMechSettings();
-    initializeCurrentOutputMultiplier();
-  }
-};
+// loadSettings ist nicht mehr nötig - Store lädt beim init()
+// Alte Funktion entfernt, Daten kommen direkt aus dem Store
 
-// Watch nur für lokale Settings (Creation Gem Werte kommen vom Store)
-watch([
-  coorsRelic, 
-  tulsandstofKit, 
-  mechEngineerToolPants,
-  transmissionAmplifierTier,
-  transmissionAmplifierLevel
-], () => {
-  saveSettings();
-});
+// Watchers nicht mehr nötig - Store speichert automatisch via computed setters
 
-watch(mechSettings, () => {
-  saveSettings();
-}, { deep: true });
-
-// Watch für currentOutputMultiplier
-watch(currentOutputMultiplier, () => {
-  saveSettings();
-}, { deep: true });
-
-// Watch für currentOutputMultiplier
+// Watch für currentOutputMultiplier - nur für Display-Update
 watch(currentOutputMultiplier, (newValue) => {
   // Aktualisiere die Input-Felder NUR wenn sie nicht fokussiert sind
   Object.keys(newValue).forEach(mechKey => {
@@ -2482,10 +2419,8 @@ watch(currentOutputMultiplier, (newValue) => {
   });
 }, { deep: true });
 
-// Watch für currentVectidCrystals
-watch(currentVectidCrystals, (newValue) => {
-  localStorage.setItem('mechPlanner_currentVectidCrystals', String(newValue || 0));
-});
+// Watch für currentVectidCrystals - Store speichert automatisch
+// Kein Watch mehr nötig
 
 // Watch für hunterStore changes (reload cached results)
 watch(() => hunterStore.getBuildsForHunter('ozzy'), () => {
@@ -2495,8 +2430,9 @@ watch(() => hunterStore.getBuildsForHunter('ozzy'), () => {
 
 // Initialize on mount
 onMounted(async () => {
-  // Initialize gem planner store
+  // Initialize stores
   gemPlannerStore.init();
+  mechPlannerStore.init(); // Lade alle Daten aus localStorage
   
   // Initialize hunter store for Ozzy first
   if (!hunterStore.hunterBuilds || !hunterStore.hunterBuilds.ozzy || hunterStore.hunterBuilds.ozzy.length === 0) {
@@ -2509,15 +2445,123 @@ onMounted(async () => {
   // Lade Mech Images
   await loadMechImages();
   
+  // Initialize Mech Settings falls noch nicht vorhanden
   initializeMechSettings();
   initializeCurrentOutputMultiplier();
-  loadSettings();
   
   // Update from selected build if available
   if (selectedBuildId.value) {
     updateFromSelectedBuild();
   }
+  
+  // Starte Auto-Update Timer für Current Output
+  startAutoUpdateTimer();
 });
+
+// Cleanup bei unmount
+onUnmounted(() => {
+  stopAutoUpdateTimer();
+});
+
+// Auto-Update Timer
+let autoUpdateInterval = null;
+
+const startAutoUpdateTimer = () => {
+  console.log('🕐 [MechPlanner] Starting timer check (updates on cycle completion)');
+  stopAutoUpdateTimer(); // Clear any existing timer
+  autoUpdateInterval = setInterval(checkAndUpdateCompletedCycles, 1000); // Check every 1 second
+};
+
+const stopAutoUpdateTimer = () => {
+  if (autoUpdateInterval) {
+    clearInterval(autoUpdateInterval);
+    autoUpdateInterval = null;
+  }
+};
+
+// Prüft für jeden Mech, ob ein kompletter Zyklus abgeschlossen wurde
+const checkAndUpdateCompletedCycles = () => {
+  const now = Date.now();
+  let updatedCount = 0;
+  
+  mechs.forEach(mech => {
+    const mechKey = mech.key;
+    const settings = mechSettings.value[mechKey];
+    
+    // Nur für aktive Mechs (owned > 0)
+    if (!settings || settings.owned === 0) return;
+    
+    // Hole gespeicherten Timestamp
+    const lastTimestamp = currentOutputTimestamps.value[mechKey];
+    if (!lastTimestamp) return;
+    
+    // Hole aktuelle Werte
+    const currentOutput = getCurrentOutputMultiplierDecimal(mechKey);
+    const maxCapacity = getMaxCapacity(mechKey);
+    
+    // Wenn bereits gecappt, nichts tun
+    if (currentOutput.gte(maxCapacity)) return;
+    
+    const currentMulti = getCurrentMultiplier(mechKey);
+    const currentTimer = getCurrentTimer(mechKey);
+    
+    // Wenn Multi <= 1, keine Erhöhung möglich
+    if (currentMulti.lte(1)) return;
+    
+    // Berechne verstrichene Zeit in Sekunden
+    const elapsedMs = now - lastTimestamp;
+    const elapsedSeconds = elapsedMs / 1000;
+    
+    // Prüfe ob mindestens ein kompletter Zyklus vergangen ist
+    if (elapsedSeconds >= currentTimer) {
+      // Berechne wie viele komplette Zyklen vergangen sind
+      const completedCycles = Math.floor(elapsedSeconds / currentTimer);
+      
+      // Berechne neuen Output: currentOutput * (currentMulti ^ completedCycles)
+      const newOutput = currentOutput.mul(currentMulti.pow(completedCycles));
+      
+      // Begrenze auf maxCapacity
+      const cappedOutput = newOutput.gt(maxCapacity) ? maxCapacity : newOutput;
+      
+      // Update via Store mit neuem Timestamp (jetzt!)
+      mechPlannerStore.updateCurrentOutput(mechKey, cappedOutput, formatDecimalForInput(cappedOutput));
+      updatedCount++;
+      
+      console.log(`🔄 [MechPlanner] ${mech.name}: Completed ${completedCycles} cycle(s), updated output`);
+    }
+  });
+  
+  if (updatedCount > 0) {
+    console.log(`⏫ [MechPlanner] Auto-updated ${updatedCount} mech(s) after cycle completion`);
+  }
+};
+
+// Hilfsfunktion zum Formatieren von Decimal für Input
+const formatDecimalForInput = (decimal) => {
+  if (!decimal || !(decimal instanceof Decimal)) {
+    return '1';
+  }
+  
+  const str = decimal.toString();
+  
+  // Wenn es wissenschaftliche Notation ist, direkt zurückgeben
+  if (str.includes('e')) {
+    return str;
+  }
+  
+  // Für große Zahlen in wissenschaftliche Notation umwandeln
+  if (decimal.gte(1e6)) {
+    return decimal.toExponential(2);
+  }
+  
+  // Für normale Zahlen: max 2 Dezimalstellen
+  if (decimal.lt(100)) {
+    return decimal.toFixed(2);
+  }
+  
+  // Für größere Zahlen: keine Dezimalstellen
+  return decimal.toFixed(0);
+};
 </script>
 
 <style scoped>

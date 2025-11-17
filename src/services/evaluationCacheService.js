@@ -212,7 +212,6 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPl
       // Nur relevante Gem-Daten basierend auf den Hunter-spezifischen Parametern einbeziehen
       const gemStates = gemPlannerStore.gemStates || {};
       
-      console.log('[EVAL] 🔑 gemPlannerStore.gemStates (RAW):', JSON.stringify(gemStates, null, 2));
       
       for (const param of gemParams) {
         const parts = param.split('.');
@@ -230,9 +229,6 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPl
             if (!gemValues[gemType]) gemValues[gemType] = {};
             
             const gemState = gemStates[gemType] || {};
-            
-            console.log(`[EVAL] 🔑 Reading gem param: ${param}, gemType: ${gemType}, gemProperty: ${gemProperty}`);
-            console.log(`[EVAL] 🔑 gemState for ${gemType}:`, JSON.stringify(gemState, null, 2));
             
             // Level
             if (gemProperty === 'level') {
@@ -253,9 +249,6 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPl
               // z.B. 'lootBorge' -> 'borge-loot-bonus'
               const paramKey = `${gemType}_${gemProperty}`; // z.B. 'attraction_lootBorge'
               const storeUpgradeKey = REVERSE_GEM_UPGRADE_MAPPING[paramKey] || gemProperty;
-              console.log(`[EVAL] 🔑 Looking for upgrade: ${gemProperty}, paramKey: ${paramKey}, mapped to: ${storeUpgradeKey}`);
-              console.log(`[EVAL] 🔑 Available upgrades:`, Object.keys(upgrades));
-              console.log(`[EVAL] 🔑 Value for ${storeUpgradeKey}:`, upgrades[storeUpgradeKey]);
               
               if (!gemValues[gemType].upgrades) gemValues[gemType].upgrades = {};
               gemValues[gemType].upgrades[gemProperty] = upgrades[storeUpgradeKey] || 0;
@@ -325,9 +318,6 @@ export async function generateCacheKey({ hunterId, buildData, hunterStore, gemPl
     // Hash des JSON-Strings als Cache-Key
     const jsonStr = JSON.stringify(dataToHash);
     const hash = stringToHash(jsonStr);
-    
-    console.log(`[EVAL] 🔑 Cache key generated for ${hunterId}:`, hash);
-    console.log(`[EVAL] 🔑 Gem values in cache key:`, JSON.stringify(gemValues, null, 2));
     
     return hash;
   } catch (error) {

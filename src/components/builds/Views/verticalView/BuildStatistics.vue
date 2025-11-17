@@ -9,7 +9,7 @@
           <div class="flex items-center">
             <IconReportMoney :size="16" class="text-amber-400" />
             <span class="stat-title">Loot Score</span>
-            <InfoTooltip 
+            <InfoTooltip v-if="props.isReferenceBuild"
               content="Overall Build Efficiency Rating that excludes pure loot bonuses (Ultima, etc). This allows for fair Build comparison, focusing only on the Build's core effectiveness."
               placement="top"
               class="ml-0.5"

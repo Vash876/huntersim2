@@ -571,7 +571,16 @@ function parseEvalResults(evalResults, hunterId, buildData, sampleSize) {
     mat2: result[8],
     mat3: result[9],
     xp: result[10],
-    stats: result[11]
+    stats: result[11],
+    // Min/Max Material und XP Werte
+    minMat1: result[14],
+    maxMat1: result[15],
+    minMat2: result[16],
+    maxMat2: result[17],
+    minMat3: result[18],
+    maxMat3: result[19],
+    minXp: result[20],
+    maxXp: result[21]
   };
   
   // Stage-Verteilung extrahieren (bestehend)

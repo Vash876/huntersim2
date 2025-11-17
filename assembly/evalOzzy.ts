@@ -190,6 +190,14 @@ class Ozzy {
   mat2: f64;
   mat3: f64;
   xp: f64;
+  minMat1: f64;
+  maxMat1: f64;
+  minMat2: f64;
+  maxMat2: f64;
+  minMat3: f64;
+  maxMat3: f64;
+  minXp: f64;
+  maxXp: f64;
   ls: f64;
   bossKill: i32;
   bossHp: f64;
@@ -268,6 +276,14 @@ class Ozzy {
     this.mat2 = 0;
     this.mat3 = 0;
     this.xp = 0;
+    this.minMat1 = 1e308;
+    this.maxMat1 = 0;
+    this.minMat2 = 1e308;
+    this.maxMat2 = 0;
+    this.minMat3 = 1e308;
+    this.maxMat3 = 0;
+    this.minXp = 1e308;
+    this.maxXp = 0;
     this.ls = 0;
     this.bossKill = 0;
     this.bossHp = 0;
@@ -658,16 +674,32 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
   let bonusMulti: f64 = 1;
   let tempEnem = currentOzzyEnem;
   
+  // Track bonus materials from while loop
+  let bonusMat1: f64 = 0;
+  let bonusMat2: f64 = 0;
+  let bonusMat3: f64 = 0;
+  let bonusXp: f64 = 0;
+  
   while (tempEnem >= enemiesInSection) {
     tempEnem -= enemiesInSection;
     enemiesInSection = 1000;
 
     bonusMulti *= Math.pow(stageGrowth, 100);
 
-    ozzy.mat1 += bonusMulti * mat1[mat1.length - 1] * 800 * includedMultis * excludedMultis;
-    ozzy.mat2 += bonusMulti * mat2[mat2.length - 1] * 600 * includedMultis * excludedMultis;
-    ozzy.mat3 += bonusMulti * mat3[mat3.length - 1] * 400 * includedMultis * excludedMultis;
-    ozzy.xp += bonusMulti * xp[xp.length - 1] * 300 * includedMultis * excludedMultis * excludedXpMultis;
+    let mat1Bonus = bonusMulti * mat1[mat1.length - 1] * 800 * includedMultis * excludedMultis;
+    let mat2Bonus = bonusMulti * mat2[mat2.length - 1] * 600 * includedMultis * excludedMultis;
+    let mat3Bonus = bonusMulti * mat3[mat3.length - 1] * 400 * includedMultis * excludedMultis;
+    let xpBonus = bonusMulti * xp[xp.length - 1] * 300 * includedMultis * excludedMultis * excludedXpMultis;
+    
+    bonusMat1 += mat1Bonus;
+    bonusMat2 += mat2Bonus;
+    bonusMat3 += mat3Bonus;
+    bonusXp += xpBonus;
+    
+    ozzy.mat1 += mat1Bonus;
+    ozzy.mat2 += mat2Bonus;
+    ozzy.mat3 += mat3Bonus;
+    ozzy.xp += xpBonus;
 
     ozzy.loot += bonusMulti * mat1[mat1.length - 1] * 800 * includedMultis;
     ozzy.loot += bonusMulti * mat2[mat2.length - 1] * 600 * includedMultis;
@@ -679,10 +711,24 @@ function ozzySim(ozzy: Ozzy, maxStage: i32, attr: i32, catchup99gu: i32, reviveC
     loopLoot += bonusMulti * normalized * stageGrowth * ((Math.pow(stageGrowth, Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) as f64) - 1) / (stageGrowth - 1) * 10 + (Math.min(tempEnem, enemiesInSection - 10) - Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) * 10) * Math.pow(stageGrowth, Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) as f64)) * includedMultis * (1 + ozzy.ll * 0.2 * ozzy.effect);
   }
   
+  let currentMat1 = loopLoot * 3 / 10 * ozzyArrayAverage(mat1) / normalized * excludedMultis + bonusMat1;
+  let currentMat2 = loopLoot * 3 / 10 * ozzyArrayAverage(mat2) / normalized * excludedMultis + bonusMat2;
+  let currentMat3 = loopLoot * 3 / 10 * ozzyArrayAverage(mat3) / normalized * excludedMultis + bonusMat3;
+  let currentXp = loopLoot * 1 / 10 * ozzyArrayAverage(xp) / normalized * excludedMultis * excludedXpMultis + bonusXp;
+  
   ozzy.mat1 += loopLoot * 3 / 10 * ozzyArrayAverage(mat1) / normalized * excludedMultis;
   ozzy.mat2 += loopLoot * 3 / 10 * ozzyArrayAverage(mat2) / normalized * excludedMultis;
   ozzy.mat3 += loopLoot * 3 / 10 * ozzyArrayAverage(mat3) / normalized * excludedMultis;
   ozzy.xp += loopLoot * 1 / 10 * ozzyArrayAverage(xp) / normalized * excludedMultis * excludedXpMultis;
+  
+  ozzy.minMat1 = Math.min(ozzy.minMat1, currentMat1);
+  ozzy.maxMat1 = Math.max(ozzy.maxMat1, currentMat1);
+  ozzy.minMat2 = Math.min(ozzy.minMat2, currentMat2);
+  ozzy.maxMat2 = Math.max(ozzy.maxMat2, currentMat2);
+  ozzy.minMat3 = Math.min(ozzy.minMat3, currentMat3);
+  ozzy.maxMat3 = Math.max(ozzy.maxMat3, currentMat3);
+  ozzy.minXp = Math.min(ozzy.minXp, currentXp);
+  ozzy.maxXp = Math.max(ozzy.maxXp, currentXp);
   ozzy.loot += loopLoot;
   ozzy.time += currentOzzyTime;
   ozzy.enem += currentOzzyEnem;
@@ -914,6 +960,38 @@ export function getLastOzzyMat3(): f64 {
 export function getLastOzzyXp(): f64 { 
   if (lastOzzy.iters === 0) return 0;
   return lastOzzy.xp / (lastOzzy.iters as f64); 
+}
+
+export function getLastMinOzzyMat1(): f64 {
+  return lastOzzy.minMat1;
+}
+
+export function getLastMaxOzzyMat1(): f64 {
+  return lastOzzy.maxMat1;
+}
+
+export function getLastMinOzzyMat2(): f64 {
+  return lastOzzy.minMat2;
+}
+
+export function getLastMaxOzzyMat2(): f64 {
+  return lastOzzy.maxMat2;
+}
+
+export function getLastMinOzzyMat3(): f64 {
+  return lastOzzy.minMat3;
+}
+
+export function getLastMaxOzzyMat3(): f64 {
+  return lastOzzy.maxMat3;
+}
+
+export function getLastMinOzzyXp(): f64 {
+  return lastOzzy.minXp;
+}
+
+export function getLastMaxOzzyXp(): f64 {
+  return lastOzzy.maxXp;
 }
 
 // Numerische Stats-Exports
