@@ -676,6 +676,7 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
   // Fragment-Multiplikatoren berechnen
   let m0 = getFragMultiplier("ms0", planStats.ms0, planStats);
   let attr1 = 1; // Attraction GN #1 direkt aus Store
+  let attr4 = 1; // Attraction GN #4 direkt aus Store
   let campfragdet = getFragMultiplier("campfragdet", planStats.campfragdet, planStats);
   let pow2 = 1; // Power GN #2 direkt aus Store
   let research_alltime = getFragMultiplier("research_alltime", planStats.research_alltime, planStats);
@@ -687,6 +688,11 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
   // Attraction GN #1 (Node Index 0) - erfordert Attraction Level 1+
   if (attractionLevel >= 1 && attractionNodes.includes(0)) {
     attr1 = 1.5; // Attraction GN #1 Fragment-Multiplier
+  }
+  
+  // Attraction GN #4 (Node Index 3) - erfordert Attraction Level 2+
+  if (attractionLevel >= 2 && attractionNodes.includes(3)) {
+    attr4 = 1.25; // Attraction GN #4 Fragment-Multiplier
   }
   
   // Power GN #2 (Node Index 1) - erfordert Power Level 1+
@@ -702,7 +708,7 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
   
   // Kampagnen-Schleife
   for (let i = 0; i < campaigns; i++) {
-    let baseFrags = (2.5 + r6Add) * (m0 * attr1 * campfragdet * pow2 * research_alltime * ouroinstalls * iap_frag * i110 * r6Multi);
+    let baseFrags = (2.5 + r6Add) * (m0 * attr1 * attr4 * campfragdet * pow2 * research_alltime * ouroinstalls * iap_frag * i110 * r6Multi);
     
     // Spezielle Multiplikatoren für bestimmte Kampagnen
     let campaignMulti = 1;

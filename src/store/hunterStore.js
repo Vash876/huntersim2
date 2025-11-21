@@ -323,10 +323,30 @@ export const useHunterStore = defineStore('hunter', () => {
       build.isImported = false; // Default: false für normale Builds
     }
     
+    // WICHTIG: Hole die korrekt geordnete Build-Liste VOR dem Hinzufügen
+    // (getOrderedBuildsForHunter liest aus hunterBuilds, das noch NICHT den neuen Build enthält)
+    const orderedBuilds = getOrderedBuildsForHunter(hunterId);
+    let insertIndex = orderedBuilds.length; // Default: ans Ende
+    
+    if (build.sourceId) {
+      // Finde den Source-Build in der geordneten Liste
+      const sourceIndex = orderedBuilds.findIndex(b => b.id === build.sourceId);
+      if (sourceIndex !== -1) {
+        insertIndex = sourceIndex + 1; // Direkt nach dem Source
+      }
+      // Entferne sourceId nach der Verwendung
+      delete build.sourceId;
+    }
+    
+    // Füge den Build an der richtigen Position ein
+    orderedBuilds.splice(insertIndex, 0, build);
+    
+    // WICHTIG: Setze die komplette geordnete Liste in den Store
+    hunterBuilds.value[hunterId] = [...orderedBuilds];
+    
     // Füge den Build mit smooth transition hinzu
     if (document.startViewTransition) {
-      // Erst Build hinzufügen
-      hunterBuilds.value[hunterId].push(build);
+      // KEINE weitere Mutation - orderedBuilds wurde schon aktualisiert und in den Store geschrieben
       
       // Setze globales Flag für in-page transition
       document.documentElement.setAttribute('data-in-page-transition', 'true');
@@ -346,12 +366,14 @@ export const useHunterStore = defineStore('hunter', () => {
           document.documentElement.removeAttribute('data-in-page-transition');
         });
       });
-    } else {
-      hunterBuilds.value[hunterId].push(build);
     }
+    // KEIN else-Block mehr nötig - Build wurde bereits in orderedBuilds eingefügt und in Store geschrieben
 
     // Scanne nach höchstem Level nach Build-Hinzufügung
     scanBuildsForHighestLevel(hunterId);
+    
+    // Speichere die neue Reihenfolge sofort
+    saveBuildsOrder(hunterId, hunterBuilds.value[hunterId]);
     
     // Die Persistenz wird durch Pinia's persist-Plugin automatisch gehandhabt
     
@@ -1749,28 +1771,43 @@ function shouldShowAdvancedTalents(hunterId) {
     data.buildCategoryMap[buildCopy.id] = categoryId;
     buildCopy.isArchived = categoryId === 'archived';
     
-    // Finde Position zum Einfügen (am Ende der Ziel-Kategorie)
-    let insertIndex = -1;
-    for (let i = builds.length - 1; i >= 0; i--) {
-      const bCategoryId = data.buildCategoryMap[builds[i].id] || (builds[i].isArchived ? 'archived' : 'active');
-      if (bCategoryId === categoryId) {
-        insertIndex = i + 1;
-        break;
-      }
-    }
+    // Finde Position des Original-Builds
+    const originalIndex = builds.findIndex(b => b.id === buildId);
     
-    // Wenn Kategorie leer ist, füge am Ende ein
-    if (insertIndex === -1) {
-      insertIndex = builds.length;
+    // Wenn in die gleiche Kategorie kopiert wird, füge direkt nach dem Original ein
+    const originalCategoryId = data.buildCategoryMap[buildId] || (originalBuild.isArchived ? 'archived' : 'active');
+    
+    let insertIndex = -1;
+    if (categoryId === originalCategoryId && originalIndex !== -1) {
+      // Füge direkt nach dem Original-Build ein (behält Referenz-Build stabil)
+      insertIndex = originalIndex + 1;
+    } else {
+      // Finde Position zum Einfügen (am Ende der Ziel-Kategorie)
+      for (let i = builds.length - 1; i >= 0; i--) {
+        const bCategoryId = data.buildCategoryMap[builds[i].id] || (builds[i].isArchived ? 'archived' : 'active');
+        if (bCategoryId === categoryId) {
+          insertIndex = i + 1;
+          break;
+        }
+      }
+      
+      // Wenn Kategorie leer ist, füge am Ende ein
+      if (insertIndex === -1) {
+        insertIndex = builds.length;
+      }
     }
     
     // Füge die Kopie ein
     builds.splice(insertIndex, 0, buildCopy);
     
+    // WICHTIG: Triggere Reaktivität explizit durch Neuzuweisung
+    // Dies stellt sicher, dass alle Watcher sofort reagieren
+    hunterBuilds.value[hunterId] = [...builds];
+    
     console.log('Build copied:', originalBuild.name, '→', buildCopy.name, 'to category:', categoryId);
     
-    // Speichere die neue Reihenfolge
-    saveBuildsOrder(hunterId, builds);
+    // Speichere die neue Reihenfolge (verwende die aktualisierte Liste)
+    saveBuildsOrder(hunterId, hunterBuilds.value[hunterId]);
   }
   
   // Hilfsfunktion zum Escapen von speziellen Zeichen in RegExp

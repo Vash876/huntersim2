@@ -606,7 +606,7 @@ import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import { getM0Cost, formatM0Cost, calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
-import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe } from '@/utils/loopModCostUtils';
+import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe, getRuleOfConsistencyExponent } from '@/utils/loopModCostUtils';
 import { 
   calculateOrbRequirement, 
   calculateOrbGainsCalc, 
@@ -2119,10 +2119,11 @@ function finalizeAllTimeOrbsInput() {
     return calculateM0CostRangeSafe(currentLevel, targetLevel);
   }
 
-  // Für Loop Mods - NEUE BEHANDLUNG
+  // Für Loop Mods - NEUE BEHANDLUNG mit Exponenten
   if (boost.key === 'lmConsistency') {
-    // Verwende den dafür definierten Loop Mod Namen aus der Konstante
-    return calculateLoopModCostRangeSafe(LOOP_MODS.RULE_OF_CONSISTENCY, currentLevel, targetLevel);
+    // Berechne nur den Exponenten für die höhere Level
+    const exponent = getRuleOfConsistencyExponent(targetLevel);
+    return exponent.toString();
   }
   
   return '';

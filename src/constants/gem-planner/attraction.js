@@ -203,7 +203,7 @@ export const ATTRACTION_GEM = {
     //       return innerBase.pow(outerExponent);
     //     }
     //   }
-    //}
+    // }
   ]
 };
 

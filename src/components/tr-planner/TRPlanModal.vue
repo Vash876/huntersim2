@@ -657,6 +657,8 @@ import { getAllGemData } from '@/constants/tr-planner/gems.js';
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
+import { getM0Cost, formatM0Cost, calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
+import { LOOP_MODS, getLoopModCost, formatLoopModCost, getRuleOfConsistencyExponent } from '@/utils/loopModCostUtils';
 import TRUpdateModal from './TRUpdateModal.vue';
 import GemOverrideModal from './GemOverrideModal.vue';
 import MaxedBoostsOverrideModal from './MaxedBoostsOverrideModal.vue';
@@ -3504,6 +3506,17 @@ function handleTRUpdate() {
       totalCost += getGadgetCost(gadgetType, level);
     }
     return formatGadgetCost(totalCost);
+  }
+  
+  // M0 (kostet Shards)
+  if (boost.key === 'ms0') {
+    return calculateM0CostRangeSafe(currentLevel, targetLevel);
+  }
+  
+  // Loop Mods (kosten MP) - zeige nur Exponent
+  if (boost.key === 'lmConsistency') {
+    const exponent = getRuleOfConsistencyExponent(targetLevel);
+    return exponent.toString();
   }
   
   return '';

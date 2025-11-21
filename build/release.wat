@@ -29384,7 +29384,7 @@
    f64.const 1
    f64.max
    f64.mul
-   f64.const 1.05
+   f64.const 1.04
    local.get $5
    f64.convert_i32_s
    call $~lib/math/NativeMath.pow

@@ -1439,30 +1439,17 @@ function getCategoryBuildCount(categoryId) {
 
 // Event-Handler für erstellten Build
 function onBuildCreated(build) {
-  // Aktualisiere die lokale Liste der Builds
-  // Wichtig: Die Builds müssen manuell aktualisiert werden!
-  if (build) {
-    const updatedBuilds = hunterStore.getOrderedBuildsForHunter(route.params.hunterId) || [];
-    builds.value = updatedBuilds.filter(b => 
-      (buildFilterMode.value === 'active' && !b.isArchived) || 
-      (buildFilterMode.value === 'archived' && b.isArchived)
-    );
-  }
+  // Der watch(filteredBuilds) wird automatisch triggern und builds.value aktualisieren
+  // Wir müssen hier nichts manuell setzen, um Race Conditions zu vermeiden
   
   showToastMessage(`Build "${build.name}" created`, 'success');
 }
 
 
 // Event-Handler für aktualisierten Build
-function onBuildUpdated(build) {  
-  // Aktualisiere die lokale Liste der Builds
-  if (build) {
-    const updatedBuilds = hunterStore.getOrderedBuildsForHunter(route.params.hunterId) || [];
-    builds.value = updatedBuilds.filter(b => 
-      (buildFilterMode.value === 'active' && !b.isArchived) || 
-      (buildFilterMode.value === 'archived' && b.isArchived)
-    );
-  }
+function onBuildUpdated(build) {
+  // Der watch(filteredBuilds) wird automatisch triggern und builds.value aktualisieren
+  // Wir müssen hier nichts manuell setzen, um Race Conditions zu vermeiden
   
   showToastMessage(`Build "${build.name}" updated`, 'success');
 }
@@ -1474,6 +1461,9 @@ function cloneBuild(build) {
   
   // ID entfernen, damit eine neue generiert wird
   delete clonedBuild.id;
+  
+  // WICHTIG: Setze sourceId, damit addBuild den Build an der richtigen Position einfügt
+  clonedBuild.sourceId = build.id;
   
   // Zeitstempel aktualisieren
   clonedBuild.timestamp = Date.now();
@@ -2191,11 +2181,20 @@ function onCategoryDrop(event, categoryId) {
     hunterStore.copyBuildToCategory(hunterId, buildId, categoryId);
     
     // WICHTIG: Nach dem Kopieren filteredBuilds neu laden
+    // Behalte die aktuelle Referenz-Build ID bei
+    const currentReferenceId = referenceBuildId.value;
+    
     nextTick(() => {
       builds.value = filteredBuilds.value.map(build => ({
         ...build,
         hunterId: build.hunterId || hunterId
       }));
+      
+      // Stelle sicher, dass der Referenz-Build sich nicht geändert hat
+      // (nur wenn wir in der gleichen Kategorie sind)
+      if (currentReferenceId && builds.value.length > 0 && builds.value[0].id !== currentReferenceId) {
+        console.warn('Reference build changed after copy - this should not happen!');
+      }
     });
     
     showToastMessage(`Build copied to ${categoryName}`, 'success', 2000);

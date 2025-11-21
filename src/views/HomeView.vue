@@ -2,6 +2,31 @@
 const changelog = 
 [
   {
+    version: '2.9.1',
+    date: '2025-11-21',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Fixed build order issues when copying builds, reference build now stays in correct position',
+        ]
+      },
+      {
+        text: 'Overview Tools',
+        subItems: [
+          'Fixed Loop Mod Overview and Research Overview  display issues',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added Attraction GN#4 to Campaign Fragment calculations',
+          'Fixed cost calculation for Rule of Consistency Loop Mod',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.9.0',
     date: '2025-11-17',
     changes: [
@@ -16,7 +41,7 @@ const changelog =
       {
         text: 'Hunter Simulator',
         subItems: [
-          'Fixed Helltouch damage calculation when Temporary GN#4 is active',
+          'Fixed Helltouch damage calculation when Temporal GN#4 is active',
           'Optimized horizontal and vertical view layouts for more compact and efficient display',
         ]
       },

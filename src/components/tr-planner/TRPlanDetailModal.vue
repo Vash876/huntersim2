@@ -366,7 +366,7 @@ import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import { getM0Cost, formatM0Cost, calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
-import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe } from '@/utils/loopModCostUtils';
+import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe, getRuleOfConsistencyExponent } from '@/utils/loopModCostUtils';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -984,8 +984,9 @@ function getLoopModCostDisplay() {
     }
   }
   
-  // Kosten für das höchste Level anzeigen
-  return calculateLoopModCostRangeSafe(LOOP_MODS.RULE_OF_CONSISTENCY, 0, highestLevel);
+  // Kosten für das höchste Level anzeigen (nur Exponent)
+  const exponent = getRuleOfConsistencyExponent(highestLevel);
+  return exponent.toString();
 }
 
 // Ermittle den Basis-All-Time-Orbs-Wert vor dem ersten TR
@@ -1319,7 +1320,8 @@ const upgradeCosts = computed(() => {
       } 
       // Spezialfall: Loop Mods (kosten MP)
       else if (boost.key === 'lmConsistency') {
-        const costString = calculateLoopModCostRangeSafe(LOOP_MODS.RULE_OF_CONSISTENCY, boost.startValue, boost.endValue);
+        const exponent = getRuleOfConsistencyExponent(boost.endValue);
+        const costString = exponent.toString();
         // Setze auf 1 damit v-if="upgradeCosts.mp > 0" funktioniert
         costs.mp = 1;
         // Speichere den formatierten String für die Anzeige

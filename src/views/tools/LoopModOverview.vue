@@ -462,7 +462,7 @@
           </div>
           
           <!-- Results - Desktop Table -->
-          <div v-else-if="enhancedFilteredLoopMods.length > 0" class="hidden lg:block overflow-x-auto loop-mod-table">
+          <div v-else-if="enhancedFilteredLoopMods.length > 0" class="hidden lg:block overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-gray-800 border-b border-gray-700">
@@ -571,7 +571,7 @@
           </div>
 
           <!-- Results - Mobile Cards -->
-          <div v-if="enhancedFilteredLoopMods.length > 0" class="lg:hidden space-y-2 loop-mod-cards">
+          <div v-if="enhancedFilteredLoopMods.length > 0" class="lg:hidden space-y-2">
 
             <!-- Mobile Cards -->
             <div 
@@ -597,49 +597,46 @@
                 </div>
               </div>
               
-              <!-- Buffs and Requirements - Mobile: stacked, Tablet+: side by side -->
-              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                <!-- Buffs -->
-                <div class="flex-1 min-w-0">
-                  <div class="flex flex-wrap gap-1">
-                    <span 
-                      v-for="(buff, index) in mod.buffs" 
-                      :key="index" 
-                      class="px-1.5 py-0.5 text-xs bg-gray-700 text-blue-300 rounded"
-                    >
-                      {{ buff }}
-                    </span>
-                  </div>
+              <!-- Buffs - Condensed -->
+              <div class="mb-2">
+                <div class="flex flex-wrap gap-1">
+                  <span 
+                    v-for="(buff, index) in mod.buffs" 
+                    :key="index" 
+                    class="px-1.5 py-0.5 text-xs bg-gray-700 text-blue-300 rounded"
+                  >
+                    {{ buff }}
+                  </span>
                 </div>
-                
-                <!-- Requirements (right-aligned on tablet+) -->
-                <div v-if="mod.requiresTemp3 || mod.requiresI61Level > 0 || mod.requiresI75Level > 0 || mod.requiresUltimaCap > 0" class="flex-shrink-0">
-                  <div class="flex flex-wrap gap-1 md:justify-end">
-                    <span 
-                      v-if="mod.requiresTemp3" 
-                      class="px-1.5 py-0.5 text-xs bg-red-900/50 text-red-300 border border-red-700 rounded whitespace-nowrap"
-                    >
-                      Temp3
-                    </span>
-                    <span 
-                      v-if="mod.requiresI61Level > 0" 
-                      class="px-1.5 py-0.5 text-xs bg-purple-900/50 text-purple-300 border border-purple-700 rounded whitespace-nowrap"
-                    >
-                      i61-{{ mod.requiresI61Level }}
-                    </span>
-                    <span 
-                      v-if="mod.requiresI75Level > 0" 
-                      class="px-1.5 py-0.5 text-xs bg-amber-900/50 text-amber-300 border border-amber-700 rounded whitespace-nowrap"
-                    >
-                      i75-{{ mod.requiresI75Level }}
-                    </span>
-                    <span 
-                      v-if="mod.requiresUltimaCap > 0" 
-                      class="px-1.5 py-0.5 text-xs bg-blue-900/50 text-blue-300 border border-blue-700 rounded whitespace-nowrap"
-                    >
-                      +{{ mod.requiresUltimaCap }} Ultima Cap
-                    </span>
-                  </div>
+              </div>
+              
+              <!-- Requirements - Condensed -->
+              <div v-if="mod.requiresTemp3 || mod.requiresI61Level > 0 || mod.requiresI75Level > 0 || mod.requiresUltimaCap > 0">
+                <div class="flex flex-wrap gap-1">
+                  <span 
+                    v-if="mod.requiresTemp3" 
+                    class="px-1.5 py-0.5 text-xs bg-red-900/50 text-red-300 border border-red-700 rounded"
+                  >
+                    Temp3
+                  </span>
+                  <span 
+                    v-if="mod.requiresI61Level > 0" 
+                    class="px-1.5 py-0.5 text-xs bg-purple-900/50 text-purple-300 border border-purple-700 rounded"
+                  >
+                    i61-{{ mod.requiresI61Level }}
+                  </span>
+                  <span 
+                    v-if="mod.requiresI75Level > 0" 
+                    class="px-1.5 py-0.5 text-xs bg-amber-900/50 text-amber-300 border border-amber-700 rounded"
+                  >
+                    i75-{{ mod.requiresI75Level }}
+                  </span>
+                  <span 
+                    v-if="mod.requiresUltimaCap > 0" 
+                    class="px-1.5 py-0.5 text-xs bg-blue-900/50 text-blue-300 border border-blue-700 rounded"
+                  >
+                    +{{ mod.requiresUltimaCap }} Ultima Cap
+                  </span>
                 </div>
               </div>
             </div>
@@ -731,21 +728,6 @@ const autoAnimateOptions = {
   easing: 'cubic-bezier(0.8, 0, 0.2, 1)'  // Material Design easing
 };
 
-// Generic smooth transition wrapper
-function withSmoothTransition(updateFn) {
-  if (document.startViewTransition) {
-    document.documentElement.classList.add('in-page-transition');
-    const transition = document.startViewTransition(() => {
-      updateFn();
-    });
-    transition.finished.finally(() => {
-      document.documentElement.classList.remove('in-page-transition');
-    });
-  } else {
-    updateFn();
-  }
-}
-
 // Computed - alle Loop Mods mit Tier-Informationen
 const allLoopMods = computed(() => {
   return loopModsData.value.map(mod => {
@@ -763,24 +745,28 @@ const allLoopMods = computed(() => {
 //////////////
 
 function handleMpValueUpdate(newVal) {
+  // Bei Pfeilklicks sofort aktualisieren
   mpValue.value = newVal;
-  mpValueRaw.value = newVal;
+  mpValueRaw.value = newVal; // Raw-Wert synchronisieren
+  saveFilters();
 }
 
 function handleMpRangeUpdate(newVal) {
+  // Bei Pfeilklicks sofort aktualisieren
   mpRange.value = newVal;
-  mpRangeRaw.value = newVal;
+  mpRangeRaw.value = newVal; // Raw-Wert synchronisieren
+  saveFilters();
 }
 
 function finalizeMpValue() {
+  // Konvertiere den Rohwert zu einer Zahl und validiere
   const numValue = Number(mpValueRaw.value);
   
+  // Validiere nur wenn der Wert eine gültige Zahl ist
   if (!isNaN(numValue)) {
-    withSmoothTransition(() => {
-      mpValue.value = Math.max(0, Math.min(99999, numValue));
-      mpValueRaw.value = mpValue.value;
-      saveFilters();
-    });
+    mpValue.value = Math.max(0, Math.min(99999, numValue));
+    mpValueRaw.value = mpValue.value;
+    saveFilters();
   }
 }
 
@@ -790,11 +776,9 @@ function finalizeMpRange() {
   
   // Validiere nur wenn der Wert eine gültige Zahl ist
   if (!isNaN(numValue)) {
-    withSmoothTransition(() => {
-      mpRange.value = Math.max(50, Math.min(10000, numValue));
-      mpRangeRaw.value = mpRange.value;
-      saveFilters();
-    });
+    mpRange.value = Math.max(50, Math.min(10000, numValue));
+    mpRangeRaw.value = mpRange.value;
+    saveFilters();
   }
 }
 
@@ -802,17 +786,16 @@ function finalizeMpRange() {
 function handleI75LevelUpdate(newVal) {
   i75Level.value = newVal;
   i75LevelRaw.value = newVal;
+  saveFilters();
 }
 
 function finalizeI75Level() {
   const numValue = Number(i75LevelRaw.value);
   
   if (!isNaN(numValue)) {
-    withSmoothTransition(() => {
-      i75Level.value = Math.max(0, Math.min(10, numValue));
-      i75LevelRaw.value = i75Level.value;
-      saveFilters();
-    });
+    i75Level.value = Math.max(0, Math.min(10, numValue));
+    i75LevelRaw.value = i75Level.value;
+    saveFilters();
   }
 }
 
@@ -820,17 +803,16 @@ function finalizeI75Level() {
 function handleI61LevelUpdate(newVal) {
   i61Level.value = newVal;
   i61LevelRaw.value = newVal;
+  saveFilters();
 }
 
 function finalizeI61Level() {
   const numValue = Number(i61LevelRaw.value);
   
   if (!isNaN(numValue)) {
-    withSmoothTransition(() => {
-      i61Level.value = Math.max(0, Math.min(5, numValue));
-      i61LevelRaw.value = i61Level.value;
-      saveFilters();
-    });
+    i61Level.value = Math.max(0, Math.min(5, numValue));
+    i61LevelRaw.value = i61Level.value;
+    saveFilters();
   }
 }
 
@@ -932,6 +914,7 @@ function handleNewTemporalGemLevelUpdate(newVal) {
   if (newVal >= temporalGemLevel.value) {
     newTemporalGemLevel.value = newVal;
     newTemporalGemLevelRaw.value = newVal;
+    checkNewlyAvailableMods();
   }
 }
 
@@ -939,11 +922,9 @@ function finalizeNewTemporalGemLevel() {
   const numValue = Number(newTemporalGemLevelRaw.value);
   
   if (!isNaN(numValue)) {
-    withSmoothTransition(() => {
-      newTemporalGemLevel.value = Math.max(temporalGemLevel.value, Math.min(TEMPORAL_GEM.maxLevel, numValue));
-      newTemporalGemLevelRaw.value = newTemporalGemLevel.value;
-      checkNewlyAvailableMods();
-    });
+    newTemporalGemLevel.value = Math.max(temporalGemLevel.value, Math.min(TEMPORAL_GEM.maxLevel, numValue));
+    newTemporalGemLevelRaw.value = newTemporalGemLevel.value;
+    checkNewlyAvailableMods();
   }
 }
 
@@ -953,31 +934,28 @@ function toggleNewUltimaCapUpgrade(id) {
     return; // Bereits ausgewählt, kann nicht entfernt werden
   }
   
-  withSmoothTransition(() => {
-    if (newSelectedUltimaCapUpgrades.value.includes(id)) {
-      newSelectedUltimaCapUpgrades.value = newSelectedUltimaCapUpgrades.value.filter(i => i !== id);
-    } else {
-      newSelectedUltimaCapUpgrades.value.push(id);
-    }
-    checkNewlyAvailableMods();
-  });
+  if (newSelectedUltimaCapUpgrades.value.includes(id)) {
+    newSelectedUltimaCapUpgrades.value = newSelectedUltimaCapUpgrades.value.filter(i => i !== id);
+  } else {
+    newSelectedUltimaCapUpgrades.value.push(id);
+  }
+  checkNewlyAvailableMods();
 }
 
 // NEU: MP Value für neuen Bereich
 function handleNewMpValueUpdate(newVal) {
   newMpValue.value = newVal;
   newMpValueRaw.value = newVal;
+  checkNewlyAvailableMods();
 }
 
 function finalizeNewMpValue() {
   const numValue = Number(newMpValueRaw.value);
   
   if (!isNaN(numValue)) {
-    withSmoothTransition(() => {
-      newMpValue.value = Math.max(0, Math.min(99999, numValue));
-      newMpValueRaw.value = newMpValue.value;
-      checkNewlyAvailableMods();
-    });
+    newMpValue.value = Math.max(0, Math.min(99999, numValue));
+    newMpValueRaw.value = newMpValue.value;
+    checkNewlyAvailableMods();
   }
 }
 
@@ -986,6 +964,7 @@ function handleNewI61LevelUpdate(newVal) {
   if (newVal >= i61Level.value) {
     newI61Level.value = newVal;
     newI61LevelRaw.value = newVal;
+    checkNewlyAvailableMods();
   }
 }
 
@@ -993,11 +972,9 @@ function finalizeNewI61Level() {
   const numValue = Number(newI61LevelRaw.value);
   
   if (!isNaN(numValue)) {
-    withSmoothTransition(() => {
-      newI61Level.value = Math.max(i61Level.value, Math.min(5, numValue));
-      newI61LevelRaw.value = newI61Level.value;
-      checkNewlyAvailableMods();
-    });
+    newI61Level.value = Math.max(i61Level.value, Math.min(5, numValue));
+    newI61LevelRaw.value = newI61Level.value;
+    checkNewlyAvailableMods();
   }
 }
 
@@ -1006,6 +983,7 @@ function handleNewI75LevelUpdate(newVal) {
   if (newVal >= i75Level.value) {
     newI75Level.value = newVal;
     newI75LevelRaw.value = newVal;
+    checkNewlyAvailableMods();
   }
 }
 
@@ -1013,11 +991,9 @@ function finalizeNewI75Level() {
   const numValue = Number(newI75LevelRaw.value);
   
   if (!isNaN(numValue)) {
-    withSmoothTransition(() => {
-      newI75Level.value = Math.max(i75Level.value, Math.min(10, numValue));
-      newI75LevelRaw.value = newI75Level.value;
-      checkNewlyAvailableMods();
-    });
+    newI75Level.value = Math.max(i75Level.value, Math.min(10, numValue));
+    newI75LevelRaw.value = newI75Level.value;
+    checkNewlyAvailableMods();
   }
 }
 
@@ -1139,8 +1115,8 @@ const sortedLoopMods = computed(() => {
     },
     cost: (a, b) => a.cost - b.cost,
     tier: (a, b) => {
-      // S > A > B > C > D > E > F
-      const tierOrder = { S: 1, A: 2, B: 3, C: 4, D: 5, E: 6, F: 7 };
+      // S > A > B > C > D > E
+      const tierOrder = { S: 1, A: 2, B: 3, C: 4, D: 5, E: 6 };
       const tierResult = tierOrder[a.tier] - tierOrder[b.tier];
       // If tiers are the same, sort by name
       return tierResult !== 0 ? tierResult : a.name.localeCompare(b.name);
@@ -1167,30 +1143,27 @@ const sortedLoopMods = computed(() => {
 function handleAllTimeHighestMPUpdate(newVal) {
   allTimeHighestMP.value = newVal;
   allTimeHighestMPRaw.value = newVal;
+  saveFilters();
 }
 
 function finalizeAllTimeHighestMP() {
   const numValue = Number(allTimeHighestMPRaw.value);
   
   if (!isNaN(numValue)) {
-    withSmoothTransition(() => {
-      allTimeHighestMP.value = Math.max(0, Math.min(99999, numValue));
-      allTimeHighestMPRaw.value = allTimeHighestMP.value;
-      saveFilters();
-    });
+    allTimeHighestMP.value = Math.max(0, Math.min(99999, numValue));
+    allTimeHighestMPRaw.value = allTimeHighestMP.value;
+    saveFilters();
   }
 }
 
 // Methods
 function toggleUltimaCapUpgrade(id) {
-  withSmoothTransition(() => {
-    if (selectedUltimaCapUpgrades.value.includes(id)) {
-      selectedUltimaCapUpgrades.value = selectedUltimaCapUpgrades.value.filter(i => i !== id);
-    } else {
-      selectedUltimaCapUpgrades.value.push(id);
-    }
-    saveFilters();
-  });
+  if (selectedUltimaCapUpgrades.value.includes(id)) {
+    selectedUltimaCapUpgrades.value = selectedUltimaCapUpgrades.value.filter(i => i !== id);
+  } else {
+    selectedUltimaCapUpgrades.value.push(id);
+  }
+  saveFilters();
 }
 
 function adjustT2r1Level(delta) {
@@ -1199,10 +1172,8 @@ function adjustT2r1Level(delta) {
   
   const newLevel = t2r1Level.value + delta;
   if (newLevel >= 0 && newLevel <= t2r1Upgrade.maxLevel) {
-    withSmoothTransition(() => {
-      t2r1Level.value = newLevel;
-      saveFilters();
-    });
+    t2r1Level.value = newLevel;
+    saveFilters();
   }
 }
 
@@ -1212,39 +1183,35 @@ function adjustNewT2r1Level(delta) {
   
   const newLevel = newT2r1Level.value + delta;
   if (newLevel >= t2r1Level.value && newLevel <= t2r1Upgrade.maxLevel) {
-    withSmoothTransition(() => {
-      newT2r1Level.value = newLevel;
-      checkNewlyAvailableMods();
-    });
+    newT2r1Level.value = newLevel;
+    checkNewlyAvailableMods();
   }
 }
 
 function updateSort(field) {
-  withSmoothTransition(() => {
-    if (sortBy.value === field) {
-      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
-    } else {
-      sortBy.value = field;
-      sortDirection.value = 'asc';
-    }
-    saveFilters();
-  });
+  if (sortBy.value === field) {
+    // Toggle direction if same field
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    // New field, default to ascending
+    sortBy.value = field;
+    sortDirection.value = 'asc';
+  }
+  saveFilters();
 }
 
 function resetFilters() {
-  withSmoothTransition(() => {
-    mpValue.value = 0;
-    mpRange.value = 50;
-    allTimeHighestMP.value = 0;
-    mpRangeEnabled.value = true;
-    i75Level.value = 0;
-    i61Level.value = 0;
-    selectedUltimaCapUpgrades.value = [];
-    t2r1Level.value = 0;
-    sortBy.value = 'cost';
-    sortDirection.value = 'asc';
-    saveFilters();
-  });
+  mpValue.value = 0;
+  mpRange.value = 50;
+  allTimeHighestMP.value = 0;
+  mpRangeEnabled.value = true;
+  i75Level.value = 0; // Angepasst
+  i61Level.value = 0; // Angepasst
+  selectedUltimaCapUpgrades.value = [];
+  t2r1Level.value = 0;
+  sortBy.value = 'cost';
+  sortDirection.value = 'asc';
+  saveFilters();
 }
 
 function getTierClass(tier) {
@@ -1254,8 +1221,7 @@ function getTierClass(tier) {
     B: 'bg-yellow-900/50 text-yellow-300 border border-yellow-700',
     C: 'bg-green-900/50 text-green-300 border border-green-700',
     D: 'bg-blue-900/50 text-blue-300 border border-blue-700',
-    E: 'bg-gray-900/50 text-gray-300 border border-gray-700',
-    F: 'bg-gray-500/50 text-gray-300 border border-gray-400'
+    E: 'bg-gray-900/50 text-gray-300 border border-gray-700'
   };
   
   return classes[tier] || 'bg-gray-900/50 text-gray-300 border border-gray-700';
@@ -1280,17 +1246,8 @@ function loadFilters() {
       mpRange.value = Number(savedFilters.mpRange);
     }
     if (savedFilters.mpRangeEnabled !== undefined) mpRangeEnabled.value = savedFilters.mpRangeEnabled;
-    
-    if (savedFilters.i75Level !== undefined && savedFilters.i75Level !== null) {
-      i75Level.value = Number(savedFilters.i75Level);
-      i75LevelRaw.value = i75Level.value;
-    }
-    
-    if (savedFilters.i61Level !== undefined && savedFilters.i61Level !== null) {
-      i61Level.value = Number(savedFilters.i61Level);
-      i61LevelRaw.value = i61Level.value;
-    }
-    
+    if (savedFilters.i75Level !== undefined) i75Level.value = Number(savedFilters.i75Level); // Angepasst
+    if (savedFilters.i61Level !== undefined) i61Level.value = Number(savedFilters.i61Level); // Angepasst
     if (savedFilters.selectedUltimaCapUpgrades !== undefined) {
       selectedUltimaCapUpgrades.value = savedFilters.selectedUltimaCapUpgrades;
     }
@@ -1310,8 +1267,8 @@ function saveFilters() {
       mpRange: mpRange.value,
       allTimeHighestMP: allTimeHighestMP.value,
       mpRangeEnabled: mpRangeEnabled.value,
-      i75Level: i75Level.value, 
-      i61Level: i61Level.value, 
+      i75Level: i75Level.value, // Angepasst
+      i61Level: i61Level.value, // Angepasst
       selectedUltimaCapUpgrades: selectedUltimaCapUpgrades.value,
       t2r1Level: t2r1Level.value,
       sortBy: sortBy.value,
@@ -1329,11 +1286,8 @@ async function loadLoopModData() {
     error.value = null;
     
     const data = await fetchLoopModData();
-    
-    withSmoothTransition(() => {
-      loopModsData.value = data.loopMods;
-      tierData.value = data.tiers;
-    });
+    loopModsData.value = data.loopMods;
+    tierData.value = data.tiers;
     
     console.log(`Loaded ${data.loopMods.length} loop mods and ${Object.keys(data.tiers).length} tier definitions`);
     
@@ -1360,15 +1314,6 @@ onMounted(async () => {
 <style scoped>
 .bg-gray-750 {
   background-color: rgba(42, 46, 53, 0.8);
-}
-
-/* View Transition Names für isolierte Animationen */
-.loop-mod-table {
-  view-transition-name: loop-mod-table;
-}
-
-.loop-mod-cards {
-  view-transition-name: loop-mod-cards;
 }
 
 /* Responsive Styles */

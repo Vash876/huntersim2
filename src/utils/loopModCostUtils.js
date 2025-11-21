@@ -26,32 +26,19 @@ const LOOP_MOD_CONFIG = {
 };
 
 /**
- * Lookup-Tabelle für exakte Kosten (optional, für präzisere Werte)
- * Format: [mod_name][level] = "kostenstring"
+ * Lookup-Tabelle für exakte Kosten (nur für Stelzi)
+ * Format: [mod_name][level] = kostenstring
  */
 const LOOP_MOD_COST_LOOKUP = {
-  [LOOP_MODS.RULE_OF_CONSISTENCY]: {
-    1: "1e5400",
-    2: "1e5688",
-    3: "1e5976",
-    4: "1e6264",
-    5: "1e6552",
-    10: "1e8280",
-    20: "1e11160",
-    50: "1e19800",
-    100: "1e34200"
-    // Weitere Werte können bei Bedarf hinzugefügt werden
-  },
   [LOOP_MODS.STELZI]: {
     1: 3400,
     2: 4000,
     3: 4600,
     4: 5200,
     5: 5800,
-    10: 8800,
-    20: 14800,
-    50: 32800,
-    100: 62800
+    6: 6400,
+    7: 7000,
+    8: 7600,
     // Weitere Werte können bei Bedarf hinzugefügt werden
   }
 };
@@ -71,7 +58,7 @@ function getLoopModCostDecimal(modName, level) {
     return new Decimal(0);
   }
 
-  // Wenn exakter Wert in der Lookup-Tabelle vorhanden ist
+  // Wenn exakter Wert in der Lookup-Tabelle vorhanden ist (nur für Stelzi)
   if (LOOP_MOD_COST_LOOKUP[modName] && LOOP_MOD_COST_LOOKUP[modName][level]) {
     return new Decimal(LOOP_MOD_COST_LOOKUP[modName][level]);
   }
@@ -89,6 +76,21 @@ function getLoopModCostDecimal(modName, level) {
     const exponent = config.baseExp + (level - 1) * config.incExp;
     return new Decimal("1e" + exponent);
   }
+}
+
+/**
+ * Berechnet nur den Exponenten für Rule of Consistency
+ * @param {number} level - Level des Loop Mods
+ * @returns {number} - Der Exponent
+ */
+export function getRuleOfConsistencyExponent(level) {
+  if (level <= 0) return 0;
+  const config = LOOP_MOD_CONFIG[LOOP_MODS.RULE_OF_CONSISTENCY];
+  // Level 1: baseExp (5400)
+  // Level 2: baseExp + incExp (5400 + 288 = 5688)
+  // Level 3: baseExp + 2*incExp (5400 + 576 = 5976)
+  // Formel: baseExp + (level - 1) * incExp
+  return config.baseExp + (level - 1) * config.incExp;
 }
 
 /**
