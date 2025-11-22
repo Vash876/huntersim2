@@ -432,13 +432,13 @@ function resetChartZoom() {
 
 // Filter out notes and other non-relevant resources from chartable resources
 const chartableResources = computed(() => {
-  const excludeFromCharts = ['notes', 'hours-in-tr', 'daily-farm-frags', 'current-camp', 'camp-timer'];
+  const excludeFromCharts = ['notes', 'hours-in-tr', 'daily-farm-frags', 'current-camp', 'camp-timer', 'attgn3-buff'];
   return props.selectedResources.filter(resource => !excludeFromCharts.includes(resource.id));
 });
 
 // Filter out notes and other non-relevant resources from overview
 const overviewResources = computed(() => {
-  const excludeFromOverview = ['notes', 'hours-in-tr', 'daily-farm-frags', 'current-camp', 'camp-timer'];
+  const excludeFromOverview = ['notes', 'hours-in-tr', 'daily-farm-frags', 'current-camp', 'camp-timer', 'attgn3-buff'];
   return props.selectedResources.filter(resource => !excludeFromOverview.includes(resource.id));
 });
 
@@ -1085,7 +1085,7 @@ const gainsChartData = computed(() => {
 // Methods
 function toggleResourceInChart(resourceId) {
   // Block forbidden resources from being added to charts
-  const forbidden = ['hours-in-tr', 'notes', 'daily-farm-frags', 'current-camp', 'camp-timer'];
+  const forbidden = ['hours-in-tr', 'notes', 'daily-farm-frags', 'current-camp', 'camp-timer', 'attgn3-buff'];
   if (forbidden.includes(resourceId)) return;
   
   const index = chartSelectedResources.value.indexOf(resourceId);
@@ -1137,7 +1137,7 @@ function setDefaultChartResources() {
       .map(r => r.id);
     
     // Explicitly block forbidden resources from charts
-    const forbidden = ['hours-in-tr', 'notes', 'daily-farm-frags', 'current-camp', 'camp-timer'];
+    const forbidden = ['hours-in-tr', 'notes', 'daily-farm-frags', 'current-camp', 'camp-timer', 'attgn3-buff'];
     chartSelectedResources.value = [...new Set(
       [...availableDefaults, ...otherResources].filter(id => !forbidden.includes(id))
     )];

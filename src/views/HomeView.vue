@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.9.2',
+    date: '2025-11-22',
+    changes: [
+      {
+        text: 'Loop Mod Overview',
+        subItems: [
+          'Added T2R1 support with level controls',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.9.1',
     date: '2025-11-21',
     changes: [

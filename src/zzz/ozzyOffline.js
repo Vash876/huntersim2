@@ -1,450 +1,908 @@
-export function EVALOZZY(lvl,maxStage,hp,atk,regen,dr,evade,effect,multistrike,multistrikePower,aspd,revival,trickster,ua,thousandNeedles,omen,ll,crippling,ultimaTalent,echoBullets,lotl,exo,scorp,dod,cat,timeless,wings,exterm,medusa,scarab,vectid,snek,cod,dwd,sisters,gadget,iap,special,ultima,reviveCd,scavengers,m0,r4,r7,r17,i31,i32,i33,i36,i37,i40,i81,i86,i92,innoGN2,innoGN3,attrGN3,attr,catchup99gu,lootgu,card,research81,iters,useSeeded,cm46,cm47,cm48,cm51) {
-  var multi = (enemyNum) => Math.max(1, 1 +
-Math.max(0,(enemyNum - 149) * .006)+
-Math.max(0,(enemyNum - 199) * .006)+
-Math.max(0,(enemyNum - 249) * .006)+
-Math.max(0,(enemyNum - 299) * .006)+
-Math.max(0,(enemyNum - 309) * .003)+
-Math.max(0,(enemyNum - 319) * .003)+
-Math.max(0,(enemyNum - 329) * .004)+
-Math.max(0,(enemyNum - 339) * .004)+
-Math.max(0,(enemyNum - 349) * .005)+
-Math.max(0,(enemyNum - 359) * .005)+
-Math.max(0,(enemyNum - 369) * .006)+
-Math.max(0,(enemyNum - 379) * .006)+
-Math.max(0,(enemyNum - 389) * .007))*Math.pow(1.01,Math.max(0,enemyNum-350))
+/** @OnlyCurrentDoc */
 
-          var simEnemy = (enemyNum) => ({
-  maxHp: (11+6 * enemyNum) * multi(enemyNum)*Math.pow(2.9,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 48 : 1)*(enemyNum === 300 ? .97 : 1),
-  hp: 1,
-  atk: (1.35+ .75 * enemyNum) * multi(enemyNum)*Math.pow(2.7,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 3 : 1)*(enemyNum === 300 ? .97 : 1),
-  critRate: Math.min(.25,(.0994 + .0006 * enemyNum + (enemyNum>0 && enemyNum%100 === 0 ? .1 : 0))),
-  critDmg: Math.min(2.5,1.03 + .008 * enemyNum),
-  dr: (1-(enemyNum>=200?(Math.max(0,Math.floor((enemyNum-1)/100)-2))*.02+.04:0)) - (enemyNum>0 && enemyNum%100 === 0 ? .05 : 0),
-  evade: enemyNum>=100?.01+.01*(Math.max(0,(Math.floor((enemyNum-1)/100))-1)):0,
-  effect: enemyNum>=300?.04+.01*(Math.max(0,(Math.floor((enemyNum-1)/100))-3)) + (enemyNum>0 && enemyNum%100 === 0 ? .04 : 0):0,
-  regen: Math.max(0,-.08 +.1* (enemyNum) * multi(enemyNum)*Math.pow(1.25,Math.floor(Math.max(0,enemyNum-1)/100)))*(enemyNum>0 && enemyNum%100 === 0 ? 6 : 1)*(enemyNum === 300 ? .97 : 1),
-  atkSpd: (3.2 - .004 * enemyNum)*(enemyNum>0 && enemyNum%100 === 0 ? 2.45 : 1),
-  maxDps: 999*(1.35+ .75 * enemyNum) * multi(enemyNum)*Math.pow(2.7,Math.floor(Math.max(0,enemyNum-1)/100))*(enemyNum>0 && enemyNum%100 === 0 ? 3 : 1)*Math.min(2.5,1.03 + .008 * enemyNum)/(3.2 - .004 * enemyNum)
-});
-var enemies = [];
-for(var i = 0;i<=1000;i++){
-    enemies.push(simEnemy(i))
-}
+/**
+ * Optimized Orb Purchase Auto-Optimizer
+ * 
+ * Key optimizations:
+ * - Batch API calls and sheet updates  
+ * - Smart flushing to prevent stale cost data
+ * - Strict budget tracking to prevent overspend
+ * - Comprehensive profiling for performance monitoring
+ */
 
-/*var ck;
-if (useSeeded) {
-  ck = (() => {
-    const s = new Uint32Array([123456789, 362436069, 521288629, 88675123]);
-    
-    return (chance) => {
-      if (!chance) return false;
-      
-      const result = (s[0] + s[3]) >>> 0;
-      
-      const t = s[1] << 9;
-      s[2] ^= s[0];
-      s[3] ^= s[1];
-      s[1] ^= s[2];
-      s[0] ^= s[3];
-      s[2] ^= t;
-      s[3] = ((s[3] << 11) | (s[3] >>> 21)) >>> 0;
-      
-      return chance > (result * 2.3283064365386963e-10);
-    };
-  })();
-} else {
-  ck = (chance) => {
-    return chance && chance > Math.random();
-  };
-}*/
-var ck = (chance) => {
-  return chance && chance > Math.random()
-}
-
-var getBaseStats = ()=>{
-    return {
-        maxHp: (16+(2+Math.floor(hp/5)*.03)*hp)*gadgetMulti*(1+.03*r4)*(Boolean(card)?1.03:1),
-        hp: 16+(2+Math.floor(hp/5)*.03)*hp*gadgetMulti,
-        atk: (2+(.3+Math.floor(atk/10)*.01)*atk)*gadgetMulti*(1+.03*r17)*(Boolean(innoGN3)?1.03:1)*(Boolean(card)?1.03:1),
-        regen: (.1+(.05+Math.floor(regen/30)*.01)*regen)*gadgetMulti*(Boolean(innoGN2)?1.25:1)*(Boolean(card)?1.03:1),
-        dr: .0035*dr+.0111*Number(i37)+.002*Number(i86),
-        evade: .0062*evade+.05,
-        effect: .0035*effect+.04+.006*Number(i31)+.002*Number(i92),
-        multistrike: .05+.0038*multistrike+(Boolean(innoGN3)?.03:0) + .005*Number(i40),
-        multistrikePower: .01*multistrikePower+.25,
-        reload: 4-.02*aspd - .03*Number(i36),
-        baseStats: `${hp}/${atk}/${regen} ${dr}/${evade}/${effect} ${multistrike}/${multistrikePower}/${aspd}`
-    }
-}
-var gadgetMulti = Math.pow(1.001,Number(gadget)) * Math.pow(1.02,Math.floor(Number(gadget)/10))
-var gadgetLootMulti = Math.pow(1.005,Number(gadget)) * Math.pow(1.02,Math.floor(Number(gadget)/10))
-var getBaseStatsRecord = ()=>{
-    return {
-        basehp: Number(hp),
-        baseatk: Number(atk),
-        baseregen: Number(regen),
-        basedr: Number(dr),
-        baseevade: Number(evade),
-        baseeffect: Number(effect),
-        basecharge: Number(multistrike),
-        basechargeGain: Number(multistrikePower),
-        basereload: Number(aspd),
-    }
-}
-var getTalents = ()=>{
-    return {
-        revival:Number(revival), trickster:Number(trickster), ua:Number(ua), thousandNeedles:Number(thousandNeedles), omen:Number(omen), ll:Number(ll), crippling:Number(crippling), echoBullets:Number(echoBullets), ultimaTalent:Number(ultimaTalent)
-    }
-}
-var getPath = ()=>{
-    return {
-        lotl:Number(lotl), exo:Number(exo), scorp:Number(scorp), dod:Number(dod), cat:Number(cat), timeless:Number(timeless), wings:Number(wings), exterm:Number(exterm), medusa:Number(medusa), scarab:Number(scarab), vectid:Number(vectid),snek:Number(snek),cod:Number(cod),dwd:Number(dwd),sisters:Number(sisters)
-    }
-}
-
-
-
-
-var baseOzzy = {
-  lvl: Math.floor(Number(lvl)),
-  maxStage: maxStage,
-  loot:0,
-  enem:0,
-  iters:0,
-  time:0,
-  minEnem:5000,
-  maxEnem:0,
-  mat1:0,
-  mat2:0,
-  mat3:0,
-  xp:0,
-  bossKill:0,
-  bossHp:0,
-  progress: {},
-  bossStats:[{},{},{},{},{},{},{},{},{},{}],
-  ...getBaseStats(),
-  ...getTalents(),
-  ...getPath(),
-  ...getBaseStatsRecord()
-}
-
-
-var prepOzzy = (ozzyBase)=>{
-  var ozzy = {...ozzyBase};
-  ozzy.maxHp *= (1+.02*ozzy.lotl)*(1+.01*ozzy.ultimaTalent);
-  ozzy.regen *= (1+.02*ozzy.lotl)*(1+.01*ozzy.ultimaTalent);
-  ozzy.atk *= (1+.012*ozzy.exo)*(1+.02*ozzy.cat)*(1+.01*ozzy.ultimaTalent);
-  ozzy.reload -= .06*ozzy.thousandNeedles;
-  ozzy.dr += .026*ozzy.wings;
-  ozzy.effect += .028*ozzy.exterm;
-  ozzy.evade += .005*ozzy.wings;
-  ozzy.lifesteal = .033*ozzy.scorp;
-
-
-  ozzy.reload*=(1-.004*ozzy.cat)
-
-
-  ozzy.hp = ozzy.maxHp;
-  return ozzy
-}
-var opts = [prepOzzy(baseOzzy)]
-
-
-var sim = (ozzy) => {
-    var enem = 0;
-    var time = 0;
-    var vectidStacks = 0;
-    var cripplingActive = false;
-    ozzy.evadeStacks = 0;
-    ozzy.hp = ozzy.maxHp;
-    ozzy.currentMaxHp = ozzy.maxHp;
-    ozzy.currentAtk = ozzy.atk*(Math.pow(Math.pow(1.08,Number(catchup99gu)),1+Number(attr)*.1-.1));
-    ozzy.currentRegen = ozzy.regen;
-    ozzy.currentDr = ozzy.dr;
-    ozzy.currentMultistrike = ozzy.multistrike;
-    ozzy.currentMultistrikePower = ozzy.multistrikePower;
-    ozzy.revives = ozzy.revival+ozzy.sisters;
-    ozzy.time += 40-Math.min(Number(reviveCd),30);
-    ozzy.maxStage = Math.max(ozzy.maxStage,Math.floor(ozzy.maxEnem/10))
-    ozzy.remainingBullets = 0;
-    var currentEnemy = enemies[0];
-    currentEnemy.hp = currentEnemy.maxHp;
-    var regen = () => {
-      var medDmg = 0;
-      if(enem%1000 === 0 && enem>=3000){
-        medDmg = currentEnemy.regen*.2*(time>hardenEnd?1:3)
-      }
-      ozzy.hp = Math.min(ozzy.currentMaxHp, ozzy.hp - medDmg + ozzy.currentRegen*(vectidStacks ? (1+.15*ozzy.vectid) : 1))
-      if(time>hardenEnd) currentEnemy.hp = Math.min(currentEnemy.maxHp, currentEnemy.hp + currentEnemy.regen*(1-.088*ozzy.snek)-.06*ozzy.medusa*ozzy.currentRegen*(vectidStacks ? (1+.15*ozzy.vectid) : 1))
-      nextRegen = time + 1;
-     
-      vectidStacks = Math.max(0, vectidStacks - 1)
-      if (currentEnemy.hp <= 0) { killEnemy() }
-    }
-    var harden = () => {
-      if(!hardenEnd){
-        hardenEnd = time+5;
-        nextEnemAtk+=5 - Math.max(0,currentEnemy.stunEnd-time);
-        nextHarden = Math.ceil(time*3)/3;
-      }
-      else{
-        currentEnemy.hp = Math.min(currentEnemy.maxHp, currentEnemy.hp + currentEnemy.regen*(1-.088*ozzy.snek)-.06*ozzy.medusa*ozzy.currentRegen*(vectidStacks ? (1+.15*ozzy.vectid) : 1))
-        nextHarden = time + 1/3;
-        if(nextHarden>hardenEnd){
-          nextHarden = time+25
-          hardenEnd = 0;
-          currentEnemy.enrage+=5;
-          nextEnemAtk = nextEnemAtk - (Math.max(.5,currentEnemy.atkSpd-(currentEnemy.enrage-5)*(currentEnemy.atkSpd/200))-Math.max(.5,currentEnemy.atkSpd-currentEnemy.enrage*(currentEnemy.atkSpd/200)))
-        }
-      }
-    }
-    var enemyAttack = () => {
-      var dmg = currentEnemy.atk;
-      
-      if(enem > 0 && enem % 1000 === 0){
-        currentEnemy.enrage++;
-        if(currentEnemy.enrage>200){
-          dmg*=3
-        } 
-        nextEnemAtk = time + Math.max(.5,currentEnemy.atkSpd-currentEnemy.enrage*(currentEnemy.atkSpd/200))
-      }
-      else{
-        nextEnemAtk = time + currentEnemy.atkSpd
-      }
-      
-       
-      if(ozzy.evadeStacks){
-        dmg=0;
-        ozzy.evadeStacks--;
-      }
-      else if (ck(ozzy.evade)) {
-        dmg = 0;
-      }
-      else if (currentEnemy.enrage>200 || ck(currentEnemy.critRate)) {
-        dmg *= currentEnemy.critDmg
-        if(ck(ozzy.dod*.15)){
-          ozzy.evadeStacks++;
-        }
-      }
-      if(ck(currentEnemy.effect)){
-        ozzy.currentDr = Math.max(0,ozzy.currentDr - .02)
-      }
-      ozzy.hp -= dmg * (1 - ozzy.currentDr) * (1-.01*ozzy.scarab);
-    }
-    var killEnemy = () => {
-      hardenEnd = 0;
-      if(enem>0 && enem % 1000 === 0)
-        enem+=10;
-      else{
-        enem++;
-      }
-      if(enem === 1000){
-        ozzy.currentAtk/=(Math.pow(Math.pow(1.08,Number(catchup99gu)),1+Number(attr)*.1-.1))
-      }
-      if(enem%1000 === 0 && enem>=2000){
-        nextHarden = time+25
-      }
-      else{
-        nextHarden = 99999999
-      }
-      if(enem%10===0)
-          currentEnemy = enemies[Math.floor(enem/10)]
-          
-      currentEnemy.hp = currentEnemy.maxHp;
-        
-      currentEnemy.enrage=0;
-      currentEnemy.stunEnd=0;
-      if (ozzy.hp < ozzy.currentMaxHp && ozzy.ua && ck(ozzy.effect)) {
-        ozzy.hp = Math.min(ozzy.currentMaxHp, ozzy.hp+ozzy.currentMaxHp*ozzy.ua*.02)
-        vectidStacks = 5;
-      }
-      if((enem > 0 && enem % 1000 === 0) || (currentEnemy.maxDps * (1 - ozzy.currentDr) > ozzy.currentRegen)){
-          nextEnemAtk = time + currentEnemy.atkSpd
-      }
-      else{
-        nextEnemAtk = 9999999;
-      }
-      if(currentEnemy.hp <= 0){
-        killEnemy();
-      }
-    }
-    var atk = (skipAtkReset, dmgMod, isMultistrike) => {
-      var evaded = currentEnemy.evade>0 && ck(currentEnemy.evade);
-      currentEnemy.hp -= evaded ? 0 : (ozzy.currentAtk*(dmgMod||1)+ozzy.omen*.008*currentEnemy.hp/(enem > 0 && enem%1000===0?10:1))*(cripplingActive?1+.03*ozzy.crippling:1)*(time<hardenEnd?.05:currentEnemy.dr);
-      if (currentEnemy.hp <= 0) { killEnemy() }
-     
-      var ms = !isMultistrike && ck(ozzy.currentMultistrike);
-      if(ms){
-        nextMultistrike = time+.3
-      }
-      
-      ozzy.hp = evaded?ozzy.hp:Math.min(ozzy.currentMaxHp, ozzy.hp + ozzy.lifesteal*ozzy.currentAtk*dmgMod)
-
-
-      if(!evaded && ozzy.crippling){
-        cripplingActive = ck(ozzy.effect)
-      }
-     
-      if(!skipAtkReset){
-        if(!evaded){
-          if(ozzy.echoBullets && ck(ozzy.effect/2)){
-            nextEchoBullet = time+.3001
-          }
-          if(ozzy.trickster && ck(ozzy.effect/2)){
-            ozzy.evadeStacks++;
-          }
-          if(time>hardenEnd && ozzy.thousandNeedles && ck(ozzy.effect)){
-            nextEnemAtk+=ozzy.thousandNeedles*.05/(enem%1000===0?2:1)
-            currentEnemy.stunEnd = time + ozzy.thousandNeedles*.05/(enem%1000===0?2:1);
-          }
-        }
-        var divisor = 1;
-        if(enem<1000){
-          divisor = (Math.pow(Math.pow(1.08,Number(catchup99gu)),1+Number(attr)*.1-.1))
-        }
-        nextAtk =  time + ozzy.reload/divisor;
-      }
-    }
-    var nextAtk = ozzy.reload;
-    var nextEchoBullet = 99999999;
-    var nextEnemAtk = currentEnemy.atkSpd;
-    var nextRegen = 1;
-    var nextMultistrike = 99999999
-    var nextHarden = 99999999
-    var hardenEnd = 0;
-    while (ozzy.hp > 0) {
-      time = Math.min(nextAtk,nextEchoBullet,nextMultistrike,nextEnemAtk,nextRegen,nextHarden) 
-      if(time == nextRegen)
-          regen()
-      else if(time == nextMultistrike){
-          atk(true,ozzy.currentMultistrikePower,true)
-          nextMultistrike = 99999999;
-      }
-      else if(time == nextEchoBullet){
-          atk(true,.05*ozzy.echoBullets)
-          nextEchoBullet = 99999999;
-      }
-      else if(time == nextEnemAtk)
-          enemyAttack()
-      else if(time == nextHarden)
-          harden()
-      else if(time == nextAtk)
-          atk(false,1)
-
-      
-      if (ozzy.revives && ozzy.hp <= 0) {
-        ozzy.hp = .8 * ozzy.currentMaxHp
-        ozzy.revives--
-        ozzy.currentAtk=ozzy.atk*(1+.02*ozzy.dwd*(ozzy.revival+ozzy.sisters-ozzy.revives))
-        ozzy.currentDr=ozzy.dr + .016*ozzy.dwd*(ozzy.revival+ozzy.sisters-ozzy.revives)
-        ozzy.currentMultistrike += .023*ozzy.cod;
-        ozzy.currentMultistrikePower += .02*ozzy.cod;
-      }
+/**
+ * Simple profiler to track execution times and bottlenecks
+ */
+class Profiler {
+    constructor() {
+      this.timers = new Map();
+      this.results = [];
+      this.apiCallCount = 0;
+      this.flushCount = 0;
     }
     
-    for(var i = 0; i<10; i++){
-      if(enem<(i+1)*1000){
-        ozzy.bossStats[i].hp = (ozzy.bossStats[i].hp || 0) + enemies[(i+1)*100].maxHp;
-      }
-      else if(enem === (i+1)*1000){
-        ozzy.bossStats[i].hp = (ozzy.bossStats[i].hp || 0) + enemies[(i+1)*100].hp;
-      }
-      else{
-        ozzy.bossStats[i].kills = (ozzy.bossStats[i].kills || 0) + 1;
-      }
+    start(label) {
+      this.timers.set(label, new Date().getTime());
     }
-    var mat1 = [1,1.2,1.4,1.6,1.8,2.5,3.2]
-    var mat2 = [1.1,1.3,1.4,2.8]    
-    var mat3 = [.9,1,1.95] 
-    var xp = [1.2,1.6]
-
-
-    var normalized = (3*mat1.reduce((a, b) => a + b) / mat1.length+3*mat2.reduce((a, b) => a + b) / mat2.length+3*mat3.reduce((a, b) => a + b) / mat3.length+xp.reduce((a, b) => a + b) / xp.length)/10
-
-    var stageGrowth = 1.059;
-    var enemiesInSection = 1010;
-    var excludedXpMultis = Math.pow(1.75,Number(i33))*Math.pow(2,Math.floor((Number(maxStage)-1)/100))
-    var includedMultis = (1+ozzy.timeless*.16)*(1+.05*ozzy.scarab)*gadgetLootMulti*(Boolean(card)?1.05:1);
-    var excludedMultis = Math.max(Number(special),1)*(Boolean(iap)?1.25:1)*Math.max(Number(ultima),1)*Math.pow(1.05,Number(scavengers))*Math.pow(1.02,Number(m0))*Math.pow(1.05,Number(r7))*(Boolean(attrGN3)?1.25:1)*(Math.pow(Math.pow(1.04,Number(lootgu)),1+Number(attr)*.1-.1))*Math.pow(1.5,Number(i32))*Math.pow(1.1,Number(i81))*(Number(research81)>=2?1.1:1)*(Number(research81)>=5?1.2:1)*(Number(cm46)>0?1.03:1)*(Number(cm47)>0?1.02:1)*(Number(cm48)>0?1.07:1)*(Number(cm51)>0?1.05:1);;
-    var loopLoot = normalized*((Math.pow(stageGrowth,Math.floor(Math.min(enem,enemiesInSection-10)/10))-1)/(stageGrowth-1)*10+(Math.min(enem,enemiesInSection-10)-Math.floor(Math.min(enem,enemiesInSection-10)/10)*10)*Math.pow(stageGrowth,Math.floor(Math.min(enem,enemiesInSection-10)/10)))*includedMultis*(1+ozzy.ll*.2*ozzy.effect);
-    var bonusMulti = 1;
-    var tempEnem = enem;
-    while(tempEnem>=enemiesInSection){
-        tempEnem-=enemiesInSection;
-        enemiesInSection = 1000;
-
-
-        bonusMulti*=Math.pow(stageGrowth,100)
-
-
-        ozzy.mat1+=bonusMulti*mat1[mat1.length-1]*800*includedMultis*excludedMultis;
-        ozzy.mat2+=bonusMulti*mat2[mat2.length-1]*600*includedMultis*excludedMultis;
-        ozzy.mat3+=bonusMulti*mat3[mat3.length-1]*400*includedMultis*excludedMultis;
-        ozzy.xp+=bonusMulti*xp[xp.length-1]*300*includedMultis*excludedMultis*excludedXpMultis;
-
-
-        ozzy.loot+=bonusMulti*mat1[mat1.length-1]*800*includedMultis;
-        ozzy.loot+=bonusMulti*mat2[mat2.length-1]*600*includedMultis;
-        ozzy.loot+=bonusMulti*mat3[mat3.length-1]*400*includedMultis;
-        ozzy.loot+=bonusMulti*xp[xp.length-1]*300*includedMultis;
-
-
-        bonusMulti*=5;
-
-
-        loopLoot += bonusMulti*normalized*stageGrowth*((Math.pow(stageGrowth,Math.floor(Math.min(tempEnem,enemiesInSection-10)/10))-1)/(stageGrowth-1)*10+(Math.min(tempEnem,enemiesInSection-10)-Math.floor(Math.min(tempEnem,enemiesInSection-10)/10)*10)*Math.pow(stageGrowth,Math.floor(Math.min(tempEnem,enemiesInSection-10)/10)))*includedMultis*(1+ozzy.ll*.2*ozzy.effect);
+    
+    end(label) {
+      const startTime = this.timers.get(label);
+      if (startTime) {
+        const duration = new Date().getTime() - startTime;
+        this.results.push({
+          operation: label,
+          duration: duration,
+          timestamp: new Date()
+        });
+        this.timers.delete(label);
+        return duration;
+      }
+      return 0;
     }
-    ozzy.mat1+=loopLoot*3/10*mat1.reduce((a, b) => a + b) / mat1.length/normalized*excludedMultis;
-    ozzy.mat2+=loopLoot*3/10*mat2.reduce((a, b) => a + b) / mat2.length/normalized*excludedMultis;
-    ozzy.mat3+=loopLoot*3/10*mat3.reduce((a, b) => a + b) / mat3.length/normalized*excludedMultis;
-    ozzy.xp+=loopLoot*1/10*xp.reduce((a, b) => a + b) / xp.length/normalized*excludedMultis*excludedXpMultis;
-    ozzy.loot+=loopLoot;
-    ozzy.time+=time;
-    ozzy.enem+=enem;
-    ozzy.ls=ozzy.loot/ozzy.time;
-    ozzy.iters++;
-   
-    ozzy.minEnem=Math.min(ozzy.minEnem,enem)
-    ozzy.maxEnem=Math.max(ozzy.maxEnem,enem)
-    ozzy.progress[Math.floor(enem/10)] = (ozzy.progress[Math.floor(enem/10)] || 0) + 1
+    
+    countApiCall(operation = 'API Call') {
+      this.apiCallCount++;
+    }
+    
+    countFlush() {
+      this.flushCount++;
+    }
+    
+    getReport() {
+      const totalTime = this.results.reduce((sum, r) => sum + r.duration, 0);
+      const sortedResults = this.results.sort((a, b) => b.duration - a.duration);
+      
+      let report = `\n🔍 PERFORMANCE PROFILING REPORT\n`;
+      report += `Total Execution Time: ${totalTime}ms (${(totalTime/1000).toFixed(2)}s)\n`;
+      report += `Total API Calls: ${this.apiCallCount}\n`;
+      report += `Total Flush Calls: ${this.flushCount}\n\n`;
+      
+      report += `📊 TIME BREAKDOWN (slowest first):\n`;
+      sortedResults.forEach((result, index) => {
+        const percentage = ((result.duration / totalTime) * 100).toFixed(1);
+        report += `${index + 1}. ${result.operation}: ${result.duration}ms (${percentage}%)\n`;
+      });
+      
+      // Performance recommendations
+      report += `\n💡 PERFORMANCE RECOMMENDATIONS:\n`;
+      if (this.apiCallCount > 50) {
+        report += `• High API call count (${this.apiCallCount}) - consider more batching\n`;
+      }
+      if (this.flushCount > 10) {
+        report += `• Many flush calls (${this.flushCount}) - reduce frequency\n`;
+      }
+      
+      const batchReadTime = sortedResults.find(r => r.operation.includes('Batch Read'));
+      if (batchReadTime && batchReadTime.duration > totalTime * 0.3) {
+        report += `• Batch reading takes ${((batchReadTime.duration/totalTime)*100).toFixed(1)}% of time - optimize data access\n`;
+      }
+      
+      return report;
+    }
   }
-
-  for(var k = 0 ;k < opts.length;k++){
-    for(var i = 0;i<iters;i++){
-        // Fortschrittsbenachrichtigung senden, falls wir im Worker-Kontext sind
-        if (typeof self !== 'undefined' && self.postMessage && i % Math.max(1, Math.floor(iters / 100)) === 0) {
-            self.postMessage({
-                type: 'progress',
-                progress: {
-                    iteration: i,
-                    total: iters
-                }
-            });
+  
+  /**
+   * Creates custom menu when the spreadsheet opens
+   */
+  function onOpen() {
+    buildOptimizerMenu();
+  }
+  
+  function buildOptimizerMenu() {
+    const ui = SpreadsheetApp.getUi();
+    const skip = getSkipConfirmSetting();
+    
+    ui.createMenu('🔮 Orb Optimizer')
+      .addItem('⚡ Optimize with Efficiency/Cost', 'optimizeOrbPurchases')
+      .addItem('⚡ Optimize (Efficiency Only)', 'optimizeOrbPurchasesEfficiencyOnly')
+      .addSeparator()
+      .addItem('🔄 Undo All Purchases', 'undoAllPurchases')
+      .addSeparator()
+      .addItem('🛒 Apply planned Purchases', 'applyPlannedPurhcases')
+      .addSeparator()
+      .addSubMenu(
+        ui.createMenu('Settings')
+          .addItem(`Don’t ask for confirmation: ${skip ? 'ON' : 'OFF'}`, 'toggleDontAskAgain')
+      )
+      .addToUi();
+  }
+  
+  function toggleDontAskAgain() {
+    const props = PropertiesService.getUserProperties();
+    const current = props.getProperty('OPTIMIZER_SKIP_CONFIRM') === 'true';
+    const next = (!current).toString();
+    props.setProperty('OPTIMIZER_SKIP_CONFIRM', next);
+    const ui = SpreadsheetApp.getUi();
+    buildOptimizerMenu();
+  }
+  
+  /**
+   * Undos all purchases by resetting upgrade levels to 0
+   */
+  function undoAllPurchases() {
+    try {
+      const sheet = SpreadsheetApp.getActiveSheet();
+      const ui = SpreadsheetApp.getUi();
+      
+      // Confirm before resetting (unless disabled)
+      if (!getSkipConfirmSetting()) {
+        const response = ui.alert(
+          'Confirm Undo All Purchases',
+          'This will reset ALL upgrade levels to 0. Continue?',
+          ui.ButtonSet.YES_NO
+        );
+        if (response !== ui.Button.YES) {
+          return;
         }
-        sim(opts[k]);
+      }
+      
+      // Batch update all ranges to 0
+      const updates = [
+        {range: 'T10:T16', values: Array(7).fill([0])},
+        {range: 'T19:T24', values: Array(6).fill([0])},
+        {range: 'T28:T35', values: Array(8).fill([0])},
+        {range: 'T38:T40', values: Array(3).fill([0])},
+        {range: 'T43:T53', values: Array(11).fill([0])},
+        {range: 'T56:T64', values: Array(9).fill([0])},
+        {range: 'T67:T70', values: Array(4).fill([0])}
+      ];
+      
+      // Batch update all ranges
+      updates.forEach(update => {
+        sheet.getRange(update.range).setValues(update.values);
+      });
+      
+      // Set BN46 (gem toggle) to FALSE
+      sheet.getRange('T9').setValue(false);
+      sheet.getRange('T18').setValue(false);
+      sheet.getRange('T26').setValue(false);
+      sheet.getRange('T37').setValue(false);
+      sheet.getRange('T42').setValue(false);
+      sheet.getRange('T55').setValue(false);
+      sheet.getRange('T66').setValue(false);
+      
+  
+      // Clear optimization results
+      sheet.getRange('AJ9:AO1000').clear();
+      
+      // Force recalculation
+      SpreadsheetApp.flush();
+      
+    } catch (error) {
+      console.error('Error in undo:', error);
+      SpreadsheetApp.getUi().alert('Error', `An error occurred: ${error.message}`, SpreadsheetApp.getUi().ButtonSet.OK);
     }
-}
-       
-            var result = opts.map(o=>{
-              var bossStatsIdx = o.bossStats.findIndex(b=>(b.kills || 0)<iters);
-              return ([
-                o.ls*60,
-                o.enem/o.iters/10,
-                o.time/o.iters/60,
-                o.minEnem/10,
-                o.maxEnem/10,
-                (o.maxEnem >= (bossStatsIdx+1)*1000) ? o.bossStats[bossStatsIdx]?.hp/o.iters/enemies[(bossStatsIdx+1)*100].maxHp*100 : '--',
-                (o.maxEnem >= (bossStatsIdx+1)*1000) ? (o.bossStats[bossStatsIdx]?.kills || 0)/o.iters*100 : '--',
-                (o.mat1/o.iters),
-                (o.mat2/o.iters),
-                (o.mat3/o.iters),
-                (o.xp/o.iters),
-                `${o.maxHp},${o.atk},${o.regen},${o.dr},${o.evade},${o.effect},${o.multistrike},${o.multistrikePower},${o.reload}`,
-                
-                JSON.stringify(Object.keys(o.progress).sort((a,b)=>Number(a)-Number(b)).reduce((prev,k)=>({...prev,[k]:o.progress[k]}),{}))
-              ])
-            })
-            return result;
-}
+  }
+  
+  /**
+   * Applys planned purchases
+   */
+  function applyPlannedPurhcases() {
+    try {
+      const sheet = SpreadsheetApp.getActiveSheet();
+      const ui = SpreadsheetApp.getUi();
 
+      
+      // Confirm before resetting
+      const response = ui.alert(
+        'Confirm Apply plan',
+        'This will reset all planned purchases to 0 and add them to your current upgrades',
+        ui.ButtonSet.YES_NO
+      );
+      
+      if (response !== ui.Button.YES) {
+        return;
+      }
+      
+      // Batch update all ranges to 0
+      const updates = [
+      {rangeBN: 'T10:T16', rangeBJ: 'P10:P16'},
+      {rangeBN: 'T19:T24', rangeBJ: 'P19:P24'},
+      {rangeBN: 'T27:T35', rangeBJ: 'P27:P35'},
+      {rangeBN: 'T38:T40', rangeBJ: 'P38:P40'},
+      {rangeBN: 'T43:T53', rangeBJ: 'P43:P53'},
+      {rangeBN: 'T56:T64', rangeBJ: 'P56:P64'},
+      {rangeBN: 'T67:T70', rangeBJ: 'P67:P70'}
+    ];
+  
+    updates.forEach(update => {
+      const bnValues = sheet.getRange(update.rangeBN).getValues();
+      const bjValues = sheet.getRange(update.rangeBJ).getValues();
+  
+      const result = bnValues.map((row, i) => {
+        const bn = row[0] || 0;
+        const bj = bjValues[i][0] || 0;
+        return [bn + bj];
+      });
+  
+      sheet.getRange(update.rangeBJ).setValues(result);
+    });
+  
+    //apply gem purhcases
+    const rows = [9, 18, 26, 37, 42, 55, 66]; // Rows of Gem qualities
+  
+    rows.forEach(row => {
+      const isChecked = sheet.getRange(`T${row}`).getValue();
+      
+      if (isChecked === true) {
+        const currentValue = sheet.getRange(`P${row}`).getValue() || 0;
+        sheet.getRange(`P${row}`).setValue(currentValue + 1);
+        sheet.getRange(`T${row}`).setValue(false);
+      }
+    });
+  
+    // Batch update all ranges to 0
+      const updates2 = [
+        {range: 'T10:T16', values: Array(7).fill([0])},
+        {range: 'T19:T24', values: Array(6).fill([0])},
+        {range: 'T27:T35', values: Array(9).fill([0])},
+        {range: 'T38:T40', values: Array(3).fill([0])},
+        {range: 'T43:T53', values: Array(11).fill([0])},
+        {range: 'T56:T64', values: Array(9).fill([0])},
+        {range: 'T67:T70', values: Array(4).fill([0])}
+      ];
+      
+      // Batch update all ranges
+      updates2.forEach(update => {
+        sheet.getRange(update.range).setValues(update.values);
+      });
+  
+      // Set BN46 (gem toggle) to FALSE
+      sheet.getRange('T9').setValue(false);
+      sheet.getRange('T18').setValue(false);
+      sheet.getRange('T26').setValue(false);
+      sheet.getRange('T37').setValue(false);
+      sheet.getRange('T42').setValue(false);
+      sheet.getRange('T55').setValue(false);
+      sheet.getRange('T66').setValue(false);
+      
+      // Clear optimization results
+      sheet.getRange('AJ9:AO1000').clear();
+      
+      // Force recalculation
+      SpreadsheetApp.flush();
+      
+    } catch (error) {
+      console.error('Error in undo:', error);
+      SpreadsheetApp.getUi().alert('Error', `An error occurred: ${error.message}`, SpreadsheetApp.getUi().ButtonSet.OK);
+    }
+  }
+  
+  /**
+   * Main optimization function - OPTIMIZED VERSION WITH PROFILING
+   */
+  function optimizeOrbPurchases() {
+    const profiler = new Profiler();
+    profiler.start('Total Execution');
+    
+    try {
+      profiler.start('Initial Setup');
+      const sheet = SpreadsheetApp.getActiveSheet();
+      profiler.countApiCall('Get Active Sheet');
+      const k79 = sheet.getRange("K79").getValue();
+
+      if (k79 == "Missing Funds:") {
+        SpreadsheetApp.getUi().alert("Error: Cannot proceed with a negative budget. Increase orb budget or take away some planned purchases");
+        return;
+      }
+      
+      // Confirm before starting (unless disabled)
+      const ui = SpreadsheetApp.getUi();
+      if (!getSkipConfirmSetting()) {
+        const response = ui.alert(
+          'Confirm Auto-Optimization',
+          'This will automatically purchase upgrades using the default strategy, until orb budget runs out',
+          ui.ButtonSet.YES_NO
+        );
+        if (response !== ui.Button.YES) {
+          return;
+        }
+      }
+      
+      // Configuration
+      const START_ROW = 10;
+      const END_ROW = 70;
+      const TOTAL_ROWS = END_ROW - START_ROW + 1;
+      
+      // Column indices (0-based)
+      const COL_INDICES = {
+        UPGRADE_NAME: columnToNumber('K') - 1,
+        CURRENT_LEVEL: columnToNumber('P') - 1,
+        UPGRADE_AMOUNT: columnToNumber('T') - 1,
+        NEXT_COST: columnToNumber('U') - 1,
+        EFFICIENCY: columnToNumber('AG') - 1
+      };
+      profiler.end('Initial Setup');
+      
+      // Get initial orb values
+      profiler.start('Read Initial Orb Values');
+      const savedOrbs = parseValue(sheet.getRange('Q5').getValue()) || 0;
+      profiler.countApiCall('Read Q5 (Saved Orbs)');
+      const accumulatedOrbs = parseValue(sheet.getRange('Q6').getValue()) || 0;
+      profiler.countApiCall('Read Q6 (Accumulated Orbs)');
+      const surplusOrbs = parseValue(sheet.getRange('S79').getValue()) || 0;
+      profiler.countApiCall('Read Q6 (Accumulated Orbs)');
+      let availableOrbs = surplusOrbs;
+      profiler.end('Read Initial Orb Values');
+      
+      console.log(`Starting optimization with ${formatNumber(availableOrbs)} orbs...`);
+      
+      const results = [];
+      let totalSpent = 0;
+      let iteration = 0;
+      const maxIterations = 100;
+      
+      // Track current upgrade levels in memory
+      const upgradeStates = new Map();
+      
+      // Initial batch read of upgrade amounts
+      profiler.start('Initial Upgrade Amounts Read');
+      const upgradeAmountRange = sheet.getRange(START_ROW, COL_INDICES.UPGRADE_AMOUNT + 1, TOTAL_ROWS, 1);
+      const initialAmounts = upgradeAmountRange.getValues();
+      profiler.countApiCall('Batch Read Initial Upgrade Amounts');
+      profiler.end('Initial Upgrade Amounts Read');
+      
+      for (let i = 0; i < TOTAL_ROWS; i++) {
+        upgradeStates.set(START_ROW + i, initialAmounts[i][0]);
+      }
+      
+      profiler.start('Main Optimization Loop');
+      let batchPurchases = []; // Track purchases in current batch
+      let batchUpgradeRows = new Set(); // Track which upgrade rows we've bought in current batch
+      
+      while (iteration < maxIterations) {
+        iteration++;
+        profiler.start(`Iteration ${iteration}`);
+        
+        // Batch read all necessary data
+        profiler.start(`Iteration ${iteration} - Batch Read`);
+        const requiredCols = [
+          COL_INDICES.UPGRADE_NAME,   // BD
+          COL_INDICES.CURRENT_LEVEL,  // BJ
+          COL_INDICES.UPGRADE_AMOUNT, // BN
+          COL_INDICES.NEXT_COST,      // BO
+          COL_INDICES.EFFICIENCY      // CA
+        ];
+  
+        // Build A1-notation ranges for each column (e.g. "BD10:BD55")
+        const rangeStrings = requiredCols.map(idx => {
+          const colLetter = numberToColumn(idx + 1);
+          return `${colLetter}${START_ROW}:${colLetter}${END_ROW}`;
+        });
+  
+        // Read all five ranges in one server round-trip
+        const ranges = sheet.getRangeList(rangeStrings).getRanges();
+        profiler.countApiCall(`Batch Read 5 Columns (Iteration ${iteration})`);
+  
+        // Extract the column arrays (each is TOTAL_ROWS × 1)
+        const [
+          upgradeNameCol,      // BD
+          currentLevelCol,     // BJ
+          upgradeAmountCol,    // BN
+          nextCostCol,         // BO
+          efficiencyCol        // CA
+        ] = ranges.map(r => r.getValues());
+        profiler.end(`Iteration ${iteration} - Batch Read`);
+        
+        // Parse upgrade data from batch read
+        profiler.start(`Iteration ${iteration} - Parse Data`);
+        const upgrades = [];
+        for (let i = 0; i < TOTAL_ROWS; i++) {
+          const row = START_ROW + i;
+          
+          const name         = upgradeNameCol[i][0];
+          const baseLevel    = currentLevelCol[i][0];
+          const plannedLevel = upgradeStates.get(row) || 0;
+          const currentLevel = baseLevel + plannedLevel; // Aktuelles Level = Base + geplante Käufe
+          const cost         = parseValue(nextCostCol[i][0]);
+          const efficiency   = parseValue(efficiencyCol[i][0]);
+
+          
+          if (!name || !cost || cost <= 0 || !efficiency) continue;
+          
+          upgrades.push({
+            row: row,
+            name: name,
+            currentLevel: currentLevel,
+            cost: cost,
+            efficiency: efficiency
+          });
+        }
+        profiler.end(`Iteration ${iteration} - Parse Data`);        // Find the best affordable upgrade, prioritizing different upgrade types
+        profiler.start(`Iteration ${iteration} - Find Best Upgrade`);
+        const bestUpgrade = findBestAffordableUpgrade(upgrades, availableOrbs, batchUpgradeRows);
+        profiler.end(`Iteration ${iteration} - Find Best Upgrade`);
+        
+        if (!bestUpgrade) {
+          console.log('Optimization complete - no more affordable upgrades found.');
+          profiler.end(`Iteration ${iteration}`);
+          break;
+        }
+        
+        // Make the purchase
+        profiler.start(`Iteration ${iteration} - Process Purchase`);
+        
+        // Double-check affordability (safety check)
+        if (bestUpgrade.cost > availableOrbs) {
+          console.error(`Budget error: Trying to spend ${formatNumber(bestUpgrade.cost)} but only ${formatNumber(availableOrbs)} orbs available.`);
+          profiler.end(`Iteration ${iteration} - Process Purchase`);
+          profiler.end(`Iteration ${iteration}`);
+          break;
+        }
+        
+        availableOrbs -= bestUpgrade.cost;
+        totalSpent += bestUpgrade.cost;
+        
+        // Record the purchase
+        const levelChange = `${bestUpgrade.currentLevel} → ${bestUpgrade.currentLevel + 1}`;
+        
+        results.push({
+          iteration: iteration,
+          upgrade: bestUpgrade.name,
+          fromLevel: bestUpgrade.currentLevel,
+          toLevel: bestUpgrade.currentLevel + 1,
+          levelChange: levelChange,
+          cost: bestUpgrade.cost,
+          efficiency: bestUpgrade.efficiency,
+          remainingOrbs: availableOrbs
+        });
+        
+        // Add to batch tracking (don't update sheet yet)
+        const newValue = (upgradeStates.get(bestUpgrade.row) || 0) + 1;
+        batchPurchases.push({
+          row: bestUpgrade.row,
+          value: newValue
+        });
+        batchUpgradeRows.add(bestUpgrade.row);
+        
+        // Update in-memory state
+        upgradeStates.set(bestUpgrade.row, newValue);
+        profiler.end(`Iteration ${iteration} - Process Purchase`);
+        
+        // Flush when we have 5 different upgrades OR no more new upgrades available OR max iterations
+        const noNewUpgrades = !findBestAffordableUpgrade(upgrades, availableOrbs, batchUpgradeRows);
+        const shouldFlush = batchUpgradeRows.size >= 5 || noNewUpgrades || iteration >= maxIterations;
+        
+        if (noNewUpgrades && batchPurchases.length > 0) {
+          // Force flush to get updated costs
+        }
+        
+        if (shouldFlush && batchPurchases.length > 0) {
+          // Batch update all purchases at once
+          profiler.start(`Iteration ${iteration} - Batch Sheet Update (${batchUpgradeRows.size} upgrades)`);
+          
+          // Prepare batch update data
+          const batchRanges = [];
+          const batchValues = [];
+          
+          for (const purchase of batchPurchases) {
+            const range = sheet.getRange(purchase.row, COL_INDICES.UPGRADE_AMOUNT + 1);
+            batchRanges.push(range);
+            batchValues.push([[purchase.value]]);
+          }
+          
+          // Update all ranges at once
+          sheet.getRangeList(batchRanges.map(r => r.getA1Notation())).getRanges().forEach((range, index) => {
+            range.setValues(batchValues[index]);
+          });
+          
+          profiler.countApiCall(`Batch Update ${batchPurchases.length} Upgrades`);
+          profiler.end(`Iteration ${iteration} - Batch Sheet Update (${batchUpgradeRows.size} upgrades)`);
+          
+          profiler.start(`Iteration ${iteration} - Flush (${batchUpgradeRows.size} upgrades)`);
+          SpreadsheetApp.flush();
+          profiler.countFlush();
+          profiler.end(`Iteration ${iteration} - Flush (${batchUpgradeRows.size} upgrades)`);
+          
+          // Reset batch tracking
+          batchPurchases = [];
+          batchUpgradeRows.clear();
+        }
+        
+        profiler.end(`Iteration ${iteration}`);
+      }
+      profiler.end('Main Optimization Loop');
+      
+      // Final budget validation
+      const finalAvailableOrbs = savedOrbs + accumulatedOrbs - totalSpent;
+      if (totalSpent > savedOrbs + accumulatedOrbs) {
+        console.error(`Budget exceeded! Spent ${formatNumber(totalSpent)} but only had ${formatNumber(savedOrbs + accumulatedOrbs)} orbs.`);
+      } else {
+        console.log(`✅ Optimization completed successfully. Spent ${formatNumber(totalSpent)} orbs, ${formatNumber(finalAvailableOrbs)} remaining.`);
+      }
+      
+      // Output results using batch operations
+      profiler.start('Output Results');
+      outputResultsOptimized(sheet, results, totalSpent, availableOrbs, profiler);
+      profiler.end('Output Results');
+      
+      profiler.end('Total Execution');
+      
+      // Show clean completion message
+      const completionMessage = `Optimization Complete! 🎉
+  
+  🔮 Purchases Made: ${results.length} upgrades
+  💰 Total Spent: ${formatNumber(totalSpent)} orbs  
+  💎 Remaining: ${formatNumber(availableOrbs)} orbs
+  
+  📊 Detailed results are available in columns AJ onwards.`;
+      
+      ui.alert('Optimization Complete', completionMessage, ui.ButtonSet.OK);
+      
+    } catch (error) {
+      profiler.end('Total Execution');
+      console.error('An error occurred during optimization:', error.message);
+      SpreadsheetApp.getUi().alert('Error', `An error occurred: ${error.message}`, SpreadsheetApp.getUi().ButtonSet.OK);
+    }
+  }
+  
+  /**
+   * Alternative optimization that uses efficiency-only greedy selector
+   */
+  function optimizeOrbPurchasesEfficiencyOnly() {
+    const profiler = new Profiler();
+    profiler.start('Total Execution');
+    
+    try {
+      profiler.start('Initial Setup');
+      const sheet = SpreadsheetApp.getActiveSheet();
+      profiler.countApiCall('Get Active Sheet');
+      
+      const ui = SpreadsheetApp.getUi();
+      if (!getSkipConfirmSetting()) {
+        const response = ui.alert(
+          'Confirm Auto-Optimization (Efficiency Only)',
+          'This will automatically purchase upgrades, always picking the highest efficiency that is affordable, until orb budget runs out',
+          ui.ButtonSet.YES_NO
+        );
+        if (response !== ui.Button.YES) {
+          return;
+        }
+      }
+      
+      const START_ROW = 10;
+      const END_ROW = 70;
+      const TOTAL_ROWS = END_ROW - START_ROW + 1;
+      
+      const COL_INDICES = {
+        UPGRADE_NAME: columnToNumber('K') - 1,
+        CURRENT_LEVEL: columnToNumber('P') - 1,
+        UPGRADE_AMOUNT: columnToNumber('T') - 1,
+        NEXT_COST: columnToNumber('U') - 1,
+        EFFICIENCY: columnToNumber('AG') - 1
+      };
+      profiler.end('Initial Setup');
+      
+      profiler.start('Read Initial Orb Values');
+      const savedOrbs = parseValue(sheet.getRange('Q5').getValue()) || 0;
+      profiler.countApiCall('Read Q5 (Saved Orbs)');
+      const accumulatedOrbs = parseValue(sheet.getRange('Q6').getValue()) || 0;
+      profiler.countApiCall('Read Q6 (Accumulated Orbs)');
+      const surplusOrbs = parseValue(sheet.getRange('S79').getValue()) || 0;
+      profiler.countApiCall('Read Q6 (Accumulated Orbs)');
+      let availableOrbs = surplusOrbs;
+      profiler.end('Read Initial Orb Values');
+      
+      const results = [];
+      let totalSpent = 0;
+      let iteration = 0;
+      const maxIterations = 100;
+      
+      const upgradeStates = new Map();
+      
+      profiler.start('Initial Upgrade Amounts Read');
+      const upgradeAmountRange = sheet.getRange(START_ROW, COL_INDICES.UPGRADE_AMOUNT + 1, TOTAL_ROWS, 1);
+      const initialAmounts = upgradeAmountRange.getValues();
+      profiler.countApiCall('Batch Read Initial Upgrade Amounts');
+      profiler.end('Initial Upgrade Amounts Read');
+      
+      for (let i = 0; i < TOTAL_ROWS; i++) {
+        upgradeStates.set(START_ROW + i, initialAmounts[i][0]);
+      }
+      
+      profiler.start('Main Optimization Loop');
+      let batchPurchases = [];
+      let batchUpgradeRows = new Set();
+      
+      while (iteration < maxIterations) {
+        iteration++;
+        profiler.start(`Iteration ${iteration}`);
+        
+        profiler.start(`Iteration ${iteration} - Batch Read`);
+        const requiredCols = [
+          COL_INDICES.UPGRADE_NAME,
+          COL_INDICES.CURRENT_LEVEL,
+          COL_INDICES.UPGRADE_AMOUNT,
+          COL_INDICES.NEXT_COST,
+          COL_INDICES.EFFICIENCY
+        ];
+        const rangeStrings = requiredCols.map(idx => {
+          const colLetter = numberToColumn(idx + 1);
+          return `${colLetter}${START_ROW}:${colLetter}${END_ROW}`;
+        });
+        const ranges = sheet.getRangeList(rangeStrings).getRanges();
+        profiler.countApiCall(`Batch Read 5 Columns (Iteration ${iteration})`);
+        const [
+          upgradeNameCol,
+          currentLevelCol,
+          upgradeAmountCol,
+          nextCostCol,
+          efficiencyCol
+        ] = ranges.map(r => r.getValues());
+        profiler.end(`Iteration ${iteration} - Batch Read`);
+        
+        profiler.start(`Iteration ${iteration} - Parse Data`);
+        const upgrades = [];
+        for (let i = 0; i < TOTAL_ROWS; i++) {
+          const row = START_ROW + i;
+          const name = upgradeNameCol[i][0];
+          const baseLevel = currentLevelCol[i][0];
+          const plannedLevel = upgradeStates.get(row) || 0;
+          const currentLevel = baseLevel + plannedLevel; // Aktuelles Level = Base + geplante Käufe
+          const cost = parseValue(nextCostCol[i][0]);
+          const efficiency = parseValue(efficiencyCol[i][0]);
+          if (!name || !cost || cost <= 0 || !efficiency) continue;
+          upgrades.push({ row, name, currentLevel, cost, efficiency });
+        }
+        profiler.end(`Iteration ${iteration} - Parse Data`);
+        
+        profiler.start(`Iteration ${iteration} - Find Best Upgrade`);
+        const bestUpgrade = findBestAffordableUpgradeByEfficiency(upgrades, availableOrbs, batchUpgradeRows);
+        profiler.end(`Iteration ${iteration} - Find Best Upgrade`);
+        
+        if (!bestUpgrade) {
+          profiler.end(`Iteration ${iteration}`);
+          break;
+        }
+        
+        profiler.start(`Iteration ${iteration} - Process Purchase`);
+        if (bestUpgrade.cost > availableOrbs) {
+          profiler.end(`Iteration ${iteration} - Process Purchase`);
+          profiler.end(`Iteration ${iteration}`);
+          break;
+        }
+        availableOrbs -= bestUpgrade.cost;
+        totalSpent += bestUpgrade.cost;
+        const levelChange = `${bestUpgrade.currentLevel} → ${bestUpgrade.currentLevel + 1}`;
+        results.push({
+          iteration,
+          upgrade: bestUpgrade.name,
+          fromLevel: bestUpgrade.currentLevel,
+          toLevel: bestUpgrade.currentLevel + 1,
+          levelChange,
+          cost: bestUpgrade.cost,
+          efficiency: bestUpgrade.efficiency,
+          remainingOrbs: availableOrbs
+        });
+        const newValue = (upgradeStates.get(bestUpgrade.row) || 0) + 1;
+        batchPurchases.push({ row: bestUpgrade.row, value: newValue });
+        batchUpgradeRows.add(bestUpgrade.row);
+        upgradeStates.set(bestUpgrade.row, newValue);
+        profiler.end(`Iteration ${iteration} - Process Purchase`);
+        
+        const noNewUpgrades = !findBestAffordableUpgradeByEfficiency(upgrades, availableOrbs, batchUpgradeRows);
+        const shouldFlush = batchUpgradeRows.size >= 5 || noNewUpgrades || iteration >= maxIterations;
+        if (shouldFlush && batchPurchases.length > 0) {
+          profiler.start(`Iteration ${iteration} - Batch Sheet Update (${batchUpgradeRows.size} upgrades)`);
+          const batchRanges = [];
+          const batchValues = [];
+          for (const purchase of batchPurchases) {
+            const range = sheet.getRange(purchase.row, COL_INDICES.UPGRADE_AMOUNT + 1);
+            batchRanges.push(range);
+            batchValues.push([[purchase.value]]);
+          }
+          sheet.getRangeList(batchRanges.map(r => r.getA1Notation())).getRanges().forEach((range, index) => {
+            range.setValues(batchValues[index]);
+          });
+          profiler.countApiCall(`Batch Update ${batchPurchases.length} Upgrades`);
+          profiler.end(`Iteration ${iteration} - Batch Sheet Update (${batchUpgradeRows.size} upgrades)`);
+          profiler.start(`Iteration ${iteration} - Flush (${batchUpgradeRows.size} upgrades)`);
+          SpreadsheetApp.flush();
+          profiler.countFlush();
+          profiler.end(`Iteration ${iteration} - Flush (${batchUpgradeRows.size} upgrades)`);
+          batchPurchases = [];
+          batchUpgradeRows.clear();
+        }
+        profiler.end(`Iteration ${iteration}`);
+      }
+      profiler.end('Main Optimization Loop');
+      const finalAvailableOrbs = savedOrbs + accumulatedOrbs - totalSpent;
+      if (totalSpent > savedOrbs + accumulatedOrbs) {
+      } else {
+      }
+      profiler.start('Output Results');
+      outputResultsOptimized(sheet, results, totalSpent, availableOrbs, profiler);
+      profiler.end('Output Results');
+      profiler.end('Total Execution');
+      const completionMessage = `Optimization Complete! 🎉\n\n🔮 Purchases Made: ${results.length} upgrades\n💰 Total Spent: ${formatNumber(totalSpent)} orbs  \n💎 Remaining: ${formatNumber(availableOrbs)} orbs\n\n📊 Detailed results are available in columns AJ onwards.`;
+      ui.alert('Optimization Complete', completionMessage, ui.ButtonSet.OK);
+    } catch (error) {
+      profiler.end('Total Execution');
+      console.error('An error occurred during optimization:', error.message);
+      SpreadsheetApp.getUi().alert('Error', `An error occurred: ${error.message}`, SpreadsheetApp.getUi().ButtonSet.OK);
+    }
+  }
+  
+  /**
+   * Finds the best affordable upgrade based on efficiency
+   * Prioritizes upgrades not yet purchased in current batch
+   */
+  function findBestAffordableUpgrade(upgrades, availableOrbs, batchUpgradeRows = new Set()) {
+    let bestUpgrade = null;
+    let bestEfficiency = 0;
+    
+    for (const upgrade of upgrades) {
+      if (upgrade.cost > availableOrbs) continue;
+      
+      // Only consider upgrades NOT in current batch to avoid stale cost issues
+      if (!batchUpgradeRows.has(upgrade.row)) {
+        if (upgrade.efficiency > bestEfficiency) {
+          bestEfficiency = upgrade.efficiency;
+          bestUpgrade = upgrade;
+        }
+      }
+    }
+    
+    // Don't use fallback - if we can't afford any new upgrade types, 
+    // force a flush to get updated costs rather than risk overspend
+    return bestUpgrade;
+  }
+  
+  /**
+   * Greedy selector that picks the highest-efficiency affordable upgrade only
+   * Does not divide by cost; ignores upgrades already chosen in the current batch
+   */
+  function findBestAffordableUpgradeByEfficiency(upgrades, availableOrbs, batchUpgradeRows = new Set()) {
+    let bestUpgrade = null;
+    let bestEfficiency = 0;
+    
+    for (const upgrade of upgrades) {
+      if (upgrade.cost > availableOrbs) continue;
+      if (!batchUpgradeRows.has(upgrade.row)) {
+        if (upgrade.efficiency > bestEfficiency) {
+          bestEfficiency = upgrade.efficiency;
+          bestUpgrade = upgrade;
+        }
+      }
+    }
+    
+    return bestUpgrade;
+  }
+  
+  /**
+   * Outputs optimization results to the sheet using batch operations
+   */
+  function outputResultsOptimized(sheet, results, totalSpent, remainingOrbs, profiler) {
+    const outputStartCol = columnToNumber('AJ');
+    const outputStartRow = 9;
+    
+    // Clear previous results
+    profiler.start('Clear Previous Results');
+    sheet.getRange(outputStartRow, outputStartCol, 1000, 7).clear();
+    profiler.countApiCall('Clear Results Range');
+    profiler.end('Clear Previous Results');
+    
+    // Prepare all data for batch write
+    profiler.start('Prepare Output Data');
+    const outputData = [];
+    
+    // Headers
+    outputData.push(['🔮 Optimization Results', '', '', '', '', '']);
+    outputData.push(['Iteration', 'Upgrade', 'Level Change', 'Cost', 'Efficiency', 'Remaining']);
+    
+    // Results data
+    for (const result of results) {
+      outputData.push([
+        result.iteration,
+        result.upgrade,
+        result.levelChange,
+        result.cost,
+        result.efficiency,
+        result.remainingOrbs
+      ]);
+    }
+    
+    // Totals row under respective columns (Cost, Efficiency only)
+    const totalCost = results.reduce((sum, r) => sum + (r.cost || 0), 0);
+    const totalEfficiency = results.reduce((sum, r) => sum + (r.efficiency || 0), 0);
+    outputData.push(['', '', 'Totals', totalCost, totalEfficiency, '']);
+    
+    // Add empty row
+    outputData.push(['', '', '', '', '', '']);
+    
+    // Summary
+    outputData.push(['📊 SUMMARY', '', '', '', '', '']);
+    outputData.push(['Total Purchases:', results.length, '', '', '', '']);
+    outputData.push(['Total Spent:', totalSpent, '', '', '', '']);
+    outputData.push(['Remaining Orbs:', remainingOrbs, '', '', '', '']);
+    profiler.end('Prepare Output Data');
+    
+    // Batch write all data at once
+    profiler.start('Write Results to Sheet');
+    const outputRange = sheet.getRange(outputStartRow, outputStartCol, outputData.length, 6);
+    outputRange.setValues(outputData);
+    profiler.countApiCall(`Batch Write Results (${outputData.length} rows)`);
+    profiler.end('Write Results to Sheet');
+  }
+  
+  // ===== UTILITY FUNCTIONS =====
+  
+  function parseValue(value) {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+      const str = value.replace(/,/g, '');
+      
+      if (str.includes('E+') || str.includes('e+')) {
+        return parseFloat(str);
+      }
+      
+      const multipliers = {
+        'K': 1e3, 'M': 1e6, 'B': 1e9, 'T': 1e12,
+        'Q': 1e15, 'QI': 1e18, 'SX': 1e21, 'SP': 1e24,
+        'OC': 1e27, 'NO': 1e30, 'DC': 1e33
+      };
+      
+      // Check for multi-character suffixes first
+      for (let len = 2; len >= 1; len--) {
+        const suffix = str.slice(-len).toUpperCase();
+        if (multipliers[suffix]) {
+          return parseFloat(str.slice(0, -len)) * multipliers[suffix];
+        }
+      }
+      
+      return parseFloat(str);
+    }
+    return 0;
+  }
+  
+  function formatNumber(num) {
+    const formats = [
+      {value: 1e33, suffix: 'DC'},
+      {value: 1e30, suffix: 'NO'},
+      {value: 1e27, suffix: 'OC'},
+      {value: 1e24, suffix: 'SP'},
+      {value: 1e21, suffix: 'SX'},
+      {value: 1e18, suffix: 'QI'},
+      {value: 1e15, suffix: 'Q'},
+      {value: 1e12, suffix: 'T'},
+      {value: 1e9, suffix: 'B'},
+      {value: 1e6, suffix: 'M'},
+      {value: 1e3, suffix: 'K'}
+    ];
+    
+    for (const format of formats) {
+      if (num >= format.value) {
+        return (num / format.value).toFixed(2) + format.suffix;
+      }
+    }
+    
+    return num.toFixed(2);
+  }
+  
+  function columnToNumber(column) {
+    let result = 0;
+    for (let i = 0; i < column.length; i++) {
+      result = result * 26 + (column.charCodeAt(i) - 'A'.charCodeAt(0) + 1);
+    }
+    return result;
+  }
+  
+  /**
+   * Converts a 1-based column number to its A-Z letter(s).
+   * Example: 1 → 'A', 27 → 'AA'
+   */
+  function numberToColumn(n) {
+    let col = '';
+    while (n > 0) {
+      const r = (n - 1) % 26;
+      col = String.fromCharCode(65 + r) + col;
+      n = Math.floor((n - 1) / 26);
+    }
+    return col;
+  }
+  
+  // ===== SETTINGS HELPERS =====
+  function getSkipConfirmSetting() {
+    const props = PropertiesService.getUserProperties();
+    return props.getProperty('OPTIMIZER_SKIP_CONFIRM') === 'true';
+  }

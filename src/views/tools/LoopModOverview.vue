@@ -171,7 +171,7 @@
               <span class="font-medium text-white text-sm">Ultima Cap Upgrades</span>
             </div>
             
-            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
               <div 
                 v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => !u.hasLevels)" 
                 :key="upgrade.id"
@@ -185,33 +185,34 @@
               </div>
               
               <!-- T2R1 Special Level Control -->
-              <!-- <div 
+              <div 
                 v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => u.hasLevels)" 
                 :key="upgrade.id"
-                class="px-1 py-1.5 rounded border text-center text-sm transition-colors flex items-center justify-between"
+                class="rounded border text-center text-sm transition-colors flex items-stretch relative"
                 :class="t2r1Level > 0 ? 
-                  'bg-blue-900/50 border-blue-500 text-blue-300' : 
-                  'bg-gray-800 border-gray-700 text-gray-400'"
+                  'bg-blue-800/40 border-blue-500 text-blue-300' : 
+                  'bg-gray-700/40 border-gray-700 text-gray-400'"
               >
                 <button 
                   @click="adjustT2r1Level(-1)"
                   :disabled="t2r1Level <= 0"
-                  class="w-5 h-full rounded-l hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  class="absolute left-0 top-0 bottom-0 w-6 rounded-l bg-gray-600/30 hover:bg-gray-500/50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center z-10 transition-colors"
                 >
-                  <IconChevronLeft size="12" />
+                  <IconChevronLeft size="14" />
                 </button>
                 
-                <span class="flex-1 text-sm">
+                <span class="flex-1 py-1.5 px-8 text-sm">
                   {{ upgrade.name }} (+{{ t2r1Level }})
                 </span>
+                
                 <button 
                   @click="adjustT2r1Level(1)"
                   :disabled="t2r1Level >= upgrade.maxLevel"
-                  class="w-5 h-full rounded-r hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  class="absolute right-0 top-0 bottom-0 w-6 rounded-r bg-gray-600/30 hover:bg-gray-500/50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center z-10 transition-colors"
                 >
-                  <IconChevronRight size="12" />
+                  <IconChevronRight size="14" />
                 </button>
-              </div> -->
+              </div>
             </div>
           </div>
         </div>
@@ -347,7 +348,7 @@
                 <span class="font-medium text-white text-sm">New Ultima Cap Upgrades</span>
               </div>
               
-              <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+              <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
                 <div 
                   v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => !u.hasLevels)" 
                   :key="`new-${upgrade.id}`"
@@ -363,36 +364,36 @@
                 </div>
                 
                 <!-- T2R1 New Level Control -->
-                <!-- <div 
+                <div 
                   v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => u.hasLevels)" 
                   :key="`new-${upgrade.id}`"
-                  class="px-2 py-1.5 rounded border text-center text-sm transition-colors flex items-center justify-between"
+                  class="rounded border text-center text-sm transition-colors flex items-stretch relative"
                   :class="newT2r1Level > t2r1Level ? 
-                    'bg-blue-900/50 border-blue-500 text-blue-300' : 
+                    'bg-blue-800/40 border-blue-500 text-blue-300' : 
                     newT2r1Level > 0 ? 
-                    'bg-gray-700/50 border-gray-600 text-gray-400' :
-                    'bg-gray-800 border-gray-700 text-gray-400'"
+                    'bg-gray-700/40 border-gray-600 text-gray-400' :
+                    'bg-gray-700/40 border-gray-700 text-gray-400'"
                 >
                   <button 
                     @click="adjustNewT2r1Level(-1)"
                     :disabled="newT2r1Level <= t2r1Level"
-                    class="w-5 h-full rounded-l hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    class="absolute left-0 top-0 bottom-0 w-6 rounded-l bg-gray-600/30 hover:bg-gray-500/50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center z-10 transition-colors"
                   >
-                    <IconChevronLeft size="12" />
+                    <IconChevronLeft size="14" />
                   </button>
                   
-                  <span class="flex-1 text-sm px-2">
+                  <span class="flex-1 py-1.5 px-8 text-sm">
                     {{ upgrade.name }} (+{{ newT2r1Level * upgrade.bonus }})
                   </span>
                   
                   <button 
                     @click="adjustNewT2r1Level(1)"
                     :disabled="newT2r1Level >= upgrade.maxLevel"
-                    class="w-5 h-full rounded-r hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    class="absolute right-0 top-0 bottom-0 w-6 rounded-r bg-gray-600/30 hover:bg-gray-500/50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center z-10 transition-colors"
                   >
-                    <IconChevronRight size="12" />
+                    <IconChevronRight size="14" />
                   </button>
-                </div> -->
+                </div>
               </div>
             </div>
             
