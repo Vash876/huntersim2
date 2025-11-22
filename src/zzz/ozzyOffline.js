@@ -391,12 +391,10 @@ class Profiler {
           const row = START_ROW + i;
           
           const name         = upgradeNameCol[i][0];
-          const baseLevel    = currentLevelCol[i][0];
-          const plannedLevel = upgradeStates.get(row) || 0;
-          const currentLevel = baseLevel + plannedLevel; // Aktuelles Level = Base + geplante Käufe
+          const currentLevel = currentLevelCol[i][0];
           const cost         = parseValue(nextCostCol[i][0]);
           const efficiency   = parseValue(efficiencyCol[i][0]);
-
+  
           
           if (!name || !cost || cost <= 0 || !efficiency) continue;
           
@@ -408,7 +406,9 @@ class Profiler {
             efficiency: efficiency
           });
         }
-        profiler.end(`Iteration ${iteration} - Parse Data`);        // Find the best affordable upgrade, prioritizing different upgrade types
+        profiler.end(`Iteration ${iteration} - Parse Data`);
+        
+        // Find the best affordable upgrade, prioritizing different upgrade types
         profiler.start(`Iteration ${iteration} - Find Best Upgrade`);
         const bestUpgrade = findBestAffordableUpgrade(upgrades, availableOrbs, batchUpgradeRows);
         profiler.end(`Iteration ${iteration} - Find Best Upgrade`);
@@ -636,9 +636,7 @@ class Profiler {
         for (let i = 0; i < TOTAL_ROWS; i++) {
           const row = START_ROW + i;
           const name = upgradeNameCol[i][0];
-          const baseLevel = currentLevelCol[i][0];
-          const plannedLevel = upgradeStates.get(row) || 0;
-          const currentLevel = baseLevel + plannedLevel; // Aktuelles Level = Base + geplante Käufe
+          const currentLevel = currentLevelCol[i][0];
           const cost = parseValue(nextCostCol[i][0]);
           const efficiency = parseValue(efficiencyCol[i][0]);
           if (!name || !cost || cost <= 0 || !efficiency) continue;

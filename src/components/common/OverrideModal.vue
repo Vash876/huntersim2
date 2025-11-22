@@ -507,6 +507,7 @@ function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
     evolution: {
       level: 'evolution_level',
       nodes: {
+        gem2: 'evolution_gem2',
         gem3: 'evolution_gem3',
         gem6: 'evolution_gem6'
       },

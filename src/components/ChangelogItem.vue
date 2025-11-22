@@ -1,14 +1,16 @@
 <template>
   <ul :class="[
     'space-y-2', 
-    depth === 0 ? 'list-disc' : 'list-[\'•\']',
+    depth === 0 ? 'list-disc list-inside' : 'list-none',
     depth === 0 ? 'pl-0' : 'pl-4 mt-2'
   ]">
     <li v-for="(item, index) in items" :key="index" class="text-gray-200">
       <template v-if="typeof item === 'string'">
+        <span v-if="depth > 0" class="inline-block mr-2">•</span>
         <span v-html="item"></span>
       </template>
       <template v-else>
+        <span v-if="depth > 0" class="inline-block mr-2">•</span>
         <span v-html="item.text"></span>
         <ChangelogItem 
           v-if="item.subItems && item.subItems.length" 
