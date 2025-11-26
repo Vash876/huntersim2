@@ -247,6 +247,8 @@ export function calculateOrbGains(currentStats, planStats, boosts = []) {
     console.log(`✅ Applied Gem Node Orb Multiplier (calculateOrbGains): ${gemNodeMultiplier}x (${beforeGemNodes.toFixed(2)} → ${result.toFixed(2)})`);
   }
 
+  result *= 1.006;
+
   return result;
 }
 
@@ -435,8 +437,10 @@ export function calculateOrbGainsCalc(currentStats, planStats, boosts = []) {
   if (gemNodeMultiplier > 1) {
     const beforeGemNodes = result;
     result *= gemNodeMultiplier;
+
     console.log(`✅ Applied Gem Node Orb Multiplier: ${gemNodeMultiplier}x (${beforeGemNodes.toFixed(2)} → ${result.toFixed(2)})`);
   }
+  result *= 1.006;
 
   return isNaN(result) ? 0 : result;
 }

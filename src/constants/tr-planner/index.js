@@ -1383,7 +1383,8 @@ export const researchData_permanent = {
     { level: 6, price: 8000, multiplier: 1.4 }
   ],
   'temporal_ultima': [
-    { level: 1, price: 4935, multiplier: 1.1 }
+    { level: 1, price: 4935, multiplier: 1.1 },
+    { level: 7, price: 6525, multiplier: 1.2 }
     // Additional levels not yet discovered
   ],
   '109': [

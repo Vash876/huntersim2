@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.9.3',
+    date: '2025-11-26',
+    changes: [
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added second Temporal Ultima OO Research',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.9.2',
     date: '2025-11-22',
     changes: [
