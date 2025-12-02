@@ -496,6 +496,19 @@ export const allBoosts = [
     tooltip: '0',
     multiplier: 1.04,
   },  
+  {
+    id: 40,
+    key: 'cm57',
+    label: 'CM #57',
+    category: 'cm',
+    unlock: 'power',
+    unlock_level: 2,
+    type: 'boolean',
+    orbcalc: true,
+    permanent: false,
+    tooltip: '0',
+    multiplier: 1.2,
+  },  
 
   // Boon E
   {

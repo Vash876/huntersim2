@@ -7,7 +7,7 @@ import { max } from 'lodash';
 export const ATTRACTION_GEM = {
   id: 'attraction',
   name: 'Attraction',
-  maxLevel: 3,
+  maxLevel: 4,
   color: {
     primary: '#3b82f6', // Blue
     secondary: '#60a5fa', // Light Blue
@@ -120,90 +120,90 @@ export const ATTRACTION_GEM = {
         }
       }
     },
-    // {
-    //   id: 'knox-loot-bonus',
-    //   name: 'Knox Loot Bonus',
-    //   hunter: true,
-    //   resource: 'Hunter',
-    //   weight : 'Knox',
-    //   baseCost: 1.2e11,
-    //   costMultiplier: 2.66,
-    //   costBumps: [
-    //     { startLevel: 9, multiplier: 1.2 },
-    //     { startLevel: 19, multiplier: 1.3 },
-    //     { startLevel: 29, multiplier: 1.4 },
-    //     { startLevel: 39, multiplier: 2 }
-    //   ],
-    //   maxLevel: 50,
-    //   color: '#a3f15e',
-    //   unlock: 4,
-    //   multiplier: {
-    //     base: 1.05,
-    //     calculate: (level, attractionLevel) => {
-    //       const levelDecimal = new Decimal(level);
-    //       const attractionLevelDecimal = new Decimal(attractionLevel);
-    //       const innerBase = new Decimal(1.05).pow(levelDecimal); // Math.pow(1.05, level)
-    //       const outerExponent = new Decimal(1).add(attractionLevelDecimal.mul(0.1)).sub(0.1); // 1 + (attractionLevel * 0.1) - 0.1
-    //       return innerBase.pow(outerExponent);
-    //     }
-    //   }
-    // },
-    // {
-    //   id: 'catch-up-power-knox',
-    //   name: 'Catch-Up Power (Knox)',
-    //   hunter: true,
-    //   resource: 'Hunter',
-    //   weight: {
-    //     calculate: (weights) => {
-    //       const knoxWeight = weights.knox || 0;
-    //       return knoxWeight / 25;
-    //     }
-    //   },
-    //   baseCost: 4e10,
-    //   costMultiplier: 100,
-    //   maxLevel: 5,
-    //   color: '#5afff7',
-    //   unlock: 4,
-    //   costBumps: [], // No cost bumps
-    //   multiplier: {
-    //     base: 1.08,
-    //     calculate: (level, attractionLevel) => {
-    //       const levelDecimal = new Decimal(level);
-    //       const attractionLevelDecimal = new Decimal(attractionLevel);
-    //       const innerBase = new Decimal(1.08).pow(levelDecimal); // Math.pow(1.08, level)
-    //       const outerExponent = new Decimal(1).add(attractionLevelDecimal.mul(0.1)).sub(0.1); // 1 + (attractionLevel * 0.1) - 0.1
-    //       return innerBase.pow(outerExponent);
-    //     }
-    //   }
-    // },
-    // {
-    //   id: 'ship-evo-bonus',
-    //   name: 'Ship Evolution Bonus',
-    //   hunter: false,
-    //   resource: 'Ship',
-    //   weight: {
-    //     calculate: (weights) => {
-    //       const shipWeight = weights.ship || 0;
-    //       return shipWeight / 25;
-    //     }
-    //   },
-    //   baseCost: 7e10,
-    //   costMultiplier: 1.45,
-    //   maxLevel: 100,
-    //   color: '#a9dded',
-    //   unlock: 4,
-    //   costBumps: [], // No cost bumps
-    //   multiplier: {
-    //     base: 1.01,
-    //     calculate: (level, attractionLevel) => {
-    //       const levelDecimal = new Decimal(level);
-    //       const attractionLevelDecimal = new Decimal(attractionLevel);
-    //       const innerBase = new Decimal(1.01).pow(levelDecimal); // Math.pow(1.01, level)
-    //       const outerExponent = new Decimal(1).add(attractionLevelDecimal.mul(0.1)).sub(0.1); // 1 + (attractionLevel * 0.1) - 0.1
-    //       return innerBase.pow(outerExponent);
-    //     }
-    //   }
-    // }
+    {
+      id: 'knox-loot-bonus',
+      name: 'Knox Loot Bonus',
+      hunter: true,
+      resource: 'Hunter',
+      weight : 'Knox',
+      baseCost: 1.2e11,
+      costMultiplier: 3,
+      costBumps: [
+        { startLevel: 9, multiplier: 1.2 },
+        { startLevel: 19, multiplier: 1.3 },
+        { startLevel: 29, multiplier: 1.4 },
+        { startLevel: 39, multiplier: 2 }
+      ],
+      maxLevel: 50,
+      color: '#a3f15e',
+      unlock: 4,
+      multiplier: {
+        base: 1.03,
+        calculate: (level, attractionLevel) => {
+          const levelDecimal = new Decimal(level);
+          const attractionLevelDecimal = new Decimal(attractionLevel);
+          const innerBase = new Decimal(1.03).pow(levelDecimal); // Math.pow(1.03, level)
+          const outerExponent = new Decimal(1).add(attractionLevelDecimal.mul(0.1)).sub(0.1); // 1 + (attractionLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
+        }
+      }
+    },
+    {
+      id: 'catch-up-power-knox',
+      name: 'Catch-Up Power (Knox)',
+      hunter: true,
+      resource: 'Hunter',
+      weight: {
+        calculate: (weights) => {
+          const knoxWeight = weights.knox || 0;
+          return knoxWeight / 25;
+        }
+      },
+      baseCost: 4e10,
+      costMultiplier: 100,
+      maxLevel: 5,
+      color: '#5afff7',
+      unlock: 4,
+      costBumps: [], // No cost bumps
+      multiplier: {
+        base: 1.08,
+        calculate: (level, attractionLevel) => {
+          const levelDecimal = new Decimal(level);
+          const attractionLevelDecimal = new Decimal(attractionLevel);
+          const innerBase = new Decimal(1.08).pow(levelDecimal); // Math.pow(1.08, level)
+          const outerExponent = new Decimal(1).add(attractionLevelDecimal.mul(0.1)).sub(0.1); // 1 + (attractionLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
+        }
+      }
+    },
+    {
+      id: 'ship-evo-bonus',
+      name: 'Ship Evolution Bonus',
+      hunter: false,
+      resource: 'Ship',
+      weight: {
+        calculate: (weights) => {
+          const shipWeight = weights.ship || 0;
+          return shipWeight / 25;
+        }
+      },
+      baseCost: 8e10,
+      costMultiplier: 1.55,
+      maxLevel: 100,
+      color: '#a9dded',
+      unlock: 4,
+      costBumps: [], // No cost bumps
+      multiplier: {
+        base: 1.01,
+        calculate: (level, attractionLevel) => {
+          const levelDecimal = new Decimal(level);
+          const attractionLevelDecimal = new Decimal(attractionLevel);
+          const innerBase = new Decimal(1.01).pow(levelDecimal); // Math.pow(1.01, level)
+          const outerExponent = new Decimal(1).add(attractionLevelDecimal.mul(0.1)).sub(0.1); // 1 + (attractionLevel * 0.1) - 0.1
+          return innerBase.pow(outerExponent);
+        }
+      }
+    }
   ]
 };
 

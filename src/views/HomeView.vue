@@ -2,6 +2,25 @@
 const changelog = 
 [
   {
+    version: '2.9.4',
+    date: '2025-12-02',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added new Attraction Gem Level 4 Upgrades',
+          'Added new batch of Construction Milestones',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added new batch of Construction Milestones',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.9.3',
     date: '2025-11-26',
     changes: [

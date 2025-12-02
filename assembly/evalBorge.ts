@@ -599,7 +599,7 @@ function arrayAverage(arr: StaticArray<f64>): f64 {
 function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd: i32, trample: boolean, 
              special: f64, iap: boolean, ultima: f64, scavengers: i32, m0: i32, r7: i32, r19: i32, 
              attrGN2: boolean, attrGN3: boolean, lootgu: i32, i14: i32, i80: i32, i44: i32, 
-             research81: i32, research95: i32, research105: i32, cm46: i32, cm47: i32, cm48: i32, cm51: i32, cm53: i32, cm54: i32, gadgetLootMulti: f64, 
+             research81: i32, research95: i32, research105: i32, cm46: i32, cm47: i32, cm48: i32, cm51: i32, cm53: i32, cm54: i32, cm57: i32, gadgetLootMulti: f64, 
              card: boolean, i60: i32, evo_gem2: i32, evoGN3: i32, tempGN4: i32, stelzi: i32, i103: i32, exodus_gem1: i32, exodus_temporalEvolutionCount: i32,
              exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32, inno_gem5: i32, crea_gem4: i32, crea_gem5: i32,
              crea_galvTrinketsCount: i32
@@ -712,7 +712,7 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
     research95Multi *= (1 + (i + 1) * 0.01);
   }
   
-  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * Math.pow(1.05, scavengers as f64) * Math.pow(1.02, m0 as f64) * Math.pow(1.05, r7 as f64) * (attrGN3 ? 1.25 : 1) * (Math.pow(Math.pow(1.07, lootgu as f64), 1 + attr * 0.1 - 0.1)) * Math.pow(1.1, i14 as f64) * Math.pow(1.1, i80 as f64) * Math.pow(1.08, i44 as f64) * (research81 >= 1 ? 1.1 : 1) * (research81 >= 4 ? 1.2 : 1) * research95Multi * (research105 >= 1 ? 1.2 : 1) * (research105 >= 4 ? 1.3 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1) * (cm53 > 0 ? 1.02 : 1) * (cm54 > 0 ? 1.02 : 1) * Math.pow(1.02, stelzi as f64) * Math.pow(1.08, i103 as f64) * (1 + exodus_temporalEvolutionCount * 0.002) * (inno_gem5 > 0 ? 1.3 : 1) * (evo_gem2 > 0 ? 1.1 : 1);
+  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * Math.pow(1.05, scavengers as f64) * Math.pow(1.02, m0 as f64) * Math.pow(1.05, r7 as f64) * (attrGN3 ? 1.25 : 1) * (Math.pow(Math.pow(1.07, lootgu as f64), 1 + attr * 0.1 - 0.1)) * Math.pow(1.1, i14 as f64) * Math.pow(1.1, i80 as f64) * Math.pow(1.08, i44 as f64) * (research81 >= 1 ? 1.1 : 1) * (research81 >= 4 ? 1.2 : 1) * research95Multi * (research105 >= 1 ? 1.2 : 1) * (research105 >= 4 ? 1.3 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1) * (cm53 > 0 ? 1.02 : 1) * (cm54 > 0 ? 1.02 : 1) * (cm57 > 0 ? 1.1 : 1) * Math.pow(1.02, stelzi as f64) * Math.pow(1.08, i103 as f64) * (1 + exodus_temporalEvolutionCount * 0.002) * (inno_gem5 > 0 ? 1.3 : 1) * (evo_gem2 > 0 ? 1.1 : 1);
   
   let loopLoot = normalized * ((Math.pow(stageGrowth, Math.floor(Math.min(currentEnem, enemiesInSection - 10) / 10) as f64) - 1) / (stageGrowth - 1) * 10 + (Math.min(currentEnem, enemiesInSection - 10) - Math.floor(Math.min(currentEnem, enemiesInSection - 10) / 10) * 10) * Math.pow(stageGrowth, Math.floor(Math.min(currentEnem, enemiesInSection - 10) / 10) as f64)) * includedMultis * (1 + borge.ll * 0.2 * borge.effect);
   
@@ -807,7 +807,7 @@ export function EVALBORGE_WASM(
   creaGN1: i32, creaGN2: i32, creaGN3: i32, innoGN3: i32,
   attrGN2: i32, attrGN3: i32, attr: i32, catchup99gu: i32,
   lootgu: i32, card: i32, research81: i32, research95: i32, research105: i32, iters: i32,
-  cm46: i32, cm47: i32, cm48: i32, cm51: i32, cm53: i32, cm54: i32, creaBorgeStat: i32, evo_gem2: i32, evoGN3: i32,
+  cm46: i32, cm47: i32, cm48: i32, cm51: i32, cm53: i32, cm54: i32, cm57: i32, creaBorgeStat: i32, evo_gem2: i32, evoGN3: i32,
   tempGN4: i32, stelzi: i32, i103: i32, exodus_gem1: i32, exodus_temporalEvolutionCount: i32,
   exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32, inno_gem5: i32,
   crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32, evo_gem6: i32
@@ -902,7 +902,7 @@ export function EVALBORGE_WASM(
   
   // Simulation laufen lassen
   for (let i = 0; i < iters; i++) {
-    sim(borge, maxStage, attr, catchup99gu, reviveCd, trample > 0, special, iap > 0, ultima, scavengers, m0, r7, r19, attrGN2 > 0, attrGN3 > 0, lootgu, i14, i80, i44, research81, research95, research105, cm46, cm47, cm48, cm51, cm53, cm54, gadgetLootMulti, card > 0, i60, evo_gem2, evoGN3, tempGN4, stelzi, i103, exodus_gem1, exodus_temporalEvolutionCount, exodus_gem4, exodus_constructionMilestoneCount, temp_gem6, inno_gem5, crea_gem4, crea_gem5, crea_galvTrinketsCount);
+    sim(borge, maxStage, attr, catchup99gu, reviveCd, trample > 0, special, iap > 0, ultima, scavengers, m0, r7, r19, attrGN2 > 0, attrGN3 > 0, lootgu, i14, i80, i44, research81, research95, research105, cm46, cm47, cm48, cm51, cm53, cm54, cm57, gadgetLootMulti, card > 0, i60, evo_gem2, evoGN3, tempGN4, stelzi, i103, exodus_gem1, exodus_temporalEvolutionCount, exodus_gem4, exodus_constructionMilestoneCount, temp_gem6, inno_gem5, crea_gem4, crea_gem5, crea_galvTrinketsCount);
   }
 
   // lastBorge für Export-Funktionen setzen

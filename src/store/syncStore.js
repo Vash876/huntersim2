@@ -48,7 +48,17 @@ export const useSyncStore = defineStore('sync', () => {
   function init() {
     const savedLastSync = localStorage.getItem('sync_last_sync_time');
     if (savedLastSync) {
-      lastSyncTime.value = savedLastSync;
+      const savedTime = new Date(savedLastSync).getTime();
+      const now = Date.now();
+      
+      // Validate: lastSyncTime should not be in the future
+      if (savedTime > now) {
+        console.warn('⚠️ Invalid lastSyncTime detected (in the future), clearing it:', savedLastSync);
+        localStorage.removeItem('sync_last_sync_time');
+        lastSyncTime.value = null;
+      } else {
+        lastSyncTime.value = savedLastSync;
+      }
     }
     
     // Initial auth state update

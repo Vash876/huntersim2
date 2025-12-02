@@ -39,7 +39,7 @@ function calculateLootOzzy(level) {
  */
 function calculateLootKnox(level) {
   const value = 1.2e11 * 
-                Math.pow(2.66, level) * 
+                Math.pow(3, level) * 
                 Math.pow(1.2, Math.max(0, level - 9)) * 
                 Math.pow(1.3, Math.max(0, level - 19)) * 
                 Math.pow(1.4, Math.max(0, level - 29)) * 

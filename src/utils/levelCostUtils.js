@@ -29,7 +29,7 @@ const LEVEL_COST_CONSTANTS = {
     baseMultiplier: 1,
     highLevelMultiplier: 4,
     growthFactor: 1.6,
-    highLevelGrowthFactor: 1.22
+    highLevelGrowthFactor: 1.2
   }
 };
 

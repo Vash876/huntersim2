@@ -780,6 +780,16 @@ export const UPGRADES = {
       unlock_lvl: 2,
     },
     {
+      id: "cm57",
+      name: "CM #57",
+      type: "boolean",
+      temporary: true,
+      value: 1.1,
+      multitext: "Hunter Loot Rewards",
+      unlock_gem: "power",
+      unlock_lvl: 2,
+    },
+    {
       id: "exodus_gem4",
       name: "Milestones Count ",
       hunter: "all",

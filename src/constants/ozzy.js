@@ -99,7 +99,7 @@ export const HUNTER_UPGRADES = {
   loopmods: ["scavenger2", "stelzi"],
   shardmilestones: ["m0"],
   researches: ["res810", "res95", "res105"],
-  cms: ["cm46", "cm47", "cm48", "cm51", "cm53", "cm54"],
+  cms: ["cm46", "cm47", "cm48", "cm51", "cm53", "cm54", "cm57"],
   diamondspecials: ["hunterloot", "reviveboost"],
   diamondcards: ["iridian"],	
   iap: ["travpack"],
@@ -190,6 +190,7 @@ export const EVAL_PARAMS = [
   "upgrades.cms.cm51",              // Construction Milestone 51
   "upgrades.cms.cm53",              // Construction Milestone 53
   "upgrades.cms.cm54",              // Construction Milestone 54
+  "upgrades.cms.cm57",              // Construction Milestone 57
   "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
   "upgrades.gems_nodes.evolution_gem2", // Evolution Gem Node 2
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
@@ -296,6 +297,7 @@ export const OVERRIDES = {
     "upgrades.cms.cm51",
     "upgrades.cms.cm53",
     "upgrades.cms.cm54",
+    "upgrades.cms.cm57",
     "upgrades.cms.exodus_gem4",
   ],
 

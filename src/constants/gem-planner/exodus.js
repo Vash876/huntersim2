@@ -190,11 +190,11 @@ export const EXODUS_GEM = {
       unlock: 5,
       costBumps: [
         { startLevel: 1, multiplier: 0.04 },
-        { startLevel: 2, multiplier: 0.5 },
-        { startLevel: 4, multiplier: 1.1 },
-        { startLevel: 9, multiplier: 1.1 },
-        { startLevel: 14, multiplier: 1.1 },
-        { startLevel: 19, multiplier: 1.1 },
+        { startLevel: 2, multiplier: 0.55 },  
+        { startLevel: 4, multiplier: 1.0 },
+        { startLevel: 7, multiplier: 1.1 },
+        { startLevel: 12, multiplier: 1.1 },
+        { startLevel: 17, multiplier: 1.1 },
       ], 
       multiplier: {
         calculate: (level, exodusLevel) => {
