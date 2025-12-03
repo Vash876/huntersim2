@@ -1181,6 +1181,26 @@ const visibleCategories = computed(() => {
         return isAttractionLevel4;
       }
       
+      // Spezielle Logik für Tier 2 Relics - nur anzeigen wenn das entsprechende Gem-Level erreicht ist
+      if (param.key.startsWith('upgrades.relics.')) {
+        const relicId = param.key.split('.')[2]; // z.B. 't2r5'
+        
+        // Finde das Relic in UPGRADES, um unlock_gem und unlock_lvl zu prüfen
+        const relic = UPGRADES.relics?.find(r => r.id === relicId);
+        
+        // Wenn das Relic unlock_gem und unlock_lvl hat, prüfe die Bedingung
+        if (relic?.unlock_gem && relic?.unlock_lvl) {
+          // Hole das Gem-Level aus dem gemPlannerStore
+          const gemLevel = gemPlannerStore.gemStates?.[relic.unlock_gem]?.level || 0;
+          
+          // Nur anzeigen wenn das Gem-Level erreicht ist
+          return gemLevel >= relic.unlock_lvl;
+        }
+        
+        // Tier 1 Relics oder Relics ohne Unlock-Bedingung immer anzeigen
+        return true;
+      }
+      
       // Alle anderen Parameter immer anzeigen
       const shouldShow = true;
       

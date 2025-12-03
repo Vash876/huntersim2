@@ -6,7 +6,7 @@ import Decimal from 'break_infinity.js';
 export const POWER_GEM = {
   id: 'power',
   name: 'Power',
-  maxLevel: 2,
+  maxLevel: 3,
   color: {
     primary: '#8b5cf6', // Purple
     secondary: '#a78bfa', // Light Purple

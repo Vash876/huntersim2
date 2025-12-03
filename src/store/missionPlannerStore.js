@@ -78,6 +78,13 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   // Selected campaign for time calculation (e.g., 'C3-8')
   const selectedCampaign = useStorage('mission-planner-selected-campaign', null);
   
+  // Relic levels (persistent via localStorage)
+  // Format: { r1: level, r2: level, ..., r20: level }
+  const relicLevels = useStorage('mission-planner-relic-levels', {
+    r1: 0, r2: 0, r3: 0, r4: 0, r5: 0, r6: 0, r7: 0, r8: 0, r9: 0, r10: 0,
+    r11: 0, r12: 0, r13: 0, r14: 0, r15: 0, r16: 0, r17: 0, r18: 0, r19: 0, r20: 0,
+  });
+  
   // Fill order position for the selected campaign (1-17, inserts before farms at that position)
   // Default is 17 (last position, after all farms)
   const campaignFillOrder = useStorage('mission-planner-campaign-fill-order', 17);
@@ -438,19 +445,48 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   }
 
   /**
+   * Optimal campaign order for maximum fragments
+   * Strategy: Do final campaigns (CX-12) as late as possible to benefit from higher completed_campaigns multiplier
+   * Order: Normal campaigns first, then finals at positions 36, 40, 44, 48
+   */
+  const OPTIMAL_CAMPAIGN_ORDER = (() => {
+    const order = [];
+    const finals = ['C1-12', 'C2-12', 'C3-12', 'C4-12'];
+    
+    // First, add all non-final campaigns (44 campaigns total)
+    for (let planet = 1; planet <= 4; planet++) {
+      for (let mission = 1; mission <= 12; mission++) {
+        const tag = `C${planet}-${mission}`;
+        if (!finals.includes(tag)) {
+          order.push(tag);
+        }
+      }
+    }
+    
+    // Now insert finals at optimal positions (36, 40, 44, 48 = indices 35, 39, 43, 47)
+    // C1-12 at position 36 (index 35)
+    order.splice(35, 0, 'C1-12');
+    // C2-12 at position 40 (index 39)
+    order.splice(39, 0, 'C2-12');
+    // C3-12 at position 44 (index 43)
+    order.splice(43, 0, 'C3-12');
+    // C4-12 at position 48 (index 47)
+    order.splice(47, 0, 'C4-12');
+    
+    return order;
+  })();
+
+  /**
    * Total fragments from all 48 campaigns in one TR
-   * Each campaign uses its own completed_campaigns value (0-47)
-   * Final campaigns (C1-12, C2-12, C3-12, C4-12) have multipliers
+   * Uses optimal order: finals (CX-12) done as late as possible for maximum multiplier benefit
+   * Final campaigns have their own multipliers: C1-12=×2, C2-12=×3, C3-12=×13, C4-12=×19
    */
   const totalCampaignFragments = computed(() => {
     let total = 0;
     
-    // Process all 48 campaigns
+    // Process all 48 campaigns in optimal order
     for (let i = 0; i < 48; i++) {
-      // Get campaign tag for this index
-      const planet = Math.floor(i / 12) + 1;
-      const missionNum = (i % 12) + 1;
-      const tag = `C${planet}-${missionNum}`;
+      const tag = OPTIMAL_CAMPAIGN_ORDER[i];
       
       // Calculate fragments for this campaign (with its completed_campaigns index)
       let frags = calculateCampaignFragsForIndex(i);
@@ -1250,6 +1286,29 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     optimizeAndApply();
   }
 
+  // ============================================
+  // RELIC MANAGEMENT
+  // ============================================
+
+  /**
+   * Set a relic level
+   * @param {string} relicId - Relic ID (e.g., 'r1', 'r10')
+   * @param {number} level - New level
+   */
+  function setRelicLevel(relicId, level) {
+    const lvl = Math.max(0, parseInt(level) || 0);
+    relicLevels.value[relicId] = lvl;
+  }
+
+  /**
+   * Reset all relic levels to 0
+   */
+  function resetAllRelicLevels() {
+    Object.keys(relicLevels.value).forEach(relicId => {
+      relicLevels.value[relicId] = 0;
+    });
+  }
+
   /**
    * Get the effective fill order considering the campaign insertion
    * Returns an array of mission tags sorted by effective fill order
@@ -1439,6 +1498,13 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     getSelectedCampaignEstimatedTime,
     isCampaignManualMode,
     toggleCampaignManualMode,
+    
+    // State - Relics
+    relicLevels,
+    
+    // Actions - Relics
+    setRelicLevel,
+    resetAllRelicLevels,
     
     // Utility exports for components
     formatCompletionTime,

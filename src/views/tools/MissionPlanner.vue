@@ -71,27 +71,27 @@
         <div class="bg-gray-800/80 rounded-t-lg flex items-center justify-between mb-0">
           <div class="flex">
             <button
-              @click="activeTab = 'farms'"
+              @click="activeTab = 'missions'"
               class="px-4 py-2 font-semibold text-xs transition-colors duration-200 border-b-2 rounded-tl-lg"
-              :class="activeTab === 'farms' 
+              :class="activeTab === 'missions' 
                 ? 'bg-gray-700/50 text-blue-400 border-blue-500' 
                 : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
             >
               <div class="flex items-center gap-1.5">
                 <IconRefresh size="14" />
-                <span>Farms</span>
+                <span>Missions</span>
               </div>
             </button>
             <button
-              @click="activeTab = 'campaigns'"
+              @click="activeTab = 'relics'"
               class="px-4 py-2 font-semibold text-xs transition-colors duration-200 border-b-2"
-              :class="activeTab === 'campaigns' 
-                ? 'bg-gray-700/50 text-cyan-400 border-cyan-500' 
+              :class="activeTab === 'relics' 
+                ? 'bg-gray-700/50 text-amber-400 border-amber-500' 
                 : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
             >
               <div class="flex items-center gap-1.5">
-                <IconTarget size="14" />
-                <span>Campaigns</span>
+                <IconDiamond size="14" />
+                <span>Relics</span>
               </div>
             </button>
           </div>
@@ -109,15 +109,15 @@
           </div>
         </div>
 
-        <!-- Farm Missions Tab -->
-        <div v-if="activeTab === 'farms'">
+        <!-- Missions Tab (Farms + Campaign) -->
+        <div v-if="activeTab === 'missions'">
           <!-- Compact Table View -->
           <div class="bg-gray-800/50 rounded-b-lg border border-gray-700/50 border-t-0 overflow-hidden p-3">
             <table class="text-xs table-fixed w-full rounded-lg overflow-hidden">
               <thead class="bg-gray-700/80 text-gray-300">
                 <tr>
                   <th class="px-2 py-1.5 text-center rounded-tl-lg w-[6%]" title="Fill Order Priority">#</th>
-                  <th class="px-2 py-1.5 text-left w-[6%]">Mission</th>
+                  <th class="px-2 py-1.5 text-left w-[7%]">Mission</th>
                   <th class="px-2 py-1.5 text-center w-[7%]">Max</th>
                   <th class="px-2 py-1.5 text-center w-[7%]">Left</th>
                   <th class="px-2 py-1.5 text-center text-red-400 w-[7%]">T1</th>
@@ -266,7 +266,7 @@
               <tr 
                 :class="[
                   'bg-gray-800/40 border-l-2',
-                  missionPlannerStore.isCampaignManualMode() ? 'border-l-yellow-500' : 'border-l-purple-500'
+                  missionPlannerStore.isCampaignManualMode() ? 'border-l-yellow-500' : 'border-l-transparent'
                 ]"
               >
                 <!-- Fill Order -->
@@ -281,15 +281,13 @@
                 </td>
                 <!-- Mission Tag -->
                 <td class="px-2 py-1 font-mono">
-                  <button
+                  <span 
                     @click="showCampaignModal = true"
-                    class="px-2 py-0.5 rounded-md font-medium transition-colors"
-                    :class="missionPlannerStore.selectedCampaign 
-                      ? 'bg-purple-600 hover:bg-purple-500 text-white' 
-                      : 'bg-gray-600 hover:bg-gray-500 text-gray-300'"
+                    class="cursor-pointer hover:text-purple-300 transition-colors"
+                    :class="missionPlannerStore.selectedCampaign ? 'text-white' : 'text-gray-500'"
                   >
                     {{ missionPlannerStore.selectedCampaign || 'Select...' }}
-                  </button>
+                  </span>
                 </td>
                 <!-- Max Crew -->
                 <td class="px-2 py-1 text-center text-gray-400">{{ getSelectedCampaignMaxCrew() }}</td>
@@ -391,89 +389,78 @@
         </div>
       </div>
 
-      <!-- Campaign Missions Tab -->
-      <div v-if="activeTab === 'campaigns'">
-        <!-- Compact Table View -->
-        <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden">
-          <table class="w-full text-xs">
-            <thead class="bg-gray-700/80 text-gray-300">
-              <tr>
-                <th class="px-2 py-1.5 text-left w-16">Tag</th>
-                <th class="px-2 py-1.5 text-left">Mission</th>
-                <th class="px-2 py-1.5 text-center w-14">Crew</th>
-                <th class="px-2 py-1.5 text-center w-14 text-red-400">T1</th>
-                <th class="px-2 py-1.5 text-center w-14 text-orange-400">T2</th>
-                <th class="px-2 py-1.5 text-center w-14 text-yellow-400">T3</th>
-                <th class="px-2 py-1.5 text-center w-14 text-green-400">T4</th>
-                <th class="px-2 py-1.5 text-right w-20">Time</th>
-                <th class="px-2 py-1.5 text-right w-20">Frags</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template v-for="(missions, planetIndex) in campaignMissionsByPlanet" :key="planetIndex">
-                <!-- Planet Header Row -->
-                <tr class="bg-gray-700/50">
-                  <td colspan="9" class="px-2 py-1 font-semibold text-cyan-400">
-                    <IconPlanet size="14" class="inline mr-1.5 -mt-0.5" />
-                    {{ missions[0]?.planet || 'Unknown' }}
-                    <span class="text-gray-500 font-normal ml-2">(sequential unlock)</span>
-                  </td>
-                </tr>
-                <!-- Mission Rows -->
-                <tr 
-                  v-for="(mission, index) in missions" 
-                  :key="mission.tag"
-                  :class="index % 2 === 0 ? 'bg-gray-800/30' : 'bg-gray-800/50'"
-                >
-                  <td class="px-2 py-1 font-mono text-gray-400">{{ mission.tag }}</td>
-                  <td class="px-2 py-1 text-white">{{ mission.name }}</td>
-                  <td class="px-2 py-1 text-center text-gray-400">{{ formatNumber(mission.maxCrew) }}</td>
-                  <td class="px-1 py-0.5">
-                    <input
-                      :value="getAssignment(mission.tag).T1"
-                      @input="updateAssignment(mission.tag, 'T1', $event.target.value)"
-                      type="number"
-                      min="0"
-                      class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-white text-xs text-center focus:border-red-500 outline-none"
-                    />
-                  </td>
-                  <td class="px-1 py-0.5">
-                    <input
-                      :value="getAssignment(mission.tag).T2"
-                      @input="updateAssignment(mission.tag, 'T2', $event.target.value)"
-                      type="number"
-                      min="0"
-                      class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-white text-xs text-center focus:border-orange-500 outline-none"
-                    />
-                  </td>
-                  <td class="px-1 py-0.5">
-                    <input
-                      :value="getAssignment(mission.tag).T3"
-                      @input="updateAssignment(mission.tag, 'T3', $event.target.value)"
-                      type="number"
-                      min="0"
-                      class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-white text-xs text-center focus:border-yellow-500 outline-none"
-                    />
-                  </td>
-                  <td class="px-1 py-0.5">
-                    <input
-                      :value="getAssignment(mission.tag).T4"
-                      @input="updateAssignment(mission.tag, 'T4', $event.target.value)"
-                      type="number"
-                      min="0"
-                      class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-white text-xs text-center focus:border-green-500 outline-none"
-                    />
-                  </td>
-                  <td class="px-2 py-1 text-right font-mono text-gray-400">
-                    {{ getCampaignMissionStats(mission.tag).completionTimeFormatted }}
-                  </td>
-                  <td class="px-2 py-1 text-right font-mono text-cyan-400">
-                    {{ formatNumber(getCampaignMissionStats(mission.tag).fragsPerCompletion, 1) }}
-                  </td>
-                </tr>
-              </template>
-            </tbody>
-          </table>
+      <!-- Relics Tab -->
+      <div v-if="activeTab === 'relics'">
+        <div class="bg-gray-800/50 rounded-b-lg border border-gray-700/50 border-t-0 overflow-hidden p-3">
+          <!-- Summary Bar -->
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-700/50">
+            <div class="flex items-center gap-4 text-xs">
+              <span class="text-gray-400">Total Invested:</span>
+              <span class="text-amber-400 font-bold">{{ formatNumber(totalRelicInvestment) }}</span>
+            </div>
+            <div class="flex gap-2">
+              <button
+                @click="resetAllRelics"
+                class="px-2 py-1 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+              >
+                Reset All
+              </button>
+            </div>
+          </div>
+          
+          <!-- Tier 1 Relics -->
+          <div class="mb-4">
+            <h3 class="text-sm font-semibold text-amber-400 mb-2 flex items-center gap-2">
+              <IconDiamond size="14" />
+              Tier 1 Relics
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+              <div
+                v-for="relic in tier1Relics"
+                :key="relic.id"
+                class="bg-gray-700/50 rounded-lg p-2 border border-gray-600/50"
+              >
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-semibold text-white">{{ relic.id.toUpperCase() }}</span>
+                  <span class="text-xs text-gray-400">Max: {{ getRelicMaxLevel(relic.id) }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <ToolValueControls
+                    :value="relicLevels[relic.id] || 0"
+                    @update:value="updateRelicLevel(relic.id, $event)"
+                    :min-value="0"
+                    :max-value="getRelicMaxLevel(relic.id)"
+                    :step="1"
+                    :show-fast-controls="false"
+                    :auto-edit="true"
+                    value-class="text-white text-xs"
+                  />
+                  <div class="flex-1 text-right">
+                    <div class="text-xs text-gray-400">Next:</div>
+                    <div class="text-xs font-mono" :class="getRelicNextCost(relic.id) === Infinity ? 'text-gray-500' : 'text-cyan-400'">
+                      {{ getRelicNextCost(relic.id) === Infinity ? 'MAX' : formatNumber(getRelicNextCost(relic.id)) }}
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-1 flex justify-between text-xs">
+                  <span class="text-gray-500">Invested:</span>
+                  <span class="text-amber-400/80 font-mono">{{ formatNumber(getRelicTotalInvested(relic.id)) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Tier 2 Relics (Coming Soon) -->
+          <div>
+            <h3 class="text-sm font-semibold text-purple-400 mb-2 flex items-center gap-2">
+              <IconDiamond size="14" />
+              Tier 2 Relics
+              <span class="text-xs text-gray-500 font-normal">(Coming Soon)</span>
+            </h3>
+            <div class="bg-gray-700/30 rounded-lg p-4 text-center text-gray-500 text-xs">
+              Tier 2 relic formulas will be added soon
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -497,21 +484,31 @@ import {
   IconTrash,
   IconLock,
   IconLockOpen,
-  IconPlanet
+  IconPlanet,
+  IconDiamond
 } from '@tabler/icons-vue';
 import { PLANETS, FARM_MISSIONS, CAMPAIGN_MISSIONS } from '@/constants/mission-planner/missions';
+import { RELICS, RELIC_COSTS, getTier1Relics, calculateTotalCost, getRelicMaxLevel as getRelicMaxLevelFromData } from '@/constants/mission-planner/relics';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
+import { formatNumber } from '@/composables/format';
 import ModifiersPanel from '@/components/mission-planner/ModifiersPanel.vue';
 import CampaignSelectModal from '@/components/mission-planner/CampaignSelectModal.vue';
+import ToolValueControls from '@/composables/ToolValueControls.vue';
 
 // Store
 const missionPlannerStore = useMissionPlannerStore();
 
 // Tab state
-const activeTab = ref('farms');
+const activeTab = ref('missions');
 
 // Campaign Modal state
 const showCampaignModal = ref(false);
+
+// Relic levels from store (persistent)
+const relicLevels = computed(() => missionPlannerStore.relicLevels);
+
+// Tier 1 relics list
+const tier1Relics = computed(() => getTier1Relics());
 
 // Computed: Available Personnel from store
 const availablePersonnel = computed(() => missionPlannerStore.availablePersonnel);
@@ -679,14 +676,6 @@ function getCampaignMissionStats(missionTag) {
   return missionPlannerStore.getMissionStats(mission, personnel);
 }
 
-// Format number without thousand separators
-function formatNumber(num, decimals = 0) {
-  if (num === undefined || num === null) return '0';
-  if (!isFinite(num)) return '∞';
-  
-  return decimals > 0 ? num.toFixed(decimals) : Math.floor(num).toString();
-}
-
 // Format number with comma as thousand separator
 // Rounds values >= 1000, otherwise floors
 function formatNumberWithCommas(num, decimals = 0) {
@@ -766,6 +755,49 @@ function getSelectedCampaignFrags() {
   if (!campaign) return '-';
   const stats = missionPlannerStore.getMissionStats(campaign, getSelectedCampaignAssignment());
   return formatNumberWithCommas(stats.fragsPerCompletion || 0, 0);
+}
+
+// ==================== RELIC FUNCTIONS ====================
+
+// Update relic level (uses store)
+function updateRelicLevel(relicId, value) {
+  const level = Math.max(0, parseInt(value) || 0);
+  const maxLevel = getRelicMaxLevel(relicId);
+  missionPlannerStore.setRelicLevel(relicId, Math.min(level, maxLevel));
+}
+
+// Get max level for a relic
+function getRelicMaxLevel(relicId) {
+  return getRelicMaxLevelFromData(relicId);
+}
+
+// Get cost for next level
+function getRelicNextCost(relicId) {
+  const currentLevel = relicLevels.value[relicId] || 0;
+  const costFn = RELIC_COSTS[relicId];
+  if (!costFn) return 0;
+  return costFn(currentLevel);
+}
+
+// Get total invested in a relic (sum of all levels purchased)
+function getRelicTotalInvested(relicId) {
+  const currentLevel = relicLevels.value[relicId] || 0;
+  if (currentLevel === 0) return 0;
+  return calculateTotalCost(relicId, 0, currentLevel);
+}
+
+// Computed: Total investment across all relics
+const totalRelicInvestment = computed(() => {
+  let total = 0;
+  Object.keys(relicLevels.value).forEach(relicId => {
+    total += getRelicTotalInvested(relicId);
+  });
+  return total;
+});
+
+// Reset all relic levels (uses store)
+function resetAllRelics() {
+  missionPlannerStore.resetAllRelicLevels();
 }
 
 // Initialize store on mount

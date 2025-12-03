@@ -22,8 +22,8 @@
  (type $20 (func (param i32 i32 i32 i32 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32)))
  (type $21 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
  (type $22 (func (param f64)))
- (type $23 (func (param i32 i32 i32 i32 i32 i32 f64 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32)))
- (type $24 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
+ (type $23 (func (param i32 i32 i32 i32 i32 i32 f64 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32)))
+ (type $24 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
  (import "env" "abort" (func $~lib/builtins/abort (param i32 i32 i32 i32)))
  (global $assembly/evalBorge/seed (mut i32) (i32.const 12345))
  (global $~lib/rt/itcms/total (mut i32) (i32.const 0))
@@ -28186,26 +28186,26 @@
   i32.add
   global.set $~lib/memory/__stack_pointer
  )
- (func $assembly/evalKnox/knoxSim (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 f64) (param $7 i32) (param $8 f64) (param $9 i32) (param $10 f64) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32)
-  (local $28 i64)
-  (local $29 f64)
+ (func $assembly/evalKnox/knoxSim (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 f64) (param $7 i32) (param $8 f64) (param $9 i32) (param $10 f64) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32)
+  (local $29 i64)
   (local $30 f64)
   (local $31 f64)
   (local $32 f64)
   (local $33 f64)
   (local $34 f64)
   (local $35 f64)
-  (local $36 i64)
+  (local $36 f64)
   (local $37 i64)
   (local $38 i64)
-  (local $39 i32)
-  (local $40 i64)
-  (local $41 f64)
+  (local $39 i64)
+  (local $40 i32)
+  (local $41 i64)
   (local $42 f64)
-  (local $43 i64)
-  (local $44 f64)
+  (local $43 f64)
+  (local $44 i64)
   (local $45 f64)
-  (local $46 i64)
+  (local $46 f64)
+  (local $47 i64)
   global.get $~lib/memory/__stack_pointer
   i32.const 32
   i32.sub
@@ -28242,201 +28242,201 @@
      local.get $0
      i32.load offset=340
      f64.convert_i32_s
-     local.tee $30
-     local.get $30
+     local.tee $31
+     local.get $31
      f64.trunc
      f64.sub
-     local.get $30
+     local.get $31
      f64.copysign
      local.get $2
      f64.convert_i32_s
-     local.tee $29
+     local.tee $30
      f64.abs
      f64.const 1
      f64.eq
      br_if $__inlined_func$~lib/math/NativeMath.mod$1
      drop
-     local.get $29
-     i64.reinterpret_f64
-     local.tee $40
-     i64.const 52
-     i64.shr_u
-     i64.const 2047
-     i64.and
-     local.set $43
-     local.get $40
-     i64.const 1
-     i64.shl
-     local.tee $37
-     i64.eqz
      local.get $30
      i64.reinterpret_f64
-     local.tee $36
+     local.tee $41
      i64.const 52
      i64.shr_u
      i64.const 2047
      i64.and
-     local.tee $46
+     local.set $44
+     local.get $41
+     i64.const 1
+     i64.shl
+     local.tee $38
+     i64.eqz
+     local.get $31
+     i64.reinterpret_f64
+     local.tee $37
+     i64.const 52
+     i64.shr_u
+     i64.const 2047
+     i64.and
+     local.tee $47
      i64.const 2047
      i64.eq
      i32.or
-     local.get $29
-     local.get $29
+     local.get $30
+     local.get $30
      f64.ne
      i32.or
      if
+      local.get $31
       local.get $30
-      local.get $29
       f64.mul
-      local.tee $29
-      local.get $29
+      local.tee $30
+      local.get $30
       f64.div
       br $__inlined_func$~lib/math/NativeMath.mod$1
      end
-     local.get $36
+     local.get $37
      i64.const 1
      i64.shl
-     local.tee $28
-     local.get $37
+     local.tee $29
+     local.get $38
      i64.le_u
      if
-      local.get $30
-      local.get $28
-      local.get $37
+      local.get $31
+      local.get $29
+      local.get $38
       i64.ne
       f64.convert_i32_u
       f64.mul
       br $__inlined_func$~lib/math/NativeMath.mod$1
      end
-     local.get $36
+     local.get $37
      i64.const 63
      i64.shr_u
-     local.set $38
-     local.get $46
+     local.set $39
+     local.get $47
      i64.eqz
      if (result i64)
-      local.get $36
+      local.get $37
       i64.const 1
-      local.get $46
-      local.get $36
+      local.get $47
+      local.get $37
       i64.const 12
       i64.shl
       i64.clz
       i64.sub
-      local.tee $46
+      local.tee $47
       i64.sub
       i64.shl
      else
-      local.get $36
+      local.get $37
       i64.const 4503599627370495
       i64.and
       i64.const 4503599627370496
       i64.or
      end
-     local.set $28
-     local.get $43
+     local.set $29
+     local.get $44
      i64.eqz
      if (result i64)
-      local.get $40
+      local.get $41
       i64.const 1
-      local.get $43
-      local.get $40
+      local.get $44
+      local.get $41
       i64.const 12
       i64.shl
       i64.clz
       i64.sub
-      local.tee $43
+      local.tee $44
       i64.sub
       i64.shl
      else
-      local.get $40
+      local.get $41
       i64.const 4503599627370495
       i64.and
       i64.const 4503599627370496
       i64.or
      end
-     local.set $36
+     local.set $37
      loop $while-continue|0
-      local.get $43
-      local.get $46
+      local.get $44
+      local.get $47
       i64.lt_s
       if
-       local.get $28
-       local.get $36
+       local.get $29
+       local.get $37
        i64.ge_u
        if (result i64)
-        local.get $30
+        local.get $31
         f64.const 0
         f64.mul
-        local.get $28
-        local.get $36
+        local.get $29
+        local.get $37
         i64.eq
         br_if $__inlined_func$~lib/math/NativeMath.mod$1
         drop
-        local.get $28
-        local.get $36
+        local.get $29
+        local.get $37
         i64.sub
        else
-        local.get $28
+        local.get $29
        end
        i64.const 1
        i64.shl
-       local.set $28
-       local.get $46
+       local.set $29
+       local.get $47
        i64.const 1
        i64.sub
-       local.set $46
+       local.set $47
        br $while-continue|0
       end
      end
-     local.get $28
-     local.get $36
+     local.get $29
+     local.get $37
      i64.ge_u
      if
-      local.get $30
+      local.get $31
       f64.const 0
       f64.mul
-      local.get $28
-      local.get $36
+      local.get $29
+      local.get $37
       i64.eq
       br_if $__inlined_func$~lib/math/NativeMath.mod$1
       drop
-      local.get $28
-      local.get $36
+      local.get $29
+      local.get $37
       i64.sub
-      local.set $28
+      local.set $29
      end
-     local.get $46
-     local.get $28
+     local.get $47
+     local.get $29
      i64.const 11
      i64.shl
      i64.clz
-     local.tee $37
+     local.tee $38
      i64.sub
-     local.set $36
-     local.get $28
-     local.get $37
+     local.set $37
+     local.get $29
+     local.get $38
      i64.shl
-     local.set $28
-     local.get $36
+     local.set $29
+     local.get $37
      i64.const 0
      i64.gt_s
      if (result i64)
-      local.get $28
+      local.get $29
       i64.const 4503599627370496
       i64.sub
-      local.get $36
+      local.get $37
       i64.const 52
       i64.shl
       i64.or
      else
-      local.get $28
+      local.get $29
       i64.const 1
-      local.get $36
+      local.get $37
       i64.sub
       i64.shr_u
      end
-     local.get $38
+     local.get $39
      i64.const 63
      i64.shl
      i64.or
@@ -28570,12 +28570,12 @@
    local.get $0
    i32.load offset=4
    f64.convert_i32_s
-   local.set $29
+   local.set $30
    global.get $~lib/memory/__stack_pointer
    local.get $0
    i32.store offset=4
    local.get $0
-   local.get $29
+   local.get $30
    local.get $0
    i32.load offset=348
    i32.const 10
@@ -28720,29 +28720,29 @@
        i32.store offset=4
        local.get $2
        f64.load offset=96
-       local.set $31
+       local.set $32
        global.get $~lib/memory/__stack_pointer
        global.get $assembly/evalKnox/currentKnox
        local.tee $2
        i32.store offset=4
        local.get $2
        f64.load offset=16
-       local.set $30
+       local.set $31
        global.get $~lib/memory/__stack_pointer
        global.get $assembly/evalKnox/currentKnox
        local.tee $2
        i32.store offset=4
        local.get $2
        f64.load offset=112
-       local.set $29
+       local.set $30
        global.get $~lib/memory/__stack_pointer
        global.get $assembly/evalKnox/currentKnox
        local.tee $2
        i32.store offset=4
        local.get $4
+       local.get $32
        local.get $31
        local.get $30
-       local.get $29
        local.get $2
        i32.load offset=200
        if (result f64)
@@ -28793,29 +28793,29 @@
       i32.store offset=4
       local.get $2
       f64.load
-      local.set $31
+      local.set $32
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalKnox/currentKnoxEnemy
       local.tee $2
       i32.store offset=4
       local.get $2
       f64.load offset=8
-      local.set $30
+      local.set $31
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalKnox/currentKnoxEnemy
       local.tee $2
       i32.store offset=4
       local.get $2
       f64.load offset=56
-      local.set $29
+      local.set $30
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalKnox/currentKnox
       local.tee $2
       i32.store offset=4
       local.get $4
+      local.get $32
       local.get $31
       local.get $30
-      local.get $29
       f64.const 1
       local.get $2
       i32.load offset=264
@@ -28902,7 +28902,7 @@
              i32.store offset=4
              local.get $2
              f64.load offset=8
-             local.set $30
+             local.set $31
              global.get $~lib/memory/__stack_pointer
              global.get $assembly/evalKnox/currentKnox
              local.tee $2
@@ -28923,14 +28923,14 @@
              f64.const 1
              f64.add
              f64.mul
-             local.set $29
+             local.set $30
              global.get $~lib/memory/__stack_pointer
              global.get $assembly/evalKnox/currentKnox
              local.tee $2
              i32.store offset=4
              local.get $7
+             local.get $31
              local.get $30
-             local.get $29
              local.get $2
              i32.load offset=304
              f64.convert_i32_s
@@ -29036,7 +29036,7 @@
       i32.store offset=4
       local.get $4
       f64.load
-      local.set $29
+      local.set $30
       global.get $~lib/memory/__stack_pointer
       global.get $assembly/evalKnox/KNOX_ENEMIES
       local.tee $4
@@ -29051,7 +29051,7 @@
       local.get $4
       i32.store offset=4
       local.get $7
-      local.get $29
+      local.get $30
       local.get $4
       f64.load
       f64.add
@@ -29098,7 +29098,7 @@
        i32.store offset=4
        local.get $4
        f64.load
-       local.set $29
+       local.set $30
        global.get $~lib/memory/__stack_pointer
        global.get $assembly/evalKnox/KNOX_ENEMIES
        local.tee $4
@@ -29113,7 +29113,7 @@
        local.get $4
        i32.store offset=4
        local.get $7
-       local.get $29
+       local.get $30
        local.get $4
        f64.load offset=8
        f64.add
@@ -29254,26 +29254,26 @@
    global.get $~lib/memory/__stack_pointer
    i32.const 3
    call $~lib/staticarray/StaticArray<f64>#constructor
-   local.tee $39
+   local.tee $40
    i32.store offset=24
    global.get $~lib/memory/__stack_pointer
-   local.get $39
+   local.get $40
    i32.store
-   local.get $39
+   local.get $40
    i32.const 0
    f64.const 0.6
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $39
+   local.get $40
    i32.store
-   local.get $39
+   local.get $40
    i32.const 1
    f64.const 0.7
    call $~lib/staticarray/StaticArray<f64>#__set
    global.get $~lib/memory/__stack_pointer
-   local.get $39
+   local.get $40
    i32.store
-   local.get $39
+   local.get $40
    i32.const 2
    f64.const 0.8
    call $~lib/staticarray/StaticArray<f64>#__set
@@ -29294,7 +29294,7 @@
    i32.const 100
    i32.div_s
    f64.convert_i32_s
-   local.tee $29
+   local.tee $30
    call $~lib/math/NativeMath.pow
    f64.const 1.3
    f64.mul
@@ -29305,7 +29305,7 @@
    local.get $4
    i32.const 1
    f64.const 2
-   local.get $29
+   local.get $30
    call $~lib/math/NativeMath.pow
    f64.const 1.4
    f64.mul
@@ -29326,9 +29326,9 @@
    f64.mul
    f64.add
    global.get $~lib/memory/__stack_pointer
-   local.get $39
+   local.get $40
    i32.store
-   local.get $39
+   local.get $40
    call $assembly/evalBorge/arrayAverage
    f64.const 3
    f64.mul
@@ -29341,7 +29341,7 @@
    f64.add
    f64.const 10
    f64.div
-   local.set $35
+   local.set $36
    i32.const 1010
    local.set $1
    global.get $~lib/memory/__stack_pointer
@@ -29363,7 +29363,7 @@
    i32.gt_s
    select
    f64.mul
-   local.set $30
+   local.set $31
    f64.const 1
    local.set $6
    i32.const 1
@@ -29524,8 +29524,13 @@
    i32.gt_s
    select
    f64.mul
-   local.set $34
-   local.get $35
+   f64.const 1.08
+   local.get $28
+   f64.convert_i32_s
+   call $~lib/math/NativeMath.pow
+   f64.mul
+   local.set $35
+   local.get $36
    f64.const 1.074
    global.get $assembly/evalKnox/currentKnoxEnem
    f64.convert_i32_s
@@ -29567,7 +29572,7 @@
    f64.mul
    f64.add
    f64.mul
-   local.get $30
+   local.get $31
    f64.mul
    global.get $~lib/memory/__stack_pointer
    local.get $0
@@ -29601,15 +29606,15 @@
      f64.const 100
      call $~lib/math/NativeMath.pow
      f64.mul
-     local.set $29
+     local.set $30
      global.get $~lib/memory/__stack_pointer
      local.get $27
      i32.store
      global.get $~lib/memory/__stack_pointer
      local.get $27
      i32.store offset=4
-     local.get $44
-     local.get $29
+     local.get $45
+     local.get $30
      local.get $27
      local.get $27
      i32.const 20
@@ -29623,21 +29628,21 @@
      f64.mul
      f64.const 800
      f64.mul
-     local.get $30
+     local.get $31
      f64.mul
-     local.get $34
+     local.get $35
      f64.mul
-     local.tee $32
+     local.tee $33
      f64.add
-     local.set $44
+     local.set $45
      global.get $~lib/memory/__stack_pointer
      local.get $7
      i32.store
      global.get $~lib/memory/__stack_pointer
      local.get $7
      i32.store offset=4
-     local.get $42
-     local.get $29
+     local.get $43
+     local.get $30
      local.get $7
      local.get $7
      i32.const 20
@@ -29651,23 +29656,23 @@
      f64.mul
      f64.const 600
      f64.mul
-     local.get $30
+     local.get $31
      f64.mul
-     local.get $34
+     local.get $35
      f64.mul
-     local.tee $31
+     local.tee $32
      f64.add
-     local.set $42
+     local.set $43
      global.get $~lib/memory/__stack_pointer
-     local.get $39
+     local.get $40
      i32.store
      global.get $~lib/memory/__stack_pointer
-     local.get $39
+     local.get $40
      i32.store offset=4
-     local.get $45
-     local.get $29
-     local.get $39
-     local.get $39
+     local.get $46
+     local.get $30
+     local.get $40
+     local.get $40
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -29679,21 +29684,21 @@
      f64.mul
      f64.const 400
      f64.mul
-     local.get $30
+     local.get $31
      f64.mul
-     local.get $34
+     local.get $35
      f64.mul
      local.tee $10
      f64.add
-     local.set $45
+     local.set $46
      global.get $~lib/memory/__stack_pointer
      local.get $4
      i32.store
      global.get $~lib/memory/__stack_pointer
      local.get $4
      i32.store offset=4
-     local.get $41
-     local.get $29
+     local.get $42
+     local.get $30
      local.get $4
      local.get $4
      i32.const 20
@@ -29707,13 +29712,13 @@
      f64.mul
      f64.const 300
      f64.mul
-     local.get $30
+     local.get $31
      f64.mul
-     local.get $34
+     local.get $35
      f64.mul
      local.tee $6
      f64.add
-     local.set $41
+     local.set $42
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.store
@@ -29723,7 +29728,7 @@
      local.get $0
      local.get $0
      f64.load offset=352
-     local.get $32
+     local.get $33
      f64.add
      f64.store offset=352
      global.get $~lib/memory/__stack_pointer
@@ -29735,7 +29740,7 @@
      local.get $0
      local.get $0
      f64.load offset=360
-     local.get $31
+     local.get $32
      f64.add
      f64.store offset=360
      global.get $~lib/memory/__stack_pointer
@@ -29779,7 +29784,7 @@
      i32.store offset=8
      local.get $0
      local.get $6
-     local.get $29
+     local.get $30
      local.get $27
      local.get $27
      i32.const 20
@@ -29793,7 +29798,7 @@
      f64.mul
      f64.const 800
      f64.mul
-     local.get $30
+     local.get $31
      f64.mul
      f64.add
      f64.store offset=328
@@ -29814,7 +29819,7 @@
      i32.store offset=8
      local.get $0
      local.get $6
-     local.get $29
+     local.get $30
      local.get $7
      local.get $7
      i32.const 20
@@ -29828,7 +29833,7 @@
      f64.mul
      f64.const 600
      f64.mul
-     local.get $30
+     local.get $31
      f64.mul
      f64.add
      f64.store offset=328
@@ -29842,16 +29847,16 @@
      f64.load offset=328
      local.set $6
      global.get $~lib/memory/__stack_pointer
-     local.get $39
+     local.get $40
      i32.store offset=4
      global.get $~lib/memory/__stack_pointer
-     local.get $39
+     local.get $40
      i32.store offset=8
      local.get $0
      local.get $6
-     local.get $29
-     local.get $39
-     local.get $39
+     local.get $30
+     local.get $40
+     local.get $40
      i32.const 20
      i32.sub
      i32.load offset=16
@@ -29863,7 +29868,7 @@
      f64.mul
      f64.const 400
      f64.mul
-     local.get $30
+     local.get $31
      f64.mul
      f64.add
      f64.store offset=328
@@ -29884,7 +29889,7 @@
      i32.store offset=8
      local.get $0
      local.get $6
-     local.get $29
+     local.get $30
      local.get $4
      local.get $4
      i32.const 20
@@ -29898,7 +29903,7 @@
      f64.mul
      f64.const 300
      f64.mul
-     local.get $30
+     local.get $31
      f64.mul
      f64.add
      f64.store offset=328
@@ -29908,11 +29913,11 @@
      local.set $3
      i32.const 1000
      local.set $1
-     local.get $29
+     local.get $30
      f64.const 5
      f64.mul
      local.tee $10
-     local.get $35
+     local.get $36
      f64.mul
      f64.const 1.074
      f64.mul
@@ -29921,7 +29926,7 @@
      f64.convert_i32_s
      f64.const 990
      f64.min
-     local.tee $29
+     local.tee $30
      f64.const 10
      f64.div
      f64.floor
@@ -29933,7 +29938,7 @@
      f64.div
      f64.const 10
      f64.mul
-     local.get $29
+     local.get $30
      local.get $6
      f64.const 10
      f64.mul
@@ -29944,9 +29949,9 @@
      f64.mul
      f64.add
      f64.mul
-     local.get $30
+     local.get $31
      f64.mul
-     local.set $29
+     local.set $30
      global.get $~lib/memory/__stack_pointer
      local.get $0
      i32.store
@@ -29960,7 +29965,7 @@
      local.get $0
      i32.store
      local.get $8
-     local.get $29
+     local.get $30
      local.get $6
      local.get $0
      f64.load offset=64
@@ -29981,60 +29986,60 @@
    f64.mul
    f64.const 10
    f64.div
-   local.tee $33
+   local.tee $34
    local.get $27
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $35
+   local.get $36
    f64.div
-   local.get $34
-   f64.mul
-   local.get $44
-   f64.add
-   local.set $32
-   global.get $~lib/memory/__stack_pointer
-   local.get $7
-   i32.store
-   local.get $33
-   local.get $7
-   call $assembly/evalBorge/arrayAverage
-   f64.mul
    local.get $35
-   f64.div
-   local.get $34
-   f64.mul
-   local.get $42
-   f64.add
-   local.set $31
-   global.get $~lib/memory/__stack_pointer
-   local.get $39
-   i32.store
-   local.get $33
-   local.get $39
-   call $assembly/evalBorge/arrayAverage
-   f64.mul
-   local.get $35
-   f64.div
-   local.get $34
    f64.mul
    local.get $45
    f64.add
-   local.set $30
+   local.set $33
+   global.get $~lib/memory/__stack_pointer
+   local.get $7
+   i32.store
+   local.get $34
+   local.get $7
+   call $assembly/evalBorge/arrayAverage
+   f64.mul
+   local.get $36
+   f64.div
+   local.get $35
+   f64.mul
+   local.get $43
+   f64.add
+   local.set $32
+   global.get $~lib/memory/__stack_pointer
+   local.get $40
+   i32.store
+   local.get $34
+   local.get $40
+   call $assembly/evalBorge/arrayAverage
+   f64.mul
+   local.get $36
+   f64.div
+   local.get $35
+   f64.mul
+   local.get $46
+   f64.add
+   local.set $31
    global.get $~lib/memory/__stack_pointer
    local.get $4
    i32.store
    local.get $8
    f64.const 10
    f64.div
-   local.tee $29
+   local.tee $30
    local.get $4
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $35
+   local.get $36
    f64.div
-   local.get $34
+   local.get $35
    f64.mul
-   local.get $41
+   local.get $42
    f64.add
    local.set $10
    global.get $~lib/memory/__stack_pointer
@@ -30051,13 +30056,13 @@
    i32.store offset=4
    local.get $0
    local.get $6
-   local.get $33
+   local.get $34
    local.get $27
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $35
+   local.get $36
    f64.div
-   local.get $34
+   local.get $35
    f64.mul
    f64.add
    f64.store offset=352
@@ -30075,13 +30080,13 @@
    i32.store offset=4
    local.get $0
    local.get $6
-   local.get $33
+   local.get $34
    local.get $7
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $35
+   local.get $36
    f64.div
-   local.get $34
+   local.get $35
    f64.mul
    f64.add
    f64.store offset=360
@@ -30095,17 +30100,17 @@
    f64.load offset=368
    local.set $6
    global.get $~lib/memory/__stack_pointer
-   local.get $39
+   local.get $40
    i32.store offset=4
    local.get $0
    local.get $6
-   local.get $33
-   local.get $39
+   local.get $34
+   local.get $40
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $35
+   local.get $36
    f64.div
-   local.get $34
+   local.get $35
    f64.mul
    f64.add
    f64.store offset=368
@@ -30123,13 +30128,13 @@
    i32.store offset=4
    local.get $0
    local.get $6
-   local.get $29
+   local.get $30
    local.get $4
    call $assembly/evalBorge/arrayAverage
    f64.mul
-   local.get $35
+   local.get $36
    f64.div
-   local.get $34
+   local.get $35
    f64.mul
    f64.add
    f64.store offset=376
@@ -30140,7 +30145,7 @@
    local.get $0
    i32.store offset=4
    local.get $0
-   local.get $32
+   local.get $33
    local.get $0
    f64.load offset=384
    f64.min
@@ -30152,7 +30157,7 @@
    local.get $0
    i32.store offset=4
    local.get $0
-   local.get $32
+   local.get $33
    local.get $0
    f64.load offset=392
    f64.max
@@ -30164,7 +30169,7 @@
    local.get $0
    i32.store offset=4
    local.get $0
-   local.get $31
+   local.get $32
    local.get $0
    f64.load offset=400
    f64.min
@@ -30176,7 +30181,7 @@
    local.get $0
    i32.store offset=4
    local.get $0
-   local.get $31
+   local.get $32
    local.get $0
    f64.load offset=408
    f64.max
@@ -30188,7 +30193,7 @@
    local.get $0
    i32.store offset=4
    local.get $0
-   local.get $30
+   local.get $31
    local.get $0
    f64.load offset=416
    f64.min
@@ -30200,7 +30205,7 @@
    local.get $0
    i32.store offset=4
    local.get $0
-   local.get $30
+   local.get $31
    local.get $0
    f64.load offset=424
    f64.max
@@ -30449,11 +30454,11 @@
   call $~lib/builtins/abort
   unreachable
  )
- (func $assembly/evalKnox/EVALKNOX_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 f64) (param $35 f64) (param $36 i32) (param $37 i32) (param $38 i32) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32) (param $83 i32) (param $84 i32) (param $85 i32) (param $86 i32) (param $87 i32) (param $88 i32) (result f64)
-  (local $89 f64)
+ (func $assembly/evalKnox/EVALKNOX_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 f64) (param $35 f64) (param $36 i32) (param $37 i32) (param $38 i32) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32) (param $83 i32) (param $84 i32) (param $85 i32) (param $86 i32) (param $87 i32) (param $88 i32) (param $89 i32) (result f64)
   (local $90 f64)
   (local $91 f64)
   (local $92 f64)
+  (local $93 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 12
   i32.sub
@@ -30515,25 +30520,25 @@
    f64.const 1.001
    local.get $31
    f64.convert_i32_s
-   local.tee $89
+   local.tee $90
    call $~lib/math/NativeMath.pow
    f64.const 1.02
    local.get $31
    i32.const 10
    i32.div_s
    f64.convert_i32_s
-   local.tee $90
+   local.tee $91
+   call $~lib/math/NativeMath.pow
+   f64.mul
+   local.set $92
+   f64.const 1.005
+   local.get $90
+   call $~lib/math/NativeMath.pow
+   f64.const 1.02
+   local.get $91
    call $~lib/math/NativeMath.pow
    f64.mul
    local.set $91
-   f64.const 1.005
-   local.get $89
-   call $~lib/math/NativeMath.pow
-   f64.const 1.02
-   local.get $90
-   call $~lib/math/NativeMath.pow
-   f64.mul
-   local.set $90
    global.get $~lib/memory/__stack_pointer
    call $assembly/evalKnox/Knox#constructor
    local.tee $31
@@ -30565,7 +30570,7 @@
    else
     f64.const 1
    end
-   local.set $92
+   local.set $93
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=4
@@ -30583,7 +30588,7 @@
    f64.mul
    f64.const 20
    f64.add
-   local.get $91
+   local.get $92
    f64.mul
    local.get $70
    f64.convert_i32_s
@@ -30591,7 +30596,7 @@
    f64.mul
    f64.const 1
    f64.add
-   local.tee $89
+   local.tee $90
    f64.mul
    f64.const 1.0777
    f64.const 1
@@ -30630,7 +30635,7 @@
     f64.const 1
    end
    f64.mul
-   local.get $92
+   local.get $93
    f64.mul
    f64.store offset=8
    global.get $~lib/memory/__stack_pointer
@@ -30660,9 +30665,9 @@
    f64.mul
    f64.const 1.2
    f64.add
-   local.get $91
+   local.get $92
    f64.mul
-   local.get $89
+   local.get $90
    f64.mul
    f64.const 1.03
    f64.const 1
@@ -30716,9 +30721,9 @@
    f64.mul
    f64.const 0.05
    f64.add
-   local.get $91
+   local.get $92
    f64.mul
-   local.get $89
+   local.get $90
    f64.mul
    f64.const 1.0777
    f64.const 1
@@ -31024,12 +31029,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=8
-   local.set $89
+   local.set $90
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $89
+   local.get $90
    local.get $31
    i32.load offset=280
    f64.convert_i32_s
@@ -31047,12 +31052,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=40
-   local.set $89
+   local.set $90
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $89
+   local.get $90
    local.get $31
    i32.load offset=280
    f64.convert_i32_s
@@ -31070,12 +31075,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=24
-   local.set $89
+   local.set $90
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $89
+   local.get $90
    local.get $31
    i32.load offset=280
    f64.convert_i32_s
@@ -31093,12 +31098,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=48
-   local.set $89
+   local.set $90
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $89
+   local.get $90
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -31114,7 +31119,7 @@
    i32.store offset=8
    local.get $31
    f64.load offset=72
-   local.set $89
+   local.set $90
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
@@ -31123,13 +31128,13 @@
    f64.convert_i32_s
    f64.const 0.01
    f64.mul
-   local.set $91
+   local.set $92
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $89
-   local.get $91
+   local.get $90
+   local.get $92
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -31163,7 +31168,7 @@
    i32.store offset=8
    local.get $31
    f64.load offset=64
-   local.set $89
+   local.set $90
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
@@ -31172,13 +31177,13 @@
    f64.convert_i32_s
    f64.const 0.02
    f64.mul
-   local.set $91
+   local.set $92
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $89
-   local.get $91
+   local.get $90
+   local.get $92
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -31195,7 +31200,7 @@
    i32.store offset=8
    local.get $31
    f64.load offset=56
-   local.set $89
+   local.set $90
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
@@ -31204,13 +31209,13 @@
    f64.convert_i32_s
    f64.const 0.01
    f64.mul
-   local.set $91
+   local.set $92
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $89
-   local.get $91
+   local.get $90
+   local.get $92
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -31249,12 +31254,12 @@
    f64.const 3
    f64.div
    f64.add
-   local.set $89
+   local.set $90
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $89
+   local.get $90
    local.get $31
    i32.load offset=4
    i32.const 1
@@ -31295,12 +31300,12 @@
    f64.convert_i32_s
    f64.const 100
    f64.add
-   local.set $89
+   local.set $90
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $89
+   local.get $90
    local.get $31
    i32.load offset=4
    i32.const 1
@@ -31328,7 +31333,7 @@
      local.get $86
      local.get $87
      local.get $88
-     local.get $90
+     local.get $91
      local.get $39
      local.get $34
      local.get $33
@@ -31352,6 +31357,7 @@
      local.get $79
      local.get $80
      local.get $82
+     local.get $89
      call $assembly/evalKnox/knoxSim
      local.get $0
      i32.const 1

@@ -39,12 +39,12 @@
               <IconPlanet size="14" class="mr-1.5" />
               Planet 1: Wasta-7
             </h3>
-            <div class="flex flex-wrap gap-1.5">
+            <div class="grid grid-cols-12 gap-1">
               <button
                 v-for="n in 12"
                 :key="`C1-${n}`"
                 @click="selectCampaign(`C1-${n}`)"
-                class="px-2.5 py-1.5 rounded text-xs font-mono transition-colors"
+                class="py-1.5 rounded text-xs font-mono transition-colors text-center"
                 :class="getCampaignButtonClass(`C1-${n}`)"
               >
                 C1-{{ n }}
@@ -58,12 +58,12 @@
               <IconPlanet size="14" class="mr-1.5" />
               Planet 2: Cryton
             </h3>
-            <div class="flex flex-wrap gap-1.5">
+            <div class="grid grid-cols-12 gap-1">
               <button
                 v-for="n in 12"
                 :key="`C2-${n}`"
                 @click="selectCampaign(`C2-${n}`)"
-                class="px-2.5 py-1.5 rounded text-xs font-mono transition-colors"
+                class="py-1.5 rounded text-xs font-mono transition-colors text-center"
                 :class="getCampaignButtonClass(`C2-${n}`)"
               >
                 C2-{{ n }}
@@ -77,12 +77,12 @@
               <IconPlanet size="14" class="mr-1.5" />
               Planet 3: Son-Egetuar
             </h3>
-            <div class="flex flex-wrap gap-1.5">
+            <div class="grid grid-cols-12 gap-1">
               <button
                 v-for="n in 12"
                 :key="`C3-${n}`"
                 @click="selectCampaign(`C3-${n}`)"
-                class="px-2.5 py-1.5 rounded text-xs font-mono transition-colors"
+                class="py-1.5 rounded text-xs font-mono transition-colors text-center"
                 :class="getCampaignButtonClass(`C3-${n}`)"
               >
                 C3-{{ n }}
@@ -96,12 +96,12 @@
               <IconPlanet size="14" class="mr-1.5" />
               Planet 4: Sekhur-5
             </h3>
-            <div class="flex flex-wrap gap-1.5">
+            <div class="grid grid-cols-12 gap-1">
               <button
                 v-for="n in 12"
                 :key="`C4-${n}`"
                 @click="selectCampaign(`C4-${n}`)"
-                class="px-2.5 py-1.5 rounded text-xs font-mono transition-colors"
+                class="py-1.5 rounded text-xs font-mono transition-colors text-center"
                 :class="getCampaignButtonClass(`C4-${n}`)"
               >
                 C4-{{ n }}

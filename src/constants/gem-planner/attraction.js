@@ -188,7 +188,7 @@ export const ATTRACTION_GEM = {
         }
       },
       baseCost: 8e10,
-      costMultiplier: 1.55,
+      costMultiplier: 1.65,
       maxLevel: 100,
       color: '#a9dded',
       unlock: 4,

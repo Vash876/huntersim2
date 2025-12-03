@@ -5,6 +5,7 @@ export const UPGRADES = {
   relics: [
     {
       id: "r4",
+      tier: 1,
       name: "#4 The Disk of Dawn",
       type: "level",
       upgradeType: "additive",   
@@ -14,6 +15,7 @@ export const UPGRADES = {
     },
     {
       id: "r7",
+      tier: 1,
       name: "#7 Manifestation Core: Titan",
       type: "level",
       upgradeType: "multiplicative", 
@@ -23,6 +25,7 @@ export const UPGRADES = {
     },
     {
       id: "r16",
+      tier: 1,
       name: "#16 The Long-Range Artillery Crawler",
       type: "level",
       upgradeType: "additive",
@@ -32,6 +35,7 @@ export const UPGRADES = {
     },
     {
       id: "r17",
+      tier: 1,
       name: "#17 The Bee-gone Companion Drone",
       type: "level",
       upgradeType: "additive",
@@ -41,12 +45,25 @@ export const UPGRADES = {
     },
     {
       id: "r19",
+      tier: 1,
       name: "#19 The Book of Mephisto",
       type: "level",
       upgradeType: "multiplicative",
       value: 2,                 
       maxLevel: 8,
       multitext: "EXP Gained",
+    },
+    {
+      id: "t2r5",
+      tier: 2,
+      unlock_gem: "power",
+      unlock_lvl: 3,
+      name: "#5 The Gorgon Eye",
+      type: "level",
+      upgradeType: "multiplicative",
+      value: 1.08 ,
+      maxLevel: 100,
+      multitext: "Loot Reward",
     }
   ],
 
