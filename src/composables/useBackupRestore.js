@@ -10,6 +10,7 @@ import { useUltimaStore } from '@/store/ultimaStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
 import { useTSStore } from '@/store/tsStore';
+import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 
 export function useBackupRestore() {
   const hunterStore = useHunterStore();
@@ -19,6 +20,7 @@ export function useBackupRestore() {
   const gemPlannerStore = useGemPlannerStore();
   const inscryptionPlannerStore = useInscryptionPlannerStore();
   const tsStore = useTSStore();
+  const missionPlannerStore = useMissionPlannerStore();
 
   const isCreatingBackup = ref(false);
   const isRestoring = ref(false);
@@ -133,6 +135,9 @@ export function useBackupRestore() {
       const inscryptionPlannerSettings = localStorage.getItem('inscryption-planner-settings');
       const inscryptionSelectedBuildId = localStorage.getItem('inscryption-planner-selectedBuildId');
       
+      // 16. Mission Planner Daten (Pinia Store mit exportData)
+      const missionPlannerData = missionPlannerStore.exportData();
+      
       // Backup-Datenpaket erstellen
       const backupData = {
         data: {
@@ -160,6 +165,7 @@ export function useBackupRestore() {
             inscryption_planner_settings: inscryptionPlannerSettings ? JSON.parse(inscryptionPlannerSettings) : {},
             inscryption_planner_selectedBuildId: inscryptionSelectedBuildId
           },
+          missionPlannerStore: missionPlannerData,
           storageInfo: storageInfo
         },
         version: '2.1.0', // Version erhöht für IndexedDB-Kompatibilität
@@ -400,6 +406,15 @@ export function useBackupRestore() {
             tsStore.settings[key] = oldSettings[key];
           }
         });
+      }
+      
+      // 6.6. Restore Mission Planner Store
+      if (backupData.data.missionPlannerStore) {
+        console.log('📥 Restoring Mission Planner data from backup...');
+        const importSuccess = missionPlannerStore.importData(backupData.data.missionPlannerStore);
+        if (!importSuccess) {
+          console.warn('⚠️ Failed to import Mission Planner data, but continuing with other data...');
+        }
       }
       
       // 7. Restore localStorage data

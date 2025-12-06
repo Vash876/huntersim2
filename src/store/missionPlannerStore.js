@@ -1401,6 +1401,78 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   }
 
   // ============================================
+  // BACKUP / RESTORE
+  // ============================================
+  
+  /**
+   * Export all persistent data for backup
+   * @returns {Object} All persistent store data
+   */
+  function exportData() {
+    return {
+      modifierValues: JSON.parse(JSON.stringify(modifierValues.value)),
+      settings: JSON.parse(JSON.stringify(settings.value)),
+      missionAssignments: JSON.parse(JSON.stringify(missionAssignments.value)),
+      manualModeMissions: JSON.parse(JSON.stringify(manualModeMissions.value)),
+      fillOrder: JSON.parse(JSON.stringify(fillOrder.value)),
+      selectedCampaign: selectedCampaign.value,
+      relicLevels: JSON.parse(JSON.stringify(relicLevels.value)),
+      campaignFillOrder: campaignFillOrder.value,
+      campaignManualMode: campaignManualMode.value,
+    };
+  }
+
+  /**
+   * Import data from backup
+   * @param {Object} data - Backup data to restore
+   * @returns {boolean} Success status
+   */
+  function importData(data) {
+    try {
+      if (!data) {
+        console.warn('No Mission Planner data to import');
+        return false;
+      }
+
+      console.log('📥 Importing Mission Planner data...');
+
+      if (data.modifierValues) {
+        Object.assign(modifierValues.value, data.modifierValues);
+      }
+      if (data.settings) {
+        Object.assign(settings.value, data.settings);
+      }
+      if (data.missionAssignments) {
+        Object.assign(missionAssignments.value, data.missionAssignments);
+      }
+      if (data.manualModeMissions) {
+        Object.assign(manualModeMissions.value, data.manualModeMissions);
+      }
+      if (data.fillOrder) {
+        Object.assign(fillOrder.value, data.fillOrder);
+      }
+      if (data.selectedCampaign !== undefined) {
+        selectedCampaign.value = data.selectedCampaign;
+      }
+      if (data.relicLevels) {
+        Object.assign(relicLevels.value, data.relicLevels);
+      }
+      if (data.campaignFillOrder !== undefined) {
+        campaignFillOrder.value = data.campaignFillOrder;
+      }
+      if (data.campaignManualMode !== undefined) {
+        campaignManualMode.value = data.campaignManualMode;
+      }
+
+      console.log('✅ Mission Planner data imported successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to import Mission Planner data:', error);
+      return false;
+    }
+  }
+
+  // ============================================
   // RETURN
   // ============================================
   
@@ -1451,6 +1523,10 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     exportConfig,
     importConfig,
     initialize,
+    
+    // Backup / Restore
+    exportData,
+    importData,
     
     // Actions - Mission Calculations
     getMissionStats,

@@ -100,6 +100,7 @@ export const useSyncStore = defineStore('sync', () => {
       const { useGemPlannerStore } = await import('@/store/gemPlannerStore');
       const { useInscryptionPlannerStore } = await import('@/store/inscryptionPlannerStore');
       const { useTSStore } = await import('@/store/tsStore');
+      const { useMissionPlannerStore } = await import('@/store/missionPlannerStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
@@ -108,6 +109,7 @@ export const useSyncStore = defineStore('sync', () => {
       const gemPlannerStore = useGemPlannerStore();
       const inscryptionPlannerStore = useInscryptionPlannerStore();
       const tsStore = useTSStore();
+      const missionPlannerStore = useMissionPlannerStore();
 
       // Create backup data (same as Settings createBackup)
       const hunterStoreState = JSON.parse(JSON.stringify(hunterStore.$state));
@@ -124,6 +126,7 @@ export const useSyncStore = defineStore('sync', () => {
           gemPlannerStore: gemPlannerStore.exportData(),
           inscryptionPlannerStore: JSON.parse(JSON.stringify(inscryptionPlannerStore.$state)),
           tsStore: JSON.parse(JSON.stringify(tsStore.settings)),
+          missionPlannerStore: missionPlannerStore.exportData(),
           localStorage: {
             gadgetCalculator_currentLevels: JSON.parse(localStorage.getItem('gadgetCalculator_currentLevels') || '{}'),
             gadgetCalculator_targetLevels: JSON.parse(localStorage.getItem('gadgetCalculator_targetLevels') || '{}'),
@@ -194,6 +197,7 @@ export const useSyncStore = defineStore('sync', () => {
       const { useGemPlannerStore } = await import('@/store/gemPlannerStore');
       const { useInscryptionPlannerStore } = await import('@/store/inscryptionPlannerStore');
       const { useTSStore } = await import('@/store/tsStore');
+      const { useMissionPlannerStore } = await import('@/store/missionPlannerStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
@@ -202,6 +206,7 @@ export const useSyncStore = defineStore('sync', () => {
       const gemPlannerStore = useGemPlannerStore();
       const inscryptionPlannerStore = useInscryptionPlannerStore();
       const tsStore = useTSStore();
+      const missionPlannerStore = useMissionPlannerStore();
 
       // Restore stores (same as Settings restoreFromBackup)
       if (backupData.data.hunterStore) {
@@ -292,6 +297,15 @@ export const useSyncStore = defineStore('sync', () => {
         });
       }
 
+      // Restore Mission Planner Store
+      if (backupData.data.missionPlannerStore) {
+        console.log('📥 Restoring Mission Planner data from cloud backup...');
+        const importSuccess = missionPlannerStore.importData(backupData.data.missionPlannerStore);
+        if (!importSuccess) {
+          console.warn('⚠️ Failed to import Mission Planner data from cloud, but continuing with other data...');
+        }
+      }
+
       // Restore localStorage
       if (backupData.data.localStorage) {
         const localStorageData = backupData.data.localStorage;
@@ -340,6 +354,38 @@ export const useSyncStore = defineStore('sync', () => {
         }
         if (localStorageData.inscryption_planner_selectedBuildId) {
           localStorage.setItem('inscryption-planner-selectedBuildId', localStorageData.inscryption_planner_selectedBuildId);
+        }
+        
+        // Mission Planner localStorage - backward compatibility for old backups
+        // Only restore from localStorage if missionPlannerStore data was not present
+        if (!backupData.data.missionPlannerStore) {
+          if (localStorageData.mission_planner_modifiers) {
+            localStorage.setItem('mission-planner-modifiers', JSON.stringify(localStorageData.mission_planner_modifiers));
+          }
+          if (localStorageData.mission_planner_settings) {
+            localStorage.setItem('mission-planner-settings', JSON.stringify(localStorageData.mission_planner_settings));
+          }
+          if (localStorageData.mission_planner_assignments) {
+            localStorage.setItem('mission-planner-assignments', JSON.stringify(localStorageData.mission_planner_assignments));
+          }
+          if (localStorageData.mission_planner_manual_missions) {
+            localStorage.setItem('mission-planner-manual-missions', JSON.stringify(localStorageData.mission_planner_manual_missions));
+          }
+          if (localStorageData.mission_planner_fill_order) {
+            localStorage.setItem('mission-planner-fill-order', JSON.stringify(localStorageData.mission_planner_fill_order));
+          }
+          if (localStorageData.mission_planner_selected_campaign !== undefined) {
+            localStorage.setItem('mission-planner-selected-campaign', JSON.stringify(localStorageData.mission_planner_selected_campaign));
+          }
+          if (localStorageData.mission_planner_relic_levels) {
+            localStorage.setItem('mission-planner-relic-levels', JSON.stringify(localStorageData.mission_planner_relic_levels));
+          }
+          if (localStorageData.mission_planner_campaign_fill_order !== undefined) {
+            localStorage.setItem('mission-planner-campaign-fill-order', JSON.stringify(localStorageData.mission_planner_campaign_fill_order));
+          }
+          if (localStorageData.mission_planner_campaign_manual_mode !== undefined) {
+            localStorage.setItem('mission-planner-campaign-manual-mode', JSON.stringify(localStorageData.mission_planner_campaign_manual_mode));
+          }
         }
         
         // Gem Planner settings
