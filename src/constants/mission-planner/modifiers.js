@@ -28,7 +28,8 @@ export const MODIFIERS = {
       min: 0,
       max: 1000000,
       multiplier: 1.0,
-      description: 'Current Cells'
+      control: 10,
+      fastControls: 100,
     },
     {
       id: 'mp',
@@ -39,7 +40,8 @@ export const MODIFIERS = {
       min: 0,
       max: 1000000,
       multiplier: 1.0,
-      description: 'Mission Points'
+      control: 10,
+      fastControls: 100,
     },
     {
       id: 'rp',
@@ -50,7 +52,8 @@ export const MODIFIERS = {
       min: 0,
       max: 1000000,
       multiplier: 1.0,
-      description: 'Relic Points'
+      control: 10,
+      fastControls: 100,
     },
     {
       id: 'all_time_highest_rp',
@@ -61,7 +64,8 @@ export const MODIFIERS = {
       min: 0,
       max: 1000000,
       multiplier: 1.0,
-      description: 'All Time Highest Relic Points'
+      control: 10,
+      fastControls: 100,
     },
     {
       id: 'plus_ultima',
@@ -72,7 +76,6 @@ export const MODIFIERS = {
       min: 0,
       max: 100,
       multiplier: 1.0,
-      description: '+Ultima level'
     }
   ],
 

@@ -1473,6 +1473,162 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   }
 
   // ============================================
+  // INSCRYPTION COST-BENEFIT ANALYSIS
+  // ============================================
+
+  /**
+   * Calculate hypothetical farm stats with modified inscryption level
+   * @param {string} inscryptionId - The inscryption modifier ID (e.g., 'inscryption_106')
+   * @param {number} levelDelta - How much to change the level (+1 typically)
+   * @returns {Object} { currentFragsPerHour, newFragsPerHour, deltaFragsPerHour, deltaFragsPerDay }
+   */
+  function calculateInscryptionBenefit(inscryptionId, levelDelta = 1) {
+    // Create modified inscryption levels with the change
+    const currentLevels = {
+      inscryption_58: modifierValues.value?.inscryption_58 || 0,
+      inscryption_102: modifierValues.value?.inscryption_102 || 0,
+      inscryption_106: modifierValues.value?.inscryption_106 || 0,
+      inscryption_107: modifierValues.value?.inscryption_107 || 0,
+      inscryption_108: modifierValues.value?.inscryption_108 || 0,
+      inscryption_109: modifierValues.value?.inscryption_109 || 0,
+      inscryption_110: modifierValues.value?.inscryption_110 || 0,
+    };
+    
+    const newLevels = { ...currentLevels };
+    newLevels[inscryptionId] = (newLevels[inscryptionId] || 0) + levelDelta;
+    
+    // Get current inscryption effects
+    const currentInscryptionEffects = getInscryptionEffectsBreakdown(currentLevels);
+    const newInscryptionEffects = getInscryptionEffectsBreakdown(newLevels);
+    
+    // Calculate current personnel power with current inscryption
+    const basePersonnel = personnelStats.value;
+    const loopmod = loopmodEffectsBreakdown.value;
+    const research = researchEffectsBreakdown.value;
+    const gem = gemEffectsBreakdown.value;
+    
+    // Current power per tier
+    const currentPowerPerTier = {
+      T1: basePersonnel.t1.powerPerUnit + loopmod.powerBonuses.T1 + currentInscryptionEffects.personnelPowerBonuses.T1 + gem.powerBonuses.T1,
+      T2: basePersonnel.t2.powerPerUnit + loopmod.powerBonuses.T2 + currentInscryptionEffects.personnelPowerBonuses.T2 + gem.powerBonuses.T2,
+      T3: basePersonnel.t3.powerPerUnit + loopmod.powerBonuses.T3 + currentInscryptionEffects.personnelPowerBonuses.T3 + gem.powerBonuses.T3,
+      T4: basePersonnel.t4.powerPerUnit + loopmod.powerBonuses.T4 + currentInscryptionEffects.personnelPowerBonuses.T4 + gem.powerBonuses.T4,
+    };
+    
+    // New power per tier with upgraded inscryption
+    const newPowerPerTier = {
+      T1: basePersonnel.t1.powerPerUnit + loopmod.powerBonuses.T1 + newInscryptionEffects.personnelPowerBonuses.T1 + gem.powerBonuses.T1,
+      T2: basePersonnel.t2.powerPerUnit + loopmod.powerBonuses.T2 + newInscryptionEffects.personnelPowerBonuses.T2 + gem.powerBonuses.T2,
+      T3: basePersonnel.t3.powerPerUnit + loopmod.powerBonuses.T3 + newInscryptionEffects.personnelPowerBonuses.T3 + gem.powerBonuses.T3,
+      T4: basePersonnel.t4.powerPerUnit + loopmod.powerBonuses.T4 + newInscryptionEffects.personnelPowerBonuses.T4 + gem.powerBonuses.T4,
+    };
+    
+    // Calculate farm frags value with current vs new inscryption
+    const baseFragValue = 0.001;
+    const loopmodMult = loopmodEffectsBreakdown.value.farmFragsMultiplier;
+    const researchMult = researchEffectsBreakdown.value.farmFragsBonuses.multiplier;
+    const badgeMult = badgeEffectsBreakdown.value.farmFragsMultiplier;
+    const otherMult = otherEffectsBreakdown.value.farmFragsMultiplier;
+    const gemMult = gem.farmFragsMultiplier;
+    
+    const researchAdd = researchEffectsBreakdown.value.farmFragsBonuses.additive;
+    const relicAdd = relicEffectsBreakdown.value.farmFragsAdditive;
+    const gadgetAdd = gadgetEffectsBreakdown.value.farmFragsAdditive;
+    const gemAdd = gem.farmFragsAdditive;
+    
+    // Current farm frags
+    const currentMultiplier = loopmodMult * researchMult * badgeMult * currentInscryptionEffects.farmFragsMultiplier * otherMult * gemMult;
+    const currentAdditive = researchAdd + relicAdd + currentInscryptionEffects.farmFragsAdditive + gadgetAdd + gemAdd;
+    const currentFarmFragsValue = (baseFragValue + currentAdditive) * currentMultiplier;
+    
+    // New farm frags with upgraded inscryption
+    const newMultiplier = loopmodMult * researchMult * badgeMult * newInscryptionEffects.farmFragsMultiplier * otherMult * gemMult;
+    const newAdditive = researchAdd + relicAdd + newInscryptionEffects.farmFragsAdditive + gadgetAdd + gemAdd;
+    const newFarmFragsValue = (baseFragValue + newAdditive) * newMultiplier;
+    
+    // Run optimization with current values
+    const currentOptResult = optimizeFarmMissions({
+      available: availablePersonnel.value,
+      powerPerTier: currentPowerPerTier,
+      missionSpeedMultiplier: missionSpeedMultiplier.value,
+      baseFarmFrags: currentFarmFragsValue,
+      manualAssignments: getManualAssignments(),
+      fillOrder: fillOrder.value,
+      campaign: null // Don't consider campaign for this calculation
+    });
+    
+    // Calculate current frags per hour
+    const currentStats = calculateFarmMissionStats(
+      currentOptResult.assignments,
+      currentPowerPerTier,
+      missionSpeedMultiplier.value,
+      currentFarmFragsValue
+    );
+    
+    // Run optimization with new inscryption values
+    const newOptResult = optimizeFarmMissions({
+      available: availablePersonnel.value,
+      powerPerTier: newPowerPerTier,
+      missionSpeedMultiplier: missionSpeedMultiplier.value,
+      baseFarmFrags: newFarmFragsValue,
+      manualAssignments: getManualAssignments(),
+      fillOrder: fillOrder.value,
+      campaign: null
+    });
+    
+    // Calculate new frags per hour
+    const newStats = calculateFarmMissionStats(
+      newOptResult.assignments,
+      newPowerPerTier,
+      missionSpeedMultiplier.value,
+      newFarmFragsValue
+    );
+    
+    const currentFragsPerHour = currentStats.totalFragsPerHour;
+    const newFragsPerHour = newStats.totalFragsPerHour;
+    const deltaFragsPerHour = newFragsPerHour - currentFragsPerHour;
+    const deltaFragsPerDay = deltaFragsPerHour * 24;
+    
+    return {
+      currentFragsPerHour,
+      newFragsPerHour,
+      deltaFragsPerHour,
+      deltaFragsPerDay
+    };
+  }
+
+  /**
+   * Calculate cost-benefit ratio for an inscryption upgrade
+   * @param {string} inscryptionId - The inscryption modifier ID
+   * @param {number} cost - The cost for the next level
+   * @returns {Object} { deltaFragsPerDay, cost, daysToROI, efficiency }
+   */
+  function getInscryptionCostBenefit(inscryptionId, cost) {
+    const benefit = calculateInscryptionBenefit(inscryptionId, 1);
+    
+    // Calculate days to ROI (Return on Investment)
+    // How many days of farming to earn back the cost
+    let daysToROI = null;
+    let efficiency = null;
+    
+    if (benefit.deltaFragsPerDay > 0 && cost > 0) {
+      daysToROI = cost / benefit.deltaFragsPerDay;
+      // Efficiency = frags gained per unit cost (higher is better)
+      efficiency = benefit.deltaFragsPerDay / cost;
+    }
+    
+    return {
+      currentFragsPerHour: benefit.currentFragsPerHour,
+      newFragsPerHour: benefit.newFragsPerHour,
+      deltaFragsPerHour: benefit.deltaFragsPerHour,
+      deltaFragsPerDay: benefit.deltaFragsPerDay,
+      cost,
+      daysToROI,
+      efficiency
+    };
+  }
+
+  // ============================================
   // RETURN
   // ============================================
   
@@ -1581,6 +1737,10 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     // Actions - Relics
     setRelicLevel,
     resetAllRelicLevels,
+    
+    // Inscryption Cost-Benefit Analysis
+    calculateInscryptionBenefit,
+    getInscryptionCostBenefit,
     
     // Utility exports for components
     formatCompletionTime,

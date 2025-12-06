@@ -7,12 +7,6 @@
           <IconAdjustments size="16" class="mr-2 text-purple-400" />
           Mission Modifiers
         </h2>
-        <button
-          @click="resetToDefaults"
-          class="text-[10px] text-gray-400 hover:text-white px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
-        >
-          Reset
-        </button>
       </div>
     </div>
 
@@ -94,17 +88,336 @@
       </div>
     </div>
 
-    <!-- Content Area - 2 Column Grid -->
+    <!-- Content Area - Inputs on top, Effects below -->
     <div class="flex-1 overflow-y-auto p-2">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full">
-        <!-- Left Side: Effects Summary -->
-        <div class="bg-gray-900/50 rounded-lg border border-gray-700/50 p-3">
+      <div class="flex flex-col gap-3 h-full">
+        <!-- Top: Modifier Inputs -->
+        <div class="flex-1 min-h-0">
+          <!-- Game Progress Tab -->
+          <div v-if="activeTab === 'gameProgress'" class="space-y-0.5">
+            <div v-for="(modifier, index) in modifiers.gameProgress" :key="modifier.id" 
+              class="flex items-center justify-between py-1.5 px-2 rounded"
+              :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
+            >
+              <label class="text-xs text-gray-300">{{ modifier.name }}</label>
+              <ToolValueControls
+                class="w-[160px]"
+                :value="missionPlannerStore.modifierValues[modifier.id]"
+                :min-value="modifier.min"
+                :max-value="modifier.max"
+                :step="modifier.control || 1"
+                :fast-step="modifier.fastControls || 10"
+                :show-fast-controls="true"
+                :tab-index="index + 1"
+                :auto-edit="true"
+                @update:value="updateModifier(modifier.id, $event)"
+              />
+            </div>
+          </div>
+
+          <!-- Space Academy Relics Tab -->
+          <div v-if="activeTab === 'relics'" class="space-y-0.5">
+            <div v-for="(modifier, index) in modifiers.relics" :key="modifier.id" 
+              class="flex items-center justify-between py-1.5 px-2 rounded"
+              :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
+            >
+              <label class="text-xs text-gray-300">{{ modifier.name }}</label>
+              <ToolValueControls
+                class="w-[160px]"
+                :value="missionPlannerStore.modifierValues[modifier.id]"
+                :min-value="modifier.min"
+                :max-value="modifier.max"
+                :step="modifier.control || 1"
+                :fast-step="modifier.fastControls || 10"
+                :show-fast-controls="true"
+                :tab-index="index + 1"
+                :auto-edit="true"
+                @update:value="updateModifier(modifier.id, $event)"
+              />
+            </div>
+          </div>
+
+          <!-- Badges Tab -->
+          <div v-if="activeTab === 'badges'" class="space-y-0.5">
+            <div v-for="(modifier, index) in modifiers.badges" :key="modifier.id" 
+              class="flex items-center py-1.5 px-2 rounded cursor-pointer"
+              :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
+              @click="updateModifier(modifier.id, !missionPlannerStore.modifierValues[modifier.id])"
+            >
+              <div class="w-3 h-3 rounded border flex items-center justify-center mr-2"
+                :class="missionPlannerStore.modifierValues[modifier.id] 
+                  ? 'bg-green-600 border-green-600' 
+                  : 'bg-transparent border-gray-600'"
+              >
+                <span v-if="missionPlannerStore.modifierValues[modifier.id]" class="text-white text-[9px]">✓</span>
+              </div>
+              <label class="text-xs text-gray-300 cursor-pointer select-none flex-1">
+                {{ modifier.name }}
+              </label>
+            </div>
+          </div>
+
+          <!-- Boons Tab -->
+          <div v-if="activeTab === 'boons'" class="space-y-0.5">
+            <div v-for="(modifier, index) in modifiers.mods" :key="modifier.id" 
+              class="flex items-center justify-between py-1.5 px-2 rounded"
+              :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
+            >
+              <label class="text-xs text-gray-300">{{ modifier.name }}</label>
+              <ToolValueControls
+                class="w-[160px]"
+                :value="missionPlannerStore.modifierValues[modifier.id]"
+                :min-value="modifier.min"
+                :max-value="modifier.max"
+                :step="modifier.control || 1"
+                :fast-step="modifier.fastControls || 10"
+                :show-fast-controls="true"
+                :tab-index="index + 1"
+                :auto-edit="true"
+                @update:value="updateModifier(modifier.id, $event)"
+              />
+            </div>
+          </div>
+
+          <!-- Inscryptions Tab -->
+          <div v-if="activeTab === 'inscryptions'" class="space-y-0.5">
+            <div v-for="(modifier, index) in modifiers.inscryptions" :key="modifier.id" 
+              class="flex items-center justify-between py-1.5 px-2 rounded"
+              :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
+            >
+              <div class="flex flex-col min-w-0">
+                <label class="text-xs text-gray-300">{{ modifier.name }}</label>
+                <!-- Cost-Benefit Row mit festen Spaltenbreiten -->
+                <div v-if="missionPlannerStore.modifierValues[modifier.id] < modifier.max && getInscryptionCostBenefit(modifier.id)" 
+                  class="flex items-center text-[11px] mt-0.5 font-mono">
+                  <span class="text-yellow-400 w-[58px] text-right">{{ getFormattedNextLevelCost(modifier.id) }}</span>
+                  <span class="text-gray-500 px-1">→</span>
+                  <span class="text-green-400 w-[72px] text-right">+{{ formatNumber(getInscryptionCostBenefit(modifier.id).deltaFragsPerDay) }}/d</span>
+                  <span class="text-gray-500 px-1">|</span>
+                  <span :class="getEfficiencyColorClass(modifier.id)" class="w-[58px] text-right">{{ formatEfficiency(modifier.id) }}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <ToolValueControls
+                  class="w-[160px]"
+                  :value="missionPlannerStore.modifierValues[modifier.id]"
+                  :min-value="modifier.min"
+                  :max-value="modifier.max"
+                  :step="modifier.control || 1"
+                  :fast-step="modifier.fastControls || 10"
+                  :show-fast-controls="true"
+                  :tab-index="index + 1"
+                  :auto-edit="true"
+                  @update:value="updateModifier(modifier.id, $event)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Gadgets Tab -->
+          <div v-if="activeTab === 'gadgets'" class="space-y-0.5">
+            <div v-for="(modifier, index) in modifiers.gadgets" :key="modifier.id" 
+              class="flex items-center justify-between py-1.5 px-2 rounded"
+              :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
+            >
+              <label class="text-xs text-gray-300">{{ modifier.name }}</label>
+              <ToolValueControls
+                class="w-[160px]"
+                :value="missionPlannerStore.modifierValues[modifier.id]"
+                :min-value="modifier.min"
+                :max-value="modifier.max"
+                :step="modifier.control || 1"
+                :fast-step="modifier.fastControls || 10"
+                :show-fast-controls="true"
+                :tab-index="index + 1"
+                :auto-edit="true"
+                @update:value="updateModifier(modifier.id, $event)"
+              />
+            </div>
+          </div>
+
+          <!-- Other Tab -->
+          <div v-if="activeTab === 'other'" class="space-y-0.5">
+            <!-- Boolean modifiers (checkboxes) -->
+            <template v-for="(modifier, index) in modifiers.other" :key="modifier.id">
+              <div v-if="modifier.type === 'boolean'" 
+                class="flex items-center py-1.5 px-2 rounded cursor-pointer"
+                :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
+                @click="updateModifier(modifier.id, !missionPlannerStore.modifierValues[modifier.id])"
+              >
+                <div class="w-3 h-3 rounded border flex items-center justify-center mr-2"
+                  :class="missionPlannerStore.modifierValues[modifier.id] 
+                    ? 'bg-green-600 border-green-600' 
+                    : 'bg-transparent border-gray-600'"
+                >
+                  <span v-if="missionPlannerStore.modifierValues[modifier.id]" class="text-white text-[9px]">✓</span>
+                </div>
+                <label class="text-xs text-gray-300 cursor-pointer select-none flex-1">
+                  {{ modifier.name }}
+                </label>
+              </div>
+              
+              <!-- Readonly modifier (Eternal Milestone) -->
+              <div v-else-if="modifier.type === 'readonly'" 
+                class="flex items-center justify-between py-1.5 px-2 rounded"
+                :class="isEternalMilestoneUnlocked ? 'bg-gray-800/50' : 'bg-gray-800/30 opacity-60'"
+              >
+                <div class="flex items-center space-x-1">
+                  <div class="w-1.5 h-1.5 rounded-full" 
+                    :class="isEternalMilestoneUnlocked && eternalMilestoneLevel > 0 ? 'bg-green-500' : 'bg-gray-600'"></div>
+                  <span class="text-xs" :class="isEternalMilestoneUnlocked ? 'text-white' : 'text-gray-500'">
+                    {{ modifier.name }}
+                  </span>
+                  <span v-if="!isEternalMilestoneUnlocked" class="text-[9px] text-red-400">
+                    🔒 Lv{{ attractionGemLevel }}/3
+                  </span>
+                </div>
+                <div v-if="isEternalMilestoneUnlocked" class="flex items-center space-x-1">
+                  <span class="text-[10px] font-mono text-blue-400">Lv{{ eternalMilestoneLevel }}</span>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Gems Tab -->
+          <div v-if="activeTab === 'gems'" class="space-y-2">
+            <p class="text-[10px] text-gray-400 mb-2">
+              Gem nodes from Gem Overview. Only special inputs editable.
+            </p>
+
+            <!-- Grouped by Gem Type -->
+            <div class="space-y-2">
+              <!-- Attraction Gem -->
+              <div class="bg-gray-800/30 rounded p-2">
+                <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #3b82f6;">
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #3b82f6;"></span>
+                  Attraction Gem
+                </h5>
+                <div class="flex flex-wrap gap-1">
+                  <div v-for="modifier in gemsByType.attraction" :key="modifier.id" 
+                    class="px-1.5 py-0.5 rounded text-[10px]"
+                    :class="isGemNodeActive(modifier.id) ? 'bg-blue-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
+                  >
+                    <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
+                      :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
+                    {{ modifier.name }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Creation Gem -->
+              <div class="bg-gray-800/30 rounded p-2">
+                <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #f97316;">
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #f97316;"></span>
+                  Creation Gem
+                </h5>
+                <div class="space-y-1">
+                  <div class="flex flex-wrap gap-1">
+                    <div v-for="modifier in gemsByType.creation" :key="modifier.id" 
+                      class="px-1.5 py-0.5 rounded text-[10px]"
+                      :class="isGemNodeActive(modifier.id) ? 'bg-orange-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
+                    >
+                      <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
+                        :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
+                      {{ modifier.name }}
+                    </div>
+                  </div>
+                  <!-- Mechs Owned Input -->
+                  <div v-if="isGemNodeActive('creation_node_5')" 
+                    class="flex items-center justify-between bg-gray-800/50 rounded p-1.5"
+                  >
+                    <div class="flex items-center space-x-1">
+                      <label class="text-[10px] text-gray-400">Mechs:</label>
+                      <span class="text-[10px] font-mono" style="color: #f97316;">
+                        ×{{ (1.001 ** (missionPlannerStore.modifierValues.creation_node_5_mechs || 0)).toFixed(4) }}
+                      </span>
+                    </div>
+                    <ToolValueControls
+                      class="w-[160px]"
+                      :value="missionPlannerStore.modifierValues.creation_node_5_mechs || 0"
+                      :min-value="0"
+                      :max-value="100000"
+                      :step="1"
+                      :show-fast-controls="true"
+                      :tab-index="1"
+                      :auto-edit="true"
+                      @update:value="updateModifier('creation_node_5_mechs', $event)"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Exodus Gem -->
+              <div class="bg-gray-800/30 rounded p-2">
+                <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #8b5cf6;">
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #8b5cf6;"></span>
+                  Exodus Gem
+                </h5>
+                <div class="space-y-1">
+                  <div class="flex flex-wrap gap-1">
+                    <div v-for="modifier in gemsByType.exodus" :key="modifier.id" 
+                      class="px-1.5 py-0.5 rounded text-[10px]"
+                      :class="isGemNodeActive(modifier.id) ? 'bg-purple-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
+                    >
+                      <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
+                        :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
+                      {{ modifier.name }}
+                    </div>
+                  </div>
+                  <!-- Loopmods Owned Input -->
+                  <div v-if="isGemNodeActive('exodus_node_2')" 
+                    class="flex items-center justify-between bg-gray-800/50 rounded p-1.5"
+                  >
+                    <div class="flex items-center space-x-1">
+                      <label class="text-[10px] text-gray-400">Loopmods:</label>
+                      <span class="text-[10px] font-mono" style="color: #8b5cf6;">
+                        +{{ (Math.floor((missionPlannerStore.modifierValues.exodus_node_2_loopmods || 0) / 10000)).toFixed(0) }}%
+                      </span>
+                    </div>
+                    <ToolValueControls
+                      class="w-[160px]"
+                      :value="missionPlannerStore.modifierValues.exodus_node_2_loopmods || 0"
+                      :min-value="0"
+                      :max-value="10000000"
+                      :step="1000"
+                      :show-fast-controls="true"
+                      :tab-index="2"
+                      :auto-edit="true"
+                      @update:value="updateModifier('exodus_node_2_loopmods', $event)"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Power Gem -->
+              <div class="bg-gray-800/30 rounded p-2">
+                <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #8b5cf6;">
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #8b5cf6;"></span>
+                  Power Gem
+                </h5>
+                <div class="flex flex-wrap gap-1">
+                  <div v-for="modifier in gemsByType.power" :key="modifier.id" 
+                    class="px-1.5 py-0.5 rounded text-[10px]"
+                    :class="isGemNodeActive(modifier.id) ? 'bg-purple-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
+                  >
+                    <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
+                      :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
+                    {{ modifier.name }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom: Effects Summary -->
+        <div class="bg-gray-900/50 rounded-lg border border-gray-700/50 p-3 flex-shrink-0">
           <h3 class="text-sm font-bold text-white mb-3 flex items-center">
             <div class="w-1 h-4 bg-indigo-500 rounded-r mr-2"></div>
             Modifier Effects
           </h3>
 
-          <div class="space-y-3">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
             <!-- Personnel Section -->
             <div class="space-y-2">
               <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Personnel</h4>
@@ -159,7 +472,7 @@
             </div>
 
             <!-- Mission Effects Section -->
-            <div class="space-y-2 pt-2 border-t border-gray-700/50">
+            <div class="space-y-2">
               <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Mission Effects</h4>
               
               <div class="bg-gray-800/50 rounded p-2">
@@ -185,307 +498,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Right Side: Modifier Inputs -->
-        <div>
-          <!-- Game Progress Tab -->
-          <div v-if="activeTab === 'gameProgress'" class="space-y-0.5">
-            <div v-for="(modifier, index) in modifiers.gameProgress" :key="modifier.id" 
-              class="flex items-center justify-between py-1.5 px-2 rounded"
-              :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
-            >
-              <label class="text-xs text-gray-300">{{ modifier.name }}</label>
-              <ToolValueControls
-                class="w-[160px]"
-                :value="missionPlannerStore.modifierValues[modifier.id]"
-                :min-value="modifier.min"
-                :max-value="modifier.max"
-                :step="1"
-                :show-fast-controls="true"
-                :tab-index="index + 1"
-                :auto-edit="true"
-                @update:value="updateModifier(modifier.id, $event)"
-              />
-            </div>
-          </div>
-
-          <!-- Space Academy Relics Tab -->
-          <div v-if="activeTab === 'relics'" class="space-y-0.5">
-            <div v-for="(modifier, index) in modifiers.relics" :key="modifier.id" 
-              class="flex items-center justify-between py-1.5 px-2 rounded"
-              :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
-            >
-              <label class="text-xs text-gray-300">{{ modifier.name }}</label>
-              <ToolValueControls
-                class="w-[160px]"
-                :value="missionPlannerStore.modifierValues[modifier.id]"
-                :min-value="modifier.min"
-                :max-value="modifier.max"
-                :step="1"
-                :show-fast-controls="true"
-                :tab-index="index + 1"
-                :auto-edit="true"
-                @update:value="updateModifier(modifier.id, $event)"
-              />
-            </div>
-          </div>
-
-      <!-- Badges Tab -->
-      <div v-if="activeTab === 'badges'" class="space-y-0.5">
-        <div v-for="(modifier, index) in modifiers.badges" :key="modifier.id" 
-          class="flex items-center py-1.5 px-2 rounded cursor-pointer"
-          :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
-          @click="updateModifier(modifier.id, !missionPlannerStore.modifierValues[modifier.id])"
-        >
-          <div class="w-3 h-3 rounded border flex items-center justify-center mr-2"
-            :class="missionPlannerStore.modifierValues[modifier.id] 
-              ? 'bg-green-600 border-green-600' 
-              : 'bg-transparent border-gray-600'"
-          >
-            <span v-if="missionPlannerStore.modifierValues[modifier.id]" class="text-white text-[9px]">✓</span>
-          </div>
-          <label class="text-xs text-gray-300 cursor-pointer select-none flex-1">
-            {{ modifier.name }}
-          </label>
-        </div>
-      </div>
-
-      <!-- Boons Tab -->
-      <div v-if="activeTab === 'boons'" class="space-y-0.5">
-        <div v-for="(modifier, index) in modifiers.mods" :key="modifier.id" 
-          class="flex items-center justify-between py-1.5 px-2 rounded"
-          :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
-        >
-          <label class="text-xs text-gray-300">{{ modifier.name }}</label>
-          <ToolValueControls
-            class="w-[160px]"
-            :value="missionPlannerStore.modifierValues[modifier.id]"
-            :min-value="modifier.min"
-            :max-value="modifier.max"
-            :step="1"
-            :show-fast-controls="true"
-            :tab-index="index + 1"
-            :auto-edit="true"
-            @update:value="updateModifier(modifier.id, $event)"
-          />
-        </div>
-      </div>
-
-      <!-- Inscryptions Tab -->
-      <div v-if="activeTab === 'inscryptions'" class="space-y-0.5">
-        <div v-for="(modifier, index) in modifiers.inscryptions" :key="modifier.id" 
-          class="flex items-center justify-between py-1.5 px-2 rounded"
-          :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
-        >
-          <label class="text-xs text-gray-300">{{ modifier.name }}</label>
-          <ToolValueControls
-            class="w-[160px]"
-            :value="missionPlannerStore.modifierValues[modifier.id]"
-            :min-value="modifier.min"
-            :max-value="modifier.max"
-            :step="1"
-            :show-fast-controls="true"
-            :tab-index="index + 1"
-            :auto-edit="true"
-            @update:value="updateModifier(modifier.id, $event)"
-          />
-        </div>
-      </div>
-
-      <!-- Gadgets Tab -->
-      <div v-if="activeTab === 'gadgets'" class="space-y-0.5">
-        <div v-for="(modifier, index) in modifiers.gadgets" :key="modifier.id" 
-          class="flex items-center justify-between py-1.5 px-2 rounded"
-          :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
-        >
-          <label class="text-xs text-gray-300">{{ modifier.name }}</label>
-          <ToolValueControls
-            class="w-[160px]"
-            :value="missionPlannerStore.modifierValues[modifier.id]"
-            :min-value="modifier.min"
-            :max-value="modifier.max"
-            :step="1"
-            :show-fast-controls="true"
-            :tab-index="index + 1"
-            :auto-edit="true"
-            @update:value="updateModifier(modifier.id, $event)"
-          />
-        </div>
-      </div>
-
-      <!-- Other Tab -->
-      <div v-if="activeTab === 'other'" class="space-y-0.5">
-        <!-- Boolean modifiers (checkboxes) -->
-        <template v-for="(modifier, index) in modifiers.other" :key="modifier.id">
-          <div v-if="modifier.type === 'boolean'" 
-            class="flex items-center py-1.5 px-2 rounded cursor-pointer"
-            :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
-            @click="updateModifier(modifier.id, !missionPlannerStore.modifierValues[modifier.id])"
-          >
-            <div class="w-3 h-3 rounded border flex items-center justify-center mr-2"
-              :class="missionPlannerStore.modifierValues[modifier.id] 
-                ? 'bg-green-600 border-green-600' 
-                : 'bg-transparent border-gray-600'"
-            >
-              <span v-if="missionPlannerStore.modifierValues[modifier.id]" class="text-white text-[9px]">✓</span>
-            </div>
-            <label class="text-xs text-gray-300 cursor-pointer select-none flex-1">
-              {{ modifier.name }}
-            </label>
-          </div>
-          
-          <!-- Readonly modifier (Eternal Milestone) -->
-          <div v-else-if="modifier.type === 'readonly'" 
-            class="flex items-center justify-between py-1.5 px-2 rounded"
-            :class="isEternalMilestoneUnlocked ? 'bg-gray-800/50' : 'bg-gray-800/30 opacity-60'"
-          >
-            <div class="flex items-center space-x-1">
-              <div class="w-1.5 h-1.5 rounded-full" 
-                :class="isEternalMilestoneUnlocked && eternalMilestoneLevel > 0 ? 'bg-green-500' : 'bg-gray-600'"></div>
-              <span class="text-xs" :class="isEternalMilestoneUnlocked ? 'text-white' : 'text-gray-500'">
-                {{ modifier.name }}
-              </span>
-              <span v-if="!isEternalMilestoneUnlocked" class="text-[9px] text-red-400">
-                🔒 Lv{{ attractionGemLevel }}/3
-              </span>
-            </div>
-            <div v-if="isEternalMilestoneUnlocked" class="flex items-center space-x-1">
-              <span class="text-[10px] font-mono text-blue-400">Lv{{ eternalMilestoneLevel }}</span>
-            </div>
-          </div>
-        </template>
-      </div>
-
-      <!-- Gems Tab -->
-      <div v-if="activeTab === 'gems'" class="space-y-2">
-        <p class="text-[10px] text-gray-400 mb-2">
-          Gem nodes from Gem Overview. Only special inputs editable.
-        </p>
-
-        <!-- Grouped by Gem Type -->
-        <div class="space-y-2">
-          <!-- Attraction Gem -->
-          <div class="bg-gray-800/30 rounded p-2">
-            <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #3b82f6;">
-              <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #3b82f6;"></span>
-              Attraction Gem
-            </h5>
-            <div class="flex flex-wrap gap-1">
-              <div v-for="modifier in gemsByType.attraction" :key="modifier.id" 
-                class="px-1.5 py-0.5 rounded text-[10px]"
-                :class="isGemNodeActive(modifier.id) ? 'bg-blue-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
-              >
-                <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
-                  :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
-                {{ modifier.name }}
-              </div>
-            </div>
-          </div>
-
-          <!-- Creation Gem -->
-          <div class="bg-gray-800/30 rounded p-2">
-            <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #f97316;">
-              <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #f97316;"></span>
-              Creation Gem
-            </h5>
-            <div class="space-y-1">
-              <div class="flex flex-wrap gap-1">
-                <div v-for="modifier in gemsByType.creation" :key="modifier.id" 
-                  class="px-1.5 py-0.5 rounded text-[10px]"
-                  :class="isGemNodeActive(modifier.id) ? 'bg-orange-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
-                >
-                  <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
-                    :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
-                  {{ modifier.name }}
-                </div>
-              </div>
-              <!-- Mechs Owned Input -->
-              <div v-if="isGemNodeActive('creation_node_5')" 
-                class="flex items-center justify-between bg-gray-800/50 rounded p-1.5"
-              >
-                <div class="flex items-center space-x-1">
-                  <label class="text-[10px] text-gray-400">Mechs:</label>
-                  <span class="text-[10px] font-mono" style="color: #f97316;">
-                    ×{{ (1.001 ** (missionPlannerStore.modifierValues.creation_node_5_mechs || 0)).toFixed(4) }}
-                  </span>
-                </div>
-                <ToolValueControls
-                  class="w-[160px]"
-                  :value="missionPlannerStore.modifierValues.creation_node_5_mechs || 0"
-                  :min-value="0"
-                  :max-value="100000"
-                  :step="1"
-                  :show-fast-controls="true"
-                  :tab-index="1"
-                  :auto-edit="true"
-                  @update:value="updateModifier('creation_node_5_mechs', $event)"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Exodus Gem -->
-          <div class="bg-gray-800/30 rounded p-2">
-            <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #8b5cf6;">
-              <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #8b5cf6;"></span>
-              Exodus Gem
-            </h5>
-            <div class="space-y-1">
-              <div class="flex flex-wrap gap-1">
-                <div v-for="modifier in gemsByType.exodus" :key="modifier.id" 
-                  class="px-1.5 py-0.5 rounded text-[10px]"
-                  :class="isGemNodeActive(modifier.id) ? 'bg-purple-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
-                >
-                  <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
-                    :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
-                  {{ modifier.name }}
-                </div>
-              </div>
-              <!-- Loopmods Owned Input -->
-              <div v-if="isGemNodeActive('exodus_node_2')" 
-                class="flex items-center justify-between bg-gray-800/50 rounded p-1.5"
-              >
-                <div class="flex items-center space-x-1">
-                  <label class="text-[10px] text-gray-400">Loopmods:</label>
-                  <span class="text-[10px] font-mono" style="color: #8b5cf6;">
-                    +{{ (Math.floor((missionPlannerStore.modifierValues.exodus_node_2_loopmods || 0) / 10000)).toFixed(0) }}%
-                  </span>
-                </div>
-                <ToolValueControls
-                  class="w-[160px]"
-                  :value="missionPlannerStore.modifierValues.exodus_node_2_loopmods || 0"
-                  :min-value="0"
-                  :max-value="10000000"
-                  :step="1000"
-                  :show-fast-controls="true"
-                  :tab-index="2"
-                  :auto-edit="true"
-                  @update:value="updateModifier('exodus_node_2_loopmods', $event)"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Power Gem -->
-          <div class="bg-gray-800/30 rounded p-2">
-            <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #8b5cf6;">
-              <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #8b5cf6;"></span>
-              Power Gem
-            </h5>
-            <div class="flex flex-wrap gap-1">
-              <div v-for="modifier in gemsByType.power" :key="modifier.id" 
-                class="px-1.5 py-0.5 rounded text-[10px]"
-                :class="isGemNodeActive(modifier.id) ? 'bg-purple-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
-              >
-                <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
-                  :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
-                {{ modifier.name }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-        </div>
       </div>
     </div>
   </div>
@@ -498,6 +510,8 @@ import { MODIFIERS } from '@/constants/mission-planner/modifiers';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
+import { getNextLevelCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
+import { formatNumber } from '@/composables/format';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 
 // Store
@@ -591,7 +605,133 @@ function updateModifier(modifierId, value) {
   missionPlannerStore.updateModifier(modifierId, value);
 }
 
-function resetToDefaults() {
-  missionPlannerStore.resetModifiers();
+// Get inscryption ID from modifier ID (e.g., 'inscryption_106' -> 'i106')
+function getInscryptionId(modifierId) {
+  const match = modifierId.match(/inscryption_(\d+)/);
+  return match ? `i${match[1]}` : null;
+}
+
+// Get formatted cost for next inscryption level
+function getFormattedNextLevelCost(modifierId) {
+  const inscryptionId = getInscryptionId(modifierId);
+  if (!inscryptionId) return null;
+  
+  const currentLevel = missionPlannerStore.modifierValues[modifierId] || 0;
+  const cost = getNextLevelCost(inscryptionId, currentLevel);
+  
+  if (cost === null) return null;
+  return formatInscryptionCost(cost);
+}
+
+// Get cost-benefit analysis for an inscryption
+function getInscryptionCostBenefit(modifierId) {
+  const inscryptionId = getInscryptionId(modifierId);
+  if (!inscryptionId) return null;
+  
+  const currentLevel = missionPlannerStore.modifierValues[modifierId] || 0;
+  const cost = getNextLevelCost(inscryptionId, currentLevel);
+  
+  if (cost === null) return null;
+  
+  return missionPlannerStore.getInscryptionCostBenefit(modifierId, cost);
+}
+
+// Format efficiency ratio with dynamic unit (cost/frags per day)
+// Zeigt wie viel Kosten pro Frag-Gewinn anfallen, normalisiert auf 1-10 Bereich
+function formatEfficiency(modifierId) {
+  const benefit = getInscryptionCostBenefit(modifierId);
+  if (!benefit || !benefit.deltaFragsPerDay || benefit.deltaFragsPerDay <= 0) {
+    return '∞';
+  }
+  
+  const cost = benefit.cost;
+  const fragsPerDay = benefit.deltaFragsPerDay;
+  
+  // Berechne das Rohverhältnis (Kosten pro Frag/Tag)
+  const rawRatio = cost / fragsPerDay;
+  
+  // Finde die passende Einheit, sodass der Wert zwischen 1-999 liegt
+  const suffixes = ['', 'k', 'm', 'b', 't', 'qa', 'qu', 'sx', 'sp', 'o', 'n', 'd'];
+  
+  if (rawRatio < 1) {
+    return rawRatio.toFixed(2);
+  }
+  
+  // Berechne den Tier basierend auf der Größenordnung
+  const tier = Math.max(0, Math.min(Math.floor(Math.log10(rawRatio) / 3), suffixes.length - 1));
+  
+  if (rawRatio >= 1e36) {
+    const exponent = Math.floor(Math.log10(rawRatio));
+    const mantissa = rawRatio / Math.pow(10, exponent);
+    return `${mantissa.toFixed(1)}e${exponent}`;
+  }
+  
+  const suffix = suffixes[tier];
+  const scaledValue = rawRatio / Math.pow(10, tier * 3);
+  
+  return `${scaledValue.toFixed(1)}${suffix}`;
+}
+
+// Get raw efficiency value for color comparison
+function getRawEfficiency(modifierId) {
+  const benefit = getInscryptionCostBenefit(modifierId);
+  if (!benefit || !benefit.deltaFragsPerDay || benefit.deltaFragsPerDay <= 0) {
+    return Infinity;
+  }
+  return benefit.cost / benefit.deltaFragsPerDay;
+}
+
+// Calculate all efficiency values for comparison and return color class
+// 10 Farbtöne von Grün (beste) über Gelb/Orange nach Rot (schlechteste)
+function getEfficiencyColorClass(modifierId) {
+  // Sammle alle Effizienzwerte der sichtbaren Inscryptions
+  const allEfficiencies = [];
+  
+  for (const modifier of modifiers.inscryptions) {
+    const currentLevel = missionPlannerStore.modifierValues[modifier.id] || 0;
+    if (currentLevel < modifier.max) {
+      const efficiency = getRawEfficiency(modifier.id);
+      if (efficiency !== Infinity) {
+        allEfficiencies.push({ id: modifier.id, efficiency });
+      }
+    }
+  }
+  
+  // Wenn keine oder nur eine Inscryption, Standard-Farbe
+  if (allEfficiencies.length <= 1) {
+    return 'text-green-400';
+  }
+  
+  // Sortiere nach Effizienz (niedrigster = bester)
+  allEfficiencies.sort((a, b) => a.efficiency - b.efficiency);
+  
+  // Finde Position dieser Inscryption
+  const currentEfficiency = getRawEfficiency(modifierId);
+  const position = allEfficiencies.findIndex(e => e.id === modifierId);
+  
+  if (position === -1 || currentEfficiency === Infinity) {
+    return 'text-gray-500';
+  }
+  
+  // Berechne relative Position (0 = beste, 1 = schlechteste)
+  const relativePosition = position / (allEfficiencies.length - 1);
+  
+  // 10 Farbtöne von Grün nach Rot
+  // Grün → Lime → Gelb → Amber → Orange → Rot
+  const colorClasses = [
+    'text-green-400',      // 0.0 - 0.1 (beste)
+    'text-green-500',      // 0.1 - 0.2
+    'text-lime-400',       // 0.2 - 0.3
+    'text-lime-500',       // 0.3 - 0.4
+    'text-yellow-400',     // 0.4 - 0.5
+    'text-yellow-500',     // 0.5 - 0.6
+    'text-amber-400',      // 0.6 - 0.7
+    'text-orange-400',     // 0.7 - 0.8
+    'text-orange-500',     // 0.8 - 0.9
+    'text-red-400',        // 0.9 - 1.0 (schlechteste)
+  ];
+  
+  const colorIndex = Math.min(Math.floor(relativePosition * 10), 9);
+  return colorClasses[colorIndex];
 }
 </script>
