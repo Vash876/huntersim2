@@ -2,13 +2,32 @@
 const changelog = 
 [
   {
+    version: '2.9.6',
+    date: '2025-12-06',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added Tier 2 Relic #7 to the sim',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added Tier 2 Relic #4 to the planner',
+          'Corrected CM Typo',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.9.5',
     date: '2025-12-03',
     changes: [
       {
         text: 'Hunter Simulator',
         subItems: [
-          'Added Tier 2 Relic to the sim',
+          'Added Tier 2 Relic #5 to the sim',
         ]
       },
     ]

@@ -64,6 +64,18 @@ export const UPGRADES = {
       value: 1.08 ,
       maxLevel: 100,
       multitext: "Loot Reward",
+    },
+    {
+      id: "t2r7",
+      tier: 2,
+      unlock_gem: "power",
+      unlock_lvl: 3,
+      name: "#7 Arthur's Sword",
+      type: "level",
+      upgradeType: "multiplicative",
+      value: 1.02 ,
+      maxLevel: 100,
+      multitext: "ATK Power",
     }
   ],
 

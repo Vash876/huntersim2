@@ -810,7 +810,7 @@ export function EVALKNOX_WASM(
   stelzi: i32, i105: i32, exodus_gem5: i32, exodus_attractionCreationCount: i32,
   exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32,
   inno_gem5: i32, pow_gem6: i32, crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32,
-  evo_gem6: i32, attr: i32, catchup99gu: i32, lootgu: i32, t2r5: i32
+  evo_gem6: i32, attr: i32, catchup99gu: i32, lootgu: i32, t2r5: i32, t2r7: i32
 ): f64 {
   
   // Enemies initialisieren
@@ -837,7 +837,7 @@ export function EVALKNOX_WASM(
   // Base Stats 
   knox.maxHp = (20 + (2 + Math.floor(hp / 5) * 0.1) * hp) * gadgetMulti * crea4GUMulti * (evoGN3 ? 1.0777 : 1) * (temp_gem6 > 0 ? 1.03 : 1) * (crea_gem4 > 0 ? 1.08 : 1) * (pow_gem6 > 0 ? 1 + Math.max(0, (lvl - 29) * 0.015) : 1) * creaGem5HpBonus;
   knox.hp = knox.maxHp;
-  knox.atk = (1.2 + (0.06 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * crea4GUMulti * (temp_gem6 > 0 ? 1.03 : 1) * (pow_gem6 > 0 ? 1 + Math.max(0, (lvl - 29) * 0.01) : 1);
+  knox.atk = (1.2 + (0.06 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * crea4GUMulti * (temp_gem6 > 0 ? 1.03 : 1) * (pow_gem6 > 0 ? 1 + Math.max(0, (lvl - 29) * 0.01) : 1) * Math.pow(1.02, t2r7 as f64);
   knox.salvo = 3 + proj * 1;
   knox.regen = (0.05 + (0.03 + Math.floor(regen / 30) * 0.02) * regen) * gadgetMulti * crea4GUMulti * (evoGN3 ? 1.0777 : 1) * (crea_gem4 > 0 ? 1.08 : 1) * (pow_gem6 > 0 ? 1 + Math.max(0, (lvl - 29) * 0.005) : 1);
   knox.dr = 0.0032 * dr;

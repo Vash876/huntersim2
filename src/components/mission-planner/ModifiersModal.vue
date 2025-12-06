@@ -272,7 +272,7 @@
           <!-- Gems Tab -->
           <div v-if="activeTab === 'gems'" class="space-y-3">
             <p class="text-xs text-gray-400 mb-3">
-              Gem node states are read from Gem Planner. Only special inputs can be edited here.
+              Gem node states are read from Gem Overview. Only special inputs can be edited here.
             </p>
 
             <!-- Grouped by Gem Type -->

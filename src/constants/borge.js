@@ -108,7 +108,7 @@ export const ATTRIBUTE_MIN_VALUE = {
 }
 
 export const HUNTER_UPGRADES = {
-  relics: ["r4", "r7", "r16", "r19"],
+  relics: ["r4", "r7", "r16", "r19", "t2r7"],
   inscryptions: ["i3", "i4", "i11", "i13", "i14", "i23", "i24", "i27", "i44", "i60", "i80", "i84", "i87", "i88", "i89", "i91", "i103"],
   gadgets: ["wrench"],
   loopmods: ["trample", "scavenger", "stelzi"],
@@ -233,6 +233,7 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.creation_gem5",      // Creation Gem Node 5
   "upgrades.gems_nodes.creation_galvTrinketsCount", // Creation Galv Trinkets Count
   "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
+  "upgrades.relics.t2r7",                     // Relic T2R7
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -292,6 +293,7 @@ export const OVERRIDES = {
     "upgrades.relics.r7",            // Relic #7
     "upgrades.relics.r16",           // Relic #16
     "upgrades.relics.r19",           // Relic #19
+    "upgrades.relics.t2r7",          // Relic T2R7
   ],
 
   // Inscryptions
@@ -504,6 +506,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.creation_gem4",    // Creation Gem Node 4
   "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
   "upgrades.gems_nodes.evolution_gem6",   // Evolution Gem Node 6
+  "upgrades.relics.t2r7",                  // Relic T2R7
 ];
 
 export const STATS_RESULT_LABELS = [

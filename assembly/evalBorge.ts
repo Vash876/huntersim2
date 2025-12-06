@@ -810,7 +810,7 @@ export function EVALBORGE_WASM(
   cm46: i32, cm47: i32, cm48: i32, cm51: i32, cm53: i32, cm54: i32, cm57: i32, creaBorgeStat: i32, evo_gem2: i32, evoGN3: i32,
   tempGN4: i32, stelzi: i32, i103: i32, exodus_gem1: i32, exodus_temporalEvolutionCount: i32,
   exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32, inno_gem5: i32,
-  crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32, evo_gem6: i32
+  crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32, evo_gem6: i32, t2r7: i32
 ): f64 {
   
   // Enemies initialisieren
@@ -837,7 +837,7 @@ export function EVALBORGE_WASM(
   // Base Stats 
   borge.maxHp = (43 + i3 * 6 + i27 * 24 + (2.5 + Math.floor(hp / 5) * 0.01) * hp) * gadgetMulti * (1 + 0.03 * r4) * (card ? 1.03 : 1) * (creaGN1 ? 1.2 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.015) : 1) * (1 + i60 * 0.03) * (evoGN3 ? 1.0777 : 1) * (1 + 0.05 * i84) * crea4GUMulti * (temp_gem6 > 0 ? 1.03 : 1) * creaGem5HpBonus;
   
-  borge.atk = (3 + i13 + 2 * impacts + (0.5 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r16) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.01) : 1) * (1 + i60 * 0.03) * Math.pow(1.05, i87 as f64) * crea4GUMulti * (temp_gem6 > 0 ? 1.03 : 1);
+  borge.atk = (3 + i13 + 2 * impacts + (0.5 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r16) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.01) : 1) * (1 + i60 * 0.03) * Math.pow(1.05, i87 as f64) * crea4GUMulti * (temp_gem6 > 0 ? 1.03 : 1) * Math.pow(1.02, t2r7 as f64);
   
   borge.regen = (0.02 + 0.04 * ylith + (0.03 + Math.floor(regen / 30) * 0.01) * regen) * gadgetMulti * (card ? 1.03 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.005) : 1) * (evoGN3 ? 1.0777 : 1) * crea4GUMulti;
   

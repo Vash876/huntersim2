@@ -56,6 +56,10 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
   // Evolution GN #1 und GN #4 prüfen
   let evolutionGN1Active = false;
   let evolutionGN4Active = false;
+  
+  // t2r4 Level aus allValues holen
+  const t2r4Level = allValues.t2r4 || 0;
+  
   try {
     // Plan-Context prüfen (für TR-Plan Overrides)
     if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
@@ -108,7 +112,7 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
   // Effektive Stunden mit Research 110 Bonus
   effectiveHours += totalBonusHours;
   
-  // Speed-Multiplikator mit Research 109 Bonus, Evolution GN #1 und Evolution GN #4
+  // Speed-Multiplikator mit Research 109 Bonus, Evolution GN #1, Evolution GN #4 und t2r4
   let speedMultiplier = 1 + totalSpeedBonus;
   if (evolutionGN1Active) {
     speedMultiplier *= 1.66; // Evolution GN #1: 1.66x schnellerer Catch-Up
@@ -119,6 +123,11 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
     const timeInSeconds = effectiveHours * 3600; // Stunden zu Sekunden
     const evoGN4Multiplier = Math.min(1.33, 1.0 * Math.exp(0.00019804 * (timeInSeconds / 900)));
     speedMultiplier *= evoGN4Multiplier;
+  }
+  
+  // t2r4: Additiver Speed-Bonus (+2% pro Level)
+  if (t2r4Level > 0) {
+    speedMultiplier *= (1 + 0.02 * t2r4Level); // Level 25 = 1.5x schnellerer Catch-Up
   }
   
   // Maximum-Wert basierend auf Evolution GN #1 und GN #4
@@ -708,6 +717,10 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
   const r6Add = 2.75 * r6;
   const r6Multi = Math.pow(1.05, r6);
   
+  // Boon E Level Multiplikator - beeinflusst die Gesamtfragmente
+  // boonELevel 0 = kein Bonus, boonELevel 1 = normal, boonELevel 2 = verdoppelt den Exponenten
+  const boonELevel = planStats.boonELevel || 0;
+  
   let totalFrags = 0;
   
   // Kampagnen-Schleife
@@ -721,8 +734,16 @@ export function calculateCampaignFragGains(currentStats, planStats, boosts = [])
     if (i === 43) campaignMulti = 13;
     if (i === 47) campaignMulti = 19;
     
-    // Skalierung und Gesamtfragmente berechnen
-    const fragGain = baseFrags * campaignMulti * Math.pow(1.03, i);
+    // Skalierung pro Kampagne - beeinflusst durch boonELevel
+    // boonELevel 0: kein 1.03^i Bonus
+    // boonELevel 1: normaler 1.03^i Bonus  
+    // boonELevel 2: (1.03^i)^2 = 1.03^(2*i) Bonus
+    let campaignScaling = 1;
+    if (boonELevel >= 1) {
+      campaignScaling = Math.pow(1.03, i * boonELevel);
+    }
+    
+    const fragGain = baseFrags * campaignMulti * campaignScaling;
     totalFrags += fragGain;
   }
   

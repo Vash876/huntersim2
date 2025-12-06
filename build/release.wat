@@ -17,13 +17,13 @@
  (type $15 (func (param i32 i32 f64)))
  (type $16 (func (param i32 i32) (result f64)))
  (type $17 (func (param i32 i32 i32 i32 i32 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32)))
- (type $18 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
+ (type $18 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
  (type $19 (func (param i32 f64 i32)))
  (type $20 (func (param i32 i32 i32 i32 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32)))
- (type $21 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
+ (type $21 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
  (type $22 (func (param f64)))
  (type $23 (func (param i32 i32 i32 i32 i32 i32 f64 i32 f64 i32 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32)))
- (type $24 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
+ (type $24 (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 f64 f64 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32) (result f64)))
  (import "env" "abort" (func $~lib/builtins/abort (param i32 i32 i32 i32)))
  (global $assembly/evalBorge/seed (mut i32) (i32.const 12345))
  (global $~lib/rt/itcms/total (mut i32) (i32.const 0))
@@ -14445,11 +14445,11 @@
   call $~lib/builtins/abort
   unreachable
  )
- (func $assembly/evalBorge/EVALBORGE_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 i32) (param $35 i32) (param $36 i32) (param $37 f64) (param $38 f64) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32) (param $83 i32) (param $84 i32) (param $85 i32) (param $86 i32) (param $87 i32) (param $88 i32) (param $89 i32) (param $90 i32) (param $91 i32) (param $92 i32) (param $93 i32) (param $94 i32) (param $95 i32) (param $96 i32) (param $97 i32) (param $98 i32) (param $99 i32) (result f64)
-  (local $100 f64)
+ (func $assembly/evalBorge/EVALBORGE_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 i32) (param $35 i32) (param $36 i32) (param $37 f64) (param $38 f64) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32) (param $83 i32) (param $84 i32) (param $85 i32) (param $86 i32) (param $87 i32) (param $88 i32) (param $89 i32) (param $90 i32) (param $91 i32) (param $92 i32) (param $93 i32) (param $94 i32) (param $95 i32) (param $96 i32) (param $97 i32) (param $98 i32) (param $99 i32) (param $100 i32) (result f64)
   (local $101 f64)
   (local $102 f64)
   (local $103 f64)
+  (local $104 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 12
   i32.sub
@@ -14475,25 +14475,25 @@
   f64.const 1.001
   local.get $35
   f64.convert_i32_s
-  local.tee $100
+  local.tee $101
   call $~lib/math/NativeMath.pow
   f64.const 1.02
   local.get $35
   i32.const 10
   i32.div_s
   f64.convert_i32_s
-  local.tee $101
+  local.tee $102
+  call $~lib/math/NativeMath.pow
+  f64.mul
+  local.set $103
+  f64.const 1.005
+  local.get $101
+  call $~lib/math/NativeMath.pow
+  f64.const 1.02
+  local.get $102
   call $~lib/math/NativeMath.pow
   f64.mul
   local.set $102
-  f64.const 1.005
-  local.get $100
-  call $~lib/math/NativeMath.pow
-  f64.const 1.02
-  local.get $101
-  call $~lib/math/NativeMath.pow
-  f64.mul
-  local.set $101
   global.get $~lib/memory/__stack_pointer
   call $assembly/evalBorge/Borge#constructor
   local.tee $35
@@ -14525,14 +14525,14 @@
   else
    f64.const 1
   end
-  local.set $103
+  local.set $104
   local.get $84
   f64.convert_i32_s
   f64.const 0.01
   f64.mul
   f64.const 1
   f64.add
-  local.set $100
+  local.set $101
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=4
@@ -14560,7 +14560,7 @@
   f64.convert_i32_s
   f64.mul
   f64.add
-  local.get $102
+  local.get $103
   f64.mul
   local.get $43
   f64.convert_i32_s
@@ -14619,7 +14619,7 @@
   f64.const 1
   f64.add
   f64.mul
-  local.get $100
+  local.get $101
   f64.mul
   f64.const 1.03
   f64.const 1
@@ -14628,7 +14628,7 @@
   i32.gt_s
   select
   f64.mul
-  local.get $103
+  local.get $104
   f64.mul
   f64.store offset=8
   global.get $~lib/memory/__stack_pointer
@@ -14656,7 +14656,7 @@
   f64.convert_i32_s
   f64.mul
   f64.add
-  local.get $102
+  local.get $103
   f64.mul
   local.get $45
   f64.convert_i32_s
@@ -14708,7 +14708,7 @@
   f64.convert_i32_s
   call $~lib/math/NativeMath.pow
   f64.mul
-  local.get $100
+  local.get $101
   f64.mul
   f64.const 1.03
   f64.const 1
@@ -14716,6 +14716,11 @@
   i32.const 0
   i32.gt_s
   select
+  f64.mul
+  f64.const 1.02
+  local.get $100
+  f64.convert_i32_s
+  call $~lib/math/NativeMath.pow
   f64.mul
   f64.store offset=24
   global.get $~lib/memory/__stack_pointer
@@ -14740,7 +14745,7 @@
   f64.convert_i32_s
   f64.mul
   f64.add
-  local.get $102
+  local.get $103
   f64.mul
   f64.const 1.03
   f64.const 1
@@ -14773,7 +14778,7 @@
   local.get $86
   select
   f64.mul
-  local.get $100
+  local.get $101
   f64.mul
   f64.store offset=32
   global.get $~lib/memory/__stack_pointer
@@ -14788,7 +14793,7 @@
   f64.const 0
   local.get $64
   select
-  local.tee $100
+  local.tee $101
   f64.add
   local.get $53
   f64.convert_i32_s
@@ -14827,7 +14832,7 @@
   local.get $66
   select
   f64.add
-  local.get $100
+  local.get $101
   f64.add
   local.get $49
   f64.convert_i32_s
@@ -14850,7 +14855,7 @@
   f64.mul
   f64.const 0.05
   f64.add
-  local.get $100
+  local.get $101
   f64.add
   local.get $48
   f64.convert_i32_s
@@ -15059,7 +15064,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=8
-  local.set $100
+  local.set $101
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -15070,13 +15075,13 @@
   f64.mul
   f64.const 1
   f64.add
-  local.set $102
+  local.set $103
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $100
-  local.get $102
+  local.get $101
+  local.get $103
   local.get $35
   i32.load offset=204
   f64.convert_i32_s
@@ -15095,7 +15100,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=32
-  local.set $100
+  local.set $101
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -15106,13 +15111,13 @@
   f64.mul
   f64.const 1
   f64.add
-  local.set $102
+  local.set $103
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $100
-  local.get $102
+  local.get $101
+  local.get $103
   local.get $35
   i32.load offset=208
   f64.convert_i32_s
@@ -15131,7 +15136,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=24
-  local.set $100
+  local.set $101
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -15153,13 +15158,13 @@
   f64.const 1
   f64.add
   f64.mul
-  local.set $102
+  local.set $103
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $100
-  local.get $102
+  local.get $101
+  local.get $103
   local.get $35
   i32.load offset=240
   f64.convert_i32_s
@@ -15178,12 +15183,12 @@
   i32.store offset=8
   local.get $35
   f64.load offset=40
-  local.set $100
+  local.set $101
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $100
+  local.get $101
   local.get $35
   i32.load offset=212
   f64.convert_i32_s
@@ -15199,7 +15204,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=64
-  local.set $100
+  local.set $101
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -15208,13 +15213,13 @@
   f64.convert_i32_s
   f64.const 0.044
   f64.mul
-  local.set $102
+  local.set $103
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $100
-  local.get $102
+  local.get $101
+  local.get $103
   local.get $35
   i32.load offset=256
   f64.convert_i32_s
@@ -15248,7 +15253,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=72
-  local.set $100
+  local.set $101
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -15257,13 +15262,13 @@
   f64.convert_i32_s
   f64.const 0.08
   f64.mul
-  local.set $102
+  local.set $103
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $100
-  local.get $102
+  local.get $101
+  local.get $103
   local.get $35
   i32.load offset=256
   f64.convert_i32_s
@@ -15280,7 +15285,7 @@
   i32.store offset=8
   local.get $35
   f64.load offset=56
-  local.set $100
+  local.set $101
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
@@ -15289,13 +15294,13 @@
   f64.convert_i32_s
   f64.const 0.012
   f64.mul
-  local.set $102
+  local.set $103
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $100
-  local.get $102
+  local.get $101
+  local.get $103
   local.get $35
   i32.load offset=256
   f64.convert_i32_s
@@ -15312,12 +15317,12 @@
   i32.store offset=8
   local.get $35
   f64.load offset=48
-  local.set $100
+  local.set $101
   global.get $~lib/memory/__stack_pointer
   local.get $35
   i32.store offset=8
   local.get $35
-  local.get $100
+  local.get $101
   local.get $35
   i32.load offset=232
   f64.convert_i32_s
@@ -15385,7 +15390,7 @@
     local.get $81
     local.get $82
     local.get $83
-    local.get $101
+    local.get $102
     local.get $72
     i32.const 0
     i32.gt_s
@@ -22704,12 +22709,12 @@
   i32.add
   global.set $~lib/memory/__stack_pointer
  )
- (func $assembly/evalOzzy/EVALOZZY_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 i32) (param $35 i32) (param $36 i32) (param $37 f64) (param $38 f64) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32) (param $83 i32) (param $84 i32) (param $85 i32) (param $86 i32) (param $87 i32) (result f64)
-  (local $88 i32)
+ (func $assembly/evalOzzy/EVALOZZY_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 i32) (param $35 i32) (param $36 i32) (param $37 f64) (param $38 f64) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32) (param $83 i32) (param $84 i32) (param $85 i32) (param $86 i32) (param $87 i32) (param $88 i32) (result f64)
   (local $89 i32)
-  (local $90 f64)
+  (local $90 i32)
   (local $91 f64)
   (local $92 f64)
+  (local $93 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 12
   i32.sub
@@ -22737,7 +22742,7 @@
    i64.const 0
    i64.store
    loop $for-loop|0
-    local.get $88
+    local.get $89
     i32.const 1000
     i32.le_s
     if
@@ -22745,20 +22750,20 @@
      global.get $assembly/evalOzzy/OZZY_ENEMIES
      local.tee $77
      i32.store
-     local.get $88
-     call $assembly/evalOzzy/OzzyEnemy#constructor
-     local.set $89
-     global.get $~lib/memory/__stack_pointer
      local.get $89
+     call $assembly/evalOzzy/OzzyEnemy#constructor
+     local.set $90
+     global.get $~lib/memory/__stack_pointer
+     local.get $90
      i32.store offset=4
      local.get $77
-     local.get $88
      local.get $89
+     local.get $90
      call $~lib/staticarray/StaticArray<assembly/evalBorge/BossStats>#__set
-     local.get $88
+     local.get $89
      i32.const 1
      i32.add
-     local.set $88
+     local.set $89
      br $for-loop|0
     end
    end
@@ -22778,9 +22783,9 @@
    i32.const 0
    i32.store
    i32.const 0
-   local.set $88
+   local.set $89
    loop $for-loop|00
-    local.get $88
+    local.get $89
     i32.const 11
     i32.lt_s
     if
@@ -22789,7 +22794,7 @@
      local.tee $77
      i32.store
      local.get $77
-     local.get $88
+     local.get $89
      i32.const 0
      call $~lib/staticarray/StaticArray<i32>#__set
      global.get $~lib/memory/__stack_pointer
@@ -22797,13 +22802,13 @@
      local.tee $77
      i32.store
      local.get $77
-     local.get $88
+     local.get $89
      i32.const 0
      call $~lib/staticarray/StaticArray<i32>#__set
-     local.get $88
+     local.get $89
      i32.const 1
      i32.add
-     local.set $88
+     local.set $89
      br $for-loop|00
     end
    end
@@ -22814,25 +22819,25 @@
    f64.const 1.001
    local.get $35
    f64.convert_i32_s
-   local.tee $90
+   local.tee $91
    call $~lib/math/NativeMath.pow
    f64.const 1.02
    local.get $35
    i32.const 10
    i32.div_s
    f64.convert_i32_s
-   local.tee $91
+   local.tee $92
    call $~lib/math/NativeMath.pow
    f64.mul
-   local.set $92
+   local.set $93
    f64.const 1.005
-   local.get $90
-   call $~lib/math/NativeMath.pow
-   f64.const 1.02
    local.get $91
    call $~lib/math/NativeMath.pow
+   f64.const 1.02
+   local.get $92
+   call $~lib/math/NativeMath.pow
    f64.mul
-   local.set $90
+   local.set $91
    global.get $~lib/memory/__stack_pointer
    call $assembly/evalOzzy/Ozzy#constructor
    local.tee $35
@@ -22866,7 +22871,7 @@
    f64.mul
    f64.const 16
    f64.add
-   local.get $92
+   local.get $93
    f64.mul
    local.get $42
    f64.convert_i32_s
@@ -22886,7 +22891,7 @@
    f64.mul
    f64.const 1
    f64.add
-   local.tee $91
+   local.tee $92
    f64.mul
    f64.const 1.0777
    f64.const 1
@@ -22952,7 +22957,7 @@
    f64.mul
    f64.const 2
    f64.add
-   local.get $92
+   local.get $93
    f64.mul
    local.get $44
    f64.convert_i32_s
@@ -22971,7 +22976,7 @@
    local.get $60
    select
    f64.mul
-   local.get $91
+   local.get $92
    f64.mul
    f64.const 1.03
    f64.const 1
@@ -22998,6 +23003,11 @@
     f64.const 1
    end
    f64.mul
+   f64.const 1.02
+   local.get $88
+   f64.convert_i32_s
+   call $~lib/math/NativeMath.pow
+   f64.mul
    f64.store offset=24
    global.get $~lib/memory/__stack_pointer
    local.get $35
@@ -23016,7 +23026,7 @@
    f64.mul
    f64.const 0.1
    f64.add
-   local.get $92
+   local.get $93
    f64.mul
    f64.const 1.25
    f64.const 1
@@ -23028,7 +23038,7 @@
    local.get $60
    select
    f64.mul
-   local.get $91
+   local.get $92
    f64.mul
    f64.const 1.0777
    f64.const 1
@@ -23376,7 +23386,7 @@
    i32.store offset=8
    local.get $35
    f64.load offset=8
-   local.set $91
+   local.set $92
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
@@ -23387,13 +23397,13 @@
    f64.mul
    f64.const 1
    f64.add
-   local.set $92
+   local.set $93
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $91
    local.get $92
+   local.get $93
    local.get $35
    i32.load offset=236
    f64.convert_i32_s
@@ -23412,7 +23422,7 @@
    i32.store offset=8
    local.get $35
    f64.load offset=32
-   local.set $91
+   local.set $92
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
@@ -23423,13 +23433,13 @@
    f64.mul
    f64.const 1
    f64.add
-   local.set $92
+   local.set $93
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $91
    local.get $92
+   local.get $93
    local.get $35
    i32.load offset=236
    f64.convert_i32_s
@@ -23448,7 +23458,7 @@
    i32.store offset=8
    local.get $35
    f64.load offset=24
-   local.set $91
+   local.set $92
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
@@ -23470,13 +23480,13 @@
    f64.const 1
    f64.add
    f64.mul
-   local.set $92
+   local.set $93
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $91
    local.get $92
+   local.get $93
    local.get $35
    i32.load offset=236
    f64.convert_i32_s
@@ -23495,12 +23505,12 @@
    i32.store offset=8
    local.get $35
    f64.load offset=80
-   local.set $91
+   local.set $92
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $91
+   local.get $92
    local.get $35
    i32.load offset=216
    f64.convert_i32_s
@@ -23543,12 +23553,12 @@
    i32.store offset=8
    local.get $35
    f64.load offset=40
-   local.set $91
+   local.set $92
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $91
+   local.get $92
    local.get $35
    i32.load offset=264
    f64.convert_i32_s
@@ -23564,12 +23574,12 @@
    i32.store offset=8
    local.get $35
    f64.load offset=56
-   local.set $91
+   local.set $92
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $91
+   local.get $92
    local.get $35
    i32.load offset=268
    f64.convert_i32_s
@@ -23585,12 +23595,12 @@
    i32.store offset=8
    local.get $35
    f64.load offset=48
-   local.set $91
+   local.set $92
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $91
+   local.get $92
    local.get $35
    i32.load offset=264
    f64.convert_i32_s
@@ -23619,12 +23629,12 @@
    i32.store offset=8
    local.get $35
    f64.load offset=80
-   local.set $91
+   local.set $92
    global.get $~lib/memory/__stack_pointer
    local.get $35
    i32.store offset=8
    local.get $35
-   local.get $91
+   local.get $92
    f64.const 1
    local.get $35
    i32.load offset=256
@@ -23683,7 +23693,7 @@
      local.get $69
      local.get $70
      local.get $71
-     local.get $90
+     local.get $91
      local.get $60
      i32.const 0
      i32.gt_s
@@ -30454,11 +30464,11 @@
   call $~lib/builtins/abort
   unreachable
  )
- (func $assembly/evalKnox/EVALKNOX_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 f64) (param $35 f64) (param $36 i32) (param $37 i32) (param $38 i32) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32) (param $83 i32) (param $84 i32) (param $85 i32) (param $86 i32) (param $87 i32) (param $88 i32) (param $89 i32) (result f64)
-  (local $90 f64)
+ (func $assembly/evalKnox/EVALKNOX_WASM (param $0 i32) (param $1 i32) (param $2 i32) (param $3 i32) (param $4 i32) (param $5 i32) (param $6 i32) (param $7 i32) (param $8 i32) (param $9 i32) (param $10 i32) (param $11 i32) (param $12 i32) (param $13 i32) (param $14 i32) (param $15 i32) (param $16 i32) (param $17 i32) (param $18 i32) (param $19 i32) (param $20 i32) (param $21 i32) (param $22 i32) (param $23 i32) (param $24 i32) (param $25 i32) (param $26 i32) (param $27 i32) (param $28 i32) (param $29 i32) (param $30 i32) (param $31 i32) (param $32 i32) (param $33 i32) (param $34 f64) (param $35 f64) (param $36 i32) (param $37 i32) (param $38 i32) (param $39 i32) (param $40 i32) (param $41 i32) (param $42 i32) (param $43 i32) (param $44 i32) (param $45 i32) (param $46 i32) (param $47 i32) (param $48 i32) (param $49 i32) (param $50 i32) (param $51 i32) (param $52 i32) (param $53 i32) (param $54 i32) (param $55 i32) (param $56 i32) (param $57 i32) (param $58 i32) (param $59 i32) (param $60 i32) (param $61 i32) (param $62 i32) (param $63 i32) (param $64 i32) (param $65 i32) (param $66 i32) (param $67 i32) (param $68 i32) (param $69 i32) (param $70 i32) (param $71 i32) (param $72 i32) (param $73 i32) (param $74 i32) (param $75 i32) (param $76 i32) (param $77 i32) (param $78 i32) (param $79 i32) (param $80 i32) (param $81 i32) (param $82 i32) (param $83 i32) (param $84 i32) (param $85 i32) (param $86 i32) (param $87 i32) (param $88 i32) (param $89 i32) (param $90 i32) (result f64)
   (local $91 f64)
   (local $92 f64)
   (local $93 f64)
+  (local $94 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 12
   i32.sub
@@ -30520,25 +30530,25 @@
    f64.const 1.001
    local.get $31
    f64.convert_i32_s
-   local.tee $90
+   local.tee $91
    call $~lib/math/NativeMath.pow
    f64.const 1.02
    local.get $31
    i32.const 10
    i32.div_s
    f64.convert_i32_s
-   local.tee $91
+   local.tee $92
+   call $~lib/math/NativeMath.pow
+   f64.mul
+   local.set $93
+   f64.const 1.005
+   local.get $91
+   call $~lib/math/NativeMath.pow
+   f64.const 1.02
+   local.get $92
    call $~lib/math/NativeMath.pow
    f64.mul
    local.set $92
-   f64.const 1.005
-   local.get $90
-   call $~lib/math/NativeMath.pow
-   f64.const 1.02
-   local.get $91
-   call $~lib/math/NativeMath.pow
-   f64.mul
-   local.set $91
    global.get $~lib/memory/__stack_pointer
    call $assembly/evalKnox/Knox#constructor
    local.tee $31
@@ -30570,7 +30580,7 @@
    else
     f64.const 1
    end
-   local.set $93
+   local.set $94
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=4
@@ -30588,7 +30598,7 @@
    f64.mul
    f64.const 20
    f64.add
-   local.get $92
+   local.get $93
    f64.mul
    local.get $70
    f64.convert_i32_s
@@ -30596,7 +30606,7 @@
    f64.mul
    f64.const 1
    f64.add
-   local.tee $90
+   local.tee $91
    f64.mul
    f64.const 1.0777
    f64.const 1
@@ -30635,7 +30645,7 @@
     f64.const 1
    end
    f64.mul
-   local.get $93
+   local.get $94
    f64.mul
    f64.store offset=8
    global.get $~lib/memory/__stack_pointer
@@ -30665,9 +30675,9 @@
    f64.mul
    f64.const 1.2
    f64.add
-   local.get $92
+   local.get $93
    f64.mul
-   local.get $90
+   local.get $91
    f64.mul
    f64.const 1.03
    f64.const 1
@@ -30693,6 +30703,11 @@
    else
     f64.const 1
    end
+   f64.mul
+   f64.const 1.02
+   local.get $90
+   f64.convert_i32_s
+   call $~lib/math/NativeMath.pow
    f64.mul
    f64.store offset=24
    global.get $~lib/memory/__stack_pointer
@@ -30721,9 +30736,9 @@
    f64.mul
    f64.const 0.05
    f64.add
-   local.get $92
+   local.get $93
    f64.mul
-   local.get $90
+   local.get $91
    f64.mul
    f64.const 1.0777
    f64.const 1
@@ -31029,12 +31044,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=8
-   local.set $90
+   local.set $91
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $90
+   local.get $91
    local.get $31
    i32.load offset=280
    f64.convert_i32_s
@@ -31052,12 +31067,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=40
-   local.set $90
+   local.set $91
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $90
+   local.get $91
    local.get $31
    i32.load offset=280
    f64.convert_i32_s
@@ -31075,12 +31090,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=24
-   local.set $90
+   local.set $91
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $90
+   local.get $91
    local.get $31
    i32.load offset=280
    f64.convert_i32_s
@@ -31098,12 +31113,12 @@
    i32.store offset=8
    local.get $31
    f64.load offset=48
-   local.set $90
+   local.set $91
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $90
+   local.get $91
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -31119,7 +31134,7 @@
    i32.store offset=8
    local.get $31
    f64.load offset=72
-   local.set $90
+   local.set $91
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
@@ -31128,13 +31143,13 @@
    f64.convert_i32_s
    f64.const 0.01
    f64.mul
-   local.set $92
+   local.set $93
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $90
-   local.get $92
+   local.get $91
+   local.get $93
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -31168,7 +31183,7 @@
    i32.store offset=8
    local.get $31
    f64.load offset=64
-   local.set $90
+   local.set $91
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
@@ -31177,13 +31192,13 @@
    f64.convert_i32_s
    f64.const 0.02
    f64.mul
-   local.set $92
+   local.set $93
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $90
-   local.get $92
+   local.get $91
+   local.get $93
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -31200,7 +31215,7 @@
    i32.store offset=8
    local.get $31
    f64.load offset=56
-   local.set $90
+   local.set $91
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
@@ -31209,13 +31224,13 @@
    f64.convert_i32_s
    f64.const 0.01
    f64.mul
-   local.set $92
+   local.set $93
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $90
-   local.get $92
+   local.get $91
+   local.get $93
    local.get $31
    i32.load offset=296
    f64.convert_i32_s
@@ -31254,12 +31269,12 @@
    f64.const 3
    f64.div
    f64.add
-   local.set $90
+   local.set $91
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $90
+   local.get $91
    local.get $31
    i32.load offset=4
    i32.const 1
@@ -31300,12 +31315,12 @@
    f64.convert_i32_s
    f64.const 100
    f64.add
-   local.set $90
+   local.set $91
    global.get $~lib/memory/__stack_pointer
    local.get $31
    i32.store offset=8
    local.get $31
-   local.get $90
+   local.get $91
    local.get $31
    i32.load offset=4
    i32.const 1
@@ -31333,7 +31348,7 @@
      local.get $86
      local.get $87
      local.get $88
-     local.get $91
+     local.get $92
      local.get $39
      local.get $34
      local.get $33

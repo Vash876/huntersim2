@@ -93,7 +93,7 @@ export const ATTRIBUTE_MIN_VALUE = {
 
 // Liste aller für Ozzy relevanten Upgrades
 export const HUNTER_UPGRADES = {
-  relics: ["r4", "r7", "r17"],
+  relics: ["r4", "r7", "r17", "t2r7"],
   inscryptions: ["i31", "i32", "i33", "i36", "i37", "i40", "i81", "i86", "i92", "i104"],
   gadgets: ["zaptron"],
   loopmods: ["scavenger2", "stelzi"],
@@ -207,6 +207,7 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.creation_galvTrinketsCount", // Creation Galv Trinkets Count
   "upgrades.gems_nodes.creation_gem6",      // Creation Gem Node 6
   "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
+  "upgrades.relics.t2r7",                     // Relic T2R7
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -266,6 +267,7 @@ export const OVERRIDES = {
     "upgrades.relics.r4",            // Relic #4
     "upgrades.relics.r7",            // Relic #7
     "upgrades.relics.r17",           // Relic #16
+    "upgrades.relics.t2r7",          // Relic T2R7
   ],
 
   // Inscriptions
@@ -455,6 +457,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
   "upgrades.gems_nodes.creation_gem6",    // Creation Gem Node 6
   "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
+  "upgrades.relics.t2r7",                     // Relic T2R7
 ];
 
 export const STATS_RESULT_LABELS = [

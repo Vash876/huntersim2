@@ -82,7 +82,7 @@ export const ATTRIBUTE_MIN_VALUE = {
 
 // Liste aller für Knox relevanten Upgrades
 export const HUNTER_UPGRADES = {
-  relics: ["t2r5"],
+  relics: ["t2r5", "t2r7"],
   gadgets: ["anchor"],
   inscryptions: ["i105"],
   researches: ["res81", "res95", "res105"],
@@ -198,6 +198,7 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.attraction_catchUp2",      // Catch-Up Power (Knox)
   "upgrades.gems_nodes.attraction_lootKnox",      // Attraction Loot (Knox)
   "upgrades.relics.t2r5",                     // Relic T2R5
+  "upgrades.relics.t2r7",                     // Relic T2R7
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -255,6 +256,7 @@ export const OVERRIDES = {
   // Relics
   relics: [
     "upgrades.relics.t2r5",         // Relic T2R5
+    "upgrades.relics.t2r7",         // Relic T2R7
   ],
 
 
@@ -394,6 +396,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
   "upgrades.gems_nodes.attraction_level",     // Attraction Gem Level
   "upgrades.gems_nodes.attraction_catchUp2",      // Catch-Up Power (Knox)
+  "upgrades.relics.t2r7",                     // Relic T2R7
 ];
 
 export const STATS_RESULT_LABELS = [

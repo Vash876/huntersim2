@@ -353,6 +353,20 @@ export const allBoosts = [
     multiplier: (value) => Math.pow(1.08, value),
     max: 100
   },
+  {
+    id: 41,
+    key: 't2r4',
+    label: 'Tier 2 Relic #4',
+    category: 'relic',
+    unlock: 'power',
+    unlock_level: 3,
+    type: 'number',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    multiplier: (value) => 1 + 0.02 * value,
+    max: 25
+  },
 
   // Inscriptions
   {
@@ -498,8 +512,8 @@ export const allBoosts = [
   },  
   {
     id: 40,
-    key: 'cm57',
-    label: 'CM #57',
+    key: 'cm55',
+    label: 'CM #55',
     category: 'cm',
     unlock: 'power',
     unlock_level: 2,

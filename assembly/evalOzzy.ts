@@ -414,7 +414,7 @@ function ozzyEnemyAttack(): void {
     }
   }
   
-  //  if (ck(currentOzzyEnemy.effect) && !evaded) 
+  //  if (ck(currentOzzyEnemy.effect) && !evaded) {
   if (ck(currentOzzyEnemy.effect)) {
     currentOzzy.currentDr = Math.max(0, currentOzzy.currentDr - 0.02);
   }
@@ -765,7 +765,7 @@ export function EVALOZZY_WASM(
   stelzi: i32, i104: i32, exodus_gem3: i32, exodus_powerInnovationCount: i32, 
   exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32, 
   inno_gem5: i32, crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32, crea_gem6: i32,
-  evo_gem6: i32
+  evo_gem6: i32, t2r7: i32
 ): f64 {
   
   // Enemies initialisieren
@@ -792,7 +792,7 @@ export function EVALOZZY_WASM(
   
   // Base Stats
   ozzy.maxHp = (16 + (2 + Math.floor(hp / 5) * 0.03) * hp) * gadgetMulti * (1 + 0.03 * r4) * (card ? 1.03 : 1) * crea4GUMulti * (evoGN3 ? 1.0777 : 1) * (temp_gem6 > 0 ? 1.03 : 1) * creaGem5HpBonus * (crea_gem6 > 0 ? 1 + Math.max(0, (lvl - 69) * 0.015) : 1);
-  ozzy.atk = (2 + (0.3 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r17) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * crea4GUMulti * (temp_gem6 > 0 ? 1.03 : 1) * (crea_gem6 > 0 ? 1 + Math.max(0, (lvl - 69) * 0.01) : 1);
+  ozzy.atk = (2 + (0.3 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r17) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * crea4GUMulti * (temp_gem6 > 0 ? 1.03 : 1) * (crea_gem6 > 0 ? 1 + Math.max(0, (lvl - 69) * 0.01) : 1) * Math.pow(1.02, t2r7 as f64);
   ozzy.regen = (0.1 + (0.05 + Math.floor(regen / 30) * 0.01) * regen) * gadgetMulti * (innoGN2 ? 1.25 : 1) * (card ? 1.03 : 1) * crea4GUMulti * (evoGN3 ? 1.0777 : 1) * (crea_gem6 > 0 ? 1 + Math.max(0, (lvl - 69) * 0.005) : 1);
   ozzy.dr = 0.0035 * dr + 0.0111 * i37 + 0.002 * i86;
   ozzy.evade = 0.0062 * evade + 0.05;

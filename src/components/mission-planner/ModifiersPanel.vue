@@ -359,7 +359,7 @@
       <!-- Gems Tab -->
       <div v-if="activeTab === 'gems'" class="space-y-2">
         <p class="text-[10px] text-gray-400 mb-2">
-          Gem nodes from Gem Planner. Only special inputs editable.
+          Gem nodes from Gem Overview. Only special inputs editable.
         </p>
 
         <!-- Grouped by Gem Type -->
