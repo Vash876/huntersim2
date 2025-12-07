@@ -1,7 +1,7 @@
 <template>
   <div class="bg-gray-800/50 rounded-b-lg border border-gray-700/50 border-t-0 overflow-hidden p-3">
-    <!-- Total Targets Summary (only shown when targets are set) -->
-    <div v-if="totalTargetsSummary.hasTargets" class="mb-3 p-3 bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-lg border border-cyan-700/50">
+    <!-- Total Targets Summary (always shown) -->
+    <div class="mb-3 p-3 bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-lg border border-cyan-700/50">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-2">
           <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
@@ -388,15 +388,15 @@ function getRelicMaxLevel(relicId) {
   return baseMax + exodusNode3Level;
 }
 
-// Get cost for next level
+// Get cost for next level (from target level, not current level)
 function getRelicNextCost(relicId) {
-  const currentLevel = relicLevels.value[relicId] || 0;
+  const targetLevel = getTargetLevel(relicId);
   const maxLevel = getRelicMaxLevel(relicId);
-  if (currentLevel >= maxLevel) return Infinity;
+  if (targetLevel >= maxLevel) return Infinity;
   
   const costFn = RELIC_COSTS[relicId];
   if (!costFn) return 0;
-  return costFn(currentLevel);
+  return costFn(targetLevel);
 }
 
 // Check if we can buy the next level (has target set and not at max)

@@ -82,7 +82,7 @@
             >
               <div class="flex items-center gap-1.5">
                 <IconRefresh size="14" />
-                <span>Missions</span>
+                <span>Farms</span>
               </div>
             </button>
             <button
