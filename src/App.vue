@@ -11,6 +11,7 @@ import { useGemPlannerStore } from './store/gemPlannerStore';
 import { useGemPlanningStore } from './store/gemPlanningStore';
 import { useTRTrackingStore } from './store/trTrackingStore';
 import { useHunterStore } from './store/hunterStore';
+import { useMissionPlannerStore } from './store/missionPlannerStore';
 import { checkLocalStorageQuota } from './utils/storageCheck';
 import { IconAlertTriangle, IconX } from '@tabler/icons-vue';
 
@@ -21,6 +22,7 @@ const gemPlannerStore = useGemPlannerStore();
 const gemPlanningStore = useGemPlanningStore();
 const trTrackingStore = useTRTrackingStore();
 const hunterStore = useHunterStore();
+const missionPlannerStore = useMissionPlannerStore();
 
 // Storage warning state
 const storageWarning = ref(null);
@@ -67,7 +69,10 @@ onMounted(async () => {
     // Cleanup evaluation cache on startup (keep only last 100 entries per hunter)
     hunterStore.cleanupEvaluationCache();
     
-    console.log('✅ All stores initialized successfully (including TR Tracking)');
+    // Initialize campaign timer system (runs in background for alarm sounds)
+    missionPlannerStore.initCampaignTimers();
+    
+    console.log('✅ All stores initialized successfully (including TR Tracking, Campaign Timers)');
     
     // Check storage quota after initialization
     const storageCheck = await checkLocalStorageQuota();

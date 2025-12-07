@@ -1,5 +1,6 @@
 <template>
-  <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden h-full flex flex-col">
+  <!-- Min-height in pixels - adjust MIN_HEIGHT_PX value as needed -->
+  <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden flex flex-col" :style="{ minHeight: MIN_HEIGHT_PX + 'px' }">
     <!-- Header -->
     <div class="bg-gradient-to-r from-purple-700 to-gray-800 p-2.5 border-b border-gray-600">
       <div class="flex items-center justify-between">
@@ -88,13 +89,12 @@
       </div>
     </div>
 
-    <!-- Content Area - Inputs on top, Effects below -->
-    <div class="flex-1 overflow-y-auto p-2">
-      <div class="flex flex-col gap-3 h-full">
-        <!-- Top: Modifier Inputs -->
-        <div class="flex-1 min-h-0">
-          <!-- Game Progress Tab -->
-          <div v-if="activeTab === 'gameProgress'" class="space-y-0.5">
+    <!-- Content Area - Scrollable Modifier Inputs -->
+    <div class="flex-1 overflow-y-auto p-2 min-h-0">
+      <!-- Modifier Inputs -->
+      <div>
+        <!-- Game Progress Tab -->
+        <div v-if="activeTab === 'gameProgress'" class="space-y-0.5">
             <div v-for="(modifier, index) in modifiers.gameProgress" :key="modifier.id" 
               class="flex items-center justify-between py-1.5 px-2 rounded"
               :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
@@ -126,7 +126,7 @@
                 class="w-[160px]"
                 :value="missionPlannerStore.modifierValues[modifier.id]"
                 :min-value="modifier.min"
-                :max-value="modifier.max"
+                :max-value="getRelicModifierMaxLevel(modifier.id)"
                 :step="modifier.control || 1"
                 :fast-step="modifier.fastControls || 10"
                 :show-fast-controls="true"
@@ -144,12 +144,15 @@
               :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
               @click="updateModifier(modifier.id, !missionPlannerStore.modifierValues[modifier.id])"
             >
-              <div class="w-3 h-3 rounded border flex items-center justify-center mr-2"
+              <!-- Toggle Switch -->
+              <div class="relative w-8 h-4 rounded-full transition-colors duration-200 mr-2 flex-shrink-0"
                 :class="missionPlannerStore.modifierValues[modifier.id] 
-                  ? 'bg-green-600 border-green-600' 
-                  : 'bg-transparent border-gray-600'"
+                  ? 'bg-green-600' 
+                  : 'bg-gray-600'"
               >
-                <span v-if="missionPlannerStore.modifierValues[modifier.id]" class="text-white text-[9px]">✓</span>
+                <div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200"
+                  :class="missionPlannerStore.modifierValues[modifier.id] ? 'translate-x-4' : 'translate-x-0'"
+                ></div>
               </div>
               <label class="text-xs text-gray-300 cursor-pointer select-none flex-1">
                 {{ modifier.name }}
@@ -238,19 +241,22 @@
 
           <!-- Other Tab -->
           <div v-if="activeTab === 'other'" class="space-y-0.5">
-            <!-- Boolean modifiers (checkboxes) -->
+            <!-- Boolean modifiers (toggles) -->
             <template v-for="(modifier, index) in modifiers.other" :key="modifier.id">
               <div v-if="modifier.type === 'boolean'" 
                 class="flex items-center py-1.5 px-2 rounded cursor-pointer"
                 :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
                 @click="updateModifier(modifier.id, !missionPlannerStore.modifierValues[modifier.id])"
               >
-                <div class="w-3 h-3 rounded border flex items-center justify-center mr-2"
+                <!-- Toggle Switch -->
+                <div class="relative w-8 h-4 rounded-full transition-colors duration-200 mr-2 flex-shrink-0"
                   :class="missionPlannerStore.modifierValues[modifier.id] 
-                    ? 'bg-green-600 border-green-600' 
-                    : 'bg-transparent border-gray-600'"
+                    ? 'bg-green-600' 
+                    : 'bg-gray-600'"
                 >
-                  <span v-if="missionPlannerStore.modifierValues[modifier.id]" class="text-white text-[9px]">✓</span>
+                  <div class="absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full shadow transition-transform duration-200"
+                    :class="missionPlannerStore.modifierValues[modifier.id] ? 'translate-x-4' : 'translate-x-0'"
+                  ></div>
                 </div>
                 <label class="text-xs text-gray-300 cursor-pointer select-none flex-1">
                   {{ modifier.name }}
@@ -379,11 +385,34 @@
                       :value="missionPlannerStore.modifierValues.exodus_node_2_loopmods || 0"
                       :min-value="0"
                       :max-value="10000000"
-                      :step="1000"
+                      :step="10000"
+                      :fast-step="100000"
                       :show-fast-controls="true"
                       :tab-index="2"
                       :auto-edit="true"
                       @update:value="updateModifier('exodus_node_2_loopmods', $event)"
+                    />
+                  </div>
+                  <!-- Exodus Node 3: Relic Max Level Bonus -->
+                  <div v-if="isGemNodeActive('exodus_node_3')" 
+                    class="flex items-center justify-between bg-gray-800/50 rounded p-1.5"
+                  >
+                    <div class="flex items-center space-x-1">
+                      <label class="text-[10px] text-gray-400">Relic Max Lv:</label>
+                      <span class="text-[10px] font-mono" style="color: #8b5cf6;">
+                        +{{ missionPlannerStore.modifierValues.exodus_node_3_level || 0 }}
+                      </span>
+                    </div>
+                    <ToolValueControls
+                      class="w-[160px]"
+                      :value="missionPlannerStore.modifierValues.exodus_node_3_level || 0"
+                      :min-value="0"
+                      :max-value="5"
+                      :step="1"
+                      :show-fast-controls="true"
+                      :tab-index="3"
+                      :auto-edit="true"
+                      @update:value="updateModifier('exodus_node_3_level', $event)"
                     />
                   </div>
                 </div>
@@ -409,9 +438,11 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Bottom: Effects Summary -->
-        <div class="bg-gray-900/50 rounded-lg border border-gray-700/50 p-3 flex-shrink-0">
+    <!-- Bottom: Effects Summary (fixed at bottom) -->
+    <div class="flex-shrink-0 p-2 pt-0">
+      <div class="bg-gray-900/50 rounded-lg border border-gray-700/50 p-3">
           <h3 class="text-sm font-bold text-white mb-3 flex items-center">
             <div class="w-1 h-4 bg-indigo-500 rounded-r mr-2"></div>
             Modifier Effects
@@ -430,7 +461,7 @@
                       <th class="text-left text-gray-400 font-semibold py-1.5 px-2">Type</th>
                       <th class="text-right text-gray-400 font-semibold py-1.5 px-2">Count</th>
                       <th class="text-right text-gray-400 font-semibold py-1.5 px-2">Ind. Pwr</th>
-                      <th class="text-right text-gray-400 font-semibold py-1.5 px-2">Total</th>
+                      <th class="text-right text-gray-400 font-semibold py-1.5 px-2">Total Pwr</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -477,27 +508,35 @@
               
               <div class="bg-gray-800/50 rounded p-2">
                 <div class="flex items-center justify-between text-sm">
-                  <span class="text-gray-300">Mission Speed</span>
+                  <span class="text-gray-300 flex items-center gap-1.5">
+                    <IconBrandSpeedtest size="16" class="text-green-400" />
+                    Mission Speed
+                  </span>
                   <span class="text-green-400 font-mono">{{ calculatedEffects.missionSpeed }}%</span>
                 </div>
               </div>
 
               <div class="bg-gray-800/50 rounded p-2">
                 <div class="flex items-center justify-between text-sm">
-                  <span class="text-gray-300">Farm Fragments</span>
+                  <span class="text-gray-300 flex items-center gap-1.5">
+                    <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
+                    Farm Fragments
+                  </span>
                   <span class="text-blue-400 font-mono">{{ calculatedEffects.farmFragmentsValue }}</span>
                 </div>
               </div>
 
               <div class="bg-gray-800/50 rounded p-2">
                 <div class="flex items-center justify-between text-sm">
-                  <span class="text-gray-300">Campaign Fragments</span>
+                  <span class="text-gray-300 flex items-center gap-1.5">
+                    <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
+                    Campaign Fragments
+                  </span>
                   <span class="text-purple-400 font-mono">{{ calculatedEffects.campaignFragmentsValue }}</span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
   </div>
@@ -505,14 +544,20 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { IconAdjustments } from '@tabler/icons-vue';
-import { MODIFIERS } from '@/constants/mission-planner/modifiers';
+import { IconAdjustments, IconBrandSpeedtest } from '@tabler/icons-vue';
+import { MODIFIERS } from '@/views/tools/mission-planner/constants/modifiers';
+import { getRelicMaxLevel as getRelicMaxLevelFromData } from '@/views/tools/mission-planner/constants/relics';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
 import { getNextLevelCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { formatNumber } from '@/composables/format';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
+
+// ============================================
+// CONFIGURATION - Adjust this value as needed
+// ============================================
+const MIN_HEIGHT_PX = 717; // Minimum height in pixels
 
 // Store
 const missionPlannerStore = useMissionPlannerStore();
@@ -556,6 +601,7 @@ const GEM_NODE_MAPPING = {
   'attraction_node_4': { gemId: 'attraction', nodeIndex: 3 },
   'creation_node_5': { gemId: 'creation', nodeIndex: 4 },
   'exodus_node_2': { gemId: 'exodus', nodeIndex: 1 },
+  'exodus_node_3': { gemId: 'exodus', nodeIndex: 2 },
   'power_node_1': { gemId: 'power', nodeIndex: 0 },
   'power_node_2': { gemId: 'power', nodeIndex: 1 },
   'power_node_3': { gemId: 'power', nodeIndex: 2 },
@@ -572,6 +618,31 @@ function isGemNodeActive(modifierId) {
   if (!gemState || !gemState.nodes) return false;
   
   return gemState.nodes[mapping.nodeIndex] === true;
+}
+
+// Get dynamic max level for a relic modifier (includes Exodus Node 3 bonus)
+// Modifier ID format: 'relic_3' -> relicId 'r3'
+function getRelicModifierMaxLevel(modifierId) {
+  // Extract relic number from modifier ID (e.g., 'relic_3' -> '3')
+  const match = modifierId.match(/relic_(\d+)/);
+  if (!match) return 100; // Default fallback
+  
+  const relicId = `r${match[1]}`;
+  const baseMax = getRelicMaxLevelFromData(relicId);
+  
+  // Exodus Node 3 bonus: +1 max level per level (except R14, R5 gets +2)
+  const exodusNode3Level = missionPlannerStore.modifierValues.exodus_node_3_level || 0;
+  
+  if (exodusNode3Level <= 0) return baseMax;
+  
+  // R14 is excluded from the bonus
+  if (relicId === 'r14') return baseMax;
+  
+  // R5 gets +2 max level per exodus node 3 level
+  if (relicId === 'r5') return baseMax + (exodusNode3Level * 2);
+  
+  // All other Tier 1 relics get +1 max level per exodus node 3 level
+  return baseMax + exodusNode3Level;
 }
 
 // Computed effects from store

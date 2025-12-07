@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useStorage } from '@vueuse/core';
-import { MODIFIERS, getDefaultModifierValues } from '@/constants/mission-planner/modifiers';
+import { MODIFIERS, getDefaultModifierValues } from '@/views/tools/mission-planner/constants/modifiers';
 import {
   calculateAllPersonnelStats,
   formatPower,
@@ -13,7 +13,7 @@ import {
   getGadgetEffectsBreakdown,
   getOtherEffectsBreakdown,
   getGemEffectsBreakdown
-} from '@/constants/mission-planner/calculations';
+} from '@/views/tools/mission-planner/constants/calculations';
 import {
   calculateTotalPower,
   calculateCompletionTime,
@@ -22,8 +22,8 @@ import {
   formatCompletionTime,
   formatNumber,
   FARM_MIN_TIME_SECONDS
-} from '@/constants/mission-planner/missionCalculator';
-import { FARM_MISSIONS, CAMPAIGN_MISSIONS, isFarmMission, DEFAULT_FILL_ORDER, CAMPAIGN_FINAL_MULTIPLIERS } from '@/constants/mission-planner/missions';
+} from '@/views/tools/mission-planner/constants/missionCalculator';
+import { FARM_MISSIONS, CAMPAIGN_MISSIONS, isFarmMission, DEFAULT_FILL_ORDER, CAMPAIGN_FINAL_MULTIPLIERS } from '@/views/tools/mission-planner/constants/missions';
 import {
   optimizeFarmMissions,
   calculateFarmMissionStats,
@@ -35,7 +35,7 @@ import {
   clonePersonnel,
   subtractPersonnel,
   addPersonnel
-} from '@/constants/mission-planner/missionOptimizer';
+} from '@/views/tools/mission-planner/constants/missionOptimizer';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
 
@@ -85,12 +85,51 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     r11: 0, r12: 0, r13: 0, r14: 0, r15: 0, r16: 0, r17: 0, r18: 0, r19: 0, r20: 0,
   });
   
+  // Relic target levels (persistent via localStorage)
+  // Format: { r1: targetLevel, r2: targetLevel, ..., r20: targetLevel }
+  const relicTargetLevels = useStorage('mission-planner-relic-target-levels', {
+    r1: 0, r2: 0, r3: 0, r4: 0, r5: 0, r6: 0, r7: 0, r8: 0, r9: 0, r10: 0,
+    r11: 0, r12: 0, r13: 0, r14: 0, r15: 0, r16: 0, r17: 0, r18: 0, r19: 0, r20: 0,
+  });
+  
+  // Current fragments owned (for relic planning time estimates)
+  const currentFragments = useStorage('mission-planner-current-fragments', 0);
+  
+  // Timestamp when fragments were last updated (for auto-growth calculation)
+  const fragmentsLastUpdated = useStorage('mission-planner-fragments-last-updated', Date.now());
+  
+  // Current hours in TR (for relic planning - shows at which hour targets can be afforded)
+  const currentHoursInTR = useStorage('mission-planner-current-hours-in-tr', 0);
+  
   // Fill order position for the selected campaign (1-17, inserts before farms at that position)
   // Default is 17 (last position, after all farms)
   const campaignFillOrder = useStorage('mission-planner-campaign-fill-order', 17);
   
   // Campaign manual mode (persistent)
   const campaignManualMode = useStorage('mission-planner-campaign-manual-mode', false);
+  
+  // Active main tab for Mission Planner page ('missions', 'campaigns', 'relics')
+  // Used to navigate directly to campaigns tab when notification is clicked
+  const activeMainTab = useStorage('mission-planner-active-main-tab', 'missions');
+
+  // ============================================
+  // CAMPAIGN TIMER STATE (Global - runs in background)
+  // ============================================
+  
+  // Active timers: { 'C1-1': { startedAt: timestamp, durationSeconds: number }, ... }
+  const campaignTimers = useStorage('mission-planner-campaign-timers', {});
+  
+  // Track which timers have already played their alarm (to avoid repeat alarms)
+  const campaignTimersAlarmPlayed = useStorage('mission-planner-campaign-timers-alarms', {});
+  
+  // Current time for reactive countdown (updated every second)
+  const campaignTimerCurrentTime = ref(Date.now());
+  
+  // Interval reference for cleanup
+  let campaignTimerInterval = null;
+  
+  // Flag to check if timer system is initialized
+  const campaignTimersInitialized = ref(false);
 
   // ============================================
   // COMPUTED - Calculated Effects
@@ -710,13 +749,25 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
 
   /**
    * Get all campaign missions with stats for given assignments
+   * Applies R11 bonus to maxCrew
    * @param {Object} assignments - { missionTag: { T1: count, T2: count, ... }, ... }
    * @returns {Array} Array of mission stats
    */
   function getCampaignMissionsWithStats(assignments = {}) {
+    // Apply R11 bonus to all campaigns
+    const r11Multiplier = relicEffectsBreakdown.value.campaignMaxCrewMultiplier || 1;
+    
     return CAMPAIGN_MISSIONS.map(mission => {
       const personnel = assignments[mission.tag] || { T1: 0, T2: 0, T3: 0, T4: 0 };
-      return getMissionStats(mission, personnel);
+      
+      // Create adjusted mission with R11 bonus
+      const adjustedMission = {
+        ...mission,
+        maxCrew: Math.floor(mission.maxCrew * r11Multiplier),
+        baseMaxCrew: mission.maxCrew,
+      };
+      
+      return getMissionStats(adjustedMission, personnel);
     });
   }
 
@@ -1271,6 +1322,56 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   }
 
   /**
+   * Calculate remaining personnel after the first N farms in fill order
+   * Used by Campaigns tab to show what personnel would be available for campaigns
+   * @param {number} fillOrderPosition - Position in fill order (1-17, campaigns would start here)
+   * @returns {Object} Remaining personnel { T1, T2, T3, T4 }
+   */
+  function getPersonnelAtFillOrderPosition(fillOrderPosition) {
+    // Start with all available personnel
+    let remaining = clonePersonnel(availablePersonnel.value);
+    
+    // Get farms sorted by fill order
+    const sortedFarms = FARM_MISSIONS.map(m => ({
+      mission: m,
+      order: fillOrder.value[m.tag] || 999,
+    })).sort((a, b) => a.order - b.order);
+    
+    // Allocate personnel to farms that come BEFORE the specified position
+    for (const { mission, order } of sortedFarms) {
+      // Stop when we reach the campaign fill order position
+      if (order >= fillOrderPosition) break;
+      
+      // Calculate minimal personnel needed for 2-second cap
+      const powerNeeded = calculatePowerFor2SecondCap(mission.timeInMinutes, missionSpeedMultiplier.value);
+      
+      // Allocate minimal personnel for this farm
+      let powerAllocated = 0;
+      const tierOrder = ['T1', 'T2', 'T3', 'T4'];
+      
+      for (const tier of tierOrder) {
+        if (powerAllocated >= powerNeeded) break;
+        
+        const tierPower = powerPerTier.value[tier] || 0;
+        const availableCount = remaining[tier] || 0;
+        const maxByCrewLimit = Math.min(availableCount, mission.maxCrew);
+        
+        // Calculate how many of this tier we need
+        const powerStillNeeded = powerNeeded - powerAllocated;
+        const countNeeded = Math.ceil(powerStillNeeded / tierPower);
+        const toAllocate = Math.min(countNeeded, maxByCrewLimit);
+        
+        if (toAllocate > 0) {
+          remaining[tier] -= toAllocate;
+          powerAllocated += toAllocate * tierPower;
+        }
+      }
+    }
+    
+    return remaining;
+  }
+
+  /**
    * Check if campaign manual mode is enabled
    */
   function isCampaignManualMode() {
@@ -1310,6 +1411,84 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   }
 
   /**
+   * Update current fragments and reset the timestamp
+   * @param {number} fragments - New fragment count
+   */
+  function setCurrentFragments(fragments) {
+    currentFragments.value = Math.max(0, fragments);
+    fragmentsLastUpdated.value = Date.now();
+  }
+
+  /**
+   * Calculate fragments earned since last update based on frags/day rate
+   * and add them to current fragments. Also updates hours in TR.
+   * Updates the timestamp.
+   * @returns {number} Fragments added
+   */
+  function updateFragmentsFromElapsedTime() {
+    const now = Date.now();
+    const lastUpdated = fragmentsLastUpdated.value || now;
+    const elapsedMs = now - lastUpdated;
+    
+    // Calculate frags per day from current assignments
+    const fragsPerHour = getTotalFarmFragsPerHour(missionAssignments.value);
+    const fragsPerDay = fragsPerHour * 24;
+    
+    if (elapsedMs <= 0) {
+      fragmentsLastUpdated.value = now;
+      return 0;
+    }
+    
+    // Convert elapsed time to hours and days
+    const elapsedHours = elapsedMs / (1000 * 60 * 60);
+    const elapsedDays = elapsedHours / 24;
+    
+    // Update hours in TR (always, regardless of frags rate)
+    currentHoursInTR.value = (currentHoursInTR.value || 0) + elapsedHours;
+    
+    // Calculate earned fragments (only if we have a rate)
+    let earnedFragments = 0;
+    if (fragsPerDay > 0) {
+      earnedFragments = elapsedDays * fragsPerDay;
+      currentFragments.value = (currentFragments.value || 0) + earnedFragments;
+    }
+    
+    fragmentsLastUpdated.value = now;
+    
+    console.log(`💎 Auto-added ${earnedFragments.toFixed(2)} fragments, +${elapsedHours.toFixed(2)}h (${(elapsedMs / 1000 / 60).toFixed(1)} min elapsed)`);
+    
+    return earnedFragments;
+  }
+
+  /**
+   * Purchase a relic level upgrade - deducts cost from current fragments
+   * and increases the relic level
+   * @param {string} relicId - Relic ID (e.g., 'r1')
+   * @param {number} cost - Cost in fragments
+   * @returns {boolean} Success status
+   */
+  function purchaseRelicLevel(relicId, cost) {
+    const currentLevel = relicLevels.value[relicId] || 0;
+    const newFragments = Math.max(0, (currentFragments.value || 0) - cost);
+    
+    // Deduct cost (or set to 0 if not enough)
+    currentFragments.value = newFragments;
+    fragmentsLastUpdated.value = Date.now();
+    
+    // Increase relic level
+    relicLevels.value[relicId] = currentLevel + 1;
+    
+    // If target was at current level, increase it too
+    if (relicTargetLevels.value[relicId] <= currentLevel) {
+      relicTargetLevels.value[relicId] = currentLevel + 1;
+    }
+    
+    console.log(`🔧 Purchased ${relicId} level ${currentLevel + 1}, cost: ${cost.toFixed(2)}, remaining: ${newFragments.toFixed(2)}`);
+    
+    return true;
+  }
+
+  /**
    * Get the effective fill order considering the campaign insertion
    * Returns an array of mission tags sorted by effective fill order
    */
@@ -1346,11 +1525,22 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   }
 
   /**
-   * Get the selected campaign mission data
+   * Get the selected campaign mission data with adjusted maxCrew (R11 bonus applied)
    */
   function getSelectedCampaignData() {
     if (!selectedCampaign.value) return null;
-    return CAMPAIGN_MISSIONS.find(m => m.tag === selectedCampaign.value) || null;
+    const baseCampaign = CAMPAIGN_MISSIONS.find(m => m.tag === selectedCampaign.value);
+    if (!baseCampaign) return null;
+    
+    // Apply R11 bonus to maxCrew
+    const r11Multiplier = relicEffectsBreakdown.value.campaignMaxCrewMultiplier || 1;
+    const adjustedMaxCrew = Math.floor(baseCampaign.maxCrew * r11Multiplier);
+    
+    return {
+      ...baseCampaign,
+      maxCrew: adjustedMaxCrew,
+      baseMaxCrew: baseCampaign.maxCrew, // Keep original for reference
+    };
   }
 
   /**
@@ -1417,6 +1607,10 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       fillOrder: JSON.parse(JSON.stringify(fillOrder.value)),
       selectedCampaign: selectedCampaign.value,
       relicLevels: JSON.parse(JSON.stringify(relicLevels.value)),
+      relicTargetLevels: JSON.parse(JSON.stringify(relicTargetLevels.value)),
+      currentFragments: currentFragments.value,
+      fragmentsLastUpdated: fragmentsLastUpdated.value,
+      currentHoursInTR: currentHoursInTR.value,
       campaignFillOrder: campaignFillOrder.value,
       campaignManualMode: campaignManualMode.value,
     };
@@ -1456,6 +1650,18 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       }
       if (data.relicLevels) {
         Object.assign(relicLevels.value, data.relicLevels);
+      }
+      if (data.relicTargetLevels) {
+        Object.assign(relicTargetLevels.value, data.relicTargetLevels);
+      }
+      if (data.currentFragments !== undefined) {
+        currentFragments.value = data.currentFragments;
+      }
+      if (data.fragmentsLastUpdated !== undefined) {
+        fragmentsLastUpdated.value = data.fragmentsLastUpdated;
+      }
+      if (data.currentHoursInTR !== undefined) {
+        currentHoursInTR.value = data.currentHoursInTR;
       }
       if (data.campaignFillOrder !== undefined) {
         campaignFillOrder.value = data.campaignFillOrder;
@@ -1629,6 +1835,255 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   }
 
   // ============================================
+  // CAMPAIGN TIMER FUNCTIONS (Global background timer system)
+  // ============================================
+
+  // Track pending alarms that couldn't play due to no user interaction
+  const pendingAlarms = ref([]);
+
+  /**
+   * Play alarm sound using Web Audio API (10 alternating beeps)
+   * Returns true if sound played, false if blocked
+   */
+  function playAlarmSound() {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Check if audio context is suspended (no user interaction yet)
+      if (audioContext.state === 'suspended') {
+        console.warn('🔇 Audio context suspended - waiting for user interaction');
+        return false;
+      }
+      
+      // Play 20 beeps with alternating frequencies
+      for (let i = 0; i < 20; i++) {
+        setTimeout(() => {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          // Alternate between 800Hz and 1000Hz for variety
+          oscillator.frequency.value = i % 2 === 0 ? 800 : 1000;
+          oscillator.type = 'sine';
+          
+          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+          
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.15);
+        }, i * 150); // 150ms between each beep
+      }
+      return true;
+    } catch (e) {
+      console.warn('Could not play campaign timer alarm sound:', e);
+      return false;
+    }
+  }
+
+  /**
+   * Show browser notification for completed timer
+   * When clicked, navigates to Mission Planner
+   */
+  function showNotification(campaignTag) {
+    // Check if notifications are supported and permitted
+    if ('Notification' in window) {
+      if (Notification.permission === 'granted') {
+        const notification = new Notification('🔔 Campaign Timer Complete!', {
+          body: `Campaign ${campaignTag} has finished! Click to open Mission Planner.`,
+          icon: '/favicon.ico',
+          tag: `campaign-timer-${campaignTag}`,
+          requireInteraction: true
+        });
+        
+        // Navigate to Mission Planner when notification is clicked
+        notification.onclick = () => {
+          // Focus the window/tab
+          window.focus();
+          
+          // Set the active tab to campaigns so it opens there
+          activeMainTab.value = 'campaigns';
+          
+          // Navigate to Mission Planner using proper path
+          // The app uses HTML5 history mode, so we navigate to the absolute path
+          window.location.href = '/tools/mission-planner';
+          
+          // Close the notification
+          notification.close();
+          
+          // Try to play the alarm sound now that user interacted
+          tryPlayPendingAlarms();
+        };
+      } else if (Notification.permission !== 'denied') {
+        // Request permission for future notifications
+        Notification.requestPermission();
+      }
+    }
+  }
+
+  /**
+   * Try to play pending alarms (called on user interaction)
+   */
+  function tryPlayPendingAlarms() {
+    if (pendingAlarms.value.length > 0) {
+      console.log(`🔔 Playing ${pendingAlarms.value.length} pending alarm(s)...`);
+      const success = playAlarmSound();
+      if (success) {
+        pendingAlarms.value = [];
+      }
+    }
+  }
+
+  /**
+   * Check for completed timers and play alarm
+   */
+  function checkForCompletedTimers() {
+    for (const [tag, timer] of Object.entries(campaignTimers.value)) {
+      const elapsed = (campaignTimerCurrentTime.value - timer.startedAt) / 1000;
+      if (elapsed >= timer.durationSeconds && !campaignTimersAlarmPlayed.value[tag]) {
+        // Timer just completed
+        console.log(`🔔 Campaign timer completed: ${tag}`);
+        
+        // Try to play sound
+        const soundPlayed = playAlarmSound();
+        
+        // If sound couldn't play, add to pending and show notification
+        if (!soundPlayed) {
+          pendingAlarms.value.push(tag);
+          console.log(`⏳ Sound blocked - added ${tag} to pending alarms`);
+        }
+        
+        // Always show browser notification as backup
+        showNotification(tag);
+        
+        // Mark as played (even if sound was blocked, we don't want repeated attempts)
+        campaignTimersAlarmPlayed.value[tag] = true;
+      }
+    }
+  }
+
+  /**
+   * Initialize the campaign timer system (call once from App.vue)
+   * Starts the background interval that checks timers every second
+   */
+  function initCampaignTimers() {
+    if (campaignTimersInitialized.value) {
+      console.log('Campaign timers already initialized');
+      return;
+    }
+    
+    console.log('🕐 Initializing campaign timer system...');
+    
+    // Request notification permission early
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        console.log(`📢 Notification permission: ${permission}`);
+      });
+    }
+    
+    // Add click listener to play pending alarms on first interaction
+    const playPendingOnInteraction = () => {
+      tryPlayPendingAlarms();
+      // Remove listener after first interaction
+      document.removeEventListener('click', playPendingOnInteraction);
+      document.removeEventListener('keydown', playPendingOnInteraction);
+    };
+    document.addEventListener('click', playPendingOnInteraction);
+    document.addEventListener('keydown', playPendingOnInteraction);
+    
+    // Start interval to update time and check for completed timers
+    campaignTimerInterval = setInterval(() => {
+      campaignTimerCurrentTime.value = Date.now();
+      checkForCompletedTimers();
+    }, 1000);
+    
+    campaignTimersInitialized.value = true;
+    console.log('✅ Campaign timer system initialized');
+  }
+
+  /**
+   * Stop the campaign timer system (cleanup)
+   */
+  function stopCampaignTimers() {
+    if (campaignTimerInterval) {
+      clearInterval(campaignTimerInterval);
+      campaignTimerInterval = null;
+    }
+    campaignTimersInitialized.value = false;
+    console.log('🛑 Campaign timer system stopped');
+  }
+
+  /**
+   * Start a timer for a specific campaign
+   */
+  function startCampaignTimer(campaignTag, durationMinutes) {
+    const durationSeconds = durationMinutes * 60;
+    
+    campaignTimers.value[campaignTag] = {
+      startedAt: Date.now(),
+      durationSeconds,
+    };
+    
+    // Clear alarm played state for this timer
+    delete campaignTimersAlarmPlayed.value[campaignTag];
+    
+    console.log(`▶️ Started campaign timer: ${campaignTag} (${durationMinutes} min)`);
+  }
+
+  /**
+   * Reset/clear a specific campaign timer
+   */
+  function resetCampaignTimer(campaignTag) {
+    delete campaignTimers.value[campaignTag];
+    delete campaignTimersAlarmPlayed.value[campaignTag];
+    console.log(`⏹️ Reset campaign timer: ${campaignTag}`);
+  }
+
+  /**
+   * Reset all campaign timers
+   */
+  function resetAllCampaignTimers() {
+    campaignTimers.value = {};
+    campaignTimersAlarmPlayed.value = {};
+    console.log('⏹️ Reset all campaign timers');
+  }
+
+  /**
+   * Get the state of a specific campaign timer
+   * @returns 'idle' | 'running' | 'completed'
+   */
+  function getCampaignTimerState(campaignTag) {
+    const timer = campaignTimers.value[campaignTag];
+    if (!timer) return 'idle';
+    
+    const elapsed = (campaignTimerCurrentTime.value - timer.startedAt) / 1000;
+    if (elapsed >= timer.durationSeconds) {
+      return 'completed';
+    }
+    return 'running';
+  }
+
+  /**
+   * Get remaining time for a campaign timer in seconds
+   */
+  function getCampaignRemainingTime(campaignTag) {
+    const timer = campaignTimers.value[campaignTag];
+    if (!timer) return 0;
+    
+    const elapsed = (campaignTimerCurrentTime.value - timer.startedAt) / 1000;
+    const remaining = timer.durationSeconds - elapsed;
+    return Math.max(0, remaining);
+  }
+
+  /**
+   * Computed: Check if any campaign timer exists
+   */
+  const hasAnyCampaignTimer = computed(() => {
+    return Object.keys(campaignTimers.value).length > 0;
+  });
+
+  // ============================================
   // RETURN
   // ============================================
   
@@ -1644,6 +2099,7 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     lastOptimizationResult,
     selectedCampaign,
     campaignFillOrder,
+    activeMainTab,
     
     // Computed - Individual Breakdowns
     loopmodEffectsBreakdown,
@@ -1725,6 +2181,7 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     setSelectedCampaign,
     clearSelectedCampaign,
     setCampaignFillOrder,
+    getPersonnelAtFillOrderPosition,
     getEffectiveFillOrder,
     getSelectedCampaignData,
     getSelectedCampaignEstimatedTime,
@@ -1733,14 +2190,26 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     
     // State - Relics
     relicLevels,
+    relicTargetLevels,
+    currentFragments,
+    fragmentsLastUpdated,
+    currentHoursInTR,
     
     // Actions - Relics
     setRelicLevel,
     resetAllRelicLevels,
+    setCurrentFragments,
+    updateFragmentsFromElapsedTime,
+    purchaseRelicLevel,
     
     // Inscryption Cost-Benefit Analysis
     calculateInscryptionBenefit,
     getInscryptionCostBenefit,
+    
+    // Campaign Fragments Calculation
+    calculateCampaignFragsForIndex,
+    OPTIMAL_CAMPAIGN_ORDER,
+    CAMPAIGN_FINAL_MULTIPLIERS,
     
     // Utility exports for components
     formatCompletionTime,
@@ -1750,5 +2219,19 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     getTotalPersonnel,
     clonePersonnel,
     DEFAULT_FILL_ORDER,
+    
+    // Campaign Timer System
+    campaignTimers,
+    campaignTimersAlarmPlayed,
+    campaignTimerCurrentTime,
+    campaignTimersInitialized,
+    initCampaignTimers,
+    stopCampaignTimers,
+    startCampaignTimer,
+    resetCampaignTimer,
+    resetAllCampaignTimers,
+    getCampaignTimerState,
+    getCampaignRemainingTime,
+    hasAnyCampaignTimer,
   };
 });

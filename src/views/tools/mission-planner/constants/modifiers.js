@@ -304,6 +304,24 @@ export const MODIFIERS = {
       max: 10000000,
       description: 'Number of Loopmods owned (for Exodus GN#2)'
     },
+    {
+      id: 'exodus_node_3',
+      name: 'Exodus GN#3',
+      type: 'readonly',
+      category: MODIFIER_CATEGORIES.GEMS,
+      defaultValue: false,
+      description: 'Max level for Tier 1 relics +1 per level (R5: +2, R14: unchanged)'
+    },
+    {
+      id: 'exodus_node_3_level',
+      name: 'Exodus GN#3 Level',
+      type: 'number',
+      category: MODIFIER_CATEGORIES.GEMS,
+      defaultValue: 0,
+      min: 0,
+      max: 5,
+      description: 'Level of Exodus GN#3 (increases max relic levels)'
+    },
     // Power Gem
     {
       id: 'power_node_1',

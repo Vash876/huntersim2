@@ -28,7 +28,7 @@ const RELIC_DATA = {
   r10: { bonus: 1.08,  baseCost: 2,    additive: 15,   exp0: 72,    fixedCosts: [2, 15, 72, 257, 594, 1691, 3140, 18861] },
   r11: { bonus: 2,     baseCost: 3,    additive: 65,   exp0: 305,   fixedCosts: [3, 65, 305, 2055, 4805, 8555, 15000, 27500] },
   r12: { bonus: 0.5,   baseCost: 50,   additive: 30,   exp0: 1.09,  exp10: 1.01,  exp20: 1,      exp30: 1,     exp40: 1.00372, exp50: null },
-  r13: { bonus: 468,   baseCost: 10,   additive: 1.13, exp0: 1.013, exp10: 1.012, exp20: 1,      exp30: 1,     exp40: 1,    exp50: 1.00372, maxLevel: 200 },
+  r13: { bonus: 468,   baseCost: 10,   additive: 1.13, exp0: 1.013, exp10: 1.012, exp20: 1,      exp30: 1,     exp40: 1,    exp50: 1.00378, maxLevel: 200 },
   r14: { bonus: 468,   baseCost: 20,   additive: 100,  exp0: 320,   fixedCosts: [20, 100, 320, 880, 2240, 5440, 12800, 29440] },
   r15: { bonus: 1,     baseCost: 30,   additive: 140,  exp0: 440,   fixedCosts: [30, 140, 440, 1200, 3040, 7360, 17280, 39680] },
   r16: { bonus: 0.03,  baseCost: 40,   additive: 5,    exp0: 1.08,  exp10: 1.028, exp20: 1,      exp30: 1,     exp40: null, exp50: null },

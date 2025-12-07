@@ -42,14 +42,17 @@
           <!-- Total Frags/Hour & Day -->
           <div class="flex items-center gap-4">
             <div class="flex items-center gap-1">
+              <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
               <span class="text-gray-400 font-semibold">Frags/hr:</span>
               <span class="text-cyan-400 font-bold">{{ formatNumberWithCommas(totalFragsPerHour, 2) }}</span>
             </div>
             <div class="flex items-center gap-1">
+              <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
               <span class="text-gray-400 font-semibold">Frags/day:</span>
               <span class="text-emerald-400 font-bold">{{ formatNumberWithCommas(totalFragsPerHour * 24, 2) }}</span>
             </div>
             <div class="flex items-center gap-1 border-l border-gray-600 pl-4">
+              <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
               <span class="text-gray-400 font-semibold">All Campaigns:</span>
               <span class="text-purple-400 font-bold">{{ missionPlannerStore.totalCampaignFragments.formatted }}</span>
             </div>
@@ -83,14 +86,26 @@
               </div>
             </button>
             <button
-              @click="activeTab = 'relics'"
+              @click="activeTab = 'campaigns'"
               class="px-4 py-2 font-semibold text-xs transition-colors duration-200 border-b-2"
-              :class="activeTab === 'relics' 
+              :class="activeTab === 'campaigns' 
                 ? 'bg-gray-700/50 text-amber-400 border-amber-500' 
                 : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
             >
               <div class="flex items-center gap-1.5">
-                <IconDiamond size="14" />
+                <IconFlag size="14" />
+                <span>Campaigns</span>
+              </div>
+            </button>
+            <button
+              @click="activeTab = 'relics'"
+              class="px-4 py-2 font-semibold text-xs transition-colors duration-200 border-b-2"
+              :class="activeTab === 'relics' 
+                ? 'bg-gray-700/50 text-purple-400 border-purple-500' 
+                : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+            >
+              <div class="flex items-center gap-1.5">
+                <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
                 <span>Relics</span>
               </div>
             </button>
@@ -108,6 +123,9 @@
             </button>
           </div>
         </div>
+
+        <!-- Campaigns Tab -->
+        <CampaignsTab v-if="activeTab === 'campaigns'" />
 
         <!-- Missions Tab (Farms + Campaign) -->
         <div v-if="activeTab === 'missions'">
@@ -390,79 +408,7 @@
       </div>
 
       <!-- Relics Tab -->
-      <div v-if="activeTab === 'relics'">
-        <div class="bg-gray-800/50 rounded-b-lg border border-gray-700/50 border-t-0 overflow-hidden p-3">
-          <!-- Summary Bar -->
-          <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-700/50">
-            <div class="flex items-center gap-4 text-xs">
-              <span class="text-gray-400">Total Invested:</span>
-              <span class="text-amber-400 font-bold">{{ formatNumber(totalRelicInvestment) }}</span>
-            </div>
-            <div class="flex gap-2">
-              <button
-                @click="resetAllRelics"
-                class="px-2 py-1 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
-              >
-                Reset All
-              </button>
-            </div>
-          </div>
-          
-          <!-- Tier 1 Relics -->
-          <div class="mb-4">
-            <h3 class="text-sm font-semibold text-amber-400 mb-2 flex items-center gap-2">
-              <IconDiamond size="14" />
-              Tier 1 Relics
-            </h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-              <div
-                v-for="relic in tier1Relics"
-                :key="relic.id"
-                class="bg-gray-700/50 rounded-lg p-2 border border-gray-600/50"
-              >
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-semibold text-white">{{ relic.id.toUpperCase() }}</span>
-                  <span class="text-xs text-gray-400">Max: {{ getRelicMaxLevel(relic.id) }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <ToolValueControls
-                    :value="relicLevels[relic.id] || 0"
-                    @update:value="updateRelicLevel(relic.id, $event)"
-                    :min-value="0"
-                    :max-value="getRelicMaxLevel(relic.id)"
-                    :step="1"
-                    :show-fast-controls="false"
-                    :auto-edit="true"
-                    value-class="text-white text-xs"
-                  />
-                  <div class="flex-1 text-right">
-                    <div class="text-xs text-gray-400">Next:</div>
-                    <div class="text-xs font-mono" :class="getRelicNextCost(relic.id) === Infinity ? 'text-gray-500' : 'text-cyan-400'">
-                      {{ getRelicNextCost(relic.id) === Infinity ? 'MAX' : formatNumber(getRelicNextCost(relic.id)) }}
-                    </div>
-                  </div>
-                </div>
-                <div class="mt-1 flex justify-between text-xs">
-                  <span class="text-gray-500">Invested:</span>
-                  <span class="text-amber-400/80 font-mono">{{ formatNumber(getRelicTotalInvested(relic.id)) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Tier 2 Relics (Coming Soon) -->
-          <div>
-            <h3 class="text-sm font-semibold text-purple-400 mb-2 flex items-center gap-2">
-              <IconDiamond size="14" />
-              Tier 2 Relics
-              <span class="text-xs text-gray-500 font-normal">(Coming Soon)</span>
-            </h3>
-            <div class="bg-gray-700/30 rounded-lg p-4 text-center text-gray-500 text-xs">
-              Tier 2 relic formulas will be added soon
-            </div>
-          </div>
-        </div>
-      </div>
+      <RelicsTab v-if="activeTab === 'relics'" />
     </div>
   </div>
   </div>
@@ -485,30 +431,28 @@ import {
   IconLock,
   IconLockOpen,
   IconPlanet,
-  IconDiamond
+  IconFlag
 } from '@tabler/icons-vue';
-import { PLANETS, FARM_MISSIONS, CAMPAIGN_MISSIONS } from '@/constants/mission-planner/missions';
-import { RELICS, RELIC_COSTS, getTier1Relics, calculateTotalCost, getRelicMaxLevel as getRelicMaxLevelFromData } from '@/constants/mission-planner/relics';
+import { PLANETS, FARM_MISSIONS, CAMPAIGN_MISSIONS } from '@/views/tools/mission-planner/constants/missions';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { formatNumber } from '@/composables/format';
-import ModifiersPanel from '@/components/mission-planner/ModifiersPanel.vue';
-import CampaignSelectModal from '@/components/mission-planner/CampaignSelectModal.vue';
+import ModifiersPanel from '@/views/tools/mission-planner/components/ModifiersPanel.vue';
+import CampaignSelectModal from '@/views/tools/mission-planner/components/CampaignSelectModal.vue';
+import CampaignsTab from '@/views/tools/mission-planner/components/CampaignsTab.vue';
+import RelicsTab from '@/views/tools/mission-planner/components/RelicsTab.vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 
 // Store
 const missionPlannerStore = useMissionPlannerStore();
 
-// Tab state
-const activeTab = ref('missions');
+// Tab state - use store's activeMainTab (persisted & can be set by notification click)
+const activeTab = computed({
+  get: () => missionPlannerStore.activeMainTab,
+  set: (value) => { missionPlannerStore.activeMainTab = value; }
+});
 
 // Campaign Modal state
 const showCampaignModal = ref(false);
-
-// Relic levels from store (persistent)
-const relicLevels = computed(() => missionPlannerStore.relicLevels);
-
-// Tier 1 relics list
-const tier1Relics = computed(() => getTier1Relics());
 
 // Computed: Available Personnel from store
 const availablePersonnel = computed(() => missionPlannerStore.availablePersonnel);
@@ -755,49 +699,6 @@ function getSelectedCampaignFrags() {
   if (!campaign) return '-';
   const stats = missionPlannerStore.getMissionStats(campaign, getSelectedCampaignAssignment());
   return formatNumberWithCommas(stats.fragsPerCompletion || 0, 0);
-}
-
-// ==================== RELIC FUNCTIONS ====================
-
-// Update relic level (uses store)
-function updateRelicLevel(relicId, value) {
-  const level = Math.max(0, parseInt(value) || 0);
-  const maxLevel = getRelicMaxLevel(relicId);
-  missionPlannerStore.setRelicLevel(relicId, Math.min(level, maxLevel));
-}
-
-// Get max level for a relic
-function getRelicMaxLevel(relicId) {
-  return getRelicMaxLevelFromData(relicId);
-}
-
-// Get cost for next level
-function getRelicNextCost(relicId) {
-  const currentLevel = relicLevels.value[relicId] || 0;
-  const costFn = RELIC_COSTS[relicId];
-  if (!costFn) return 0;
-  return costFn(currentLevel);
-}
-
-// Get total invested in a relic (sum of all levels purchased)
-function getRelicTotalInvested(relicId) {
-  const currentLevel = relicLevels.value[relicId] || 0;
-  if (currentLevel === 0) return 0;
-  return calculateTotalCost(relicId, 0, currentLevel);
-}
-
-// Computed: Total investment across all relics
-const totalRelicInvestment = computed(() => {
-  let total = 0;
-  Object.keys(relicLevels.value).forEach(relicId => {
-    total += getRelicTotalInvested(relicId);
-  });
-  return total;
-});
-
-// Reset all relic levels (uses store)
-function resetAllRelics() {
-  missionPlannerStore.resetAllRelicLevels();
 }
 
 // Initialize store on mount
