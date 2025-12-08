@@ -181,7 +181,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { IconCheck, IconClock } from '@tabler/icons-vue';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { formatNumber } from '@/composables/format';
@@ -195,6 +195,28 @@ import ToolValueControls from '@/composables/ToolValueControls.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
 
 const missionPlannerStore = useMissionPlannerStore();
+
+// Live update interval reference
+let liveUpdateInterval = null;
+
+// Initialize on mount - auto update fragments based on elapsed time
+onMounted(() => {
+  // Auto-update fragments based on elapsed time since last visit
+  missionPlannerStore.updateFragmentsFromElapsedTime();
+  
+  // Start live update interval (every 5 seconds)
+  liveUpdateInterval = setInterval(() => {
+    missionPlannerStore.updateFragmentsFromElapsedTime();
+  }, 5000);
+});
+
+// Cleanup interval on unmount
+onUnmounted(() => {
+  if (liveUpdateInterval) {
+    clearInterval(liveUpdateInterval);
+    liveUpdateInterval = null;
+  }
+});
 
 // Relic levels from store
 const relicLevels = computed(() => missionPlannerStore.relicLevels);
