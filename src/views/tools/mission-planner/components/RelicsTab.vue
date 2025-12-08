@@ -246,7 +246,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, onUnmounted, watch, ref } from 'vue';
 import { IconCheck } from '@tabler/icons-vue';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
@@ -603,6 +603,9 @@ watch(
   { deep: true }
 );
 
+// Live update interval reference
+let liveUpdateInterval = null;
+
 // Initialize on mount - auto sync from both sources
 onMounted(() => {
   // Auto-update fragments based on elapsed time since last visit
@@ -626,5 +629,21 @@ onMounted(() => {
       missionPlannerStore.relicTargetLevels[relic.id] = currentLevel;
     }
   });
+  
+  // Start live update interval (every 30 seconds)
+  liveUpdateInterval = setInterval(() => {
+    const addedFrags = missionPlannerStore.updateFragmentsFromElapsedTime();
+    if (addedFrags > 0) {
+      console.log(`💎 Live update: +${formatNumber(addedFrags)} fragments`);
+    }
+  }, 30000); // 30 seconds
+});
+
+// Cleanup interval on unmount
+onUnmounted(() => {
+  if (liveUpdateInterval) {
+    clearInterval(liveUpdateInterval);
+    liveUpdateInterval = null;
+  }
 });
 </script>
