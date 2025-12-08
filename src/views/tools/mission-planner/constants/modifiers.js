@@ -30,6 +30,7 @@ export const MODIFIERS = {
       multiplier: 1.0,
       control: 10,
       fastControls: 100,
+      icon: 'src/assets/general/cells.png'
     },
     {
       id: 'mp',
@@ -42,6 +43,7 @@ export const MODIFIERS = {
       multiplier: 1.0,
       control: 10,
       fastControls: 100,
+      icon: 'src/assets/general/mp.png'
     },
     {
       id: 'rp',
@@ -54,6 +56,7 @@ export const MODIFIERS = {
       multiplier: 1.0,
       control: 10,
       fastControls: 100,
+      icon: 'src/assets/general/rp.png'
     },
     {
       id: 'all_time_highest_rp',
@@ -66,16 +69,18 @@ export const MODIFIERS = {
       multiplier: 1.0,
       control: 10,
       fastControls: 100,
+      icon: 'src/assets/general/rp.png'
     },
     {
       id: 'plus_ultima',
-      name: '+Ultima',
+      name: 'Ultima',
       type: 'number',
       category: MODIFIER_CATEGORIES.GAME_PROGRESS,
       defaultValue: 0,
       min: 0,
       max: 100,
       multiplier: 1.0,
+      icon: 'IconPlus'
     }
   ],
 
@@ -123,6 +128,17 @@ export const MODIFIERS = {
       min: 0,
       max: 100,
       type: 'max_crew',
+      multiplier: 1.0,
+    },
+    {
+      id: 't2r8',
+      name: 'T2 Relic 8 Level',
+      type: 'number',
+      category: MODIFIER_CATEGORIES.RELICS,
+      defaultValue: 0,
+      min: 0,
+      max: 21,
+      type: 'all_frags',
       multiplier: 1.0,
     }
   ],

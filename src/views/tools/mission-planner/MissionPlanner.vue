@@ -111,15 +111,27 @@
             </button>
           </div>
           
-          <!-- Clear Button -->
-          <div class="flex gap-1.5 pr-2">
+          <!-- Clear Button (not shown in Relics tab) -->
+          <div v-if="activeTab !== 'relics'" class="flex gap-1.5 pr-2">
             <button
               @click="handleClearAll"
-              class="px-2.5 py-1 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
+              class="px-2.5 py-1 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors flex items-center gap-1"
               title="Clear all assignments and reset to auto mode"
             >
-              <IconTrash size="14" class="inline mr-1" />
+              <IconTrash size="14" />
               Clear
+            </button>
+          </div>
+          
+          <!-- Reset Targets Button (only shown in Relics tab) -->
+          <div v-if="activeTab === 'relics'" class="flex gap-1.5 pr-2">
+            <button
+              @click="handleResetTargets"
+              class="px-2.5 py-1 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors flex items-center gap-1"
+              title="Reset all relic targets to current levels"
+            >
+              <IconRefresh size="14" />
+              Reset Targets
             </button>
           </div>
         </div>
@@ -642,6 +654,16 @@ function formatNumberWithCommas(num, decimals = 0) {
 // Handle clear all button
 function handleClearAll() {
   missionPlannerStore.clearAllAssignments();
+}
+
+// Handle reset targets button (for Relics tab)
+function handleResetTargets() {
+  // Reset all target levels to current levels
+  const tier1RelicIds = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14'];
+  tier1RelicIds.forEach(relicId => {
+    const currentLevel = missionPlannerStore.relicLevels[relicId] || 0;
+    missionPlannerStore.relicTargetLevels[relicId] = currentLevel;
+  });
 }
 
 // Campaign selection handler

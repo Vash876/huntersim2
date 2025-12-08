@@ -1,92 +1,86 @@
 <template>
   <div class="bg-gray-800/50 rounded-b-lg border border-gray-700/50 border-t-0 overflow-hidden p-3">
-    <!-- Total Targets Summary (always shown) -->
-    <div class="mb-3 p-3 bg-gradient-to-r from-cyan-900/30 to-purple-900/30 rounded-lg border border-cyan-700/50">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
-          <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
-          <span class="text-sm font-semibold text-cyan-400">Target Summary</span>
-          <span class="text-xs text-gray-400">({{ totalTargetsSummary.targetCount }} relics)</span>
-        </div>
-        <div class="flex flex-wrap items-center gap-4 text-xs">
-          <!-- Current Hours in TR -->
-          <div class="flex items-center gap-1.5">
-            <span class="text-gray-400">Current Hours:</span>
-            <SuffixInput
-              :model-value="currentHoursInTR"
-              @update:model-value="handleHoursUpdate"
-              class="w-20"
-              focus-ring-class="focus:ring-cyan-500"
-              text-color-class="text-cyan-400"
-            />
-            <span class="text-gray-500 text-[10px]" :title="lastUpdateTooltip">(auto)</span>
+    <!-- Combined Summary Panel -->
+    <div class="mb-3 bg-gradient-to-r from-gray-800/80 to-gray-900/80 rounded-lg border border-gray-700/50 overflow-hidden">
+      <!-- Top Row: Current Status (Fragments & Hours Input) -->
+      <div class="px-3 py-2 bg-gray-800/50 border-b border-gray-700/30">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-4 text-xs">
+            <!-- Current Fragments Input -->
+            <div class="flex items-center gap-1.5">
+              <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
+              <span class="text-gray-400">Current:</span>
+              <SuffixInput
+                :model-value="currentFragments"
+                @update:model-value="handleFragmentsUpdate"
+                class="w-24"
+                focus-ring-class="focus:ring-purple-500"
+                text-color-class="text-purple-400"
+              />
+            </div>
+            <!-- Current Hours in TR -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-gray-400">Hours in TR:</span>
+              <SuffixInput
+                :model-value="currentHoursInTR"
+                @update:model-value="handleHoursUpdate"
+                class="w-20"
+                focus-ring-class="focus:ring-cyan-500"
+                text-color-class="text-cyan-400"
+              />
+            </div>
+            <!-- Frags per Day -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-gray-400">Rate:</span>
+              <span class="text-green-400 font-bold">+{{ formatNumber(fragsPerDay) }}/day</span>
+              <span class="text-gray-500 text-[10px]" :title="lastUpdateTooltip">(auto)</span>
+            </div>
           </div>
-          <!-- Total Cost -->
-          <div class="flex items-center gap-1.5">
-            <span class="text-gray-400">Total Cost:</span>
-            <span class="text-amber-400 font-bold">{{ formatNumber(totalTargetsSummary.totalCost) }}</span>
-          </div>
-          <!-- Remaining (after current frags) -->
-          <div class="flex items-center gap-1.5">
-            <span class="text-gray-400">Remaining:</span>
-            <span :class="totalTargetsSummary.remaining <= 0 ? 'text-green-400' : 'text-cyan-400'" class="font-bold">
-              {{ totalTargetsSummary.remaining <= 0 ? 'Ready!' : formatNumber(totalTargetsSummary.remaining) }}
-            </span>
-          </div>
-          <!-- Est. Time (in days) -->
-          <div class="flex items-center gap-1.5">
-            <span class="text-gray-400">Est. Time:</span>
-            <span :class="totalTargetsSummary.remaining <= 0 ? 'text-green-400' : 'text-yellow-400'" class="font-bold">
-              {{ totalTargetsSummary.estimatedTime }}
-            </span>
-          </div>
-          <!-- Est. Hours in TR (absolute hour when you can afford it) -->
-          <div class="flex items-center gap-1.5">
-            <span class="text-gray-400">Est. Hours in TR:</span>
-            <span :class="totalTargetsSummary.remaining <= 0 ? 'text-green-400' : 'text-green-400'" class="font-bold">
-              {{ totalTargetsSummary.estimatedHoursInTR }}
-            </span>
+          <!-- Total Invested -->
+          <div class="flex items-center gap-1.5 text-xs">
+            <span class="text-gray-400">Invested:</span>
+            <span class="text-amber-400 font-bold">{{ formatNumber(totalRelicInvestment) }}</span>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- Summary Bar -->
-    <div class="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2 border-b border-gray-700/50">
-      <div class="flex flex-wrap items-center gap-4 text-xs">
-        <!-- Current Fragments Input -->
-        <div class="flex items-center gap-2">
-          <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
-          <span class="text-gray-400">Current:</span>
-          <SuffixInput
-            :model-value="currentFragments"
-            @update:model-value="handleFragmentsUpdate"
-            class="w-24"
-            focus-ring-class="focus:ring-purple-500"
-            text-color-class="text-purple-400"
-          />
-          <span class="text-gray-500 text-[10px]" :title="lastUpdateTooltip">
-            (auto +{{ formatNumber(fragsPerDay) }}/day)
-          </span>
+      
+      <!-- Bottom Row: Target Summary -->
+      <div class="px-3 py-2 bg-gradient-to-r from-cyan-900/20 to-purple-900/20">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
+            <span class="text-xs font-semibold text-cyan-400">Targets</span>
+            <span class="text-[10px] text-gray-500">({{ totalTargetsSummary.targetCount }})</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 text-xs">
+            <!-- Total Cost -->
+            <div class="flex items-center gap-1">
+              <span class="text-gray-500">Cost:</span>
+              <span class="text-amber-400 font-semibold">{{ formatNumber(totalTargetsSummary.totalCost) }}</span>
+            </div>
+            <!-- Remaining -->
+            <div class="flex items-center gap-1">
+              <span class="text-gray-500">Remaining:</span>
+              <span :class="totalTargetsSummary.remaining <= 0 ? 'text-green-400' : 'text-cyan-400'" class="font-semibold">
+                {{ totalTargetsSummary.remaining <= 0 ? '✓' : formatNumber(totalTargetsSummary.remaining) }}
+              </span>
+            </div>
+            <!-- Est. Time -->
+            <div class="flex items-center gap-1">
+              <span class="text-gray-500">Time:</span>
+              <span :class="totalTargetsSummary.remaining <= 0 ? 'text-green-400' : 'text-yellow-400'" class="font-semibold">
+                {{ totalTargetsSummary.estimatedTime }}
+              </span>
+            </div>
+            <!-- Est. Hours in TR -->
+            <div class="flex items-center gap-1">
+              <span class="text-gray-500">@Hour:</span>
+              <span :class="totalTargetsSummary.remaining <= 0 ? 'text-green-400' : 'text-green-400'" class="font-semibold">
+                {{ totalTargetsSummary.estimatedHoursInTR }}
+              </span>
+            </div>
+          </div>
         </div>
-        <!-- Frags per Day -->
-        <div class="flex items-center gap-2">
-          <span class="text-gray-400">Frags/Day:</span>
-          <span class="text-green-400 font-bold">{{ formatNumber(fragsPerDay) }}</span>
-        </div>
-        <!-- Total Invested -->
-        <div class="flex items-center gap-2">
-          <span class="text-gray-400">Total Invested:</span>
-          <span class="text-amber-400 font-bold">{{ formatNumber(totalRelicInvestment) }}</span>
-        </div>
-      </div>
-      <div class="flex gap-2">
-        <button
-          @click="resetAllTargets"
-          class="px-2 py-1 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors"
-        >
-          Reset Targets
-        </button>
       </div>
     </div>
     
@@ -108,7 +102,12 @@
               <th class="px-2 py-1.5 text-right">Max</th>
               <th class="px-2 py-1.5 text-right">Target Cost</th>
               <th class="px-2 py-1.5 text-right">Est. Time</th>
-              <th class="px-2 py-1.5 text-right">Next Cost</th>
+              <th class="px-2 py-1.5 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <img src="@/assets/general/fragments.png" alt="Fragments" class="w-3 h-3" />
+                  <span>Next Cost</span>
+                </div>
+              </th>
               <th class="px-2 py-1.5 text-right rounded-tr-lg">
                 <div class="flex items-center justify-end gap-1">
                   <img src="@/assets/general/fragments.png" alt="Fragments" class="w-3 h-3" />
@@ -610,9 +609,6 @@ let liveUpdateInterval = null;
 onMounted(() => {
   // Auto-update fragments based on elapsed time since last visit
   const addedFrags = missionPlannerStore.updateFragmentsFromElapsedTime();
-  if (addedFrags > 0) {
-    console.log(`💎 Welcome back! Added ${formatNumber(addedFrags)} fragments from elapsed time.`);
-  }
   
   // First sync from modifiers panel
   syncModifiersToRelics();
@@ -633,10 +629,7 @@ onMounted(() => {
   // Start live update interval (every 30 seconds)
   liveUpdateInterval = setInterval(() => {
     const addedFrags = missionPlannerStore.updateFragmentsFromElapsedTime();
-    if (addedFrags > 0) {
-      console.log(`💎 Live update: +${formatNumber(addedFrags)} fragments`);
-    }
-  }, 30000); // 30 seconds
+  }, 5000); // 5 seconds
 });
 
 // Cleanup interval on unmount

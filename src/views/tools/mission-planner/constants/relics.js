@@ -36,6 +36,8 @@ const RELIC_DATA = {
   r18: { bonus: 365,   baseCost: 60,   additive: 6,    exp0: 1.03,  exp10: 1.01,  exp20: 1.02,   exp30: 1,     exp40: null, exp50: null, maxLevel: 200 },
   r19: { bonus: 365,   baseCost: 666,  additive: 1289, exp0: 2446,  fixedCosts: [666, 1289, 2446, 4569, 8428, 15390, 27871, 50121] },
   r20: { bonus: 2,     baseCost: 1000, additive: 50,   exp0: 1.2,   exp10: 1,     exp20: 1,      exp30: 1,     exp40: 1,    exp50: null },
+  // Tier 2 Relics
+  t2r8: { bonus: 1.021, baseCost: 0, additive: 0, exp0: 1, maxLevel: 21 }, // Fragment multiplier for farms and campaigns
 };
 
 // Cost type categorization
@@ -409,9 +411,13 @@ export const RELICS = {
   t2r8: {
     id: 't2r8',
     name: 'Tier 2 Relic 8',
-    description: 'TBD',
+    description: 'Increase farm and campaign fragments',
     tier: 2,
-    maxLevel: 100,
+    maxLevel: 21,
+    effectType: 'all_fragments_multiplier',
+    // x1.021 per level (multiplicative), so level 10 = 1.021^10 = ~1.23x
+    effectPerLevel: 1.021,
+    isMultiplicative: true,
     getCost: RELIC_COSTS.t2r8,
   },
   t2r9: {
@@ -503,6 +509,17 @@ export function calculateRelic11MaxCrew(level) {
 }
 
 /**
+ * Calculate all fragments multiplier from T2 Relic 8
+ * @param {number} level - T2R8 level
+ * @returns {number} Fragment multiplier (e.g., 1.021^10 = ~1.23 for level 10)
+ */
+export function calculateT2R8FragmentMultiplier(level) {
+  if (level <= 0) return 1.0;
+  // 1.021^level (multiplicative)
+  return Math.pow(RELICS.t2r8.effectPerLevel, level);
+}
+
+/**
  * Get all relic effects combined
  * @param {object} relicLevels - Object with relic IDs and their levels
  * @returns {object} Combined relic effects
@@ -513,8 +530,10 @@ export function getRelicEffects(relicLevels) {
   const relic5Level = relicLevels.r5 || relicLevels.relic_5 || 0;
   const relic6Level = relicLevels.r6 || relicLevels.relic_6 || 0;
   const relic11Level = relicLevels.r11 || relicLevels.relic_11 || 0;
+  const t2r8Level = relicLevels.t2r8 || 0;
   
   const relic6Effects = calculateRelic6CampaignFrags(relic6Level);
+  const t2r8Multiplier = calculateT2R8FragmentMultiplier(t2r8Level);
   
   return {
     missionSpeedMultiplier: calculateRelic3MissionSpeed(relic3Level),
@@ -522,6 +541,7 @@ export function getRelicEffects(relicLevels) {
     campaignFragsAdditive: relic6Effects.additive,
     campaignFragsMultiplier: relic6Effects.multiplier,
     campaignMaxCrewMultiplier: calculateRelic11MaxCrew(relic11Level),
+    allFragmentsMultiplier: t2r8Multiplier, // T2R8: applies to both farm and campaign
     
     // Individual levels for reference
     levels: {
@@ -529,6 +549,7 @@ export function getRelicEffects(relicLevels) {
       r5: relic5Level,
       r6: relic6Level,
       r11: relic11Level,
+      t2r8: t2r8Level,
     },
   };
 }

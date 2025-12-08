@@ -175,6 +175,7 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       relic_5: modifierValues.value?.relic_5 || 0,
       relic_6: modifierValues.value?.relic_6 || 0,
       relic_11: modifierValues.value?.relic_11 || 0,
+      t2r8: modifierValues.value?.t2r8 || 0,
     };
     return getRelicEffectsBreakdown(relicLevels);
   });
@@ -332,8 +333,9 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     const inscryptionMult = inscryptionEffectsBreakdown.value.farmFragsMultiplier;
     const otherMult = otherEffectsBreakdown.value.farmFragsMultiplier;
     const gemMult = gem.farmFragsMultiplier;
+    const relicAllFragsMult = relicEffectsBreakdown.value.allFragmentsMultiplier || 1;
     
-    const multiplier = loopmodMult * researchMult * badgeMult * inscryptionMult * otherMult * gemMult;
+    const multiplier = loopmodMult * researchMult * badgeMult * inscryptionMult * otherMult * gemMult * relicAllFragsMult;
     
     // Individual additives
     const researchAdd = researchEffectsBreakdown.value.farmFragsBonuses.additive;
@@ -365,6 +367,7 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     console.log(`  Inscryption (I110): ×${inscryptionMult.toFixed(4)}`);
     console.log(`  Other (TS07+FragPack): ×${otherMult.toFixed(4)}`);
     console.log(`  Gems (Power4+Attr4+Creation+Exodus): ×${gemMult.toFixed(4)}`);
+    console.log(`  Relic T2R8: ×${relicAllFragsMult.toFixed(4)}`);
     console.log(`  Total Multiplier: ×${multiplier.toFixed(4)}`);
     console.log('--- RESULT ---');
     console.log(`  Formula: (${baseValue} + ${additive.toFixed(6)}) × ${multiplier.toFixed(4)}`);
@@ -385,6 +388,7 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
         inscryptionMult,
         otherMult,
         gemMult,
+        relicAllFragsMult,
         researchAdd,
         relicAdd,
         inscryptionAdd,
@@ -410,8 +414,9 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     const gadgetMult = gadgetEffectsBreakdown.value.campaignFragsMultiplier;
     const otherMult = otherEffectsBreakdown.value.campaignFragsMultiplier;
     const gemMult = gem.campaignFragsMultiplier;
+    const relicAllFragsMult = relicEffectsBreakdown.value.allFragmentsMultiplier || 1;
     
-    const multiplier = loopmodMult * researchMult * relicMult * inscryptionMult * gadgetMult * otherMult * gemMult;
+    const multiplier = loopmodMult * researchMult * relicMult * inscryptionMult * gadgetMult * otherMult * gemMult * relicAllFragsMult;
     
     // Additive bonuses are added to base BEFORE multiplying
     const researchAdd = researchEffectsBreakdown.value.campaignFragsBonuses.additive;
@@ -436,6 +441,7 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
         gadgetMult,
         otherMult,
         gemMult,
+        relicAllFragsMult,
         researchAdd,
         relicAdd,
       },
@@ -473,8 +479,9 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     const gadgetMult = gadgetEffectsBreakdown.value.campaignFragsMultiplier;
     const otherMult = otherEffectsBreakdown.value.campaignFragsMultiplier;
     const gemMult = gem.campaignFragsMultiplier;
+    const relicAllFragsMult = relicEffectsBreakdown.value.allFragmentsMultiplier || 1;
     
-    const multiplier = loopmodMult * researchMult * relicMult * inscryptionMult * gadgetMult * otherMult * gemMult;
+    const multiplier = loopmodMult * researchMult * relicMult * inscryptionMult * gadgetMult * otherMult * gemMult * relicAllFragsMult;
     
     const researchAdd = researchEffectsBreakdown.value.campaignFragsBonuses.additive;
     const relicAdd = relicEffectsBreakdown.value.campaignFragsAdditive;
@@ -1454,8 +1461,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     }
     
     fragmentsLastUpdated.value = now;
-    
-    console.log(`💎 Auto-added ${earnedFragments.toFixed(2)} fragments, +${elapsedHours.toFixed(2)}h (${(elapsedMs / 1000 / 60).toFixed(1)} min elapsed)`);
     
     return earnedFragments;
   }

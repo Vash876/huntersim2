@@ -99,7 +99,13 @@
               class="flex items-center justify-between py-1.5 px-2 rounded"
               :class="index % 2 === 0 ? 'bg-gray-700/40' : ''"
             >
-              <label class="text-xs text-gray-300">{{ modifier.name }}</label>
+              <label class="text-xs text-gray-300 flex items-center gap-1.5">
+                <!-- Icon: Tabler Icon -->
+                <IconPlus v-if="modifier.icon === 'IconPlus'" size="14" class="text-red-500" />
+                <!-- Icon: Image path -->
+                <img v-else-if="modifier.icon && !modifier.icon.startsWith('Icon')" :src="'/' + modifier.icon" class="w-3.5 h-3.5" />
+                {{ modifier.name }}
+              </label>
               <ToolValueControls
                 class="w-[160px]"
                 :value="missionPlannerStore.modifierValues[modifier.id]"
@@ -544,7 +550,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { IconAdjustments, IconBrandSpeedtest } from '@tabler/icons-vue';
+import { IconAdjustments, IconBrandSpeedtest, IconPlus } from '@tabler/icons-vue';
 import { MODIFIERS } from '@/views/tools/mission-planner/constants/modifiers';
 import { getRelicMaxLevel as getRelicMaxLevelFromData } from '@/views/tools/mission-planner/constants/relics';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
@@ -621,8 +627,14 @@ function isGemNodeActive(modifierId) {
 }
 
 // Get dynamic max level for a relic modifier (includes Exodus Node 3 bonus)
-// Modifier ID format: 'relic_3' -> relicId 'r3'
+// Modifier ID format: 'relic_3' -> relicId 'r3', 't2r8' -> relicId 't2r8'
 function getRelicModifierMaxLevel(modifierId) {
+  // Handle Tier 2 relics (t2rX format)
+  if (modifierId.startsWith('t2r')) {
+    const baseMax = getRelicMaxLevelFromData(modifierId);
+    return baseMax || 100;
+  }
+  
   // Extract relic number from modifier ID (e.g., 'relic_3' -> '3')
   const match = modifierId.match(/relic_(\d+)/);
   if (!match) return 100; // Default fallback
