@@ -483,38 +483,29 @@ function updateModifier(id, value) {
   missionPlannerStore.updateModifier(id, value);
 }
 
-// Default breakdown values
-const defaultBreakdown = {
-  t1: { count: 0, powerPerUnit: 0, totalPower: 0 },
-  t2: { count: 0, powerPerUnit: 0, totalPower: 0 },
-  t3: { count: 0, powerPerUnit: 0, totalPower: 0 },
-  t4: { count: 0, powerPerUnit: 0, totalPower: 0 },
-  total: { count: 0, totalPower: 0 }
-};
-
 // Calculated effects from store
 const calculatedEffects = computed(() => {
-  const effects = missionPlannerStore.calculatedEffects || {};
-  const breakdown = missionPlannerStore.personnelBreakdown || defaultBreakdown;
+  const effects = missionPlannerStore.calculatedEffects;
+  const personnel = effects.personnel;
   
   return {
-    t1Count: formatNumber(breakdown.t1?.count || 0),
-    t1PowerPerUnit: (breakdown.t1?.powerPerUnit || 0).toFixed(1),
-    t1Power: formatNumber(breakdown.t1?.totalPower || 0),
-    t2Count: formatNumber(breakdown.t2?.count || 0),
-    t2PowerPerUnit: (breakdown.t2?.powerPerUnit || 0).toFixed(1),
-    t2Power: formatNumber(breakdown.t2?.totalPower || 0),
-    t3Count: formatNumber(breakdown.t3?.count || 0),
-    t3PowerPerUnit: (breakdown.t3?.powerPerUnit || 0).toFixed(1),
-    t3Power: formatNumber(breakdown.t3?.totalPower || 0),
-    t4Count: formatNumber(breakdown.t4?.count || 0),
-    t4PowerPerUnit: (breakdown.t4?.powerPerUnit || 0).toFixed(1),
-    t4Power: formatNumber(breakdown.t4?.totalPower || 0),
-    totalCount: formatNumber(breakdown.total?.count || 0),
-    totalPower: formatNumber(breakdown.total?.totalPower || 0),
-    missionSpeed: formatNumber((effects.missionSpeedMultiplier || 0) * 100),
-    farmFragmentsValue: formatNumber(effects.farmFragments || 0),
-    campaignFragmentsValue: formatNumber(effects.campaignFragments || 0),
+    t1Power: personnel.formatted.t1Power,
+    t1PowerPerUnit: personnel.t1.powerPerUnit.toFixed(1),
+    t1Count: personnel.t1.count,
+    t2Power: personnel.formatted.t2Power,
+    t2PowerPerUnit: personnel.t2.powerPerUnit.toFixed(1),
+    t2Count: personnel.t2.count,
+    t3Power: personnel.formatted.t3Power,
+    t3PowerPerUnit: personnel.t3.powerPerUnit.toFixed(1),
+    t3Count: personnel.t3.count,
+    t4Power: personnel.formatted.t4Power,
+    t4PowerPerUnit: personnel.t4.powerPerUnit.toFixed(1),
+    t4Count: personnel.t4.count,
+    totalCount: personnel.totalCount,
+    totalPower: personnel.formatted.totalPower,
+    missionSpeed: effects.missionSpeed,
+    farmFragmentsValue: effects.farmFragments.formatted,
+    campaignFragmentsValue: effects.campaignFragments.formatted,
   };
 });
 </script>
