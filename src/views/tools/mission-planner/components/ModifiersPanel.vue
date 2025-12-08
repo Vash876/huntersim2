@@ -103,7 +103,7 @@
                 <!-- Icon: Tabler Icon -->
                 <IconPlus v-if="modifier.icon === 'IconPlus'" size="14" class="text-red-500" />
                 <!-- Icon: Image path -->
-                <img v-else-if="modifier.icon && !modifier.icon.startsWith('Icon')" :src="'/' + modifier.icon" class="w-3.5 h-3.5" />
+                <img v-else-if="modifier.icon && !modifier.icon.startsWith('Icon')" :src="getModifierIconUrl(modifier.icon)" class="w-3.5 h-3.5" />
                 {{ modifier.name }}
               </label>
               <ToolValueControls
@@ -560,6 +560,11 @@ import { getNextLevelCost, formatInscryptionCost } from '@/utils/inscryptionCost
 import { formatNumber } from '@/composables/format';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 
+// Import modifier icons (required for Vite/Netlify production builds)
+import cellsIcon from '@/assets/general/cells.png';
+import mpIcon from '@/assets/general/mp.png';
+import rpIcon from '@/assets/general/rp.png';
+
 // ============================================
 // CONFIGURATION - Adjust this value as needed
 // ============================================
@@ -614,6 +619,18 @@ const GEM_NODE_MAPPING = {
   'power_node_4': { gemId: 'power', nodeIndex: 3 },
   'power_node_5': { gemId: 'power', nodeIndex: 4 }
 };
+
+// Icon mapping for modifier icons (required for Vite/Netlify production builds)
+const MODIFIER_ICON_MAP = {
+  'src/assets/general/cells.png': cellsIcon,
+  'src/assets/general/mp.png': mpIcon,
+  'src/assets/general/rp.png': rpIcon,
+};
+
+// Get the correct URL for a modifier icon
+function getModifierIconUrl(iconPath) {
+  return MODIFIER_ICON_MAP[iconPath] || '';
+}
 
 // Check if a gem node is active
 function isGemNodeActive(modifierId) {
