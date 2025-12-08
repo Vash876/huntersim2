@@ -8,7 +8,7 @@
           <div>
             <div class="flex items-center">
               <IconSword size="20" class="mr-2 text-blue-400" />
-              <h1 class="text-xl font-bold">Mission Planner</h1>
+              <h1 class="text-xl font-bold">Mission & Relic Planner</h1>
             </div>
           </div>
         </div>
