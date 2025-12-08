@@ -994,8 +994,13 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     });
     
     // Apply campaign assignment if not manual
-    if (result.campaignAssignment && selectedCampaign.value && !campaignManualMode.value) {
-      setAssignment(selectedCampaign.value, result.campaignAssignment.personnel, true);
+    if (selectedCampaign.value && !campaignManualMode.value) {
+      if (result.campaignAssignment) {
+        setAssignment(selectedCampaign.value, result.campaignAssignment.personnel, true);
+      } else {
+        // Clear campaign assignment if no personnel available for it
+        clearAssignment(selectedCampaign.value);
+      }
     }
     
     // Clear assignments for unassigned missions (not enough personnel)

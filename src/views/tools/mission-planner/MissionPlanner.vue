@@ -288,8 +288,8 @@
               
               <!-- Campaign Row -->
               <tr class="bg-gray-700/50">
-                <td colspan="13" class="px-2 py-1 font-semibold text-purple-400">
-                  <IconTarget size="12" class="inline mr-1 -mt-0.5" />
+                <td colspan="13" class="px-2 py-1 font-semibold text-amber-400">
+                  <IconFlag size="12" class="inline mr-1 -mt-0.5" />
                   Campaign
                 </td>
               </tr>
@@ -438,7 +438,6 @@ import { ref, computed, onMounted } from 'vue';
 import {
   IconSword,
   IconRefresh,
-  IconTarget,
   IconTrash,
   IconLock,
   IconLockOpen,
