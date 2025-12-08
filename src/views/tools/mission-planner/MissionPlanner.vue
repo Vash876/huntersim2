@@ -16,46 +16,75 @@
         </div>
       </div>
 
-      <!-- Personnel Summary Bar -->
-      <div class="bg-gray-800/90 px-3 py-2 border-b border-gray-700/50">
-        <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-          <!-- Personnel Available -->
-          <div class="flex items-center gap-3">
-            <span class="text-gray-400 font-semibold">Available:</span>
-            <div class="flex gap-2">
-              <span class="text-red-400">T1: {{ formatNumber(availablePersonnel.T1) }}</span>
-              <span class="text-orange-400">T2: {{ formatNumber(availablePersonnel.T2) }}</span>
-              <span class="text-yellow-400">T3: {{ formatNumber(availablePersonnel.T3) }}</span>
-              <span class="text-green-400">T4: {{ formatNumber(availablePersonnel.T4) }}</span>
-            </div>
-          </div>
-          
-          <!-- Personnel Used -->
-          <div class="flex items-center gap-3">
-            <span class="text-gray-400 font-semibold">Used:</span>
-            <div class="flex gap-2">
-              <span class="text-red-400">{{ formatNumber(personnelUsed.T1) }}</span>
-              <span class="text-orange-400">{{ formatNumber(personnelUsed.T2) }}</span>
-              <span class="text-yellow-400">{{ formatNumber(personnelUsed.T3) }}</span>
-              <span class="text-green-400">{{ formatNumber(personnelUsed.T4) }}</span>
+      <!-- Personnel Summary Bar with Glassmorphism -->
+      <div class="bg-gray-800/70 backdrop-blur-sm px-3 py-2.5 border-b border-gray-700/50">
+        <div class="flex flex-wrap items-center justify-between gap-3 text-xs">
+          <!-- Personnel with Progress Bars -->
+          <div class="flex items-center gap-4">
+            <span class="text-gray-400 font-semibold">Personnel:</span>
+            <div class="flex gap-3">
+              <!-- T1 Progress -->
+              <div class="flex items-center gap-1.5">
+                <span class="text-red-400 font-medium w-6">T1</span>
+                <div class="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    class="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full"
+                    :style="{ width: getPersonnelUsagePercent('T1') + '%' }"
+                  ></div>
+                </div>
+                <span class="text-gray-300 text-[10px] w-16">{{ formatNumber(personnelUsed.T1) }}/{{ formatNumber(availablePersonnel.T1) }}</span>
+              </div>
+              <!-- T2 Progress -->
+              <div class="flex items-center gap-1.5">
+                <span class="text-orange-400 font-medium w-6">T2</span>
+                <div class="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    class="h-full bg-gradient-to-r from-orange-600 to-orange-400 rounded-full"
+                    :style="{ width: getPersonnelUsagePercent('T2') + '%' }"
+                  ></div>
+                </div>
+                <span class="text-gray-300 text-[10px] w-16">{{ formatNumber(personnelUsed.T2) }}/{{ formatNumber(availablePersonnel.T2) }}</span>
+              </div>
+              <!-- T3 Progress -->
+              <div class="flex items-center gap-1.5">
+                <span class="text-yellow-400 font-medium w-6">T3</span>
+                <div class="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    class="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full"
+                    :style="{ width: getPersonnelUsagePercent('T3') + '%' }"
+                  ></div>
+                </div>
+                <span class="text-gray-300 text-[10px] w-16">{{ formatNumber(personnelUsed.T3) }}/{{ formatNumber(availablePersonnel.T3) }}</span>
+              </div>
+              <!-- T4 Progress -->
+              <div class="flex items-center gap-1.5">
+                <span class="text-green-400 font-medium w-6">T4</span>
+                <div class="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    class="h-full bg-gradient-to-r from-green-600 to-green-400 rounded-full"
+                    :style="{ width: getPersonnelUsagePercent('T4') + '%' }"
+                  ></div>
+                </div>
+                <span class="text-gray-300 text-[10px] w-16">{{ formatNumber(personnelUsed.T4) }}/{{ formatNumber(availablePersonnel.T4) }}</span>
+              </div>
             </div>
           </div>
           
           <!-- Total Frags/Hour & Day -->
           <div class="flex items-center gap-4">
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1.5 bg-gray-700/50 px-2 py-1 rounded-md">
               <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
-              <span class="text-gray-400 font-semibold">Frags/hr:</span>
+              <span class="text-gray-400 font-semibold">hr:</span>
               <span class="text-cyan-400 font-bold">{{ formatNumberWithCommas(totalFragsPerHour, 2) }}</span>
             </div>
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1.5 bg-gray-700/50 px-2 py-1 rounded-md">
               <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
-              <span class="text-gray-400 font-semibold">Frags/day:</span>
+              <span class="text-gray-400 font-semibold">day:</span>
               <span class="text-emerald-400 font-bold">{{ formatNumberWithCommas(totalFragsPerHour * 24, 2) }}</span>
             </div>
-            <div class="flex items-center gap-1 border-l border-gray-600 pl-4">
+            <div class="flex items-center gap-1.5 bg-purple-900/30 px-2 py-1 rounded-md border border-purple-700/30">
               <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
-              <span class="text-gray-400 font-semibold">All Campaigns:</span>
+              <span class="text-gray-400 font-semibold">Campaigns:</span>
               <span class="text-purple-400 font-bold">{{ missionPlannerStore.totalCampaignFragments.formatted }}</span>
             </div>
           </div>
@@ -77,10 +106,10 @@
           <div class="flex">
             <button
               @click="activeTab = 'missions'"
-              class="px-4 py-2 font-semibold text-xs transition-colors duration-200 border-b-2 rounded-tl-lg"
+              class="px-4 py-2 font-semibold text-xs border-b-2 rounded-tl-lg"
               :class="activeTab === 'missions' 
-                ? 'bg-gray-700/50 text-blue-400 border-blue-500' 
-                : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+                ? 'bg-blue-900/30 text-blue-400 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.3)]' 
+                : 'text-gray-400 hover:text-blue-300 hover:bg-blue-900/20 hover:border-blue-500/50 border-transparent'"
             >
               <div class="flex items-center gap-1.5">
                 <IconRefresh size="14" />
@@ -89,10 +118,10 @@
             </button>
             <button
               @click="activeTab = 'campaigns'"
-              class="px-4 py-2 font-semibold text-xs transition-colors duration-200 border-b-2"
+              class="px-4 py-2 font-semibold text-xs border-b-2"
               :class="activeTab === 'campaigns' 
-                ? 'bg-gray-700/50 text-amber-400 border-amber-500' 
-                : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+                ? 'bg-amber-900/30 text-amber-400 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]' 
+                : 'text-gray-400 hover:text-amber-300 hover:bg-amber-900/20 hover:border-amber-500/50 border-transparent'"
             >
               <div class="flex items-center gap-1.5">
                 <IconFlag size="14" />
@@ -101,10 +130,10 @@
             </button>
             <button
               @click="activeTab = 'relics'"
-              class="px-4 py-2 font-semibold text-xs transition-colors duration-200 border-b-2"
+              class="px-4 py-2 font-semibold text-xs border-b-2"
               :class="activeTab === 'relics' 
-                ? 'bg-gray-700/50 text-purple-400 border-purple-500' 
-                : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+                ? 'bg-purple-900/30 text-purple-400 border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.3)]' 
+                : 'text-gray-400 hover:text-purple-300 hover:bg-purple-900/20 hover:border-purple-500/50 border-transparent'"
             >
               <div class="flex items-center gap-1.5">
                 <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
@@ -472,6 +501,14 @@ const availablePersonnel = computed(() => missionPlannerStore.availablePersonnel
 
 // Computed: Personnel used across all assignments
 const personnelUsed = computed(() => missionPlannerStore.getTotalPersonnelUsed());
+
+// Get personnel usage percentage for progress bars
+function getPersonnelUsagePercent(tier) {
+  const available = availablePersonnel.value[tier] || 0;
+  const used = personnelUsed.value[tier] || 0;
+  if (available === 0) return 0;
+  return Math.min(100, (used / available) * 100);
+}
 
 // Computed: Total frags per hour from all farm missions
 const totalFragsPerHour = computed(() => {

@@ -1,13 +1,13 @@
 <template>
   <div class="bg-gray-800/50 rounded-b-lg border border-gray-700/50 border-t-0 overflow-hidden p-3">
-    <!-- Combined Summary Panel -->
-    <div class="mb-3 bg-gradient-to-r from-gray-800/80 to-gray-900/80 rounded-lg border border-gray-700/50 overflow-hidden">
+    <!-- Combined Summary Panel with Glassmorphism -->
+    <div class="mb-3 bg-gray-800/70 backdrop-blur-sm rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
       <!-- Top Row: Current Status (Fragments & Hours Input) -->
-      <div class="px-3 py-2 bg-gray-800/50 border-b border-gray-700/30">
+      <div class="px-3 py-2.5 bg-gray-800/50 border-b border-gray-700/30">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex flex-wrap items-center gap-4 text-xs">
             <!-- Current Fragments Input -->
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1.5 bg-gray-700/40 px-2 py-1 rounded-md">
               <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
               <span class="text-gray-400">Current:</span>
               <SuffixInput
@@ -19,7 +19,7 @@
               />
             </div>
             <!-- Current Hours in TR -->
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1.5 bg-gray-700/40 px-2 py-1 rounded-md">
               <span class="text-gray-400">Hours in TR:</span>
               <SuffixInput
                 :model-value="currentHoursInTR"
@@ -30,14 +30,14 @@
               />
             </div>
             <!-- Frags per Day -->
-            <div class="flex items-center gap-1.5">
+            <div class="flex items-center gap-1.5 bg-green-900/30 px-2 py-1 rounded-md border border-green-700/30">
               <span class="text-gray-400">Rate:</span>
               <span class="text-green-400 font-bold">+{{ formatNumber(fragsPerDay) }}/day</span>
               <span class="text-gray-500 text-[10px]" :title="lastUpdateTooltip">(auto)</span>
             </div>
           </div>
           <!-- Total Invested -->
-          <div class="flex items-center gap-1.5 text-xs">
+          <div class="flex items-center gap-1.5 text-xs bg-amber-900/30 px-2 py-1 rounded-md border border-amber-700/30">
             <span class="text-gray-400">Invested:</span>
             <span class="text-amber-400 font-bold">{{ formatNumber(totalRelicInvestment) }}</span>
           </div>
@@ -45,35 +45,35 @@
       </div>
       
       <!-- Bottom Row: Target Summary -->
-      <div class="px-3 py-2 bg-gradient-to-r from-cyan-900/20 to-purple-900/20">
+      <div class="px-3 py-2.5 bg-gradient-to-r from-cyan-900/20 to-purple-900/20">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex items-center gap-2">
             <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
             <span class="text-xs font-semibold text-cyan-400">Targets</span>
-            <span class="text-[10px] text-gray-500">({{ totalTargetsSummary.targetCount }})</span>
+            <span class="text-[10px] text-gray-500 bg-gray-700/50 px-1.5 py-0.5 rounded">({{ totalTargetsSummary.targetCount }})</span>
           </div>
           <div class="flex flex-wrap items-center gap-3 text-xs">
             <!-- Total Cost -->
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1 bg-gray-800/50 px-2 py-1 rounded">
               <span class="text-gray-500">Cost:</span>
               <span class="text-amber-400 font-semibold">{{ formatNumber(totalTargetsSummary.totalCost) }}</span>
             </div>
             <!-- Remaining -->
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1 bg-gray-800/50 px-2 py-1 rounded">
               <span class="text-gray-500">Remaining:</span>
               <span :class="totalTargetsSummary.remaining <= 0 ? 'text-green-400' : 'text-cyan-400'" class="font-semibold">
                 {{ totalTargetsSummary.remaining <= 0 ? '✓' : formatNumber(totalTargetsSummary.remaining) }}
               </span>
             </div>
             <!-- Est. Time -->
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1 bg-gray-800/50 px-2 py-1 rounded">
               <span class="text-gray-500">Time:</span>
               <span :class="totalTargetsSummary.remaining <= 0 ? 'text-green-400' : 'text-yellow-400'" class="font-semibold">
                 {{ totalTargetsSummary.estimatedTime }}
               </span>
             </div>
             <!-- Est. Hours in TR -->
-            <div class="flex items-center gap-1">
+            <div class="flex items-center gap-1 bg-gray-800/50 px-2 py-1 rounded">
               <span class="text-gray-500">@Hour:</span>
               <span :class="totalTargetsSummary.remaining <= 0 ? 'text-green-400' : 'text-green-400'" class="font-semibold">
                 {{ totalTargetsSummary.estimatedHoursInTR }}
@@ -86,13 +86,13 @@
     
     <!-- Tier 1 Relics Table -->
     <div class="mb-4">
-      <h3 class="text-sm font-semibold text-amber-400 mb-2 flex items-center gap-2">
+      <h3 class="text-sm font-semibold text-amber-400 mb-2 flex items-center gap-2 border-l-2 border-amber-500/50 pl-2">
         <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
         Tier 1 Relics
       </h3>
       
       <div class="overflow-x-auto">
-        <table class="text-xs w-full rounded-lg overflow-hidden">
+        <table class="text-xs w-full rounded-lg overflow-hidden border border-gray-700/30">
           <thead class="bg-gray-700/80 text-gray-300">
             <tr>
               <th class="px-2 py-1.5 text-left rounded-tl-lg">ID</th>
@@ -122,7 +122,7 @@
               :key="relic.id"
               :class="[
                 index % 2 === 0 ? 'bg-gray-800/30' : 'bg-gray-800/50',
-                'border-l-2',
+                'border-l-2 hover:bg-gray-700/40',
                 hasTargetSet(relic.id) ? 'border-l-amber-500' : 'border-l-transparent'
               ]"
             >
@@ -173,7 +173,7 @@
                   <button
                     v-if="canBuyNextLevel(relic.id)"
                     @click="buyNextLevel(relic.id)"
-                    class="p-1 rounded hover:bg-green-600/30 text-green-400 transition-colors"
+                    class="p-1 rounded bg-green-900/40 hover:bg-green-600/40 text-green-400 border border-green-600/30 shadow-[0_0_6px_rgba(34,197,94,0.2)]"
                     :title="`Buy level ${getRelicLevel(relic.id) + 1} for ${formatNumber(getRelicNextCost(relic.id))} frags`"
                   >
                     <IconCheck size="16" />
@@ -232,12 +232,12 @@
     
     <!-- Tier 2 Relics -->
     <div>
-      <h3 class="text-sm font-semibold text-purple-400 mb-2 flex items-center gap-2">
+      <h3 class="text-sm font-semibold text-purple-400 mb-2 flex items-center gap-2 border-l-2 border-purple-500/50 pl-2">
         <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
         Tier 2 Relics
-        <span class="text-xs text-gray-500 font-normal">(Coming Soon)</span>
+        <span class="text-xs text-gray-500 font-normal bg-gray-700/50 px-1.5 py-0.5 rounded">(Coming Soon)</span>
       </h3>
-      <div class="bg-gray-700/30 rounded-lg p-4 text-center text-gray-500 text-xs">
+      <div class="bg-gray-700/30 rounded-lg p-4 text-center text-gray-500 text-xs border border-gray-700/30">
         Tier 2 relic formulas will be added soon
       </div>
     </div>

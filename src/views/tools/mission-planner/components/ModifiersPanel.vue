@@ -16,73 +16,73 @@
       <div class="flex overflow-x-auto">
         <button
           @click="activeTab = 'gameProgress'"
-          class="flex-1 px-2 py-2 font-semibold text-[11px] transition-colors duration-200 border-b-2 whitespace-nowrap"
+          class="flex-1 px-2 py-2 font-semibold text-[11px] border-b-2 whitespace-nowrap"
           :class="activeTab === 'gameProgress' 
-            ? 'bg-gray-700/50 text-white border-white' 
-            : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+            ? 'bg-gray-700/50 text-white border-white shadow-[0_0_8px_rgba(255,255,255,0.2)]' 
+            : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30 hover:border-gray-400/50 border-transparent'"
         >
           Progress
         </button>
         <button
           @click="activeTab = 'relics'"
-          class="flex-1 px-2 py-2 font-semibold text-[11px] transition-colors duration-200 border-b-2 whitespace-nowrap"
+          class="flex-1 px-2 py-2 font-semibold text-[11px] border-b-2 whitespace-nowrap"
           :class="activeTab === 'relics' 
-            ? 'bg-gray-700/50 text-purple-400 border-purple-500' 
-            : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+            ? 'bg-purple-900/30 text-purple-400 border-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.3)]' 
+            : 'text-gray-400 hover:text-purple-300 hover:bg-purple-900/20 hover:border-purple-500/50 border-transparent'"
         >
           Relics
         </button>
         <button
           @click="activeTab = 'badges'"
-          class="flex-1 px-2 py-2 font-semibold text-[11px] transition-colors duration-200 border-b-2 whitespace-nowrap"
+          class="flex-1 px-2 py-2 font-semibold text-[11px] border-b-2 whitespace-nowrap"
           :class="activeTab === 'badges' 
-            ? 'bg-gray-700/50 text-yellow-400 border-yellow-500' 
-            : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+            ? 'bg-yellow-900/30 text-yellow-400 border-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.3)]' 
+            : 'text-gray-400 hover:text-yellow-300 hover:bg-yellow-900/20 hover:border-yellow-500/50 border-transparent'"
         >
           Badges
         </button>
         <button
           @click="activeTab = 'boons'"
-          class="flex-1 px-2 py-2 font-semibold text-[11px] transition-colors duration-200 border-b-2 whitespace-nowrap"
+          class="flex-1 px-2 py-2 font-semibold text-[11px] border-b-2 whitespace-nowrap"
           :class="activeTab === 'boons' 
-            ? 'bg-gray-700/50 text-red-500 border-red-500' 
-            : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+            ? 'bg-red-900/30 text-red-500 border-red-500 shadow-[0_0_8px_rgba(239,68,68,0.3)]' 
+            : 'text-gray-400 hover:text-red-400 hover:bg-red-900/20 hover:border-red-500/50 border-transparent'"
         >
           Boons
         </button>
         <button
           @click="activeTab = 'inscryptions'"
-          class="flex-1 px-2 py-2 font-semibold text-[11px] transition-colors duration-200 border-b-2 whitespace-nowrap"
+          class="flex-1 px-2 py-2 font-semibold text-[11px] border-b-2 whitespace-nowrap"
           :class="activeTab === 'inscryptions' 
-            ? 'bg-gray-700/50 text-rose-400 border-rose-500' 
-            : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+            ? 'bg-rose-900/30 text-rose-400 border-rose-500 shadow-[0_0_8px_rgba(251,113,133,0.3)]' 
+            : 'text-gray-400 hover:text-rose-300 hover:bg-rose-900/20 hover:border-rose-500/50 border-transparent'"
         >
           Inscryptions
         </button>
         <button
           @click="activeTab = 'gadgets'"
-          class="flex-1 px-2 py-2 font-semibold text-[11px] transition-colors duration-200 border-b-2 whitespace-nowrap"
+          class="flex-1 px-2 py-2 font-semibold text-[11px] border-b-2 whitespace-nowrap"
           :class="activeTab === 'gadgets' 
-            ? 'bg-gray-700/50 text-sky-400 border-sky-400' 
-            : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+            ? 'bg-sky-900/30 text-sky-400 border-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.3)]' 
+            : 'text-gray-400 hover:text-sky-300 hover:bg-sky-900/20 hover:border-sky-400/50 border-transparent'"
         >
           Gadgets
         </button>
         <button
           @click="activeTab = 'gems'"
-          class="flex-1 px-2 py-2 font-semibold text-[11px] transition-colors duration-200 border-b-2 whitespace-nowrap"
+          class="flex-1 px-2 py-2 font-semibold text-[11px] border-b-2 whitespace-nowrap"
           :class="activeTab === 'gems' 
-            ? 'bg-gray-700/50 text-blue-500 border-blue-500' 
-            : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+            ? 'bg-blue-900/30 text-blue-500 border-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.3)]' 
+            : 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/20 hover:border-blue-500/50 border-transparent'"
         >
           Gems
         </button>
         <button
           @click="activeTab = 'other'"
-          class="flex-1 px-2 py-2 font-semibold text-[11px] transition-colors duration-200 border-b-2 whitespace-nowrap"
+          class="flex-1 px-2 py-2 font-semibold text-[11px] border-b-2 whitespace-nowrap"
           :class="activeTab === 'other' 
-            ? 'bg-gray-700/50 text-gray-300 border-gray-400' 
-            : 'text-gray-400 hover:text-white hover:bg-gray-700/30 border-transparent'"
+            ? 'bg-gray-700/50 text-gray-300 border-gray-400 shadow-[0_0_8px_rgba(156,163,175,0.2)]' 
+            : 'text-gray-400 hover:text-gray-300 hover:bg-gray-700/30 hover:border-gray-400/50 border-transparent'"
         >
           Other
         </button>
@@ -300,37 +300,37 @@
             <!-- Grouped by Gem Type -->
             <div class="space-y-2">
               <!-- Attraction Gem -->
-              <div class="bg-gray-800/30 rounded p-2">
-                <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #3b82f6;">
-                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #3b82f6;"></span>
+              <div class="bg-gray-800/30 rounded p-2 border-l-2 border-blue-500/50">
+                <h5 class="text-xs font-semibold mb-1 flex items-center text-blue-400">
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5 bg-blue-500"></span>
                   Attraction Gem
                 </h5>
                 <div class="flex flex-wrap gap-1">
                   <div v-for="modifier in gemsByType.attraction" :key="modifier.id" 
                     class="px-1.5 py-0.5 rounded text-[10px]"
-                    :class="isGemNodeActive(modifier.id) ? 'bg-blue-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
+                    :class="isGemNodeActive(modifier.id) ? 'bg-blue-900/50 text-white shadow-[0_0_6px_rgba(59,130,246,0.4)] border border-blue-500/30' : 'bg-gray-800/50 text-gray-500'"
                   >
                     <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
-                      :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
+                      :class="isGemNodeActive(modifier.id) ? 'bg-green-400' : 'bg-gray-600'"></span>
                     {{ modifier.name }}
                   </div>
                 </div>
               </div>
 
               <!-- Creation Gem -->
-              <div class="bg-gray-800/30 rounded p-2">
-                <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #f97316;">
-                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #f97316;"></span>
+              <div class="bg-gray-800/30 rounded p-2 border-l-2 border-orange-500/50">
+                <h5 class="text-xs font-semibold mb-1 flex items-center text-orange-400">
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5 bg-orange-500"></span>
                   Creation Gem
                 </h5>
                 <div class="space-y-1">
                   <div class="flex flex-wrap gap-1">
                     <div v-for="modifier in gemsByType.creation" :key="modifier.id" 
                       class="px-1.5 py-0.5 rounded text-[10px]"
-                      :class="isGemNodeActive(modifier.id) ? 'bg-orange-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
+                      :class="isGemNodeActive(modifier.id) ? 'bg-orange-900/50 text-white shadow-[0_0_6px_rgba(249,115,22,0.4)] border border-orange-500/30' : 'bg-gray-800/50 text-gray-500'"
                     >
                       <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
-                        :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
+                        :class="isGemNodeActive(modifier.id) ? 'bg-green-400' : 'bg-gray-600'"></span>
                       {{ modifier.name }}
                     </div>
                   </div>
@@ -360,19 +360,19 @@
               </div>
 
               <!-- Exodus Gem -->
-              <div class="bg-gray-800/30 rounded p-2">
-                <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #8b5cf6;">
-                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #8b5cf6;"></span>
+              <div class="bg-gray-800/30 rounded p-2 border-l-2 border-purple-500/50">
+                <h5 class="text-xs font-semibold mb-1 flex items-center text-purple-400">
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5 bg-purple-500"></span>
                   Exodus Gem
                 </h5>
                 <div class="space-y-1">
                   <div class="flex flex-wrap gap-1">
                     <div v-for="modifier in gemsByType.exodus" :key="modifier.id" 
                       class="px-1.5 py-0.5 rounded text-[10px]"
-                      :class="isGemNodeActive(modifier.id) ? 'bg-purple-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
+                      :class="isGemNodeActive(modifier.id) ? 'bg-purple-900/50 text-white shadow-[0_0_6px_rgba(139,92,246,0.4)] border border-purple-500/30' : 'bg-gray-800/50 text-gray-500'"
                     >
                       <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
-                        :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
+                        :class="isGemNodeActive(modifier.id) ? 'bg-green-400' : 'bg-gray-600'"></span>
                       {{ modifier.name }}
                     </div>
                   </div>
@@ -425,18 +425,18 @@
               </div>
 
               <!-- Power Gem -->
-              <div class="bg-gray-800/30 rounded p-2">
-                <h5 class="text-xs font-semibold mb-1 flex items-center" style="color: #8b5cf6;">
-                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" style="background-color: #8b5cf6;"></span>
+              <div class="bg-gray-800/30 rounded p-2 border-l-2 border-violet-500/50">
+                <h5 class="text-xs font-semibold mb-1 flex items-center text-violet-400">
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5 bg-violet-500"></span>
                   Power Gem
                 </h5>
                 <div class="flex flex-wrap gap-1">
                   <div v-for="modifier in gemsByType.power" :key="modifier.id" 
                     class="px-1.5 py-0.5 rounded text-[10px]"
-                    :class="isGemNodeActive(modifier.id) ? 'bg-purple-900/40 text-white' : 'bg-gray-800/50 text-gray-500'"
+                    :class="isGemNodeActive(modifier.id) ? 'bg-violet-900/50 text-white shadow-[0_0_6px_rgba(139,92,246,0.4)] border border-violet-500/30' : 'bg-gray-800/50 text-gray-500'"
                   >
                     <span class="w-1 h-1 rounded-full inline-block mr-0.5" 
-                      :class="isGemNodeActive(modifier.id) ? 'bg-green-500' : 'bg-gray-600'"></span>
+                      :class="isGemNodeActive(modifier.id) ? 'bg-green-400' : 'bg-gray-600'"></span>
                     {{ modifier.name }}
                   </div>
                 </div>
@@ -448,9 +448,9 @@
 
     <!-- Bottom: Effects Summary (fixed at bottom) -->
     <div class="flex-shrink-0 p-2 pt-0">
-      <div class="bg-gray-900/50 rounded-lg border border-gray-700/50 p-3">
+      <div class="bg-gray-900/70 backdrop-blur-sm rounded-lg border border-gray-700/50 p-3 shadow-lg">
           <h3 class="text-sm font-bold text-white mb-3 flex items-center">
-            <div class="w-1 h-4 bg-indigo-500 rounded-r mr-2"></div>
+            <div class="w-1 h-4 bg-gradient-to-b from-indigo-400 to-indigo-600 rounded-r mr-2"></div>
             Modifier Effects
           </h3>
 
@@ -460,10 +460,10 @@
               <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Personnel</h4>
               
               <!-- Personnel Table -->
-              <div class="bg-gray-800/50 rounded overflow-hidden">
+              <div class="bg-gray-800/70 rounded overflow-hidden border border-gray-700/30">
                 <table class="w-full text-xs">
                   <thead>
-                    <tr class="border-b border-gray-700/50">
+                    <tr class="border-b border-gray-700/50 bg-gray-700/30">
                       <th class="text-left text-gray-400 font-semibold py-1.5 px-2">Type</th>
                       <th class="text-right text-gray-400 font-semibold py-1.5 px-2">Count</th>
                       <th class="text-right text-gray-400 font-semibold py-1.5 px-2">Ind. Pwr</th>
@@ -471,25 +471,25 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr class="border-b border-gray-700/30 hover:bg-gray-700/30 transition-colors">
+                    <tr class="border-b border-gray-700/30 hover:bg-gray-700/30">
                       <td class="py-1.5 px-2 text-gray-300"><span class="text-red-400 font-semibold">T1</span> Mining Pod</td>
                       <td class="py-1.5 px-2 text-right text-cyan-400 font-mono">{{ calculatedEffects.t1Count }}</td>
                       <td class="py-1.5 px-2 text-right text-gray-300 font-mono">{{ calculatedEffects.t1PowerPerUnit }}</td>
                       <td class="py-1.5 px-2 text-right text-white font-mono font-semibold">{{ calculatedEffects.t1Power }}</td>
                     </tr>
-                    <tr class="border-b border-gray-700/30 hover:bg-gray-700/30 transition-colors">
+                    <tr class="border-b border-gray-700/30 hover:bg-gray-700/30">
                       <td class="py-1.5 px-2 text-gray-300"><span class="text-orange-400 font-semibold">T2</span> Fireteam</td>
                       <td class="py-1.5 px-2 text-right text-cyan-400 font-mono">{{ calculatedEffects.t2Count }}</td>
                       <td class="py-1.5 px-2 text-right text-gray-300 font-mono">{{ calculatedEffects.t2PowerPerUnit }}</td>
                       <td class="py-1.5 px-2 text-right text-white font-mono font-semibold">{{ calculatedEffects.t2Power }}</td>
                     </tr>
-                    <tr class="border-b border-gray-700/30 hover:bg-gray-700/30 transition-colors">
+                    <tr class="border-b border-gray-700/30 hover:bg-gray-700/30">
                       <td class="py-1.5 px-2 text-gray-300"><span class="text-yellow-400 font-semibold">T3</span> Titan</td>
                       <td class="py-1.5 px-2 text-right text-cyan-400 font-mono">{{ calculatedEffects.t3Count }}</td>
                       <td class="py-1.5 px-2 text-right text-gray-300 font-mono">{{ calculatedEffects.t3PowerPerUnit }}</td>
                       <td class="py-1.5 px-2 text-right text-white font-mono font-semibold">{{ calculatedEffects.t3Power }}</td>
                     </tr>
-                    <tr class="hover:bg-gray-700/30 transition-colors">
+                    <tr class="hover:bg-gray-700/30">
                       <td class="py-1.5 px-2 text-gray-300"><span class="text-green-400 font-semibold">T4</span> Corvette</td>
                       <td class="py-1.5 px-2 text-right text-cyan-400 font-mono">{{ calculatedEffects.t4Count }}</td>
                       <td class="py-1.5 px-2 text-right text-gray-300 font-mono">{{ calculatedEffects.t4PowerPerUnit }}</td>
@@ -497,7 +497,7 @@
                     </tr>
                   </tbody>
                   <tfoot>
-                    <tr class="bg-gray-700/40 border-t border-gray-600">
+                    <tr class="bg-gray-700/50 border-t border-gray-600">
                       <td class="py-1.5 px-2 text-white font-semibold">Total</td>
                       <td class="py-1.5 px-2 text-right text-cyan-400 font-mono font-semibold">{{ calculatedEffects.totalCount }}</td>
                       <td class="py-1.5 px-2 text-right text-gray-400">-</td>
@@ -512,7 +512,7 @@
             <div class="space-y-2">
               <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Mission Effects</h4>
               
-              <div class="bg-gray-800/50 rounded p-2">
+              <div class="bg-gray-800/70 rounded p-2 border border-gray-700/30">
                 <div class="flex items-center justify-between text-sm">
                   <span class="text-gray-300 flex items-center gap-1.5">
                     <IconBrandSpeedtest size="16" class="text-green-400" />
@@ -522,17 +522,17 @@
                 </div>
               </div>
 
-              <div class="bg-gray-800/50 rounded p-2">
+              <div class="bg-gray-800/70 rounded p-2 border border-gray-700/30">
                 <div class="flex items-center justify-between text-sm">
                   <span class="text-gray-300 flex items-center gap-1.5">
                     <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
                     Farm Fragments
                   </span>
-                  <span class="text-blue-400 font-mono">{{ calculatedEffects.farmFragmentsValue }}</span>
+                  <span class="text-cyan-400 font-mono">{{ calculatedEffects.farmFragmentsValue }}</span>
                 </div>
               </div>
 
-              <div class="bg-gray-800/50 rounded p-2">
+              <div class="bg-gray-800/70 rounded p-2 border border-gray-700/30">
                 <div class="flex items-center justify-between text-sm">
                   <span class="text-gray-300 flex items-center gap-1.5">
                     <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
