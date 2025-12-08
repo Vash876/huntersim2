@@ -9,14 +9,11 @@
           <select
             :value="missionPlannerStore.campaignFillOrder"
             @change="updateCampaignFillOrder($event.target.value)"
-            class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-white"
+            class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-white w-14 text-center"
           >
-            <option :value="1">After all farms</option>
-            <option :value="2">After F3-4</option>
-            <option :value="3">After F2-4</option>
-            <option :value="4">After F1-4</option>
-            <option :value="5">No farms</option>
+            <option v-for="n in 17" :key="n" :value="n">{{ n }}</option>
           </select>
+          <span class="text-[10px] text-gray-500">(after {{ missionPlannerStore.campaignFillOrder - 1 }} farms)</span>
         </div>
         <button
           v-if="hasAnyTimer"
@@ -199,6 +196,10 @@ function getTimerState(campaignTag) {
 function toggleTimer(campaignTag, completionTimeMinutes) {
   const state = getTimerState(campaignTag);
   if (state === 'idle') {
+    // Request notification permission on mobile when starting timer
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
     missionPlannerStore.startCampaignTimer(campaignTag, completionTimeMinutes);
   }
 }
