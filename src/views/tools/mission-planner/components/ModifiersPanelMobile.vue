@@ -672,7 +672,12 @@ function getRelicNextCost(modifierId) {
   if (!costFn) return null;
   
   const currentLevel = missionPlannerStore.modifierValues[modifierId] || 0;
-  return costFn(currentLevel + 1);
+  const cost = costFn(currentLevel);
+  
+  // Return null if cost is 0, Infinity, or invalid (formula not available)
+  if (!cost || cost <= 0 || cost === Infinity) return null;
+  
+  return cost;
 }
 
 // Get formatted cost for the next relic level
