@@ -324,12 +324,7 @@
                       type="number"
                       min="0"
                       :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                      :class="[
-                        'w-12 px-1 py-0.5 border rounded text-xs text-center outline-none',
-                        missionPlannerStore.isManualMode(mission.tag)
-                          ? 'bg-gray-900 border-gray-600 text-white focus:border-red-500 cursor-text'
-                          : 'bg-gray-800/50 border-gray-700/50 text-gray-300 cursor-not-allowed'
-                      ]"
+                      class="w-12 px-1 py-0.5 bg-gray-900 border border-red-600/50 rounded text-xs text-center text-red-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </td>
                   <td class="px-1 py-1">
@@ -339,12 +334,7 @@
                       type="number"
                       min="0"
                       :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                      :class="[
-                        'w-12 px-1 py-0.5 border rounded text-xs text-center outline-none',
-                        missionPlannerStore.isManualMode(mission.tag)
-                          ? 'bg-gray-900 border-gray-600 text-white focus:border-orange-500 cursor-text'
-                          : 'bg-gray-800/50 border-gray-700/50 text-gray-300 cursor-not-allowed'
-                      ]"
+                      class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-xs text-center text-orange-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </td>
                   <td class="px-1 py-1">
@@ -354,12 +344,7 @@
                       type="number"
                       min="0"
                       :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                      :class="[
-                        'w-12 px-1 py-0.5 border rounded text-xs text-center outline-none',
-                        missionPlannerStore.isManualMode(mission.tag)
-                          ? 'bg-gray-900 border-gray-600 text-white focus:border-yellow-500 cursor-text'
-                          : 'bg-gray-800/50 border-gray-700/50 text-gray-300 cursor-not-allowed'
-                      ]"
+                      class="w-12 px-1 py-0.5 bg-gray-900 border border-yellow-600/50 rounded text-xs text-center text-yellow-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </td>
                   <td class="px-1 py-1">
@@ -369,12 +354,7 @@
                       type="number"
                       min="0"
                       :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                      :class="[
-                        'w-12 px-1 py-0.5 border rounded text-xs text-center outline-none',
-                        missionPlannerStore.isManualMode(mission.tag)
-                          ? 'bg-gray-900 border-gray-600 text-white focus:border-green-500 cursor-text'
-                          : 'bg-gray-800/50 border-gray-700/50 text-gray-300 cursor-not-allowed'
-                      ]"
+                      class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-xs text-center text-green-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </td>
                   <td 
@@ -456,12 +436,7 @@
                     type="number"
                     min="0"
                     :disabled="!missionPlannerStore.selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-                    :class="[
-                      'w-12 px-1 py-0.5 border rounded text-xs text-center outline-none',
-                      missionPlannerStore.isCampaignManualMode() && missionPlannerStore.selectedCampaign
-                        ? 'bg-gray-900 border-gray-600 text-white focus:border-red-500 cursor-text'
-                        : 'bg-gray-800/50 border-gray-700/50 text-gray-300 cursor-not-allowed'
-                    ]"
+                    class="w-12 px-1 py-0.5 bg-gray-900 border border-red-600/50 rounded text-xs text-center text-red-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <!-- T2 -->
@@ -472,12 +447,7 @@
                     type="number"
                     min="0"
                     :disabled="!missionPlannerStore.selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-                    :class="[
-                      'w-12 px-1 py-0.5 border rounded text-xs text-center outline-none',
-                      missionPlannerStore.isCampaignManualMode() && missionPlannerStore.selectedCampaign
-                        ? 'bg-gray-900 border-gray-600 text-white focus:border-orange-500 cursor-text'
-                        : 'bg-gray-800/50 border-gray-700/50 text-gray-300 cursor-not-allowed'
-                    ]"
+                    class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-xs text-center text-orange-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <!-- T3 -->
@@ -488,12 +458,7 @@
                     type="number"
                     min="0"
                     :disabled="!missionPlannerStore.selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-                    :class="[
-                      'w-12 px-1 py-0.5 border rounded text-xs text-center outline-none',
-                      missionPlannerStore.isCampaignManualMode() && missionPlannerStore.selectedCampaign
-                        ? 'bg-gray-900 border-gray-600 text-white focus:border-yellow-500 cursor-text'
-                        : 'bg-gray-800/50 border-gray-700/50 text-gray-300 cursor-not-allowed'
-                    ]"
+                    class="w-12 px-1 py-0.5 bg-gray-900 border border-yellow-600/50 rounded text-xs text-center text-yellow-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <!-- T4 -->
@@ -504,12 +469,7 @@
                     type="number"
                     min="0"
                     :disabled="!missionPlannerStore.selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-                    :class="[
-                      'w-12 px-1 py-0.5 border rounded text-xs text-center outline-none',
-                      missionPlannerStore.isCampaignManualMode() && missionPlannerStore.selectedCampaign
-                        ? 'bg-gray-900 border-gray-600 text-white focus:border-green-500 cursor-text'
-                        : 'bg-gray-800/50 border-gray-700/50 text-gray-300 cursor-not-allowed'
-                    ]"
+                    class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-xs text-center text-green-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <!-- Time -->

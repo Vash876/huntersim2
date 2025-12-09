@@ -14,6 +14,8 @@ import {
   getOtherEffectsBreakdown,
   getGemEffectsBreakdown
 } from '@/views/tools/mission-planner/constants/calculations';
+import { ALL_LOOPMODS, getLoopmodLevelCost } from '@/views/tools/mission-planner/constants/loopmods';
+import { NORMAL_RESEARCHES, DARK_RESEARCHES } from '@/views/tools/mission-planner/constants/researches';
 import {
   calculateTotalPower,
   calculateCompletionTime,
@@ -348,31 +350,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     
     // Correct formula: (base + additive) * multiplier
     const value = (baseValue + additive) * multiplier;
-    
-    // Debug log
-    console.log('=== FARM FRAGMENTS CALCULATION ===');
-    console.log(`Base Value: ${baseValue}`);
-    console.log('--- ADDITIVES ---');
-    console.log(`  Research (93): +${researchAdd.toFixed(6)}`);
-    console.log(`  Relic 5: +${relicAdd.toFixed(6)}`);
-    console.log(`  Inscryption (I102): +${inscryptionAdd.toFixed(6)}`);
-    console.log(`  Gadget (Local Magnet): +${gadgetAdd.toFixed(6)}`);
-    console.log(`  Gem (Power3): +${gemAdd.toFixed(6)}`);
-    console.log(`  Total Additive: +${additive.toFixed(6)}`);
-    console.log(`  (Base + Additive): ${(baseValue + additive).toFixed(6)}`);
-    console.log('--- MULTIPLIERS ---');
-    console.log(`  Loopmod: ×${loopmodMult.toFixed(4)}`);
-    console.log(`  Research (97+104): ×${researchMult.toFixed(4)}`);
-    console.log(`  Badge: ×${badgeMult.toFixed(4)}`);
-    console.log(`  Inscryption (I110): ×${inscryptionMult.toFixed(4)}`);
-    console.log(`  Other (TS07+FragPack): ×${otherMult.toFixed(4)}`);
-    console.log(`  Gems (Power4+Attr4+Creation+Exodus): ×${gemMult.toFixed(4)}`);
-    console.log(`  Relic T2R8: ×${relicAllFragsMult.toFixed(4)}`);
-    console.log(`  Total Multiplier: ×${multiplier.toFixed(4)}`);
-    console.log('--- RESULT ---');
-    console.log(`  Formula: (${baseValue} + ${additive.toFixed(6)}) × ${multiplier.toFixed(4)}`);
-    console.log(`  Result: ${value.toFixed(6)}`);
-    console.log('==================================');
     
     return {
       baseValue,
@@ -1493,8 +1470,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       relicTargetLevels.value[relicId] = currentLevel + 1;
     }
     
-    console.log(`🔧 Purchased ${relicId} level ${currentLevel + 1}, cost: ${cost.toFixed(2)}, remaining: ${newFragments.toFixed(2)}`);
-    
     return true;
   }
 
@@ -1638,8 +1613,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
         return false;
       }
 
-      console.log('📥 Importing Mission Planner data...');
-
       if (data.modifierValues) {
         Object.assign(modifierValues.value, data.modifierValues);
       }
@@ -1680,12 +1653,611 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
         campaignManualMode.value = data.campaignManualMode;
       }
 
-      console.log('✅ Mission Planner data imported successfully');
       return true;
     } catch (error) {
       console.error('❌ Failed to import Mission Planner data:', error);
       return false;
     }
+  }
+
+  // ============================================
+  // NEXT THRESHOLD CALCULATION
+  // ============================================
+
+  /**
+   * Calculate total farm frags per hour with a custom MP value
+   * This uses the current assignments but recalculates loopmod effects with the new MP
+   * @param {number} customMP - The MP value to use for calculation
+   * @returns {number} Total fragments per hour
+   */
+  function calculateFragsPerHourWithMP(customMP) {
+    // Get loopmod effects with the custom MP
+    const customLoopmodEffects = getLoopmodEffectsBreakdown(customMP, loopmodBonuses.value, boonModifiers.value);
+    
+    // Calculate mission speed with custom loopmod effects
+    const customMissionSpeed = customLoopmodEffects.missionSpeedMultiplier 
+      * researchEffectsBreakdown.value.missionSpeedMultiplier 
+      * relicEffectsBreakdown.value.missionSpeedMultiplier 
+      * badgeEffectsBreakdown.value.missionSpeedMultiplier;
+    
+    // Calculate farm fragments value with custom loopmod effects
+    const baseValue = 0.001;
+    const gem = gemEffectsBreakdown.value;
+    const research = researchEffectsBreakdown.value;
+    const inscryption = inscryptionEffectsBreakdown.value;
+    
+    const customFarmFragsMult = customLoopmodEffects.farmFragsMultiplier 
+      * research.farmFragsBonuses.multiplier 
+      * badgeEffectsBreakdown.value.farmFragsMultiplier 
+      * inscryption.farmFragsMultiplier 
+      * otherEffectsBreakdown.value.farmFragsMultiplier 
+      * gem.farmFragsMultiplier 
+      * (relicEffectsBreakdown.value.allFragmentsMultiplier || 1);
+    
+    const customFarmFragsAdd = research.farmFragsBonuses.additive 
+      + relicEffectsBreakdown.value.farmFragsAdditive 
+      + inscryption.farmFragsAdditive 
+      + gadgetEffectsBreakdown.value.farmFragsAdditive 
+      + gem.farmFragsAdditive;
+    
+    const customFarmFragsValue = (baseValue + customFarmFragsAdd) * customFarmFragsMult;
+    
+    // Calculate power per tier with custom loopmod effects
+    const personnelStats = calculateAllPersonnelStats(modifierValues.value?.cells || 0);
+    const customPowerPerTier = {
+      T1: personnelStats.t1.powerPerUnit + customLoopmodEffects.powerBonuses.T1 + inscryption.personnelPowerBonuses.T1 + gem.powerBonuses.T1,
+      T2: personnelStats.t2.powerPerUnit + customLoopmodEffects.powerBonuses.T2 + inscryption.personnelPowerBonuses.T2 + gem.powerBonuses.T2,
+      T3: personnelStats.t3.powerPerUnit + customLoopmodEffects.powerBonuses.T3 + inscryption.personnelPowerBonuses.T3 + gem.powerBonuses.T3,
+      T4: personnelStats.t4.powerPerUnit + customLoopmodEffects.powerBonuses.T4 + inscryption.personnelPowerBonuses.T4 + gem.powerBonuses.T4,
+    };
+    
+    // Calculate available personnel with custom loopmod effects (includes count bonuses!)
+    const customAvailablePersonnel = {
+      T1: personnelStats.t1.count + customLoopmodEffects.countBonuses.T1 + research.personnelBonuses.T1 + gem.personnelBonuses.T1,
+      T2: personnelStats.t2.count + customLoopmodEffects.countBonuses.T2 + research.personnelBonuses.T2 + gem.personnelBonuses.T2,
+      T3: personnelStats.t3.count + customLoopmodEffects.countBonuses.T3 + research.personnelBonuses.T3 + gem.personnelBonuses.T3,
+      T4: personnelStats.t4.count + customLoopmodEffects.countBonuses.T4 + research.personnelBonuses.T4 + gem.personnelBonuses.T4,
+    };
+    
+    // Run optimization with custom values to get optimal assignments
+    const optResult = optimizeFarmMissions({
+      available: customAvailablePersonnel,
+      powerPerTier: customPowerPerTier,
+      missionSpeedMultiplier: customMissionSpeed,
+      baseFarmFrags: customFarmFragsValue,
+      manualAssignments: getManualAssignments(),
+      fillOrder: fillOrder.value,
+      campaign: null
+    });
+    
+    // Calculate frags per hour from optimized assignments
+    const farmStats = calculateFarmMissionStats(
+      optResult.assignments,
+      customPowerPerTier,
+      customMissionSpeed,
+      customFarmFragsValue
+    );
+    
+    return farmStats.totalFragsPerHour || 0;
+  }
+
+  /**
+   * Find the next MP threshold where a loopmod level becomes available
+   * @param {number} currentMP - Current MP value
+   * @returns {Object} { nextThreshold, delta, loopmodName } or null if no more thresholds
+   */
+  function getNextMPThreshold(currentMP) {
+    const inscryptionBonus = inscryptionEffectsBreakdown.value?.headstartMaxLevelBonus || 0;
+    const plusUltima = modifierValues.value?.plus_ultima || 0;
+    let nextThreshold = Infinity;
+    let loopmodName = '';
+    
+    for (const [id, loopmod] of Object.entries(ALL_LOOPMODS)) {
+      // Skip boons - they only affect campaign fragments, not farm frags
+      if (id === 'boon_eternity' || id === 'boon_hegemony') {
+        continue;
+      }
+      
+      // Calculate bonus levels based on loopmod type
+      let bonusLevels = 0;
+      
+      // Headstart mods get inscryption bonus
+      if (loopmod.inscryptionMaxLevelBonus !== undefined || loopmod.inscryptionCostIncrement !== undefined) {
+        bonusLevels = inscryptionBonus;
+      }
+      
+      // Ultima mods get +Ultima bonus
+      if (loopmod.ultimaBonusPerLevel) {
+        bonusLevels = plusUltima * loopmod.ultimaBonusPerLevel;
+      }
+      
+      const effectiveMaxLevel = loopmod.maxLevel + bonusLevels;
+      
+      // Find the next level that's not yet unlocked
+      for (let level = 1; level <= effectiveMaxLevel; level++) {
+        const cost = getLoopmodLevelCost(loopmod, level, bonusLevels);
+        
+        // If this level costs more than currentMP but less than our best candidate
+        if (cost > currentMP && cost < nextThreshold) {
+          nextThreshold = cost;
+          loopmodName = loopmod.name || id;
+        }
+      }
+    }
+    
+    if (nextThreshold === Infinity) {
+      return null; // All loopmods maxed
+    }
+    
+    return {
+      nextThreshold,
+      delta: Math.ceil(nextThreshold - currentMP),
+      loopmodName
+    };
+  }
+
+  /**
+   * Find the next RP threshold where a normal research level becomes available
+   * @param {number} currentRP - Current RP value
+   * @returns {Object} { nextThreshold, delta, researchName } or null if no more thresholds
+   */
+  function getNextRPThreshold(currentRP) {
+    let nextThreshold = Infinity;
+    let researchName = '';
+    
+    for (const [id, research] of Object.entries(NORMAL_RESEARCHES)) {
+      for (const level of research.levels) {
+        // If this level costs more than currentRP but less than our best candidate
+        if (level.cost > currentRP && level.cost < nextThreshold) {
+          nextThreshold = level.cost;
+          researchName = research.name || id;
+        }
+      }
+    }
+    
+    if (nextThreshold === Infinity) {
+      return null; // All normal researches maxed
+    }
+    
+    return {
+      nextThreshold,
+      delta: Math.ceil(nextThreshold - currentRP),
+      researchName
+    };
+  }
+
+  /**
+   * Find the next All Time Highest RP threshold where a dark research level becomes available
+   * @param {number} currentAllTimeHighestRP - Current All Time Highest RP value
+   * @returns {Object} { nextThreshold, delta, researchName } or null if no more thresholds
+   */
+  function getNextAllTimeHighestRPThreshold(currentAllTimeHighestRP) {
+    let nextThreshold = Infinity;
+    let researchName = '';
+    
+    for (const [id, research] of Object.entries(DARK_RESEARCHES)) {
+      for (const level of research.levels) {
+        // If this level costs more than currentAllTimeHighestRP but less than our best candidate
+        if (level.cost > currentAllTimeHighestRP && level.cost < nextThreshold) {
+          nextThreshold = level.cost;
+          researchName = research.name || id;
+        }
+      }
+    }
+    
+    if (nextThreshold === Infinity) {
+      return null; // All dark researches maxed
+    }
+    
+    return {
+      nextThreshold,
+      delta: Math.ceil(nextThreshold - currentAllTimeHighestRP),
+      researchName
+    };
+  }
+
+  // ============================================
+  // GAME PROGRESS BENEFIT CALCULATION
+  // ============================================
+
+  /**
+   * Calculate benefit of increasing a game progress modifier to its next threshold
+   * For MP/RP/AllTimeHighestRP: finds next loopmod/research unlock
+   * For Cells: uses fixed +100 delta
+   * @param {string} modifierId - The modifier ID to increase
+   * @returns {Object} { delta, deltaFragsPerDay, nextName } or null if no benefit
+   */
+  function calculateGameProgressBenefit(modifierId) {
+    // Get current values
+    const currentCells = modifierValues.value?.cells || 0;
+    const currentMP = modifierValues.value?.mp || 0;
+    const currentRP = modifierValues.value?.rp || 0;
+    const currentAllTimeHighestRP = modifierValues.value?.all_time_highest_rp || 0;
+    
+    // Determine delta based on modifier type
+    let delta = 100; // Default for cells
+    let nextName = '';
+    let nextThresholdValue = 0; // The actual threshold value
+    
+    if (modifierId === 'mp') {
+      const nextThreshold = getNextMPThreshold(currentMP);
+      if (!nextThreshold) return { delta: 0, deltaFragsPerDay: 0, nextName: 'Max' };
+      delta = nextThreshold.delta;
+      nextName = nextThreshold.loopmodName;
+      nextThresholdValue = nextThreshold.nextThreshold;
+      
+      // Calculate frags/hour with OPTIMIZED current values vs at new threshold
+      // We must optimize both states to get correct delta, because higher missionSpeed
+      // means less personnel needed per farm (2s cap reached with less power)
+      const currentFragsPerHour = calculateFragsPerHourWithMP(currentMP);
+      const newFragsPerHour = calculateFragsPerHourWithMP(nextThresholdValue);
+      const deltaFragsPerDay = (newFragsPerHour - currentFragsPerHour) * 24;
+      
+      return {
+        delta,
+        deltaFragsPerDay,
+        nextName
+      };
+    } else if (modifierId === 'rp') {
+      const nextThreshold = getNextRPThreshold(currentRP);
+      if (!nextThreshold) return { delta: 0, deltaFragsPerDay: 0, nextName: 'Max' };
+      delta = nextThreshold.delta;
+      nextName = nextThreshold.researchName;
+      nextThresholdValue = nextThreshold.nextThreshold;
+    } else if (modifierId === 'all_time_highest_rp') {
+      const nextThreshold = getNextAllTimeHighestRPThreshold(currentAllTimeHighestRP);
+      if (!nextThreshold) return { delta: 0, deltaFragsPerDay: 0, nextName: 'Max' };
+      delta = nextThreshold.delta;
+      nextName = nextThreshold.researchName;
+      nextThresholdValue = nextThreshold.nextThreshold;
+    }
+    
+    // If delta is 0 or negative, no benefit
+    if (delta <= 0) {
+      return { delta: 0, deltaFragsPerDay: 0, nextName: 'Max' };
+    }
+    
+    // For rp and all_time_highest_rp, use the threshold calculation
+    // For cells, use the regular delta-based calculation
+    let benefit;
+    if (modifierId === 'rp' || modifierId === 'all_time_highest_rp') {
+      // Calculate benefit from (threshold - 1) to threshold
+      // This shows the pure benefit of unlocking the next research
+      benefit = calculateGameProgressBenefitAtThreshold(modifierId, nextThresholdValue);
+    } else {
+      // For cells, use the regular delta-based calculation
+      benefit = calculateGameProgressBenefitWithDelta(modifierId, delta);
+    }
+    
+    return {
+      delta,
+      deltaFragsPerDay: benefit.deltaFragsPerDay,
+      nextName
+    };
+  }
+
+  /**
+   * Calculate benefit of increasing a game progress modifier by a specific delta
+   * @param {string} modifierId - The modifier ID to increase
+   * @param {number} delta - How much to increase
+   * @returns {Object} { currentFragsPerHour, newFragsPerHour, deltaFragsPerHour, deltaFragsPerDay }
+   */
+  function calculateGameProgressBenefitWithDelta(modifierId, delta) {
+    // Get current values
+    const currentCells = modifierValues.value?.cells || 0;
+    const currentMP = modifierValues.value?.mp || 0;
+    const currentRP = modifierValues.value?.rp || 0;
+    const currentAllTimeHighestRP = modifierValues.value?.all_time_highest_rp || 0;
+    
+    // Create new values with the delta applied to the target modifier
+    const newCells = modifierId === 'cells' ? currentCells + delta : currentCells;
+    const newMP = modifierId === 'mp' ? currentMP + delta : currentMP;
+    const newRP = modifierId === 'rp' ? currentRP + delta : currentRP;
+    const newAllTimeHighestRP = modifierId === 'all_time_highest_rp' ? currentAllTimeHighestRP + delta : currentAllTimeHighestRP;
+    
+    // Calculate CURRENT personnel stats (from cells)
+    const currentPersonnelStats = calculateAllPersonnelStats(currentCells);
+    const newPersonnelStats = calculateAllPersonnelStats(newCells);
+    
+    // Calculate CURRENT loopmod effects (from MP)
+    const currentLoopmodEffects = getLoopmodEffectsBreakdown(currentMP, loopmodBonuses.value, boonModifiers.value);
+    const newLoopmodEffects = getLoopmodEffectsBreakdown(newMP, loopmodBonuses.value, boonModifiers.value);
+    
+    // Calculate CURRENT research effects (from RP and All Time Highest RP)
+    const currentResearchEffects = getResearchEffectsBreakdown(currentRP, currentAllTimeHighestRP);
+    const newResearchEffects = getResearchEffectsBreakdown(newRP, newAllTimeHighestRP);
+    
+    // Get other effects that don't change
+    const inscryption = inscryptionEffectsBreakdown.value;
+    const gem = gemEffectsBreakdown.value;
+    const badge = badgeEffectsBreakdown.value;
+    const relic = relicEffectsBreakdown.value;
+    const other = otherEffectsBreakdown.value;
+    const gadget = gadgetEffectsBreakdown.value;
+    
+    // Calculate CURRENT available personnel
+    const currentAvailablePersonnel = {
+      T1: currentPersonnelStats.t1.count + currentLoopmodEffects.countBonuses.T1 + currentResearchEffects.personnelBonuses.T1 + gem.personnelBonuses.T1,
+      T2: currentPersonnelStats.t2.count + currentLoopmodEffects.countBonuses.T2 + currentResearchEffects.personnelBonuses.T2 + gem.personnelBonuses.T2,
+      T3: currentPersonnelStats.t3.count + currentLoopmodEffects.countBonuses.T3 + currentResearchEffects.personnelBonuses.T3 + gem.personnelBonuses.T3,
+      T4: currentPersonnelStats.t4.count + currentLoopmodEffects.countBonuses.T4 + currentResearchEffects.personnelBonuses.T4 + gem.personnelBonuses.T4,
+    };
+    
+    // Calculate NEW available personnel
+    const newAvailablePersonnel = {
+      T1: newPersonnelStats.t1.count + newLoopmodEffects.countBonuses.T1 + newResearchEffects.personnelBonuses.T1 + gem.personnelBonuses.T1,
+      T2: newPersonnelStats.t2.count + newLoopmodEffects.countBonuses.T2 + newResearchEffects.personnelBonuses.T2 + gem.personnelBonuses.T2,
+      T3: newPersonnelStats.t3.count + newLoopmodEffects.countBonuses.T3 + newResearchEffects.personnelBonuses.T3 + gem.personnelBonuses.T3,
+      T4: newPersonnelStats.t4.count + newLoopmodEffects.countBonuses.T4 + newResearchEffects.personnelBonuses.T4 + gem.personnelBonuses.T4,
+    };
+    
+    // Calculate CURRENT power per tier
+    const currentPowerPerTier = {
+      T1: currentPersonnelStats.t1.powerPerUnit + currentLoopmodEffects.powerBonuses.T1 + inscryption.personnelPowerBonuses.T1 + gem.powerBonuses.T1,
+      T2: currentPersonnelStats.t2.powerPerUnit + currentLoopmodEffects.powerBonuses.T2 + inscryption.personnelPowerBonuses.T2 + gem.powerBonuses.T2,
+      T3: currentPersonnelStats.t3.powerPerUnit + currentLoopmodEffects.powerBonuses.T3 + inscryption.personnelPowerBonuses.T3 + gem.powerBonuses.T3,
+      T4: currentPersonnelStats.t4.powerPerUnit + currentLoopmodEffects.powerBonuses.T4 + inscryption.personnelPowerBonuses.T4 + gem.powerBonuses.T4,
+    };
+    
+    // Calculate NEW power per tier
+    const newPowerPerTier = {
+      T1: newPersonnelStats.t1.powerPerUnit + newLoopmodEffects.powerBonuses.T1 + inscryption.personnelPowerBonuses.T1 + gem.powerBonuses.T1,
+      T2: newPersonnelStats.t2.powerPerUnit + newLoopmodEffects.powerBonuses.T2 + inscryption.personnelPowerBonuses.T2 + gem.powerBonuses.T2,
+      T3: newPersonnelStats.t3.powerPerUnit + newLoopmodEffects.powerBonuses.T3 + inscryption.personnelPowerBonuses.T3 + gem.powerBonuses.T3,
+      T4: newPersonnelStats.t4.powerPerUnit + newLoopmodEffects.powerBonuses.T4 + inscryption.personnelPowerBonuses.T4 + gem.powerBonuses.T4,
+    };
+    
+    // Calculate CURRENT mission speed
+    const currentMissionSpeed = currentLoopmodEffects.missionSpeedMultiplier 
+      * currentResearchEffects.missionSpeedMultiplier 
+      * relic.missionSpeedMultiplier 
+      * badge.missionSpeedMultiplier;
+    
+    // Calculate NEW mission speed
+    const newMissionSpeed = newLoopmodEffects.missionSpeedMultiplier 
+      * newResearchEffects.missionSpeedMultiplier 
+      * relic.missionSpeedMultiplier 
+      * badge.missionSpeedMultiplier;
+    
+    // Calculate CURRENT farm frags value
+    const baseFragValue = 0.001;
+    const currentFarmFragsMult = currentLoopmodEffects.farmFragsMultiplier 
+      * currentResearchEffects.farmFragsBonuses.multiplier 
+      * badge.farmFragsMultiplier 
+      * inscryption.farmFragsMultiplier 
+      * other.farmFragsMultiplier 
+      * gem.farmFragsMultiplier 
+      * (relic.allFragmentsMultiplier || 1);
+    const currentFarmFragsAdd = currentResearchEffects.farmFragsBonuses.additive 
+      + relic.farmFragsAdditive 
+      + inscryption.farmFragsAdditive 
+      + gadget.farmFragsAdditive 
+      + gem.farmFragsAdditive;
+    const currentFarmFragsValue = (baseFragValue + currentFarmFragsAdd) * currentFarmFragsMult;
+    
+    // Calculate NEW farm frags value
+    const newFarmFragsMult = newLoopmodEffects.farmFragsMultiplier 
+      * newResearchEffects.farmFragsBonuses.multiplier 
+      * badge.farmFragsMultiplier 
+      * inscryption.farmFragsMultiplier 
+      * other.farmFragsMultiplier 
+      * gem.farmFragsMultiplier 
+      * (relic.allFragmentsMultiplier || 1);
+    const newFarmFragsAdd = newResearchEffects.farmFragsBonuses.additive 
+      + relic.farmFragsAdditive 
+      + inscryption.farmFragsAdditive 
+      + gadget.farmFragsAdditive 
+      + gem.farmFragsAdditive;
+    const newFarmFragsValue = (baseFragValue + newFarmFragsAdd) * newFarmFragsMult;
+    
+    // Run optimization with CURRENT values
+    const currentOptResult = optimizeFarmMissions({
+      available: currentAvailablePersonnel,
+      powerPerTier: currentPowerPerTier,
+      missionSpeedMultiplier: currentMissionSpeed,
+      baseFarmFrags: currentFarmFragsValue,
+      manualAssignments: getManualAssignments(),
+      fillOrder: fillOrder.value,
+      campaign: null
+    });
+    
+    // Calculate CURRENT frags per hour using calculateFarmMissionStats
+    const currentStats = calculateFarmMissionStats(
+      currentOptResult.assignments,
+      currentPowerPerTier,
+      currentMissionSpeed,
+      currentFarmFragsValue
+    );
+    
+    // Run optimization with NEW values
+    const newOptResult = optimizeFarmMissions({
+      available: newAvailablePersonnel,
+      powerPerTier: newPowerPerTier,
+      missionSpeedMultiplier: newMissionSpeed,
+      baseFarmFrags: newFarmFragsValue,
+      manualAssignments: getManualAssignments(),
+      fillOrder: fillOrder.value,
+      campaign: null
+    });
+    
+    // Calculate NEW frags per hour using calculateFarmMissionStats
+    const newStats = calculateFarmMissionStats(
+      newOptResult.assignments,
+      newPowerPerTier,
+      newMissionSpeed,
+      newFarmFragsValue
+    );
+    
+    const currentFragsPerHour = currentStats.totalFragsPerHour;
+    const newFragsPerHour = newStats.totalFragsPerHour;
+    const deltaFragsPerHour = newFragsPerHour - currentFragsPerHour;
+    const deltaFragsPerDay = deltaFragsPerHour * 24;
+    
+    return {
+      currentFragsPerHour,
+      newFragsPerHour,
+      deltaFragsPerHour,
+      deltaFragsPerDay,
+      delta
+    };
+  }
+
+  /**
+   * Calculate benefit of crossing a specific threshold (for MP, RP, All Time Highest RP)
+   * This calculates the benefit from (threshold - 1) to threshold, 
+   * showing the pure benefit of unlocking the next loopmod/research.
+   * @param {string} modifierId - The modifier ID ('mp', 'rp', or 'all_time_highest_rp')
+   * @param {number} threshold - The threshold value to cross
+   * @returns {Object} { deltaFragsPerDay }
+   */
+  function calculateGameProgressBenefitAtThreshold(modifierId, threshold) {
+    // Use threshold - 1 as the "before" state and threshold as the "after" state
+    const beforeValue = threshold - 1;
+    const afterValue = threshold;
+    
+    // Get current values for other modifiers (unchanged)
+    const currentCells = modifierValues.value?.cells || 0;
+    const currentMP = modifierId === 'mp' ? beforeValue : (modifierValues.value?.mp || 0);
+    const currentRP = modifierId === 'rp' ? beforeValue : (modifierValues.value?.rp || 0);
+    const currentAllTimeHighestRP = modifierId === 'all_time_highest_rp' ? beforeValue : (modifierValues.value?.all_time_highest_rp || 0);
+    
+    const newMP = modifierId === 'mp' ? afterValue : currentMP;
+    const newRP = modifierId === 'rp' ? afterValue : currentRP;
+    const newAllTimeHighestRP = modifierId === 'all_time_highest_rp' ? afterValue : currentAllTimeHighestRP;
+    
+    // Calculate personnel stats (from cells - unchanged)
+    const personnelStats = calculateAllPersonnelStats(currentCells);
+    
+    // Calculate BEFORE loopmod effects
+    const beforeLoopmodEffects = getLoopmodEffectsBreakdown(currentMP, loopmodBonuses.value, boonModifiers.value);
+    const afterLoopmodEffects = getLoopmodEffectsBreakdown(newMP, loopmodBonuses.value, boonModifiers.value);
+    
+    // Calculate BEFORE research effects
+    const beforeResearchEffects = getResearchEffectsBreakdown(currentRP, currentAllTimeHighestRP);
+    const afterResearchEffects = getResearchEffectsBreakdown(newRP, newAllTimeHighestRP);
+    
+    // Get other effects that don't change
+    const inscryption = inscryptionEffectsBreakdown.value;
+    const gem = gemEffectsBreakdown.value;
+    const badge = badgeEffectsBreakdown.value;
+    const relic = relicEffectsBreakdown.value;
+    const other = otherEffectsBreakdown.value;
+    const gadget = gadgetEffectsBreakdown.value;
+    
+    // Calculate BEFORE available personnel
+    const beforeAvailablePersonnel = {
+      T1: personnelStats.t1.count + beforeLoopmodEffects.countBonuses.T1 + beforeResearchEffects.personnelBonuses.T1 + gem.personnelBonuses.T1,
+      T2: personnelStats.t2.count + beforeLoopmodEffects.countBonuses.T2 + beforeResearchEffects.personnelBonuses.T2 + gem.personnelBonuses.T2,
+      T3: personnelStats.t3.count + beforeLoopmodEffects.countBonuses.T3 + beforeResearchEffects.personnelBonuses.T3 + gem.personnelBonuses.T3,
+      T4: personnelStats.t4.count + beforeLoopmodEffects.countBonuses.T4 + beforeResearchEffects.personnelBonuses.T4 + gem.personnelBonuses.T4,
+    };
+    
+    // Calculate AFTER available personnel
+    const afterAvailablePersonnel = {
+      T1: personnelStats.t1.count + afterLoopmodEffects.countBonuses.T1 + afterResearchEffects.personnelBonuses.T1 + gem.personnelBonuses.T1,
+      T2: personnelStats.t2.count + afterLoopmodEffects.countBonuses.T2 + afterResearchEffects.personnelBonuses.T2 + gem.personnelBonuses.T2,
+      T3: personnelStats.t3.count + afterLoopmodEffects.countBonuses.T3 + afterResearchEffects.personnelBonuses.T3 + gem.personnelBonuses.T3,
+      T4: personnelStats.t4.count + afterLoopmodEffects.countBonuses.T4 + afterResearchEffects.personnelBonuses.T4 + gem.personnelBonuses.T4,
+    };
+    
+    // Calculate power per tier (unchanged by MP/RP/all_time_highest_rp for now)
+    const powerPerTier = {
+      T1: personnelStats.t1.powerPerUnit + beforeLoopmodEffects.powerBonuses.T1 + inscryption.personnelPowerBonuses.T1 + gem.powerBonuses.T1,
+      T2: personnelStats.t2.powerPerUnit + beforeLoopmodEffects.powerBonuses.T2 + inscryption.personnelPowerBonuses.T2 + gem.powerBonuses.T2,
+      T3: personnelStats.t3.powerPerUnit + beforeLoopmodEffects.powerBonuses.T3 + inscryption.personnelPowerBonuses.T3 + gem.powerBonuses.T3,
+      T4: personnelStats.t4.powerPerUnit + beforeLoopmodEffects.powerBonuses.T4 + inscryption.personnelPowerBonuses.T4 + gem.powerBonuses.T4,
+    };
+    
+    const afterPowerPerTier = {
+      T1: personnelStats.t1.powerPerUnit + afterLoopmodEffects.powerBonuses.T1 + inscryption.personnelPowerBonuses.T1 + gem.powerBonuses.T1,
+      T2: personnelStats.t2.powerPerUnit + afterLoopmodEffects.powerBonuses.T2 + inscryption.personnelPowerBonuses.T2 + gem.powerBonuses.T2,
+      T3: personnelStats.t3.powerPerUnit + afterLoopmodEffects.powerBonuses.T3 + inscryption.personnelPowerBonuses.T3 + gem.powerBonuses.T3,
+      T4: personnelStats.t4.powerPerUnit + afterLoopmodEffects.powerBonuses.T4 + inscryption.personnelPowerBonuses.T4 + gem.powerBonuses.T4,
+    };
+    
+    // Mission speed (only loopmod, research, relic, badge contribute)
+    const missionSpeed = beforeLoopmodEffects.missionSpeedMultiplier 
+      * beforeResearchEffects.missionSpeedMultiplier 
+      * relic.missionSpeedMultiplier 
+      * badge.missionSpeedMultiplier;
+    
+    const afterMissionSpeed = afterLoopmodEffects.missionSpeedMultiplier 
+      * afterResearchEffects.missionSpeedMultiplier 
+      * relic.missionSpeedMultiplier 
+      * badge.missionSpeedMultiplier;
+    
+    // Farm frags value
+    const baseFragValue = 0.001;
+    const beforeFarmFragsMult = beforeLoopmodEffects.farmFragsMultiplier 
+      * beforeResearchEffects.farmFragsBonuses.multiplier 
+      * badge.farmFragsMultiplier 
+      * inscryption.farmFragsMultiplier 
+      * other.farmFragsMultiplier 
+      * gem.farmFragsMultiplier 
+      * (relic.allFragmentsMultiplier || 1);
+    const beforeFarmFragsAdd = beforeResearchEffects.farmFragsBonuses.additive 
+      + relic.farmFragsAdditive 
+      + inscryption.farmFragsAdditive 
+      + gadget.farmFragsAdditive 
+      + gem.farmFragsAdditive;
+    const beforeFarmFragsValue = (baseFragValue + beforeFarmFragsAdd) * beforeFarmFragsMult;
+    
+    const afterFarmFragsMult = afterLoopmodEffects.farmFragsMultiplier 
+      * afterResearchEffects.farmFragsBonuses.multiplier 
+      * badge.farmFragsMultiplier 
+      * inscryption.farmFragsMultiplier 
+      * other.farmFragsMultiplier 
+      * gem.farmFragsMultiplier 
+      * (relic.allFragmentsMultiplier || 1);
+    const afterFarmFragsAdd = afterResearchEffects.farmFragsBonuses.additive 
+      + relic.farmFragsAdditive 
+      + inscryption.farmFragsAdditive 
+      + gadget.farmFragsAdditive 
+      + gem.farmFragsAdditive;
+    const afterFarmFragsValue = (baseFragValue + afterFarmFragsAdd) * afterFarmFragsMult;
+    
+    // Run optimization BEFORE threshold
+    const beforeOptResult = optimizeFarmMissions({
+      available: beforeAvailablePersonnel,
+      powerPerTier: powerPerTier,
+      missionSpeedMultiplier: missionSpeed,
+      baseFarmFrags: beforeFarmFragsValue,
+      manualAssignments: getManualAssignments(),
+      fillOrder: fillOrder.value,
+      campaign: null
+    });
+    
+    const beforeStats = calculateFarmMissionStats(
+      beforeOptResult.assignments,
+      powerPerTier,
+      missionSpeed,
+      beforeFarmFragsValue
+    );
+    
+    // Run optimization AFTER threshold
+    const afterOptResult = optimizeFarmMissions({
+      available: afterAvailablePersonnel,
+      powerPerTier: afterPowerPerTier,
+      missionSpeedMultiplier: afterMissionSpeed,
+      baseFarmFrags: afterFarmFragsValue,
+      manualAssignments: getManualAssignments(),
+      fillOrder: fillOrder.value,
+      campaign: null
+    });
+    
+    const afterStats = calculateFarmMissionStats(
+      afterOptResult.assignments,
+      afterPowerPerTier,
+      afterMissionSpeed,
+      afterFarmFragsValue
+    );
+    
+    const deltaFragsPerHour = afterStats.totalFragsPerHour - beforeStats.totalFragsPerHour;
+    const deltaFragsPerDay = deltaFragsPerHour * 24;
+   
+    return {
+      deltaFragsPerDay
+    };
   }
 
   // ============================================
@@ -2506,7 +3078,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
    */
   function tryPlayPendingAlarms() {
     if (pendingAlarms.value.length > 0) {
-      console.log(`🔔 Playing ${pendingAlarms.value.length} pending alarm(s)...`);
       const success = playAlarmSound();
       if (success) {
         pendingAlarms.value = [];
@@ -2521,8 +3092,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     for (const [tag, timer] of Object.entries(campaignTimers.value)) {
       const elapsed = (campaignTimerCurrentTime.value - timer.startedAt) / 1000;
       if (elapsed >= timer.durationSeconds && !campaignTimersAlarmPlayed.value[tag]) {
-        // Timer just completed
-        console.log(`🔔 Campaign timer completed: ${tag}`);
         
         // Try to play sound
         const soundPlayed = playAlarmSound();
@@ -2530,7 +3099,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
         // If sound couldn't play, add to pending and show notification
         if (!soundPlayed) {
           pendingAlarms.value.push(tag);
-          console.log(`⏳ Sound blocked - added ${tag} to pending alarms`);
         }
         
         // Always show browser notification as backup
@@ -2548,16 +3116,12 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
    */
   function initCampaignTimers() {
     if (campaignTimersInitialized.value) {
-      console.log('Campaign timers already initialized');
       return;
     }
-    
-    console.log('🕐 Initializing campaign timer system...');
     
     // Request notification permission early
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission().then(permission => {
-        console.log(`📢 Notification permission: ${permission}`);
       });
     }
     
@@ -2578,7 +3142,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     }, 1000);
     
     campaignTimersInitialized.value = true;
-    console.log('✅ Campaign timer system initialized');
   }
 
   /**
@@ -2590,7 +3153,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       campaignTimerInterval = null;
     }
     campaignTimersInitialized.value = false;
-    console.log('🛑 Campaign timer system stopped');
   }
 
   /**
@@ -2606,8 +3168,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     
     // Clear alarm played state for this timer
     delete campaignTimersAlarmPlayed.value[campaignTag];
-    
-    console.log(`▶️ Started campaign timer: ${campaignTag} (${durationMinutes} min)`);
   }
 
   /**
@@ -2616,7 +3176,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   function resetCampaignTimer(campaignTag) {
     delete campaignTimers.value[campaignTag];
     delete campaignTimersAlarmPlayed.value[campaignTag];
-    console.log(`⏹️ Reset campaign timer: ${campaignTag}`);
   }
 
   /**
@@ -2625,7 +3184,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   function resetAllCampaignTimers() {
     campaignTimers.value = {};
     campaignTimersAlarmPlayed.value = {};
-    console.log('⏹️ Reset all campaign timers');
   }
 
   /**
@@ -2780,6 +3338,10 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     setCurrentFragments,
     updateFragmentsFromElapsedTime,
     purchaseRelicLevel,
+    
+    // Game Progress Cost-Benefit Analysis
+    calculateGameProgressBenefit,
+    calculateGameProgressBenefitWithDelta,
     
     // Inscryption Cost-Benefit Analysis
     calculateInscryptionBenefit,

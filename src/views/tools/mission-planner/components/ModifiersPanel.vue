@@ -107,14 +107,44 @@
                   <img v-else-if="modifier.icon && !modifier.icon.startsWith('Icon')" :src="getModifierIconUrl(modifier.icon)" class="w-3.5 h-3.5" />
                   {{ modifier.name }}
                 </label>
+                <!-- Dynamic Benefit Projection for cells, mp, rp, all_time_highest_rp -->
+                <div v-if="['cells', 'mp', 'rp', 'all_time_highest_rp'].includes(modifier.id) && getGameProgressBenefit(modifier.id).delta > 0" 
+                  class="flex flex-col text-[11px] mt-0.5 font-mono">
+                  <div class="flex items-center">
+                    <span class="text-gray-500 w-[45px] text-right">+{{ getGameProgressBenefit(modifier.id).delta }}</span>
+                    <span class="text-gray-500 px-1">→</span>
+                    <span class="text-green-400 w-[72px] text-right">+{{ formatNumber(getGameProgressBenefit(modifier.id).deltaFragsPerDay) }}/d</span>
+                  </div>
+                  <!-- Additional +1000 projection for cells -->
+                  <div v-if="modifier.id === 'cells'" class="flex items-center">
+                    <span class="text-gray-500 w-[45px] text-right">+1000</span>
+                    <span class="text-gray-500 px-1">→</span>
+                    <span class="text-green-400 w-[72px] text-right">+{{ formatNumber(getCellsBenefit1000().deltaFragsPerDay) }}/d</span>
+                  </div>
+                  <!-- Debug: Show next loopmod/research name for mp, rp, all_time_highest_rp -->
+                  <div v-if="modifier.id !== 'cells' && getGameProgressBenefit(modifier.id).nextName" 
+                    class="text-[9px] text-cyan-400/70 truncate max-w-[150px]" :title="getGameProgressBenefit(modifier.id).nextName">
+                    → {{ getGameProgressBenefit(modifier.id).nextName }}
+                  </div>
+                </div>
+                <div v-else-if="['cells', 'mp', 'rp', 'all_time_highest_rp'].includes(modifier.id)" 
+                  class="flex items-center text-[10px] mt-0.5 font-mono">
+                  <span class="text-gray-500 w-[45px] text-right">-</span>
+                  <span class="text-gray-500 px-1"></span>
+                  <span class="text-gray-500 w-[72px] text-right"></span>
+                </div>
                 <!-- +Ultima Cost-Benefit Row -->
                 <div v-if="modifier.id === 'plus_ultima' && getPlusUltimaBenefit()" 
                   class="flex items-center text-[11px] mt-0.5 font-mono">
                   <template v-if="getPlusUltimaBenefit().canAffordNewLevels">
-                    <span class="text-green-400">+{{ formatNumber(getPlusUltimaBenefit().deltaFragsPerDay) }}/d</span>
+                    <span class="text-gray-500 w-[45px] text-right">+1</span>
+                    <span class="text-gray-500 px-1">→</span>
+                    <span class="text-green-400 w-[72px] text-right">+{{ formatNumber(getPlusUltimaBenefit().deltaFragsPerDay) }}/d</span>
                   </template>
                   <template v-else>
-                    <span class="text-gray-500 text-[10px]">MP zu niedrig</span>
+                    <span class="text-gray-500 w-[45px] text-right">-</span>
+                    <span class="text-gray-500 px-1"></span>
+                    <span class="text-gray-500 w-[72px] text-right"></span>
                   </template>
                 </div>
               </div>
@@ -263,8 +293,6 @@
                     <span class="text-yellow-400 w-[58px] text-right">{{ getFormattedGadgetCost(modifier.id, 1) }}</span>
                     <span class="text-gray-500 px-1">→</span>
                     <span class="text-green-400 w-[72px] text-right">+{{ formatNumber(getGadgetCostBenefit(modifier.id, 1).deltaFragsPerDay) }}/d</span>
-                    <span class="text-gray-500 px-1">|</span>
-                    <span :class="getGadgetEfficiencyColorClass(modifier.id, 1)" class="w-[58px] text-right">{{ formatGadgetEfficiency(modifier.id, 1) }}</span>
                   </div>
                   <!-- +10 Levels -->
                   <div v-if="getGadgetCostBenefit(modifier.id, 10)" 
@@ -273,8 +301,6 @@
                     <span class="text-yellow-400 w-[58px] text-right">{{ getFormattedGadgetCost(modifier.id, 10) }}</span>
                     <span class="text-gray-500 px-1">→</span>
                     <span class="text-green-400 w-[72px] text-right">+{{ formatNumber(getGadgetCostBenefit(modifier.id, 10).deltaFragsPerDay) }}/d</span>
-                    <span class="text-gray-500 px-1">|</span>
-                    <span :class="getGadgetEfficiencyColorClass(modifier.id, 10)" class="w-[58px] text-right">{{ formatGadgetEfficiency(modifier.id, 10) }}</span>
                   </div>
                 </template>
               </div>
@@ -597,7 +623,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { IconAdjustments, IconBrandSpeedtest, IconPlus } from '@tabler/icons-vue';
 import { MODIFIERS } from '@/views/tools/mission-planner/constants/modifiers';
 import { getRelicMaxLevel as getRelicMaxLevelFromData } from '@/views/tools/mission-planner/constants/relics';
@@ -1146,4 +1172,50 @@ function getGadgetEfficiencyColorClass(gadgetId, levelDelta = 1) {
 function getPlusUltimaBenefit() {
   return missionPlannerStore.getPlusUltimaCostBenefit();
 }
+
+// ============================================
+// GAME PROGRESS DYNAMIC BENEFIT PROJECTION
+// ============================================
+
+// Cache for game progress benefit calculations to avoid recalculating on every render
+const gameProgressBenefitCache = ref({});
+
+// Get benefit projection for next threshold of game progress modifiers
+// For MP/RP/AllTimeHighestRP: calculates delta to next loopmod/research
+// For Cells: uses fixed +100 delta
+function getGameProgressBenefit(modifierId) {
+  // Check cache first
+  const cacheKey = `${modifierId}_${missionPlannerStore.modifierValues[modifierId]}`;
+  if (gameProgressBenefitCache.value[cacheKey] !== undefined) {
+    return gameProgressBenefitCache.value[cacheKey];
+  }
+  
+  // Calculate and cache
+  const result = missionPlannerStore.calculateGameProgressBenefit(modifierId);
+  gameProgressBenefitCache.value[cacheKey] = result;
+  return result;
+}
+
+// Get benefit projection for cells with +1000 delta
+function getCellsBenefit1000() {
+  const cacheKey = `cells_1000_${missionPlannerStore.modifierValues.cells}`;
+  if (gameProgressBenefitCache.value[cacheKey] !== undefined) {
+    return gameProgressBenefitCache.value[cacheKey];
+  }
+  
+  const result = missionPlannerStore.calculateGameProgressBenefitWithDelta('cells', 1000);
+  gameProgressBenefitCache.value[cacheKey] = result;
+  return result;
+}
+
+// Clear cache when optimization runs
+watch(() => missionPlannerStore.optimizationRun, () => {
+  gameProgressBenefitCache.value = {};
+});
+
+// Clear cache when ANY modifier changes (since they can affect each other's projections)
+// MP changes affect missionSpeed which affects all other projections
+watch(() => missionPlannerStore.modifierValues, () => {
+  gameProgressBenefitCache.value = {};
+}, { deep: true });
 </script>
