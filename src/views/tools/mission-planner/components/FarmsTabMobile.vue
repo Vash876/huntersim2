@@ -1,134 +1,110 @@
 <template>
   <div class="bg-gray-800/50 rounded-b-lg border border-gray-700/50 border-t-0 overflow-hidden">
     <!-- Mission Cards -->
-    <div class="p-2 space-y-2">
+    <div class="p-2 space-y-1.5">
       <template v-for="(missions, planetIndex) in farmMissionsByPlanet" :key="planetIndex">
         <!-- Planet Header -->
-        <div class="bg-blue-900/30 rounded-lg px-3 py-1.5 flex items-center gap-2 border-l-2 border-blue-500">
-          <IconPlanet size="14" class="text-blue-400" />
-          <span class="text-sm font-semibold text-blue-400">{{ missions[0]?.planet || 'Unknown' }}</span>
+        <div class="bg-blue-900/30 rounded-lg px-2 py-1 flex items-center gap-2 border-l-2 border-blue-500">
+          <IconPlanet size="12" class="text-blue-400" />
+          <span class="text-xs font-semibold text-blue-400">{{ missions[0]?.planet || 'Unknown' }}</span>
         </div>
         
         <!-- Mission Cards for this Planet -->
-        <div class="space-y-2">
+        <div class="space-y-1.5">
           <div 
             v-for="mission in missions" 
             :key="mission.tag"
-            class="bg-gray-700/40 rounded-lg p-3 border-l-2"
+            class="bg-gray-700/40 rounded-lg p-2 border-l-2"
             :class="missionPlannerStore.isManualMode(mission.tag) ? 'border-l-yellow-500' : 'border-l-transparent'"
           >
-            <!-- Card Header: Mission Tag + Controls -->
-            <div class="flex items-center justify-between mb-2">
+            <!-- Row 1: Mission Tag, Fill Order, Manual Toggle, Time, Left -->
+            <div class="flex items-center justify-between mb-1.5">
               <div class="flex items-center gap-2">
                 <span class="font-mono font-bold text-white text-sm">{{ mission.tag }}</span>
-                <span class="text-[10px] text-gray-500 bg-gray-600/50 px-1.5 py-0.5 rounded">
-                  Max: {{ formatNumber(mission.maxCrew) }}
-                </span>
-              </div>
-              <div class="flex items-center gap-2">
-                <!-- Fill Order -->
                 <select
                   :value="missionPlannerStore.getFillOrder(mission.tag)"
                   @change="updateFillOrder(mission.tag, $event.target.value)"
-                  class="w-12 px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-white text-xs text-center focus:border-blue-500 outline-none"
+                  class="w-10 px-0.5 py-0.5 bg-gray-900 border border-gray-600 rounded text-white text-[10px] text-center focus:border-blue-500 outline-none"
                 >
-                  <option v-for="n in 17" :key="n" :value="n">#{{ n }}</option>
+                  <option v-for="n in 17" :key="n" :value="n">{{ n }}</option>
                 </select>
-                <!-- Manual Mode Toggle -->
                 <button
                   @click="toggleManualMode(mission.tag)"
-                  class="w-7 h-7 rounded flex items-center justify-center"
+                  class="w-6 h-6 rounded flex items-center justify-center"
                   :class="missionPlannerStore.isManualMode(mission.tag) 
                     ? 'bg-yellow-600 text-white' 
                     : 'bg-gray-600 text-gray-400'"
                 >
-                  <IconLock v-if="missionPlannerStore.isManualMode(mission.tag)" size="14" />
-                  <IconLockOpen v-else size="14" />
+                  <IconLock v-if="missionPlannerStore.isManualMode(mission.tag)" size="12" />
+                  <IconLockOpen v-else size="12" />
                 </button>
+              </div>
+              <div class="flex items-center gap-2 text-[10px]">
+                <span 
+                  class="font-mono"
+                  :class="getMissionStats(mission.tag).isAtCap ? 'text-green-400' : 'text-gray-300'"
+                >
+                  {{ getMissionStats(mission.tag).completionTimeFormatted }}
+                </span>
+                <span class="text-gray-500">|</span>
+                <span 
+                  class="font-mono"
+                  :class="getUsedCrew(mission.tag) > 0 ? 'text-cyan-400' : 'text-gray-500'"
+                  :title="`Used: ${getUsedCrew(mission.tag)} of ${mission.maxCrew}`"
+                >
+                  {{ getUsedCrew(mission.tag) }}/{{ mission.maxCrew }}
+                </span>
               </div>
             </div>
             
-            <!-- Personnel Grid (2x2) -->
-            <div class="grid grid-cols-4 gap-1.5 mb-2">
-              <div class="bg-gray-800/50 rounded p-1.5 text-center">
-                <div class="text-[10px] text-red-400 font-semibold mb-0.5">T1</div>
+            <!-- Row 2: Personnel Inputs (inline) + Frags -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1">
                 <input
                   :value="getAssignment(mission.tag).T1"
                   @input="updateAssignment(mission.tag, 'T1', $event.target.value)"
                   type="number"
                   min="0"
                   :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                  class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-xs text-center text-white outline-none disabled:opacity-50"
+                  class="w-12 px-1 py-0.5 bg-gray-900 border border-red-600/50 rounded text-[11px] text-center text-red-400 outline-none disabled:opacity-50"
+                  placeholder="T1"
                 />
-              </div>
-              <div class="bg-gray-800/50 rounded p-1.5 text-center">
-                <div class="text-[10px] text-orange-400 font-semibold mb-0.5">T2</div>
                 <input
                   :value="getAssignment(mission.tag).T2"
                   @input="updateAssignment(mission.tag, 'T2', $event.target.value)"
                   type="number"
                   min="0"
                   :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                  class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-xs text-center text-white outline-none disabled:opacity-50"
+                  class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-[11px] text-center text-orange-400 outline-none disabled:opacity-50"
+                  placeholder="T2"
                 />
-              </div>
-              <div class="bg-gray-800/50 rounded p-1.5 text-center">
-                <div class="text-[10px] text-yellow-400 font-semibold mb-0.5">T3</div>
                 <input
                   :value="getAssignment(mission.tag).T3"
                   @input="updateAssignment(mission.tag, 'T3', $event.target.value)"
                   type="number"
                   min="0"
                   :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                  class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-xs text-center text-white outline-none disabled:opacity-50"
+                  class="w-12 px-1 py-0.5 bg-gray-900 border border-yellow-600/50 rounded text-[11px] text-center text-yellow-400 outline-none disabled:opacity-50"
+                  placeholder="T3"
                 />
-              </div>
-              <div class="bg-gray-800/50 rounded p-1.5 text-center">
-                <div class="text-[10px] text-green-400 font-semibold mb-0.5">T4</div>
                 <input
                   :value="getAssignment(mission.tag).T4"
                   @input="updateAssignment(mission.tag, 'T4', $event.target.value)"
                   type="number"
                   min="0"
                   :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                  class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-xs text-center text-white outline-none disabled:opacity-50"
+                  class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-[11px] text-center text-green-400 outline-none disabled:opacity-50"
+                  placeholder="T4"
                 />
               </div>
-            </div>
-            
-            <!-- Stats Row -->
-            <div class="flex items-center justify-between text-xs">
-              <div class="flex items-center gap-3">
-                <!-- Time -->
-                <div class="flex items-center gap-1">
-                  <span class="text-gray-500">Time:</span>
-                  <span 
-                    class="font-mono"
-                    :class="getMissionStats(mission.tag).isAtCap ? 'text-green-400' : 'text-gray-300'"
-                  >
-                    {{ getMissionStats(mission.tag).completionTimeFormatted }}
-                  </span>
-                </div>
-                <!-- Left -->
-                <div class="flex items-center gap-1">
-                  <span class="text-gray-500">Left:</span>
-                  <span 
-                    class="font-mono"
-                    :class="getLeftCrew(mission.tag, mission.maxCrew) > 0 ? 'text-yellow-400' : 'text-gray-500'"
-                  >
-                    {{ getLeftCrew(mission.tag, mission.maxCrew) }}
-                  </span>
-                </div>
-              </div>
-              <!-- Frags -->
-              <div class="flex items-center gap-2">
-                <div class="flex items-center gap-1">
+              <div class="flex items-center gap-1.5">
+                <div class="flex items-center gap-0.5">
                   <img src="@/assets/general/fragments.png" alt="Fragments" class="w-3 h-3" />
-                  <span class="font-mono font-semibold" :style="{ color: getIncomeColor(mission.tag) }">
-                    {{ formatNumberWithCommas(getMissionStats(mission.tag).fragsPerHour, 0) }}/hr
+                  <span class="font-mono font-semibold text-[11px]" :style="{ color: getIncomeColor(mission.tag) }">
+                    {{ formatNumberWithCommas(getMissionStats(mission.tag).fragsPerHour, 0) }}
                   </span>
                 </div>
-                <span class="text-gray-500 text-[10px]">{{ getIncomePercentage(mission.tag) }}</span>
+                <span class="text-gray-500 text-[9px]">{{ getIncomePercentage(mission.tag) }}</span>
               </div>
             </div>
           </div>
@@ -136,17 +112,17 @@
       </template>
       
       <!-- Campaign Card -->
-      <div class="bg-amber-900/20 rounded-lg px-3 py-1.5 flex items-center gap-2 border-l-2 border-amber-500">
-        <IconFlag size="14" class="text-amber-400" />
-        <span class="text-sm font-semibold text-amber-400">Campaign</span>
+      <div class="bg-amber-900/20 rounded-lg px-2 py-1 flex items-center gap-2 border-l-2 border-amber-500">
+        <IconFlag size="12" class="text-amber-400" />
+        <span class="text-xs font-semibold text-amber-400">Campaign</span>
       </div>
       
       <div 
-        class="bg-gray-700/40 rounded-lg p-3 border-l-2"
+        class="bg-gray-700/40 rounded-lg p-2 border-l-2"
         :class="missionPlannerStore.isCampaignManualMode() ? 'border-l-yellow-500' : 'border-l-transparent'"
       >
-        <!-- Card Header -->
-        <div class="flex items-center justify-between mb-2">
+        <!-- Row 1: Campaign Select, Fill Order, Manual Toggle, Time -->
+        <div class="flex items-center justify-between mb-1.5">
           <div class="flex items-center gap-2">
             <span 
               @click="$emit('openCampaignModal')"
@@ -155,88 +131,75 @@
             >
               {{ selectedCampaign || 'Select...' }}
             </span>
-            <span v-if="selectedCampaignData" class="text-[10px] text-gray-500 bg-gray-600/50 px-1.5 py-0.5 rounded">
-              Max: {{ formatNumber(selectedCampaignData.maxCrew) }}
-            </span>
-          </div>
-          <div class="flex items-center gap-2">
             <select
               :value="missionPlannerStore.campaignFillOrder"
               @change="missionPlannerStore.setCampaignFillOrder(Number($event.target.value))"
-              class="w-12 px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-white text-xs text-center focus:border-purple-500 outline-none"
+              class="w-10 px-0.5 py-0.5 bg-gray-900 border border-gray-600 rounded text-white text-[10px] text-center focus:border-purple-500 outline-none"
             >
-              <option v-for="n in 17" :key="n" :value="n">#{{ n }}</option>
+              <option v-for="n in 17" :key="n" :value="n">{{ n }}</option>
             </select>
             <button
               @click="missionPlannerStore.toggleCampaignManualMode()"
-              class="w-7 h-7 rounded flex items-center justify-center"
+              class="w-6 h-6 rounded flex items-center justify-center"
               :class="missionPlannerStore.isCampaignManualMode() 
                 ? 'bg-yellow-600 text-white' 
                 : 'bg-gray-600 text-gray-400'"
             >
-              <IconLock v-if="missionPlannerStore.isCampaignManualMode()" size="14" />
-              <IconLockOpen v-else size="14" />
+              <IconLock v-if="missionPlannerStore.isCampaignManualMode()" size="12" />
+              <IconLockOpen v-else size="12" />
             </button>
+          </div>
+          <div class="flex items-center gap-2 text-[10px]">
+            <span class="font-mono text-purple-400">{{ campaignTime }}</span>
+            <span v-if="selectedCampaignData" class="text-gray-500">
+              /{{ selectedCampaignData.maxCrew }}
+            </span>
           </div>
         </div>
         
-        <!-- Personnel Grid -->
-        <div class="grid grid-cols-4 gap-1.5 mb-2">
-          <div class="bg-gray-800/50 rounded p-1.5 text-center">
-            <div class="text-[10px] text-red-400 font-semibold mb-0.5">T1</div>
+        <!-- Row 2: Personnel Inputs + Frags -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1">
             <input
               :value="getCampaignAssignment().T1"
               @input="updateCampaignAssignment('T1', $event.target.value)"
               type="number"
               min="0"
               :disabled="!selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-              class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-xs text-center text-white outline-none disabled:opacity-50"
+              class="w-12 px-1 py-0.5 bg-gray-900 border border-red-600/50 rounded text-[11px] text-center text-red-400 outline-none disabled:opacity-50"
+              placeholder="T1"
             />
-          </div>
-          <div class="bg-gray-800/50 rounded p-1.5 text-center">
-            <div class="text-[10px] text-orange-400 font-semibold mb-0.5">T2</div>
             <input
               :value="getCampaignAssignment().T2"
               @input="updateCampaignAssignment('T2', $event.target.value)"
               type="number"
               min="0"
               :disabled="!selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-              class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-xs text-center text-white outline-none disabled:opacity-50"
+              class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-[11px] text-center text-orange-400 outline-none disabled:opacity-50"
+              placeholder="T2"
             />
-          </div>
-          <div class="bg-gray-800/50 rounded p-1.5 text-center">
-            <div class="text-[10px] text-yellow-400 font-semibold mb-0.5">T3</div>
             <input
               :value="getCampaignAssignment().T3"
               @input="updateCampaignAssignment('T3', $event.target.value)"
               type="number"
               min="0"
               :disabled="!selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-              class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-xs text-center text-white outline-none disabled:opacity-50"
+              class="w-12 px-1 py-0.5 bg-gray-900 border border-yellow-600/50 rounded text-[11px] text-center text-yellow-400 outline-none disabled:opacity-50"
+              placeholder="T3"
             />
-          </div>
-          <div class="bg-gray-800/50 rounded p-1.5 text-center">
-            <div class="text-[10px] text-green-400 font-semibold mb-0.5">T4</div>
             <input
               :value="getCampaignAssignment().T4"
               @input="updateCampaignAssignment('T4', $event.target.value)"
               type="number"
               min="0"
               :disabled="!selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-              class="w-full px-1 py-0.5 bg-gray-900 border border-gray-600 rounded text-xs text-center text-white outline-none disabled:opacity-50"
+              class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-[11px] text-center text-green-400 outline-none disabled:opacity-50"
+              placeholder="T4"
             />
           </div>
-        </div>
-        
-        <!-- Stats Row -->
-        <div class="flex items-center justify-between text-xs">
-          <div class="flex items-center gap-1">
-            <span class="text-gray-500">Time:</span>
-            <span class="font-mono text-purple-400">{{ campaignTime }}</span>
-          </div>
-          <div class="flex items-center gap-1">
+          <div class="flex items-center gap-0.5">
             <img src="@/assets/general/fragments.png" alt="Fragments" class="w-3 h-3" />
-            <span class="font-mono font-semibold text-purple-400">{{ campaignFrags }}</span>
+            <span class="font-mono font-semibold text-[11px] text-purple-400">{{ campaignFrags }}</span>
           </div>
         </div>
       </div>
@@ -317,11 +280,10 @@ function updateCampaignAssignment(tier, value) {
   });
 }
 
-// Get remaining crew slots
-function getLeftCrew(missionTag, maxCrew) {
+// Get used crew count
+function getUsedCrew(missionTag) {
   const assignment = missionPlannerStore.getAssignment(missionTag);
-  const usedCrew = (assignment.T1 || 0) + (assignment.T2 || 0) + (assignment.T3 || 0) + (assignment.T4 || 0);
-  return maxCrew - usedCrew;
+  return (assignment.T1 || 0) + (assignment.T2 || 0) + (assignment.T3 || 0) + (assignment.T4 || 0);
 }
 
 // Toggle manual mode

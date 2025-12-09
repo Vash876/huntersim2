@@ -1,58 +1,48 @@
 <template>
-  <div class="flex flex-col gap-3">
+  <div class="flex flex-col gap-2">
     <!-- Summary Bar -->
-    <div class="bg-gray-800/70 backdrop-blur-sm rounded-xl p-3 border border-gray-700/50">
-      <!-- Fill Order & Actions Row -->
-      <div class="flex items-center justify-between mb-3">
+    <div class="bg-gray-800/70 backdrop-blur-sm rounded-lg p-2 border border-gray-700/50">
+      <!-- Fill Order & Stats Row -->
+      <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <span class="text-xs text-gray-400">Fill Order:</span>
+          <span class="text-[10px] text-gray-400">Fill:</span>
           <select
             :value="missionPlannerStore.campaignFillOrder"
             @change="updateCampaignFillOrder($event.target.value)"
-            class="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs text-white w-14 text-center"
+            class="bg-gray-700 border border-gray-600 rounded px-1.5 py-0.5 text-[10px] text-white w-10 text-center"
           >
             <option v-for="n in 17" :key="n" :value="n">{{ n }}</option>
           </select>
-          <span class="text-[10px] text-gray-500">(after {{ missionPlannerStore.campaignFillOrder - 1 }} farms)</span>
+          <span class="text-gray-500">|</span>
+          <span class="text-[10px] text-gray-400">{{ formatNumber(totalRemainingPersonnel) }} crew</span>
         </div>
-        <button
-          v-if="hasAnyTimer"
-          @click="resetAllTimers"
-          class="px-2 py-1 text-xs bg-red-600/30 text-red-300 rounded hover:bg-red-600/50 transition-colors"
-        >
-          Reset All
-        </button>
-      </div>
-
-      <!-- Stats Row -->
-      <div class="grid grid-cols-2 gap-2 text-center">
-        <div class="bg-gray-900/50 rounded-lg p-2">
-          <div class="text-xs text-gray-400">Remaining Personnel</div>
-          <div class="text-sm font-bold text-white">
-            {{ formatNumber(totalRemainingPersonnel) }}
-          </div>
-        </div>
-        <div class="bg-gray-900/50 rounded-lg p-2">
-          <div class="text-xs text-gray-400">Total Time</div>
-          <div class="text-sm font-bold text-amber-400">
-            {{ totalCompletionTimeFormatted }}
-          </div>
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-amber-400 font-semibold">{{ totalCompletionTimeFormatted }}</span>
+          <span class="text-gray-500">|</span>
+          <span class="text-[10px] text-yellow-400 font-semibold">{{ formatNumber(totalFragments) }}</span>
+          <button
+            v-if="hasAnyTimer"
+            @click="resetAllTimers"
+            class="px-1.5 py-0.5 text-[10px] bg-red-600/30 text-red-300 rounded hover:bg-red-600/50"
+          >
+            Reset
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Planet Groups -->
-    <div v-for="(campaigns, planetIndex) in campaignsByPlanet" :key="planetIndex" class="flex flex-col gap-2">
+    <div v-for="(campaigns, planetIndex) in campaignsByPlanet" :key="planetIndex" class="flex flex-col gap-1">
       <!-- Planet Header -->
       <div :class="[
-        'flex items-center justify-between px-3 py-2 rounded-lg',
+        'flex items-center justify-between px-2 py-1 rounded-lg',
         planetIndex === 0 ? 'bg-emerald-900/30 border border-emerald-700/30' :
         planetIndex === 1 ? 'bg-blue-900/30 border border-blue-700/30' :
         planetIndex === 2 ? 'bg-purple-900/30 border border-purple-700/30' :
         'bg-amber-900/30 border border-amber-700/30'
       ]">
         <span :class="[
-          'text-sm font-semibold',
+          'text-xs font-semibold',
           planetIndex === 0 ? 'text-emerald-300' :
           planetIndex === 1 ? 'text-blue-300' :
           planetIndex === 2 ? 'text-purple-300' :
@@ -60,117 +50,83 @@
         ]">
           {{ campaigns[0]?.planet || `Planet ${planetIndex + 1}` }}
         </span>
-        <div class="flex items-center gap-3 text-xs">
-          <span class="text-gray-400">
-            {{ formatTime(getPlanetTotalTime(campaigns)) }}
-          </span>
-          <span class="text-yellow-400">
-            {{ formatNumber(getPlanetTotalFrags(campaigns)) }} frags
-          </span>
+        <div class="flex items-center gap-2 text-[10px]">
+          <span class="text-gray-400">{{ formatTime(getPlanetTotalTime(campaigns)) }}</span>
+          <span class="text-yellow-400">{{ formatNumber(getPlanetTotalFrags(campaigns)) }}</span>
         </div>
       </div>
 
-      <!-- Campaign Cards -->
-      <div v-for="campaign in campaigns" :key="campaign.tag" class="bg-gray-800/60 rounded-lg p-3 border border-gray-700/40">
-        <!-- Campaign Header with Timer -->
-        <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-2">
-            <!-- Timer Button -->
-            <button
-              @click="toggleTimer(campaign.tag, campaign.completionTimeMinutes)"
-              :class="[
-                'w-8 h-8 rounded-lg flex items-center justify-center transition-colors',
-                getTimerState(campaign.tag) === 'completed' ? 'bg-green-600/30 text-green-400' :
-                getTimerState(campaign.tag) === 'running' ? 'bg-blue-600/30 text-blue-400' :
-                'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
-              ]"
-            >
-              <IconCheck v-if="getTimerState(campaign.tag) === 'completed'" :size="16" />
-              <IconClock v-else-if="getTimerState(campaign.tag) === 'running'" :size="16" />
-              <IconPlayerPlay v-else :size="16" />
-            </button>
-            
-            <!-- Campaign Tag -->
-            <span class="text-white font-semibold">{{ campaign.tag }}</span>
-            
-            <!-- Final Mission Badge -->
-            <span
-              v-if="campaign.finalMultiplier > 1"
-              class="text-[10px] px-1.5 py-0.5 bg-yellow-500/20 text-yellow-400 rounded"
-            >
-              ×{{ campaign.finalMultiplier }}
+      <!-- Campaign Cards - Compact -->
+      <div class="space-y-1">
+        <div 
+          v-for="campaign in campaigns" 
+          :key="campaign.tag" 
+          class="bg-gray-800/60 rounded-lg p-2 border border-gray-700/40"
+        >
+          <!-- Single Row Layout -->
+          <div class="flex items-center justify-between">
+            <!-- Left: Timer + Tag + Badge -->
+            <div class="flex items-center gap-1.5">
+              <button
+                @click="toggleTimer(campaign.tag, campaign.completionTimeMinutes)"
+                :class="[
+                  'w-6 h-6 rounded flex items-center justify-center transition-colors',
+                  getTimerState(campaign.tag) === 'completed' ? 'bg-green-600/30 text-green-400' :
+                  getTimerState(campaign.tag) === 'running' ? 'bg-blue-600/30 text-blue-400' :
+                  'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
+                ]"
+              >
+                <IconCheck v-if="getTimerState(campaign.tag) === 'completed'" :size="12" />
+                <IconClock v-else-if="getTimerState(campaign.tag) === 'running'" :size="12" />
+                <IconPlayerPlay v-else :size="12" />
+              </button>
+              
+              <span class="text-white font-semibold text-sm">{{ campaign.tag }}</span>
+              
+              <span
+                v-if="campaign.finalMultiplier > 1"
+                class="text-[9px] px-1 py-0.5 bg-yellow-500/20 text-yellow-400 rounded"
+              >
+                ×{{ campaign.finalMultiplier }}
+              </span>
+              
+              <button
+                v-if="getTimerState(campaign.tag) !== 'idle'"
+                @click.stop="resetTimer(campaign.tag)"
+                class="p-0.5 text-gray-500 hover:text-red-400"
+              >
+                <IconX :size="12" />
+              </button>
+            </div>
+
+            <!-- Right: Stats -->
+            <div class="flex items-center gap-2 text-[10px]">
+              <!-- Crew -->
+              <span :class="[
+                'font-mono',
+                campaign.crewUsed >= campaign.adjustedMaxCrew ? 'text-green-400' :
+                campaign.crewUsed > 0 ? 'text-yellow-400' : 'text-gray-500'
+              ]">
+                {{ formatNumber(campaign.crewUsed) }}/{{ formatNumber(campaign.adjustedMaxCrew) }}
+              </span>
+              <span class="text-gray-500">|</span>
+              <!-- Time -->
+              <span class="text-amber-400 font-mono">{{ campaign.completionTimeFormatted }}</span>
+              <span class="text-gray-500">|</span>
+              <!-- Frags -->
+              <span class="text-yellow-400 font-semibold">{{ formatNumber(campaign.fragsPerCompletion) }}</span>
+            </div>
+          </div>
+
+          <!-- Countdown Row (only when running) -->
+          <div
+            v-if="getTimerState(campaign.tag) === 'running'"
+            class="mt-1.5 text-center py-1 bg-blue-900/30 rounded border border-blue-700/30"
+          >
+            <span class="text-blue-300 font-mono text-sm">
+              {{ formatCountdown(getRemainingTime(campaign.tag)) }}
             </span>
           </div>
-
-          <!-- Reset Timer Button -->
-          <button
-            v-if="getTimerState(campaign.tag) !== 'idle'"
-            @click.stop="resetTimer(campaign.tag)"
-            class="p-1.5 text-gray-500 hover:text-red-400 transition-colors"
-          >
-            <IconX :size="14" />
-          </button>
-        </div>
-
-        <!-- Countdown (when running) -->
-        <div
-          v-if="getTimerState(campaign.tag) === 'running'"
-          class="mb-2 text-center py-2 bg-blue-900/30 rounded-lg border border-blue-700/30"
-        >
-          <span class="text-blue-300 font-mono text-lg">
-            {{ formatCountdown(getRemainingTime(campaign.tag)) }}
-          </span>
-        </div>
-
-        <!-- Campaign Stats Grid -->
-        <div class="grid grid-cols-3 gap-2 text-center text-xs">
-          <!-- Max Crew -->
-          <div class="bg-gray-900/50 rounded px-2 py-1.5">
-            <div class="text-gray-500 mb-0.5">Max Crew</div>
-            <div class="text-white font-medium">
-              {{ formatNumber(campaign.adjustedMaxCrew) }}
-              <span v-if="campaign.adjustedMaxCrew !== campaign.maxCrew" class="text-green-400 text-[10px]">
-                (+{{ formatNumber(campaign.adjustedMaxCrew - campaign.maxCrew) }})
-              </span>
-            </div>
-          </div>
-          
-          <!-- Assigned -->
-          <div class="bg-gray-900/50 rounded px-2 py-1.5">
-            <div class="text-gray-500 mb-0.5">Assigned</div>
-            <div :class="[
-              'font-medium',
-              campaign.crewUsed >= campaign.adjustedMaxCrew ? 'text-green-400' :
-              campaign.crewUsed > 0 ? 'text-yellow-400' : 'text-red-400'
-            ]">
-              {{ formatNumber(campaign.crewUsed) }}
-            </div>
-          </div>
-          
-          <!-- Time -->
-          <div class="bg-gray-900/50 rounded px-2 py-1.5">
-            <div class="text-gray-500 mb-0.5">Time</div>
-            <div class="text-amber-400 font-medium">{{ campaign.completionTimeFormatted }}</div>
-          </div>
-        </div>
-
-        <!-- Fragments Row -->
-        <div class="mt-2 flex items-center justify-center gap-1 py-1.5 bg-yellow-900/20 rounded border border-yellow-700/20">
-          <span class="text-yellow-400 font-semibold text-sm">
-            {{ formatNumber(campaign.fragsPerCompletion) }}
-          </span>
-          <span class="text-yellow-600 text-xs">fragments</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Total Summary -->
-    <div class="bg-gradient-to-r from-gray-800/80 to-gray-700/80 rounded-xl p-3 border border-gray-600/50">
-      <div class="flex items-center justify-between">
-        <span class="text-gray-300 font-medium">Total All Campaigns</span>
-        <div class="flex items-center gap-4">
-          <span class="text-amber-400 font-bold">{{ totalCompletionTimeFormatted }}</span>
-          <span class="text-yellow-400 font-bold">{{ formatNumber(totalFragments) }} frags</span>
         </div>
       </div>
     </div>
