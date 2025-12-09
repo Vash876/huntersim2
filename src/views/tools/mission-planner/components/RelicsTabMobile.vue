@@ -104,7 +104,7 @@
               v-if="hasRelicIcon(relic.id)"
               :src="getRelicIconUrl(relic.id)" 
               :alt="relic.id" 
-              class="w-5 h-5 object-contain"
+              class="w-6 h-6 object-contain"
             />
             <span class="text-white font-semibold font-mono text-xs">{{ relic.id.replace(/^r/i, '#') }}</span>
           </div>
