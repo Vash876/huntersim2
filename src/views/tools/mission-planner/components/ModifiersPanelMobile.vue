@@ -33,10 +33,22 @@
           class="bg-gray-800/60 rounded-lg p-3 border border-gray-700/40"
         >
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 text-xs text-gray-300">
-              <IconPlus v-if="modifier.icon === 'IconPlus'" :size="14" class="text-red-500" />
-              <img v-else-if="modifier.icon && !modifier.icon.startsWith('Icon')" :src="getModifierIconUrl(modifier.icon)" class="w-3.5 h-3.5" />
-              {{ modifier.name }}
+            <div class="flex flex-col min-w-0">
+              <div class="flex items-center gap-1.5 text-xs text-gray-300">
+                <IconPlus v-if="modifier.icon === 'IconPlus'" :size="14" class="text-red-500" />
+                <img v-else-if="modifier.icon && !modifier.icon.startsWith('Icon')" :src="getModifierIconUrl(modifier.icon)" class="w-3.5 h-3.5" />
+                {{ modifier.name }}
+              </div>
+              <!-- +Ultima Cost-Benefit Row -->
+              <div v-if="modifier.id === 'plus_ultima' && getPlusUltimaBenefit()" 
+                class="flex items-center text-[10px] mt-0.5 font-mono">
+                <template v-if="getPlusUltimaBenefit().canAffordNewLevels">
+                  <span class="text-green-400">+{{ formatNumber(getPlusUltimaBenefit().deltaFragsPerDay) }}/d</span>
+                </template>
+                <template v-else>
+                  <span class="text-gray-500 text-[9px]">MP zu niedrig</span>
+                </template>
+              </div>
             </div>
             <ToolValueControls
               class="w-[140px]"
@@ -61,7 +73,18 @@
           class="bg-gray-800/60 rounded-lg p-3 border border-gray-700/40"
         >
           <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-300">{{ modifier.name }}</span>
+            <div class="flex flex-col min-w-0">
+              <span class="text-xs text-gray-300">{{ modifier.name }}</span>
+              <!-- Cost-Benefit Row for farm-affecting relics -->
+              <div v-if="isRelicFarmAffecting(modifier.id) && missionPlannerStore.modifierValues[modifier.id] < modifier.max && getRelicCostBenefit(modifier.id)" 
+                class="flex items-center text-[10px] mt-0.5 font-mono">
+                <span class="text-yellow-400 w-[52px] text-right">{{ getFormattedRelicNextLevelCost(modifier.id) }}</span>
+                <span class="text-gray-500 px-0.5">→</span>
+                <span class="text-green-400 w-[60px] text-right">+{{ formatNumber(getRelicCostBenefit(modifier.id).deltaFragsPerDay) }}/d</span>
+                <span class="text-gray-500 px-0.5">|</span>
+                <span :class="getRelicEfficiencyColorClass(modifier.id)" class="w-[44px] text-right">{{ formatRelicEfficiency(modifier.id) }}</span>
+              </div>
+            </div>
             <ToolValueControls
               class="w-[140px]"
               :value="missionPlannerStore.modifierValues[modifier.id]"
@@ -132,7 +155,18 @@
         >
           <div class="flex flex-col gap-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs text-gray-300">{{ modifier.name }}</span>
+              <div class="flex flex-col min-w-0">
+                <span class="text-xs text-gray-300">{{ modifier.name }}</span>
+                <!-- Cost-Benefit Row -->
+                <div v-if="missionPlannerStore.modifierValues[modifier.id] < modifier.max && getInscryptionCostBenefit(modifier.id)" 
+                  class="flex items-center text-[10px] mt-0.5 font-mono">
+                  <span class="text-yellow-400 w-[52px] text-right">{{ getFormattedNextLevelCost(modifier.id) }}</span>
+                  <span class="text-gray-500 px-0.5">→</span>
+                  <span class="text-green-400 w-[60px] text-right">+{{ formatNumber(getInscryptionCostBenefit(modifier.id).deltaFragsPerDay) }}/d</span>
+                  <span class="text-gray-500 px-0.5">|</span>
+                  <span :class="getInscryptionEfficiencyColorClass(modifier.id)" class="w-[44px] text-right">{{ formatInscryptionEfficiency(modifier.id) }}</span>
+                </div>
+              </div>
               <ToolValueControls
                 class="w-[140px]"
                 :value="missionPlannerStore.modifierValues[modifier.id]"
@@ -157,7 +191,32 @@
           class="bg-gray-800/60 rounded-lg p-3 border border-gray-700/40"
         >
           <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-300">{{ modifier.name }}</span>
+            <div class="flex flex-col min-w-0">
+              <span class="text-xs text-gray-300">{{ modifier.name }}</span>
+              <!-- Cost-Benefit Rows for Local Fragment Magnet (G12) -->
+              <template v-if="modifier.id === 'local_fragment_magnet'">
+                <!-- +1 Level -->
+                <div v-if="getGadgetCostBenefit(modifier.id, 1)" 
+                  class="flex items-center text-[10px] mt-0.5 font-mono">
+                  <span class="text-gray-500 w-[18px]">+1:</span>
+                  <span class="text-yellow-400 w-[48px] text-right">{{ getFormattedGadgetCost(modifier.id, 1) }}</span>
+                  <span class="text-gray-500 px-0.5">→</span>
+                  <span class="text-green-400 w-[52px] text-right">+{{ formatNumber(getGadgetCostBenefit(modifier.id, 1).deltaFragsPerDay) }}/d</span>
+                  <span class="text-gray-500 px-0.5">|</span>
+                  <span :class="getGadgetEfficiencyColorClass(modifier.id, 1)" class="w-[40px] text-right">{{ formatGadgetEfficiency(modifier.id, 1) }}</span>
+                </div>
+                <!-- +10 Levels -->
+                <div v-if="getGadgetCostBenefit(modifier.id, 10)" 
+                  class="flex items-center text-[10px] mt-0.5 font-mono">
+                  <span class="text-gray-500 w-[18px]">+10:</span>
+                  <span class="text-yellow-400 w-[48px] text-right">{{ getFormattedGadgetCost(modifier.id, 10) }}</span>
+                  <span class="text-gray-500 px-0.5">→</span>
+                  <span class="text-green-400 w-[52px] text-right">+{{ formatNumber(getGadgetCostBenefit(modifier.id, 10).deltaFragsPerDay) }}/d</span>
+                  <span class="text-gray-500 px-0.5">|</span>
+                  <span :class="getGadgetEfficiencyColorClass(modifier.id, 10)" class="w-[40px] text-right">{{ formatGadgetEfficiency(modifier.id, 10) }}</span>
+                </div>
+              </template>
+            </div>
             <ToolValueControls
               class="w-[140px]"
               :value="missionPlannerStore.modifierValues[modifier.id]"
@@ -424,6 +483,9 @@ import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { formatNumber } from '@/composables/format';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import { MODIFIERS } from '../constants/modifiers';
+import { getNextLevelCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
+import { getGadgetCost, calcGadgetCostDifference, formatGadgetCost } from '@/utils/gadgetCostUtils';
+import { RELIC_COSTS } from '../constants/relics';
 
 // Import modifier icons (required for Vite/Netlify production builds)
 import cellsIcon from '@/assets/general/cells.png';
@@ -508,6 +570,301 @@ const calculatedEffects = computed(() => {
     campaignFragmentsValue: effects.campaignFragments.formatted,
   };
 });
+
+// ============================================
+// INSCRYPTION COST-BENEFIT FUNCTIONS
+// ============================================
+
+// Get the cost for the next inscryption level
+function getInscryptionNextLevelCost(modifierId) {
+  const inscryptionId = modifierId.replace('inscryption_', 'i');
+  const currentLevel = missionPlannerStore.modifierValues[modifierId] || 0;
+  return getNextLevelCost(inscryptionId, currentLevel);
+}
+
+// Get formatted cost for the next level
+function getFormattedNextLevelCost(modifierId) {
+  const cost = getInscryptionNextLevelCost(modifierId);
+  return formatInscryptionCost(cost);
+}
+
+// Get cost-benefit analysis for an inscryption
+function getInscryptionCostBenefit(modifierId) {
+  const cost = getInscryptionNextLevelCost(modifierId);
+  if (cost === null || cost === 0) return null;
+  
+  return missionPlannerStore.getInscryptionCostBenefit(modifierId, cost);
+}
+
+// Format efficiency ratio for inscryptions
+function formatInscryptionEfficiency(modifierId) {
+  const benefit = getInscryptionCostBenefit(modifierId);
+  if (!benefit || !benefit.deltaFragsPerDay || benefit.deltaFragsPerDay <= 0) {
+    return '∞';
+  }
+  
+  const cost = benefit.cost;
+  const fragsPerDay = benefit.deltaFragsPerDay;
+  const rawRatio = cost / fragsPerDay;
+  
+  return formatEfficiencyValue(rawRatio);
+}
+
+// Get efficiency color class for inscryptions
+function getInscryptionEfficiencyColorClass(modifierId) {
+  const allEfficiencies = [];
+  
+  for (const modifier of modifiers.inscryptions) {
+    const currentLevel = missionPlannerStore.modifierValues[modifier.id] || 0;
+    if (currentLevel < modifier.max) {
+      const benefit = getInscryptionCostBenefit(modifier.id);
+      if (benefit && benefit.deltaFragsPerDay > 0) {
+        allEfficiencies.push({ id: modifier.id, efficiency: benefit.cost / benefit.deltaFragsPerDay });
+      }
+    }
+  }
+  
+  if (allEfficiencies.length <= 1) {
+    return 'text-green-400';
+  }
+  
+  allEfficiencies.sort((a, b) => a.efficiency - b.efficiency);
+  
+  const benefit = getInscryptionCostBenefit(modifierId);
+  if (!benefit || !benefit.deltaFragsPerDay || benefit.deltaFragsPerDay <= 0) {
+    return 'text-gray-500';
+  }
+  
+  const currentEfficiency = benefit.cost / benefit.deltaFragsPerDay;
+  const position = allEfficiencies.findIndex(e => e.id === modifierId);
+  
+  if (position === -1) {
+    return 'text-gray-500';
+  }
+  
+  const relativePosition = position / (allEfficiencies.length - 1);
+  return getColorClassFromPosition(relativePosition);
+}
+
+// ============================================
+// RELIC COST-BENEFIT FUNCTIONS
+// ============================================
+
+const FARM_AFFECTING_RELICS = ['relic_3', 'relic_5', 't2r8'];
+
+function isRelicFarmAffecting(modifierId) {
+  return FARM_AFFECTING_RELICS.includes(modifierId);
+}
+
+// Get relic ID from modifier ID
+function getRelicIdFromModifier(modifierId) {
+  if (modifierId === 't2r8') return 't2r8';
+  const match = modifierId.match(/relic_(\d+)/);
+  return match ? `r${match[1]}` : null;
+}
+
+// Get the cost for the next relic level
+function getRelicNextCost(modifierId) {
+  const relicId = getRelicIdFromModifier(modifierId);
+  if (!relicId) return null;
+  
+  const costFn = RELIC_COSTS[relicId];
+  if (!costFn) return null;
+  
+  const currentLevel = missionPlannerStore.modifierValues[modifierId] || 0;
+  return costFn(currentLevel + 1);
+}
+
+// Get formatted cost for the next relic level
+function getFormattedRelicNextLevelCost(modifierId) {
+  const cost = getRelicNextCost(modifierId);
+  if (cost === null || cost === Infinity) return '-';
+  return formatNumber(cost);
+}
+
+// Get cost-benefit analysis for a relic
+function getRelicCostBenefit(modifierId) {
+  const cost = getRelicNextCost(modifierId);
+  if (cost === null) return null;
+  
+  return missionPlannerStore.getRelicCostBenefit(modifierId, cost);
+}
+
+// Format relic efficiency ratio
+function formatRelicEfficiency(modifierId) {
+  const benefit = getRelicCostBenefit(modifierId);
+  if (!benefit || !benefit.deltaFragsPerDay || benefit.deltaFragsPerDay <= 0) {
+    return '∞';
+  }
+  
+  const rawRatio = benefit.cost / benefit.deltaFragsPerDay;
+  return formatEfficiencyValue(rawRatio);
+}
+
+// Get efficiency color class for relics
+function getRelicEfficiencyColorClass(modifierId) {
+  const allEfficiencies = [];
+  
+  for (const modifier of modifiers.relics) {
+    if (!isRelicFarmAffecting(modifier.id)) continue;
+    
+    const currentLevel = missionPlannerStore.modifierValues[modifier.id] || 0;
+    if (currentLevel < modifier.max) {
+      const benefit = getRelicCostBenefit(modifier.id);
+      if (benefit && benefit.deltaFragsPerDay > 0) {
+        allEfficiencies.push({ id: modifier.id, efficiency: benefit.cost / benefit.deltaFragsPerDay });
+      }
+    }
+  }
+  
+  if (allEfficiencies.length <= 1) {
+    return 'text-green-400';
+  }
+  
+  allEfficiencies.sort((a, b) => a.efficiency - b.efficiency);
+  
+  const benefit = getRelicCostBenefit(modifierId);
+  if (!benefit || !benefit.deltaFragsPerDay || benefit.deltaFragsPerDay <= 0) {
+    return 'text-gray-500';
+  }
+  
+  const position = allEfficiencies.findIndex(e => e.id === modifierId);
+  
+  if (position === -1) {
+    return 'text-gray-500';
+  }
+  
+  const relativePosition = position / (allEfficiencies.length - 1);
+  return getColorClassFromPosition(relativePosition);
+}
+
+// ============================================
+// GADGET COST-BENEFIT FUNCTIONS
+// ============================================
+
+// Get the cost for next gadget levels (1 or 10)
+function getGadgetNextCost(gadgetId, levelDelta = 1) {
+  if (gadgetId !== 'local_fragment_magnet') return null;
+  
+  const currentLevel = missionPlannerStore.modifierValues[gadgetId] || 0;
+  return calcGadgetCostDifference('g12', currentLevel, currentLevel + levelDelta);
+}
+
+// Get formatted cost for gadget
+function getFormattedGadgetCost(gadgetId, levelDelta = 1) {
+  const cost = getGadgetNextCost(gadgetId, levelDelta);
+  if (cost === null || cost === 0) return '-';
+  return formatGadgetCost(cost);
+}
+
+// Get cost-benefit analysis for a gadget
+function getGadgetCostBenefit(gadgetId, levelDelta = 1) {
+  const cost = getGadgetNextCost(gadgetId, levelDelta);
+  if (cost === null || cost <= 0) return null;
+  
+  return missionPlannerStore.getGadgetCostBenefit(gadgetId, cost, levelDelta);
+}
+
+// Format gadget efficiency ratio
+function formatGadgetEfficiency(gadgetId, levelDelta = 1) {
+  const benefit = getGadgetCostBenefit(gadgetId, levelDelta);
+  if (!benefit || !benefit.deltaFragsPerDay || benefit.deltaFragsPerDay <= 0) {
+    return '∞';
+  }
+  
+  const rawRatio = benefit.cost / benefit.deltaFragsPerDay;
+  return formatEfficiencyValue(rawRatio);
+}
+
+// Calculate color class for gadget efficiency
+function getGadgetEfficiencyColorClass(gadgetId, levelDelta = 1) {
+  const efficiency1 = getGadgetRawEfficiency(gadgetId, 1);
+  const efficiency10 = getGadgetRawEfficiency(gadgetId, 10);
+  
+  if (efficiency1 === Infinity && efficiency10 === Infinity) {
+    return 'text-gray-500';
+  }
+  if (efficiency1 === Infinity || efficiency10 === Infinity) {
+    return 'text-green-400';
+  }
+  
+  const currentEfficiency = levelDelta === 1 ? efficiency1 : efficiency10;
+  const betterEfficiency = Math.min(efficiency1, efficiency10);
+  
+  if (currentEfficiency === betterEfficiency) {
+    return 'text-green-400';
+  }
+  
+  const ratio = currentEfficiency / betterEfficiency;
+  
+  if (ratio <= 1.1) return 'text-green-500';
+  if (ratio <= 1.25) return 'text-lime-400';
+  if (ratio <= 1.5) return 'text-yellow-400';
+  if (ratio <= 2.0) return 'text-orange-400';
+  return 'text-red-400';
+}
+
+function getGadgetRawEfficiency(gadgetId, levelDelta = 1) {
+  const benefit = getGadgetCostBenefit(gadgetId, levelDelta);
+  if (!benefit || !benefit.deltaFragsPerDay || benefit.deltaFragsPerDay <= 0) {
+    return Infinity;
+  }
+  return benefit.cost / benefit.deltaFragsPerDay;
+}
+
+// ============================================
+// SHARED HELPER FUNCTIONS
+// ============================================
+
+// Format efficiency value with suffixes
+function formatEfficiencyValue(rawRatio) {
+  const suffixes = ['', 'k', 'm', 'b', 't', 'qa', 'qu', 'sx', 'sp', 'o', 'n', 'd'];
+  
+  if (rawRatio < 1) {
+    return rawRatio.toFixed(2);
+  }
+  
+  const tier = Math.max(0, Math.min(Math.floor(Math.log10(rawRatio) / 3), suffixes.length - 1));
+  
+  if (rawRatio >= 1e36) {
+    const exponent = Math.floor(Math.log10(rawRatio));
+    const mantissa = rawRatio / Math.pow(10, exponent);
+    return `${mantissa.toFixed(1)}e${exponent}`;
+  }
+  
+  const suffix = suffixes[tier];
+  const scaledValue = rawRatio / Math.pow(10, tier * 3);
+  
+  return `${scaledValue.toFixed(1)}${suffix}`;
+}
+
+// Get color class from relative position (0 = best/green, 1 = worst/red)
+function getColorClassFromPosition(relativePosition) {
+  const colorClasses = [
+    'text-green-400',
+    'text-green-500',
+    'text-lime-400',
+    'text-lime-500',
+    'text-yellow-400',
+    'text-yellow-500',
+    'text-amber-400',
+    'text-orange-400',
+    'text-orange-500',
+    'text-red-400',
+  ];
+  
+  const colorIndex = Math.min(Math.floor(relativePosition * 10), 9);
+  return colorClasses[colorIndex];
+}
+
+// ============================================
+// +ULTIMA COST-BENEFIT FUNCTIONS
+// ============================================
+
+// Get cost-benefit analysis for +Ultima
+function getPlusUltimaBenefit() {
+  return missionPlannerStore.getPlusUltimaCostBenefit();
+}
 </script>
 
 <style scoped>

@@ -20,6 +20,7 @@
             </div>
             <!-- Current Hours in TR -->
             <div class="flex items-center gap-1.5 bg-gray-700/40 px-2 py-1 rounded-md">
+              <IconClock size="14" class="text-cyan-400" />
               <span class="text-gray-400">Hours in TR:</span>
               <SuffixInput
                 :model-value="currentHoursInTR"
@@ -70,6 +71,13 @@
               <span class="text-gray-500">Time:</span>
               <span :class="totalTargetsSummary.remaining <= 0 ? 'text-green-400' : 'text-yellow-400'" class="font-semibold">
                 {{ totalTargetsSummary.estimatedTime }}
+              </span>
+            </div>
+            <!-- Est. Date -->
+            <div class="flex items-center gap-1 bg-gray-800/50 px-2 py-1 rounded">
+              <span class="text-gray-500">Date:</span>
+              <span :class="totalTargetsSummary.remaining <= 0 ? 'text-green-400' : 'text-orange-400'" class="font-semibold">
+                {{ totalTargetsSummary.estimatedDate }}
               </span>
             </div>
             <!-- Est. Hours in TR -->
@@ -254,7 +262,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, watch, ref } from 'vue';
-import { IconCheck } from '@tabler/icons-vue';
+import { IconCheck, IconClock } from '@tabler/icons-vue';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
 import { formatNumber } from '@/composables/format';
@@ -544,26 +552,42 @@ const totalTargetsSummary = computed(() => {
     hoursNeeded = days * 24;
   }
   
-  // Calculate estimated time (in days format)
+  // Calculate estimated time (in days and hours format)
   let estimatedTime = '-';
   if (remaining <= 0 && totalCost > 0) {
     estimatedTime = 'Ready!';
   } else if (remaining > 0 && fragsPerDay.value > 0) {
-    const days = remaining / fragsPerDay.value;
-    if (days < 1) {
-      const hours = days * 24;
+    const totalDays = remaining / fragsPerDay.value;
+    if (totalDays < 1) {
+      const hours = totalDays * 24;
       if (hours < 1) {
         const minutes = hours * 60;
         estimatedTime = `${Math.ceil(minutes)}m`;
       } else {
-        estimatedTime = `${hours.toFixed(1)}h`;
+        estimatedTime = `${Math.floor(hours)}h ${Math.round((hours % 1) * 60)}m`;
       }
-    } else if (days >= 365) {
-      const years = days / 365;
-      estimatedTime = `${years.toFixed(1)}y`;
+    } else if (totalDays >= 365) {
+      const years = Math.floor(totalDays / 365);
+      const remainingDays = Math.floor(totalDays % 365);
+      estimatedTime = remainingDays > 0 ? `${years}y ${remainingDays}d` : `${years}y`;
     } else {
-      estimatedTime = `${days.toFixed(1)}d`;
+      const days = Math.floor(totalDays);
+      const hours = Math.round((totalDays - days) * 24);
+      estimatedTime = hours > 0 ? `${days}d ${hours}h` : `${days}d`;
     }
+  }
+  
+  // Calculate estimated date (local date + time when target will be reached, without year)
+  let estimatedDate = '-';
+  if (remaining <= 0 && totalCost > 0) {
+    estimatedDate = 'Ready!';
+  } else if (hoursNeeded > 0) {
+    const targetDate = new Date();
+    targetDate.setTime(targetDate.getTime() + hoursNeeded * 60 * 60 * 1000);
+    // Format: day.month hour:minute (localized, without year)
+    const dateStr = targetDate.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' });
+    const timeStr = targetDate.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    estimatedDate = `${dateStr} ${timeStr}`;
   }
   
   // Calculate estimated hours in TR (current hours + hours needed = absolute hour)
@@ -581,6 +605,7 @@ const totalTargetsSummary = computed(() => {
     totalCost,
     remaining,
     estimatedTime,
+    estimatedDate,
     estimatedHoursInTR
   };
 });
