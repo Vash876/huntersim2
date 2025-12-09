@@ -88,7 +88,7 @@ export const MODIFIERS = {
   relics: [
     {
       id: 'relic_3',
-      name: 'Relic 3',
+      name: 'Relic #3',
       type: 'number',
       category: MODIFIER_CATEGORIES.RELICS,
       defaultValue: 0,
@@ -99,7 +99,7 @@ export const MODIFIERS = {
     },
     {
       id: 'relic_5',
-      name: 'Relic 5',
+      name: 'Relic #5',
       type: 'number',
       category: MODIFIER_CATEGORIES.RELICS,
       defaultValue: 0,
@@ -110,7 +110,7 @@ export const MODIFIERS = {
     },
     {
       id: 'relic_6',
-      name: 'Relic 6',
+      name: 'Relic #6',
       type: 'number',
       category: MODIFIER_CATEGORIES.RELICS,
       defaultValue: 0,
@@ -121,7 +121,7 @@ export const MODIFIERS = {
     },
     {
       id: 'relic_11',
-      name: 'Relic 11',
+      name: 'Relic #11',
       type: 'number',
       category: MODIFIER_CATEGORIES.RELICS,
       defaultValue: 0,
@@ -132,7 +132,7 @@ export const MODIFIERS = {
     },
     {
       id: 't2r8',
-      name: 'T2 Relic 8',
+      name: 'T2 Relic #8',
       type: 'number',
       category: MODIFIER_CATEGORIES.RELICS,
       defaultValue: 0,

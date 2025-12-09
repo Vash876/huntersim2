@@ -98,8 +98,16 @@
       >
         <!-- Compact Row: ID + Level + Target + Buy -->
         <div class="flex items-center gap-2">
-          <!-- Relic ID -->
-          <span class="text-white font-semibold font-mono text-xs w-8">{{ relic.id.toUpperCase() }}</span>
+          <!-- Relic ID with Icon -->
+          <div class="flex items-center gap-1 w-14">
+            <img 
+              v-if="hasRelicIcon(relic.id)"
+              :src="getRelicIconUrl(relic.id)" 
+              :alt="relic.id" 
+              class="w-5 h-5 object-contain"
+            />
+            <span class="text-white font-semibold font-mono text-xs">{{ relic.id.replace(/^r/i, '#') }}</span>
+          </div>
           
           <!-- Level Control -->
           <div class="flex items-center gap-1 flex-1">
@@ -241,6 +249,27 @@ const MODIFIER_TO_RELIC = {
   'relic_11': 'r11',
 };
 
+// Relic icon imports - add more as they become available
+const relicIcons = import.meta.glob('@/assets/relics/*.png', { eager: true, import: 'default' });
+
+// Get the filename for a relic icon (supports both T1: r1.png and T2: t2r1.png naming)
+function getRelicIconFilename(relicId) {
+  return `${relicId}.png`;
+}
+
+// Check if a relic has an icon available
+function hasRelicIcon(relicId) {
+  const filename = getRelicIconFilename(relicId);
+  return Object.keys(relicIcons).some(key => key.endsWith(`/${filename}`));
+}
+
+// Get the URL for a relic icon
+function getRelicIconUrl(relicId) {
+  const filename = getRelicIconFilename(relicId);
+  const key = Object.keys(relicIcons).find(k => k.endsWith(`/${filename}`));
+  return key ? relicIcons[key] : '';
+}
+
 // Handle fragments update
 function handleFragmentsUpdate(value) {
   missionPlannerStore.setCurrentFragments(value);
@@ -310,7 +339,18 @@ function getRelicMaxLevel(relicId) {
   return baseMax + exodusNode3Level;
 }
 
-// Get cost for next level from target level
+// Get cost for next level from current level (for buying)
+function getRelicNextCostFromCurrent(relicId) {
+  const currentLevel = getRelicLevel(relicId);
+  const maxLevel = getRelicMaxLevel(relicId);
+  if (currentLevel >= maxLevel) return Infinity;
+  
+  const costFn = RELIC_COSTS[relicId];
+  if (!costFn) return 0;
+  return costFn(currentLevel);
+}
+
+// Get cost for next level from target level (for display)
 function getRelicNextCost(relicId) {
   const targetLevel = getTargetLevel(relicId);
   const maxLevel = getRelicMaxLevel(relicId);
@@ -331,7 +371,7 @@ function canBuyNextLevel(relicId) {
 
 // Buy next level
 function buyNextLevel(relicId) {
-  const cost = getRelicNextCost(relicId);
+  const cost = getRelicNextCostFromCurrent(relicId);
   if (cost === Infinity) return;
   missionPlannerStore.purchaseRelicLevel(relicId, cost);
   

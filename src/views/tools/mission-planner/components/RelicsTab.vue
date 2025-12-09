@@ -126,9 +126,17 @@
                 hasTargetSet(relic.id) ? 'border-l-amber-500' : 'border-l-transparent'
               ]"
             >
-              <!-- ID -->
-              <td class="px-2 py-1.5 font-mono font-semibold text-white">
-                {{ relic.id.toUpperCase() }}
+              <!-- ID with Icon -->
+              <td class="px-2 py-1.5">
+                <div class="flex items-center gap-1.5">
+                  <img 
+                    v-if="hasRelicIcon(relic.id)"
+                    :src="getRelicIconUrl(relic.id)" 
+                    :alt="relic.id" 
+                    class="w-6 h-6 object-contain"
+                  />
+                  <span class="font-mono font-semibold text-white">{{ relic.id.replace(/^r/i, '#') }}</span>
+                </div>
               </td>
               
               <!-- Level Input -->
@@ -174,7 +182,7 @@
                     v-if="canBuyNextLevel(relic.id)"
                     @click="buyNextLevel(relic.id)"
                     class="p-1 rounded bg-green-900/40 hover:bg-green-600/40 text-green-400 border border-green-600/30 shadow-[0_0_6px_rgba(34,197,94,0.2)]"
-                    :title="`Buy level ${getRelicLevel(relic.id) + 1} for ${formatNumber(getRelicNextCost(relic.id))} frags`"
+                    :title="`Buy level ${getRelicLevel(relic.id) + 1} for ${formatNumber(getRelicNextCostFromCurrent(relic.id))} frags`"
                   >
                     <IconCheck size="16" />
                   </button>
@@ -311,6 +319,27 @@ const MODIFIER_TO_RELIC = {
   'relic_11': 'r11',
 };
 
+// Relic icon imports - add more as they become available
+const relicIcons = import.meta.glob('@/assets/relics/*.png', { eager: true, import: 'default' });
+
+// Get the filename for a relic icon (supports both T1: r1.png and T2: t2r1.png naming)
+function getRelicIconFilename(relicId) {
+  return `${relicId}.png`;
+}
+
+// Check if a relic has an icon available
+function hasRelicIcon(relicId) {
+  const filename = getRelicIconFilename(relicId);
+  return Object.keys(relicIcons).some(key => key.endsWith(`/${filename}`));
+}
+
+// Get the URL for a relic icon
+function getRelicIconUrl(relicId) {
+  const filename = getRelicIconFilename(relicId);
+  const key = Object.keys(relicIcons).find(k => k.endsWith(`/${filename}`));
+  return key ? relicIcons[key] : '';
+}
+
 // Check if a relic has a target level set (target > current level)
 function hasTargetSet(relicId) {
   const currentLevel = getRelicLevel(relicId);
@@ -387,7 +416,18 @@ function getRelicMaxLevel(relicId) {
   return baseMax + exodusNode3Level;
 }
 
-// Get cost for next level (from target level, not current level)
+// Get cost for next level from current level (for buying)
+function getRelicNextCostFromCurrent(relicId) {
+  const currentLevel = getRelicLevel(relicId);
+  const maxLevel = getRelicMaxLevel(relicId);
+  if (currentLevel >= maxLevel) return Infinity;
+  
+  const costFn = RELIC_COSTS[relicId];
+  if (!costFn) return 0;
+  return costFn(currentLevel);
+}
+
+// Get cost for next level (from target level, for display in "Next Cost" column)
 function getRelicNextCost(relicId) {
   const targetLevel = getTargetLevel(relicId);
   const maxLevel = getRelicMaxLevel(relicId);
@@ -410,7 +450,7 @@ function canBuyNextLevel(relicId) {
 
 // Buy next level - deduct cost from fragments and increase level
 function buyNextLevel(relicId) {
-  const cost = getRelicNextCost(relicId);
+  const cost = getRelicNextCostFromCurrent(relicId);
   if (cost === Infinity) return;
   
   // Use store function to handle purchase

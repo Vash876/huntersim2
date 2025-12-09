@@ -8,7 +8,7 @@
           <svg class="w-5 h-5 text-blue-300 fill-current flex-shrink-0" viewBox="0 0 133.33333 133.33333" xmlns="http://www.w3.org/2000/svg">
             <path d="M 48.700769,96.005782 17.470982,64.672447 h -0.833514 -0.833515 l -3.161868,3.365654 -3.161867,3.365653 8.572516,8.649398 8.572516,8.6494 -12.9764,12.976398 -12.97640104,12.9764 V 57.6639 0.67244981 H 62.984938 125.29742 L 109.6516,16.359141 94.005779,32.045834 v 1.296625 1.296626 l 18.939641,18.973501 18.93965,18.973501 -3.21566,3.422921 -3.21567,3.422922 L 96.052222,50.052189 66.6507,20.672449 h -1.423375 -1.423374 l -3.173289,3.377811 -3.173289,3.377811 22.274203,22.30315 22.274194,22.303149 -0.0505,8.652372 -0.0505,8.65237 -28.723499,-29.146653 -28.723424,-29.146653 -3.825034,3.664614 -3.825033,3.664615 37.932333,38.761633 37.932327,38.761642 -0.0421,0.7204 -0.0421,0.72041 -3.47623,3.95613 -3.47623,3.95613 L 63.152556,82.295242 20.669396,39.339114 h -1.099388 -1.099389 l -3.176071,3.380774 -3.176072,3.380773 36.943652,36.961331 36.943651,36.961338 v 1.45124 1.45125 l -2.43832,2.20665 -2.438321,2.20665 h -0.599291 -0.599291 z" />
           </svg>
-          <h1 class="text-lg font-bold text-white">Mission Planner</h1>
+          <h1 class="text-lg font-bold text-white">Mission & Relic Planner</h1>
         </div>
       </div>
 
@@ -116,50 +116,50 @@
           <!-- Personnel with Progress Bars -->
           <div class="flex items-center gap-4">
             <span class="text-gray-400 font-semibold">Personnel:</span>
-            <div class="flex gap-3">
+            <div class="flex gap-2">
               <!-- T1 Progress -->
-              <div class="flex items-center gap-1.5">
-                <span class="text-red-400 font-medium w-6">T1</span>
-                <div class="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div class="flex items-center gap-1.5 bg-red-950/20 border border-red-800/30 rounded-md px-2 py-1">
+                <span class="text-red-400 font-semibold w-5">T1</span>
+                <div class="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
                   <div 
-                    class="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full"
+                    class="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full transition-all duration-300"
                     :style="{ width: getPersonnelUsagePercent('T1') + '%' }"
                   ></div>
                 </div>
-                <span class="text-gray-300 text-[10px] w-16">{{ formatNumber(personnelUsed.T1) }}/{{ formatNumber(availablePersonnel.T1) }}</span>
+                <span class="text-gray-300 text-[10px] font-mono">{{ formatNumber(personnelUsed.T1) }}/{{ formatNumber(availablePersonnel.T1) }}</span>
               </div>
               <!-- T2 Progress -->
-              <div class="flex items-center gap-1.5">
-                <span class="text-orange-400 font-medium w-6">T2</span>
-                <div class="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div class="flex items-center gap-1.5 bg-orange-950/20 border border-orange-800/30 rounded-md px-2 py-1">
+                <span class="text-orange-400 font-semibold w-5">T2</span>
+                <div class="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
                   <div 
-                    class="h-full bg-gradient-to-r from-orange-600 to-orange-400 rounded-full"
+                    class="h-full bg-gradient-to-r from-orange-600 to-orange-400 rounded-full transition-all duration-300"
                     :style="{ width: getPersonnelUsagePercent('T2') + '%' }"
                   ></div>
                 </div>
-                <span class="text-gray-300 text-[10px] w-16">{{ formatNumber(personnelUsed.T2) }}/{{ formatNumber(availablePersonnel.T2) }}</span>
+                <span class="text-gray-300 text-[10px] font-mono">{{ formatNumber(personnelUsed.T2) }}/{{ formatNumber(availablePersonnel.T2) }}</span>
               </div>
               <!-- T3 Progress -->
-              <div class="flex items-center gap-1.5">
-                <span class="text-yellow-400 font-medium w-6">T3</span>
-                <div class="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div class="flex items-center gap-1.5 bg-yellow-950/20 border border-yellow-800/30 rounded-md px-2 py-1">
+                <span class="text-yellow-400 font-semibold w-5">T3</span>
+                <div class="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
                   <div 
-                    class="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full"
+                    class="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full transition-all duration-300"
                     :style="{ width: getPersonnelUsagePercent('T3') + '%' }"
                   ></div>
                 </div>
-                <span class="text-gray-300 text-[10px] w-16">{{ formatNumber(personnelUsed.T3) }}/{{ formatNumber(availablePersonnel.T3) }}</span>
+                <span class="text-gray-300 text-[10px] font-mono">{{ formatNumber(personnelUsed.T3) }}/{{ formatNumber(availablePersonnel.T3) }}</span>
               </div>
               <!-- T4 Progress -->
-              <div class="flex items-center gap-1.5">
-                <span class="text-green-400 font-medium w-6">T4</span>
-                <div class="w-20 h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div class="flex items-center gap-1.5 bg-green-950/20 border border-green-800/30 rounded-md px-2 py-1">
+                <span class="text-green-400 font-semibold w-5">T4</span>
+                <div class="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
                   <div 
-                    class="h-full bg-gradient-to-r from-green-600 to-green-400 rounded-full"
+                    class="h-full bg-gradient-to-r from-green-600 to-green-400 rounded-full transition-all duration-300"
                     :style="{ width: getPersonnelUsagePercent('T4') + '%' }"
                   ></div>
                 </div>
-                <span class="text-gray-300 text-[10px] w-16">{{ formatNumber(personnelUsed.T4) }}/{{ formatNumber(availablePersonnel.T4) }}</span>
+                <span class="text-gray-300 text-[10px] font-mono">{{ formatNumber(personnelUsed.T4) }}/{{ formatNumber(availablePersonnel.T4) }}</span>
               </div>
             </div>
           </div>

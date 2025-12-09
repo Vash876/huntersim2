@@ -163,8 +163,7 @@
                         <!-- Spezialfall für hoursInTR -->
                         <template v-if="boost.key === 'hoursInTR'">
                           <span class="text-yellow-400 font-medium">
-                            Cup-Multi: 
-                            {{ formatMultiplier(getBoostMultiplier(boost, currentBoosts[boost.key] || 0)) }}
+                            ×{{ getBoostMultiplier(boost, currentBoosts[boost.key] || 0).toFixed(4) }}
                           </span>
                         </template>
                         <!-- Boolean-Boosts: Zeige Multiplikator nur wenn aktiviert -->
@@ -180,7 +179,7 @@
                       <span class="text-white">
                         <!-- Spezialfall für hoursInTR -->
                         <template v-if="boost.key === 'hoursInTR'">
-                          <span class="text-yellow-400 font-medium">{{ formatMultiplier(getBoostMultiplier(boost, targetBoosts[boost.key] || 0, true)) }}</span>
+                          <span class="text-yellow-400 font-medium">×{{ getBoostMultiplier(boost, targetBoosts[boost.key] || 0, true).toFixed(4) }}</span>
                         </template>
                         <!-- Boolean-Boosts: Zeige Multiplikator nur wenn aktiviert -->
                         <template v-else-if="boost.type === 'boolean'">
