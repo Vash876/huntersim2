@@ -2,9 +2,10 @@
  * Formatiert eine Zahl in eine lesbare Form mit Suffixen (k, m, b, etc.)
  * 
  * @param {number} value - Die zu formatierende Zahl
+ * @param {number} decimals - Anzahl der Nachkommastellen (Standard: 2)
  * @returns {string} - Die formatierte Zahl als String
  */
-export function formatNumber(value) {
+export function formatNumber(value, decimals = 2) {
   if (typeof value !== 'number' || isNaN(value)) {
     return '0';
   }
@@ -16,7 +17,7 @@ export function formatNumber(value) {
   
   // Behandlung für kleine Werte zwischen 0.01 und 1
   if (Math.abs(value) < 1) {
-    return value.toFixed(2);
+    return value.toFixed(decimals);
   }
   
   const absValue = Math.abs(value);
@@ -29,19 +30,19 @@ export function formatNumber(value) {
   if (absValue >= 1e36) {
     const exponent = Math.floor(Math.log10(absValue));
     const mantissa = value / Math.pow(10, exponent);
-    return `${mantissa.toFixed(2)}e${exponent}`;
+    return `${mantissa.toFixed(decimals)}e${exponent}`;
   }
   
-  // Für Werte < 1000, zeige ohne Suffix - immer 2 Dezimalstellen
+  // Für Werte < 1000, zeige ohne Suffix
   if (tier === 0) {
-    return value.toFixed(2);
+    return value.toFixed(decimals);
   }
   
   const suffix = suffixes[tier];
   const scaledValue = value / Math.pow(10, tier * 3);
   
-  // Formatiere die skalierte Zahl mit 2 Dezimalstellen + Suffix
-  return `${scaledValue.toFixed(2)}${suffix}`;
+  // Formatiere die skalierte Zahl mit gewünschten Dezimalstellen + Suffix
+  return `${scaledValue.toFixed(decimals)}${suffix}`;
 }
 
 /**

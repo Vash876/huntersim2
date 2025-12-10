@@ -315,7 +315,7 @@
                     </select>
                   </td>
                   <td class="px-2 py-1 font-mono text-white">{{ mission.tag }}</td>
-                  <td class="px-2 py-1 text-center text-gray-400">{{ formatNumber(mission.maxCrew) }}</td>
+                  <td class="px-2 py-1 text-center text-gray-400">{{ formatNumber(mission.maxCrew, 0) }}</td>
                   <td class="px-2 py-1 text-center" :class="getLeftCrew(mission.tag, mission.maxCrew) > 0 ? 'text-yellow-400' : 'text-gray-500'">{{ getLeftCrew(mission.tag, mission.maxCrew) }}</td>
                   <td class="px-1 py-1">
                     <input
@@ -815,7 +815,7 @@ function updateSelectedCampaignAssignment(tier, value) {
 function getSelectedCampaignMaxCrew() {
   const campaign = missionPlannerStore.getSelectedCampaignData();
   if (!campaign) return '-';
-  return formatNumber(campaign.maxCrew);
+  return formatNumber(campaign.maxCrew, 0);
 }
 
 // Get selected campaign left crew

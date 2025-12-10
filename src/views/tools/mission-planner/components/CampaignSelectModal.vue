@@ -9,9 +9,9 @@
       @click.stop
     >
       <!-- Header -->
-      <div class="bg-gradient-to-r from-cyan-700 to-gray-800 p-3 border-b border-gray-600 flex justify-between items-center">
+      <div class="bg-gradient-to-r from-amber-700 to-gray-800 p-3 border-b border-gray-600 flex justify-between items-center">
         <h2 class="text-sm font-bold text-white flex items-center">
-          <IconTarget size="18" class="mr-2 text-cyan-400" />
+          <IconFlag size="18" class="mr-2 text-amber-400" />
           Select Campaign
         </h2>
         <button @click="closeModal" class="p-1.5 rounded-full hover:bg-gray-700 transition-colors">
@@ -21,16 +21,6 @@
 
       <!-- Content -->
       <div class="p-3 sm:p-4 max-h-[70vh] overflow-y-auto">
-        <!-- Total Campaign Fragments -->
-        <div class="bg-gray-900/50 rounded-lg p-3 mb-4 border border-gray-700/50">
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-300">Total Campaign Fragments (all 48)</span>
-            <span class="text-lg font-bold text-cyan-400 font-mono">
-              {{ missionPlannerStore.totalCampaignFragments.formatted }}
-            </span>
-          </div>
-        </div>
-
         <!-- Planet Sections -->
         <div class="space-y-3">
           <!-- Planet 1: Wasta-7 -->
@@ -47,7 +37,7 @@
                 class="py-1.5 rounded text-xs font-mono transition-colors text-center"
                 :class="getCampaignButtonClass(`C1-${n}`)"
               >
-                C1-{{ n }}
+                <span class="hidden sm:inline">C1-</span>{{ n }}
               </button>
             </div>
           </div>
@@ -66,7 +56,7 @@
                 class="py-1.5 rounded text-xs font-mono transition-colors text-center"
                 :class="getCampaignButtonClass(`C2-${n}`)"
               >
-                C2-{{ n }}
+                <span class="hidden sm:inline">C2-</span>{{ n }}
               </button>
             </div>
           </div>
@@ -85,7 +75,7 @@
                 class="py-1.5 rounded text-xs font-mono transition-colors text-center"
                 :class="getCampaignButtonClass(`C3-${n}`)"
               >
-                C3-{{ n }}
+                <span class="hidden sm:inline">C3-</span>{{ n }}
               </button>
             </div>
           </div>
@@ -104,7 +94,7 @@
                 class="py-1.5 rounded text-xs font-mono transition-colors text-center"
                 :class="getCampaignButtonClass(`C4-${n}`)"
               >
-                C4-{{ n }}
+                <span class="hidden sm:inline">C4-</span>{{ n }}
               </button>
             </div>
           </div>
@@ -132,7 +122,7 @@
 
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
-import { IconTarget, IconX, IconPlanet } from '@tabler/icons-vue';
+import { IconFlag, IconX, IconPlanet } from '@tabler/icons-vue';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 
 const props = defineProps({
