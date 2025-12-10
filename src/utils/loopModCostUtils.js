@@ -8,6 +8,7 @@ import Decimal from 'break_infinity.js';
 // Loop Mod Namen als Konstanten
 export const LOOP_MODS = {
   RULE_OF_CONSISTENCY: "Ultima LM: Rule of Consistency",
+  OUROBOROS_SHIP_EVOLUTION: "Ouroboros Ship Evolution",
   STELZI: "Stelzi"
 };
 
@@ -18,6 +19,11 @@ const LOOP_MOD_CONFIG = {
   [LOOP_MODS.RULE_OF_CONSISTENCY]: {
     baseExp: 5400,   // Basis-Exponent für Level 1: 1e5400
     incExp: 288      // Inkrementeller Exponent pro Level: +1e288
+  },
+  [LOOP_MODS.OUROBOROS_SHIP_EVOLUTION]: {
+    // MP-basierte Kosten (lineare Lookup-Tabelle, da Level 2+ noch unbekannt)
+    baseCost: 10624,  // Level 1 kostet 10624 MP
+    increment: 0      // Wird später angepasst wenn Level 2 bekannt ist
   },
   [LOOP_MODS.STELZI]: {
     baseCost: 3400,  // Basis-Kosten für Level 1: 3400
@@ -30,6 +36,10 @@ const LOOP_MOD_CONFIG = {
  * Format: [mod_name][level] = kostenstring
  */
 const LOOP_MOD_COST_LOOKUP = {
+  [LOOP_MODS.OUROBOROS_SHIP_EVOLUTION]: {
+    1: 10624,
+    // Level 2+ Kosten noch unbekannt - hier hinzufügen wenn bekannt
+  },
   [LOOP_MODS.STELZI]: {
     1: 3400,
     2: 4000,
@@ -69,6 +79,11 @@ function getLoopModCostDecimal(modName, level) {
   if (modName === LOOP_MODS.STELZI) {
     // Stelzi: Lineare Kostensteigerung
     // Level 1: 3400, Level 2: 4000 (+600), Level 3: 4600 (+600), etc.
+    const cost = config.baseCost + (level - 1) * config.increment;
+    return new Decimal(cost);
+  } else if (modName === LOOP_MODS.OUROBOROS_SHIP_EVOLUTION) {
+    // Ouroboros Ship Evolution: MP-basiert
+    // Für jetzt nur Level 1 bekannt, weitere Levels verwenden Lookup oder Formel
     const cost = config.baseCost + (level - 1) * config.increment;
     return new Decimal(cost);
   } else {
@@ -217,6 +232,74 @@ export function getMaxAffordableLoopModLevel(modName, currentLevel, currency) {
   const maxLevel = Math.floor((currencyExp - config.baseExp) / config.incExp + 1);
   
   return Math.max(currentLevel, maxLevel);
+}
+
+/**
+ * Berechnet das maximale Level basierend auf verfügbarer MP
+ * @param {string} modName - Name des Loop Mods
+ * @param {number} availableMP - Verfügbare MP
+ * @returns {number} - Maximales kaufbares Level (0 wenn keines kaufbar)
+ */
+export function getMaxLevelFromMP(modName, availableMP) {
+  if (!availableMP || availableMP <= 0) return 0;
+  if (!LOOP_MOD_CONFIG[modName]) return 0;
+  
+  // Für Rule of Consistency: MP ist der Exponent (z.B. 5400 für 1e5400)
+  if (modName === LOOP_MODS.RULE_OF_CONSISTENCY) {
+    const config = LOOP_MOD_CONFIG[modName];
+    // Formel: exponent = baseExp + (level - 1) * incExp
+    // Umgestellt: level = (exponent - baseExp) / incExp + 1
+    if (availableMP < config.baseExp) return 0;
+    const level = Math.floor((availableMP - config.baseExp) / config.incExp + 1);
+    return Math.max(0, level);
+  }
+  
+  // Für Ouroboros Ship Evolution: MP ist die direkte Währung
+  if (modName === LOOP_MODS.OUROBOROS_SHIP_EVOLUTION) {
+    const lookup = LOOP_MOD_COST_LOOKUP[modName];
+    let maxLevel = 0;
+    
+    // Durchsuche Lookup-Tabelle nach höchstem kaufbaren Level
+    for (const [level, cost] of Object.entries(lookup)) {
+      if (availableMP >= cost) {
+        maxLevel = Math.max(maxLevel, parseInt(level));
+      }
+    }
+    
+    return maxLevel;
+  }
+  
+  // Für andere Mods (Stelzi etc.): Lineare Berechnung
+  const config = LOOP_MOD_CONFIG[modName];
+  if (config.increment === 0) {
+    // Nur Level 1 möglich wenn genug MP
+    return availableMP >= config.baseCost ? 1 : 0;
+  }
+  
+  // Formel: cost = baseCost + (level - 1) * increment
+  // Umgestellt: level = (cost - baseCost) / increment + 1
+  if (availableMP < config.baseCost) return 0;
+  const level = Math.floor((availableMP - config.baseCost) / config.increment + 1);
+  return Math.max(0, level);
+}
+
+/**
+ * Gibt die MP-Kosten für ein bestimmtes Level zurück
+ * @param {string} modName - Name des Loop Mods
+ * @param {number} level - Das Level
+ * @returns {number} - MP-Kosten (oder Exponent für Rule of Consistency)
+ */
+export function getMPCostForLevel(modName, level) {
+  if (level <= 0) return 0;
+  
+  // Für Rule of Consistency: Gib den Exponenten zurück
+  if (modName === LOOP_MODS.RULE_OF_CONSISTENCY) {
+    return getRuleOfConsistencyExponent(level);
+  }
+  
+  // Für andere: Gib die direkten MP-Kosten zurück
+  const decimalCost = getLoopModCostDecimal(modName, level);
+  return decimalCost.toNumber();
 }
 
 // Export der Hilfsfunktionen

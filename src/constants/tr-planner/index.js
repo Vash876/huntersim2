@@ -1,6 +1,7 @@
 import { useTRPlannerStore } from '@/store/orbStore';
 import { getGemDataFromLocalStorage, getDefaultGemData } from '@/utils/gemDataUtils.js';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
+import { getMaxLevelFromMP, LOOP_MODS } from '@/utils/loopModCostUtils';
 
 // Context-aware gem data loading for plan calculations
 let currentPlanContext = null;
@@ -282,17 +283,70 @@ export const allBoosts = [
   },
   {
     id: 3,
-    key: 'lmConsistency',
-    label: 'Ultima LM: Rule of Consistency',
+    key: 'mp',
+    label: 'MP',
     category: 'time',
     unlock: 'temporal',
     unlock_level: 3,
     type: 'number',
     orbcalc: true,
-    tooltip: '0',
+    tooltip: (value, allValues) => {
+      // Max Consistency Level = 1 + plusUltima
+      const plusUltima = allValues?.plusUltima || 0;
+      const maxConsistencyLevel = 1 + plusUltima;
+      
+      const rawConsistencyLevel = getMaxLevelFromMP(LOOP_MODS.RULE_OF_CONSISTENCY, value);
+      const consistencyLevel = Math.min(rawConsistencyLevel, maxConsistencyLevel);
+      const evolutionLevel = getMaxLevelFromMP(LOOP_MODS.OUROBOROS_SHIP_EVOLUTION, value);
+      
+      let tooltip = `Rule of Consistency: Lv ${consistencyLevel}/${maxConsistencyLevel} (×${Math.pow(1.02, consistencyLevel).toFixed(4)})`;
+      tooltip += `<br>Ouroboros Ship Evolution: Lv ${evolutionLevel} (×${Math.pow(1.25, evolutionLevel).toFixed(2)})`;
+      return tooltip;
+    },
+    normalControl: 100,
+    fastControl: 1000,
+    multiplier: (value, allValues) => {
+      // MP ist ein Threshold - berechne welche Loop Mod Levels man sich leisten kann
+      
+      // Max Consistency Level = 1 + plusUltima
+      const plusUltima = allValues?.plusUltima || 0;
+      const maxConsistencyLevel = 1 + plusUltima;
+      
+      // Rule of Consistency: MP ist der Exponent (z.B. 5400 = 1e5400)
+      const rawConsistencyLevel = getMaxLevelFromMP(LOOP_MODS.RULE_OF_CONSISTENCY, value);
+      const consistencyLevel = Math.min(rawConsistencyLevel, maxConsistencyLevel);
+      const consistencyMultiplier = Math.pow(1.02, consistencyLevel);
+      
+      // Ouroboros Ship Evolution: MP ist direkter Kostenwert (z.B. 10624)
+      const evolutionLevel = getMaxLevelFromMP(LOOP_MODS.OUROBOROS_SHIP_EVOLUTION, value);
+      const evolutionMultiplier = Math.pow(1.25, evolutionLevel);
+      
+      // Kombinierter Multiplier
+      return consistencyMultiplier * evolutionMultiplier;
+    },
+    // Zeigt die berechneten Levels an
+    displayValue: (value, allValues) => {
+      const plusUltima = allValues?.plusUltima || 0;
+      const maxConsistencyLevel = 1 + plusUltima;
+      const rawConsistencyLevel = getMaxLevelFromMP(LOOP_MODS.RULE_OF_CONSISTENCY, value);
+      const consistencyLevel = Math.min(rawConsistencyLevel, maxConsistencyLevel);
+      const evolutionLevel = getMaxLevelFromMP(LOOP_MODS.OUROBOROS_SHIP_EVOLUTION, value);
+      return `RoC: Lv${consistencyLevel}/${maxConsistencyLevel}, OSE: Lv${evolutionLevel}`;
+    }
+  },
+  {
+    id: 42,
+    key: 'plusUltima',
+    label: '+Ultima',
+    category: 'time',
+    unlock: 'temporal',
+    unlock_level: 3,
+    type: 'number',
+    orbcalc: true,
+    tooltip: 'Increases the max Lvl of Ultima Loopmods (Rule of Consistency).',
     normalControl: 1,
-    fastControl: 10,
-    multiplier: (value) => Math.pow(1.02, value),
+    fastControl: 5,
+    multiplier: 1, // +Ultima selbst gibt keinen direkten Multiplier
   },
   // Milestones
   {
@@ -366,6 +420,20 @@ export const allBoosts = [
     tooltip: '0',
     multiplier: (value) => 1 + 0.02 * value,
     max: 25
+  },
+  {
+    id: 43,
+    key: 't2r8',
+    label: 'Tier 2 Relic #8',
+    category: 'relic',
+    unlock: 'power',
+    unlock_level: 3,
+    type: 'number',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '0',
+    fragmulti: (value) => Math.pow(1.021, value),
+    max: 21
   },
 
   // Inscriptions

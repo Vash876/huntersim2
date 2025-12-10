@@ -140,8 +140,8 @@
                     
                     <!-- Info-Icon mit Tooltip anzeigen, wenn Tooltip oder Anforderungen vorhanden sind -->
                     <InfoTooltip 
-                      v-if="hasTooltipContent(boost)"
-                      :content="getFullTooltipContent(boost)"
+                      v-if="hasTooltipContent(boost, targetBoosts[boost.key])"
+                      :content="getFullTooltipContent(boost, targetBoosts[boost.key])"
                       placement="right"
                       class="ml-1"
                     />
@@ -296,8 +296,8 @@
                       
                       <!-- Info-Icon mit Tooltip anzeigen, wenn Tooltip oder Anforderungen vorhanden sind -->
                       <InfoTooltip 
-                        v-if="hasTooltipContent(boost)"
-                        :content="getFullTooltipContent(boost)"
+                        v-if="hasTooltipContent(boost, targetBoosts[boost.key])"
+                        :content="getFullTooltipContent(boost, targetBoosts[boost.key])"
                         placement="right"
                         class="ml-1"
                       />
@@ -2196,16 +2196,23 @@ function getBoostRequirementText(boost) {
 }
 
 // Hilfsfunktionen für Tooltips
-function hasTooltipContent(boost) {
-  return (boost.tooltip && boost.tooltip !== '0') || boost.minRequirement;
+function hasTooltipContent(boost, value) {
+  // targetBoosts als allValues für die Tooltip-Funktion verwenden
+  const allValues = targetBoosts.value || {};
+  const tooltipValue = typeof boost.tooltip === 'function' ? boost.tooltip(value, allValues) : boost.tooltip;
+  return (tooltipValue && tooltipValue !== '0') || boost.minRequirement;
 }
 
-function getFullTooltipContent(boost) {
+function getFullTooltipContent(boost, value) {
   let content = '';
   
-  // Boost-Tooltip anzeigen, wenn vorhanden
-  if (boost.tooltip && boost.tooltip !== '0') {
-    content += boost.tooltip;
+  // targetBoosts als allValues für die Tooltip-Funktion verwenden
+  const allValues = targetBoosts.value || {};
+  
+  // Boost-Tooltip anzeigen, wenn vorhanden (kann Funktion oder String sein)
+  const tooltipValue = typeof boost.tooltip === 'function' ? boost.tooltip(value, allValues) : boost.tooltip;
+  if (tooltipValue && tooltipValue !== '0') {
+    content += tooltipValue;
   }
   
   // Anforderungen hinzufügen, falls vorhanden

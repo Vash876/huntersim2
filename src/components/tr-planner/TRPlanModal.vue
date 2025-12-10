@@ -314,8 +314,8 @@
                         
                         <!-- Info-Icon mit Tooltip -->
                         <InfoTooltip 
-                          v-if="hasTooltipContent(boost, step)"
-                          :content="getFullTooltipContent(boost, step)"
+                          v-if="hasTooltipContent(boost, step, getTargetLevel(step.id, boost.key))"
+                          :content="getFullTooltipContent(boost, step, getTargetLevel(step.id, boost.key))"
                           placement="right"
                           class="ml-1 mt-0.5"
                         />
@@ -3645,17 +3645,31 @@ function getBoostRequirementText(boost) {
 }
 
 // Hilfsfunktionen für Tooltips
-function hasTooltipContent(boost, step) {
-  return (boost.tooltip && boost.tooltip !== '0') || 
+function hasTooltipContent(boost, step, value) {
+  // Erstelle combinedStats für die Tooltip-Funktion (wie in getOrbMultiplierText)
+  const combinedStats = { ...step.stats };
+  Object.entries(step.targetLevels).forEach(([key, val]) => {
+    combinedStats[key] = val;
+  });
+  
+  const tooltipValue = typeof boost.tooltip === 'function' ? boost.tooltip(value, combinedStats) : boost.tooltip;
+  return (tooltipValue && tooltipValue !== '0') || 
          (boost.minRequirement && !isBoostAvailable(boost, step));
 }
 
-function getFullTooltipContent(boost, step) {
+function getFullTooltipContent(boost, step, value) {
   let content = '';
   
-  // Boost-Tooltip anzeigen, wenn vorhanden
-  if (boost.tooltip && boost.tooltip !== '0') {
-    content += boost.tooltip;
+  // Erstelle combinedStats für die Tooltip-Funktion (wie in getOrbMultiplierText)
+  const combinedStats = { ...step.stats };
+  Object.entries(step.targetLevels).forEach(([key, val]) => {
+    combinedStats[key] = val;
+  });
+  
+  // Boost-Tooltip anzeigen, wenn vorhanden (kann Funktion oder String sein)
+  const tooltipValue = typeof boost.tooltip === 'function' ? boost.tooltip(value, combinedStats) : boost.tooltip;
+  if (tooltipValue && tooltipValue !== '0') {
+    content += tooltipValue;
   }
   
   // Anforderungen hinzufügen, falls vorhanden und nicht erfüllt

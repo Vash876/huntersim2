@@ -2,6 +2,20 @@
 const changelog = 
 [
   {
+    version: '2.9.7',
+    date: '2025-12-10',
+    changes: [
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Changed Rule of Consistency to MP-based input and included Ouroboros Ship Evolution in calculation',
+          'Added +Ultima input to limit max level of Ultima Loop Mods (Rule of Consistency)',
+          'Added Tier 2 Relic #8 to the planner',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.9.6',
     date: '2025-12-06',
     changes: [
