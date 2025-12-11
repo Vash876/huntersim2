@@ -419,6 +419,37 @@
               <span class="text-xs text-gray-300">{{ modifier.name }}</span>
             </div>
           </div>
+          
+          <!-- Readonly modifier (Eternal Milestone) - now editable with temporary override -->
+          <div v-else-if="modifier.type === 'readonly'" 
+            class="bg-gray-800/60 rounded-lg p-3 border border-gray-700/40"
+            :class="!isEternalMilestoneUnlocked ? 'opacity-60' : ''"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full" 
+                  :class="isEternalMilestoneUnlocked && eternalMilestoneLevel > 0 ? 'bg-green-500' : 'bg-gray-600'"></div>
+                <span class="text-xs" :class="isEternalMilestoneUnlocked ? 'text-white' : 'text-gray-500'">
+                  {{ modifier.name }}
+                </span>
+                <span v-if="!isEternalMilestoneUnlocked" class="text-[9px] text-red-400">
+                  🔒 Lv{{ attractionGemLevel }}/3
+                </span>
+              </div>
+              <ToolValueControls
+                v-if="isEternalMilestoneUnlocked"
+                class="w-[120px]"
+                :value="eternalMilestoneLevel"
+                :min-value="0"
+                :max-value="1000"
+                :step="1"
+                :fast-step="10"
+                :show-fast-controls="true"
+                :auto-edit="true"
+                @update:value="updateModifier('eternal_milestone_override', $event)"
+              />
+            </div>
+          </div>
         </template>
       </template>
     </div>
@@ -501,10 +532,11 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { IconAdjustments, IconPlus, IconBrandSpeedtest } from '@tabler/icons-vue';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
+import { useHunterStore } from '@/store/hunterStore';
 import { formatNumber } from '@/composables/format';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import { MODIFIERS } from '../constants/modifiers';
@@ -526,8 +558,41 @@ const MODIFIER_ICON_MAP = {
 
 const missionPlannerStore = useMissionPlannerStore();
 const gemPlannerStore = useGemPlannerStore();
+const hunterStore = useHunterStore();
 
 const activeTab = ref('gameProgress');
+
+// Eternal Milestone from hunterStore (base value)
+const eternalMilestoneLevelBase = computed(() => {
+  return hunterStore.getUpgradeValue('shardmilestones', 'm0') || 0;
+});
+
+// Eternal Milestone - use override if set, otherwise base value
+const eternalMilestoneLevel = computed(() => {
+  const override = missionPlannerStore.modifierValues?.eternal_milestone_override;
+  if (override !== undefined && override !== null) {
+    return override;
+  }
+  return eternalMilestoneLevelBase.value;
+});
+
+// Initialize eternal milestone override on mount
+onMounted(() => {
+  // Set initial override value from hunterStore if not already set
+  if (missionPlannerStore.modifierValues?.eternal_milestone_override === undefined) {
+    missionPlannerStore.updateModifier('eternal_milestone_override', eternalMilestoneLevelBase.value);
+  }
+});
+
+// Attraction Gem Level (required Level 3 to unlock Eternal Milestone)
+const attractionGemLevel = computed(() => {
+  return gemPlannerStore.gemStates?.attraction?.level || 0;
+});
+
+// Check if Eternal Milestone is unlocked (Attraction Gem Level 3+)
+const isEternalMilestoneUnlocked = computed(() => {
+  return attractionGemLevel.value >= 3;
+});
 
 const tabs = [
   { id: 'gameProgress', label: 'Progress', activeClass: 'bg-gray-700/50 text-white' },

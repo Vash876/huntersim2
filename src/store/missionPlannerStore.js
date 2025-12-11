@@ -217,13 +217,17 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       fragmentation_pack: modifierValues.value?.fragmentation_pack || false,
     };
     
-    // Get Eternal Milestone level from hunterStore (id: m0)
+    // Get Eternal Milestone level - prefer override from modifierValues, fallback to hunterStore
     let eternalMilestoneLevel = 0;
-    try {
-      const hunterStore = useHunterStore();
-      eternalMilestoneLevel = hunterStore.getUpgradeValue('shardmilestones', 'm0') || 0;
-    } catch (error) {
-      console.warn('Could not get Eternal Milestone level:', error);
+    if (modifierValues.value?.eternal_milestone_override !== undefined && modifierValues.value?.eternal_milestone_override !== null) {
+      eternalMilestoneLevel = modifierValues.value.eternal_milestone_override;
+    } else {
+      try {
+        const hunterStore = useHunterStore();
+        eternalMilestoneLevel = hunterStore.getUpgradeValue('shardmilestones', 'm0') || 0;
+      } catch (error) {
+        console.warn('Could not get Eternal Milestone level:', error);
+      }
     }
     
     // Get Attraction Gem level from gemPlannerStore (required Level 3 to unlock Eternal Milestone)

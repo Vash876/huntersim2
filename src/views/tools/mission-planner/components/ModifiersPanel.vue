@@ -343,7 +343,7 @@
                 </label>
               </div>
               
-              <!-- Readonly modifier (Eternal Milestone) -->
+              <!-- Readonly modifier (Eternal Milestone) - now editable with temporary override -->
               <div v-else-if="modifier.type === 'readonly'" 
                 class="flex items-center justify-between py-1.5 px-2 rounded"
                 :class="isEternalMilestoneUnlocked ? 'bg-gray-800/50' : 'bg-gray-800/30 opacity-60'"
@@ -358,9 +358,18 @@
                     🔒 Lv{{ attractionGemLevel }}/3
                   </span>
                 </div>
-                <div v-if="isEternalMilestoneUnlocked" class="flex items-center space-x-1">
-                  <span class="text-[10px] font-mono text-blue-400">Lv{{ eternalMilestoneLevel }}</span>
-                </div>
+                <ToolValueControls
+                  v-if="isEternalMilestoneUnlocked"
+                  class="w-[160px]"
+                  :value="eternalMilestoneLevel"
+                  :min-value="0"
+                  :max-value="1000"
+                  :step="1"
+                  :fast-step="10"
+                  :show-fast-controls="true"
+                  :auto-edit="true"
+                  @update:value="updateModifier('eternal_milestone_override', $event)"
+                />
               </div>
             </template>
           </div>
@@ -623,7 +632,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { IconAdjustments, IconBrandSpeedtest, IconPlus } from '@tabler/icons-vue';
 import { MODIFIERS } from '@/views/tools/mission-planner/constants/modifiers';
 import { getRelicMaxLevel as getRelicMaxLevelFromData } from '@/views/tools/mission-planner/constants/relics';
@@ -655,9 +664,26 @@ const hunterStore = useHunterStore();
 const modifiers = MODIFIERS;
 const activeTab = ref('gameProgress');
 
-// Eternal Milestone from hunterStore (read-only)
-const eternalMilestoneLevel = computed(() => {
+// Eternal Milestone from hunterStore (base value)
+const eternalMilestoneLevelBase = computed(() => {
   return hunterStore.getUpgradeValue('shardmilestones', 'm0') || 0;
+});
+
+// Eternal Milestone - use override if set, otherwise base value
+const eternalMilestoneLevel = computed(() => {
+  const override = missionPlannerStore.modifierValues?.eternal_milestone_override;
+  if (override !== undefined && override !== null) {
+    return override;
+  }
+  return eternalMilestoneLevelBase.value;
+});
+
+// Initialize eternal milestone override on mount
+onMounted(() => {
+  // Set initial override value from hunterStore if not already set
+  if (missionPlannerStore.modifierValues?.eternal_milestone_override === undefined) {
+    missionPlannerStore.updateModifier('eternal_milestone_override', eternalMilestoneLevelBase.value);
+  }
 });
 
 // Attraction Gem Level (required Level 3 to unlock Eternal Milestone)
