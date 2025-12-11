@@ -13,6 +13,18 @@ const changelog =
           'Added Tier 2 Relic #8 to the planner',
         ]
       },
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Fixed incorrect display of Temporal Gem Nodes in Override Modal',
+        ]
+      },
+      {
+        text: 'm0 Cost Overview',
+        subItems: [
+          'Adjusted costs',
+        ]
+      },
     ]
   },
   {

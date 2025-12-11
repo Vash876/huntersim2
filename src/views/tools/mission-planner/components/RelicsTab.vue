@@ -139,9 +139,11 @@
                 <div class="flex items-center gap-1.5">
                   <img 
                     v-if="hasRelicIcon(relic.id)"
+                    :ref="el => setRelicIconRef(el, relic.id)"
                     :src="getRelicIconUrl(relic.id)" 
                     :alt="relic.id" 
-                    class="w-6 h-6 object-contain"
+                    :data-description="relic.description"
+                    class="w-6 h-6 object-contain cursor-help"
                   />
                   <span class="font-mono font-semibold text-white">{{ relic.id.replace(/^r/i, '#') }}</span>
                 </div>
@@ -261,7 +263,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, watch, ref } from 'vue';
+import { computed, onMounted, onUnmounted, watch, ref, nextTick } from 'vue';
 import { IconCheck, IconClock } from '@tabler/icons-vue';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
@@ -275,6 +277,7 @@ import {
 } from '../constants/relics';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
+import tippy from 'tippy.js';
 
 // Stores
 const missionPlannerStore = useMissionPlannerStore();
@@ -329,6 +332,46 @@ const MODIFIER_TO_RELIC = {
 
 // Relic icon imports - add more as they become available
 const relicIcons = import.meta.glob('@/assets/relics/*.png', { eager: true, import: 'default' });
+
+// Tippy instances for relic icons
+const relicIconRefs = ref({});
+const tippyInstances = ref({});
+
+// Set ref for relic icon and create tippy tooltip
+function setRelicIconRef(el, relicId) {
+  if (el) {
+    relicIconRefs.value[relicId] = el;
+    // Create tippy instance if it doesn't exist
+    nextTick(() => {
+      if (!tippyInstances.value[relicId] && el.dataset.description) {
+        tippyInstances.value[relicId] = tippy(el, {
+          content: el.dataset.description,
+          allowHTML: true,
+          theme: 'huntersim',
+          placement: 'right',
+          arrow: false,
+          animation: 'fade',
+          maxWidth: 250,
+          trigger: 'mouseenter click',
+          touch: true,
+          interactive: true,
+          interactiveBorder: 10,
+          zIndex: 9999,
+          appendTo: document.body,
+          delay: [100, 0],
+          duration: [200, 0]
+        });
+      }
+    });
+  }
+}
+
+// Cleanup tippy instances on unmount
+onUnmounted(() => {
+  Object.values(tippyInstances.value).forEach(instance => {
+    if (instance) instance.destroy();
+  });
+});
 
 // Get the filename for a relic icon (supports both T1: r1.png and T2: t2r1.png naming)
 function getRelicIconFilename(relicId) {

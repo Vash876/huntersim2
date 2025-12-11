@@ -466,6 +466,18 @@ function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
       upgrades: {
       }
     },
+    temporal: {
+      level: 'temporal_level',
+      nodes: {
+        gem1: 'temporal_gem1',
+        gem2: 'temporal_gem2',
+        gem3: 'temporal_gem3',
+        gem4: 'temporal_gem4',
+        gem5: 'temporal_gem5',
+        gem6: 'temporal_gem6',
+      },
+      upgrades: GEM_UPGRADE_MAPPING // Verwende zentrales Mapping
+    },
     attraction: {
       level: 'attraction_level',
       nodes: {

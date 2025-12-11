@@ -102,9 +102,11 @@
           <div class="flex items-center gap-1 w-14">
             <img 
               v-if="hasRelicIcon(relic.id)"
+              :ref="el => setRelicIconRef(el, relic.id)"
               :src="getRelicIconUrl(relic.id)" 
               :alt="relic.id" 
-              class="w-6 h-6 object-contain"
+              :data-description="RELICS[relic.id]?.description"
+              class="w-6 h-6 object-contain cursor-help"
             />
             <span class="text-white font-semibold font-mono text-xs">{{ relic.id.replace(/^r/i, '#') }}</span>
           </div>
@@ -127,8 +129,7 @@
           </div>
           
           <!-- Target Control -->
-          <div class="flex items-center gap-1 flex-1">
-            <span class="text-[9px] text-cyan-500">→</span>
+          <div class="flex items-center flex-1">
             <ToolValueControls
               :value="getTargetLevel(relic.id)"
               @update:value="updateTargetLevel(relic.id, $event)"
@@ -189,7 +190,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue';
 import { IconCheck, IconClock } from '@tabler/icons-vue';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { formatNumber } from '@/composables/format';
@@ -197,10 +198,12 @@ import {
   getTier1Relics, 
   calculateTotalCost, 
   getRelicMaxLevel as getRelicMaxLevelFromData,
-  RELIC_COSTS
+  RELIC_COSTS,
+  RELICS
 } from '../constants/relics';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
+import tippy from 'tippy.js';
 
 const missionPlannerStore = useMissionPlannerStore();
 
@@ -218,12 +221,16 @@ onMounted(() => {
   }, 5000);
 });
 
-// Cleanup interval on unmount
+// Cleanup interval and tippy instances on unmount
 onUnmounted(() => {
   if (liveUpdateInterval) {
     clearInterval(liveUpdateInterval);
     liveUpdateInterval = null;
   }
+  // Destroy all tippy instances
+  Object.values(tippyInstances.value).forEach(instance => {
+    if (instance) instance.destroy();
+  });
 });
 
 // Relic levels from store
@@ -251,6 +258,38 @@ const MODIFIER_TO_RELIC = {
 
 // Relic icon imports - add more as they become available
 const relicIcons = import.meta.glob('@/assets/relics/*.png', { eager: true, import: 'default' });
+
+// Tippy instances for relic icons
+const relicIconRefs = ref({});
+const tippyInstances = ref({});
+
+// Set ref for relic icon and create tippy tooltip
+function setRelicIconRef(el, relicId) {
+  if (el) {
+    relicIconRefs.value[relicId] = el;
+    nextTick(() => {
+      if (!tippyInstances.value[relicId] && el.dataset.description) {
+        tippyInstances.value[relicId] = tippy(el, {
+          content: el.dataset.description,
+          allowHTML: true,
+          theme: 'huntersim',
+          placement: 'right',
+          arrow: false,
+          animation: 'fade',
+          maxWidth: 200,
+          trigger: 'mouseenter click',
+          touch: true,
+          interactive: true,
+          interactiveBorder: 10,
+          zIndex: 9999,
+          appendTo: document.body,
+          delay: [100, 0],
+          duration: [200, 0]
+        });
+      }
+    });
+  }
+}
 
 // Get the filename for a relic icon (supports both T1: r1.png and T2: t2r1.png naming)
 function getRelicIconFilename(relicId) {
