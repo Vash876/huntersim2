@@ -543,6 +543,20 @@ const tabs = [
 // Modifiers data
 const modifiers = MODIFIERS;
 
+// Map gem node IDs to gemPlannerStore format
+const GEM_NODE_MAPPING = {
+  'attraction_node_1': { gemId: 'attraction', nodeIndex: 0 },
+  'attraction_node_4': { gemId: 'attraction', nodeIndex: 3 },
+  'creation_node_5': { gemId: 'creation', nodeIndex: 4 },
+  'exodus_node_2': { gemId: 'exodus', nodeIndex: 1 },
+  'exodus_node_3': { gemId: 'exodus', nodeIndex: 2 },
+  'power_node_1': { gemId: 'power', nodeIndex: 0 },
+  'power_node_2': { gemId: 'power', nodeIndex: 1 },
+  'power_node_3': { gemId: 'power', nodeIndex: 2 },
+  'power_node_4': { gemId: 'power', nodeIndex: 3 },
+  'power_node_5': { gemId: 'power', nodeIndex: 4 }
+};
+
 // Gems grouped by type (filter for readonly gem nodes only)
 const gemsByType = computed(() => {
   const gems = modifiers.gems || [];
@@ -555,9 +569,15 @@ const gemsByType = computed(() => {
   };
 });
 
-// Check if gem node is active
-function isGemNodeActive(nodeId) {
-  return missionPlannerStore.modifierValues[nodeId] === true;
+// Check if a gem node is active
+function isGemNodeActive(modifierId) {
+  const mapping = GEM_NODE_MAPPING[modifierId];
+  if (!mapping) return false;
+  
+  const gemState = gemPlannerStore.gemStates?.[mapping.gemId];
+  if (!gemState || !gemState.nodes) return false;
+  
+  return gemState.nodes[mapping.nodeIndex] === true;
 }
 
 // Get the correct URL for a modifier icon
