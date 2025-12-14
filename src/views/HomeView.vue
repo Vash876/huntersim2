@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.9.8',
+    date: '2025-12-14',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Integrated Exodus GN#3',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.9.7',
     date: '2025-12-10',
     changes: [

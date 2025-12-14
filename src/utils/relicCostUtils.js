@@ -2,6 +2,42 @@
  * Gemeinsame Basisfunktionen für die Berechnung von Relics-Kosten
  */
 
+// Tier 1 Relic IDs
+const TIER_1_RELIC_IDS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14', 'r15', 'r16', 'r17', 'r18', 'r19', 'r20'];
+
+/**
+ * Berechnet den Max-Level-Bonus für Tier 1 Relics basierend auf res_ultima
+ * @param {number} resUltimaLevel - Der aktuelle res_ultima Wert (z.B. 300000, 600000, etc.)
+ * @returns {number} - Der Bonus auf das Max-Level (1 pro 300000 res_ultima)
+ */
+export function getTier1RelicMaxLevelBonus(resUltimaLevel) {
+  if (!resUltimaLevel || resUltimaLevel <= 0) return 0;
+  return Math.floor(resUltimaLevel / 300000);
+}
+
+/**
+ * Prüft ob ein Relic ein Tier 1 Relic ist
+ * @param {string} relicId - Die Relic ID (z.B. 'r4', 'r7', etc.)
+ * @returns {boolean} - True wenn Tier 1 Relic
+ */
+export function isTier1Relic(relicId) {
+  return TIER_1_RELIC_IDS.includes(relicId);
+}
+
+/**
+ * Berechnet das effektive Max-Level für ein Relic unter Berücksichtigung des res_ultima Bonus
+ * @param {string} relicId - Die Relic ID (z.B. 'r4', 'r7', etc.)
+ * @param {number} baseMaxLevel - Das Basis Max-Level des Relics
+ * @param {number} resUltimaLevel - Der aktuelle res_ultima Wert
+ * @returns {number} - Das effektive Max-Level
+ */
+export function getEffectiveRelicMaxLevel(relicId, baseMaxLevel, resUltimaLevel = 0) {
+  if (!isTier1Relic(relicId)) {
+    return baseMaxLevel;
+  }
+  return baseMaxLevel + getTier1RelicMaxLevelBonus(resUltimaLevel);
+}
+
 /**
  * Relic 4 Kosten berechnen
  * @param {number} level - Das aktuelle Level

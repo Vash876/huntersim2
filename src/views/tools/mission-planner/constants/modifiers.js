@@ -140,6 +140,8 @@ export const MODIFIERS = {
       max: 21,
       type: 'all_frags',
       multiplier: 1.0,
+      unlock_gem: 'power',
+      unlock_lvl: 3,
     }
   ],
 
@@ -175,7 +177,8 @@ export const MODIFIERS = {
       defaultValue: 0,
       min: 0,
       max: 10000,
-      description: 'Number of completed campaigns (for Boon: Eternity)'
+      description: 'Number of completed campaigns (for Boon: Eternity)',
+      unlock_boon: 'eternity'
     },
     {
       id: 'ship_installs',
@@ -185,7 +188,8 @@ export const MODIFIERS = {
       defaultValue: 0,
       min: 0,
       max: 10000,
-      description: 'Number of Ouroboros Ship Installs (for Boon: Hegemony)'
+      description: 'Number of Ouroboros Ship Installs (for Boon: Hegemony)',
+      unlock_boon: 'hegemony'
     }
   ],
 
@@ -213,7 +217,7 @@ export const MODIFIERS = {
     },
     {
       id: 'inscryption_106',
-      name: 'I106: T1 Power',
+      name: 'i106: T1 Power',
       type: 'number',
       category: MODIFIER_CATEGORIES.INSCRYPTIONS,
       defaultValue: 0,
@@ -369,7 +373,9 @@ export const MODIFIERS = {
       type: 'readonly',
       category: MODIFIER_CATEGORIES.GEMS,
       defaultValue: false,
-      description: '+150 T3 personnel, +3 power for T3, farm frags x2'
+      description: '+150 T3 personnel, +3 power for T3, farm frags x2',
+      unlock_gem: 'exodus',
+      unlock_lvl: 5,
     },
     {
       id: 'power_node_5',
@@ -377,7 +383,9 @@ export const MODIFIERS = {
       type: 'readonly',
       category: MODIFIER_CATEGORIES.GEMS,
       defaultValue: false,
-      description: '+100 T4 personnel, +4 power for T4'
+      description: '+100 T4 personnel, +4 power for T4',
+      unlock_gem: 'exodus',
+      unlock_lvl: 5,
     }
   ],
 
@@ -391,7 +399,9 @@ export const MODIFIERS = {
       defaultValue: 0,
       min: 0,
       max: 1000,
-      description: 'Adds flat farm fragments (level * 0.0001 + milestones * 0.0005)'
+      description: 'Adds flat farm fragments',
+      unlock_gem: 'exodus',
+      unlock_lvl: 4,
     },
     {
       id: 'galactic_fragment_magnet',
@@ -401,7 +411,9 @@ export const MODIFIERS = {
       defaultValue: 0,
       min: 0,
       max: 1000,
-      description: 'Multiplies campaign fragments (1.01^level * 1.08^milestones)'
+      description: 'Multiplies campaign fragments ',
+      unlock_gem: 'exodus',
+      unlock_lvl: 4,
     }
   ],
 
@@ -413,7 +425,7 @@ export const MODIFIERS = {
       type: 'boolean',
       category: MODIFIER_CATEGORIES.OTHER,
       defaultValue: false,
-      description: 'x2 farm fragments when active'
+      description: 'x2 farm fragments'
     },
     {
       id: 'fragmentation_pack',
@@ -421,7 +433,7 @@ export const MODIFIERS = {
       type: 'boolean',
       category: MODIFIER_CATEGORIES.OTHER,
       defaultValue: false,
-      description: 'x1.25 all fragments (farm + campaign) when active'
+      description: 'x1.25 all fragments (farm + campaign)'
     },
     {
       id: 'eternal_milestone',
@@ -429,7 +441,9 @@ export const MODIFIERS = {
       type: 'readonly',
       category: MODIFIER_CATEGORIES.OTHER,
       defaultValue: 0,
-      description: 'x1.011 campaign fragments per level (from Milestones)'
+      description: 'x1.011 campaign fragments per level',
+      unlock_gem: 'attraction',
+      unlock_lvl: 3,
     }
   ]
 };

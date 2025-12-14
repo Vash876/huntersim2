@@ -18,6 +18,7 @@
       :level="item.type === 'boolean' ? null : getLevel({ id: item.id })"
       :maxLevel="item.type === 'boolean' ? null : item.maxLevel"
       :color="color"
+      :step="item.step || 1"
     />
 
     <!-- Content Area -->
@@ -63,10 +64,10 @@
           'opacity-20 cursor-not-allowed hover:bg-gray-900': getLevel({ id: item.id }) <= 0
         }"
         style="min-width: 2.5rem;"
-        @mousedown="$event => handleStart($event, decrementFast, { id: item.id, maxLevel: item.maxLevel })"
+        @mousedown="$event => handleStart($event, decrementFast, { id: item.id, maxLevel: item.maxLevel, step: item.step })"
         @mouseup="$event => handleEnd($event, { id: item.id })"
         @mouseleave="$event => handleEnd($event, { id: item.id })"
-        @touchstart.prevent="$event => handleStart($event, decrementFast, { id: item.id, maxLevel: item.maxLevel })"
+        @touchstart.prevent="$event => handleStart($event, decrementFast, { id: item.id, maxLevel: item.maxLevel, step: item.step })"
         @touchend.prevent="$event => handleEnd($event, { id: item.id })"
         @touchcancel.prevent="$event => handleEnd($event, { id: item.id })"
         @touchmove="$event => handleTouchMove($event, { id: item.id })"
@@ -85,10 +86,10 @@
           'opacity-20 cursor-not-allowed hover:bg-gray-900': getLevel({ id: item.id }) <= 0
         }"
         style="min-width: 2.5rem;"
-        @mousedown="$event => handleStart($event, decrement, { id: item.id, maxLevel: item.maxLevel })"
+        @mousedown="$event => handleStart($event, decrement, { id: item.id, maxLevel: item.maxLevel, step: item.step })"
         @mouseup="$event => handleEnd($event, { id: item.id })"
         @mouseleave="$event => handleEnd($event, { id: item.id })"
-        @touchstart.prevent="$event => handleStart($event, decrement, { id: item.id, maxLevel: item.maxLevel })"
+        @touchstart.prevent="$event => handleStart($event, decrement, { id: item.id, maxLevel: item.maxLevel, step: item.step })"
         @touchend.prevent="$event => handleEnd($event, { id: item.id })"
         @touchcancel.prevent="$event => handleEnd($event, { id: item.id })"
         @touchmove="$event => handleTouchMove($event, { id: item.id })"
@@ -112,10 +113,10 @@
           'opacity-20 cursor-not-allowed hover:bg-gray-900': isMaxReached
         }"
         style="min-width: 2.5rem;"
-        @mousedown="$event => handleStart($event, increment, { id: item.id, maxLevel: item.maxLevel })"
+        @mousedown="$event => handleStart($event, increment, { id: item.id, maxLevel: item.maxLevel, step: item.step })"
         @mouseup="$event => handleEnd($event, { id: item.id })"
         @mouseleave="$event => handleEnd($event, { id: item.id })"
-        @touchstart.prevent="$event => handleStart($event, increment, { id: item.id, maxLevel: item.maxLevel })"
+        @touchstart.prevent="$event => handleStart($event, increment, { id: item.id, maxLevel: item.maxLevel, step: item.step })"
         @touchend.prevent="$event => handleEnd($event, { id: item.id })"
         @touchcancel.prevent="$event => handleEnd($event, { id: item.id })"
         @touchmove="$event => handleTouchMove($event, { id: item.id })"
@@ -131,10 +132,10 @@
           'opacity-20 cursor-not-allowed hover:bg-gray-900': isMaxReached
         }"
         style="min-width: 2.5rem;"
-        @mousedown="$event => handleStart($event, incrementFast, { id: item.id, maxLevel: item.maxLevel })"
+        @mousedown="$event => handleStart($event, incrementFast, { id: item.id, maxLevel: item.maxLevel, step: item.step })"
         @mouseup="$event => handleEnd($event, { id: item.id })"
         @mouseleave="$event => handleEnd($event, { id: item.id })"
-        @touchstart.prevent="$event => handleStart($event, incrementFast, { id: item.id, maxLevel: item.maxLevel })"
+        @touchstart.prevent="$event => handleStart($event, incrementFast, { id: item.id, maxLevel: item.maxLevel, step: item.step })"
         @touchend.prevent="$event => handleEnd($event, { id: item.id })"
         @touchcancel.prevent="$event => handleEnd($event, { id: item.id })"
         @touchmove="$event => handleTouchMove($event, { id: item.id })"

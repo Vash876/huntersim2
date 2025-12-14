@@ -93,7 +93,7 @@
       <!-- Relics Tab -->
       <template v-if="activeTab === 'relics'">
         <div 
-          v-for="modifier in modifiers.relics" 
+          v-for="modifier in unlockedRelics" 
           :key="modifier.id"
           class="bg-gray-800/60 rounded-lg p-3 border border-gray-700/40"
         >
@@ -150,7 +150,7 @@
       <!-- Boons Tab -->
       <template v-if="activeTab === 'boons'">
         <div 
-          v-for="modifier in modifiers.mods" 
+          v-for="modifier in unlockedMods" 
           :key="modifier.id"
           class="bg-gray-800/60 rounded-lg p-3 border border-gray-700/40"
         >
@@ -211,7 +211,7 @@
       <!-- Gadgets Tab -->
       <template v-if="activeTab === 'gadgets'">
         <div 
-          v-for="modifier in modifiers.gadgets" 
+          v-for="modifier in unlockedGadgets" 
           :key="modifier.id"
           class="bg-gray-800/60 rounded-lg p-3 border border-gray-700/40"
         >
@@ -402,7 +402,7 @@
 
       <!-- Other Tab -->
       <template v-if="activeTab === 'other'">
-        <template v-for="modifier in modifiers.other" :key="modifier.id">
+        <template v-for="modifier in unlockedOther" :key="modifier.id">
           <!-- Boolean toggle -->
           <div v-if="modifier.type === 'boolean'" 
             class="bg-gray-800/60 rounded-lg p-3 border border-gray-700/40"
@@ -427,8 +427,6 @@
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full" 
-                  :class="isEternalMilestoneUnlocked && eternalMilestoneLevel > 0 ? 'bg-green-500' : 'bg-gray-600'"></div>
                 <span class="text-xs" :class="isEternalMilestoneUnlocked ? 'text-white' : 'text-gray-500'">
                   {{ modifier.name }}
                 </span>
@@ -540,6 +538,7 @@ import { useHunterStore } from '@/store/hunterStore';
 import { formatNumber } from '@/composables/format';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import { MODIFIERS } from '../constants/modifiers';
+import { ALL_LOOPMODS } from '../constants/loopmods';
 import { getNextLevelCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, calcGadgetCostDifference, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import { RELIC_COSTS } from '../constants/relics';
@@ -625,7 +624,7 @@ const GEM_NODE_MAPPING = {
 // Gems grouped by type (filter for readonly gem nodes only)
 const gemsByType = computed(() => {
   const gems = modifiers.gems || [];
-  const readonlyGems = gems.filter(m => m.type === 'readonly');
+  const readonlyGems = gems.filter(m => m.type === 'readonly' && isModifierUnlocked(m));
   return {
     attraction: readonlyGems.filter(m => m.id.startsWith('attraction_')),
     creation: readonlyGems.filter(m => m.id.startsWith('creation_')),
@@ -633,6 +632,51 @@ const gemsByType = computed(() => {
     power: readonlyGems.filter(m => m.id.startsWith('power_')),
   };
 });
+
+// ============================================
+// MODIFIER UNLOCK CONDITIONS
+// ============================================
+
+/**
+ * Check if a modifier is unlocked based on its unlock conditions
+ * @param {object} modifier - The modifier object with optional unlock_gem, unlock_lvl, unlock_boon
+ * @returns {boolean} - Whether the modifier is unlocked
+ */
+function isModifierUnlocked(modifier) {
+  // If no unlock conditions, it's always unlocked
+  if (!modifier.unlock_gem && !modifier.unlock_boon) {
+    return true;
+  }
+  
+  // Check gem unlock condition
+  if (modifier.unlock_gem && modifier.unlock_lvl !== undefined) {
+    const gemLevel = gemPlannerStore.gemStates?.[modifier.unlock_gem]?.level || 0;
+    if (gemLevel < modifier.unlock_lvl) {
+      return false;
+    }
+  }
+  
+  // Check boon unlock condition (requires enough MP to unlock the boon)
+  if (modifier.unlock_boon) {
+    const boonId = `boon_${modifier.unlock_boon}`;
+    const boonData = ALL_LOOPMODS[boonId];
+    if (boonData && boonData.levelCosts && boonData.levelCosts.length > 0) {
+      const mpThreshold = boonData.levelCosts[0]; // First level cost = MP needed to unlock
+      const currentMP = missionPlannerStore.modifierValues?.mp || 0;
+      if (currentMP < mpThreshold) {
+        return false;
+      }
+    }
+  }
+  
+  return true;
+}
+
+// Filtered modifiers based on unlock conditions
+const unlockedRelics = computed(() => modifiers.relics.filter(m => isModifierUnlocked(m)));
+const unlockedMods = computed(() => modifiers.mods.filter(m => isModifierUnlocked(m)));
+const unlockedGadgets = computed(() => modifiers.gadgets.filter(m => isModifierUnlocked(m)));
+const unlockedOther = computed(() => modifiers.other.filter(m => isModifierUnlocked(m)));
 
 // Check if a gem node is active
 function isGemNodeActive(modifierId) {

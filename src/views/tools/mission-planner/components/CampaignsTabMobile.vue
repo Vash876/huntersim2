@@ -13,8 +13,6 @@
           >
             <option v-for="n in 17" :key="n" :value="n">{{ n }}</option>
           </select>
-          <span class="text-gray-500">|</span>
-          <span class="text-[10px] text-gray-400">{{ formatNumber(totalRemainingPersonnel) }} crew</span>
         </div>
         <div class="flex items-center gap-2">
           <span class="text-[10px] text-amber-400 font-semibold">{{ totalCompletionTimeFormatted }}</span>
@@ -83,13 +81,6 @@
               
               <span class="text-white font-semibold text-sm">{{ campaign.tag }}</span>
               
-              <span
-                v-if="campaign.finalMultiplier > 1"
-                class="text-[9px] px-1 py-0.5 bg-yellow-500/20 text-yellow-400 rounded"
-              >
-                ×{{ campaign.finalMultiplier }}
-              </span>
-              
               <button
                 v-if="getTimerState(campaign.tag) !== 'idle'"
                 @click.stop="resetTimer(campaign.tag)"
@@ -107,7 +98,7 @@
                 campaign.crewUsed >= campaign.adjustedMaxCrew ? 'text-green-400' :
                 campaign.crewUsed > 0 ? 'text-yellow-400' : 'text-gray-500'
               ]">
-                {{ formatNumber(campaign.crewUsed) }}/{{ formatNumber(campaign.adjustedMaxCrew) }}
+                {{ formatCrew(campaign.crewUsed) }}/{{ formatCrew(campaign.adjustedMaxCrew) }}
               </span>
               <span class="text-gray-500">|</span>
               <!-- Time -->
@@ -243,6 +234,7 @@ const campaignsWithStats = computed(() => {
       if (crewUsed >= adjustedMaxCrew) break;
     }
     
+    // Calculate completion time (always calculate as reference, even without crew)
     let completionTimeMinutes = campaign.timeInMinutes;
     if (totalPower > 0 && missionSpeed > 0) {
       completionTimeMinutes = campaign.timeInMinutes / (totalPower * missionSpeed);
@@ -281,6 +273,9 @@ const campaignsByPlanet = computed(() => {
 });
 
 const totalCompletionTime = computed(() => {
+  // If any campaign has no crew assigned (totalPower === 0), return Infinity
+  const hasNoCrew = campaignsWithStats.value.some(c => c.totalPower === 0);
+  if (hasNoCrew) return Infinity;
   return campaignsWithStats.value.reduce((total, c) => total + c.completionTimeMinutes, 0);
 });
 
@@ -305,6 +300,7 @@ function getPlanetTotalFrags(campaigns) {
 // ============================================
 
 function formatTime(minutes) {
+  if (!isFinite(minutes)) return '∞';
   if (!minutes || minutes <= 0) return '-';
   
   const totalSeconds = minutes * 60;
@@ -332,6 +328,14 @@ function formatNumber(num) {
   if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
   if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
   return Math.floor(num).toLocaleString();
+}
+
+// Format crew values - no decimals under 1000
+function formatCrew(value) {
+  if (value < 1000) {
+    return Math.floor(value).toString();
+  }
+  return formatNumber(value);
 }
 
 function updateCampaignFillOrder(value) {

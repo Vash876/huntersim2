@@ -8,6 +8,7 @@ import IconsResolver from 'unplugin-icons/resolver'
 import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import svgLoader from 'vite-svg-loader'
 
 // unplugin-vue-components
 import Components from 'unplugin-vue-components/vite'
@@ -21,6 +22,7 @@ export default defineConfig({
   },
   plugins: [
     vue(),
+    svgLoader(),
     tailwindcss(),
     wasm(),
     topLevelAwait(),

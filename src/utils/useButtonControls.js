@@ -58,9 +58,10 @@ export function useButtonControls({ getLevel, updateLevel }) {
   
     const itemLevel = getLevel(item);
     const maxLevel = item.maxLevel !== undefined ? item.maxLevel : Infinity;
+    const step = item.step || 1;
     
     if (itemLevel < maxLevel) {
-      updateLevel(item, itemLevel + 1);
+      updateLevel(item, Math.min(itemLevel + step, maxLevel));
     }
   }
 
@@ -76,8 +77,9 @@ export function useButtonControls({ getLevel, updateLevel }) {
     }
 
     const itemLevel = getLevel(item);
+    const step = item.step || 1;
     if (itemLevel > 0) {
-      updateLevel(item, itemLevel - 1);
+      updateLevel(item, Math.max(itemLevel - step, 0));
     }
   }
 
@@ -94,7 +96,8 @@ export function useButtonControls({ getLevel, updateLevel }) {
   
     const itemLevel = getLevel(item);
     const maxLevel = item.maxLevel !== undefined ? item.maxLevel : Infinity;
-    updateLevel(item, Math.min(itemLevel + 10, maxLevel));
+    const step = item.step || 1;
+    updateLevel(item, Math.min(itemLevel + (step * 10), maxLevel));
   }
 
   function decrementFast(item) {
@@ -109,7 +112,8 @@ export function useButtonControls({ getLevel, updateLevel }) {
     }
 
     const itemLevel = getLevel(item);
-    updateLevel(item, Math.max(itemLevel - 10, 0));
+    const step = item.step || 1;
+    updateLevel(item, Math.max(itemLevel - (step * 10), 0));
   }
 
   /**

@@ -111,6 +111,7 @@ import {
   formatUpgradeValue 
 } from '@/utils/upgradeUtils';
 import { useButtonControls } from '@/utils/useButtonControls.js';
+import { getTier1RelicMaxLevelBonus } from '@/utils/relicCostUtils';
 import { HUNTERS } from '@/constants/hunters';
 import UpgradeGrid from '@/components/upgrades/UpgradeGrid.vue';
 import UpgradeCard from '@/components/upgrades/UpgradeCard.vue';
@@ -124,9 +125,20 @@ const relics = ref([]);
 const loading = ref(true);
 const category = 'relics'; // Die Kategorie dieser View
 
-// Tier 1 Relics (tier undefined oder 1)
+// res_ultima Bonus für Tier 1 Relics
+const tier1MaxLevelBonus = computed(() => {
+  const resUltimaLevel = hunterStore.getUpgradeValue('researches', 'res_ultima') || 0;
+  return getTier1RelicMaxLevelBonus(resUltimaLevel);
+});
+
+// Tier 1 Relics (tier undefined oder 1) mit dynamischem maxLevel
 const tier1Relics = computed(() => {
-  return relics.value.filter(r => !r.tier || r.tier === 1);
+  return relics.value
+    .filter(r => !r.tier || r.tier === 1)
+    .map(r => ({
+      ...r,
+      maxLevel: (r.maxLevel || 100) + tier1MaxLevelBonus.value
+    }));
 });
 
 // Tier 2 Relics
@@ -171,7 +183,10 @@ function getRelicLevel(item) {
 // Relic aktualisieren
 function updateRelicLevel(item, newLevel) {
   // Finde das Relic-Objekt um Limits zu prüfen
-  const relic = relics.value.find(r => r.id === item.id);
+  // Nutze tier1Relics für Tier 1 (mit dynamischem maxLevel) oder relics für andere
+  const relic = tier1Relics.value.find(r => r.id === item.id) 
+    || tier2Relics.value.find(r => r.id === item.id)
+    || relics.value.find(r => r.id === item.id);
   if (!relic) return;
   
   // Stelle sicher, dass der neue Wert innerhalb der Grenzen liegt

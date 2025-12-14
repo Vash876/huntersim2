@@ -101,7 +101,7 @@
                 <div class="flex items-center gap-0.5">
                   <img src="@/assets/general/fragments.png" alt="Fragments" class="w-3 h-3" />
                   <span class="font-mono font-semibold text-[11px]" :style="{ color: getIncomeColor(mission.tag) }">
-                    {{ formatNumberWithCommas(getMissionStats(mission.tag).fragsPerHour, 0) }}
+                    {{ formatNumberWithCommas(getMissionStats(mission.tag).fragsPerHour * 24, 0) }}
                   </span>
                 </div>
                 <span class="text-gray-500 text-[9px]">{{ getIncomePercentage(mission.tag) }}</span>
@@ -242,10 +242,23 @@ const campaignTime = computed(() => {
 
 const campaignFrags = computed(() => {
   if (!selectedCampaign.value) return '-';
-  const campaign = selectedCampaignData.value;
-  if (!campaign) return '-';
-  const stats = missionPlannerStore.getMissionStats(campaign, getCampaignAssignment());
-  return formatNumberWithCommas(stats.fragsPerCompletion || 0, 0);
+  
+  // Get optimal order and final multipliers from store
+  const OPTIMAL_ORDER = missionPlannerStore.OPTIMAL_CAMPAIGN_ORDER;
+  const FINAL_MULTIPLIERS = missionPlannerStore.CAMPAIGN_FINAL_MULTIPLIERS;
+  
+  // Find the order index of the selected campaign
+  const orderIndex = OPTIMAL_ORDER.indexOf(selectedCampaign.value);
+  if (orderIndex === -1) return '-';
+  
+  // Calculate base fragments for this campaign's position
+  const baseFrags = missionPlannerStore.calculateCampaignFragsForIndex(orderIndex);
+  
+  // Apply final multiplier for CX-12 campaigns
+  const finalMultiplier = FINAL_MULTIPLIERS[selectedCampaign.value] || 1;
+  const fragsPerCompletion = baseFrags * finalMultiplier;
+  
+  return formatNumberWithCommas(fragsPerCompletion, 0);
 });
 
 // Get assignment for a mission

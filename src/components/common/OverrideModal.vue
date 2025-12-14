@@ -234,7 +234,7 @@ import { HUNTERS } from '../../constants/hunters';
 import { UPGRADES } from '../../constants/upgrades';
 import { GEM_UPGRADE_MAPPING } from '../../constants/gemUpgradeMappings';
 import { calcCostDifference, formatCost } from '../../utils/statCostUtils';
-import { getRelicCost, calcRelicCostDifference, formatRelicCost } from '../../utils/relicCostUtils';
+import { getRelicCost, calcRelicCostDifference, formatRelicCost, getTier1RelicMaxLevelBonus, isTier1Relic } from '../../utils/relicCostUtils';
 import { getGadgetCost, calcGadgetCostDifference, formatGadgetCost } from '../../utils/gadgetCostUtils';
 import { getInscryptionCost, calcInscryptionCostDifference, formatInscryptionCost } from '../../utils/inscryptionCostUtils';
 import { getOrbCost, calcOrbCostDifference, formatOrbCost } from '../../utils/orbCostUtils';
@@ -778,6 +778,13 @@ async function loadOverrideData() {
                   paramName = upgrade.name;
                   maxValue = upgrade.maxLevel || null;
                   type = upgrade.type || "numeric";
+                  
+                  // Dynamisches maxLevel für Tier 1 Relics basierend auf res_ultima
+                  if (upgradeType === 'relics' && isTier1Relic(upgradeId)) {
+                    const resUltimaLevel = hunterStore.getUpgradeValue('researches', 'res_ultima') || 0;
+                    const bonus = getTier1RelicMaxLevelBonus(resUltimaLevel);
+                    maxValue = (upgrade.maxLevel || 100) + bonus;
+                  }
                   
                   // NEU: Description für Inscryptions hinzufügen
                   if (upgradeType === 'inscryptions' && upgrade.description) {

@@ -921,7 +921,7 @@ import { useHunterStore } from '../../store/hunterStore';
 import { getHunterById } from '../../constants/hunters';
 import { UPGRADES } from '../../constants/upgrades';
 import { calcCostDifference, calcKnoxSalvoCostDifference, formatCost } from '../../utils/statCostUtils';
-import { calcRelicCostDifference } from '../../utils/relicCostUtils';
+import { calcRelicCostDifference, getTier1RelicMaxLevelBonus, isTier1Relic } from '../../utils/relicCostUtils';
 import { calcGadgetCostDifference } from '../../utils/gadgetCostUtils';
 import { calcInscryptionCostDifference } from '../../utils/inscryptionCostUtils';
 import { 
@@ -968,6 +968,33 @@ const upgradesByCurrency = ref({});
 const hunterInfo = computed(() => getHunterById(props.hunterId));
 const hunterName = computed(() => hunterInfo.value.name);
 const hunterColor = computed(() => hunterInfo.value.color);
+
+// Dynamischer Tier 1 Relic Max Level Bonus basierend auf res_ultima
+const tier1RelicMaxLevelBonus = computed(() => {
+  const resUltimaLevel = hunterStore.getUpgradeValue('researches', 'res_ultima') || 0;
+  return getTier1RelicMaxLevelBonus(resUltimaLevel);
+});
+
+// Computed upgradesByCurrency mit dynamischen maxLevels für Tier 1 Relics
+const upgradesByCurrencyWithBonus = computed(() => {
+  const result = {};
+  for (const [currency, upgrades] of Object.entries(upgradesByCurrency.value)) {
+    result[currency] = upgrades.map(upgrade => {
+      // Prüfe ob es ein Tier 1 Relic ist
+      if (upgrade.key.startsWith('upgrades.relics.')) {
+        const relicId = upgrade.key.split('.')[2];
+        if (isTier1Relic(relicId)) {
+          return {
+            ...upgrade,
+            max: (upgrade.max || 100) + tier1RelicMaxLevelBonus.value
+          };
+        }
+      }
+      return upgrade;
+    });
+  }
+  return result;
+});
 
 // Fragments per day - für Fragment-spezifische Berechnungen
 const fragmentsPerDay = ref(Number(localStorage.getItem('fragments_per_day')) || 100); // Standardwert
@@ -1624,9 +1651,9 @@ function getMaterialLabel(property) {
 
 // Funktion, um Upgrades zu filtern, die noch nicht das Maximum erreicht haben
 function getAvailableUpgrades(currency) {
-  if (!currency || !upgradesByCurrency.value[currency]) return [];
+  if (!currency || !upgradesByCurrencyWithBonus.value[currency]) return [];
   
-  return upgradesByCurrency.value[currency].filter(upgrade => {
+  return upgradesByCurrencyWithBonus.value[currency].filter(upgrade => {
     // Globalen Wert ermitteln
     const globalValue = getBaseValue(upgrade.key);
     // Wenn kein Maximum definiert ist, immer anzeigen

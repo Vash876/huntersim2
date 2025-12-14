@@ -16,17 +16,6 @@
           <span class="text-[10px] text-gray-500">(after {{ missionPlannerStore.campaignFillOrder - 1 }} farm missions)</span>
         </div>
 
-        <!-- Available Personnel for Campaigns (remaining after farms) -->
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-gray-400 font-semibold">Remaining Personnel:</span>
-          <div class="flex gap-2 text-xs">
-            <span class="text-red-400">T1: {{ formatNumber(remainingPersonnel.T1) }}</span>
-            <span class="text-orange-400">T2: {{ formatNumber(remainingPersonnel.T2) }}</span>
-            <span class="text-yellow-400">T3: {{ formatNumber(remainingPersonnel.T3) }}</span>
-            <span class="text-green-400">T4: {{ formatNumber(remainingPersonnel.T4) }}</span>
-          </div>
-        </div>
-
         <!-- Total Completion Time -->
         <div class="flex items-center gap-2">
           <span class="text-xs text-gray-400 font-semibold">All Campaigns Time:</span>
@@ -129,9 +118,9 @@
               </td>
               
               <td class="px-2 py-1.5 font-mono text-white">{{ campaign.tag }}</td>
-              <td class="px-2 py-1.5 text-right text-gray-400">{{ formatNumber(campaign.adjustedMaxCrew) }}</td>
+              <td class="px-2 py-1.5 text-right text-gray-400">{{ formatCrew(campaign.adjustedMaxCrew) }}</td>
               <td class="px-2 py-1.5 text-right" :class="campaign.crewUsed >= campaign.adjustedMaxCrew ? 'text-green-400' : campaign.crewUsed > 0 ? 'text-yellow-400' : 'text-red-400'">
-                {{ formatNumber(campaign.crewUsed) }}
+                {{ formatCrew(campaign.crewUsed) }}
               </td>
               
               <!-- Time / Remaining -->
@@ -225,6 +214,14 @@ function formatCountdown(seconds) {
   return `${secs}s`;
 }
 
+// Format crew values - no decimals under 1000
+function formatCrew(value) {
+  if (value < 1000) {
+    return Math.floor(value).toString();
+  }
+  return formatNumber(value, 0);
+}
+
 // ============================================
 // EXISTING LOGIC
 // ============================================
@@ -282,7 +279,7 @@ const campaignsWithStats = computed(() => {
       if (crewUsed >= adjustedMaxCrew) break;
     }
     
-    // Calculate completion time
+    // Calculate completion time (always calculate as reference, even without crew)
     let completionTimeMinutes = campaign.timeInMinutes;
     if (totalPower > 0 && missionSpeed > 0) {
       completionTimeMinutes = campaign.timeInMinutes / (totalPower * missionSpeed);
@@ -327,6 +324,9 @@ const campaignsByPlanet = computed(() => {
 
 // Calculate total completion time for all campaigns
 const totalCompletionTime = computed(() => {
+  // If any campaign has no crew assigned (totalPower === 0), return Infinity
+  const hasNoCrew = campaignsWithStats.value.some(c => c.totalPower === 0);
+  if (hasNoCrew) return Infinity;
   return campaignsWithStats.value.reduce((total, c) => total + c.completionTimeMinutes, 0);
 });
 
@@ -351,6 +351,7 @@ function getPlanetTotalFrags(campaigns) {
 
 // Format time from minutes to human-readable string (max unit: hours)
 function formatTime(minutes) {
+  if (!isFinite(minutes)) return '∞';
   if (!minutes || minutes <= 0) return '-';
   
   const totalSeconds = minutes * 60;

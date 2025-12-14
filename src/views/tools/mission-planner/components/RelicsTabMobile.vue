@@ -161,22 +161,28 @@
         <!-- Always show Next Cost + Invested -->
         <div class="flex items-center justify-between mt-1.5 text-[10px] px-1">
           <span class="text-gray-500">Next: 
-            <span v-if="getRelicNextCost(relic.id) !== Infinity" class="text-yellow-400 font-mono">{{ formatNumber(getRelicNextCost(relic.id)) }}</span>
-            <span v-else class="text-green-400 font-mono">MAX</span>
+            <span v-if="getRelicNextCost(relic.id) === Infinity" class="text-green-400 font-mono">MAX</span>
+            <span v-else-if="getRelicNextCost(relic.id) === null" class="text-gray-500 font-mono">?</span>
+            <span v-else class="text-yellow-400 font-mono">{{ formatNumber(getRelicNextCost(relic.id)) }}</span>
           </span>
           <span class="text-gray-500">Inv: <span class="text-amber-400/80 font-mono">{{ formatNumber(getRelicTotalInvested(relic.id)) }}</span></span>
         </div>
 
         <!-- Target Stats Row (only if target set) -->
         <div v-if="hasTargetSet(relic.id)" class="flex items-center justify-between mt-1 text-[10px] px-1 pt-1 border-t border-gray-700/30">
-          <span class="text-gray-500">Target Cost: <span class="text-cyan-400 font-mono">{{ formatNumber(getTargetCost(relic.id)) }}</span></span>
-          <span class="text-gray-500">ETA: <span class="text-green-400 font-mono">{{ getEstimatedTime(relic.id) }}</span></span>
+          <span class="text-gray-500">Target Cost: 
+            <span v-if="getTargetCost(relic.id) === null" class="text-gray-500 font-mono">?</span>
+            <span v-else class="text-cyan-400 font-mono">{{ formatNumber(getTargetCost(relic.id)) }}</span>
+          </span>
+          <span class="text-gray-500">ETA: 
+            <span :class="getEstimatedTime(relic.id) === '?' ? 'text-gray-500' : 'text-green-400'" class="font-mono">{{ getEstimatedTime(relic.id) }}</span>
+          </span>
         </div>
       </div>
     </div>
 
-    <!-- Tier 2 Relics -->
-    <div class="mt-2">
+    <!-- Tier 2 Relics (only show if Power Gem Level >= 3) -->
+    <div v-if="showTier2Relics" class="mt-2">
       <div class="flex items-center gap-2 border-l-2 border-purple-500/50 pl-2 mb-2">
         <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
         <h3 class="text-sm font-semibold text-purple-400">Tier 2 Relics</h3>
@@ -193,11 +199,14 @@
 import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue';
 import { IconCheck, IconClock } from '@tabler/icons-vue';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { formatNumber } from '@/composables/format';
 import { 
   getTier1Relics, 
   calculateTotalCost, 
   getRelicMaxLevel as getRelicMaxLevelFromData,
+  hasValidCostForLevel,
+  getRelicBaseCostMaxLevel,
   RELIC_COSTS,
   RELICS
 } from '../constants/relics';
@@ -206,6 +215,11 @@ import SuffixInput from '@/composables/SuffixInput.vue';
 import tippy from 'tippy.js';
 
 const missionPlannerStore = useMissionPlannerStore();
+const gemPlannerStore = useGemPlannerStore();
+
+// Power Gem Level (required Level 3 to show Tier 2 Relics)
+const powerGemLevel = computed(() => gemPlannerStore.gemStates?.power?.level || 0);
+const showTier2Relics = computed(() => powerGemLevel.value >= 3);
 
 // Live update interval reference
 let liveUpdateInterval = null;
@@ -378,40 +392,60 @@ function getRelicMaxLevel(relicId) {
   return baseMax + exodusNode3Level;
 }
 
+// Check if a relic has valid cost data for a specific level
+function hasValidCost(relicId, level) {
+  return hasValidCostForLevel(relicId, level);
+}
+
 // Get cost for next level from current level (for buying)
+// Returns null if no valid cost formula exists for this level
 function getRelicNextCostFromCurrent(relicId) {
   const currentLevel = getRelicLevel(relicId);
   const maxLevel = getRelicMaxLevel(relicId);
   if (currentLevel >= maxLevel) return Infinity;
   
+  // Check if we have valid cost data for this level
+  if (!hasValidCost(relicId, currentLevel)) return null;
+  
   const costFn = RELIC_COSTS[relicId];
-  if (!costFn) return 0;
+  if (!costFn) return null;
   return costFn(currentLevel);
 }
 
 // Get cost for next level from target level (for display)
+// Returns null if no valid cost formula exists for this level
 function getRelicNextCost(relicId) {
   const targetLevel = getTargetLevel(relicId);
   const maxLevel = getRelicMaxLevel(relicId);
   if (targetLevel >= maxLevel) return Infinity;
   
+  // Check if we have valid cost data for this level
+  if (!hasValidCost(relicId, targetLevel)) return null;
+  
   const costFn = RELIC_COSTS[relicId];
-  if (!costFn) return 0;
+  if (!costFn) return null;
   return costFn(targetLevel);
 }
 
-// Check if can buy next level
+// Check if can buy next level (must have valid cost)
 function canBuyNextLevel(relicId) {
   const currentLevel = getRelicLevel(relicId);
   const target = getTargetLevel(relicId);
   const maxLevel = getRelicMaxLevel(relicId);
-  return target > currentLevel && currentLevel < maxLevel;
+  
+  // Can't buy if at max or no target set
+  if (currentLevel >= maxLevel || target <= currentLevel) return false;
+  
+  // Can't buy if no valid cost formula
+  if (!hasValidCost(relicId, currentLevel)) return false;
+  
+  return true;
 }
 
 // Buy next level
 function buyNextLevel(relicId) {
   const cost = getRelicNextCostFromCurrent(relicId);
-  if (cost === Infinity) return;
+  if (cost === Infinity || cost === null) return;
   missionPlannerStore.purchaseRelicLevel(relicId, cost);
   
   // Sync to modifier panel
@@ -423,16 +457,24 @@ function buyNextLevel(relicId) {
 }
 
 // Get target cost
+// Returns null if any level in the range has missing cost data
 function getTargetCost(relicId) {
   const currentLevel = getRelicLevel(relicId);
   const target = getTargetLevel(relicId);
   if (target <= currentLevel) return 0;
+  
+  // Check if all levels have valid cost data
+  for (let lvl = currentLevel; lvl < target; lvl++) {
+    if (!hasValidCost(relicId, lvl)) return null;
+  }
+  
   return calculateTotalCost(relicId, currentLevel, target);
 }
 
 // Get estimated time
 function getEstimatedTime(relicId) {
   const cost = getTargetCost(relicId);
+  if (cost === null) return '?'; // Missing cost data
   if (cost === 0) return '-';
   if (fragsPerDay.value <= 0) return '∞';
   
@@ -456,18 +498,29 @@ function getEstimatedTime(relicId) {
   return `${days.toFixed(1)}d`;
 }
 
-// Get total invested
+// Get total invested (only counts levels with valid cost data)
 function getRelicTotalInvested(relicId) {
   const currentLevel = relicLevels.value[relicId] || 0;
   if (currentLevel === 0) return 0;
-  return calculateTotalCost(relicId, 0, currentLevel);
+  
+  // Get the base cost max level (levels with known costs)
+  const baseCostMaxLevel = getRelicBaseCostMaxLevel(relicId);
+  
+  // Only calculate cost up to the level we have data for
+  const levelToCalculate = Math.min(currentLevel, baseCostMaxLevel);
+  if (levelToCalculate === 0) return 0;
+  
+  return calculateTotalCost(relicId, 0, levelToCalculate);
 }
 
 // Total investment
 const totalRelicInvestment = computed(() => {
   let total = 0;
   Object.keys(relicLevels.value).forEach(relicId => {
-    total += getRelicTotalInvested(relicId);
+    const invested = getRelicTotalInvested(relicId);
+    if (invested && !isNaN(invested)) {
+      total += invested;
+    }
   });
   return total;
 });
@@ -479,7 +532,7 @@ const totalTargetsSummary = computed(() => {
   
   tier1Relics.value.forEach(relic => {
     const cost = getTargetCost(relic.id);
-    if (cost > 0) {
+    if (cost !== null && cost > 0) {
       totalCost += cost;
       targetCount++;
     }

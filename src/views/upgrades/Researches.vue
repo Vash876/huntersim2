@@ -21,8 +21,18 @@
           :incrementFast="incrementFast"
           :decrementFast="decrementFast"
         >
-          <!-- Effekt-Box mit einer Zeile pro Hunter -->
-          <div class="bg-gray-900/50 p-3 rounded-md w-full mb-4">
+          <!-- Spezielle Anzeige für res_ultima (Relic Bonus) -->
+          <div v-if="research.special === 'relic_bonus'" class="bg-gray-900/50 p-3 rounded-md w-full mb-4">
+            <div class="flex justify-between items-center py-1">
+              <span class="text-gray-400 text-sm">Tier 1 Relics Max Lvl</span>
+              <span class="text-purple-300 font-medium text-sm">
+                +{{ Math.floor(getResearchLevel({ id: research.id }) / 300000) }}
+              </span>
+            </div>
+          </div>
+          
+          <!-- Standard-Effekt-Box mit Hunter-Multiplikatoren -->
+          <div v-else class="bg-gray-900/50 p-3 rounded-md w-full mb-4">
             
             <!-- Hunter-spezifische Multiplikatoren -->
             <div 
@@ -85,6 +95,14 @@ const researches = computed(() => {
       // Verstecke das Research wenn das erforderliche Gem-Level nicht erreicht ist
       if (currentGemLevel < research.unlock_lvl) {
         return false;
+      }
+      
+      // Prüfe auch unlock_node wenn vorhanden
+      if (research.unlock_node !== undefined) {
+        const hasRequiredNode = gemState?.nodes?.[research.unlock_node - 1] || false;
+        if (!hasRequiredNode) {
+          return false;
+        }
       }
     }
     

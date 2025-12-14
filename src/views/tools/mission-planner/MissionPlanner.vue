@@ -4,11 +4,14 @@
     <template v-if="isMobile">
       <!-- Mobile Header -->
       <div class="mb-3">
-        <div class="bg-gradient-to-r from-blue-900/90 to-gray-800/90 rounded-xl p-3 flex items-center gap-2">
-          <svg class="w-5 h-5 text-blue-300 fill-current flex-shrink-0" viewBox="0 0 133.33333 133.33333" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 48.700769,96.005782 17.470982,64.672447 h -0.833514 -0.833515 l -3.161868,3.365654 -3.161867,3.365653 8.572516,8.649398 8.572516,8.6494 -12.9764,12.976398 -12.97640104,12.9764 V 57.6639 0.67244981 H 62.984938 125.29742 L 109.6516,16.359141 94.005779,32.045834 v 1.296625 1.296626 l 18.939641,18.973501 18.93965,18.973501 -3.21566,3.422921 -3.21567,3.422922 L 96.052222,50.052189 66.6507,20.672449 h -1.423375 -1.423374 l -3.173289,3.377811 -3.173289,3.377811 22.274203,22.30315 22.274194,22.303149 -0.0505,8.652372 -0.0505,8.65237 -28.723499,-29.146653 -28.723424,-29.146653 -3.825034,3.664614 -3.825033,3.664615 37.932333,38.761633 37.932327,38.761642 -0.0421,0.7204 -0.0421,0.72041 -3.47623,3.95613 -3.47623,3.95613 L 63.152556,82.295242 20.669396,39.339114 h -1.099388 -1.099389 l -3.176071,3.380774 -3.176072,3.380773 36.943652,36.961331 36.943651,36.961338 v 1.45124 1.45125 l -2.43832,2.20665 -2.438321,2.20665 h -0.599291 -0.599291 z" />
-          </svg>
-          <h1 class="text-lg font-bold text-white">Mission & Relic Planner</h1>
+        <div class="bg-gradient-to-r from-blue-900/90 to-gray-800/90 rounded-xl p-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-300 fill-current flex-shrink-0" viewBox="0 0 133.33333 133.33333" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 48.700769,96.005782 17.470982,64.672447 h -0.833514 -0.833515 l -3.161868,3.365654 -3.161867,3.365653 8.572516,8.649398 8.572516,8.6494 -12.9764,12.976398 -12.97640104,12.9764 V 57.6639 0.67244981 H 62.984938 125.29742 L 109.6516,16.359141 94.005779,32.045834 v 1.296625 1.296626 l 18.939641,18.973501 18.93965,18.973501 -3.21566,3.422921 -3.21567,3.422922 L 96.052222,50.052189 66.6507,20.672449 h -1.423375 -1.423374 l -3.173289,3.377811 -3.173289,3.377811 22.274203,22.30315 22.274194,22.303149 -0.0505,8.652372 -0.0505,8.65237 -28.723499,-29.146653 -28.723424,-29.146653 -3.825034,3.664614 -3.825033,3.664615 37.932333,38.761633 37.932327,38.761642 -0.0421,0.7204 -0.0421,0.72041 -3.47623,3.95613 -3.47623,3.95613 L 63.152556,82.295242 20.669396,39.339114 h -1.099388 -1.099389 l -3.176071,3.380774 -3.176072,3.380773 36.943652,36.961331 36.943651,36.961338 v 1.45124 1.45125 l -2.43832,2.20665 -2.438321,2.20665 h -0.599291 -0.599291 z" />
+            </svg>
+            <h1 class="text-lg font-bold text-white">Mission & Relic Planner</h1>
+          </div>
+          <p class="text-[10px] text-gray-400 mt-1 ml-7">{{ creditsText }}</p>
         </div>
       </div>
 
@@ -104,7 +107,10 @@
               <svg class="w-6 h-6 mr-2 text-blue-300 fill-current" viewBox="0 0 133.33333 133.33333" xmlns="http://www.w3.org/2000/svg">
                 <path d="M 48.700769,96.005782 17.470982,64.672447 h -0.833514 -0.833515 l -3.161868,3.365654 -3.161867,3.365653 8.572516,8.649398 8.572516,8.6494 -12.9764,12.976398 -12.97640104,12.9764 V 57.6639 0.67244981 H 62.984938 125.29742 L 109.6516,16.359141 94.005779,32.045834 v 1.296625 1.296626 l 18.939641,18.973501 18.93965,18.973501 -3.21566,3.422921 -3.21567,3.422922 L 96.052222,50.052189 66.6507,20.672449 h -1.423375 -1.423374 l -3.173289,3.377811 -3.173289,3.377811 22.274203,22.30315 22.274194,22.303149 -0.0505,8.652372 -0.0505,8.65237 -28.723499,-29.146653 -28.723424,-29.146653 -3.825034,3.664614 -3.825033,3.664615 37.932333,38.761633 37.932327,38.761642 -0.0421,0.7204 -0.0421,0.72041 -3.47623,3.95613 -3.47623,3.95613 L 63.152556,82.295242 20.669396,39.339114 h -1.099388 -1.099389 l -3.176071,3.380774 -3.176072,3.380773 36.943652,36.961331 36.943651,36.961338 v 1.45124 1.45125 l -2.43832,2.20665 -2.438321,2.20665 h -0.599291 -0.599291 z" />
               </svg>
-              <h1 class="text-xl font-bold">Mission & Relic Planner</h1>
+              <div>
+                <h1 class="text-xl font-bold">Mission & Relic Planner</h1>
+                <p class="text-[10px] text-gray-400">{{ creditsText }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -552,6 +558,11 @@ const { isMobile } = useIsMobile();
 // Store
 const missionPlannerStore = useMissionPlannerStore();
 
+// RNG for credits - 50/50 chance for name order
+const creditsText = Math.random() < 0.5 
+  ? 'Original spreadsheet by Alp & Anders' 
+  : 'Original spreadsheet by Anders & Alp';
+
 // Valid tabs for each view
 const desktopTabs = ['missions', 'campaigns', 'relics'];
 const mobileTabs = ['modifiers', 'missions', 'campaigns', 'relics'];
@@ -830,10 +841,23 @@ function getSelectedCampaignLeftCrew() {
 // Get selected campaign fragments
 function getSelectedCampaignFrags() {
   if (!missionPlannerStore.selectedCampaign) return '-';
-  const campaign = missionPlannerStore.getSelectedCampaignData();
-  if (!campaign) return '-';
-  const stats = missionPlannerStore.getMissionStats(campaign, getSelectedCampaignAssignment());
-  return formatNumberWithCommas(stats.fragsPerCompletion || 0, 0);
+  
+  // Get optimal order and final multipliers from store
+  const OPTIMAL_ORDER = missionPlannerStore.OPTIMAL_CAMPAIGN_ORDER;
+  const FINAL_MULTIPLIERS = missionPlannerStore.CAMPAIGN_FINAL_MULTIPLIERS;
+  
+  // Find the order index of the selected campaign
+  const orderIndex = OPTIMAL_ORDER.indexOf(missionPlannerStore.selectedCampaign);
+  if (orderIndex === -1) return '-';
+  
+  // Calculate base fragments for this campaign's position
+  const baseFrags = missionPlannerStore.calculateCampaignFragsForIndex(orderIndex);
+  
+  // Apply final multiplier for CX-12 campaigns
+  const finalMultiplier = FINAL_MULTIPLIERS[missionPlannerStore.selectedCampaign] || 1;
+  const fragsPerCompletion = baseFrags * finalMultiplier;
+  
+  return formatNumberWithCommas(fragsPerCompletion, 0);
 }
 
 // Initialize store on mount

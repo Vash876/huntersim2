@@ -153,6 +153,18 @@ export const UPGRADES = {
         { level: 5, multipliers: { borge: 1.56, ozzy: 1.56, knox: 1.2 } },  
         { level: 6, multipliers: { borge: 1.56, ozzy: 1.56, knox: 1.56 } }, 
       ]
+    },
+    {
+      id: "res_ultima",
+      name: "Research Ultima Lvls",
+      hunter: "all",
+      type: "level",
+      maxLevel: 1500000,
+      step: 300000,
+      special: "relic_bonus",
+      unlock_gem: "exodus",
+      unlock_lvl: 5,
+      unlock_node: 3,
     }
   ],
 

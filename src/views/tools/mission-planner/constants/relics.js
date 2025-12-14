@@ -20,13 +20,13 @@ const RELIC_DATA = {
   r2:  { bonus: 11,    baseCost: 0.6,  additive: 0.2,  exp0: 1.09,  exp10: 1.006, exp20: 1.007,  exp30: 1.022, exp40: null, exp50: null },
   r3:  { bonus: 0.03,  baseCost: 0.7,  additive: 0.5,  exp0: 1.12,  exp10: 1.02,  exp20: 1.04,   exp30: 1.07,  exp40: null,    exp50: null },
   r4:  { bonus: 0.03,  baseCost: 0.8,  additive: 0.4,  exp0: 1.12,  exp10: 1.02,  exp20: 1.015,  exp30: 1,     exp40: null, exp50: null },
-  r5:  { bonus: 0.001, baseCost: 1,    additive: 120,  exp0: 4400,  fixedCosts: [1, 120, 4400, 6200, 15200, 18500, 24000, 30000, 44000, 56000, 72000] },
-  r6:  { bonus: 2.75,  baseCost: 30,   additive: 450,  exp0: 1070,  fixedCosts: [30, 450, 1070, 2500, 6700, 7000, 7600, 8500, 12000, 16000, 32000] },
+  r5:  { bonus: 0.001, baseCost: 1,    additive: 120,  exp0: 4400,  fixedCosts: [1, 120, 4400, 6200, 15200, 18500, 24000, 30000, 44000, 56000, 72000, 144000] },
+  r6:  { bonus: 2.75,  baseCost: 30,   additive: 450,  exp0: 1070,  fixedCosts: [30, 450, 1070, 2500, 6700, 7000, 7600, 8500, 12000, 16000, 32000, 2510000] },
   r7:  { bonus: 1.05,  baseCost: 2,    additive: 1.8,  exp0: 1.14,  exp10: 1.01,  exp20: 1.02,   exp30: 1,     exp40: 1,    exp50: null },
   r8:  { bonus: 5,     baseCost: 5,    additive: 4,    exp0: 1.2,   exp10: 1.1,   exp20: 1,      exp30: 1,     exp40: null, exp50: null },
   r9:  { bonus: 1.08,  baseCost: 8,    additive: 1.8,  exp0: 1.18,  exp10: 1.03,  exp20: 1.08,   exp30: 1,     exp40: 1,    exp50: 1 },
-  r10: { bonus: 1.08,  baseCost: 2,    additive: 15,   exp0: 72,    fixedCosts: [2, 15, 72, 257, 594, 1691, 3140, 18861] },
-  r11: { bonus: 2,     baseCost: 3,    additive: 65,   exp0: 305,   fixedCosts: [3, 65, 305, 2055, 4805, 8555, 15000, 27500] },
+  r10: { bonus: 1.08,  baseCost: 2,    additive: 15,   exp0: 72,    fixedCosts: [2, 15, 72, 257, 594, 1691, 3140, 18861, 139150] },
+  r11: { bonus: 2,     baseCost: 3,    additive: 65,   exp0: 305,   fixedCosts: [3, 65, 305, 2055, 4805, 8555, 15000, 27500, 575000] },
   r12: { bonus: 0.5,   baseCost: 50,   additive: 30,   exp0: 1.09,  exp10: 1.01,  exp20: 1,      exp30: 1,     exp40: 1.00372, exp50: null },
   r13: { bonus: 468,   baseCost: 10,   additive: 1.13, exp0: 1.013, exp10: 1.012, exp20: 1,      exp30: 1,     exp40: 1,    exp50: 1.00378, maxLevel: 200 },
   r14: { bonus: 468,   baseCost: 20,   additive: 100,  exp0: 320,   fixedCosts: [20, 100, 320, 880, 2240, 5440, 12800, 29440] },
@@ -34,7 +34,7 @@ const RELIC_DATA = {
   r16: { bonus: 0.03,  baseCost: 40,   additive: 5,    exp0: 1.08,  exp10: 1.028, exp20: 1,      exp30: 1,     exp40: null, exp50: null },
   r17: { bonus: 0.03,  baseCost: 50,   additive: 6,    exp0: 1.1,   exp10: 1.037, exp20: 1,      exp30: 1,     exp40: null, exp50: null },
   r18: { bonus: 365,   baseCost: 60,   additive: 6,    exp0: 1.03,  exp10: 1.01,  exp20: 1.02,   exp30: 1,     exp40: null, exp50: null, maxLevel: 200 },
-  r19: { bonus: 365,   baseCost: 666,  additive: 1289, exp0: 2446,  fixedCosts: [666, 1289, 2446, 4569, 8428, 15390, 27871, 50121] },
+  r19: { bonus: 365,   baseCost: 666,  additive: 1289, exp0: 2446,  fixedCosts: [666, 1289, 2446, 4569, 8428, 15390, 27871, 50121, 3140000] },
   r20: { bonus: 2,     baseCost: 1000, additive: 50,   exp0: 1.2,   exp10: 1,     exp20: 1,      exp30: 1,     exp40: 1,    exp50: null },
   // Tier 2 Relics
   t2r8: { bonus: 1.021, baseCost: 0, additive: 0, exp0: 1, maxLevel: 21 }, // Fragment multiplier for farms and campaigns
@@ -142,6 +142,42 @@ export const RELIC_COSTS = {
  */
 export function getRelicData(relicId) {
   return RELIC_DATA[relicId] || null;
+}
+
+/**
+ * Check if a relic has a valid cost formula for a specific level
+ * Returns false if the cost would be NaN, Infinity, 0 (for unknown), or undefined
+ */
+export function hasValidCostForLevel(relicId, level) {
+  const costFn = RELIC_COSTS[relicId];
+  if (!costFn) return false;
+  
+  const cost = costFn(level);
+  
+  // Invalid if: NaN, Infinity, undefined, null, 0 (for T2 relics without formulas), or negative
+  if (cost === null || cost === undefined || cost === 0) return false;
+  if (Number.isNaN(cost) || !Number.isFinite(cost)) return false;
+  if (cost < 0) return false;
+  
+  return true;
+}
+
+/**
+ * Get the base max level for a relic (without bonuses like Exodus Node 3)
+ * This represents the level up to which we have valid cost data
+ */
+export function getRelicBaseCostMaxLevel(relicId) {
+  const data = RELIC_DATA[relicId];
+  if (!data) return 0;
+  
+  // For FIXED relics, max level is the length of fixedCosts array
+  if (data.fixedCosts) return data.fixedCosts.length;
+  
+  // For relics with explicit maxLevel in data
+  if (data.maxLevel) return data.maxLevel;
+  
+  // For formula-based relics, return 100 (default)
+  return 100;
 }
 
 /**
