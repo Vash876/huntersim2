@@ -326,7 +326,7 @@ export const OVERRIDES = {
     "upgrades.cms.cm53",            // Construction Milestone #53
     "upgrades.cms.cm54",            // Construction Milestone #54
     "upgrades.cms.cm57",            // Construction Milestone #57
-    "upgrades.cms.exodus_gem4",     // Exodus Gem Node 4 (via CM)
+    "upgrades.cms.exodus_gem4",     // Exodus Gem Node 4, Milestones Count 
   ],
 
   // Research
@@ -334,6 +334,7 @@ export const OVERRIDES = {
     "upgrades.researches.res81",     // Research#81
     "upgrades.researches.res95",     // Research#95
     "upgrades.researches.res105",    // Research#105
+    "upgrades.researches.res_ultima",// Exodus Gem Node 3, Research Ultima Count
   ],
 
   // Loopmods
@@ -351,6 +352,7 @@ export const OVERRIDES = {
   // Gem Nodes
   gemNodes: [
     "upgrades.gems_nodes.exodus_gem1",      // Exodus Gem Node 1
+    "upgrades.gems_nodes.exodus_gem3",      // Exodus Gem Node 3
     "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
     "upgrades.gems_nodes.temporal_gem4",    // Temporal Gem Node 4
     "upgrades.gems_nodes.temporal_gem6",    // Temporal Gem Node 6
@@ -500,6 +502,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.temporal_gem4", // Temporal Gem Node 4
   "upgrades.loopmods.stelzi",           // Stelzi
   "upgrades.inscryptions.i103",        // Inscription #103
+  "upgrades.gems_nodes.exodus_gem3",      // Exodus Gem Node 3
   "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
   "upgrades.cms.exodus_gem4",      // Exodus Gem Node 4
   "upgrades.gems_nodes.temporal_gem6", // Temporal Gem Node 6
@@ -507,6 +510,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
   "upgrades.gems_nodes.evolution_gem6",   // Evolution Gem Node 6
   "upgrades.relics.t2r7",                  // Relic T2R7
+  "upgrades.researches.res_ultima",
 ];
 
 export const STATS_RESULT_LABELS = [

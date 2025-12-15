@@ -203,10 +203,16 @@
                     :minValue="0"
                     :maxValue="param.maxValue || 999"
                     :showFastControls="true"
-                    :step="1"
+                    :step="getParamStep(param)"
+                    :fastStep="getParamFastStep(param)"
                     :valueClass="getValueColorClass(param.key, getBaseValue(param.key, param.globalValue))"
                     @update:value="(newVal) => updateOverrideValue(param.key, newVal, param)"
-                  />
+                  >
+                    <!-- Formatierter Wert für große Zahlen -->
+                    <span :class="getValueColorClass(param.key, getBaseValue(param.key, param.globalValue))">
+                      {{ formatParamValue(param, localOverrides[param.key] === null ? getBaseValue(param.key, param.globalValue) : localOverrides[param.key]) }}
+                    </span>
+                  </ValueControls>
                 </div>
               </div>
             </div>
@@ -238,6 +244,7 @@ import { getRelicCost, calcRelicCostDifference, formatRelicCost, getTier1RelicMa
 import { getGadgetCost, calcGadgetCostDifference, formatGadgetCost } from '../../utils/gadgetCostUtils';
 import { getInscryptionCost, calcInscryptionCostDifference, formatInscryptionCost } from '../../utils/inscryptionCostUtils';
 import { getOrbCost, calcOrbCostDifference, formatOrbCost } from '../../utils/orbCostUtils';
+import { formatNumber } from '../../composables/format';
 import ValueControls from './ValueControls.vue';
 
 const props = defineProps({
@@ -1220,6 +1227,71 @@ const visibleCategories = computed(() => {
         return true;
       }
       
+      // Spezielle Logik für res_ultima - nur anzeigen wenn Exodus Node 3 aktiv ist
+      if (param.key === 'upgrades.researches.res_ultima') {
+        const exodusGem3Key = 'upgrades.gems_nodes.exodus_gem3';
+        
+        // Prüfe aktuellen Override-Status für exodus gem3
+        const exodusGem3Override = localOverrides.value[exodusGem3Key];
+        
+        // Prüfe global state für exodus gem3
+        const exodusGem3Param = parameterData.value
+          .flatMap(cat => cat.params)
+          .find(p => p.key === exodusGem3Key);
+        const exodusGem3GlobalValue = exodusGem3Param?.globalValue || 0;
+        
+        // Bestimme den aktuellen effektiven Wert für exodus gem3
+        const exodusGem3EffectiveValue = (exodusGem3Override !== null && exodusGem3Override !== undefined) 
+          ? exodusGem3Override 
+          : exodusGem3GlobalValue;
+        
+        const isExodusGem3Active = exodusGem3EffectiveValue > 0;
+        
+        return isExodusGem3Active;
+      }
+      
+      // Spezielle Logik für Researches mit unlock-Bedingungen (außer res_ultima, das oben behandelt wird)
+      if (param.key.startsWith('upgrades.researches.')) {
+        const researchId = param.key.split('.')[2];
+        
+        // res_ultima wird oben separat behandelt
+        if (researchId === 'res_ultima') {
+          return true;
+        }
+        
+        const research = UPGRADES.researches?.find(r => r.id === researchId);
+        
+        if (research?.unlock_gem && research?.unlock_lvl) {
+          const gemState = gemPlannerStore.gemStates?.[research.unlock_gem];
+          const gemLevel = gemState?.level || 0;
+          
+          // Prüfe Gem-Level
+          if (gemLevel < research.unlock_lvl) {
+            return false;
+          }
+          
+          // Prüfe auch unlock_node wenn vorhanden (und berücksichtige Overrides)
+          if (research.unlock_node !== undefined) {
+            const nodeKey = `upgrades.gems_nodes.${research.unlock_gem}_gem${research.unlock_node}`;
+            const nodeOverride = localOverrides.value[nodeKey];
+            
+            const nodeParam = parameterData.value
+              .flatMap(cat => cat.params)
+              .find(p => p.key === nodeKey);
+            const nodeGlobalValue = nodeParam?.globalValue || 0;
+            
+            const nodeEffectiveValue = (nodeOverride !== null && nodeOverride !== undefined) 
+              ? nodeOverride 
+              : nodeGlobalValue;
+            
+            if (nodeEffectiveValue <= 0) {
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+      
       // Alle anderen Parameter immer anzeigen
       const shouldShow = true;
       
@@ -1555,6 +1627,37 @@ function getValueColorClass(paramKey, globalValue) {
   return 'text-white';
 }
 
+// Bestimmt den normalen Step für einen Parameter
+function getParamStep(param) {
+  // res_ultima hat spezielle Step-Größe von 300k
+  if (param.key === 'upgrades.researches.res_ultima') {
+    return 300000;
+  }
+  return param.step || 1;
+}
+
+// Bestimmt den schnellen Step für einen Parameter
+function getParamFastStep(param) {
+  // res_ultima hat spezielle Fast-Step-Größe von 1.5M
+  if (param.key === 'upgrades.researches.res_ultima') {
+    return 1500000;
+  }
+  return param.fastStep || 10;
+}
+
+// Formatiert den Parameterwert - nutzt formatNumber für große Zahlen
+function formatParamValue(param, value) {
+  // res_ultima: 1 Dezimalstelle ab 1M, sonst keine
+  if (param.key === 'upgrades.researches.res_ultima') {
+    return formatNumber(value, value >= 1000000 ? 1 : 0);
+  }
+  // Andere große Zahlen ohne Dezimalstellen
+  if (param.maxValue && param.maxValue >= 100000) {
+    return formatNumber(value, 0);
+  }
+  return value;
+}
+
 function resetOverride(param) {
   localOverrides.value[param] = null;
   calculateTotalCost();
@@ -1629,6 +1732,31 @@ watch(() => props.isVisible, (newValue) => {
     
     loadOverrideData();
   }
+});
+
+// Watch für res_ultima Änderungen - aktualisiert Tier 1 Relic maxLevel dynamisch
+watch(() => localOverrides.value['upgrades.researches.res_ultima'], (newResUltima) => {
+  if (!props.isVisible) return;
+  
+  // Berechne den effektiven res_ultima Wert (Override oder Global)
+  const globalResUltima = hunterStore.getUpgradeValue('researches', 'res_ultima') || 0;
+  const effectiveResUltima = newResUltima !== null ? newResUltima : globalResUltima;
+  const bonus = getTier1RelicMaxLevelBonus(effectiveResUltima);
+  
+  // Aktualisiere maxLevel für alle Tier 1 Relics in parameterData
+  parameterData.value.forEach(category => {
+    category.params.forEach(param => {
+      if (param.key.startsWith('upgrades.relics.')) {
+        const relicId = param.key.split('.').pop();
+        if (isTier1Relic(relicId)) {
+          // Finde das originale Relic für das base maxLevel
+          const relicDef = UPGRADES.relics?.find(r => r.id === relicId);
+          const baseMaxLevel = relicDef?.maxLevel || 100;
+          param.maxValue = baseMaxLevel + bonus;
+        }
+      }
+    });
+  });
 });
 
 watch(() => props.currentOverrides, () => {
