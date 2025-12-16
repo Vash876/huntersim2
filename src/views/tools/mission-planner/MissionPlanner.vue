@@ -242,15 +242,24 @@
             </button>
           </div>
           
-          <!-- Clear Button (not shown in Relics tab) -->
+          <!-- Buttons (not shown in Relics tab) -->
           <div v-if="activeTab !== 'relics'" class="flex gap-1.5 pr-2">
+            <!-- Fill Order Settings Button (only in Farms tab) -->
+            <button
+              v-if="activeTab === 'missions'"
+              @click="showFillOrderModal = true"
+              class="p-1.5 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-500 text-white transition-colors"
+              title="Fill order settings"
+            >
+              <IconSettings size="14" />
+            </button>
             <button
               @click="handleClearAll"
               class="px-2.5 py-1 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors flex items-center gap-1"
               title="Clear all assignments and reset to auto mode"
             >
-              <IconTrash size="14" />
-              Clear
+              <IconRefresh size="14" />
+              Reset
             </button>
           </div>
           
@@ -523,6 +532,12 @@
     @close="showCampaignModal = false"
     @select="onCampaignSelect"
   />
+
+  <!-- Fill Order Settings Modal -->
+  <FillOrderSettingsModal
+    :is-visible="showFillOrderModal"
+    @close="showFillOrderModal = false"
+  />
   </div>
 </template>
 
@@ -535,7 +550,8 @@ import {
   IconLock,
   IconLockOpen,
   IconPlanet,
-  IconFlag
+  IconFlag,
+  IconSettings
 } from '@tabler/icons-vue';
 import { PLANETS, FARM_MISSIONS, CAMPAIGN_MISSIONS } from '@/views/tools/mission-planner/constants/missions';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
@@ -550,6 +566,7 @@ import RelicsTab from '@/views/tools/mission-planner/components/RelicsTab.vue';
 import RelicsTabMobile from '@/views/tools/mission-planner/components/RelicsTabMobile.vue';
 import FarmsTabMobile from '@/views/tools/mission-planner/components/FarmsTabMobile.vue';
 import SummaryBarMobile from '@/views/tools/mission-planner/components/SummaryBarMobile.vue';
+import FillOrderSettingsModal from '@/views/tools/mission-planner/components/FillOrderSettingsModal.vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 
 // Mobile detection
@@ -581,6 +598,9 @@ const activeTab = computed({
 
 // Campaign Modal state
 const showCampaignModal = ref(false);
+
+// Fill Order Settings Modal state
+const showFillOrderModal = ref(false);
 
 // Computed: Available Personnel from store
 const availablePersonnel = computed(() => missionPlannerStore.availablePersonnel);
@@ -778,6 +798,11 @@ function formatNumberWithCommas(num, decimals = 0) {
 // Handle clear all button
 function handleClearAll() {
   missionPlannerStore.clearAllAssignments();
+}
+
+// Handle reset fill order button
+function handleResetFillOrder() {
+  missionPlannerStore.resetFillOrder();
 }
 
 // Handle reset targets button (for Relics tab)

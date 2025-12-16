@@ -1,5 +1,27 @@
 <template>
   <div class="bg-gray-800/50 rounded-b-lg border border-gray-700/50 border-t-0 overflow-hidden">
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-end px-2 py-1.5 bg-gray-700/30 border-b border-gray-600/50">
+      <div class="flex items-center gap-1.5">
+        <button
+          @click="handleClearAll"
+          class="flex items-center gap-1 px-1.5 py-1 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-500 text-white transition-colors"
+          title="Clear all assignments and reset to auto mode"
+        >
+          <IconRefresh size="14" />
+          <span class="text-[10px] text-gray-300">Reset</span>
+        </button>
+        <button
+          @click="showFillOrderModal = true"
+          class="flex items-center gap-1 px-1.5 py-1 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-500 text-white transition-colors"
+          title="Fill order settings"
+        >
+          <IconSettings size="14" />
+          <span class="text-[10px] text-gray-300">Fill Order</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Mission Cards -->
     <div class="p-2 space-y-1.5">
       <template v-for="(missions, planetIndex) in farmMissionsByPlanet" :key="planetIndex">
@@ -204,19 +226,34 @@
         </div>
       </div>
     </div>
+
+    <!-- Fill Order Settings Modal -->
+    <FillOrderSettingsModal
+      :is-visible="showFillOrderModal"
+      @close="showFillOrderModal = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { IconPlanet, IconFlag, IconLock, IconLockOpen } from '@tabler/icons-vue';
+import { ref, computed } from 'vue';
+import { IconPlanet, IconFlag, IconLock, IconLockOpen, IconRefresh, IconSettings } from '@tabler/icons-vue';
 import { FARM_MISSIONS, CAMPAIGN_MISSIONS } from '@/views/tools/mission-planner/constants/missions';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { formatNumber } from '@/composables/format';
+import FillOrderSettingsModal from './FillOrderSettingsModal.vue';
 
 const emit = defineEmits(['openCampaignModal']);
 
 const missionPlannerStore = useMissionPlannerStore();
+
+// Fill Order Settings Modal state
+const showFillOrderModal = ref(false);
+
+// Handle clear all button
+function handleClearAll() {
+  missionPlannerStore.clearAllAssignments();
+}
 
 // Group farm missions by planet
 const farmMissionsByPlanet = computed(() => {

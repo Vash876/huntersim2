@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { MODIFIERS, getDefaultModifierValues } from '@/views/tools/mission-planner/constants/modifiers';
 import {
@@ -50,6 +50,26 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   const isLoading = ref(false);
   const error = ref(null);
 
+  // ============================================
+  // PROFILE SYSTEM
+  // ============================================
+  
+  // Default profile ID constant
+  const DEFAULT_PROFILE_ID = 'default';
+  
+  // Profiles list (persistent via localStorage)
+  // Format: { id: string, name: string, data: ProfileData }
+  // Default profile is always included
+  const profiles = useStorage('mission-planner-profiles', [
+    { id: DEFAULT_PROFILE_ID, name: 'Default', createdAt: Date.now(), updatedAt: Date.now(), data: null }
+  ]);
+  
+  // Active profile ID (default profile by default)
+  const activeProfileId = useStorage('mission-planner-active-profile', DEFAULT_PROFILE_ID);
+  
+  // Flag to prevent recursive auto-save during profile load
+  const isLoadingProfile = ref(false);
+
   // Modifier values (persistent via localStorage with useStorage)
   const modifierValues = useStorage('mission-planner-modifiers', getDefaultModifierValues());
   
@@ -72,6 +92,10 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   // Format: { missionTag: priority } - lower = higher priority (1-16)
   // Missions are processed in this order during optimization
   const fillOrder = useStorage('mission-planner-fill-order', { ...DEFAULT_FILL_ORDER });
+  
+  // Custom default fill order (persistent via localStorage)
+  // This is the user's preferred default fill order used when resetting
+  const customDefaultFillOrder = useStorage('mission-planner-custom-default-fill-order', { ...DEFAULT_FILL_ORDER });
 
   // Last optimization result (not persisted)
   const lastOptimizationResult = ref(null);
@@ -811,15 +835,15 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   }
 
   /**
-   * Clear all assignments and manual modes, reset fill order, clear campaign, then re-optimize
+   * Clear all assignments and manual modes, reset fill order to custom default, clear campaign, then re-optimize
    */
   function clearAllAssignments() {
     missionAssignments.value = {};
     manualModeMissions.value = {};
     lastOptimizationResult.value = null;
     
-    // Reset fill order to defaults
-    fillOrder.value = { ...DEFAULT_FILL_ORDER };
+    // Reset fill order to custom default (or original default if no custom set)
+    fillOrder.value = { ...customDefaultFillOrder.value };
     
     // Clear campaign selection and reset to defaults
     selectedCampaign.value = null;
@@ -1178,10 +1202,38 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   }
 
   /**
-   * Reset fill order to default
+   * Reset fill order to custom default (or original default if no custom set)
    */
   function resetFillOrder() {
+    fillOrder.value = { ...customDefaultFillOrder.value };
+  }
+  
+  /**
+   * Reset fill order to original hard-coded default
+   */
+  function resetFillOrderToOriginal() {
     fillOrder.value = { ...DEFAULT_FILL_ORDER };
+  }
+  
+  /**
+   * Set custom default fill order
+   */
+  function setCustomDefaultFillOrder(newOrder) {
+    customDefaultFillOrder.value = { ...newOrder };
+  }
+  
+  /**
+   * Save current fill order as custom default
+   */
+  function saveCurrentAsDefaultFillOrder() {
+    customDefaultFillOrder.value = { ...fillOrder.value };
+  }
+  
+  /**
+   * Reset custom default fill order to original default
+   */
+  function resetCustomDefaultFillOrder() {
+    customDefaultFillOrder.value = { ...DEFAULT_FILL_ORDER };
   }
 
   /**
@@ -1602,6 +1654,10 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       currentHoursInTR: currentHoursInTR.value,
       campaignFillOrder: campaignFillOrder.value,
       campaignManualMode: campaignManualMode.value,
+      // Profile System
+      profiles: JSON.parse(JSON.stringify(profiles.value)),
+      activeProfileId: activeProfileId.value,
+      customDefaultFillOrder: JSON.parse(JSON.stringify(customDefaultFillOrder.value)),
     };
   }
 
@@ -1656,12 +1712,237 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       if (data.campaignManualMode !== undefined) {
         campaignManualMode.value = data.campaignManualMode;
       }
+      // Profile System
+      if (data.profiles) {
+        profiles.value = data.profiles;
+      }
+      if (data.activeProfileId !== undefined) {
+        activeProfileId.value = data.activeProfileId;
+      }
+      if (data.customDefaultFillOrder) {
+        Object.assign(customDefaultFillOrder.value, data.customDefaultFillOrder);
+      }
 
       return true;
     } catch (error) {
       console.error('❌ Failed to import Mission Planner data:', error);
       return false;
     }
+  }
+
+  // ============================================
+  // PROFILE MANAGEMENT
+  // ============================================
+
+  /**
+   * Get profile data structure for saving
+   * Only includes modifier-related data, not assignments or timers
+   */
+  function getProfileData() {
+    return {
+      modifierValues: JSON.parse(JSON.stringify(modifierValues.value)),
+      relicLevels: JSON.parse(JSON.stringify(relicLevels.value)),
+      relicTargetLevels: JSON.parse(JSON.stringify(relicTargetLevels.value)),
+      customDefaultFillOrder: JSON.parse(JSON.stringify(customDefaultFillOrder.value)),
+      currentFragments: currentFragments.value,
+      fragmentsLastUpdated: fragmentsLastUpdated.value,
+      currentHoursInTR: currentHoursInTR.value,
+    };
+  }
+
+  /**
+   * Apply profile data to current state
+   */
+  function applyProfileData(data) {
+    if (!data) return;
+    
+    isLoadingProfile.value = true;
+    
+    if (data.modifierValues) {
+      Object.assign(modifierValues.value, data.modifierValues);
+    }
+    if (data.relicLevels) {
+      Object.assign(relicLevels.value, data.relicLevels);
+    }
+    if (data.relicTargetLevels) {
+      Object.assign(relicTargetLevels.value, data.relicTargetLevels);
+    }
+    if (data.customDefaultFillOrder) {
+      Object.assign(customDefaultFillOrder.value, data.customDefaultFillOrder);
+    }
+    if (data.currentFragments !== undefined) {
+      currentFragments.value = data.currentFragments;
+    }
+    if (data.fragmentsLastUpdated !== undefined) {
+      fragmentsLastUpdated.value = data.fragmentsLastUpdated;
+    }
+    if (data.currentHoursInTR !== undefined) {
+      currentHoursInTR.value = data.currentHoursInTR;
+    }
+    
+    // Small delay to prevent immediate auto-save
+    setTimeout(() => {
+      isLoadingProfile.value = false;
+    }, 100);
+  }
+
+  /**
+   * Ensure default profile exists
+   */
+  function ensureDefaultProfile() {
+    const defaultExists = profiles.value.some(p => p.id === DEFAULT_PROFILE_ID);
+    if (!defaultExists) {
+      profiles.value.unshift({
+        id: DEFAULT_PROFILE_ID,
+        name: 'Default',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        data: getProfileData()
+      });
+    }
+    // Ensure active profile is set
+    if (!activeProfileId.value) {
+      activeProfileId.value = DEFAULT_PROFILE_ID;
+    }
+  }
+
+  /**
+   * Auto-save current data to active profile
+   * Called automatically when modifier values change
+   */
+  function autoSaveActiveProfile() {
+    if (isLoadingProfile.value) return;
+    if (!activeProfileId.value) return;
+    
+    const profileIndex = profiles.value.findIndex(p => p.id === activeProfileId.value);
+    if (profileIndex === -1) return;
+    
+    profiles.value[profileIndex].data = getProfileData();
+    profiles.value[profileIndex].updatedAt = Date.now();
+  }
+
+  /**
+   * Get all profiles
+   */
+  function getProfiles() {
+    ensureDefaultProfile();
+    return profiles.value;
+  }
+
+  /**
+   * Get active profile
+   */
+  function getActiveProfile() {
+    ensureDefaultProfile();
+    return profiles.value.find(p => p.id === activeProfileId.value) || profiles.value[0];
+  }
+
+  /**
+   * Create a new profile from current data
+   * @param {string} name - Profile name
+   * @returns {Object} Created profile
+   */
+  function createProfile(name) {
+    const profile = {
+      id: `profile_${Date.now()}`,
+      name: name || `Profile ${profiles.value.length}`,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      data: getProfileData()
+    };
+    
+    profiles.value.push(profile);
+    return profile;
+  }
+
+  /**
+   * Load a profile by ID
+   * @param {string} profileId - Profile ID to load
+   * @returns {boolean} Success status
+   */
+  function loadProfile(profileId) {
+    const profile = profiles.value.find(p => p.id === profileId);
+    if (!profile) return false;
+    
+    activeProfileId.value = profileId;
+    
+    // Only apply data if profile has saved data
+    if (profile.data) {
+      applyProfileData(profile.data);
+    }
+    
+    return true;
+  }
+
+  /**
+   * Rename a profile
+   * @param {string} profileId - Profile ID
+   * @param {string} newName - New profile name
+   * @returns {boolean} Success status
+   */
+  function renameProfile(profileId, newName) {
+    // Cannot rename default profile
+    if (profileId === DEFAULT_PROFILE_ID) return false;
+    
+    const profile = profiles.value.find(p => p.id === profileId);
+    if (!profile) return false;
+    
+    profile.name = newName;
+    profile.updatedAt = Date.now();
+    return true;
+  }
+
+  /**
+   * Delete a profile
+   * @param {string} profileId - Profile ID to delete
+   * @returns {boolean} Success status
+   */
+  function deleteProfile(profileId) {
+    // Cannot delete default profile
+    if (profileId === DEFAULT_PROFILE_ID) return false;
+    
+    const index = profiles.value.findIndex(p => p.id === profileId);
+    if (index === -1) return false;
+    
+    profiles.value.splice(index, 1);
+    
+    // If deleted profile was active, switch to default
+    if (activeProfileId.value === profileId) {
+      loadProfile(DEFAULT_PROFILE_ID);
+    }
+    
+    return true;
+  }
+
+  /**
+   * Duplicate a profile
+   * @param {string} profileId - Profile ID to duplicate
+   * @returns {Object|null} New profile or null if failed
+   */
+  function duplicateProfile(profileId) {
+    const profile = profiles.value.find(p => p.id === profileId);
+    if (!profile) return null;
+    
+    // For default profile without saved data, use current data
+    const dataToClone = profile.data || getProfileData();
+    
+    const newProfile = {
+      id: `profile_${Date.now()}`,
+      name: `${profile.name} (Copy)`,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      data: JSON.parse(JSON.stringify(dataToClone))
+    };
+    
+    profiles.value.push(newProfile);
+    return newProfile;
+  }
+
+  /**
+   * Check if profile is the default profile
+   */
+  function isDefaultProfile(profileId) {
+    return profileId === DEFAULT_PROFILE_ID;
   }
 
   // ============================================
@@ -3225,6 +3506,35 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   });
 
   // ============================================
+  // AUTO-SAVE WATCHERS
+  // ============================================
+  
+  // Auto-save when modifier values change
+  watch(modifierValues, () => {
+    autoSaveActiveProfile();
+  }, { deep: true });
+  
+  // Auto-save when relic levels change
+  watch(relicLevels, () => {
+    autoSaveActiveProfile();
+  }, { deep: true });
+  
+  // Auto-save when relic target levels change
+  watch(relicTargetLevels, () => {
+    autoSaveActiveProfile();
+  }, { deep: true });
+  
+  // Auto-save when fragment tracking values change
+  watch([currentFragments, currentHoursInTR], () => {
+    autoSaveActiveProfile();
+  });
+  
+  // Auto-save when custom default fill order changes
+  watch(customDefaultFillOrder, () => {
+    autoSaveActiveProfile();
+  }, { deep: true });
+
+  // ============================================
   // RETURN
   // ============================================
   
@@ -3241,6 +3551,20 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     selectedCampaign,
     campaignFillOrder,
     activeMainTab,
+    
+    // Profile System
+    profiles,
+    activeProfileId,
+    DEFAULT_PROFILE_ID,
+    getProfiles,
+    getActiveProfile,
+    createProfile,
+    loadProfile,
+    renameProfile,
+    deleteProfile,
+    duplicateProfile,
+    isDefaultProfile,
+    autoSaveActiveProfile,
     
     // Computed - Individual Breakdowns
     loopmodEffectsBreakdown,
@@ -3316,7 +3640,12 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     setFillOrder,
     swapFillOrder,
     resetFillOrder,
+    resetFillOrderToOriginal,
     getMissionsByFillOrder,
+    customDefaultFillOrder,
+    setCustomDefaultFillOrder,
+    saveCurrentAsDefaultFillOrder,
+    resetCustomDefaultFillOrder,
     
     // Actions - Campaign Selection
     setSelectedCampaign,

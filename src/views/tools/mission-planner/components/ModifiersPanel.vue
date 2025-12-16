@@ -8,6 +8,8 @@
           <IconAdjustments size="16" class="mr-2 text-purple-400" />
           Mission Modifiers
         </h2>
+        <!-- Profile Selector -->
+        <ProfileSelector />
       </div>
     </div>
 
@@ -643,6 +645,7 @@ import { getGadgetCost, calcGadgetCostDifference, formatGadgetCost } from '@/uti
 import { formatNumber } from '@/composables/format';
 import { RELIC_COSTS } from '@/views/tools/mission-planner/constants/relics';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
+import ProfileSelector from './ProfileSelector.vue';
 
 // Import modifier icons (required for Vite/Netlify production builds)
 import cellsIcon from '@/assets/general/cells.png';

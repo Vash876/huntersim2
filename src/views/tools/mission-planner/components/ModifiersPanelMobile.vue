@@ -1,9 +1,13 @@
 <template>
   <div class="flex flex-col gap-3">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-purple-700/70 to-gray-800/70 rounded-xl p-2.5 flex items-center gap-2">
-      <IconAdjustments :size="16" class="text-purple-400" />
-      <h2 class="text-sm font-bold text-white">Mission Modifiers</h2>
+    <div class="bg-gradient-to-r from-purple-700/70 to-gray-800/70 rounded-xl p-2.5 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <IconAdjustments :size="16" class="text-purple-400" />
+        <h2 class="text-sm font-bold text-white">Mission Modifiers</h2>
+      </div>
+      <!-- Profile Selector -->
+      <ProfileSelector />
     </div>
 
     <!-- Tab Pills (Horizontal Scroll) -->
@@ -537,6 +541,7 @@ import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
 import { formatNumber } from '@/composables/format';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
+import ProfileSelector from './ProfileSelector.vue';
 import { MODIFIERS } from '../constants/modifiers';
 import { ALL_LOOPMODS } from '../constants/loopmods';
 import { getNextLevelCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';

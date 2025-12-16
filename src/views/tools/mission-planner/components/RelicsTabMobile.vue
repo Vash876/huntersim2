@@ -81,9 +81,19 @@
     </div>
 
     <!-- Tier 1 Relics Header -->
-    <div class="flex items-center gap-2 border-l-2 border-amber-500/50 pl-2">
-      <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
-      <h3 class="text-sm font-semibold text-amber-400">Tier 1 Relics</h3>
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2 border-l-2 border-amber-500/50 pl-2">
+        <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
+        <h3 class="text-sm font-semibold text-amber-400">Tier 1 Relics</h3>
+      </div>
+      <button
+        @click="handleResetTargets"
+        class="flex items-center gap-1 px-1.5 py-1 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-500 text-white transition-colors"
+        title="Reset all relic targets to current levels"
+      >
+        <IconRefresh size="14" />
+        <span class="text-[10px] text-gray-300">Reset Targets</span>
+      </button>
     </div>
 
     <!-- Relic Cards (Compact) -->
@@ -197,7 +207,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, nextTick } from 'vue';
-import { IconCheck, IconClock } from '@tabler/icons-vue';
+import { IconCheck, IconClock, IconRefresh } from '@tabler/icons-vue';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { formatNumber } from '@/composables/format';
@@ -255,6 +265,15 @@ const currentHoursInTR = computed(() => missionPlannerStore.currentHoursInTR);
 
 // Tier 1 relics list
 const tier1Relics = computed(() => getTier1Relics());
+
+// Handle reset targets button
+function handleResetTargets() {
+  const tier1RelicIds = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14'];
+  tier1RelicIds.forEach(relicId => {
+    const currentLevel = missionPlannerStore.relicLevels[relicId] || 0;
+    missionPlannerStore.relicTargetLevels[relicId] = currentLevel;
+  });
+}
 
 // Frags per day
 const fragsPerDay = computed(() => {
