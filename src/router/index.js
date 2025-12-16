@@ -175,7 +175,7 @@ const routes = [
     component: () => import('../views/tools/InscryptionPlanner.vue'),
   },
   {
-    path: '/tools/mission-planner',
+    path: '/tools/mission-relic-planner',
     name: 'Mission & Relic Planner',
     component: () => import('../views/tools/mission-planner/MissionPlanner.vue'),
   },
