@@ -418,7 +418,7 @@ export const allBoosts = [
     orbcalc: true,
     permanent: true,
     tooltip: '0',
-    multiplier: (value) => 1 + 0.02 * value,
+    multiplier: 1,
     max: 25
   },
   {
