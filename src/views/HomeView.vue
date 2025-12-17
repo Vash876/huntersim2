@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.9.9',
+    date: '2025-12-17',
+    changes: [
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added Tier 2 Relic #10 with Mech Count dependency',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.9.8',
     date: '2025-12-14',
     changes: [

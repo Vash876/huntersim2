@@ -435,6 +435,39 @@ export const allBoosts = [
     fragmulti: (value) => Math.pow(1.021, value),
     max: 21
   },
+  {
+    id: 44,
+    key: 't2r10',
+    label: 'Tier 2 Relic #10',
+    category: 'relic',
+    unlock: 'power',
+    unlock_level: 3,
+    type: 'number',
+    orbcalc: true,
+    permanent: true,
+    tooltip: '',
+    multiplier: (value, allValues) => {
+      const mechCount = allValues?.mechCount || 0;
+      return Math.pow(1 + 0.0005 * mechCount, value);
+    },
+    max: 25
+  },
+  {
+    id: 45,
+    key: 'mechCount',
+    label: 'Mech Count',
+    category: 'relic',
+    unlock: 'power',
+    unlock_level: 3,
+    type: 'number',
+    orbcalc: false,
+    permanent: true,
+    tooltip: 'Total number of Mechs owned. Used for T2R10 calculation.',
+    normalControl: 1,
+    fastControl: 10,
+    multiplier: 1,
+  },
+
 
   // Inscriptions
   {
