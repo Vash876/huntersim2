@@ -24,8 +24,8 @@ export const GEM_UPGRADE_MAPPING = {
   'borge-loot-bonus': 'attraction_lootBorge',
   'ozzy-loot-bonus': 'attraction_lootOzzy',
   'knox-loot-bonus': 'attraction_lootKnox',
+  'catch-up-power-borge-ozzy': 'attraction_catchUp',  // Aktuelle ID in attraction.js
   'catch-up-power': 'attraction_catchUp',  // ALTE Store-ID (für Kompatibilität mit existierenden Daten)
-  'catch-up-power-borge-ozzy': 'attraction_catchUp',  // NEUE ID in attraction.js Definition
   'catch-up-power-knox': 'attraction_catchUp2',
   
   // Creation Gem Upgrades
@@ -37,19 +37,28 @@ export const GEM_UPGRADE_MAPPING = {
 /**
  * Umgekehrtes Mapping: Von upgrades.gems_nodes keys zu gemPlannerStore IDs
  * 
- * Wird automatisch aus GEM_UPGRADE_MAPPING generiert
+ * Manuell definiert um sicherzustellen, dass die aktuellen Store-IDs verwendet werden
  */
-export const REVERSE_GEM_UPGRADE_MAPPING = Object.entries(GEM_UPGRADE_MAPPING).reduce((acc, [key, value]) => {
-  acc[value] = key;
-  return acc;
-}, {});
+export const REVERSE_GEM_UPGRADE_MAPPING = {
+  // Attraction Gem Upgrades
+  'attraction_lootBorge': 'borge-loot-bonus',
+  'attraction_lootOzzy': 'ozzy-loot-bonus',
+  'attraction_lootKnox': 'knox-loot-bonus',
+  'attraction_catchUp': 'catch-up-power-borge-ozzy',  // Aktuelle Store-ID
+  'attraction_catchUp2': 'catch-up-power-knox',
+  
+  // Creation Gem Upgrades
+  'creation_borgeGU': 'borge-stat-bonus',
+  'creation_ozzyGU': 'ozzy-stat-bonus',
+  'creation_knoxGU': 'knox-stat-bonus',
+};
 
 /**
  * Upgrade-Name Mapping: Von kurzem Upgrade-Namen (ohne Gem-Typ) zu gemPlannerStore IDs
  * 
  * Format:
  * - Key: Kurzer Name wie er in upgrades.gems_nodes nach dem Unterstrich kommt (z.B. 'catchUp', 'lootBorge')
- * - Value: ID wie sie im gemPlannerStore gespeichert ist (z.B. 'catch-up-power')
+ * - Value: ID wie sie im gemPlannerStore gespeichert ist (z.B. 'catch-up-power-borge-ozzy')
  * 
  * Wird für die Parameter-Extraktion im Worker verwendet
  */
@@ -58,7 +67,7 @@ export const UPGRADE_NAME_TO_STORE_ID = {
   'lootBorge': 'borge-loot-bonus',
   'lootOzzy': 'ozzy-loot-bonus',
   'lootKnox': 'knox-loot-bonus',
-  'catchUp': 'catch-up-power',  // ALTE Store-ID (für Kompatibilität)
+  'catchUp': 'catch-up-power-borge-ozzy',  // Store-ID wie in attraction.js definiert
   'catchUp2': 'catch-up-power-knox',
   
   // Creation Gem Upgrades
