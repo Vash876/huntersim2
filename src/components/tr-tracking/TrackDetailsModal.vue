@@ -667,6 +667,16 @@ const gridOptions = ref({
   columnDefs: [],
   rowData: [],
   getRowId: (params) => params.data.id, // Add row ID function to help AG Grid track rows
+  getRowClass: (params) => {
+    // Check if this entry represents a LR Reset
+    if (params.data && params.data.id) {
+      const previousEntry = findPreviousEntryChronologically(params.data.id);
+      if (isLRResetEntry(params.data, previousEntry)) {
+        return 'lr-reset-row';
+      }
+    }
+    return null;
+  },
   suppressMovableColumns: false, // Allow column moving by default
   suppressMoveWhenColumnDragging: false, // Allow live movement during drag
   suppressColumnMoveAnimation: false, // Keep animations for smooth movement
@@ -1927,6 +1937,127 @@ const researchData = [
   { id: "research91", level: 5, bonus: 1, cost: "5900" },
 ];
 
+// Helper: Get AttrGN3 Calculator settings from localStorage
+function getAttrGN3CalculatorSettings() {
+  let settings = {
+    tickSpeed: 1.5,
+    ticksPerTick: 1,
+    relic14: 0,
+    efficiencyBadge: false,
+    ts5: false
+  };
+  
+  try {
+    const savedSettings = JSON.parse(localStorage.getItem('attrGN3Calculator_settings') || '{}');
+    if (savedSettings.tickSpeed !== undefined) settings.tickSpeed = savedSettings.tickSpeed;
+    if (savedSettings.ticksPerTick !== undefined) settings.ticksPerTick = savedSettings.ticksPerTick;
+    if (savedSettings.relic14 !== undefined) settings.relic14 = savedSettings.relic14;
+    if (savedSettings.efficiencyBadge !== undefined) settings.efficiencyBadge = savedSettings.efficiencyBadge;
+    if (savedSettings.ts5 !== undefined) settings.ts5 = savedSettings.ts5;
+  } catch (error) {
+    console.warn('Could not load AttrGN3 Calculator settings, using defaults');
+  }
+  
+  return settings;
+}
+
+// Helper: Calculate expected ticks between two timestamps
+function calculateExpectedTicks(fromTimestamp, toTimestamp) {
+  const settings = getAttrGN3CalculatorSettings();
+  
+  if (settings.tickSpeed <= 0 || settings.ticksPerTick <= 0) return 0;
+  
+  const fromDate = new Date(fromTimestamp);
+  const toDate = new Date(toTimestamp);
+  const secondsElapsed = (toDate - fromDate) / 1000;
+  
+  if (secondsElapsed <= 0) return 0;
+  
+  // Calculate expected ticks: (seconds / tickSpeed) * ticksPerTick
+  const expectedTicks = (secondsElapsed / settings.tickSpeed) * settings.ticksPerTick;
+  
+  return expectedTicks;
+}
+
+// Helper: Calculate predicted LR Ticks for a new entry based on previous entry
+function calculatePredictedLRTicks() {
+  if (!props.track || !props.track.entries || props.track.entries.length === 0) {
+    return 0;
+  }
+  
+  // Get the most recent entry (sorted by date descending)
+  const sortedEntries = [...props.track.entries].sort((a, b) => {
+    return new Date(b.date) - new Date(a.date);
+  });
+  
+  const lastEntry = sortedEntries[0];
+  const lastLRTicks = lastEntry.values?.['lr-ticks'] || 0;
+  const lastTimestamp = lastEntry.date;
+  
+  if (lastLRTicks === 0) return 0;
+  
+  // Calculate expected ticks since last entry
+  const now = new Date();
+  const expectedTicksSinceLastEntry = calculateExpectedTicks(lastTimestamp, now.toISOString());
+  
+  // Predicted LR Ticks = last LR Ticks + expected ticks
+  const predictedTicks = lastLRTicks + expectedTicksSinceLastEntry;
+  
+  return Math.round(predictedTicks);
+}
+
+// Helper: Check if a LR Reset occurred for a given entry (compared to previous)
+function isLRResetEntry(entry, previousEntry) {
+  if (!previousEntry) return false;
+  
+  const currentTicks = entry.values?.['lr-ticks'] || 0;
+  const previousTicks = previousEntry.values?.['lr-ticks'] || 0;
+  
+  // If current ticks is 0 or previous is 0, can't determine reset
+  if (currentTicks === 0 || previousTicks === 0) return false;
+  
+  // Calculate expected ticks based on time difference
+  const expectedTicks = calculateExpectedTicks(previousEntry.date, entry.date);
+  
+  // Expected total ticks = previous ticks + expected increase
+  const expectedTotalTicks = previousTicks + expectedTicks;
+  
+  // Allow 20% tolerance for manual input inaccuracy
+  const tolerance = 0.20;
+  const minExpectedTicks = expectedTotalTicks * (1 - tolerance);
+  
+  // If current ticks are significantly lower than expected minimum, it's a LR Reset
+  // (current should be at least close to previous + expected increase)
+  const isReset = currentTicks < minExpectedTicks;
+  
+  return isReset;
+}
+
+// Helper: Get entry by index in chronological order (oldest first)
+function getChronologicalEntryByIndex(index) {
+  if (!props.track || !props.track.entries) return null;
+  
+  const chronologicalEntries = [...props.track.entries].sort((a, b) => {
+    return new Date(a.date) - new Date(b.date);
+  });
+  
+  return chronologicalEntries[index] || null;
+}
+
+// Helper: Find previous entry chronologically
+function findPreviousEntryChronologically(entryId) {
+  if (!props.track || !props.track.entries) return null;
+  
+  const chronologicalEntries = [...props.track.entries].sort((a, b) => {
+    return new Date(a.date) - new Date(b.date);
+  });
+  
+  const currentIndex = chronologicalEntries.findIndex(e => e.id === entryId);
+  if (currentIndex <= 0) return null;
+  
+  return chronologicalEntries[currentIndex - 1];
+}
+
 function getAttGN3DaysToMax() {
   const latestValues = getLatestValues();
   
@@ -3079,6 +3210,39 @@ async function addNewEntry() {
     entryToSave.values[resource.id] = 0;
   });
   
+  // Get the previous entry (most recent) for auto-fill
+  let previousEntry = null;
+  if (props.track && props.track.entries && props.track.entries.length > 0) {
+    const sortedEntries = [...props.track.entries].sort((a, b) => {
+      return new Date(b.date) - new Date(a.date);
+    });
+    previousEntry = sortedEntries[0];
+  }
+  
+  // Auto-fill resources with autoFill: true from previous entry
+  if (previousEntry) {
+    draggableResources.value.forEach(resource => {
+      // Check if this resource has autoFill: true
+      const resourceDef = trTrackingStore.availableResources.find(r => r.id === resource.id);
+      if (resourceDef?.autoFill && previousEntry.values?.[resource.id] !== undefined) {
+        const previousValue = previousEntry.values[resource.id];
+        if (previousValue !== 0 && previousValue !== null && previousValue !== '') {
+          entryToSave.values[resource.id] = previousValue;
+          console.log(`✅ Auto-filled ${resource.name || resource.id}: ${previousValue} (from previous entry)`);
+        }
+      }
+    });
+  }
+  
+  // Auto-populate LR Ticks based on previous entry and time elapsed
+  if (entryToSave.values.hasOwnProperty('lr-ticks')) {
+    const predictedLRTicks = calculatePredictedLRTicks();
+    if (predictedLRTicks > 0) {
+      entryToSave.values['lr-ticks'] = predictedLRTicks;
+      console.log(`✅ Auto-populated LR Ticks: ${predictedLRTicks}`);
+    }
+  }
+  
   // Auto-populate Mat3 values for enabled hunters (jetzt mit aktuellen Werten)
   const hunterBuildSettings = trTrackingStore.hunterBuildSettings;
   if (hunterBuildSettings?.enabledHunters && hunterBuildSettings?.hunterProductions) {
@@ -3927,6 +4091,20 @@ input[type="number"] {
 :deep(.ag-grid-container) .ag-header-cell.drag-header:hover {
   background-color: rgba(59, 130, 246, 0.1) !important;
   border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+/* LR Reset Row Styling - rote Markierung für Loop Reset Einträge */
+:deep(.ag-grid-container) .ag-row.lr-reset-row {
+  background-color: rgba(220, 38, 38, 0.25) !important;
+}
+:deep(.ag-grid-container) .ag-row.lr-reset-row:hover {
+  background-color: rgba(220, 38, 38, 0.35) !important;
+}
+:deep(.ag-grid-container) .ag-row.lr-reset-row.ag-row-odd {
+  background-color: rgba(220, 38, 38, 0.30) !important;
+}
+:deep(.ag-grid-container) .ag-row.lr-reset-row.ag-row-odd:hover {
+  background-color: rgba(220, 38, 38, 0.40) !important;
 }
 </style>
 <style scoped>

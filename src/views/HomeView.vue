@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.9.10',
+    date: '2025-12-22',
+    changes: [
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Automatically marks entries where a new Loop Reset started with red background for easy identification',
+          'Added auto-fill for resources that rarely change between entries (LR Count, Loop Mods Purchased, AttGN3 Buff, MP, Blueprints, Inno Cores, Ulti Badge)',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.9.9',
     date: '2025-12-17',
     changes: [
