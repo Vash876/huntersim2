@@ -469,28 +469,28 @@
         <div class="grid grid-cols-2 gap-1.5">
           <div class="bg-gray-800/70 rounded p-2 border border-gray-700/30">
             <div class="flex items-center justify-between text-[10px]">
-              <span class="text-red-400 font-semibold">T1</span>
+              <span class="text-purple-400 font-semibold">T1</span>
               <span class="text-cyan-400 font-mono">{{ calculatedEffects.t1Count }}</span>
             </div>
             <div class="text-[9px] text-gray-500">Pwr: {{ calculatedEffects.t1Power }}</div>
           </div>
           <div class="bg-gray-800/70 rounded p-2 border border-gray-700/30">
             <div class="flex items-center justify-between text-[10px]">
-              <span class="text-orange-400 font-semibold">T2</span>
+              <span class="text-cyan-400 font-semibold">T2</span>
               <span class="text-cyan-400 font-mono">{{ calculatedEffects.t2Count }}</span>
             </div>
             <div class="text-[9px] text-gray-500">Pwr: {{ calculatedEffects.t2Power }}</div>
           </div>
           <div class="bg-gray-800/70 rounded p-2 border border-gray-700/30">
             <div class="flex items-center justify-between text-[10px]">
-              <span class="text-yellow-400 font-semibold">T3</span>
+              <span class="text-green-400 font-semibold">T3</span>
               <span class="text-cyan-400 font-mono">{{ calculatedEffects.t3Count }}</span>
             </div>
             <div class="text-[9px] text-gray-500">Pwr: {{ calculatedEffects.t3Power }}</div>
           </div>
           <div class="bg-gray-800/70 rounded p-2 border border-gray-700/30">
             <div class="flex items-center justify-between text-[10px]">
-              <span class="text-green-400 font-semibold">T4</span>
+              <span class="text-orange-400 font-semibold">T4</span>
               <span class="text-cyan-400 font-mono">{{ calculatedEffects.t4Count }}</span>
             </div>
             <div class="text-[9px] text-gray-500">Pwr: {{ calculatedEffects.t4Power }}</div>

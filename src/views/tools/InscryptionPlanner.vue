@@ -407,122 +407,71 @@
             >
               <template #item="{ element: item }">
                 <div 
-                  class="bg-gray-700/30 rounded-lg p-3 border border-gray-600/50"
+                  class="bg-gray-700/30 rounded-lg p-2 border border-gray-600/50"
                   :class="{
                     'border-2 border-red-500': invalidDragItems.has(item.id),
                     'border border-gray-600/50': !invalidDragItems.has(item.id)
                   }"
                 >
-                  <!-- Mobile Shopping Item Header -->
-                  <div class="flex items-start justify-between mb-2">
-                    <div class="flex items-center gap-2 flex-1 min-w-0">
-                      <div class="drag-handle cursor-move text-gray-500 hover:text-gray-400 p-1">
-                        <IconGripVertical size="14" />
-                      </div>
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between gap-2">
-                          <div class="flex items-center gap-2">
-                            <!-- Stat Upgrade Badge -->
-                            <span v-if="item.isStatUpgrade" class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
-                              Stat Upgrade
-                            </span>
-                            <!-- Regular Inscryption Badge -->
-                            <span v-else class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
-                              i{{ item.inscryptionId }}
-                            </span>
-                          </div>
-                          <!-- Rank Badge - Right Side -->
-                          <span class="text-xs bg-gray-600/50 px-1.5 py-0.5 rounded-full text-gray-300 font-mono">
-                            Rank {{ item.rank }}
-                          </span>
-                        </div>
-                        <!-- Name/Description -->
-                        <p v-if="item.isStatUpgrade" class="text-sm font-medium text-white mt-1 leading-tight truncate">
-                          {{ item.name }}
-                        </p>
-                        <p v-else class="text-sm font-medium text-white mt-1 leading-tight truncate">
-                          {{ item.description }}
-                        </p>
-                      </div>
+                  <!-- Mobile Shopping Item - Compact Single Row Header -->
+                  <div class="flex items-center gap-1.5">
+                    <div class="drag-handle cursor-move text-gray-500 hover:text-gray-400 flex-shrink-0">
+                      <IconGripVertical size="12" />
                     </div>
+                    <img 
+                      v-if="item.isStatUpgrade" 
+                      :src="getStatIconUrl(item.statKey)" 
+                      class="w-6 h-6 rounded object-cover flex-shrink-0" 
+                      :alt="item.name"
+                    />
+                    <img 
+                      v-else-if="getShoppingItemIcon(item)"
+                      :src="getShoppingItemIcon(item)" 
+                      class="w-6 h-6 rounded object-cover flex-shrink-0" 
+                      :alt="'i' + item.inscryptionId"
+                    />
+                    <div v-else class="w-6 h-6 rounded bg-gray-600/50 flex-shrink-0 animate-pulse"></div>
+                    <!-- Badge + Name + Rank in one line -->
+                    <span v-if="item.isStatUpgrade" class="text-[10px] font-mono bg-amber-900/50 px-1 rounded text-amber-300 flex-shrink-0">Stat</span>
+                    <span v-else class="text-[10px] font-mono bg-red-900/50 px-1 rounded text-red-300 flex-shrink-0">i{{ item.inscryptionId }}</span>
+                    <span class="text-xs text-white truncate flex-1">{{ item.isStatUpgrade ? item.name : item.description }}</span>
+                    <span class="text-[10px] bg-gray-600/50 px-1 rounded text-gray-300 flex-shrink-0">R{{ item.rank }}</span>
+                    <span class="text-xs font-bold text-yellow-400 flex-shrink-0">{{ formatNumber(item.costSci) }}</span>
+                    <!-- Action Buttons -->
+                    <button @click="markAsPurchased(item)" class="text-green-400 hover:text-green-300 p-0.5 flex-shrink-0" :title="isHunterSpecificItem(item) ? 'Mark as purchased (updates global)' : 'Mark as purchased'">
+                      <IconCheck size="14" />
+                    </button>
+                    <button @click="store.removeFromShoppingList(item.id)" class="text-red-400 hover:text-red-300 p-0.5 flex-shrink-0" title="Remove">
+                      <IconX size="14" />
+                    </button>
                   </div>
 
-                  <!-- Mobile Shopping Item Details -->
-                  <div class="space-y-1">
-                    <!-- Cost and Buff in one line -->
-                    <div class="flex items-center gap-4 text-xs">
-                      <span class="text-gray-400">Cost: <span class="text-yellow-400">{{ formatNumber(item.costSci) }}</span></span>
+                  <!-- Mobile Shopping Item Details - Compact -->
+                  <div class="mt-1 pl-5 space-y-0.5 text-[10px]">
+                    <!-- Buff + Hunter-specific in one line -->
+                    <div class="flex items-center gap-2 flex-wrap">
                       <span v-if="item.buffPerRank" class="text-green-400">{{ item.buffPerRank }}</span>
-                    </div>
-                    <!-- Hunter-specific Info -->
-                    <div v-if="isHunterSpecificItem(item)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5">
-                      <IconWorld size="12" class="inline mr-1" />
-                      <span v-if="item.isStatUpgrade">Automatically updates global when purchased</span>
-                      <span v-else>Automatically updates global when purchased</span>
+                      <span v-if="isHunterSpecificItem(item)" class="text-blue-400"><IconWorld size="10" class="inline" /> Auto-updates global</span>
                     </div>
                     
-                    <!-- Production Display -->
-                    <div v-if="hbmProductionDataMap[item.id]?.currentHBMProduction !== undefined" class="text-xs">
-                      <span class="text-gray-400">HBM: </span>
-                      <span class="text-blue-400">{{ formatNumber(hbmProductionDataMap[item.id]?.currentHBMProduction) }}/day</span>
-                      <span v-if="hbmProductionDataMap[item.id]?.newHBMProduction !== undefined && hbmProductionDataMap[item.id]?.newHBMProduction !== hbmProductionDataMap[item.id]?.currentHBMProduction" class="text-gray-400"> → </span>
-                      <span v-if="hbmProductionDataMap[item.id]?.newHBMProduction !== undefined && hbmProductionDataMap[item.id]?.newHBMProduction !== hbmProductionDataMap[item.id]?.currentHBMProduction" class="text-green-400">
-                        {{ formatNumber(hbmProductionDataMap[item.id]?.newHBMProduction) }}/day
+                    <!-- HBM Production + Evaluation in one line -->
+                    <div v-if="hbmProductionDataMap[item.id]?.currentHBMProduction !== undefined" class="flex items-center gap-1 flex-wrap">
+                      <span class="text-gray-400">HBM:</span>
+                      <span class="text-blue-400">{{ formatNumber(hbmProductionDataMap[item.id]?.currentHBMProduction) }}/d</span>
+                      <template v-if="hbmProductionDataMap[item.id]?.newHBMProduction !== undefined && hbmProductionDataMap[item.id]?.newHBMProduction !== hbmProductionDataMap[item.id]?.currentHBMProduction">
+                        <span class="text-gray-400">→</span>
+                        <span class="text-green-400">{{ formatNumber(hbmProductionDataMap[item.id]?.newHBMProduction) }}/d</span>
+                      </template>
+                      <span v-if="hbmProductionDataMap[item.id]?.isEvaluating" class="text-yellow-400 flex items-center gap-0.5">
+                        <div class="animate-spin rounded-full h-2 w-2 border border-yellow-400 border-t-transparent"></div> Evaluating
                       </span>
-                    </div>
-
-                    <!-- Evaluation Status -->
-                    <div v-if="hbmProductionDataMap[item.id]?.isEvaluating" class="text-xs text-yellow-400 flex items-center gap-1">
-                      <div class="animate-spin rounded-full h-3 w-3 border border-yellow-400 border-t-transparent"></div>
-                      Evaluating...
+                      <button v-else-if="hbmProductionDataMap[item.id]?.needsEvaluation && !hbmProductionDataMap[item.id]?.newHBMProduction" @click="triggerEvaluation(item)" class="text-red-400 hover:text-red-300">Evaluate</button>
                     </div>
                     
-                    <div v-else-if="hbmProductionDataMap[item.id]?.needsEvaluation && !hbmProductionDataMap[item.id]?.newHBMProduction" class="text-xs">
-                      <button @click="triggerEvaluation(item)" class="text-red-400 hover:text-red-300">
-                        Evaluate Impact
-                      </button>
-                    </div>
-                    
-                    <!-- Mobile Time Display -->
-                    <div v-if="hellishBiomatterPerDay > 0" class="flex flex-col gap-1 mt-2 pt-2 border-t border-gray-700/50">
-                      <!-- Individual item time -->
-                      <div 
-                        class="bg-blue-700/30 text-blue-200 px-2 py-1 rounded text-xs flex items-center gap-1" 
-                        title="Time to afford this item alone"
-                      >
-                        <IconClock size="12" />
-                        <span class="font-medium">Individual:</span>
-                        <span class="ml-auto">{{ formatItemTimeToSaveWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}</span>
-                      </div>
-                      <!-- In queue time -->
-                      <div 
-                        class="bg-green-700/30 text-green-200 px-2 py-1 rounded text-xs flex items-center gap-1" 
-                        title="When available in shopping queue"
-                      >
-                        <IconChartDots size="12" />
-                        <span class="font-medium">In Queue:</span>
-                        <span class="ml-auto">{{ formatCumulativeTargetDate(store.shoppingList.findIndex(listItem => listItem.id === item.id)) }}</span>
-                      </div>
-                    </div>
-                    
-                    <!-- Mobile Action Buttons -->
-                    <div class="flex items-center justify-between gap-2 mt-2 pt-2 border-t border-gray-700/50">
-                      <button
-                        @click="markAsPurchased(item)"
-                        class="flex items-center gap-1 px-2 py-1 bg-green-700 hover:bg-green-600 rounded text-xs text-white transition-colors"
-                        :title="isHunterSpecificItem(item) ? 'Mark as purchased (updates global Hunter level)' : 'Mark as purchased'"
-                      >
-                        <IconCheck size="12" />
-                        <span>Purchased</span>
-                      </button>
-                      <button
-                        @click="store.removeFromShoppingList(item.id)"
-                        class="flex items-center gap-1 px-2 py-1 bg-red-700 hover:bg-red-600 rounded text-xs text-white transition-colors"
-                        title="Remove from shopping list"
-                      >
-                        <IconX size="12" />
-                        <span>Remove</span>
-                      </button>
+                    <!-- Time Display - Compact horizontal -->
+                    <div v-if="hellishBiomatterPerDay > 0" class="flex gap-2 pt-0.5">
+                      <span class="text-blue-300" title="Time alone"><IconClock size="10" class="inline" /> {{ formatItemTimeToSaveWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}</span>
+                      <span class="text-green-300" title="In queue"><IconChartDots size="10" class="inline" /> {{ formatCumulativeTargetDate(store.shoppingList.findIndex(listItem => listItem.id === item.id)) }}</span>
                     </div>
                   </div>
                 </div>
@@ -762,126 +711,69 @@
             >
               <template #item="{ element: item, index }">
                 <div 
-                  class="bg-gray-700/30 rounded-lg p-3 transition-all duration-200 hover:bg-gray-700/50"
+                  class="bg-gray-700/30 rounded-lg p-2 transition-all duration-200 hover:bg-gray-700/50"
                   :class="{
                     'border-2 border-red-500': invalidDragItems.has(item.id),
                     'border border-transparent': !invalidDragItems.has(item.id)
                   }"
                 >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2 flex-1 min-w-0">
-                      <!-- Grip Handle -->
-                      <div class="grip-handle p-1 text-gray-500 hover:text-gray-300 cursor-grab">
-                        <IconGripVertical size="16" />
+                  <!-- Main Row: All key info in one line -->
+                  <div class="flex items-center gap-2">
+                    <div class="grip-handle text-gray-500 hover:text-gray-300 cursor-grab flex-shrink-0">
+                      <IconGripVertical size="14" />
+                    </div>
+                    <img 
+                      v-if="item.isStatUpgrade" 
+                      :src="getStatIconUrl(item.statKey)" 
+                      class="w-8 h-8 rounded object-cover flex-shrink-0" 
+                      :alt="item.name"
+                    />
+                    <img 
+                      v-else-if="getShoppingItemIcon(item)"
+                      :src="getShoppingItemIcon(item)" 
+                      class="w-8 h-8 rounded object-cover flex-shrink-0" 
+                      :alt="'i' + item.inscryptionId"
+                    />
+                    <div v-else class="w-8 h-8 rounded bg-gray-600/50 flex-shrink-0 animate-pulse"></div>
+                    
+                    <!-- Info Section -->
+                    <div class="flex-1 min-w-0">
+                      <!-- Top line: Badge (with rank) + Name + Global -->
+                      <div class="flex items-center gap-1.5">
+                        <span v-if="item.isStatUpgrade" class="text-xs font-mono bg-amber-900/50 px-1 rounded text-amber-300 flex-shrink-0">Stat-{{ item.rank }}</span>
+                        <span v-else class="text-xs font-mono bg-red-900/50 px-1 rounded text-red-300 flex-shrink-0">i{{ item.inscryptionId }}-{{ item.rank }}</span>
+                        <span class="text-sm text-white truncate">{{ item.isStatUpgrade ? item.name : truncateDescription(item.description) }}</span>
+                        <span v-if="isHunterSpecificItem(item)" class="text-blue-400 flex-shrink-0" title="Auto-updates global"><IconWorld size="14" /></span>
                       </div>
-                      
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between gap-2 mb-1">
-                          <div class="flex items-center gap-2 min-w-0 flex-1">
-                            <!-- Stat Upgrade Badge -->
-                            <span v-if="item.isStatUpgrade" class="text-xs font-mono bg-amber-900/50 px-1.5 py-0.5 rounded text-amber-300">
-                              Stat Upgrade
-                            </span>
-                            <!-- Regular Inscryption Badge -->
-                            <span v-else class="text-xs font-mono bg-red-900/50 px-1.5 py-0.5 rounded text-red-300">
-                              i{{ item.inscryptionId }}
-                            </span>
-                            
-                            <!-- Name/Description -->
-                            <span v-if="item.isStatUpgrade" class="text-sm font-medium text-white truncate">
-                              {{ item.name }}
-                            </span>
-                            <span v-else class="text-sm font-medium text-white truncate">
-                              {{ truncateDescription(item.description) }}
-                            </span>
-                          </div>
-                          
-                          <!-- Rank Badge - Right Side -->
-                          <span class="text-xs bg-blue-900/50 px-1.5 py-0.5 rounded text-blue-300 flex-shrink-0">
-                            Rank {{ item.rank }}
+                      <!-- Bottom line: Buff + HBM + Times - fixed widths for alignment -->
+                      <div class="flex items-center text-xs text-gray-400 mt-0.5">
+                        <span class="w-12 truncate text-green-400">{{ item.buffPerRank || '' }}</span>
+                        <span class="w-22">HBM: <span class="text-blue-400">{{ formatNumber(hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}/d</span></span>
+                        <span class="w-22">
+                          <template v-if="hbmProductionDataMap[item.id]?.newHBMProduction && hbmProductionDataMap[item.id]?.newHBMProduction !== hbmProductionDataMap[item.id]?.currentHBMProduction">
+                            → <span class="text-yellow-400">{{ formatNumber(hbmProductionDataMap[item.id]?.newHBMProduction) }}/d</span>
+                          </template>
+                          <span v-else-if="hbmProductionDataMap[item.id]?.isEvaluating" class="text-yellow-400 inline-flex items-center gap-0.5">
+                            <span class="animate-spin rounded-full h-3 w-3 border border-yellow-400 border-t-transparent"></span>
                           </span>
-                        </div>
-                        <div class="text-xs text-gray-400 mb-1">
-                          <!-- Hunter-specific Info -->
-                          <div v-if="isHunterSpecificItem(item)" class="text-xs text-blue-400 bg-blue-900/20 rounded px-1 py-0.5 mb-1">
-                            <IconWorld size="12" class="inline mr-1" />
-                            <span v-if="item.isStatUpgrade">Automatically updates global Stat Upgrade Rank when purchased</span>
-                            <span v-else>Automatically updates global Inscryption Rank when purchased</span>
-                          </div>
-                          <span class="text-green-400">{{ item.buffPerRank }}</span>
-                        </div>
-                        
-                        <!-- HBM Production Info -->
-                        <div class="text-xs text-gray-500 space-y-1">
-                          <div class="flex items-center gap-3">
-                            <span>
-                              HBM Income: <span class="text-blue-400">{{ formatNumber(hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}/day</span>
-                            </span>
-                            
-                            <!-- Borge Buff 1 (Simple Multiplier) -->
-                            <span v-if="hbmProductionDataMap[item.id]?.hbmMultiplier && !hbmProductionDataMap[item.id]?.needsEvaluation" class="text-green-400">
-                              → <span class="text-yellow-400">{{ formatNumber(hbmProductionDataMap[item.id]?.newHBMProduction || 0) }}/day</span>
-                            </span>
-                            
-                            <!-- Borge Buff 2 (Requires Evaluation) -->
-                            <span v-if="hbmProductionDataMap[item.id]?.needsEvaluation">
-                              <span v-if="hbmProductionDataMap[item.id]?.isEvaluating" class="text-yellow-400 flex items-center gap-1">
-                                <div class="inline-block animate-spin rounded-full h-3 w-3 border-b border-yellow-400"></div>
-                                {{ hbmProductionDataMap[item.id]?.evaluationProgress || 'Evaluating...' }}
-                              </span>
-                              <span v-else-if="hbmProductionDataMap[item.id]?.newHBMProduction" class="text-green-400">
-                                → <span class="text-yellow-400">{{ formatNumber(hbmProductionDataMap[item.id]?.newHBMProduction || 0) }}/day</span>
-                              </span>
-                              <button v-else @click="triggerEvaluation(item)" class="text-red-400 hover:text-red-300 text-xs">
-                                Evaluate Impact
-                              </button>
-                            </span>
-                          </div>
-                          
-                          <!-- Enhanced Time Display -->
-                          <div class="flex flex-col sm:flex-row gap-1 sm:gap-2 mt-2 pt-2 border-t border-gray-700/50">
-                            <!-- Individual item time (if bought alone with current HBM) -->
-                            <div 
-                              class="bg-blue-700/50 text-blue-200 px-2 py-1 rounded-md text-xs flex items-center gap-1 cursor-help flex-1" 
-                              title="Time to afford this item alone with current HBM reserves and production rate"
-                            >
-                              <IconClock size="12" />
-                              <span class="font-medium">Individual:</span>
-                              {{ formatItemTimeToSaveWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}
-                            </div>
-                            <!-- Cumulative time (considering all previous items in order) -->
-                            <div 
-                              class="bg-green-700/50 text-green-200 px-2 py-1 rounded-md text-xs flex items-center gap-1 cursor-help flex-1" 
-                              title="When this item will be available considering all previous items in shopping queue and production boosts"
-                            >
-                              <IconChartDots size="12" />
-                              <span class="font-medium">In Queue:</span>
-                              {{ formatCumulativeTargetDate(index) }}
-                            </div>
-                          </div>
-                        </div>
+                          <button v-else-if="hbmProductionDataMap[item.id]?.needsEvaluation && !hbmProductionDataMap[item.id]?.newHBMProduction" @click="triggerEvaluation(item)" class="text-red-400 hover:text-red-300">Eval</button>
+                        </span>
+                        <span class="w-16 text-blue-300" :title="hellishBiomatterPerDay > 0 ? 'Time alone' : ''">
+                          <template v-if="hellishBiomatterPerDay > 0"><IconClock size="12" class="inline" /> {{ formatItemTimeToSaveWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}</template>
+                        </span>
+                        <span class="w-28 text-green-300" :title="hellishBiomatterPerDay > 0 ? 'In queue' : ''">
+                          <template v-if="hellishBiomatterPerDay > 0"><IconChartDots size="12" class="inline" /> {{ formatCumulativeTargetDate(index) }}</template>
+                        </span>
                       </div>
                     </div>
                     
                     <!-- Right side: Price + Buttons -->
-                    <div class="flex items-center gap-2 ml-4">
-                      <div class="text-right">
-                        <div class="text-sm font-bold text-yellow-400">
-                          {{ formatNumber(item.costSci) }}
-                        </div>
-                      </div>
-                      <button
-                        @click="markAsPurchased(item)"
-                        class="text-green-400 hover:text-green-300 transition-colors p-1"
-                        :title="isHunterSpecificItem(item) ? 'Mark as purchased (updates global Hunter level)' : 'Mark as purchased'"
-                      >
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                      <span class="text-sm font-bold text-yellow-400 w-20 text-right">{{ formatNumber(item.costSci) }}</span>
+                      <button @click="markAsPurchased(item)" class="text-green-400 hover:text-green-300 p-0.5" :title="isHunterSpecificItem(item) ? 'Mark as purchased (updates global)' : 'Mark as purchased'">
                         <IconCheck size="16" />
                       </button>
-                      <button
-                        @click="store.removeFromShoppingList(item.id)"
-                        class="text-red-400 hover:text-red-300 transition-colors p-1"
-                        title="Remove from shopping list"
-                      >
+                      <button @click="store.removeFromShoppingList(item.id)" class="text-red-400 hover:text-red-300 p-0.5" title="Remove">
                         <IconX size="16" />
                       </button>
                     </div>
@@ -973,12 +865,43 @@ function getStatIconUrl(statKey) {
   return statIconMap[statKey] || '/src/assets/borge/loot_mat3.png'; // fallback to HBM icon
 }
 
+// Function to get inscryption icon for shopping list items (with fallback to rank 1 metadata)
+function getShoppingItemIcon(item) {
+  // If item already has a valid icon, use it
+  if (item.icon && item.icon !== 'default' && item.icon !== '') {
+    return getInscryptionIconUrl(item.icon);
+  }
+  
+  // If CSV data not loaded yet, return null (don't show default icon)
+  if (!store.inscryptionsData || store.inscryptionsData.length === 0) {
+    return null;
+  }
+  
+  // Fallback: look up icon from inscryptionsData (Rank 1 metadata)
+  const rank1Data = store.inscryptionsData.find(
+    data => data.inscryptionId === item.inscryptionId
+  );
+  
+  if (rank1Data && rank1Data.icon) {
+    return getInscryptionIconUrl(rank1Data.icon);
+  }
+  
+  // Final fallback to default icon (only if data is loaded but no icon found)
+  return getInscryptionIconUrl('default');
+}
+
 // Mobile state
 const activeMobileTab = ref('available');
 
-// Sorting state for Available Inscryptions
-const sortBy = ref('id'); // 'id' or 'cost'
-const sortOrder = ref('asc'); // 'asc' or 'desc'
+// Sorting state for Available Inscryptions (using store for persistence)
+const sortBy = computed({
+  get: () => store.settings.sortBy || 'id',
+  set: (value) => { store.settings.sortBy = value; }
+});
+const sortOrder = computed({
+  get: () => store.settings.sortOrder || 'asc',
+  set: (value) => { store.settings.sortOrder = value; }
+});
 
 // Generic smooth transition helper
 function withSmoothTransition(updateFn) {

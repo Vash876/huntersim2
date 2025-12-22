@@ -88,7 +88,7 @@
                   type="number"
                   min="0"
                   :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                  class="w-12 px-1 py-0.5 bg-gray-900 border border-red-600/50 rounded text-[11px] text-center text-red-400 outline-none disabled:opacity-50"
+                  class="w-12 px-1 py-0.5 bg-gray-900 border border-purple-600/50 rounded text-[11px] text-center text-purple-400 outline-none disabled:opacity-50"
                   placeholder="T1"
                 />
                 <input
@@ -97,7 +97,7 @@
                   type="number"
                   min="0"
                   :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                  class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-[11px] text-center text-orange-400 outline-none disabled:opacity-50"
+                  class="w-12 px-1 py-0.5 bg-gray-900 border border-cyan-600/50 rounded text-[11px] text-center text-cyan-400 outline-none disabled:opacity-50"
                   placeholder="T2"
                 />
                 <input
@@ -106,7 +106,7 @@
                   type="number"
                   min="0"
                   :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                  class="w-12 px-1 py-0.5 bg-gray-900 border border-yellow-600/50 rounded text-[11px] text-center text-yellow-400 outline-none disabled:opacity-50"
+                  class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-[11px] text-center text-green-400 outline-none disabled:opacity-50"
                   placeholder="T3"
                 />
                 <input
@@ -115,7 +115,7 @@
                   type="number"
                   min="0"
                   :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                  class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-[11px] text-center text-green-400 outline-none disabled:opacity-50"
+                  class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-[11px] text-center text-orange-400 outline-none disabled:opacity-50"
                   placeholder="T4"
                 />
               </div>
@@ -188,7 +188,7 @@
               type="number"
               min="0"
               :disabled="!selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-              class="w-12 px-1 py-0.5 bg-gray-900 border border-red-600/50 rounded text-[11px] text-center text-red-400 outline-none disabled:opacity-50"
+              class="w-12 px-1 py-0.5 bg-gray-900 border border-purple-600/50 rounded text-[11px] text-center text-purple-400 outline-none disabled:opacity-50"
               placeholder="T1"
             />
             <input
@@ -197,7 +197,7 @@
               type="number"
               min="0"
               :disabled="!selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-              class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-[11px] text-center text-orange-400 outline-none disabled:opacity-50"
+              class="w-12 px-1 py-0.5 bg-gray-900 border border-cyan-600/50 rounded text-[11px] text-center text-cyan-400 outline-none disabled:opacity-50"
               placeholder="T2"
             />
             <input
@@ -206,7 +206,7 @@
               type="number"
               min="0"
               :disabled="!selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-              class="w-12 px-1 py-0.5 bg-gray-900 border border-yellow-600/50 rounded text-[11px] text-center text-yellow-400 outline-none disabled:opacity-50"
+              class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-[11px] text-center text-green-400 outline-none disabled:opacity-50"
               placeholder="T3"
             />
             <input
@@ -215,7 +215,7 @@
               type="number"
               min="0"
               :disabled="!selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-              class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-[11px] text-center text-green-400 outline-none disabled:opacity-50"
+              class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-[11px] text-center text-orange-400 outline-none disabled:opacity-50"
               placeholder="T4"
             />
           </div>

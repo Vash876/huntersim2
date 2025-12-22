@@ -124,44 +124,44 @@
             <span class="text-gray-400 font-semibold">Personnel:</span>
             <div class="flex gap-2">
               <!-- T1 Progress -->
-              <div class="flex items-center gap-1.5 bg-red-950/20 border border-red-800/30 rounded-md px-2 py-1">
-                <span class="text-red-400 font-semibold w-5">T1</span>
+              <div class="flex items-center gap-1.5 bg-purple-950/20 border border-purple-800/30 rounded-md px-2 py-1">
+                <span class="text-purple-400 font-semibold w-5">T1</span>
                 <div class="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
                   <div 
-                    class="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full transition-all duration-300"
+                    class="h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full transition-all duration-300"
                     :style="{ width: getPersonnelUsagePercent('T1') + '%' }"
                   ></div>
                 </div>
                 <span class="text-gray-300 text-[10px] font-mono">{{ formatNumber(personnelUsed.T1) }}/{{ formatNumber(availablePersonnel.T1) }}</span>
               </div>
               <!-- T2 Progress -->
-              <div class="flex items-center gap-1.5 bg-orange-950/20 border border-orange-800/30 rounded-md px-2 py-1">
-                <span class="text-orange-400 font-semibold w-5">T2</span>
+              <div class="flex items-center gap-1.5 bg-cyan-950/20 border border-cyan-800/30 rounded-md px-2 py-1">
+                <span class="text-cyan-400 font-semibold w-5">T2</span>
                 <div class="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
                   <div 
-                    class="h-full bg-gradient-to-r from-orange-600 to-orange-400 rounded-full transition-all duration-300"
+                    class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full transition-all duration-300"
                     :style="{ width: getPersonnelUsagePercent('T2') + '%' }"
                   ></div>
                 </div>
                 <span class="text-gray-300 text-[10px] font-mono">{{ formatNumber(personnelUsed.T2) }}/{{ formatNumber(availablePersonnel.T2) }}</span>
               </div>
               <!-- T3 Progress -->
-              <div class="flex items-center gap-1.5 bg-yellow-950/20 border border-yellow-800/30 rounded-md px-2 py-1">
-                <span class="text-yellow-400 font-semibold w-5">T3</span>
+              <div class="flex items-center gap-1.5 bg-green-950/20 border border-green-800/30 rounded-md px-2 py-1">
+                <span class="text-green-400 font-semibold w-5">T3</span>
                 <div class="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
                   <div 
-                    class="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full transition-all duration-300"
+                    class="h-full bg-gradient-to-r from-green-600 to-green-400 rounded-full transition-all duration-300"
                     :style="{ width: getPersonnelUsagePercent('T3') + '%' }"
                   ></div>
                 </div>
                 <span class="text-gray-300 text-[10px] font-mono">{{ formatNumber(personnelUsed.T3) }}/{{ formatNumber(availablePersonnel.T3) }}</span>
               </div>
               <!-- T4 Progress -->
-              <div class="flex items-center gap-1.5 bg-green-950/20 border border-green-800/30 rounded-md px-2 py-1">
-                <span class="text-green-400 font-semibold w-5">T4</span>
+              <div class="flex items-center gap-1.5 bg-orange-950/20 border border-orange-800/30 rounded-md px-2 py-1">
+                <span class="text-orange-400 font-semibold w-5">T4</span>
                 <div class="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
                   <div 
-                    class="h-full bg-gradient-to-r from-green-600 to-green-400 rounded-full transition-all duration-300"
+                    class="h-full bg-gradient-to-r from-orange-600 to-orange-400 rounded-full transition-all duration-300"
                     :style="{ width: getPersonnelUsagePercent('T4') + '%' }"
                   ></div>
                 </div>
@@ -290,10 +290,10 @@
                   <th class="px-2 py-1.5 text-left w-[7%]">Mission</th>
                   <th class="px-2 py-1.5 text-center w-[7%]">Max</th>
                   <th class="px-2 py-1.5 text-center w-[7%]">Left</th>
-                  <th class="px-2 py-1.5 text-center text-red-400 w-[7%]">T1</th>
-                  <th class="px-2 py-1.5 text-center text-orange-400 w-[7%]">T2</th>
-                  <th class="px-2 py-1.5 text-center text-yellow-400 w-[7%]">T3</th>
-                  <th class="px-2 py-1.5 text-center text-green-400 w-[7%]">T4</th>
+                  <th class="px-2 py-1.5 text-center text-purple-400 w-[7%]">T1</th>
+                  <th class="px-2 py-1.5 text-center text-cyan-400 w-[7%]">T2</th>
+                  <th class="px-2 py-1.5 text-center text-green-400 w-[7%]">T3</th>
+                  <th class="px-2 py-1.5 text-center text-orange-400 w-[7%]">T4</th>
                   <th class="px-2 py-1.5 text-right w-[10%]">Time</th>
                   <th class="px-2 py-1.5 text-right w-[12%]">Frags/hr</th>
                   <th class="px-2 py-1.5 text-right w-[12%]">Frags/day</th>
@@ -339,7 +339,7 @@
                       type="number"
                       min="0"
                       :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                      class="w-12 px-1 py-0.5 bg-gray-900 border border-red-600/50 rounded text-xs text-center text-red-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="w-12 px-1 py-0.5 bg-gray-900 border border-purple-600/50 rounded text-xs text-center text-purple-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </td>
                   <td class="px-1 py-1">
@@ -349,7 +349,7 @@
                       type="number"
                       min="0"
                       :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                      class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-xs text-center text-orange-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="w-12 px-1 py-0.5 bg-gray-900 border border-cyan-600/50 rounded text-xs text-center text-cyan-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </td>
                   <td class="px-1 py-1">
@@ -359,7 +359,7 @@
                       type="number"
                       min="0"
                       :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                      class="w-12 px-1 py-0.5 bg-gray-900 border border-yellow-600/50 rounded text-xs text-center text-yellow-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-xs text-center text-green-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </td>
                   <td class="px-1 py-1">
@@ -369,7 +369,7 @@
                       type="number"
                       min="0"
                       :disabled="!missionPlannerStore.isManualMode(mission.tag)"
-                      class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-xs text-center text-green-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-xs text-center text-orange-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </td>
                   <td 
@@ -451,7 +451,7 @@
                     type="number"
                     min="0"
                     :disabled="!missionPlannerStore.selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-                    class="w-12 px-1 py-0.5 bg-gray-900 border border-red-600/50 rounded text-xs text-center text-red-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="w-12 px-1 py-0.5 bg-gray-900 border border-purple-600/50 rounded text-xs text-center text-purple-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <!-- T2 -->
@@ -462,7 +462,7 @@
                     type="number"
                     min="0"
                     :disabled="!missionPlannerStore.selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-                    class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-xs text-center text-orange-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="w-12 px-1 py-0.5 bg-gray-900 border border-cyan-600/50 rounded text-xs text-center text-cyan-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <!-- T3 -->
@@ -473,7 +473,7 @@
                     type="number"
                     min="0"
                     :disabled="!missionPlannerStore.selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-                    class="w-12 px-1 py-0.5 bg-gray-900 border border-yellow-600/50 rounded text-xs text-center text-yellow-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-xs text-center text-green-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <!-- T4 -->
@@ -484,7 +484,7 @@
                     type="number"
                     min="0"
                     :disabled="!missionPlannerStore.selectedCampaign || !missionPlannerStore.isCampaignManualMode()"
-                    class="w-12 px-1 py-0.5 bg-gray-900 border border-green-600/50 rounded text-xs text-center text-green-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="w-12 px-1 py-0.5 bg-gray-900 border border-orange-600/50 rounded text-xs text-center text-orange-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </td>
                 <!-- Time -->

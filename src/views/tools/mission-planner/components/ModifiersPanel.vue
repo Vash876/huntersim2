@@ -555,25 +555,25 @@
                   </thead>
                   <tbody>
                     <tr class="border-b border-gray-700/30 hover:bg-gray-700/30">
-                      <td class="py-1.5 px-2 text-gray-300"><span class="text-red-400 font-semibold">T1</span> Mining Pod</td>
+                      <td class="py-1.5 px-2 text-gray-300"><span class="text-purple-400 font-semibold">T1</span> Mining Pod</td>
                       <td class="py-1.5 px-2 text-right text-cyan-400 font-mono">{{ calculatedEffects.t1Count }}</td>
                       <td class="py-1.5 px-2 text-right text-gray-300 font-mono">{{ calculatedEffects.t1PowerPerUnit }}</td>
                       <td class="py-1.5 px-2 text-right text-white font-mono font-semibold">{{ calculatedEffects.t1Power }}</td>
                     </tr>
                     <tr class="border-b border-gray-700/30 hover:bg-gray-700/30">
-                      <td class="py-1.5 px-2 text-gray-300"><span class="text-orange-400 font-semibold">T2</span> Fireteam</td>
+                      <td class="py-1.5 px-2 text-gray-300"><span class="text-cyan-400 font-semibold">T2</span> Fireteam</td>
                       <td class="py-1.5 px-2 text-right text-cyan-400 font-mono">{{ calculatedEffects.t2Count }}</td>
                       <td class="py-1.5 px-2 text-right text-gray-300 font-mono">{{ calculatedEffects.t2PowerPerUnit }}</td>
                       <td class="py-1.5 px-2 text-right text-white font-mono font-semibold">{{ calculatedEffects.t2Power }}</td>
                     </tr>
                     <tr class="border-b border-gray-700/30 hover:bg-gray-700/30">
-                      <td class="py-1.5 px-2 text-gray-300"><span class="text-yellow-400 font-semibold">T3</span> Titan</td>
+                      <td class="py-1.5 px-2 text-gray-300"><span class="text-green-400 font-semibold">T3</span> Titan</td>
                       <td class="py-1.5 px-2 text-right text-cyan-400 font-mono">{{ calculatedEffects.t3Count }}</td>
                       <td class="py-1.5 px-2 text-right text-gray-300 font-mono">{{ calculatedEffects.t3PowerPerUnit }}</td>
                       <td class="py-1.5 px-2 text-right text-white font-mono font-semibold">{{ calculatedEffects.t3Power }}</td>
                     </tr>
                     <tr class="hover:bg-gray-700/30">
-                      <td class="py-1.5 px-2 text-gray-300"><span class="text-green-400 font-semibold">T4</span> Corvette</td>
+                      <td class="py-1.5 px-2 text-gray-300"><span class="text-orange-400 font-semibold">T4</span> Corvette</td>
                       <td class="py-1.5 px-2 text-right text-cyan-400 font-mono">{{ calculatedEffects.t4Count }}</td>
                       <td class="py-1.5 px-2 text-right text-gray-300 font-mono">{{ calculatedEffects.t4PowerPerUnit }}</td>
                       <td class="py-1.5 px-2 text-right text-white font-mono font-semibold">{{ calculatedEffects.t4Power }}</td>

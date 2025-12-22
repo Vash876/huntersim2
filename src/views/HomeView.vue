@@ -12,6 +12,12 @@ const changelog =
           'Added auto-fill for resources that rarely change between entries (LR Count, Loop Mods Purchased, AttGN3 Buff, MP, Blueprints, Inno Cores, Ulti Badge)',
         ]
       },
+      {
+        text: 'Inscryption Planner',
+        subItems: [
+          'Optimized shopping list view with more compact card layout',
+        ]
+      },
     ]
   },
   {

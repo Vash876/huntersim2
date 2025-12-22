@@ -22,8 +22,8 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
     hellishBiomatterProduction: 0,
     selectedBuild: null, // Borge build reference
     showTiers: true,
-    sortBy: 'inscryptionId',
-    sortDirection: 'asc',
+    sortBy: 'id', // 'id' or 'cost'
+    sortOrder: 'asc', // 'asc' or 'desc'
     hideOwned: false,
     // HBM tracking with timestamp
     currentHBM: {
@@ -311,6 +311,18 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
   }
 
   async function addToShoppingList(inscryption, quantity = 1) {
+    // Get icon from inscryption or look it up from inscryptionsData (Rank 1 metadata)
+    let iconValue = inscryption.icon;
+    if (!iconValue || iconValue === 'default' || iconValue === '') {
+      // Look up icon from Rank 1 metadata
+      const rank1Data = inscryptionsData.value.find(
+        data => data.inscryptionId === inscryption.inscryptionId
+      );
+      if (rank1Data && rank1Data.icon) {
+        iconValue = rank1Data.icon;
+      }
+    }
+    
     const item = {
       id: `${inscryption.inscryptionId}-${inscryption.rank}-${Date.now()}`,
       inscryptionId: inscryption.inscryptionId,
@@ -319,6 +331,7 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
       costSci: inscryption.costSci, // This is now the parsed cost from Cost(Label)
       costLabel: formatNumber(inscryption.costSci), // Format using formatNumber
       buffPerRank: inscryption.buffPerRank,
+      icon: iconValue || 'default', // Preserve icon for shopping list display
       quantity: quantity,
       addedAt: new Date().toISOString(),
       // Preserve stat upgrade properties

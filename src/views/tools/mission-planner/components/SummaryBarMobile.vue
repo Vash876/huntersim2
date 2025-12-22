@@ -6,12 +6,12 @@
         <!-- T1 -->
         <div class="bg-gray-700/40 rounded-lg p-2">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-red-400 font-semibold text-xs">T1</span>
+            <span class="text-purple-400 font-semibold text-xs">T1</span>
             <span class="text-gray-300 text-[10px]">{{ formatNumber(personnelUsed.T1) }}/{{ formatNumber(availablePersonnel.T1) }}</span>
           </div>
           <div class="h-1.5 bg-gray-600 rounded-full overflow-hidden">
             <div 
-              class="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full"
+              class="h-full bg-gradient-to-r from-purple-600 to-purple-400 rounded-full"
               :style="{ width: getPersonnelUsagePercent('T1') + '%' }"
             ></div>
           </div>
@@ -20,12 +20,12 @@
         <!-- T2 -->
         <div class="bg-gray-700/40 rounded-lg p-2">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-orange-400 font-semibold text-xs">T2</span>
+            <span class="text-cyan-400 font-semibold text-xs">T2</span>
             <span class="text-gray-300 text-[10px]">{{ formatNumber(personnelUsed.T2) }}/{{ formatNumber(availablePersonnel.T2) }}</span>
           </div>
           <div class="h-1.5 bg-gray-600 rounded-full overflow-hidden">
             <div 
-              class="h-full bg-gradient-to-r from-orange-600 to-orange-400 rounded-full"
+              class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full"
               :style="{ width: getPersonnelUsagePercent('T2') + '%' }"
             ></div>
           </div>
@@ -34,12 +34,12 @@
         <!-- T3 -->
         <div class="bg-gray-700/40 rounded-lg p-2">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-yellow-400 font-semibold text-xs">T3</span>
+            <span class="text-green-400 font-semibold text-xs">T3</span>
             <span class="text-gray-300 text-[10px]">{{ formatNumber(personnelUsed.T3) }}/{{ formatNumber(availablePersonnel.T3) }}</span>
           </div>
           <div class="h-1.5 bg-gray-600 rounded-full overflow-hidden">
             <div 
-              class="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full"
+              class="h-full bg-gradient-to-r from-green-600 to-green-400 rounded-full"
               :style="{ width: getPersonnelUsagePercent('T3') + '%' }"
             ></div>
           </div>
@@ -48,12 +48,12 @@
         <!-- T4 -->
         <div class="bg-gray-700/40 rounded-lg p-2">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-green-400 font-semibold text-xs">T4</span>
+            <span class="text-orange-400 font-semibold text-xs">T4</span>
             <span class="text-gray-300 text-[10px]">{{ formatNumber(personnelUsed.T4) }}/{{ formatNumber(availablePersonnel.T4) }}</span>
           </div>
           <div class="h-1.5 bg-gray-600 rounded-full overflow-hidden">
             <div 
-              class="h-full bg-gradient-to-r from-green-600 to-green-400 rounded-full"
+              class="h-full bg-gradient-to-r from-orange-600 to-orange-400 rounded-full"
               :style="{ width: getPersonnelUsagePercent('T4') + '%' }"
             ></div>
           </div>
