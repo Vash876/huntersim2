@@ -23,7 +23,8 @@ import {
   IconBook,
   IconDatabase,
   IconShieldCheck,
-  IconSword
+  IconSword,
+  IconCoins
 } from '@tabler/icons-vue';
 
 const IconMilestone = {
@@ -264,6 +265,12 @@ export const NAVIGATION = {
           name: 'Inscryption Planner',
           path: '/tools/inscryption-planner',
           icon: IconWriting
+        },
+        {
+          id: 'tokenplanner',
+          name: 'Token Planner',
+          path: '/tools/token-planner',
+          icon: IconCoins
         },
         // {
         //   id: 'missionplanner',

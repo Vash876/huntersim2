@@ -11,6 +11,7 @@ import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
 import { useTSStore } from '@/store/tsStore';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
+import { useTokenPlannerStore } from '@/store/tokenPlannerStore';
 
 export function useBackupRestore() {
   const hunterStore = useHunterStore();
@@ -21,6 +22,7 @@ export function useBackupRestore() {
   const inscryptionPlannerStore = useInscryptionPlannerStore();
   const tsStore = useTSStore();
   const missionPlannerStore = useMissionPlannerStore();
+  const tokenPlannerStore = useTokenPlannerStore();
 
   const isCreatingBackup = ref(false);
   const isRestoring = ref(false);
@@ -138,6 +140,9 @@ export function useBackupRestore() {
       // 16. Mission Planner Daten (Pinia Store mit exportData)
       const missionPlannerData = missionPlannerStore.exportData();
       
+      // 17. Token Planner Daten (Pinia Store mit exportData)
+      const tokenPlannerData = tokenPlannerStore.exportData();
+      
       // Backup-Datenpaket erstellen
       const backupData = {
         data: {
@@ -166,6 +171,7 @@ export function useBackupRestore() {
             inscryption_planner_selectedBuildId: inscryptionSelectedBuildId
           },
           missionPlannerStore: missionPlannerData,
+          tokenPlannerStore: tokenPlannerData,
           storageInfo: storageInfo
         },
         version: '2.1.0', // Version erhöht für IndexedDB-Kompatibilität
@@ -414,6 +420,15 @@ export function useBackupRestore() {
         const importSuccess = missionPlannerStore.importData(backupData.data.missionPlannerStore);
         if (!importSuccess) {
           console.warn('⚠️ Failed to import Mission Planner data, but continuing with other data...');
+        }
+      }
+      
+      // 6.7. Restore Token Planner Store
+      if (backupData.data.tokenPlannerStore) {
+        console.log('📥 Restoring Token Planner data from backup...');
+        const importSuccess = tokenPlannerStore.importData(backupData.data.tokenPlannerStore);
+        if (!importSuccess) {
+          console.warn('⚠️ Failed to import Token Planner data, but continuing with other data...');
         }
       }
       

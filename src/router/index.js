@@ -175,6 +175,16 @@ const routes = [
     component: () => import('../views/tools/InscryptionPlanner.vue'),
   },
   {
+    path: '/tools/token-planner',
+    name: 'Token Planner',
+    component: () => import('../views/tools/token-planner/TokenPlanner.vue'),
+  },
+  {
+    path: '/tools/token-planner/debug',
+    name: 'Token Debug',
+    component: () => import('../views/tools/token-planner/TokenDebug.vue'),
+  },
+  {
     path: '/tools/mission-relic-planner',
     name: 'Mission & Relic Planner',
     component: () => import('../views/tools/mission-planner/MissionPlanner.vue'),

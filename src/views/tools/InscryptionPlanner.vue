@@ -1730,7 +1730,7 @@ function formatTimeToSave() {
   
   if (cumulativeDays === Infinity) return 'Never';
   if (cumulativeDays > 36500) return '☠️';
-  if (cumulativeDays <= 0) return 'Available now';
+  if (cumulativeDays <= 0) return 'Ready';
   
   if (cumulativeDays > 365) {
     const years = Math.floor(cumulativeDays / 365);
@@ -1770,7 +1770,7 @@ function formatItemTimeToSave(itemCost) {
   
   // Berücksichtige bereits gesammeltes HBM
   const remainingCost = Math.max(0, itemCost - current);
-  if (remainingCost <= 0) return 'Available now';
+  if (remainingCost <= 0) return 'Ready';
   
   const days = remainingCost / dailyProduction;
   
@@ -1810,12 +1810,12 @@ function formatItemTargetDate(itemCost) {
   const dailyProduction = hellishBiomatterPerDay.value;
   const current = currentHBM.value || 0;
   
-  if (itemCost <= 0) return 'Available now';
+  if (itemCost <= 0) return 'Ready';
   if (dailyProduction <= 0) return 'Set production rate';
   
   // Berücksichtige bereits gesammeltes HBM
   const remainingCost = Math.max(0, itemCost - current);
-  if (remainingCost <= 0) return 'Available now';
+  if (remainingCost <= 0) return 'Ready';
   
   const days = remainingCost / dailyProduction;
   
@@ -1891,7 +1891,7 @@ function formatItemTimeToSaveWithProduction(itemCost, hbmProduction) {
   
   // Berücksichtige bereits gesammeltes HBM
   const remainingCost = Math.max(0, itemCost - current);
-  if (remainingCost <= 0) return 'Available now';
+  if (remainingCost <= 0) return 'Ready';
   
   const days = remainingCost / hbmProduction;
   
@@ -1929,12 +1929,12 @@ function formatItemTimeToSaveWithProduction(itemCost, hbmProduction) {
 function formatItemTargetDateWithProduction(itemCost, hbmProduction) {
   const current = currentHBM.value || 0;
   
-  if (itemCost <= 0) return 'Available now';
+  if (itemCost <= 0) return 'Ready';
   if (hbmProduction <= 0) return 'Set production rate';
   
   // Berücksichtige bereits gesammeltes HBM
   const remainingCost = Math.max(0, itemCost - current);
-  if (remainingCost <= 0) return 'Available now';
+  if (remainingCost <= 0) return 'Ready';
   
   const days = remainingCost / hbmProduction;
   
@@ -2016,7 +2016,7 @@ function formatCumulativeTargetDate(itemIndex) {
   }
   
   if (cumulativeDays === Infinity || cumulativeDays > 36500) return 'Never';
-  if (cumulativeDays <= 0) return 'Available now';
+  if (cumulativeDays <= 0) return 'Ready';
   
   const now = new Date();
   const targetDate = new Date(now.getTime() + (cumulativeDays * 24 * 60 * 60 * 1000));

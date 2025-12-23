@@ -101,6 +101,7 @@ export const useSyncStore = defineStore('sync', () => {
       const { useInscryptionPlannerStore } = await import('@/store/inscryptionPlannerStore');
       const { useTSStore } = await import('@/store/tsStore');
       const { useMissionPlannerStore } = await import('@/store/missionPlannerStore');
+      const { useTokenPlannerStore } = await import('@/store/tokenPlannerStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
@@ -110,6 +111,7 @@ export const useSyncStore = defineStore('sync', () => {
       const inscryptionPlannerStore = useInscryptionPlannerStore();
       const tsStore = useTSStore();
       const missionPlannerStore = useMissionPlannerStore();
+      const tokenPlannerStore = useTokenPlannerStore();
 
       // Create backup data (same as Settings createBackup)
       const hunterStoreState = JSON.parse(JSON.stringify(hunterStore.$state));
@@ -127,6 +129,7 @@ export const useSyncStore = defineStore('sync', () => {
           inscryptionPlannerStore: JSON.parse(JSON.stringify(inscryptionPlannerStore.$state)),
           tsStore: JSON.parse(JSON.stringify(tsStore.settings)),
           missionPlannerStore: missionPlannerStore.exportData(),
+          tokenPlannerStore: tokenPlannerStore.exportData(),
           localStorage: {
             gadgetCalculator_currentLevels: JSON.parse(localStorage.getItem('gadgetCalculator_currentLevels') || '{}'),
             gadgetCalculator_targetLevels: JSON.parse(localStorage.getItem('gadgetCalculator_targetLevels') || '{}'),
@@ -198,6 +201,7 @@ export const useSyncStore = defineStore('sync', () => {
       const { useInscryptionPlannerStore } = await import('@/store/inscryptionPlannerStore');
       const { useTSStore } = await import('@/store/tsStore');
       const { useMissionPlannerStore } = await import('@/store/missionPlannerStore');
+      const { useTokenPlannerStore } = await import('@/store/tokenPlannerStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
@@ -207,6 +211,7 @@ export const useSyncStore = defineStore('sync', () => {
       const inscryptionPlannerStore = useInscryptionPlannerStore();
       const tsStore = useTSStore();
       const missionPlannerStore = useMissionPlannerStore();
+      const tokenPlannerStore = useTokenPlannerStore();
 
       // Restore stores (same as Settings restoreFromBackup)
       if (backupData.data.hunterStore) {
@@ -303,6 +308,15 @@ export const useSyncStore = defineStore('sync', () => {
         const importSuccess = missionPlannerStore.importData(backupData.data.missionPlannerStore);
         if (!importSuccess) {
           console.warn('⚠️ Failed to import Mission Planner data from cloud, but continuing with other data...');
+        }
+      }
+
+      // Restore Token Planner Store
+      if (backupData.data.tokenPlannerStore) {
+        console.log('📥 Restoring Token Planner data from cloud backup...');
+        const importSuccess = tokenPlannerStore.importData(backupData.data.tokenPlannerStore);
+        if (!importSuccess) {
+          console.warn('⚠️ Failed to import Token Planner data from cloud, but continuing with other data...');
         }
       }
 

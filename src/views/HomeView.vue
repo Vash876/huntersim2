@@ -2,6 +2,20 @@
 const changelog = 
 [
   {
+    version: '2.10.0',
+    date: '2025-12-23',
+    changes: [
+      {
+        text: '<b class="text-yellow-400">NEW:</b> Token Planner Tool',
+        subItems: [
+          'Credits to Solanaceae for the original spreadsheet',
+          'Plan your next T4 Max Level upgrade with detailed cost and efficiency analysis',
+          'Integrated with backup/restore system',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.9.10',
     date: '2025-12-22',
     changes: [
