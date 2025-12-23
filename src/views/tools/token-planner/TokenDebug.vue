@@ -57,14 +57,14 @@
             :value="singleLevel"
             :minValue="0"
             :maxValue="50000"
-            :step="1"
+            :step="10"
             :fastStep="100"
             @update:value="(val) => singleLevel = val"
             value-class="text-purple-400 font-medium"
             :autoEdit="true"
           />
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
           <div class="bg-gray-900/60 rounded-lg p-3">
             <div class="text-gray-400 text-xs">Base Cost</div>
             <div class="text-white font-mono">{{ formatNumber(singleLevelInfo.baseCost) }}</div>
@@ -80,6 +80,31 @@
           <div class="bg-gray-900/60 rounded-lg p-3">
             <div class="text-gray-400 text-xs">Bump Index</div>
             <div class="text-yellow-400 font-mono">[{{ singleLevelInfo.bumpIndex }}]</div>
+          </div>
+          <div class="bg-gray-900/60 rounded-lg p-3">
+            <div class="text-gray-400 text-xs">Scaling</div>
+            <div :class="singleLevelInfo.hasScaling ? 'text-cyan-400' : 'text-gray-500'" class="font-mono">
+              {{ singleLevelInfo.hasScaling ? `+${singleLevelInfo.scalingAdded.toFixed(2)}` : 'N/A' }}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Bump Scaling Info -->
+        <div v-if="selectedUpgrade?.bumpScaling" class="mt-4 bg-gray-900/60 rounded-lg p-3 border border-cyan-900/30">
+          <div class="text-cyan-400 text-xs font-semibold mb-2">Bump Scaling Active</div>
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <span class="text-gray-400">Starts at Bump:</span>
+              <span class="text-white ml-2 font-mono">{{ selectedUpgrade.bumpScaling.startBump }}</span>
+            </div>
+            <div>
+              <span class="text-gray-400">Per Level:</span>
+              <span class="text-cyan-400 ml-2 font-mono">+{{ selectedUpgrade.bumpScaling.perLevel }}</span>
+            </div>
+            <div>
+              <span class="text-gray-400">Scaling Start Level:</span>
+              <span class="text-white ml-2 font-mono">{{ selectedUpgrade.defaultMax + (selectedUpgrade.bumpScaling.startBump * bumpInterval) }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -234,7 +259,7 @@ const costBreakdown = computed(() => {
 // Single level info
 const singleLevelInfo = computed(() => {
   if (!selectedUpgrade.value) {
-    return { baseCost: 0, multiplier: 1, finalCost: 0, bumpIndex: -1, hasScaling: false };
+    return { baseCost: 0, multiplier: 1, finalCost: 0, bumpIndex: -1, hasScaling: false, scalingAdded: 0 };
   }
   
   const upgrade = selectedUpgrade.value;
@@ -247,6 +272,7 @@ const singleLevelInfo = computed(() => {
   let multiplier = 1;
   let bumpIndex = -1;
   let hasScaling = false;
+  let scalingAdded = 0;
   
   if (level >= defaultMax) {
     const levelsOverDefault = level - defaultMax;
@@ -257,7 +283,8 @@ const singleLevelInfo = computed(() => {
     if (upgrade.bumpScaling && bumpIndex >= upgrade.bumpScaling.startBump) {
       const scalingStartLevel = defaultMax + (upgrade.bumpScaling.startBump * interval);
       const levelsIntoScaling = level - scalingStartLevel;
-      multiplier = baseBumpMultiplier + (levelsIntoScaling * upgrade.bumpScaling.perLevel);
+      scalingAdded = levelsIntoScaling * upgrade.bumpScaling.perLevel;
+      multiplier = baseBumpMultiplier + scalingAdded;
       hasScaling = true;
     } else {
       multiplier = baseBumpMultiplier;
@@ -269,7 +296,8 @@ const singleLevelInfo = computed(() => {
     multiplier: Math.round(multiplier * 100) / 100,  // Round to 2 decimals
     finalCost: baseCost * multiplier,
     bumpIndex,
-    hasScaling
+    hasScaling,
+    scalingAdded
   };
 });
 

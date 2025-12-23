@@ -15,7 +15,7 @@
           <span class="text-gray-400">Verified costs: </span>
           <span class="text-green-400">T1-11</span>,
           <span class="text-cyan-400">T2-9</span>,
-          <span class="text-purple-400">T3-10</span>
+          <span class="text-purple-400">T3-11</span>
         </p>
       </div>
       

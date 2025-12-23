@@ -190,7 +190,8 @@ export const T3_UPGRADES = [
     defaultMax: 2000,
     startingCost: 7000,
     scalingCost: 100,
-    costBumps: [2, 2.4, 2.64, 2.64, 2.904, 3.1944, 3.51384, 3.51384, 3.51384, 3.51384]
+    costBumps: [2, 2.4, 2.64, 2.64, 2.904, 3.1944, 3.51384, 3.51384, 3.51384, 3.51384, 17.49],
+    bumpScaling: { startBump: 10, perLevel: 0.002 }
   },
   { 
     id: 'all_gens_shards_ap', 
@@ -200,7 +201,8 @@ export const T3_UPGRADES = [
     defaultMax: 2000,
     startingCost: 7000,
     scalingCost: 100,
-    costBumps: [2, 2.4, 2.64, 2.64, 2.904, 3.1944, 3.51384, 3.51384, 3.51384, 3.51384]
+    costBumps: [2, 2.4, 2.64, 2.64, 2.904, 3.1944, 3.51384, 3.51384, 3.51384, 3.51384, 17.49],
+    bumpScaling: { startBump: 10, perLevel: 0.002 }
   },
 ];
 
