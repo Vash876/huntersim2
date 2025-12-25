@@ -2,7 +2,7 @@
   <div :class="['rounded-lg border overflow-hidden', colors.border, colors.header]">
     <!-- Header -->
     <div :class="['px-4 py-2 border-b flex justify-between items-center', colors.header]">
-      <h3 :class="['text-lg font-bold', colors.text]">{{ title }}-{{ maxLevel + 1 }}</h3>
+      <h3 :class="['text-2xl font-anta', colors.text]">{{ title }} - {{ maxLevel + 1 }}</h3>
       <span class="text-yellow-400 font-mono text-sm flex items-center gap-1">
         <img src="@/assets/general/tokens.png" alt="Tokens" class="w-4 h-4" />
         {{ formatNumber(totalCost) }}

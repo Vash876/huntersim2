@@ -181,14 +181,29 @@ export function getRelicBaseCostMaxLevel(relicId) {
 }
 
 /**
- * Get max level for a relic (for FIXED relics, based on fixedCosts length)
+ * Get max level for a relic
+ * @param {string} relicId - The relic ID (e.g., 'r5', 'r6')
+ * @param {number} bonusLevels - Additional max levels from bonuses (e.g., Exodus Node 3)
+ * @returns {number} The maximum achievable level
  */
-export function getRelicMaxLevel(relicId) {
+export function getRelicMaxLevel(relicId, bonusLevels = 0) {
+  const relic = RELICS[relicId];
   const data = RELIC_DATA[relicId];
-  if (!data) return 0;
-  if (data.fixedCosts) return data.fixedCosts.length;
-  if (data.maxLevel) return data.maxLevel;
-  return 100; // Default max for formula-based relics
+  
+  if (!relic && !data) return 0;
+  
+  // Get base max level from RELICS definition (preferred) or RELIC_DATA
+  let baseMax = relic?.maxLevel || data?.maxLevel || 100;
+  
+  // Apply bonus levels (e.g., from Exodus Node 3)
+  let maxWithBonus = baseMax + bonusLevels;
+  
+  // For fixed-cost relics, cap at available cost data
+  if (data?.fixedCosts) {
+    maxWithBonus = Math.min(maxWithBonus, data.fixedCosts.length);
+  }
+  
+  return maxWithBonus;
 }
 
 /**
@@ -298,7 +313,7 @@ export const RELICS = {
     id: 'r10',
     name: 'Relic 10',
     tier: 1,
-    maxLevel: 100,
+    maxLevel: 8,
     getCost: RELIC_COSTS.r10,
     description: 'Construction Project Speed +200%',
   },
@@ -306,7 +321,7 @@ export const RELICS = {
     id: 'r11',
     name: 'Relic 11',
     tier: 1,
-    maxLevel: 100, 
+    maxLevel: 8, 
     effectType: 'campaign_max_crew',
     // +50% per level (additive), so level 2 = 1 + (2 * 0.5) = 2x capacity
     effectPerLevel: 0.5,
@@ -334,7 +349,7 @@ export const RELICS = {
     id: 'r14',
     name: 'Relic 14',
     tier: 1,
-    maxLevel: 100,
+    maxLevel: 8,
     getCost: RELIC_COSTS.r14,
     description: '-1 Tick for Shard Operations',
   },
@@ -342,7 +357,7 @@ export const RELICS = {
     id: 'r15',
     name: 'Relic 15',
     tier: 1,
-    maxLevel: 100,
+    maxLevel: 8,
     getCost: RELIC_COSTS.r15,
     description: 'Max Lvl Time Upgrades for Mechs +5',
   },
@@ -374,7 +389,7 @@ export const RELICS = {
     id: 'r19',
     name: 'Relic 19',
     tier: 1,
-    maxLevel: 100,
+    maxLevel: 8,
     getCost: RELIC_COSTS.r19,
     description: 'Borge EXP x2',
   },

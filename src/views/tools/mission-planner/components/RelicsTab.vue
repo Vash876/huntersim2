@@ -458,23 +458,28 @@ function syncRelicToModifiers(relicId, level) {
   }
 }
 
-// Get max level for a relic (including Exodus Node 3 bonus)
+// Get max level for a relic (including Exodus Node 3 and Power Node 1 bonuses)
+// Uses the centralized function from relics.js which handles fixedCosts limits
 function getRelicMaxLevel(relicId) {
-  const baseMax = getRelicMaxLevelFromData(relicId);
-  
   // Exodus Node 3 bonus: +1 max level per level (except R14, R5 gets +2)
   const exodusNode3Level = missionPlannerStore.modifierValues.exodus_node_3_level || 0;
   
-  if (exodusNode3Level <= 0) return baseMax;
+  // Power Node 1 bonus: +3 max level for R5 and R6 only
+  // Read directly from gemPlannerStore since it's not synced to modifierValues
+  const powerNode1Active = gemPlannerStore.gemStates?.power?.nodes?.[0] || false;
+  const powerNode1Bonus = powerNode1Active ? 3 : 0;
   
-  // R14 is excluded from the bonus
-  if (relicId === 'r14') return baseMax;
+  // R14 is excluded from all bonuses
+  if (relicId === 'r14') return getRelicMaxLevelFromData(relicId, 0);
   
-  // R5 gets +2 max level per exodus node 3 level
-  if (relicId === 'r5') return baseMax + (exodusNode3Level * 2);
+  // R5 gets +2 per Exodus Node 3 level AND +3 from Power Node 1
+  if (relicId === 'r5') return getRelicMaxLevelFromData(relicId, (exodusNode3Level * 2) + powerNode1Bonus);
   
-  // All other Tier 1 relics get +1 max level per exodus node 3 level
-  return baseMax + exodusNode3Level;
+  // R6 gets +1 per Exodus Node 3 level AND +3 from Power Node 1
+  if (relicId === 'r6') return getRelicMaxLevelFromData(relicId, exodusNode3Level + powerNode1Bonus);
+  
+  // All other Tier 1 relics get +1 max level per Exodus Node 3 level
+  return getRelicMaxLevelFromData(relicId, exodusNode3Level);
 }
 
 // Check if a relic has valid cost data for a specific level

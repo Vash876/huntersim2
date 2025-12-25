@@ -792,13 +792,13 @@ function isGemNodeActive(modifierId) {
   return gemState.nodes[mapping.nodeIndex] === true;
 }
 
-// Get dynamic max level for a relic modifier (includes Exodus Node 3 bonus)
+// Get dynamic max level for a relic modifier (includes Exodus Node 3 and Power Node 1 bonuses)
 // Modifier ID format: 'relic_3' -> relicId 'r3', 't2r8' -> relicId 't2r8'
+// Uses centralized getRelicMaxLevelFromData which handles fixedCosts limits
 function getRelicModifierMaxLevel(modifierId) {
   // Handle Tier 2 relics (t2rX format)
   if (modifierId.startsWith('t2r')) {
-    const baseMax = getRelicMaxLevelFromData(modifierId);
-    return baseMax || 100;
+    return getRelicMaxLevelFromData(modifierId, 0) || 100;
   }
   
   // Extract relic number from modifier ID (e.g., 'relic_3' -> '3')
@@ -806,21 +806,26 @@ function getRelicModifierMaxLevel(modifierId) {
   if (!match) return 100; // Default fallback
   
   const relicId = `r${match[1]}`;
-  const baseMax = getRelicMaxLevelFromData(relicId);
   
   // Exodus Node 3 bonus: +1 max level per level (except R14, R5 gets +2)
   const exodusNode3Level = missionPlannerStore.modifierValues.exodus_node_3_level || 0;
   
-  if (exodusNode3Level <= 0) return baseMax;
+  // Power Node 1 bonus: +3 max level for R5 and R6 only
+  // Read directly from gemPlannerStore since it's not synced to modifierValues
+  const powerNode1Active = gemPlannerStore.gemStates?.power?.nodes?.[0] || false;
+  const powerNode1Bonus = powerNode1Active ? 3 : 0;
   
-  // R14 is excluded from the bonus
-  if (relicId === 'r14') return baseMax;
+  // R14 is excluded from all bonuses
+  if (relicId === 'r14') return getRelicMaxLevelFromData(relicId, 0);
   
-  // R5 gets +2 max level per exodus node 3 level
-  if (relicId === 'r5') return baseMax + (exodusNode3Level * 2);
+  // R5 gets +2 per Exodus Node 3 level AND +3 from Power Node 1
+  if (relicId === 'r5') return getRelicMaxLevelFromData(relicId, (exodusNode3Level * 2) + powerNode1Bonus);
   
-  // All other Tier 1 relics get +1 max level per exodus node 3 level
-  return baseMax + exodusNode3Level;
+  // R6 gets +1 per Exodus Node 3 level AND +3 from Power Node 1
+  if (relicId === 'r6') return getRelicMaxLevelFromData(relicId, exodusNode3Level + powerNode1Bonus);
+  
+  // All other Tier 1 relics get +1 max level per Exodus Node 3 level
+  return getRelicMaxLevelFromData(relicId, exodusNode3Level);
 }
 
 // Computed effects from store

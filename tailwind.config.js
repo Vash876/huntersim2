@@ -4,6 +4,13 @@ export default {
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
+  theme: {
+    extend: {
+      fontFamily: {
+        'anta': ['Anta', 'sans-serif'],
+      },
+    },
+  },
   safelist: [
     // Category colors - bg classes
     'bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-red-500',

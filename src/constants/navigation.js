@@ -226,6 +226,12 @@ export const NAVIGATION = {
           path: '/tools/tr-planner',
           icon: IconTRPlanner
         },
+        // {
+        //   id: 'trplannerv2',
+        //   name: 'TR Planner 2.0',
+        //   path: '/tools/tr-planner-v2',
+        //   icon: IconTRPlanner
+        // },
         {
           id: 'trtracking',
           name: 'TR Tracking',

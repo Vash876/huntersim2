@@ -268,11 +268,11 @@ const tier1Relics = computed(() => getTier1Relics());
 
 // Handle reset targets button
 function handleResetTargets() {
-  const tier1RelicIds = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14'];
-  tier1RelicIds.forEach(relicId => {
+  for (let i = 1; i <= 20; i++) {
+    const relicId = `r${i}`;
     const currentLevel = missionPlannerStore.relicLevels[relicId] || 0;
     missionPlannerStore.relicTargetLevels[relicId] = currentLevel;
-  });
+  }
 }
 
 // Frags per day
@@ -399,16 +399,28 @@ function updateRelicLevel(relicId, value) {
   }
 }
 
-// Get max level (including Exodus Node 3 bonus)
+// Get max level for a relic (including Exodus Node 3 and Power Node 1 bonuses)
+// Uses the centralized function from relics.js which handles fixedCosts limits
 function getRelicMaxLevel(relicId) {
-  const baseMax = getRelicMaxLevelFromData(relicId);
+  // Exodus Node 3 bonus: +1 max level per level (except R14, R5 gets +2)
   const exodusNode3Level = missionPlannerStore.modifierValues.exodus_node_3_level || 0;
   
-  if (exodusNode3Level <= 0) return baseMax;
-  if (relicId === 'r14') return baseMax;
-  if (relicId === 'r5') return baseMax + (exodusNode3Level * 2);
+  // Power Node 1 bonus: +3 max level for R5 and R6 only
+  // Read directly from gemPlannerStore since it's not synced to modifierValues
+  const powerNode1Active = gemPlannerStore.gemStates?.power?.nodes?.[0] || false;
+  const powerNode1Bonus = powerNode1Active ? 3 : 0;
   
-  return baseMax + exodusNode3Level;
+  // R14 is excluded from all bonuses
+  if (relicId === 'r14') return getRelicMaxLevelFromData(relicId, 0);
+  
+  // R5 gets +2 per Exodus Node 3 level AND +3 from Power Node 1
+  if (relicId === 'r5') return getRelicMaxLevelFromData(relicId, (exodusNode3Level * 2) + powerNode1Bonus);
+  
+  // R6 gets +1 per Exodus Node 3 level AND +3 from Power Node 1
+  if (relicId === 'r6') return getRelicMaxLevelFromData(relicId, exodusNode3Level + powerNode1Bonus);
+  
+  // All other Tier 1 relics get +1 max level per Exodus Node 3 level
+  return getRelicMaxLevelFromData(relicId, exodusNode3Level);
 }
 
 // Check if a relic has valid cost data for a specific level

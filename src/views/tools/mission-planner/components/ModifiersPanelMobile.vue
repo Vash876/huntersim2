@@ -105,7 +105,7 @@
             <div class="flex flex-col min-w-0">
               <span class="text-xs text-gray-300">{{ modifier.name }}</span>
               <!-- Cost-Benefit Row for farm-affecting relics -->
-              <div v-if="isRelicFarmAffecting(modifier.id) && missionPlannerStore.modifierValues[modifier.id] < modifier.max && getRelicCostBenefit(modifier.id)" 
+              <div v-if="isRelicFarmAffecting(modifier.id) && missionPlannerStore.modifierValues[modifier.id] < getRelicModifierMaxLevel(modifier.id) && getRelicCostBenefit(modifier.id)" 
                 class="flex items-center text-[10px] mt-0.5 font-mono">
                 <span class="text-yellow-400 w-[52px] text-right">{{ getFormattedRelicNextLevelCost(modifier.id) }}</span>
                 <span class="text-gray-500 px-0.5">→</span>
@@ -118,7 +118,7 @@
               class="w-[140px]"
               :value="missionPlannerStore.modifierValues[modifier.id]"
               :min-value="modifier.min"
-              :max-value="modifier.max"
+              :max-value="getRelicModifierMaxLevel(modifier.id)"
               :step="modifier.control || 1"
               :fast-step="modifier.fastControls || 10"
               :show-fast-controls="true"
@@ -546,7 +546,7 @@ import { MODIFIERS } from '../constants/modifiers';
 import { ALL_LOOPMODS } from '../constants/loopmods';
 import { getNextLevelCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, calcGadgetCostDifference, formatGadgetCost } from '@/utils/gadgetCostUtils';
-import { RELIC_COSTS } from '../constants/relics';
+import { RELIC_COSTS, getRelicMaxLevel as getRelicMaxLevelFromData } from '../constants/relics';
 
 // Import modifier icons (required for Vite/Netlify production builds)
 import cellsIcon from '@/assets/general/cells.png';
@@ -682,6 +682,41 @@ const unlockedRelics = computed(() => modifiers.relics.filter(m => isModifierUnl
 const unlockedMods = computed(() => modifiers.mods.filter(m => isModifierUnlocked(m)));
 const unlockedGadgets = computed(() => modifiers.gadgets.filter(m => isModifierUnlocked(m)));
 const unlockedOther = computed(() => modifiers.other.filter(m => isModifierUnlocked(m)));
+
+// Get dynamic max level for a relic modifier (includes Exodus Node 3 and Power Node 1 bonuses)
+// Uses centralized getRelicMaxLevelFromData which handles fixedCosts limits
+function getRelicModifierMaxLevel(modifierId) {
+  // Handle Tier 2 relics (t2rX format)
+  if (modifierId.startsWith('t2r')) {
+    return getRelicMaxLevelFromData(modifierId, 0) || 100;
+  }
+  
+  // Extract relic number from modifier ID (e.g., 'relic_3' -> '3')
+  const match = modifierId.match(/relic_(\d+)/);
+  if (!match) return 100; // Default fallback
+  
+  const relicId = `r${match[1]}`;
+  
+  // Exodus Node 3 bonus: +1 max level per level (except R14, R5 gets +2)
+  const exodusNode3Level = missionPlannerStore.modifierValues.exodus_node_3_level || 0;
+  
+  // Power Node 1 bonus: +3 max level for R5 and R6 only
+  // Read directly from gemPlannerStore since it's not synced to modifierValues
+  const powerNode1Active = gemPlannerStore.gemStates?.power?.nodes?.[0] || false;
+  const powerNode1Bonus = powerNode1Active ? 3 : 0;
+  
+  // R14 is excluded from all bonuses
+  if (relicId === 'r14') return getRelicMaxLevelFromData(relicId, 0);
+  
+  // R5 gets +2 per Exodus Node 3 level AND +3 from Power Node 1
+  if (relicId === 'r5') return getRelicMaxLevelFromData(relicId, (exodusNode3Level * 2) + powerNode1Bonus);
+  
+  // R6 gets +1 per Exodus Node 3 level AND +3 from Power Node 1
+  if (relicId === 'r6') return getRelicMaxLevelFromData(relicId, exodusNode3Level + powerNode1Bonus);
+  
+  // All other Tier 1 relics get +1 max level per Exodus Node 3 level
+  return getRelicMaxLevelFromData(relicId, exodusNode3Level);
+}
 
 // Check if a gem node is active
 function isGemNodeActive(modifierId) {
@@ -873,7 +908,8 @@ function getRelicEfficiencyColorClass(modifierId) {
     if (!isRelicFarmAffecting(modifier.id)) continue;
     
     const currentLevel = missionPlannerStore.modifierValues[modifier.id] || 0;
-    if (currentLevel < modifier.max) {
+    const maxLevel = getRelicModifierMaxLevel(modifier.id);
+    if (currentLevel < maxLevel) {
       const benefit = getRelicCostBenefit(modifier.id);
       if (benefit && benefit.deltaFragsPerDay > 0) {
         allEfficiencies.push({ id: modifier.id, efficiency: benefit.cost / benefit.deltaFragsPerDay });

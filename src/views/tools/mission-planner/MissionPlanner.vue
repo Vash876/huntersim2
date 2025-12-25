@@ -807,12 +807,12 @@ function handleResetFillOrder() {
 
 // Handle reset targets button (for Relics tab)
 function handleResetTargets() {
-  // Reset all target levels to current levels
-  const tier1RelicIds = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14'];
-  tier1RelicIds.forEach(relicId => {
+  // Reset all target levels to current levels (r1-r20)
+  for (let i = 1; i <= 20; i++) {
+    const relicId = `r${i}`;
     const currentLevel = missionPlannerStore.relicLevels[relicId] || 0;
     missionPlannerStore.relicTargetLevels[relicId] = currentLevel;
-  });
+  }
 }
 
 // Campaign selection handler

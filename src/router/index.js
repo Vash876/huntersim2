@@ -189,6 +189,11 @@ const routes = [
     name: 'Mission & Relic Planner',
     component: () => import('../views/tools/mission-planner/MissionPlanner.vue'),
   },
+  {
+    path: '/tools/tr-planner-v2',
+    name: 'TR Planner 2.0',
+    component: () => import('../views/tools/tr-planner-v2/TRPlannerV2.vue'),
+  },
 
   // Settings Route
   {

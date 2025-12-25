@@ -8,8 +8,8 @@
       frame-src 'self' https://accounts.google.com; 
       connect-src 'self' https://accounts.google.com https://www.google-analytics.com https://region1.google-analytics.com https://api.stack-auth.com https://*.stack-auth.com https://docs.google.com https://*.googleusercontent.com; 
       img-src 'self' data: https: blob:; 
-      style-src 'self' 'unsafe-inline' https://accounts.google.com;
-      font-src 'self' https: data:;
+      style-src 'self' 'unsafe-inline' https://accounts.google.com https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com https: data:;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
@@ -36,6 +36,11 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#1e293b">
     <meta name="msapplication-TileColor" content="#1e293b">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anta&display=swap" rel="stylesheet">
 
     <!-- Dynamic title: "CIFI Tools" + " - Dev" on dev server -->
     <script type="module">
