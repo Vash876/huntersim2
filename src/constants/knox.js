@@ -186,7 +186,7 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.exodus_gem5",   // Exodus Gem Node 5
   "upgrades.gems_nodes.exodus_attractionCreationCount", // Attraction & Creation Upgrades Count
   "upgrades.gems_nodes.exodus_gem4", // Exodus Gem Node 4
-  "upgrades.cms.exodus_gem4",       // Exodus Gem Node 4
+  "upgrades.cms.milestoneCount",       // Exodus Milestones Count
   "upgrades.gems_nodes.temporal_gem6",      // Temporal Gem Node 6
   "upgrades.gems_nodes.innovation_gem5",    // Innovation Gem Node 5
   "upgrades.gems_nodes.power_gem6",         // Power Gem Node 6
@@ -286,7 +286,7 @@ export const OVERRIDES = {
     "upgrades.cms.cm53",             // CM53
     "upgrades.cms.cm54",             // CM54
     "upgrades.cms.cm57",             // CM57
-    "upgrades.cms.exodus_gem4",
+    "upgrades.cms.milestoneCount",    // Exodus Milestones Count
   ],
 
   gemNodes: [
@@ -388,7 +388,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.creation_knoxGU", // Knox Gem Upgrade
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
   "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
-  "upgrades.cms.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.cms.milestoneCount",    // Exodus Milestones Count
   "upgrades.gems_nodes.temporal_gem6",      // Temporal Gem Node 6
   "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
   "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5

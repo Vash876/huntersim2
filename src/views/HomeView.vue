@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.10.1',
+    date: '2025-12-26',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Fixed Exodus Gem Node #4 bug where Milestone Count was incorrectly calculated',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.10.0',
     date: '2025-12-23',
     changes: [

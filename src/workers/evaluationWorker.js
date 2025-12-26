@@ -273,43 +273,18 @@ function extractParamValue(storeData, hunterId, buildData, param) {
     return upgradeCount;
   }
 
-  // Spezielle Behandlung für CMS Exodus Gem4 Count
-  if (param === 'upgrades.cms.exodus_gem4') {
-    // Berechnet Construction Milestone Upgrades wenn exodus_gem4 aktiv ist
-    
-    // ZUERST prüfen ob es einen direkten Override für cms.exodus_gem4 gibt
-    if (buildData?.overrides && 'upgrades.cms.exodus_gem4' in buildData.overrides) {
-      const overrideValue = buildData.overrides['upgrades.cms.exodus_gem4'];
-      console.log(`🟠 [Worker] CMS Exodus_gem4 Override detected: ${overrideValue}`);
+  // Spezielle Behandlung für CMS Milestone Count (Exodus Gem 4)
+  if (param === 'upgrades.cms.milestoneCount') {
+    // ZUERST prüfen ob es einen direkten Override für milestoneCount gibt
+    if (buildData?.overrides && 'upgrades.cms.milestoneCount' in buildData.overrides) {
+      const overrideValue = buildData.overrides['upgrades.cms.milestoneCount'];
+      console.log(`🟠 [Worker] CMS milestoneCount Override detected: ${overrideValue}`);
       return overrideValue;
     }
     
-    // Ansonsten prüfen ob exodus_gem4 aktiviert ist (entweder via Override oder global)
-    let hasExodusNode4;
-    if (buildData?.overrides && 'upgrades.gems_nodes.exodus_gem4' in buildData.overrides) {
-      hasExodusNode4 = buildData.overrides['upgrades.gems_nodes.exodus_gem4'] === 1;
-      console.log(`🟠 [Worker] Exodus Node 4 Override detected for CMS: ${hasExodusNode4}`);
-    } else {
-      // Fallback auf globalen Zustand
-      const exodusGemState = storeData.gemPlannerStore?.gemStates?.exodus;
-      hasExodusNode4 = exodusGemState?.nodes?.[3] || false; // Node 4 = Index 3
-      console.log(`🟠 [Worker] Exodus Node 4 Global state for CMS: ${hasExodusNode4}`);
-    }
-    
-    if (!hasExodusNode4) {
-      console.log(`🟠 [Worker] Exodus Node 4 not activated, returning 0 for CMS count`);
-      return 0; // Node ist nicht aktiviert
-    }
-    
-    // Wenn aktiviert, berechne die Anzahl der Construction Milestone Upgrades
-    let milestoneCount = 0;
-    
-    // Check Construction Milestone upgrades
-    if (storeData.upgrades?.cms) {
-      milestoneCount = Object.values(storeData.upgrades.cms).reduce((sum, level) => sum + (level || 0), 0);
-    }
-    
-    console.log(`🟠 [Worker] CMS Exodus_gem4 calculated: ${milestoneCount}`);
+    // Ansonsten direkt den gespeicherten Wert aus dem Store holen
+    const milestoneCount = storeData.upgrades?.cms?.milestoneCount || 0;
+    console.log(`🟠 [Worker] CMS milestoneCount from store: ${milestoneCount}`);
     return milestoneCount;
   }
 
@@ -713,7 +688,13 @@ async function evaluate(hunterId, buildData, storeData) {
   });
   
   console.log(`✅ [Worker] Parameter extraction complete`);
-  console.log(`🎯 [Worker] Final parameter array:`, params);
+  
+  // Detaillierter Log aller Parameter mit Namen und Werten
+  console.log(`📊 [Worker] ===== WASM PARAMETERS FOR ${hunterId.toUpperCase()} =====`);
+  paramConfig.forEach((paramName, index) => {
+    console.log(`  [${index.toString().padStart(3, '0')}] ${paramName.padEnd(55, '.')} ${params[index]}`);
+  });
+  console.log(`📊 [Worker] ===== END PARAMETERS (${params.length} total) =====`);
   
   // Prüfen, ob die Parameter-Anzahl korrekt ist
   if (params.length !== paramConfig.length) {

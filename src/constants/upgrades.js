@@ -831,7 +831,7 @@ export const UPGRADES = {
       unlock_lvl: 2,
     },
     {
-      id: "exodus_gem4",
+      id: "milestoneCount",
       name: "Milestones Count ",
       hunter: "all",
       type: "level",

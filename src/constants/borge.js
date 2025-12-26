@@ -226,7 +226,7 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.exodus_gem1",      // Exodus Gem Node 1 (for re-evaluation trigger)
   "upgrades.gems_nodes.exodus_temporalEvolutionCount", // Exodus Temporal Evolution Count
   "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
-  "upgrades.cms.exodus_gem4",             // Exodus Gem Node 4
+  "upgrades.cms.milestoneCount",           // Exodus Milestones Count
   "upgrades.gems_nodes.temporal_gem6",      // Temporal Gem Node 6
   "upgrades.gems_nodes.innovation_gem5",    // Innovation Gem Node 5
   "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
@@ -326,7 +326,7 @@ export const OVERRIDES = {
     "upgrades.cms.cm53",            // Construction Milestone #53
     "upgrades.cms.cm54",            // Construction Milestone #54
     "upgrades.cms.cm57",            // Construction Milestone #57
-    "upgrades.cms.exodus_gem4",     // Exodus Gem Node 4, Milestones Count 
+    "upgrades.cms.milestoneCount",     // Exodus Milestones Count 
   ],
 
   // Research
@@ -504,7 +504,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.inscryptions.i103",        // Inscription #103
   "upgrades.gems_nodes.exodus_gem3",      // Exodus Gem Node 3
   "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
-  "upgrades.cms.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.cms.milestoneCount",      // Exodus Milestones Count
   "upgrades.gems_nodes.temporal_gem6", // Temporal Gem Node 6
   "upgrades.gems_nodes.creation_gem4",    // Creation Gem Node 4
   "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5

@@ -199,7 +199,7 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.exodus_gem3", // Exodus Gem Node 3
   "upgrades.gems_nodes.exodus_powerInnovationCount", // Power & Innovation Upgrades Count
   "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
-  "upgrades.cms.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.cms.milestoneCount",           // Exodus Milestones Count
   "upgrades.gems_nodes.temporal_gem6",      // Temporal Gem Node 6
   "upgrades.gems_nodes.innovation_gem5",    // Innovation Gem Node 5
   "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
@@ -301,7 +301,7 @@ export const OVERRIDES = {
     "upgrades.cms.cm53",
     "upgrades.cms.cm54",
     "upgrades.cms.cm57",
-    "upgrades.cms.exodus_gem4",
+    "upgrades.cms.milestoneCount",
   ],
 
   // Loopmods
@@ -450,10 +450,9 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
   "upgrades.loopmods.stelzi",           // Stelzi
-  "upgrades.inscryptions.i104",        // Inscription #104
   "upgrades.gems_nodes.exodus_gem3",      // Exodus Gem Node 3
   "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
-  "upgrades.cms.exodus_gem4",      // Exodus Gem Node 4
+  "upgrades.cms.milestoneCount",  // Exodus Milestones Count
   "upgrades.gems_nodes.temporal_gem6",      // Temporal Gem Node 6
   "upgrades.gems_nodes.creation_gem4",      // Creation Gem Node 4
   "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5

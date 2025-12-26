@@ -699,6 +699,20 @@ async function loadOverrideData() {
               }
             }
             
+            // Special handling for milestoneCount - get value directly from store
+            if (paramKey === 'upgrades.cms.milestoneCount') {
+              // Get name from UPGRADES.cms definition
+              const milestoneUpgrade = UPGRADES.cms.find(cm => cm.id === 'milestoneCount');
+              if (milestoneUpgrade) {
+                paramName = milestoneUpgrade.name;
+              }
+              maxValue = milestoneUpgrade?.maxLevel || 75;
+              type = 'numeric';
+              
+              // Get the stored value directly (set by user in ConstructionMilestones.vue)
+              globalValue = upgradesData?.cms?.milestoneCount || 0;
+            }
+            
             // Special handling for gem_nodes
             if (upgradeType === 'gems_nodes') {
               // Format is "gemname_property" (e.g. "creation_level", "attraction_lootBorge")
@@ -1058,12 +1072,40 @@ const calculatedExodusAttractionCreationCount = computed(() => {
   }
 });
 
+// Computed property for milestoneCount value - get directly from store
+const calculatedMilestoneCount = computed(() => {
+  // Get the stored value directly (set by user in ConstructionMilestones.vue)
+  const upgradesData = hunterStore.upgrades || {};
+  return upgradesData?.cms?.milestoneCount || 0;
+});
+
 // Computed list of categories that have parameters
 const visibleCategories = computed(() => {
   return parameterData.value.map(category => {
     // Filter parameters basierend auf aktuellen Bedingungen
     const filteredParams = category.params.filter(param => {
-      // Generische Logik für exodus gem CMS Parameter
+      // Spezielle Logik für milestoneCount - nur anzeigen wenn exodus_gem4 aktiv ist
+      if (param.key === 'upgrades.cms.milestoneCount') {
+        const exodusGemKey = 'upgrades.gems_nodes.exodus_gem4';
+        
+        // Prüfe aktuellen Override-Status für exodus gem4
+        const exodusGemOverride = localOverrides.value[exodusGemKey];
+        
+        // Prüfe global state
+        const exodusGemParam = parameterData.value
+          .flatMap(cat => cat.params)
+          .find(p => p.key === exodusGemKey);
+        const globalValue = exodusGemParam?.globalValue || 0;
+        
+        // Bestimme den aktuellen effektiven Wert
+        const effectiveValue = (exodusGemOverride !== null && exodusGemOverride !== undefined) 
+          ? exodusGemOverride 
+          : globalValue;
+        
+        return effectiveValue > 0;
+      }
+      
+      // Generische Logik für andere exodus gem CMS Parameter (falls vorhanden)
       if (param.key.startsWith('upgrades.cms.exodus_gem')) {
         // Extrahiere die exodus gem ID aus dem Parameter key (z.B. "exodus_gem4" aus "upgrades.cms.exodus_gem4")
         const exodusGemMatch = param.key.match(/upgrades\.cms\.(exodus_gem\d+)/);
@@ -1327,6 +1369,13 @@ const visibleCategories = computed(() => {
           return {
             ...param,
             globalValue: calculatedExodusAttractionCreationCount.value
+          };
+        }
+        // Update milestoneCount with calculated value
+        else if (param.key === 'upgrades.cms.milestoneCount') {
+          return {
+            ...param,
+            globalValue: calculatedMilestoneCount.value
           };
         }
         return param;
