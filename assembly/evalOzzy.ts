@@ -77,7 +77,7 @@ class OzzyEnemy {
     }
 
     if (enemyNum >= 300) {
-      this.effect = 0.04 + 0.01 * Math.max(0, floorDiv - 3) + (isBoss ? 0.04 : 0);
+      this.effect = 0.08 + 0.01 * Math.max(0, floorDiv - 3);
     } else {
       this.effect = 0;
     }

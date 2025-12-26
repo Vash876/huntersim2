@@ -227,9 +227,9 @@ export const NAVIGATION = {
           icon: IconTRPlanner
         },
         // {
-        //   id: 'trplannerv2',
-        //   name: 'TR Planner 2.0',
-        //   path: '/tools/tr-planner-v2',
+        //   id: 'trplannernew',
+        //   name: 'TR Planner',
+        //   path: '/tools/tr-planner-new',
         //   icon: IconTRPlanner
         // },
         {

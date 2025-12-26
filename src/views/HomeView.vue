@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.10.2',
+    date: '2025-12-26',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Fixed Ozzy enemy Effect chance for stages 301+ (now correctly 8% base instead of 4%)',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.10.1',
     date: '2025-12-26',
     changes: [

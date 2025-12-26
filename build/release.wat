@@ -7873,12 +7873,7 @@
    f64.max
    f64.const 0.01
    f64.mul
-   f64.const 0.04
-   f64.add
-   f64.const 0.04
-   f64.const 0
-   local.get $1
-   select
+   f64.const 0.08
    f64.add
    f64.store offset=56
   else
