@@ -2,6 +2,22 @@
 const changelog = 
 [
   {
+    version: '2.10.3',
+    date: '2025-12-28',
+    changes: [
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Added Initial Values columns (OO Lifetime, Frags Lifetime, TS Milestones, Hunter Levels) to main overview table',
+          'Combined drag & drop sorting for all columns (Initial Values + Resources)',
+          'Added diff display showing changes compared to previous TR',
+          'Added TR Duration display showing total time spent in each TR',
+          'Added Archive feature for completed TR plans',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.10.2',
     date: '2025-12-26',
     changes: [

@@ -117,18 +117,31 @@
         <div class="p-4 border-b border-gray-700/50 bg-gray-800/80">
           <div class="flex items-center justify-between">
             <div>
-              <h2 class="text-xl font-semibold text-white">Tracking Plans Overview</h2>
+              <h2 class="text-xl font-semibold text-white">{{ showArchive ? 'Archived Plans' : 'Tracking Plans Overview' }}</h2>
               <p class="text-sm text-gray-400 mt-1">{{ trTracks.length }} plan{{ trTracks.length !== 1 ? 's' : '' }} total</p>
             </div>
-            <div class="flex items-center gap-4 text-sm">
-              <span class="flex items-center gap-2">
-                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span class="text-gray-300">Active: {{ activeTracks.length }}</span>
-              </span>
-              <span class="flex items-center gap-2">
-                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span class="text-gray-300">Completed: {{ completedTracks.length }}</span>
-              </span>
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-4 text-sm">
+                <span class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span class="text-gray-300">Active: {{ activeTracks.length }}</span>
+                </span>
+                <span class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span class="text-gray-300">Completed: {{ completedTracks.length }}</span>
+                </span>
+              </div>
+              <button
+                @click="showArchive = !showArchive"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                :class="showArchive 
+                  ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                  : 'bg-gray-700 hover:bg-gray-600 text-gray-300'"
+                :title="showArchive ? 'Back to Plans' : `Show Archive (${archivedTracks.length})`"
+              >
+                <IconArchive size="16" />
+                <span>{{ showArchive ? 'Back' : `Archive (${archivedTracks.length})` }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -138,12 +151,13 @@
           <table class="w-full">
             <thead class="bg-gray-700/50">
               <tr>
-                <th class="text-left py-3 px-4 text-gray-300 font-medium text-sm">TR#</th>
-                <th class="text-center py-3 px-4 text-gray-300 font-medium text-sm">Entries</th>
+                <th class="text-left py-2 px-3 text-gray-300 font-medium text-sm">TR#</th>
+                <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">Entries</th>
+                <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">Duration</th>
                 
-                <!-- Draggable Resource Columns Header -->
+                <!-- Combined Draggable Columns Header (Initial Values + Resources) -->
                 <Draggable
-                  v-model="draggableResources"
+                  v-model="draggableColumns"
                   item-key="id"
                   tag="th"
                   handle=".grip-handle"
@@ -152,20 +166,20 @@
                   class="contents"
                 >
                   <template #item="{ element }">
-                    <th class="text-center py-3 px-4 text-gray-300 font-medium text-sm">
+                    <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">
                       <div class="flex items-center justify-center gap-1">
                         <IconGripVertical 
                           size="14" 
                           class="grip-handle text-gray-500 hover:text-gray-300 transition-colors cursor-grab active:cursor-grabbing" 
                         />
-                        <span>Highest {{ element.name }}</span>
+                        <span :class="element.type === 'initial' ? 'text-white' : ''">{{ element.name }}</span>
                       </div>
                     </th>
                   </template>
                 </Draggable>
                 
-                <th class="text-center py-3 px-4 text-gray-300 font-medium text-sm">Status</th>
-                <th class="text-center py-3 px-4 text-gray-300 font-medium text-sm">Actions</th>
+                <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">Status</th>
+                <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -176,81 +190,121 @@
                 @click="openTrackDetailsModal(track)"
               >
                 <!-- TR Name -->
-                <td class="py-4 px-4">
-                  <div>
-                    <div class="text-white font-medium">TR#{{ track.trCount || 0 }} - {{ track.name }}</div>
-                    <div class="text-xs text-gray-400">
-                      Started: {{ formatDate(track.startDate) }}
-                      <span v-if="!track.isActive && track.endDate"> • Ended: {{ formatDate(track.endDate) }}</span>
-                    </div>
+                <td class="py-2 px-3">
+                  <div class="text-white font-medium whitespace-nowrap">
+                    TR#{{ track.trCount || 0 }} - {{ track.name }}
+                  </div>
+                  <div class="text-[10px] text-gray-500">
+                    {{ formatDateShort(track.startDate) }}
+                    <span v-if="!track.isActive && track.endDate"> → {{ formatDateShort(track.endDate) }}</span>
                   </div>
                 </td>
 
                 <!-- Entries Count -->
-                <td class="py-4 px-4 text-center text-white">
+                <td class="py-2 px-3 text-center text-white">
                   {{ track.entries.length }}
                 </td>
 
-                <!-- Highest Values for Selected Resources (same order as draggableResources) -->
+                <!-- Duration -->
+                <td class="py-2 px-3 text-center text-gray-300 text-sm">
+                  {{ getTrackDuration(track) }}
+                </td>
+
+                <!-- Combined Columns (Initial Values + Resources in draggable order) -->
                 <td 
-                  v-for="resource in draggableResources"
-                  :key="resource.id"
-                  class="py-4 px-4 text-center font-mono font-bold"
-                  :style="{ color: resource.color }"
+                  v-for="column in draggableColumns"
+                  :key="column.id"
+                  class="py-2 px-3 text-center font-mono text-sm"
+                  :style="{ color: column.color }"
                 >
-                  {{ getHighestValue(track, resource.id) }}
+                  <!-- Initial Value Column -->
+                  <div v-if="column.type === 'initial'">
+                    <span class="font-bold">{{ getInitialValue(track, column) }}</span>
+                    <div 
+                      v-if="getInitialValueDiff(track, column) !== null"
+                      class="text-[10px] text-white"
+                    >
+                      {{ getInitialValueDiff(track, column) > 0 ? '+' : '' }}{{ formatInitialValueDiff(track, column) }}
+                    </div>
+                  </div>
+                  <!-- Resource Column -->
+                  <div v-else>
+                    <span class="font-bold">{{ getHighestValue(track, column.id) }}</span>
+                    <div 
+                      v-if="getResourceDiff(track, column.id) !== null"
+                      class="text-[10px] text-white"
+                    >
+                      {{ getResourceDiff(track, column.id) > 0 ? '+' : '' }}{{ formatResourceDiff(track, column.id) }}
+                    </div>
+                  </div>
                 </td>
 
                 <!-- Status -->
-                <td class="py-4 px-4 text-center">
+                <td class="py-2 px-3 text-center">
                   <span 
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
                     :class="{
                       'bg-green-900/50 text-green-300 border border-green-700/50': track.isActive,
                       'bg-blue-900/50 text-blue-300 border border-blue-700/50': !track.isActive
                     }"
                   >
-                    {{ track.isActive ? 'Active' : 'Completed' }}
+                    {{ track.isActive ? 'Active' : 'Done' }}
                   </span>
                 </td>
 
                 <!-- Actions -->
-                <td class="py-4 px-4 text-center" @click.stop>
-                  <div class="flex items-center justify-center gap-1">
+                <td class="py-2 px-3 text-center" @click.stop>
+                  <div class="flex items-center justify-center gap-0.5">
                     <button
                       @click="openProgressModal(track)"
-                      class="p-1.5 text-gray-400 hover:text-green-400 hover:bg-green-900/20 rounded transition-colors"
+                      class="p-1 text-gray-400 hover:text-green-400 hover:bg-green-900/20 rounded transition-colors"
                       title="Progress & Charts"
                     >
-                      <IconChartLine size="16" />
+                      <IconChartLine size="15" />
                     </button>
                     <button
                       @click="shareTrack(track)"
-                      class="p-1.5 text-gray-400 hover:text-blue-400 hover:bg-blue-900/20 rounded transition-colors"
+                      class="p-1 text-gray-400 hover:text-blue-400 hover:bg-blue-900/20 rounded transition-colors"
                       title="Share Track Code"
                     >
-                      <IconShare size="16" />
+                      <IconShare size="15" />
                     </button>
                     <button
                       @click="editTrack(track)"
-                      class="p-1.5 text-gray-400 hover:text-yellow-400 hover:bg-yellow-900/20 rounded transition-colors"
+                      class="p-1 text-gray-400 hover:text-yellow-400 hover:bg-yellow-900/20 rounded transition-colors"
                       title="Edit Track Settings"
                     >
-                      <IconEdit size="16" />
+                      <IconEdit size="15" />
                     </button>
                     <button
                       @click="copyTrack(track)"
-                      class="p-1.5 text-gray-400 hover:text-cyan-400 hover:bg-cyan-900/20 rounded transition-colors"
+                      class="p-1 text-gray-400 hover:text-cyan-400 hover:bg-cyan-900/20 rounded transition-colors"
                       title="Copy Track"
                     >
-                      <IconCopy size="16" />
+                      <IconCopy size="15" />
+                    </button>
+                    <button
+                      v-if="!track.isArchived"
+                      @click="archiveTrack(track)"
+                      class="p-1 text-gray-400 hover:text-orange-400 hover:bg-orange-900/20 rounded transition-colors"
+                      title="Archive Track"
+                    >
+                      <IconArchive size="15" />
+                    </button>
+                    <button
+                      v-else
+                      @click="unarchiveTrack(track)"
+                      class="p-1 text-gray-400 hover:text-green-400 hover:bg-green-900/20 rounded transition-colors"
+                      title="Restore from Archive"
+                    >
+                      <IconArchiveOff size="15" />
                     </button>
                     <button
                       @click="deleteTrack(track)"
-                      class="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded transition-colors"
+                      class="p-1 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded transition-colors"
                       title="Delete Track"
                     >
-                      <IconTrash size="16" />
+                      <IconTrash size="15" />
                     </button>
                   </div>
                 </td>
@@ -367,7 +421,9 @@ import {
   IconEdit,
   IconDownload,
   IconTrendingUp,
-  IconGripVertical
+  IconGripVertical,
+  IconArchive,
+  IconArchiveOff
 } from '@tabler/icons-vue';
 
 // Components
@@ -396,6 +452,7 @@ const showShareTrackModal = ref(false);
 const showMultiTRComparisonModal = ref(false);
 const showBuildSelectionModal = ref(false);
 const currentTrack = ref(null);
+const showArchive = ref(false);
 
 // Hunter Build Selection State - connect to store for persistence
 const selectedHunterBuilds = computed(() => trTrackingStore.hunterBuildSettings?.selectedBuilds || {});
@@ -416,19 +473,55 @@ const alertDialog = ref({
 // Computed
 const selectedResources = computed(() => trTrackingStore.selectedResources);
 
-// Draggable resources for table columns (reactive ref based on store)
-const draggableResources = computed({
-  get: () => getHighestValueResources(),
+// Combined draggable columns (Initial Values + Resources)
+const draggableColumns = computed({
+  get: () => {
+    // Get initial values
+    const initialValues = trTrackingStore.showInitialValuesInTable
+      .map(id => {
+        const iv = trTrackingStore.availableInitialValues.find(item => item.id === id);
+        return iv ? { ...iv, type: 'initial' } : null;
+      })
+      .filter(Boolean);
+    
+    // Get resources
+    const resources = getHighestValueResources()
+      .map(r => ({ ...r, type: 'resource' }));
+    
+    // Combine in stored order or default (initial values first, then resources)
+    const storedOrder = trTrackingStore.columnOrder || [];
+    
+    if (storedOrder.length > 0) {
+      // Sort by stored order
+      const combined = [...initialValues, ...resources];
+      return storedOrder
+        .map(id => combined.find(c => c.id === id))
+        .filter(Boolean)
+        .concat(combined.filter(c => !storedOrder.includes(c.id)));
+    }
+    
+    return [...initialValues, ...resources];
+  },
   set: (newOrder) => {
-    // Extract resource IDs in new order
-    const newResourceOrder = newOrder.map(r => r.id);
-    // Save to store
-    trTrackingStore.updateShowInTableResourcesOrder(newResourceOrder);
+    // Save the combined order
+    const newColumnOrder = newOrder.map(c => c.id);
+    trTrackingStore.updateColumnOrder(newColumnOrder);
+    
+    // Also update individual stores for backwards compatibility
+    const initialValueIds = newOrder.filter(c => c.type === 'initial').map(c => c.id);
+    const resourceIds = newOrder.filter(c => c.type === 'resource').map(c => c.id);
+    
+    trTrackingStore.updateShowInitialValuesInTable(initialValueIds);
+    trTrackingStore.updateShowInTableResourcesOrder(resourceIds);
   }
 });
 
 const trTracks = computed(() => {
-  return [...trTrackingStore.trTracks].sort((a, b) => {
+  const tracks = showArchive.value 
+    ? trTrackingStore.archivedTracks 
+    : trTrackingStore.trTracks.filter(t => !t.isArchived);
+  
+  return [...tracks].sort((a, b) => {
     // 1. Aktive Tracks zuerst
     if (a.isActive !== b.isActive) {
       return b.isActive - a.isActive;
@@ -443,6 +536,7 @@ const trTracks = computed(() => {
 });
 const activeTracks = computed(() => trTrackingStore.activeTracks);
 const completedTracks = computed(() => trTrackingStore.completedTracks);
+const archivedTracks = computed(() => trTrackingStore.archivedTracks);
 const hasSelectedResources = computed(() => selectedResources.value.length > 0);
 
 // Methods
@@ -495,6 +589,30 @@ function formatDate(dateString) {
     day: 'numeric',
     year: 'numeric'
   });
+}
+
+function formatDateShort(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric'
+  });
+}
+
+function getTrackDuration(track) {
+  if (!track.startDate) return '-';
+  
+  const start = new Date(track.startDate);
+  const end = track.endDate ? new Date(track.endDate) : new Date();
+  
+  const diffMs = end - start;
+  if (diffMs < 0) return '-';
+  
+  const totalMinutes = Math.floor(diffMs / (1000 * 60));
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  
+  return `${hours}:${String(mins).padStart(2, '0')}`;
 }
 
 function getHighestValueResources() {
@@ -625,6 +743,128 @@ function getLastUpdatedTime() {
     minute: '2-digit',
     hour12: true
   });
+}
+
+// Get Initial Value for a track
+function getInitialValue(track, initialValue) {
+  if (!track.initialValues) return '-';
+  
+  const key = initialValue.key;
+  const value = track.initialValues[key];
+  
+  if (value === undefined || value === null) return '-';
+  
+  // Handle TS Milestones specially
+  if (key === 'tsMilestones' && typeof value === 'object') {
+    return `${value.level1 || 0}/${value.level2 || 0}/${value.level3 || 0}`;
+  }
+  
+  // Format based on dataType
+  if (initialValue.dataType === 'suffix') {
+    return formatSuffixInput(value);
+  }
+  
+  return value.toString();
+}
+
+// Get the previous (older) track in the sorted list
+function getPreviousTrack(track) {
+  const sortedTracks = trTracks.value;
+  const currentIndex = sortedTracks.findIndex(t => t.id === track.id);
+  
+  // Previous track is the one below (older) in the list
+  if (currentIndex >= 0 && currentIndex < sortedTracks.length - 1) {
+    return sortedTracks[currentIndex + 1];
+  }
+  
+  return null;
+}
+
+// Get the difference in initial value compared to previous TR
+function getInitialValueDiff(track, initialValue) {
+  const previousTrack = getPreviousTrack(track);
+  if (!previousTrack) return null;
+  
+  const key = initialValue.key;
+  const currentValue = track.initialValues?.[key];
+  const previousValue = previousTrack.initialValues?.[key];
+  
+  if (currentValue === undefined || previousValue === undefined) return null;
+  
+  // Handle TS Milestones specially
+  if (key === 'tsMilestones') {
+    if (typeof currentValue !== 'object' || typeof previousValue !== 'object') return null;
+    // Return total diff as sum of all levels
+    const currentTotal = (currentValue.level1 || 0) + (currentValue.level2 || 0) + (currentValue.level3 || 0);
+    const previousTotal = (previousValue.level1 || 0) + (previousValue.level2 || 0) + (previousValue.level3 || 0);
+    return currentTotal - previousTotal;
+  }
+  
+  return currentValue - previousValue;
+}
+
+// Format the diff value for display
+function formatInitialValueDiff(track, initialValue) {
+  const diff = getInitialValueDiff(track, initialValue);
+  if (diff === null) return '';
+  
+  // Format based on dataType
+  if (initialValue.dataType === 'suffix') {
+    return formatSuffixInput(Math.abs(diff));
+  }
+  
+  return Math.abs(diff).toString();
+}
+
+// Get the difference in highest resource value compared to previous TR
+function getResourceDiff(track, resourceId) {
+  const previousTrack = getPreviousTrack(track);
+  if (!previousTrack) return null;
+  
+  // Get raw highest values for comparison
+  const currentValue = getHighestValueRaw(track, resourceId);
+  const previousValue = getHighestValueRaw(previousTrack, resourceId);
+  
+  if (currentValue === null || previousValue === null) return null;
+  if (typeof currentValue !== 'number' || typeof previousValue !== 'number') return null;
+  
+  return currentValue - previousValue;
+}
+
+// Get raw highest value (numeric) for diff calculation
+function getHighestValueRaw(track, resourceId) {
+  if (track.entries.length === 0) return null;
+  
+  const resource = trTrackingStore.availableResources.find(r => r.id === resourceId);
+  
+  // Skip non-numeric types
+  if (resource && (resource.format === 'time' || resource.format === 'camp' || 
+      resource.format === 'text' || resource.dataType === 'text' || resource.dataType === 'boolean')) {
+    return null;
+  }
+  
+  const values = track.entries
+    .map(entry => entry.values[resourceId] || 0)
+    .filter(value => value > 0);
+    
+  if (values.length === 0) return 0;
+  
+  return Math.max(...values);
+}
+
+// Format resource diff for display
+function formatResourceDiff(track, resourceId) {
+  const diff = getResourceDiff(track, resourceId);
+  if (diff === null) return '';
+  
+  const resource = trTrackingStore.availableResources.find(r => r.id === resourceId);
+  
+  // Apply suffix formatting for suffix dataType or specific resources
+  if ((resource && resource.dataType === 'suffix') || resourceId === 'oo-accum' || resourceId === 'attgn3-buff' || resourceId.startsWith('mat3-')) {
+    return formatSuffixInput(Math.abs(diff));
+  }
+  
+  return Math.abs(diff).toString();
 }
 
 // Event handlers
@@ -758,6 +998,7 @@ function copyTrack(track) {
     id: undefined, // Will be generated by the store
     name: `${track.name} (Copy)`,
     isActive: true, // New copy should be active
+    isArchived: false, // New copy should not be archived
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     // Copy all entries from the original track
@@ -780,6 +1021,28 @@ function copyTrack(track) {
   } catch (error) {
     console.error('Failed to copy track:', error);
     alert('Failed to copy track. Please try again.');
+  }
+}
+
+// Archive track
+async function archiveTrack(track) {
+  try {
+    await trTrackingStore.archiveTRTrack(track.id);
+    console.log('Track archived:', track.name);
+  } catch (error) {
+    console.error('Failed to archive track:', error);
+    alert('Failed to archive track. Please try again.');
+  }
+}
+
+// Unarchive track
+async function unarchiveTrack(track) {
+  try {
+    await trTrackingStore.unarchiveTRTrack(track.id);
+    console.log('Track restored from archive:', track.name);
+  } catch (error) {
+    console.error('Failed to restore track:', error);
+    alert('Failed to restore track. Please try again.');
   }
 }
 

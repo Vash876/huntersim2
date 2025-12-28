@@ -43,8 +43,40 @@
 
       <!-- Content -->
       <div class="p-3 space-y-3">
-        <!-- Standard Resources Section -->
+        <!-- Initial Values Section -->
         <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <div class="flex items-center">
+              <div class="w-1.5 h-5 bg-green-500 rounded-r mr-2"></div>
+              <h4 class="font-medium text-sm text-green-200">Initial Values</h4>
+              <span class="text-xs text-gray-400 ml-2">(show in table)</span>
+            </div>
+          </div>
+          <p class="text-xs text-gray-400 mb-2">Show starting values from Plan creation in the main overview table</p>
+          
+          <!-- Initial Values Grid -->
+          <div class="flex flex-wrap gap-2">
+            <div
+              v-for="initialValue in trTrackingStore.availableInitialValues"
+              :key="initialValue.id"
+              @click="toggleInitialValue(initialValue)"
+              class="border rounded-md p-2 cursor-pointer transition-all text-center"
+              :class="isInitialValueInTable(initialValue) 
+                ? 'border-green-500 bg-green-900/30' 
+                : 'border-gray-600 bg-gray-700/30 hover:border-gray-500'"
+            >
+              <div 
+                class="text-xs font-medium"
+                :style="{ color: initialValue.color }"
+              >
+                {{ initialValue.name }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Standard Resources Section -->
+        <div class="border-t border-gray-700 pt-3">
           <div class="flex items-center justify-between mb-1.5">
             <div class="flex items-center">
               <div class="w-1.5 h-5 bg-blue-500 rounded-r mr-2"></div>
@@ -169,6 +201,7 @@
           <p class="text-xs text-gray-300">
             <strong>{{ enabledResourcesCount }} resources enabled</strong> for tracking in your TR plans.
             <strong>{{ localShowInTableResources.length }} resources</strong> will show highest values in the main table.
+            <strong>{{ localShowInitialValuesInTable.length }} initial values</strong> will show in the overview.
           </p>
         </div>
       </div>
@@ -216,6 +249,7 @@ const trTrackingStore = useTRTrackingStore();
 // Local state
 const localSelectedResources = ref([]);
 const localShowInTableResources = ref([]);
+const localShowInitialValuesInTable = ref([]);
 const newResourceName = ref('');
 const newResourceColor = ref('#3B82F6');
 const newResourceDataType = ref('number'); // Default to 'number'
@@ -259,9 +293,11 @@ watch(() => props.show, (newVal) => {
     // Initialize with current store state when modal opens
     localSelectedResources.value = [...trTrackingStore.selectedResources];
     localShowInTableResources.value = [...trTrackingStore.showInTableResources];
+    localShowInitialValuesInTable.value = [...trTrackingStore.showInitialValuesInTable];
     console.log('Modal opened, local resources set to:', {
       selected: localSelectedResources.value.map(r => r.id),
-      showInTable: localShowInTableResources.value
+      showInTable: localShowInTableResources.value,
+      showInitialValues: localShowInitialValuesInTable.value
     });
   }
 });
@@ -271,6 +307,7 @@ watch(() => props.selectedResources, (newVal) => {
   if (newVal && newVal.length > 0 && !props.show) {
     localSelectedResources.value = [...newVal];
     localShowInTableResources.value = [...trTrackingStore.showInTableResources];
+    localShowInitialValuesInTable.value = [...trTrackingStore.showInitialValuesInTable];
   }
 }, { immediate: true });
 
@@ -281,6 +318,20 @@ function isResourceSelected(resource) {
 
 function isResourceInTable(resource) {
   return localShowInTableResources.value.includes(resource.id);
+}
+
+function isInitialValueInTable(initialValue) {
+  return localShowInitialValuesInTable.value.includes(initialValue.id);
+}
+
+function toggleInitialValue(initialValue) {
+  const index = localShowInitialValuesInTable.value.indexOf(initialValue.id);
+  
+  if (index > -1) {
+    localShowInitialValuesInTable.value.splice(index, 1);
+  } else {
+    localShowInitialValuesInTable.value.push(initialValue.id);
+  }
 }
 
 function toggleResource(resource) {
@@ -399,6 +450,7 @@ function resetToDefaults() {
   // Update local state to reflect the store change
   localSelectedResources.value = [...trTrackingStore.selectedResources];
   localShowInTableResources.value = [...trTrackingStore.showInTableResources];
+  localShowInitialValuesInTable.value = [...trTrackingStore.showInitialValuesInTable];
   showAddCustomForm.value = false;
 }
 
@@ -406,6 +458,7 @@ function closeModal() {
   // Automatically save settings to store when closing
   trTrackingStore.updateSelectedResources(localSelectedResources.value);
   trTrackingStore.updateShowInTableResources(localShowInTableResources.value);
+  trTrackingStore.updateShowInitialValuesInTable(localShowInitialValuesInTable.value);
   // Also emit to parent for any additional processing
   emit('close', localSelectedResources.value);
 }

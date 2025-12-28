@@ -105,6 +105,19 @@ const DEFAULT_SHOW_IN_TABLE_RESOURCES = [
   'rp'
 ];
 
+// Available Initial Values that can be shown in the table
+const AVAILABLE_INITIAL_VALUES = [
+  { id: 'initial-oo-lifetime', name: 'OO Lifetime', color: '#a200ff', key: 'ooLifetime', dataType: 'suffix' },
+  { id: 'initial-frags-lifetime', name: 'Frags Lifetime', color: '#c084fc', key: 'fragsLifetime', dataType: 'suffix' },
+  { id: 'initial-ts-milestones', name: 'TS Milestones', color: '#22c55e', key: 'tsMilestones', dataType: 'milestones' },
+  { id: 'initial-borge-level', name: 'Borge Level', color: '#ef4444', key: 'borgeLevel', dataType: 'number' },
+  { id: 'initial-ozzy-level', name: 'Ozzy Level', color: '#22c55e', key: 'ozzyLevel', dataType: 'number' },
+  { id: 'initial-knox-level', name: 'Knox Level', color: '#3b82f6', key: 'knoxLevel', dataType: 'number' }
+];
+
+// Default Initial Values to show in table (empty by default)
+const DEFAULT_SHOW_INITIAL_VALUES_IN_TABLE = [];
+
 // Helper function to get default selected resources
 function getDefaultSelectedResources() {
   return DEFAULT_AVAILABLE_RESOURCES.filter(resource => 
@@ -117,6 +130,9 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
   const availableResources = ref([...DEFAULT_AVAILABLE_RESOURCES]);
   const selectedResources = ref([]);
   const showInTableResources = ref([...DEFAULT_SHOW_IN_TABLE_RESOURCES]);
+  const showInitialValuesInTable = ref([...DEFAULT_SHOW_INITIAL_VALUES_IN_TABLE]);
+  const columnOrder = ref([]); // Combined order of initial values + resources
+  const availableInitialValues = ref([...AVAILABLE_INITIAL_VALUES]);
   const trTracks = ref([]);
   const isInitialized = ref(false);
   const useIndexedDB = ref(false);
@@ -131,8 +147,9 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
   });
 
   // Computed
-  const activeTracks = computed(() => trTracks.value.filter(track => track.isActive));
-  const completedTracks = computed(() => trTracks.value.filter(track => !track.isActive));
+  const activeTracks = computed(() => trTracks.value.filter(track => track.isActive && !track.isArchived));
+  const completedTracks = computed(() => trTracks.value.filter(track => !track.isActive && !track.isArchived));
+  const archivedTracks = computed(() => trTracks.value.filter(track => track.isArchived));
 
   // Methods
   async function init() {
@@ -255,6 +272,22 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         await saveToStorage(); // Save defaults
       }
 
+      // Load show initial values in table
+      const savedShowInitialValues = await idbService.loadTRSettings('showInitialValuesInTable');
+      if (savedShowInitialValues) {
+        showInitialValuesInTable.value = savedShowInitialValues;
+      } else {
+        showInitialValuesInTable.value = [...DEFAULT_SHOW_INITIAL_VALUES_IN_TABLE];
+      }
+
+      // Load combined column order
+      const savedColumnOrder = await idbService.loadTRSettings('columnOrder');
+      if (savedColumnOrder) {
+        columnOrder.value = savedColumnOrder;
+      } else {
+        columnOrder.value = [];
+      }
+
       // Load hunter build settings
       const savedHunterBuildSettings = await idbService.loadTRSettings('hunterBuildSettings');
       if (savedHunterBuildSettings) {
@@ -298,6 +331,8 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       // Save settings
       await idbService.saveTRSettings('selectedResources', selectedResources.value);
       await idbService.saveTRSettings('showInTableResources', showInTableResources.value);
+      await idbService.saveTRSettings('showInitialValuesInTable', showInitialValuesInTable.value);
+      await idbService.saveTRSettings('columnOrder', columnOrder.value);
       
       // Save only custom resources (not the defaults)
       const customResources = availableResources.value.filter(
@@ -322,6 +357,8 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       // Always use IndexedDB after migration
       await idbService.saveTRSettings('selectedResources', selectedResources.value);
       await idbService.saveTRSettings('showInTableResources', showInTableResources.value);
+      await idbService.saveTRSettings('showInitialValuesInTable', showInitialValuesInTable.value);
+      await idbService.saveTRSettings('columnOrder', columnOrder.value);
       
       // Save only custom resources (not the defaults)
       const customResources = availableResources.value.filter(
@@ -353,6 +390,18 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     // Update the order of resources shown in table
     showInTableResources.value = resourceIds;
     console.log('📊 Updated table resource order:', resourceIds);
+    await saveToStorage();
+  }
+
+  async function updateShowInitialValuesInTable(valueIds) {
+    showInitialValuesInTable.value = valueIds;
+    console.log('📊 Updated initial values in table:', valueIds);
+    await saveToStorage();
+  }
+
+  async function updateColumnOrder(columnIds) {
+    columnOrder.value = columnIds;
+    console.log('📊 Updated combined column order:', columnIds);
     await saveToStorage();
   }
 
@@ -623,6 +672,38 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     }
   }
 
+  async function archiveTRTrack(trackId) {
+    const track = trTracks.value.find(track => track.id === trackId);
+    if (!track) return false;
+
+    track.isArchived = true;
+    track.updatedAt = new Date().toISOString();
+    
+    try {
+      await idbService.saveTRTrack(track);
+      return true;
+    } catch (error) {
+      console.error('Failed to archive track:', error);
+      return false;
+    }
+  }
+
+  async function unarchiveTRTrack(trackId) {
+    const track = trTracks.value.find(track => track.id === trackId);
+    if (!track) return false;
+
+    track.isArchived = false;
+    track.updatedAt = new Date().toISOString();
+    
+    try {
+      await idbService.saveTRTrack(track);
+      return true;
+    } catch (error) {
+      console.error('Failed to unarchive track:', error);
+      return false;
+    }
+  }
+
   async function addEntry(trackId, entryData) {
     const track = trTracks.value.find(track => track.id === trackId);
     if (!track) return false;
@@ -889,6 +970,9 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     availableResources,
     selectedResources,
     showInTableResources,
+    showInitialValuesInTable,
+    columnOrder,
+    availableInitialValues,
     trTracks,
     isInitialized,
     hunterBuildSettings,
@@ -896,6 +980,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     // Computed
     activeTracks,
     completedTracks,
+    archivedTracks,
 
     // Methods
     init,
@@ -903,6 +988,8 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     updateSelectedResources,
     updateShowInTableResources,
     updateShowInTableResourcesOrder,
+    updateShowInitialValuesInTable,
+    updateColumnOrder,
     addCustomResource,
     removeCustomResource,
     createTRTrack,
@@ -911,6 +998,8 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     updateResourceOrder,
     deleteTRTrack,
     completeTRTrack,
+    archiveTRTrack,
+    unarchiveTRTrack,
     addEntry,
     updateEntry,
     deleteEntry,
