@@ -224,7 +224,7 @@
                       v-if="getInitialValueDiff(track, column) !== null"
                       class="text-[10px] text-white"
                     >
-                      {{ getInitialValueDiff(track, column) > 0 ? '+' : '' }}{{ formatInitialValueDiff(track, column) }}
+                      {{ getInitialValueDiff(track, column) > 0 ? '+' : (getInitialValueDiff(track, column) < 0 ? '-' : '') }}{{ formatInitialValueDiff(track, column) }}
                     </div>
                   </div>
                   <!-- Resource Column -->
@@ -234,7 +234,7 @@
                       v-if="getResourceDiff(track, column.id) !== null"
                       class="text-[10px] text-white"
                     >
-                      {{ getResourceDiff(track, column.id) > 0 ? '+' : '' }}{{ formatResourceDiff(track, column.id) }}
+                      {{ getResourceDiff(track, column.id) > 0 ? '+' : (getResourceDiff(track, column.id) < 0 ? '-' : '') }}{{ formatResourceDiff(track, column.id) }}
                     </div>
                   </div>
                 </td>
