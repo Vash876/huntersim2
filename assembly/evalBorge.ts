@@ -345,8 +345,8 @@ function fury(enabled: boolean): void {
 // Infernal Bulk function (Boss #400)
 function infernalBulk(): void {
   if (currentEnem === 4000) {
-    // Add +2800 ATK
-    currentEnemy.atk += 2800;
+    // Add +2778 ATK
+    currentEnemy.atk += 2778;
     // Next activation in 10 seconds
     nextInfernalBulk = currentTime + 10.0;
   } else {
@@ -456,7 +456,7 @@ function killEnemy(): void {
     // Reset Infernal Bulk ATK to base value for new enemy
     // Only Boss #400 should have the pre-combat Infernal Bulk bonus
     if (currentEnem === 4000) {
-      currentEnemy.atk = currentEnemy.baseAtk + 2780; // Pre-combat Infernal Bulk
+      currentEnemy.atk = currentEnemy.baseAtk; // Pre-combat Infernal Bulk
     } else {
       currentEnemy.atk = currentEnemy.baseAtk; // Reset to base ATK
     }
@@ -475,7 +475,7 @@ function killEnemy(): void {
       
       // Reset Infernal Bulk ATK for new enemy during trample
       if (currentEnem === 4000) {
-        currentEnemy.atk = currentEnemy.baseAtk + 2780; // Pre-combat Infernal Bulk
+        currentEnemy.atk = currentEnemy.baseAtk; // Pre-combat Infernal Bulk
       } else {
         currentEnemy.atk = currentEnemy.baseAtk; // Reset to base ATK
       }

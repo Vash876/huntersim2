@@ -211,7 +211,7 @@ export function formatNumber(value) {
   }
   
   const absValue = Math.abs(value);
-  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d'];
+  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','o','n','d'];
   
   // Berechne die Größenordnung korrekt
   let tier = Math.max(0, Math.min(Math.floor(Math.log10(absValue) / 3), suffixes.length - 1));

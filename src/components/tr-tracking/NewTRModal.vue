@@ -434,15 +434,17 @@ const formData = ref({
   }
 });
 
-// Watch for modal open/close
-watch(() => props.show, (newVal) => {
-  if (newVal) {
-    resetForm();
-  }
-});
-
 // Watch for status changes to automatically set end date
+// Only trigger when the user manually changes the status, not during initial load
+let isInitialLoad = true;
+
 watch(() => formData.value.isActive, (newIsActive, oldIsActive) => {
+  // Skip the initial load to prevent overwriting existing endDate
+  if (isInitialLoad) {
+    isInitialLoad = false;
+    return;
+  }
+  
   // If changing from active to completed, set current date/time
   if (oldIsActive === true && newIsActive === false) {
     const now = new Date();
@@ -456,6 +458,18 @@ watch(() => formData.value.isActive, (newIsActive, oldIsActive) => {
   else if (oldIsActive === false && newIsActive === true) {
     formData.value.endDate = '';
     formData.value.endTime = '';
+  }
+});
+
+// Reset isInitialLoad flag when modal opens
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    isInitialLoad = true;
+    resetForm();
+    // After resetForm, allow the watcher to work normally
+    setTimeout(() => {
+      isInitialLoad = false;
+    }, 0);
   }
 });
 

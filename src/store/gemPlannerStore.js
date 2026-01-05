@@ -37,6 +37,12 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
   const isInitialized = ref(false);
   const activeTRPlanData = ref(null); // For TR Planner integration data
 
+  // Global Hours in TR tracking (shared across tools)
+  const hoursInTR = ref({
+    value: 0,
+    timestamp: Date.now()
+  });
+
   // Computed
   const totalOOSpent = computed(() => {
     let total = 0;
@@ -105,6 +111,11 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
         // Load base gem states (never reset)
         baseGemStates.value = data.baseGemStates || {};
         
+        // Load Hours in TR tracking
+        if (data.hoursInTR && typeof data.hoursInTR === 'object') {
+          hoursInTR.value = data.hoursInTR;
+        }
+        
         console.log('Gem Planner data loaded from storage');
       }
     } catch (error) {
@@ -125,6 +136,7 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
         orbSpendingPlans: orbSpendingPlans.value,
         activeOrbSpendingPlan: activeOrbSpendingPlan.value,
         baseGemStates: baseGemStates.value,
+        hoursInTR: hoursInTR.value,
         lastSaved: new Date().toISOString()
       };
       
@@ -658,6 +670,7 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
       if (data.gemStates) gemStates.value = data.gemStates;
       if (data.currentStats) currentStats.value = { availableOO: 0, ...data.currentStats };
       if (data.gemPlans) gemPlans.value = data.gemPlans;
+      if (data.hoursInTR) hoursInTR.value = data.hoursInTR;
       
       saveToStorage();
       return true;
@@ -665,6 +678,84 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
       console.error('Error importing Gem Planner data:', error);
       return false;
     }
+  }
+
+  // ==========================================
+  // Hours in TR Management (Global Tracking)
+  // ==========================================
+  
+  /**
+   * Update Hours in TR value with new timestamp
+   * @param {number} newValue - Total hours as decimal (e.g., 1.5 = 1h 30m)
+   */
+  function updateHoursInTR(newValue) {
+    hoursInTR.value = {
+      value: Math.max(0, newValue),
+      timestamp: Date.now()
+    };
+    saveToStorage();
+  }
+
+  /**
+   * Get current Hours in TR including elapsed time since last update
+   * @returns {number} Total hours including elapsed time
+   */
+  function getCurrentHoursInTR() {
+    // Ensure hoursInTR is properly structured (backward compatibility)
+    if (!hoursInTR.value || typeof hoursInTR.value !== 'object' || !hoursInTR.value.timestamp) {
+      hoursInTR.value = {
+        value: typeof hoursInTR.value === 'number' ? hoursInTR.value : 0,
+        timestamp: Date.now()
+      };
+      return hoursInTR.value.value;
+    }
+    
+    const now = Date.now();
+    const elapsedMs = now - hoursInTR.value.timestamp;
+    const elapsedHours = elapsedMs / (1000 * 60 * 60);
+    
+    return Math.max(0, hoursInTR.value.value + elapsedHours);
+  }
+
+  /**
+   * Reset the Hours in TR timestamp to now (used when page loads)
+   * This recalculates the value including elapsed time and resets the timestamp
+   */
+  function resetHoursInTRTimestamp() {
+    if (!hoursInTR.value || typeof hoursInTR.value !== 'object') {
+      hoursInTR.value = {
+        value: typeof hoursInTR.value === 'number' ? hoursInTR.value : 0,
+        timestamp: Date.now()
+      };
+      saveToStorage();
+      return;
+    }
+    
+    const currentCalculated = getCurrentHoursInTR();
+    hoursInTR.value = {
+      value: currentCalculated,
+      timestamp: Date.now()
+    };
+    saveToStorage();
+  }
+
+  /**
+   * Get the raw Hours in TR state (value + timestamp)
+   * @returns {{ value: number, timestamp: number }}
+   */
+  function getHoursInTRState() {
+    return hoursInTR.value;
+  }
+
+  /**
+   * Reset Hours in TR to zero (e.g., when starting a new TR)
+   */
+  function resetHoursInTR() {
+    hoursInTR.value = {
+      value: 0,
+      timestamp: Date.now()
+    };
+    saveToStorage();
   }
 
   // Return store interface
@@ -679,6 +770,7 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     activeOrbSpendingPlan,
     baseGemStates,
     isInitialized,
+    hoursInTR,
 
     // Computed
     totalOOSpent,
@@ -752,6 +844,13 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     resetGemStates,
     getGemState,
     hasGemState,
+
+    // Hours in TR (Global Tracking)
+    updateHoursInTR,
+    getCurrentHoursInTR,
+    resetHoursInTRTimestamp,
+    getHoursInTRState,
+    resetHoursInTR,
 
     // Export/Import
     exportData,

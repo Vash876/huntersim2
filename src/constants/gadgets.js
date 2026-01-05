@@ -293,7 +293,7 @@ function formatWithSuffix(value) {
   if (typeof value !== 'number' || isNaN(value) || value === 0) {
     return '0';
   }
-  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d'];
+  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','o','n','d'];
   let tier = Math.floor(Math.log10(Math.abs(value)) / 3);
   if (tier === 0) {
     return value.toFixed(2);

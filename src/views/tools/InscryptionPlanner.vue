@@ -26,7 +26,7 @@
         </div>
         
         <div class="p-2 sm:p-4">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <!-- Reference Build -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <div class="font-medium text-white text-sm mb-1">Reference Build</div>
@@ -66,6 +66,26 @@
               />
             </div>
 
+            <!-- Hours in TR -->
+            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="font-medium text-white text-sm mb-1 flex items-center gap-1">
+                Hours in TR
+                <InfoTooltip 
+                  content="<strong>Hours in TR:</strong><br/>• Tracks your current hours in this TR<br/>• Auto-increments in real time<br/>• Used to calculate @Hour for shopping list items<br/>• Shared across all tools"
+                  placement="top"
+                />
+              </div>
+              <div class="text-xs text-gray-400 mb-2">Current hours in TR</div>
+              <HoursInTRInput
+                :model-value="gemPlannerStore.hoursInTR?.value || 0"
+                :timestamp="gemPlannerStore.hoursInTR?.timestamp"
+                :live-update="true"
+                :show-live-indicator="true"
+                focus-ring-class="focus:ring-cyan-500"
+                @update:model-value="gemPlannerStore.updateHoursInTR($event)"
+              />
+            </div>
+
             <!-- Daily HBM Rate -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <div class="font-medium text-white text-sm mb-1">Daily HBM Production</div>
@@ -93,7 +113,7 @@
         </div>
         
         <div class="p-2 sm:p-4">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <!-- Total Cost -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <div class="font-medium text-white text-sm mb-1">Total Cost</div>
@@ -107,6 +127,16 @@
               <div class="font-medium text-white text-sm mb-1">Time to Save</div>
               <div class="text-lg font-bold text-blue-400">
                 {{ formatTimeToSave() }}
+              </div>
+            </div>
+
+            <!-- @Hour (when complete) -->
+            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="font-medium text-white text-sm mb-1 flex items-center gap-1">
+                @Hour
+              </div>
+              <div class="text-lg font-bold text-cyan-400">
+                {{ formatTotalHoursInTR() }}
               </div>
             </div>
 
@@ -468,10 +498,9 @@
                       <button v-else-if="hbmProductionDataMap[item.id]?.needsEvaluation && !hbmProductionDataMap[item.id]?.newHBMProduction" @click="triggerEvaluation(item)" class="text-red-400 hover:text-red-300">Evaluate</button>
                     </div>
                     
-                    <!-- Time Display - Compact horizontal -->
+                    <!-- @Hour Display -->
                     <div v-if="hellishBiomatterPerDay > 0" class="flex gap-2 pt-0.5">
-                      <span class="text-blue-300" title="Time alone"><IconClock size="10" class="inline" /> {{ formatItemTimeToSaveWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}</span>
-                      <span class="text-green-300" title="In queue"><IconChartDots size="10" class="inline" /> {{ formatCumulativeTargetDate(store.shoppingList.findIndex(listItem => listItem.id === item.id)) }}</span>
+                      <span class="text-cyan-400" title="@Hour in TR">{{ formatCumulativeHoursInTR(store.shoppingList.findIndex(listItem => listItem.id === item.id)) }}</span>
                     </div>
                   </div>
                 </div>
@@ -758,11 +787,8 @@
                           </span>
                           <button v-else-if="hbmProductionDataMap[item.id]?.needsEvaluation && !hbmProductionDataMap[item.id]?.newHBMProduction" @click="triggerEvaluation(item)" class="text-red-400 hover:text-red-300">Eval</button>
                         </span>
-                        <span class="w-16 text-blue-300" :title="hellishBiomatterPerDay > 0 ? 'Time alone' : ''">
-                          <template v-if="hellishBiomatterPerDay > 0"><IconClock size="12" class="inline" /> {{ formatItemTimeToSaveWithProduction(item.costSci, hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}</template>
-                        </span>
-                        <span class="w-28 text-green-300" :title="hellishBiomatterPerDay > 0 ? 'In queue' : ''">
-                          <template v-if="hellishBiomatterPerDay > 0"><IconChartDots size="12" class="inline" /> {{ formatCumulativeTargetDate(index) }}</template>
+                        <span class="text-cyan-400" :title="hellishBiomatterPerDay > 0 ? '@Hour in TR' : ''">
+                          <template v-if="hellishBiomatterPerDay > 0">{{ formatCumulativeHoursInTR(index) }}</template>
                         </span>
                       </div>
                     </div>
@@ -841,6 +867,7 @@ import { calcCost } from '@/utils/statCostUtils';
 import InscryptionOwnershipModal from '@/components/common/inscryption-planner/InscryptionOwnershipModal.vue';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
+import HoursInTRInput from '@/composables/HoursInTRInput.vue';
 import Draggable from 'vuedraggable';
 
 // Import stat icons
@@ -936,6 +963,20 @@ const currentHBM = computed({
   set(newValue) {
     // Manual update - uses store function
     store.updateCurrentHBM(newValue);
+  }
+});
+
+// Computed property for currentHoursInTR that auto-updates based on time (using gemPlannerStore for global access)
+const currentHoursInTR = computed({
+  get() {
+    // Force reactivity update with trigger
+    const _ = liveUpdateTrigger.value;
+    
+    return gemPlannerStore.getCurrentHoursInTR();
+  },
+  set(newValue) {
+    // Manual update - uses gemPlannerStore for global persistence
+    gemPlannerStore.updateHoursInTR(newValue);
   }
 });
 
@@ -1647,10 +1688,12 @@ onMounted(async () => {
   }
   
   // Update HBM timestamp on page visit (calculate auto-increase since last visit)
-  // Uses store function to reset timestamp
   store.resetHBMTimestamp();
   
-  // Start live update interval (update display every 1 second for testing)
+  // Update Hours in TR timestamp on page visit (using gemPlannerStore for global access)
+  gemPlannerStore.resetHoursInTRTimestamp();
+  
+  // Start live update interval (update display every 10 seconds)
   hbmUpdateInterval = setInterval(() => {
     // Force reactivity update by incrementing trigger
     liveUpdateTrigger.value++;
@@ -1669,6 +1712,9 @@ function resetProduction() {
   
   // Reset HBM data
   currentHBM.value = 0;
+  
+  // Reset Hours in TR data
+  currentHoursInTR.value = 0;
 }
 
 // Wrapper function for loading inscryptions data with smooth transition
@@ -2039,6 +2085,86 @@ function formatCumulativeTargetDate(itemIndex) {
     month: '2-digit',
     year: 'numeric'
   });
+}
+
+// Formatiert die gesamte @Hour für alle Items in der Shopping List
+function formatTotalHoursInTR() {
+  if (store.shoppingList.length === 0) return '-';
+  if (hellishBiomatterPerDay.value <= 0) return 'Set rate';
+  
+  // Berechne kumulative Zeit basierend auf dynamischen HBM-Produktions-Änderungen
+  let cumulativeDays = 0;
+  let availableHBM = currentHBM.value || 0;
+  let currentDailyProduction = hellishBiomatterPerDay.value;
+  
+  for (let i = 0; i < store.shoppingList.length; i++) {
+    const item = store.shoppingList[i];
+    const remainingCost = Math.max(0, item.costSci - availableHBM);
+    
+    if (remainingCost > 0) {
+      if (currentDailyProduction <= 0) {
+        return 'Set rate';
+      }
+      const daysForThisItem = remainingCost / currentDailyProduction;
+      cumulativeDays += daysForThisItem;
+      availableHBM += daysForThisItem * currentDailyProduction;
+    }
+    
+    availableHBM -= item.costSci;
+    
+    const itemHBMData = hbmProductionDataMap.value[item.id];
+    if (itemHBMData && itemHBMData.newHBMProduction > currentDailyProduction) {
+      currentDailyProduction = itemHBMData.newHBMProduction;
+    }
+  }
+  
+  if (cumulativeDays === Infinity || cumulativeDays > 36500) return 'Never';
+  
+  const hoursNeeded = cumulativeDays * 24;
+  const totalHours = (currentHoursInTR.value || 0) + hoursNeeded;
+  
+  if (hoursNeeded <= 0) return `${Math.round(currentHoursInTR.value || 0)}h`;
+  
+  return `${Math.round(totalHours)}h`;
+}
+
+// Berechnet die @Hour für ein spezifisches Item in der Shopping List
+function formatCumulativeHoursInTR(itemIndex) {
+  let cumulativeDays = 0;
+  let availableHBM = currentHBM.value || 0;
+  let currentDailyProduction = hellishBiomatterPerDay.value;
+  
+  if (currentDailyProduction <= 0) return '-';
+  
+  for (let i = 0; i <= itemIndex; i++) {
+    const item = store.shoppingList[i];
+    const remainingCost = Math.max(0, item.costSci - availableHBM);
+    
+    if (remainingCost > 0) {
+      if (currentDailyProduction <= 0) {
+        return '-';
+      }
+      const daysForThisItem = remainingCost / currentDailyProduction;
+      cumulativeDays += daysForThisItem;
+      availableHBM += daysForThisItem * currentDailyProduction;
+    }
+    
+    availableHBM -= item.costSci;
+    
+    const itemHBMData = hbmProductionDataMap.value[item.id];
+    if (itemHBMData && itemHBMData.newHBMProduction > currentDailyProduction) {
+      currentDailyProduction = itemHBMData.newHBMProduction;
+    }
+  }
+  
+  if (cumulativeDays === Infinity || cumulativeDays > 36500) return 'Never';
+  
+  const hoursNeeded = cumulativeDays * 24;
+  const totalHours = (currentHoursInTR.value || 0) + hoursNeeded;
+  
+  if (hoursNeeded <= 0) return `@${Math.round(currentHoursInTR.value || 0)}h`;
+  
+  return `@${Math.round(totalHours)}h`;
 }
 
 // Handler für "Mark as Purchased" - fügt Item zu owned hinzu und entfernt es aus der Shopping List

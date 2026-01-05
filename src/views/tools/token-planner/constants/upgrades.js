@@ -38,8 +38,13 @@ export const T1_UPGRADES = [
     defaultMax: 200,
     startingCost: 10,
     scalingCost: 2,
-    costBumps: [10, 20, 40, 44, 48.4, 53.24, 53.24, 53.24, 53.24, 53.24, 291.52],
-    bumpScaling: { startBump: 10, perLevel: 0.0185 }
+    costBumps: [10, 20, 40, 44, 48.4, 53.24, 53.24, 53.24, 53.24, 53.24],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 53.24,
+      multiplier: 1.8,
+      levelCoeff: 0.0002
+    }
   },
   { 
     id: 'mk1_gen', 
@@ -48,8 +53,13 @@ export const T1_UPGRADES = [
     defaultMax: 5000,
     startingCost: 1,
     scalingCost: 0.1,
-    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282, 80.53],
-    bumpScaling: { startBump: 10, perLevel: 0.003215 }
+    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 29.282,
+      multiplier: 1.1,
+      levelCoeff: 0.0001
+    }
   },
   { 
     id: 'mk2_gen', 
@@ -58,8 +68,13 @@ export const T1_UPGRADES = [
     defaultMax: 5000,
     startingCost: 2,
     scalingCost: 0.12,
-    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282, 80.53],
-    bumpScaling: { startBump: 10, perLevel: 0.003215 }
+    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 29.282,
+      multiplier: 1.1,
+      levelCoeff: 0.0001
+    }
   },
   { 
     id: 'mk3_gen', 
@@ -68,8 +83,13 @@ export const T1_UPGRADES = [
     defaultMax: 5000,
     startingCost: 3,
     scalingCost: 0.13,
-    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282, 80.53],
-    bumpScaling: { startBump: 10, perLevel: 0.003215 }
+    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 29.282,
+      multiplier: 1.1,
+      levelCoeff: 0.0001
+    }
   },
   { 
     id: 'mk4_gen', 
@@ -78,8 +98,13 @@ export const T1_UPGRADES = [
     defaultMax: 5000,
     startingCost: 4,
     scalingCost: 0.14,
-    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282, 80.53],
-    bumpScaling: { startBump: 10, perLevel: 0.003215 }
+    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 29.282,
+      multiplier: 1.1,
+      levelCoeff: 0.0001
+    }
   },
   { 
     id: 'mk5_gen', 
@@ -88,8 +113,13 @@ export const T1_UPGRADES = [
     defaultMax: 5000,
     startingCost: 15,
     scalingCost: 0.15,
-    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282, 80.53],
-    bumpScaling: { startBump: 10, perLevel: 0.003215 }
+    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 29.282,
+      multiplier: 1.1,
+      levelCoeff: 0.0001
+    }
   },
   { 
     id: 'mk6_gen', 
@@ -98,8 +128,13 @@ export const T1_UPGRADES = [
     defaultMax: 5000,
     startingCost: 26,
     scalingCost: 0.16,
-    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282, 80.53],
-    bumpScaling: { startBump: 10, perLevel: 0.003215 }
+    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 29.282,
+      multiplier: 1.1,
+      levelCoeff: 0.0001
+    }
   },
   { 
     id: 'mk7_gen', 
@@ -108,8 +143,13 @@ export const T1_UPGRADES = [
     defaultMax: 5000,
     startingCost: 37,
     scalingCost: 0.2,
-    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282, 80.53],
-    bumpScaling: { startBump: 10, perLevel: 0.003215 }
+    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 29.282,
+      multiplier: 1.1,
+      levelCoeff: 0.0001
+    }
   },
   { 
     id: 'mk8_gen', 
@@ -118,8 +158,13 @@ export const T1_UPGRADES = [
     defaultMax: 5000,
     startingCost: 48,
     scalingCost: 0.3,
-    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282, 80.53],
-    bumpScaling: { startBump: 10, perLevel: 0.003215 }
+    costBumps: [10, 20, 22, 24.2, 26.62, 29.282, 29.282, 29.282, 29.282, 29.282],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 29.282,
+      multiplier: 1.1,
+      levelCoeff: 0.0001
+    }
   },
 ];
 
@@ -130,21 +175,33 @@ export const T2_UPGRADES = [
   { 
     id: 'mp_shards', 
     name: 'MP + Shards', 
-    resourceTypes: ['mp', 'shards'],  // Produces MP and Shards
+    resourceTypes: ['mp', 'shards'],
     defaultMax: 500,
     startingCost: 1275,
     scalingCost: 25,
-    costBumps: [5, 10, 19, 34.2, 58.14, 87.21, 87.21, 87.21, 87.21, 87.21]
+    costBumps: [5, 10, 19, 34.2, 58.14, 87.21, 87.21, 87.21, 87.21, 87.21],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 87.21,
+      multiplier: 1,
+      levelCoeff: 0.00025
+    }
   },
   { 
     id: 'mk1_mk2_gens', 
     name: 'Mk1 + Mk2 Gens', 
     resourceTypes: ['cells'],
-    resourceCount: { cells: 2 },  // 2 gens = cells multiplier ^2
+    resourceCount: { cells: 2 },
     defaultMax: 2500,
     startingCost: 75,
     scalingCost: 2,
-    costBumps: [5, 10, 11, 12.1, 13.31, 14.641, 14.641, 14.641, 14.641, 14.641]
+    costBumps: [5, 10, 11, 12.1, 13.31, 14.641, 14.641, 14.641, 14.641, 14.641],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 14.641,
+      multiplier: 1.1,
+      levelCoeff: 0.0003
+    }
   },
   { 
     id: 'mk3_mk4_gens', 
@@ -154,7 +211,13 @@ export const T2_UPGRADES = [
     defaultMax: 2500,
     startingCost: 100,
     scalingCost: 3,
-    costBumps: [5, 7.5, 8.25, 9.075, 9.9825, 10.98075, 10.98075, 10.98075, 10.98075, 10.98075]
+    costBumps: [5, 7.5, 8.25, 9.075, 9.9825, 10.98075, 10.98075, 10.98075, 10.98075, 10.98075],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 10.98075,
+      multiplier: 1.1,
+      levelCoeff: 0.0003
+    }
   },
   { 
     id: 'mk5_mk6_gens', 
@@ -164,7 +227,13 @@ export const T2_UPGRADES = [
     defaultMax: 2500,
     startingCost: 125,
     scalingCost: 4,
-    costBumps: [5, 7.5, 8.25, 9.075, 9.9825, 10.98075, 10.98075, 10.98075, 10.98075, 10.98075]
+    costBumps: [5, 7.5, 8.25, 9.075, 9.9825, 10.98075, 10.98075, 10.98075, 10.98075, 10.98075],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 10.98075,
+      multiplier: 1.1,
+      levelCoeff: 0.0003
+    }
   },
   { 
     id: 'mk7_mk8_gens', 
@@ -174,7 +243,13 @@ export const T2_UPGRADES = [
     defaultMax: 2500,
     startingCost: 150,
     scalingCost: 5,
-    costBumps: [5, 7.5, 8.25, 9.075, 9.9825, 10.98075, 10.98075, 10.98075, 10.98075, 10.98075]
+    costBumps: [5, 7.5, 8.25, 9.075, 9.9825, 10.98075, 10.98075, 10.98075, 10.98075, 10.98075],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 10.98075,
+      multiplier: 1.1,
+      levelCoeff: 0.0003
+    }
   },
 ];
 
@@ -185,24 +260,34 @@ export const T3_UPGRADES = [
   { 
     id: 'all_gens_mp_rp', 
     name: 'All Gens + MP + RP', 
-    resourceTypes: ['cells', 'mp', 'rp'],  // Produces Cells (via Gens), MP, and RP
-    resourceCount: { cells: 8 },  // 8 gens = cells multiplier ^8
+    resourceTypes: ['cells', 'mp', 'rp'],
+    resourceCount: { cells: 8 },
     defaultMax: 2000,
     startingCost: 7000,
     scalingCost: 100,
-    costBumps: [2, 2.4, 2.64, 2.64, 2.904, 3.1944, 3.51384, 3.51384, 3.51384, 3.51384, 17.49],
-    bumpScaling: { startBump: 10, perLevel: 0.002 }
+    costBumps: [2, 2.4, 2.64, 2.64, 2.904, 3.1944, 3.51384, 3.51384, 3.51384, 3.51384],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 3.51384,
+      multiplier: 1.2,
+      levelCoeff: 0.00045
+    }
   },
   { 
     id: 'all_gens_shards_ap', 
     name: 'All Gens + Shards + AP', 
-    resourceTypes: ['cells', 'shards', 'ap'],  // Produces Cells (via Gens), Shards, and AP
-    resourceCount: { cells: 8 },  // 8 gens = cells multiplier ^8
+    resourceTypes: ['cells', 'shards', 'ap'],
+    resourceCount: { cells: 8 },
     defaultMax: 2000,
     startingCost: 7000,
     scalingCost: 100,
-    costBumps: [2, 2.4, 2.64, 2.64, 2.904, 3.1944, 3.51384, 3.51384, 3.51384, 3.51384, 17.49],
-    bumpScaling: { startBump: 10, perLevel: 0.002 }
+    costBumps: [2, 2.4, 2.64, 2.64, 2.904, 3.1944, 3.51384, 3.51384, 3.51384, 3.51384],
+    postBumpFormula: {
+      afterBumpIndex: 10,
+      baseBump: 3.51384,
+      multiplier: 1.2,
+      levelCoeff: 0.00045
+    }
   },
 ];
 
@@ -383,7 +468,7 @@ export const TIER_COLORS = {
  * @returns {number} Total cost from startLevel to targetLevel
  */
 export function calculateCost(upgrade, bumpInterval, startLevel, targetLevel) {
-  const { startingCost, scalingCost, defaultMax, costBumps, bumpScaling } = upgrade;
+  const { startingCost, scalingCost, defaultMax, costBumps, bumpScaling, postBumpFormula } = upgrade;
   
   let totalCost = 0;
   
@@ -398,17 +483,24 @@ export function calculateCost(upgrade, bumpInterval, startLevel, targetLevel) {
       // Calculate which cost bump tier we're in
       const levelsOverDefault = level - defaultMax;
       const bumpIndex = Math.floor(levelsOverDefault / bumpInterval);
-      // Use the last bump if we exceed the array
-      const baseBumpMultiplier = costBumps[Math.min(bumpIndex, costBumps.length - 1)];
       
-      // Apply linear scaling if defined and we're at or past the startBump
-      if (bumpScaling && bumpIndex >= bumpScaling.startBump) {
-        // Calculate how many levels into the scaling range we are
-        const scalingStartLevel = defaultMax + (bumpScaling.startBump * bumpInterval);
-        const levelsIntoScaling = level - scalingStartLevel;
-        multiplier = baseBumpMultiplier + (levelsIntoScaling * bumpScaling.perLevel);
+      // Check if postBumpFormula applies (exact dev formula)
+      if (postBumpFormula && bumpIndex >= postBumpFormula.afterBumpIndex) {
+        // Dev formula: baseBump * multiplier * (1 + level * levelCoeff)
+        multiplier = postBumpFormula.baseBump * postBumpFormula.multiplier * (1 + level * postBumpFormula.levelCoeff);
       } else {
-        multiplier = baseBumpMultiplier;
+        // Use the last bump if we exceed the array
+        const baseBumpMultiplier = costBumps[Math.min(bumpIndex, costBumps.length - 1)];
+        
+        // Apply linear scaling if defined and we're at or past the startBump
+        if (bumpScaling && bumpIndex >= bumpScaling.startBump) {
+          // Calculate how many levels into the scaling range we are
+          const scalingStartLevel = defaultMax + (bumpScaling.startBump * bumpInterval);
+          const levelsIntoScaling = level - scalingStartLevel;
+          multiplier = baseBumpMultiplier + (levelsIntoScaling * bumpScaling.perLevel);
+        } else {
+          multiplier = baseBumpMultiplier;
+        }
       }
     }
     

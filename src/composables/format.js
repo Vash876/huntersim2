@@ -69,7 +69,7 @@ export function formatNumberDecimal(value) {
       return realValue.toFixed(2);
     }
     
-    const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d'];
+    const suffixes = ['','k','m','b','t','qa','qu','sx','sp','o','n','d'];
     
     // Berechne die Größenordnung korrekt
     const log10Value = Math.log10(Math.abs(realValue));
@@ -105,7 +105,7 @@ export function formatNumberDecimal(value) {
       return value.toFixed(2);
     }
     
-    const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d'];
+    const suffixes = ['','k','m','b','t','qa','qu','sx','sp','o','n','d'];
     
     // Berechne die Größenordnung korrekt mit Decimal
     const log10Value = value.abs().log10();
@@ -263,7 +263,7 @@ export function formatSuffixInput(value) {
     return '0.00';
   }
   
-  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','oc','n','d'];
+  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','o','n','d'];
   
   // Für Werte < 1000, zeige ohne Suffix
   if (Math.abs(value) < 1000) {

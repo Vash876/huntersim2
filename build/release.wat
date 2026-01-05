@@ -9772,38 +9772,18 @@
    i32.trunc_sat_f64_s
    call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
    global.set $assembly/evalBorge/currentEnemy
-   global.get $assembly/evalBorge/currentEnem
-   i32.const 4000
-   i32.eq
-   if
-    global.get $~lib/memory/__stack_pointer
-    global.get $assembly/evalBorge/currentEnemy
-    local.tee $0
-    i32.store
-    global.get $~lib/memory/__stack_pointer
-    global.get $assembly/evalBorge/currentEnemy
-    local.tee $3
-    i32.store offset=4
-    local.get $0
-    local.get $3
-    f64.load offset=104
-    f64.const 2780
-    f64.add
-    f64.store offset=16
-   else
-    global.get $~lib/memory/__stack_pointer
-    global.get $assembly/evalBorge/currentEnemy
-    local.tee $0
-    i32.store
-    global.get $~lib/memory/__stack_pointer
-    global.get $assembly/evalBorge/currentEnemy
-    local.tee $3
-    i32.store offset=4
-    local.get $0
-    local.get $3
-    f64.load offset=104
-    f64.store offset=16
-   end
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/currentEnemy
+   local.tee $0
+   i32.store
+   global.get $~lib/memory/__stack_pointer
+   global.get $assembly/evalBorge/currentEnemy
+   local.tee $3
+   i32.store offset=4
+   local.get $0
+   local.get $3
+   f64.load offset=104
+   f64.store offset=16
   end
   loop $while-continue|0
    global.get $~lib/memory/__stack_pointer
@@ -9861,38 +9841,18 @@
      i32.trunc_sat_f64_s
      call $~lib/staticarray/StaticArray<assembly/evalBorge/Enemy>#__get
      global.set $assembly/evalBorge/currentEnemy
-     global.get $assembly/evalBorge/currentEnem
-     i32.const 4000
-     i32.eq
-     if
-      global.get $~lib/memory/__stack_pointer
-      global.get $assembly/evalBorge/currentEnemy
-      local.tee $0
-      i32.store
-      global.get $~lib/memory/__stack_pointer
-      global.get $assembly/evalBorge/currentEnemy
-      local.tee $3
-      i32.store offset=4
-      local.get $0
-      local.get $3
-      f64.load offset=104
-      f64.const 2780
-      f64.add
-      f64.store offset=16
-     else
-      global.get $~lib/memory/__stack_pointer
-      global.get $assembly/evalBorge/currentEnemy
-      local.tee $0
-      i32.store
-      global.get $~lib/memory/__stack_pointer
-      global.get $assembly/evalBorge/currentEnemy
-      local.tee $3
-      i32.store offset=4
-      local.get $0
-      local.get $3
-      f64.load offset=104
-      f64.store offset=16
-     end
+     global.get $~lib/memory/__stack_pointer
+     global.get $assembly/evalBorge/currentEnemy
+     local.tee $0
+     i32.store
+     global.get $~lib/memory/__stack_pointer
+     global.get $assembly/evalBorge/currentEnemy
+     local.tee $3
+     i32.store offset=4
+     local.get $0
+     local.get $3
+     f64.load offset=104
+     f64.store offset=16
     end
     br $while-continue|0
    end
@@ -13053,7 +13013,7 @@
              local.get $1
              local.get $3
              f64.load offset=16
-             f64.const 2800
+             f64.const 2778
              f64.add
              f64.store offset=16
              global.get $assembly/evalBorge/currentTime

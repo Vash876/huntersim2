@@ -195,6 +195,13 @@ const routes = [
     component: () => import('../views/tools/tr-planner/TRPlannerNew.vue'),
   },
 
+  // Debug Routes
+  {
+    path: '/debug/enemy-stats',
+    name: 'Enemy Stats Debug',
+    component: () => import('../views/debug/EnemyStatsDebug.vue'),
+  },
+
   // Settings Route
   {
     path: '/settings',

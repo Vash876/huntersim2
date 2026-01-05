@@ -24,12 +24,13 @@
             <IconClock :size="14" class="text-gray-400" />
             <span class="text-xs text-gray-400">Hours in TR</span>
           </div>
-          <SuffixInput
-            :model-value="currentHoursInTR"
-            @update:model-value="handleHoursUpdate"
-            class="w-full"
+          <HoursInTRInput
+            :model-value="gemPlannerStore.hoursInTR?.value || 0"
+            :timestamp="gemPlannerStore.hoursInTR?.timestamp"
+            :live-update="true"
+            :show-live-indicator="true"
             focus-ring-class="focus:ring-cyan-500"
-            text-color-class="text-cyan-400"
+            @update:model-value="gemPlannerStore.updateHoursInTR($event)"
           />
         </div>
       </div>
@@ -222,6 +223,7 @@ import {
 } from '../constants/relics';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
+import HoursInTRInput from '@/composables/HoursInTRInput.vue';
 import tippy from 'tippy.js';
 
 const missionPlannerStore = useMissionPlannerStore();
@@ -261,7 +263,7 @@ onUnmounted(() => {
 const relicLevels = computed(() => missionPlannerStore.relicLevels);
 const targetLevels = computed(() => missionPlannerStore.relicTargetLevels);
 const currentFragments = computed(() => missionPlannerStore.currentFragments);
-const currentHoursInTR = computed(() => missionPlannerStore.currentHoursInTR);
+const currentHoursInTR = computed(() => gemPlannerStore.getCurrentHoursInTR());
 
 // Tier 1 relics list
 const tier1Relics = computed(() => getTier1Relics());
@@ -347,10 +349,7 @@ function handleFragmentsUpdate(value) {
   missionPlannerStore.setCurrentFragments(value);
 }
 
-// Handle hours update
-function handleHoursUpdate(value) {
-  missionPlannerStore.currentHoursInTR = Math.max(0, value);
-}
+// Hours in TR wird jetzt direkt über gemPlannerStore verwaltet
 
 // Check if target is set
 function hasTargetSet(relicId) {

@@ -13,7 +13,7 @@
               <SuffixInput
                 :model-value="currentFragments"
                 @update:model-value="handleFragmentsUpdate"
-                class="w-24"
+                class="w-20"
                 focus-ring-class="focus:ring-purple-500"
                 text-color-class="text-purple-400"
               />
@@ -22,24 +22,24 @@
             <div class="flex items-center gap-1.5 bg-gray-700/40 px-2 py-1 rounded-md">
               <IconClock size="14" class="text-cyan-400" />
               <span class="text-gray-400">Hours in TR:</span>
-              <SuffixInput
-                :model-value="currentHoursInTR"
-                @update:model-value="handleHoursUpdate"
-                class="w-20"
+              <HoursInTRInput
+                :model-value="gemPlannerStore.hoursInTR?.value || 0"
+                :timestamp="gemPlannerStore.hoursInTR?.timestamp"
+                :live-update="true"
+                :show-live-indicator="true"
                 focus-ring-class="focus:ring-cyan-500"
-                text-color-class="text-cyan-400"
+                @update:model-value="gemPlannerStore.updateHoursInTR($event)"
               />
             </div>
             <!-- Frags per Day -->
             <div class="flex items-center gap-1.5 bg-green-900/30 px-2 py-1 rounded-md border border-green-700/30">
               <span class="text-gray-400">Rate:</span>
               <span class="text-green-400 font-bold">+{{ formatNumber(fragsPerDay) }}/day</span>
-              <span class="text-gray-500 text-[10px]" :title="lastUpdateTooltip">(auto)</span>
             </div>
           </div>
           <!-- Total Invested -->
           <div class="flex items-center gap-1.5 text-xs bg-amber-900/30 px-2 py-1 rounded-md border border-amber-700/30">
-            <span class="text-gray-400">Invested:</span>
+            <span class="text-gray-400">Invest:</span>
             <span class="text-amber-400 font-bold">{{ formatNumber(totalRelicInvestment) }}</span>
           </div>
         </div>
@@ -282,6 +282,7 @@ import {
 } from '../constants/relics';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import SuffixInput from '@/composables/SuffixInput.vue';
+import HoursInTRInput from '@/composables/HoursInTRInput.vue';
 import tippy from 'tippy.js';
 
 // Stores
@@ -302,8 +303,8 @@ const targetLevels = computed(() => missionPlannerStore.relicTargetLevels);
 // Current fragments owned from store (persistent)
 const currentFragments = computed(() => missionPlannerStore.currentFragments);
 
-// Current hours in TR from store (persistent)
-const currentHoursInTR = computed(() => missionPlannerStore.currentHoursInTR);
+// Current hours in TR from gemPlannerStore (global, with live update)
+const currentHoursInTR = computed(() => gemPlannerStore.getCurrentHoursInTR());
 
 // Last update tooltip
 const lastUpdateTooltip = computed(() => {
@@ -318,10 +319,7 @@ function handleFragmentsUpdate(value) {
   missionPlannerStore.setCurrentFragments(value);
 }
 
-// Handle hours in TR update from input
-function handleHoursUpdate(value) {
-  missionPlannerStore.currentHoursInTR = Math.max(0, value);
-}
+// Hours in TR wird jetzt direkt über gemPlannerStore verwaltet
 
 // Tier 1 relics list
 const tier1Relics = computed(() => getTier1Relics());

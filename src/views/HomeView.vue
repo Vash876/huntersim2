@@ -2,6 +2,44 @@
 const changelog = 
 [
   {
+    version: '2.10.5',
+    date: '2026-01-05',
+    changes: [
+      {
+        text: 'm0 Cost Overview',
+        subItems: [
+          'Implemented new cost bumps at level 250 and 275',
+        ]
+      },
+      {
+        text: 'Inscryption Planner',
+        subItems: [
+          'Replaced time display with Hours in TR display',
+        ]
+      },
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Fixed end date not saving properly when editing TR plans',
+        ]
+      },
+    ]
+  },
+  {
+    version: '2.10.4',
+    date: '2025-12-30',
+    changes: [
+      {
+        text: 'Inscryption Planner',
+        subItems: [
+          'Added Hours in TR input field with live auto-increment and removed the old time displays',
+          'Added @Hour display showing at which TR hour each shopping list item will be purchased',
+          'Summary now shows total @Hour when all items are bought',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.10.3',
     date: '2025-12-28',
     changes: [
