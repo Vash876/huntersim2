@@ -232,62 +232,72 @@
               <div 
                 v-for="gadget in GADGETS" 
                 :key="gadget.id"
-                class="bg-gray-700/30 rounded-lg p-3 hover:bg-gray-700/50 transition-colors"
+                class="bg-gray-700/30 rounded-lg p-2.5 hover:bg-gray-700/50 transition-colors"
               >
-                <div class="flex items-start gap-3">
-                  <!-- Icon standalone on the left -->
-                  <div class="w-[35px] h-[35px] flex items-center justify-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                  <!-- Icon -->
+                  <div class="w-[32px] h-[32px] flex items-center justify-center flex-shrink-0">
                     <img 
                       v-if="getGadgetImageUrl(gadget.id)"
                       :src="getGadgetImageUrl(gadget.id)"
                       :alt="gadget.label"
-                      class="w-[35px] h-[35px] object-contain"
+                      class="w-[32px] h-[32px] object-contain"
                     />
                   </div>
                   
-                  <!-- Content area -->
+                  <!-- Content: Name + Effects -->
                   <div class="flex-1 min-w-0">
-                    <!-- Header with Name and Level Badge -->
-                    <div class="flex items-center gap-2 mb-1">
-                      <span class="text-sm font-medium text-white truncate max-w-[140px]">
-                        {{ gadget.label }}
-                      </span>
-                      <span class="text-xs bg-gray-600/50 px-2 py-0.5 rounded-full text-gray-300 font-mono ml-auto flex-shrink-0">
-                        Lvl {{ getCurrentLevel(gadget.id) }}
-                      </span>
+                    <div class="text-sm font-medium text-white truncate max-w-[140px]">
+                      {{ gadget.label }}
+                    </div>
+                    <div class="text-[10px] text-gray-400 truncate mt-0.5">
+                      {{ gadget.boost.map(b => b.description).join(', ') }}
+                    </div>
+                  </div>
+                  
+                  <!-- Level Badge + Buy Buttons -->
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <!-- Level Badge -->
+                    <div class="text-[11px] bg-gray-600/50 px-1 py-1 rounded text-gray-300 font-mono self-start">
+                      {{ getCurrentLevel(gadget.id) }}
                     </div>
                     
-                    <!-- Effects and Buy Buttons -->
-                    <div class="flex items-center gap-3 text-xs text-gray-400">
-                      <span class="text-gray-300 truncate flex-1">{{ gadget.boost.map(b => b.description).join(', ') }}</span>
-                      
-                      <!-- Buy Buttons with Costs -->
-                      <div class="flex items-center gap-2 flex-shrink-0">
-                        <div class="flex flex-col items-end gap-0.5 relative">
-                          <button
-                            @click="addGadgetToListWithLevels(gadget, 1)"
-                            @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 1 }"
-                            @mouseleave="hoveredButton = null"
-                            class="text-xs px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors whitespace-nowrap text-white font-semibold w-12"
-                          >
-                            +1
-                          </button>
-                          <span class="text-[10px] text-amber-400 whitespace-nowrap">
-                            ({{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 1)) }})
-                          </span>
+                    <!-- +1 Button -->
+                    <div class="flex flex-col items-center gap-0.5">
+                      <button
+                        @click="addGadgetToListWithLevels(gadget, 1)"
+                        @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 1 }"
+                        @mouseleave="hoveredButton = null"
+                        class="text-xs px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors text-white font-semibold w-11"
+                      >
+                        +1
+                      </button>
+                      <div class="text-center">
+                        <div class="text-[9px] text-amber-400 whitespace-nowrap">
+                          {{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 1)) }}
                         </div>
-                        <div class="flex flex-col items-end gap-0.5 relative">
-                          <button
-                            @click="addGadgetToListWithLevels(gadget, 10)"
-                            @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 10 }"
-                            @mouseleave="hoveredButton = null"
-                            class="text-xs px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors whitespace-nowrap text-white font-semibold w-12"
-                          >
-                            +10
-                          </button>
-                          <span class="text-[10px] text-amber-400 whitespace-nowrap">
-                            ({{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)) }})
-                          </span>
+                        <div class="text-[9px] text-cyan-400 whitespace-nowrap">
+                          {{ formatTimeToAfford(calculateTimeToAfford(gadget.id, 1)) }}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- +10 Button -->
+                    <div class="flex flex-col items-center gap-0.5">
+                      <button
+                        @click="addGadgetToListWithLevels(gadget, 10)"
+                        @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 10 }"
+                        @mouseleave="hoveredButton = null"
+                        class="text-xs px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors text-white font-semibold w-11"
+                      >
+                        +10
+                      </button>
+                      <div class="text-center">
+                        <div class="text-[9px] text-amber-400 whitespace-nowrap">
+                          {{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)) }}
+                        </div>
+                        <div class="text-[9px] text-cyan-400 whitespace-nowrap">
+                          {{ formatTimeToAfford(calculateTimeToAfford(gadget.id, 10)) }}
                         </div>
                       </div>
                     </div>
@@ -441,97 +451,107 @@
               <div 
                 v-for="gadget in GADGETS" 
                 :key="gadget.id"
-                class="bg-gray-700/30 rounded-lg p-2 hover:bg-gray-700/50 transition-colors"
+                class="bg-gray-700/30 rounded-lg p-2.5 hover:bg-gray-700/50 transition-colors"
               >
-                <div class="flex items-start gap-3">
-                  <!-- Icon standalone on the left -->
-                  <div class="w-[35px] h-[35px] flex items-center justify-center flex-shrink-0">
+                <div class="flex items-center gap-2">
+                  <!-- Icon -->
+                  <div class="w-[32px] h-[32px] flex items-center justify-center flex-shrink-0">
                     <img 
                       v-if="getGadgetImageUrl(gadget.id)"
                       :src="getGadgetImageUrl(gadget.id)"
                       :alt="gadget.label"
-                      class="w-[35px] h-[35px] object-contain"
+                      class="w-[32px] h-[32px] object-contain"
                     />
                   </div>
                   
-                  <!-- Content area -->
+                  <!-- Content: Name + Effects -->
                   <div class="flex-1 min-w-0">
-                    <!-- Header with Name and Level Badge -->
-                    <div class="flex items-center gap-2 mb-1">
-                      <span class="text-sm font-medium text-white truncate">
-                        {{ gadget.label }}
-                      </span>
-                      <span class="text-xs bg-gray-600/50 px-2 py-0.5 rounded-full text-gray-300 font-mono ml-auto">
-                        Lvl {{ getCurrentLevel(gadget.id) }}
-                      </span>
+                    <div class="text-sm font-medium text-white truncate">
+                      {{ gadget.label }}
+                    </div>
+                    <div class="text-[10px] text-gray-400 truncate mt-0.5">
+                      {{ gadget.boost.map(b => b.description).join(', ') }}
+                    </div>
+                  </div>
+                  
+                  <!-- Level Badge + Buy Buttons -->
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    <!-- Level Badge -->
+                    <div class="text-[11px] bg-gray-600/50 px-1.5 py-1 rounded text-gray-300 font-mono self-start">
+                      Lvl {{ getCurrentLevel(gadget.id) }}
                     </div>
                     
-                    <!-- Effects and Buy Buttons -->
-                    <div class="flex items-center gap-3 text-xs text-gray-400">
-                      <span class="text-gray-300 truncate flex-1">{{ gadget.boost.map(b => b.description).join(', ') }}</span>
+                    <!-- +1 Button -->
+                    <div class="flex flex-col items-center gap-0.5 relative">
+                      <button
+                        @click="addGadgetToListWithLevels(gadget, 1)"
+                        @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 1 }"
+                        @mouseleave="hoveredButton = null"
+                        class="text-xs px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors text-white font-semibold w-11"
+                      >
+                        +1
+                      </button>
+                      <div class="text-center">
+                        <div class="text-[9px] text-amber-400 whitespace-nowrap">
+                          {{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 1)) }}
+                        </div>
+                        <div class="text-[9px] text-cyan-400 whitespace-nowrap">
+                          {{ formatTimeToAfford(calculateTimeToAfford(gadget.id, 1)) }}
+                        </div>
+                      </div>
                       
-                      <!-- Buy Buttons with Costs -->
-                      <div class="flex items-center gap-2 flex-shrink-0">
-                        <div class="flex flex-col items-end gap-0.5 relative">
-                          <button
-                            @click="addGadgetToListWithLevels(gadget, 1)"
-                            @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 1 }"
-                            @mouseleave="hoveredButton = null"
-                            class="text-xs px-2 py-0.5 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors whitespace-nowrap text-white font-semibold w-12"
-                          >
-                            +1
-                          </button>
-                          <span class="text-[10px] text-amber-400 whitespace-nowrap">
-                            ({{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 1)) }})
-                          </span>
-                          
-                          <!-- Tooltip for +1 -->
+                      <!-- Tooltip for +1 -->
+                      <div 
+                        v-if="hoveredButton?.gadgetId === gadget.id && hoveredButton?.levels === 1 && !isMobile"
+                        class="absolute bottom-full mb-2 right-0 bg-gray-900 border border-gray-600 rounded-lg p-2 shadow-xl z-50 min-w-[160px] tooltip-arrow"
+                      >
+                        <div class="text-[10px] text-gray-400 mb-1 font-semibold">Improvements:</div>
+                        <div class="space-y-0.5">
                           <div 
-                            v-if="hoveredButton?.gadgetId === gadget.id && hoveredButton?.levels === 1 && !isMobile"
-                            class="absolute bottom-full mb-2 right-0 bg-gray-900 border border-gray-600 rounded-lg p-2 shadow-xl z-50 min-w-[160px] tooltip-arrow"
+                            v-for="improvement in calculateBoostImprovements(gadget, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 1)" 
+                            :key="improvement.description"
+                            class="flex justify-between items-center gap-2"
                           >
-                            <div class="text-[10px] text-gray-400 mb-1 font-semibold">Improvements:</div>
-                            <div class="space-y-0.5">
-                              <div 
-                                v-for="improvement in calculateBoostImprovements(gadget, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 1)" 
-                                :key="improvement.description"
-                                class="flex justify-between items-center gap-2"
-                              >
-                                <span class="text-gray-300 text-[10px]">{{ improvement.description }}</span>
-                                <span class="text-green-400 font-semibold text-[10px]">+{{ improvement.percentChange }}%</span>
-                              </div>
-                            </div>
+                            <span class="text-gray-300 text-[10px]">{{ improvement.description }}</span>
+                            <span class="text-green-400 font-semibold text-[10px]">+{{ improvement.percentChange }}%</span>
                           </div>
                         </div>
-                        <div class="flex flex-col items-end gap-0.5 relative">
-                          <button
-                            @click="addGadgetToListWithLevels(gadget, 10)"
-                            @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 10 }"
-                            @mouseleave="hoveredButton = null"
-                            class="text-xs px-2 py-0.5 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors whitespace-nowrap text-white font-semibold w-12"
-                          >
-                            +10
-                          </button>
-                          <span class="text-[10px] text-amber-400 whitespace-nowrap">
-                            ({{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)) }})
-                          </span>
-                          
-                          <!-- Tooltip for +10 -->
+                      </div>
+                    </div>
+                    
+                    <!-- +10 Button -->
+                    <div class="flex flex-col items-center gap-0.5 relative">
+                      <button
+                        @click="addGadgetToListWithLevels(gadget, 10)"
+                        @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 10 }"
+                        @mouseleave="hoveredButton = null"
+                        class="text-xs px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors text-white font-semibold w-11"
+                      >
+                        +10
+                      </button>
+                      <div class="text-center">
+                        <div class="text-[9px] text-amber-400 whitespace-nowrap">
+                          {{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)) }}
+                        </div>
+                        <div class="text-[9px] text-cyan-400 whitespace-nowrap">
+                          {{ formatTimeToAfford(calculateTimeToAfford(gadget.id, 10)) }}
+                        </div>
+                      </div>
+                      
+                      <!-- Tooltip for +10 -->
+                      <div 
+                        v-if="hoveredButton?.gadgetId === gadget.id && hoveredButton?.levels === 10 && !isMobile"
+                        class="absolute bottom-full mb-2 right-0 bg-gray-900 border border-gray-600 rounded-lg p-2 shadow-xl z-50 min-w-[160px] tooltip-arrow"
+                      >
+                        <div class="text-[10px] text-gray-400 mb-1 font-semibold">Improvements:</div>
+                        <div class="space-y-0.5">
                           <div 
-                            v-if="hoveredButton?.gadgetId === gadget.id && hoveredButton?.levels === 10 && !isMobile"
-                            class="absolute bottom-full mb-2 right-0 bg-gray-900 border border-gray-600 rounded-lg p-2 shadow-xl z-50 min-w-[160px] tooltip-arrow"
+                            v-for="improvement in calculateBoostImprovements(gadget, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)" 
+                            :key="improvement.description"
+                            class="flex justify-between items-center gap-2"
                           >
-                            <div class="text-[10px] text-gray-400 mb-1 font-semibold">Improvements:</div>
-                            <div class="space-y-0.5">
-                              <div 
-                                v-for="improvement in calculateBoostImprovements(gadget, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)" 
-                                :key="improvement.description"
-                                class="flex justify-between items-center gap-2"
-                              >
-                                <span class="text-gray-300 text-[10px]">{{ improvement.description }}</span>
-                                <span class="text-green-400 font-semibold text-[10px]">+{{ improvement.percentChange }}%</span>
-                              </div>
-                            </div>
+                            <span class="text-gray-300 text-[10px]">{{ improvement.description }}</span>
+                            <span class="text-green-400 font-semibold text-[10px]">+{{ improvement.percentChange }}%</span>
                           </div>
                         </div>
                       </div>
@@ -945,6 +965,32 @@ function getProductionAtIndex(index) {
 
 function calculateUpgradeCost(gadgetId, fromLevel, toLevel) {
   return calcGadgetCostDifference(gadgetId, fromLevel, toLevel);
+}
+
+function calculateTimeToAfford(gadgetId, levels) {
+  const currentLevel = getCurrentLevel(gadgetId);
+  const cost = calculateUpgradeCost(gadgetId, currentLevel, currentLevel + levels);
+  const production = tessarectsPerDay.value;
+  const availableTesseracts = store.getCurrentTesseractsWithProduction();
+  
+  if (production <= 0) return null;
+  
+  const remainingCost = Math.max(0, cost - availableTesseracts);
+  if (remainingCost <= 0) return { days: 0, hours: 0 };
+  
+  const daysNeeded = remainingCost / production;
+  const fullDays = Math.floor(daysNeeded);
+  const remainingHours = Math.round((daysNeeded - fullDays) * 24);
+  
+  return { days: fullDays, hours: remainingHours };
+}
+
+function formatTimeToAfford(time) {
+  if (!time) return '-';
+  if (time.days === 0 && time.hours === 0) return 'Now';
+  if (time.days === 0) return `${time.hours}h`;
+  if (time.hours === 0) return `${time.days}d`;
+  return `${time.days}d ${time.hours}h`;
 }
 
 function calculateAnchorProductionBoost(fromLevel, toLevel, currentProduction) {

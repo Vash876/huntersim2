@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.11.1',
+    date: '2026-01-11',
+    changes: [
+      {
+        text: 'Gadget Planner',
+        subItems: [
+          'Added time-to-afford display under +1 and +10 buttons based on Tesseract production',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.11.0',
     date: '2026-01-11',
     changes: [
