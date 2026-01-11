@@ -163,7 +163,17 @@ function multi(enemyNum) {
     Math.max(0, (enemyNum - 359) * 0.005) +
     Math.max(0, (enemyNum - 369) * 0.006) +
     Math.max(0, (enemyNum - 379) * 0.006) +
-    Math.max(0, (enemyNum - 389) * 0.007)
+    Math.max(0, (enemyNum - 389) * 0.007) +
+    Math.max(0, (enemyNum - 400) * 0.005) +
+    Math.max(0, (enemyNum - 410) * 0.005) +
+    Math.max(0, (enemyNum - 420) * 0.005) +
+    Math.max(0, (enemyNum - 430) * 0.004) +
+    Math.max(0, (enemyNum - 440) * 0.004) +
+    Math.max(0, (enemyNum - 450) * 0.004) +
+    Math.max(0, (enemyNum - 460) * 0.004) +
+    Math.max(0, (enemyNum - 470) * 0.004) +
+    Math.max(0, (enemyNum - 480) * 0.004) +
+    Math.max(0, (enemyNum - 490) * 0.004)
   ) * Math.pow(1.01, Math.max(0, enemyNum - 350));
 }
 
@@ -194,7 +204,10 @@ function calculateEnemy(enemyNum) {
   }
   
   let effect = 0;
-  if (enemyNum >= 300) {
+  if (enemyNum >= 401) {
+    // Ab Stage 401: 5.5% für normale Enemies, 9.5% für Bosse (Dev-Update)
+    effect = 0.055 + (isBoss ? 0.04 : 0);
+  } else if (enemyNum >= 300) {
     effect = 0.04 + 0.01 * Math.max(0, floorDiv - 3) + (isBoss ? 0.04 : 0);
   }
   

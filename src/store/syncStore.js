@@ -102,6 +102,7 @@ export const useSyncStore = defineStore('sync', () => {
       const { useTSStore } = await import('@/store/tsStore');
       const { useMissionPlannerStore } = await import('@/store/missionPlannerStore');
       const { useTokenPlannerStore } = await import('@/store/tokenPlannerStore');
+      const { useGadgetPlannerStore } = await import('@/store/gadgetPlannerStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
@@ -112,6 +113,7 @@ export const useSyncStore = defineStore('sync', () => {
       const tsStore = useTSStore();
       const missionPlannerStore = useMissionPlannerStore();
       const tokenPlannerStore = useTokenPlannerStore();
+      const gadgetPlannerStore = useGadgetPlannerStore();
 
       // Create backup data (same as Settings createBackup)
       const hunterStoreState = JSON.parse(JSON.stringify(hunterStore.$state));
@@ -130,10 +132,8 @@ export const useSyncStore = defineStore('sync', () => {
           tsStore: JSON.parse(JSON.stringify(tsStore.settings)),
           missionPlannerStore: missionPlannerStore.exportData(),
           tokenPlannerStore: tokenPlannerStore.exportData(),
+          gadgetPlannerStore: gadgetPlannerStore.exportData(),
           localStorage: {
-            gadgetCalculator_currentLevels: JSON.parse(localStorage.getItem('gadgetCalculator_currentLevels') || '{}'),
-            gadgetCalculator_targetLevels: JSON.parse(localStorage.getItem('gadgetCalculator_targetLevels') || '{}'),
-            gadgetCalculator_referenceBuildId: localStorage.getItem('gadgetCalculator_referenceBuildId'),
             mechPlanner_settings: JSON.parse(localStorage.getItem('mechPlanner_settings') || '{}'),
             attrGN3Calculator_settings: JSON.parse(localStorage.getItem('attrGN3Calculator_settings') || '{}'),
             researchOverview_filters: JSON.parse(localStorage.getItem('researchOverview_filters') || '{}'),
@@ -202,6 +202,7 @@ export const useSyncStore = defineStore('sync', () => {
       const { useTSStore } = await import('@/store/tsStore');
       const { useMissionPlannerStore } = await import('@/store/missionPlannerStore');
       const { useTokenPlannerStore } = await import('@/store/tokenPlannerStore');
+      const { useGadgetPlannerStore } = await import('@/store/gadgetPlannerStore');
 
       const hunterStore = useHunterStore();
       const trPlannerStore = useTRPlannerStore();
@@ -212,6 +213,7 @@ export const useSyncStore = defineStore('sync', () => {
       const tsStore = useTSStore();
       const missionPlannerStore = useMissionPlannerStore();
       const tokenPlannerStore = useTokenPlannerStore();
+      const gadgetPlannerStore = useGadgetPlannerStore();
 
       // Restore stores (same as Settings restoreFromBackup)
       if (backupData.data.hunterStore) {
@@ -320,19 +322,15 @@ export const useSyncStore = defineStore('sync', () => {
         }
       }
 
+      // Restore Gadget Planner Store
+      if (backupData.data.gadgetPlannerStore) {
+        console.log('📥 Restoring Gadget Planner data from cloud backup...');
+        gadgetPlannerStore.importData(backupData.data.gadgetPlannerStore);
+      }
+
       // Restore localStorage
       if (backupData.data.localStorage) {
         const localStorageData = backupData.data.localStorage;
-        
-        if (localStorageData.gadgetCalculator_currentLevels) {
-          localStorage.setItem('gadgetCalculator_currentLevels', JSON.stringify(localStorageData.gadgetCalculator_currentLevels));
-        }
-        if (localStorageData.gadgetCalculator_targetLevels) {
-          localStorage.setItem('gadgetCalculator_targetLevels', JSON.stringify(localStorageData.gadgetCalculator_targetLevels));
-        }
-        if (localStorageData.gadgetCalculator_referenceBuildId) {
-          localStorage.setItem('gadgetCalculator_referenceBuildId', localStorageData.gadgetCalculator_referenceBuildId);
-        }
         if (localStorageData.mechPlanner_settings) {
           localStorage.setItem('mechPlanner_settings', JSON.stringify(localStorageData.mechPlanner_settings));
         }

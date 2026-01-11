@@ -1,22 +1,22 @@
 <template>
   <div class="p-0 sm:p-6 max-w-[1440px] mx-auto">
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8 border border-gray-800/80">
-      <!-- Überschrift -->
+      <!-- Header -->
       <h2 class="text-2xl font-bold mb-4 text-center text-white">
         <span>Gadget Planner</span>
       </h2>
       
-      <!-- Tessarect Rate Settings -->
+      <!-- Tesseract Production Box -->
       <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
         <div class="header p-3 flex justify-between items-center">
           <h3 class="text-lg font-semibold text-white flex items-center">
-            <img src="@/assets/knox/loot_mat3.png" class="w-7 h-7 mr-2" alt="Hellish Biomatter" />
+            <img src="@/assets/knox/loot_mat3.png" class="w-7 h-7 mr-2" alt="Tesseracts" />
             Tesseract Production
           </h3>
           
           <div class="flex items-center gap-2">            
             <button 
-              @click="resetAllLevels" 
+              @click="resetProduction" 
               class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
             >
               <IconRefresh size="14" class="mr-1" />
@@ -26,7 +26,7 @@
         </div>
         
         <div class="p-2 sm:p-4">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <!-- Reference Build -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <div class="font-medium text-white text-sm mb-1">Reference Build</div>
@@ -46,24 +46,53 @@
 
             <!-- Current Tesseracts -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-              <div class="font-medium text-white text-sm mb-1">Current Tesseracts</div>
-                <div class="text-xs text-gray-400 mb-2">Amount you have saved</div>
+              <div class="font-medium text-white text-sm mb-1 flex items-center gap-1">
+                Current Tesseracts
+                <InfoTooltip 
+                  content="<strong>Auto-updating Tesseracts:</strong><br/>• Grows automatically based on daily production<br/>• Updates live<br/>• Deducted automatically when marking items as purchased"
+                  placement="top"
+                />
+              </div>
+              <div class="text-xs text-gray-400 mb-2">Amount you have saved</div>
               
               <SuffixInput
                 v-model="currentTesseracts"
                 placeholder="0"
+                :focus-ring-class="'focus:ring-blue-500'"
+                :placeholder-class="'placeholder-blue-400'"
                 class="w-full text-sm bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none"
+              />
+            </div>
+
+            <!-- Hours in TR -->
+            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="font-medium text-white text-sm mb-1 flex items-center gap-1">
+                Hours in TR
+                <InfoTooltip 
+                  content="<strong>Hours in TR:</strong><br/>• Tracks your current hours in this TR<br/>• Auto-increments in real time<br/>• Used to calculate @Hour for shopping list items<br/>• Shared across all tools"
+                  placement="top"
+                />
+              </div>
+              <div class="text-xs text-gray-400 mb-2">Current hours in TR</div>
+              
+              <HoursInTRInput
+                :model-value="gemPlannerStore.hoursInTR?.value || 0"
+                :timestamp="gemPlannerStore.hoursInTR?.timestamp"
+                :live-update="true"
+                :show-live-indicator="true"
+                focus-ring-class="focus:ring-cyan-500"
+                @update:model-value="gemPlannerStore.updateHoursInTR($event)"
               />
             </div>     
             
-            <!-- Daily Tessarect Rate -->
+            <!-- Daily Tesseract Rate -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <div class="font-medium text-white text-sm mb-1">Tesseracts per Day</div>
               <div class="text-xs text-gray-400 mb-2">Calculated from Build</div>
 
               <div class="flex items-center bg-gray-800/80 py-2 px-3 rounded-lg border border-gray-700">
                 <div class="text-amber-400 text-base font-bold">{{ formatGadgetCost(tessarectsPerDay) }}</div>
-                <div v-if="!selectedBuild" class="ml-2 text-gray-400 text-xs">
+                <div v-if="!selectedBuildId" class="ml-2 text-gray-400 text-xs">
                   (select a build)
                 </div>
               </div>
@@ -71,313 +100,751 @@
           </div>
         </div>
       </div>
-      
-      <!-- Summary Box (total cost, days) -->
-      <div class="bg-gray-800/80 rounded-xl border border-gray-700/60 overflow-hidden mb-4">
-        <div class="header p-3 flex items-center">
+
+      <!-- Summary Box -->
+      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
+        <div class="header p-3 flex justify-between items-center">
           <h3 class="text-lg font-semibold text-white flex items-center">
             <IconChartDots size="18" class="mr-2 text-green-400" />
             Summary
           </h3>
+          <button 
+            @click="showSummaryModal = true" 
+            class="bg-cyan-700 hover:bg-cyan-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
+          >
+            <IconShare size="14" class="mr-1" />
+            Summary
+          </button>
         </div>
         
         <div class="p-2 sm:p-4">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div class="bg-gray-900/80 rounded-lg p-3 border border-gray-700/60">
-              <div class="text-gray-400 text-xs mb-0.5">Total Tesseracts Cost</div>
-              <div class="text-amber-400 font-bold text-lg">{{ formatGadgetCost(totalCost) }}</div>
-            </div>
-            
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <!-- Total Cost -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-              <div class="text-gray-400 text-xs mb-0.5">Time to Save</div>
-              <div 
-                :class="{
-                  'text-white': daysToSave < 30, 
-                  'text-yellow-400': daysToSave >= 30 && daysToSave < 60, 
-                  'text-red-400': daysToSave >= 60
-                }" 
-                class="font-bold text-lg"
-              >
-                {{ formatTimeToSave(daysToSave) }}
+              <div class="font-medium text-white text-sm mb-1">Total Cost</div>
+              <div class="text-lg font-bold text-amber-400">
+                {{ formatGadgetCost(store.totalShoppingCost) }}
               </div>
             </div>
-            
+
+            <!-- Time to Save -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-              <div class="text-gray-400 text-xs mb-0.5">Planned Upgrades</div>
-              <div class="text-white text-lg">
-                <span class="text-blue-400 font-bold">{{ activeLevelCount }}</span>
-                <span class="text-gray-500 mx-1">/</span>
-                <span>{{ totalGadgets }}</span>
+              <div class="font-medium text-white text-sm mb-1">Time to Save</div>
+              <div class="text-lg font-bold text-cyan-400">
+                {{ formatTimeToSave() }}
+              </div>
+            </div>
+
+            <!-- @Hour (when complete) -->
+            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="font-medium text-white text-sm mb-1">@Hour</div>
+              <div class="text-lg font-bold text-cyan-400">
+                {{ formatTotalHoursInTR() }}
+              </div>
+            </div>
+
+            <!-- Items Count -->
+            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+              <div class="font-medium text-white text-sm mb-1">Shopping List</div>
+              <div class="text-lg font-bold text-white">
+                {{ shoppingList.length }} Gadget{{ shoppingList.length !== 1 ? 's' : '' }}
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-      <!-- Gadget List -->
-      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-8">
-        <div class="header p-4 flex justify-between items-center">
-          <h3 class="text-lg font-semibold text-white flex items-center">
-            <IconSettings size="20" class="mr-2 text-cyan-400" />
-            Gadget Upgrades
-          </h3>
-          <!-- Summary Button  -->
-          <button 
-            @click="showSummaryModal = true"
-            class="bg-purple-700 hover:bg-purple-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
+
+      <!-- Mobile Tab Navigation (lg:hidden) -->
+      <div class="lg:hidden mb-4">
+        <div class="bg-gray-800/50 rounded-xl border border-gray-700/50 p-1 flex">
+          <button
+            @click="activeMobileTab = 'available'"
+            :class="[
+              'flex-1 py-2 px-3 rounded-lg font-medium transition-all text-sm',
+              activeMobileTab === 'available' 
+                ? 'bg-cyan-700 text-white shadow-md' 
+                : 'text-gray-400 hover:text-white'
+            ]"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" id="Generate-Summary--Streamline-Outlined-Expansion" height="16" width="16">
-              <desc>
-                Generate Summary Streamline Icon: https://streamlinehq.com
-              </desc>
-              <g id="generate-summary">
-                <path id="Union" fill="#FFFFFF" fill-rule="evenodd" d="M5 11V4H3v7c0 3.866 3.13401 7 7 7h7.293L16 19.293l1.4142 1.4142 3.7071 -3.7071 -3.7071 -3.7071L16 14.7072 17.2928 16H10c-2.76142 0 -5 -2.2386 -5 -5Zm3 -5h13V4H8v2Zm7 5H8V9h7v2Z" clip-rule="evenodd" stroke-width="1"></path>
-              </g>
-            </svg>
-            <span class="ml-1">Summary</span>
+            <div class="flex items-center justify-center gap-2">
+              <IconList size="16" />
+              <span>Available</span>
+              <span class="text-xs bg-cyan-900/50 px-1.5 py-0.5 rounded">{{ GADGETS.length }}</span>
+            </div>
+          </button>
+          <button
+            @click="activeMobileTab = 'shopping'"
+            :class="[
+              'flex-1 py-2 px-3 rounded-lg font-medium transition-all text-sm',
+              activeMobileTab === 'shopping' 
+                ? 'bg-green-700 text-white shadow-md' 
+                : 'text-gray-400 hover:text-white'
+            ]"
+          >
+            <div class="flex items-center justify-center gap-2">
+              <IconShoppingCart size="16" />
+              <span>Shopping</span>
+              <span class="text-xs bg-green-900/50 px-1.5 py-0.5 rounded">{{ shoppingList.length }}</span>
+            </div>
           </button>
         </div>
-        
-        <div class="p-2 sm:p-6">
-          <!-- Loading state -->
-          <div v-if="isLoading" class="p-4 flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-l-2 border-blue-500 mb-2"></div>
-            <p class="text-gray-400 text-sm">Loading gadget data...</p>
-          </div>
+      </div>
 
-          <!-- Error state -->
-          <div v-else-if="loadError" class="p-4 text-center">
-            <IconAlertCircle size="24" class="text-red-500 mx-auto mb-1" />
-            <p class="text-red-400 text-sm">{{ loadError }}</p>
+      <!-- Mobile Content (lg:hidden) -->
+      <div class="lg:hidden">
+        <!-- Mobile: Available Gadgets Tab -->
+        <div v-if="activeMobileTab === 'available'" class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
+          <div class="header p-4 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-white flex items-center">
+              <IconList size="20" class="mr-2 text-cyan-400" />
+              Available Gadgets
+            </h3>
             <button 
-              @click="loadGadgetData" 
-              class="mt-2 px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white rounded-md text-xs"
+              @click="showLevelsModal = true" 
+              class="bg-cyan-700 hover:bg-cyan-600 text-white px-2 py-1 text-xs rounded-lg flex items-center transition-colors"
             >
-              Retry
+              <IconSettings size="14" class="mr-1" />
+              Manage Levels
             </button>
           </div>
           
-          <!-- Gadget List -->
-          <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div
-              v-for="gadget in GADGETS"
-              :key="gadget.id"
-              class="gadget-card rounded-xl border border-gray-700 bg-gray-800/90 pb-2 p-4 transition-colors hover:border-cyan-600 relative overflow-hidden mb-1"
-              :class="{ 'active-gadget': hasLevelChanges(gadget.id) }"
-              :style="{ viewTransitionName: `gadget-${gadget.id}` }"
-            >
-              <!-- Hintergrundbild - GEFIXT mit dynamischem Import -->
-              <img 
-                v-if="getGadgetImageUrl(gadget.id)"
-                :src="getGadgetImageUrl(gadget.id)"
-                :alt="`Gadget ${getGadgetImageNumber(gadget.id)}`"
-                class="absolute top-2 right-2 w-16 h-16 object-contain opacity-80 pointer-events-none z-0"
-                style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;"
-              />
-              
-              <!-- Content Overlay -->
-              <div class="relative z-10 gadget-content">
-                <!-- Gadget Header -->
-                <div class="flex flex-wrap justify-between items-center mb-2">
-                  <div class="flex-grow">
-                    <span class="text-base text-white font-medium gadget-title">
-                      <span class="hidden sm:inline">
-                        {{ gadget.label.length > 40 ? gadget.label.substring(0, 31) + '...' : gadget.label }}
-                      </span>
-                      <span class="inline sm:hidden">
-                        {{ gadget.label.length > 28 ? gadget.label.substring(0, 25) + '...' : gadget.label }}
-                      </span>
-                    </span>
-                    
-                    <!-- Anchor Evaluation Button -->
-                    <div v-if="gadget.id === 'anchor' && targetLevels.anchor > (currentLevels.anchor || 0)" class="mt-1">
-                      <button 
-                        v-if="!anchorEvaluationEnabled"
-                        @click="triggerAnchorEvaluation"
-                        :disabled="evaluatingAnchor"
-                        class="text-xs bg-blue-800 hover:bg-blue-600 disabled:bg-gray-600 text-white px-2 py-1 rounded-md transition-colors flex items-center"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-3 h-3 mr-1">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Evaluate for exact time
-                        <InfoTooltip 
-                          content="Click to get more accurate time (may take a while)"
-                          placement="top"
-                          class="ml-1"
-                        />
-                      </button>
-                      <div v-else class="text-xs text-purple-300">
-                        Using evaluation results
-                      </div>
-                    </div>
-                  </div>
-                  <div v-if="getGadgetCost(gadget.id) > 0" class="flex flex-col items-end gap-1">
-                    <!-- Cost Badge -->
-                    <div class="text-amber-400 text-xs font-bold bg-gray-900/90 px-2 py-0.5 rounded-lg border border-amber-700/40">
-                      {{ formatGadgetCost(getGadgetCost(gadget.id)) }}
-                    </div>
-                    <!-- Time Badge -->
-                    <div class="text-xs px-2 py-0.5 rounded-lg bg-blue-900/80 text-blue-200 font-bold border border-blue-700/40 flex items-center">
-                      <span v-if="gadget.id === 'anchor' && evaluatingAnchor" class="animate-spin w-3 h-3 border border-blue-300 border-t-transparent rounded-full mr-1"></span>
-                      {{ gadget.id === 'anchor' ? getAnchorTimeDisplay() : formatIndividualSaveTime(gadget.id) }}
-                    </div>
-                  </div>
-                </div>
+          <div class="p-4 space-y-2">
+            <!-- Loading State -->
+            <div v-if="isLoading" class="p-8 flex flex-col items-center justify-center">
+              <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-l-2 border-blue-500 mb-4"></div>
+              <p class="text-gray-400 text-sm">Loading gadget data...</p>
+            </div>
 
-                <!-- Level Controls -->
-                <div class="grid grid-cols-2 gap-2 mb-2">
-                  <!-- Current Level Controls -->
-                  <div class="gadget-controls">
-                    <div class="text-[11px] text-gray-400 mb-1 uppercase font-semibold tracking-wide">Current</div>
-                    <ToolValueControls
-                      :value="currentLevels[gadget.id] || 0"
-                      :maxValue="999"
-                      :minValue="0"
-                      :step="1"
-                      :fastStep="10"
-                      :showFastControls="true"
-                      @update:value="(newVal) => updateCurrentLevel(gadget.id, newVal)"
-                      :tabIndex="getTabIndexForCurrentLevel(gadget.id)"
-                      :autoEdit="true"
-                      class="mx-auto gadget-control-enhanced"
+            <!-- Error State -->
+            <div v-else-if="loadError" class="p-4 text-center">
+              <IconAlertCircle size="24" class="text-red-500 mx-auto mb-2" />
+              <p class="text-red-400 text-sm">{{ loadError }}</p>
+              <button 
+                @click="loadGadgetData" 
+                class="mt-3 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-md text-sm"
+              >
+                Retry
+              </button>
+            </div>
+
+            <!-- Gadget Cards -->
+            <div v-else class="space-y-2">
+              <div 
+                v-for="gadget in GADGETS" 
+                :key="gadget.id"
+                class="bg-gray-700/30 rounded-lg p-3 hover:bg-gray-700/50 transition-colors"
+              >
+                <div class="flex items-start gap-3">
+                  <!-- Icon standalone on the left -->
+                  <div class="w-[35px] h-[35px] flex items-center justify-center flex-shrink-0">
+                    <img 
+                      v-if="getGadgetImageUrl(gadget.id)"
+                      :src="getGadgetImageUrl(gadget.id)"
+                      :alt="gadget.label"
+                      class="w-[35px] h-[35px] object-contain"
                     />
                   </div>
                   
-                  <!-- Target Level Controls -->
-                  <div class="gadget-controls">
-                    <div class="text-[11px] text-gray-400 mb-1 uppercase font-semibold tracking-wide">Target</div>
-                    <ToolValueControls
-                      :value="targetLevels[gadget.id] || 0"
-                      :maxValue="999"
-                      :minValue="0"  
-                      :step="1"
-                      :fastStep="10"
-                      :showFastControls="true"
-                      :validateOnFinalOnly="true"
-                      @update:value="(newVal) => updateTargetLevel(gadget.id, newVal)"
-                      @finalize:value="(newVal) => finalizeTargetLevel(gadget.id, newVal)"
-                      :valueClass="hasLevelChanges(gadget.id) ? 'text-green-400' : 'text-white'"
-                      :tabIndex="getTabIndexForTargetLevel(gadget.id)"
-                      :autoEdit="true"
-                      :disableDecrement="targetLevels[gadget.id] <= (currentLevels[gadget.id] || 0)"
-                      class="mx-auto gadget-control-enhanced"
-                    />
-                  </div>
-                </div>
-                
-                <!-- Multiplier Information -->
-                <div v-if="showMultipliers" class="gadget-multipliers rounded-xl p-3 border border-gray-700 bg-gray-900/80 mt-1">
-                  <div class="space-y-1">
-                    <div v-for="(boost, index) in gadget.boost" :key="`${gadget.id}-boost-${index}`">
-                      <!-- Current Multiplier -->
-                      <div class="flex justify-between">
-                        <span class="text-xs text-gray-300 font-medium">{{ boost.description }}:</span>
-                        <span class="text-xs font-bold text-white">
-                          {{ formatMultiplier(calculateMultiplier(gadget, currentLevels[gadget.id] || 0, boost.type), false, gadget.id) }}
-                        </span>
-                      </div>
-
-                      <!-- Target Multiplier (if different from current) -->
-                      <div v-if="hasLevelChanges(gadget.id)" class="flex justify-between mt-0.5">
-                        <span class="text-xs text-gray-400 font-medium">Target:</span>
-                        <span class="text-xs font-bold text-green-400">
-                          {{ formatMultiplier(calculateMultiplier(gadget, targetLevels[gadget.id] || 0, boost.type), false, gadget.id) }}
-                          <span class="text-gray-400 ml-1">({{ 
-                            calculateMultiplierDifference(
-                              calculateMultiplier(gadget, currentLevels[gadget.id] || 0, boost.type),
-                              calculateMultiplier(gadget, targetLevels[gadget.id] || 0, boost.type)
-                            ) 
-                          }})</span>
-                        </span>
+                  <!-- Content area -->
+                  <div class="flex-1 min-w-0">
+                    <!-- Header with Name and Level Badge -->
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-sm font-medium text-white truncate max-w-[140px]">
+                        {{ gadget.label }}
+                      </span>
+                      <span class="text-xs bg-gray-600/50 px-2 py-0.5 rounded-full text-gray-300 font-mono ml-auto flex-shrink-0">
+                        Lvl {{ getCurrentLevel(gadget.id) }}
+                      </span>
+                    </div>
+                    
+                    <!-- Effects and Buy Buttons -->
+                    <div class="flex items-center gap-3 text-xs text-gray-400">
+                      <span class="text-gray-300 truncate flex-1">{{ gadget.boost.map(b => b.description).join(', ') }}</span>
+                      
+                      <!-- Buy Buttons with Costs -->
+                      <div class="flex items-center gap-2 flex-shrink-0">
+                        <div class="flex flex-col items-end gap-0.5 relative">
+                          <button
+                            @click="addGadgetToListWithLevels(gadget, 1)"
+                            @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 1 }"
+                            @mouseleave="hoveredButton = null"
+                            class="text-xs px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors whitespace-nowrap text-white font-semibold w-12"
+                          >
+                            +1
+                          </button>
+                          <span class="text-[10px] text-amber-400 whitespace-nowrap">
+                            ({{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 1)) }})
+                          </span>
+                        </div>
+                        <div class="flex flex-col items-end gap-0.5 relative">
+                          <button
+                            @click="addGadgetToListWithLevels(gadget, 10)"
+                            @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 10 }"
+                            @mouseleave="hoveredButton = null"
+                            class="text-xs px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors whitespace-nowrap text-white font-semibold w-12"
+                          >
+                            +10
+                          </button>
+                          <span class="text-[10px] text-amber-400 whitespace-nowrap">
+                            ({{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)) }})
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile: Shopping List Tab -->
+        <div v-if="activeMobileTab === 'shopping'" class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
+          <div class="header p-4 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-white flex items-center">
+              <IconShoppingCart size="20" class="mr-2 text-green-400" />
+              Shopping List
+            </h3>
+            
+            <button 
+              @click="store.clearShoppingList()" 
+              class="bg-cyan-700 hover:bg-cyan-600 text-white px-2 py-1 text-xs rounded-lg transition-colors"
+            >
+              Clear All
+            </button>
+          </div>
+          
+          <div class="p-4">
+            <div v-if="shoppingList.length === 0" class="text-center py-8">
+              <IconShoppingCartOff size="48" class="mx-auto text-gray-600 mb-2" />
+              <p class="text-gray-500">No items in shopping list</p>
+            </div>
+
+            <Draggable 
+              v-else
+              :modelValue="shoppingList" 
+              @update:modelValue="store.updateShoppingListOrder($event)"
+              handle=".grip-handle"
+              :animation="200"
+              item-key="id"
+              class="space-y-2"
+            >
+              <template #item="{ element: item }">
+                <div class="bg-gray-700/40 rounded-lg border border-gray-600/30 hover:border-gray-500/50 transition-all">
+                  <div class="p-3">
+                    <div class="flex items-center gap-3">
+                      <div class="grip-handle cursor-move text-gray-500 hover:text-gray-300 transition-colors">
+                        <IconGripVertical size="16" />
+                      </div>
+                      
+                      <div class="w-8 h-8 flex-shrink-0">
+                        <img 
+                          v-if="getGadgetImageUrl(item.gadgetId)"
+                          :src="getGadgetImageUrl(item.gadgetId)"
+                          :alt="item.gadgetName"
+                          class="w-8 h-8 object-contain"
+                        />
+                      </div>
+                      
+                      <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium text-white truncate">{{ item.gadgetName }}</div>
+                        <div class="text-xs text-gray-400">
+                          Level {{ item.fromLevel }} → {{ item.toLevel }}
+                        </div>
+                        <!-- Mobile: Tess: WERT @Hours Datum -->
+                        <div class="flex flex-col gap-0.5 text-[10px] mt-0.5">
+                          <template v-if="item.evaluation && item.evaluation.tesseractsPerDay">
+                            <span class="text-green-400">
+                              Tess: {{ formatGadgetCost(item.evaluation.previousProduction || tessarectsPerDay) }}/d → {{ formatGadgetCost(item.evaluation.tesseractsPerDay) }}/d
+                            </span>
+                          </template>
+                          <template v-else-if="getProductionAtIndex(index) > 0">
+                            <span class="text-gray-400">Tess: {{ formatGadgetCost(getProductionAtIndex(index)) }}/d</span>
+                          </template>
+                          <span v-else class="text-gray-500">Tess: -</span>
+                          <span class="text-cyan-400">{{ formatItemHours(item) }}</span>
+                          <span v-if="formatAvailabilityDate(item)" class="text-purple-400 text-[9px] flex items-center gap-1">
+                            <IconCalendar size="10" />
+                            {{ formatAvailabilityDate(item) }}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div class="text-right flex-shrink-0">
+                        <div class="text-sm font-semibold text-amber-400">{{ formatGadgetCost(item.totalCost) }}</div>
+                      </div>
+                      
+                      <div class="flex gap-1 flex-shrink-0">
+                        <button 
+                          @click="markAsPurchased(item.id)" 
+                          class="text-green-400 hover:text-green-300 p-0.5"
+                          title="Mark as Purchased"
+                        >
+                          <IconCheck size="14" />
+                        </button>
+                        <button 
+                          @click="removeItem(item.id)" 
+                          class="text-red-400 hover:text-red-300 p-0.5"
+                          title="Remove"
+                        >
+                          <IconX size="14" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </Draggable>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Content Grid (hidden on mobile) -->
+      <div class="hidden lg:grid lg:grid-cols-2 gap-4">
+        <!-- LEFT: Available Gadgets -->
+        <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
+          <div class="p-4 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-white flex items-center">
+              <IconList size="20" class="mr-2 text-cyan-400" />
+              Available Gadgets
+            </h3>
+            <button 
+              @click="showLevelsModal = true" 
+              class="bg-cyan-700 hover:bg-cyan-600 text-white px-2 py-1 text-xs rounded-lg flex items-center transition-colors"
+            >
+              <IconSettings size="14" class="mr-1" />
+              Manage Levels
+            </button>
+          </div>
+          
+          <div class="p-4 space-y-2">
+            <!-- Loading State -->
+            <div v-if="isLoading" class="p-8 flex flex-col items-center justify-center">
+              <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-l-2 border-blue-500 mb-4"></div>
+              <p class="text-gray-400 text-sm">Loading gadget data...</p>
+            </div>
+
+            <!-- Error State -->
+            <div v-else-if="loadError" class="p-4 text-center">
+              <IconAlertCircle size="24" class="text-red-500 mx-auto mb-2" />
+              <p class="text-red-400 text-sm">{{ loadError }}</p>
+              <button 
+                @click="loadGadgetData" 
+                class="mt-3 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-md text-sm"
+              >
+                Retry
+              </button>
+            </div>
+
+            <!-- Gadget Cards -->
+            <div v-else class="space-y-2">
+              <div 
+                v-for="gadget in GADGETS" 
+                :key="gadget.id"
+                class="bg-gray-700/30 rounded-lg p-2 hover:bg-gray-700/50 transition-colors"
+              >
+                <div class="flex items-start gap-3">
+                  <!-- Icon standalone on the left -->
+                  <div class="w-[35px] h-[35px] flex items-center justify-center flex-shrink-0">
+                    <img 
+                      v-if="getGadgetImageUrl(gadget.id)"
+                      :src="getGadgetImageUrl(gadget.id)"
+                      :alt="gadget.label"
+                      class="w-[35px] h-[35px] object-contain"
+                    />
+                  </div>
+                  
+                  <!-- Content area -->
+                  <div class="flex-1 min-w-0">
+                    <!-- Header with Name and Level Badge -->
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-sm font-medium text-white truncate">
+                        {{ gadget.label }}
+                      </span>
+                      <span class="text-xs bg-gray-600/50 px-2 py-0.5 rounded-full text-gray-300 font-mono ml-auto">
+                        Lvl {{ getCurrentLevel(gadget.id) }}
+                      </span>
+                    </div>
+                    
+                    <!-- Effects and Buy Buttons -->
+                    <div class="flex items-center gap-3 text-xs text-gray-400">
+                      <span class="text-gray-300 truncate flex-1">{{ gadget.boost.map(b => b.description).join(', ') }}</span>
+                      
+                      <!-- Buy Buttons with Costs -->
+                      <div class="flex items-center gap-2 flex-shrink-0">
+                        <div class="flex flex-col items-end gap-0.5 relative">
+                          <button
+                            @click="addGadgetToListWithLevels(gadget, 1)"
+                            @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 1 }"
+                            @mouseleave="hoveredButton = null"
+                            class="text-xs px-2 py-0.5 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors whitespace-nowrap text-white font-semibold w-12"
+                          >
+                            +1
+                          </button>
+                          <span class="text-[10px] text-amber-400 whitespace-nowrap">
+                            ({{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 1)) }})
+                          </span>
+                          
+                          <!-- Tooltip for +1 -->
+                          <div 
+                            v-if="hoveredButton?.gadgetId === gadget.id && hoveredButton?.levels === 1 && !isMobile"
+                            class="absolute bottom-full mb-2 right-0 bg-gray-900 border border-gray-600 rounded-lg p-2 shadow-xl z-50 min-w-[160px] tooltip-arrow"
+                          >
+                            <div class="text-[10px] text-gray-400 mb-1 font-semibold">Improvements:</div>
+                            <div class="space-y-0.5">
+                              <div 
+                                v-for="improvement in calculateBoostImprovements(gadget, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 1)" 
+                                :key="improvement.description"
+                                class="flex justify-between items-center gap-2"
+                              >
+                                <span class="text-gray-300 text-[10px]">{{ improvement.description }}</span>
+                                <span class="text-green-400 font-semibold text-[10px]">+{{ improvement.percentChange }}%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-0.5 relative">
+                          <button
+                            @click="addGadgetToListWithLevels(gadget, 10)"
+                            @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 10 }"
+                            @mouseleave="hoveredButton = null"
+                            class="text-xs px-2 py-0.5 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors whitespace-nowrap text-white font-semibold w-12"
+                          >
+                            +10
+                          </button>
+                          <span class="text-[10px] text-amber-400 whitespace-nowrap">
+                            ({{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)) }})
+                          </span>
+                          
+                          <!-- Tooltip for +10 -->
+                          <div 
+                            v-if="hoveredButton?.gadgetId === gadget.id && hoveredButton?.levels === 10 && !isMobile"
+                            class="absolute bottom-full mb-2 right-0 bg-gray-900 border border-gray-600 rounded-lg p-2 shadow-xl z-50 min-w-[160px] tooltip-arrow"
+                          >
+                            <div class="text-[10px] text-gray-400 mb-1 font-semibold">Improvements:</div>
+                            <div class="space-y-0.5">
+                              <div 
+                                v-for="improvement in calculateBoostImprovements(gadget, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)" 
+                                :key="improvement.description"
+                                class="flex justify-between items-center gap-2"
+                              >
+                                <span class="text-gray-300 text-[10px]">{{ improvement.description }}</span>
+                                <span class="text-green-400 font-semibold text-[10px]">+{{ improvement.percentChange }}%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Shopping List -->
+        <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
+          <div class="p-4 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-white flex items-center">
+              <IconShoppingCart size="20" class="mr-2 text-cyan-400" />
+              Shopping List
+            </h3>
+            <button
+              v-if="shoppingList.length > 0"
+              @click="store.clearShoppingList()"
+              class="text-xs px-2 py-1 bg-cyan-700 hover:bg-cyan-600 rounded-lg transition-colors"
+            >
+              Clear All
+            </button>
+          </div>
+
+          <!-- Shopping List Items -->
+          <div class="p-4 space-y-3 max-h-[700px] overflow-y-auto">
+            <!-- Empty State -->
+            <div v-if="shoppingList.length === 0" class="p-12 text-center">
+              <IconShoppingCartOff size="48" class="mx-auto text-gray-600 mb-3" />
+              <p class="text-gray-400 text-sm">No items in shopping list</p>
+              <p class="text-gray-500 text-xs mt-1">Add gadget upgrades from the catalog</p>
+            </div>
+
+            <!-- Draggable List -->
+            <Draggable 
+              v-else
+              v-model="shoppingList"
+              handle=".grip-handle"
+              :animation="200"
+              @end="onDragEnd"
+              item-key="id"
+              class="space-y-2"
+            >
+              <template #item="{ element: item, index }">
+                <div class="bg-gray-700/30 rounded-lg p-2 transition-all duration-200 hover:bg-gray-700/50 border border-transparent">
+                  <!-- Main Row: All key info in one line -->
+                  <div class="flex items-center gap-2">
+                    <div class="grip-handle text-gray-500 hover:text-gray-300 cursor-grab flex-shrink-0">
+                      <IconGripVertical size="14" />
+                    </div>
+                    
+                    <img 
+                      v-if="getGadgetImageUrl(item.gadgetId)"
+                      :src="getGadgetImageUrl(item.gadgetId)"
+                      :alt="item.gadgetName"
+                      class="w-8 h-8 rounded object-cover flex-shrink-0"
+                    />
+                    
+                    <!-- Info Section -->
+                    <div class="flex-1 min-w-0">
+                      <!-- Top line: Name + Level -->
+                      <div class="flex items-center">
+                        <span class="text-sm text-white truncate">{{ item.gadgetName }}</span>
+                        <span class="text-xs text-gray-400 flex-shrink-0">Lvl {{ item.fromLevel }} → {{ item.toLevel }}</span>
+                      </div>
+                      <!-- Bottom line: Tess: WERT @Hours Datum -->
+                      <div class="flex items-center text-xs mt-0.5">
+                        <template v-if="item.evaluation && item.evaluation.tesseractsPerDay">
+                          <span class="text-green-400 w-40">
+                            Tess: {{ formatGadgetCost(item.evaluation.previousProduction || tessarectsPerDay) }}/d → {{ formatGadgetCost(item.evaluation.tesseractsPerDay) }}/d
+                          </span>
+                        </template>
+                        <template v-else-if="getProductionAtIndex(index) > 0">
+                          <span class="text-gray-400 w-40">Tess: {{ formatGadgetCost(getProductionAtIndex(index)) }}/d</span>
+                        </template>
+                        <span v-else class="text-gray-500 w-40">Tess: -</span>
+                        <span class="text-cyan-400 w-20">{{ formatItemHours(item) }}</span>
+                        <span v-if="formatAvailabilityDate(item)" class="text-purple-400 flex items-center gap-1">
+                          <IconCalendar size="12" />
+                          {{ formatAvailabilityDate(item) }}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <!-- Right side: Price + Buttons -->
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                      <span class="text-sm font-bold text-amber-400 w-20 text-right">{{ formatGadgetCost(item.totalCost) }}</span>
+                      <button @click="markItemAsPurchased(item.id)" class="text-green-400 hover:text-green-300 p-0.5" title="Mark as purchased">
+                        <IconCheck size="16" />
+                      </button>
+                      <button @click="removeItem(item.id)" class="text-red-400 hover:text-red-300 p-0.5" title="Remove">
+                        <IconX size="16" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </Draggable>
+
+            <!-- Shopping List Summary - Total Cost -->
+            <div v-if="shoppingList.length > 0" class="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50 mt-4">
+              <div class="flex justify-between items-center">
+                <span class="font-medium text-white">Total Cost</span>
+                <span class="text-lg font-bold text-amber-400">
+                  {{ formatGadgetCost(totalShoppingCostForSummary) }}
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Gadget Summary Modal -->
     <GadgetSummaryModal
-        :is-visible="showSummaryModal"
-        :current-levels="currentLevels"
-        :target-levels="targetLevels"
-        :total-cost="totalCost"
-        :days-to-save="daysToSave"
-        :build-name="selectedBuild?.name || ''"
-        :tessarects-per-day="tessarectsPerDay"
-        :gadget-images="gadgetImages"
-        :current-tesseracts="currentTesseracts"
-        :anchor-evaluation-enabled="anchorEvaluationEnabled"
-        :anchor-evaluations="anchorEvaluations"
-        :evaluating-anchor="evaluatingAnchor"
-        @close="showSummaryModal = false"
-      />
+      v-if="showSummaryModal"
+      :isVisible="showSummaryModal"
+      :currentLevels="store.currentLevels"
+      :targetLevels="targetLevelsForSummary"
+      :totalCost="totalShoppingCostForSummary"
+      :daysToSave="daysToSaveForSummary"
+      :buildName="selectedBuild?.name || 'None selected'"
+      :tessarectsPerDay="tessarectsPerDay"
+      :gadgetImages="gadgetImages"
+      :currentTesseracts="currentTesseracts"
+      :anchorEvaluationEnabled="false"
+      :anchorEvaluations="{}"
+      :evaluatingAnchor="false"
+      @close="showSummaryModal = false"
+    />
+
+    <!-- Gadget Levels Modal -->
+    <GadgetLevelsModal
+      v-if="showLevelsModal"
+      :gadgetImages="gadgetImages"
+      :gadgets="GADGETS"
+      @close="showLevelsModal = false"
+    />
+
+    <!-- Confirmation Modal (Mobile) -->
+    <div 
+      v-if="showConfirmModal && pendingGadget" 
+      class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4"
+      @click.self="cancelConfirmModal"
+    >
+      <div 
+        class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in border border-gray-700"
+        @click.stop
+      >
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-cyan-900 to-gray-800 p-4 border-b border-gray-700 flex justify-between items-center">
+          <h3 class="text-lg font-bold text-white flex items-center">
+            <IconShoppingCart size="20" class="mr-2 text-cyan-400" />
+            Add to Shopping List
+          </h3>
+          <button @click="cancelConfirmModal" class="p-1.5 rounded-full hover:bg-gray-700 transition-colors">
+            <IconX size="18" />
+          </button>
+        </div>
+
+        <!-- Content -->
+        <div class="p-4 space-y-4">
+          <!-- Gadget Info -->
+          <div class="flex items-center gap-3 bg-gray-700/30 rounded-lg p-3">
+            <img 
+              v-if="gadgetImages[pendingGadget.id]"
+              :src="gadgetImages[pendingGadget.id]"
+              :alt="pendingGadget.label"
+              class="w-12 h-12 object-contain"
+            />
+            <div class="flex-1">
+              <div class="text-white font-semibold">{{ pendingGadget.label }}</div>
+              <div class="text-sm text-gray-400">
+                Level {{ getCurrentLevel(pendingGadget.id) }} → {{ getCurrentLevel(pendingGadget.id) + pendingLevels }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost -->
+          <div class="bg-gray-700/30 rounded-lg p-3">
+            <div class="text-sm text-gray-400 mb-1">Cost</div>
+            <div class="text-xl font-bold text-amber-400">
+              {{ formatGadgetCost(calculateUpgradeCost(pendingGadget.id, getCurrentLevel(pendingGadget.id), getCurrentLevel(pendingGadget.id) + pendingLevels)) }}
+            </div>
+          </div>
+
+          <!-- Improvements -->
+          <div class="bg-gray-700/30 rounded-lg p-3">
+            <div class="text-sm text-gray-400 mb-2">Improvements</div>
+            <div class="space-y-1">
+              <div 
+                v-for="improvement in calculateBoostImprovements(pendingGadget, getCurrentLevel(pendingGadget.id), getCurrentLevel(pendingGadget.id) + pendingLevels)" 
+                :key="improvement.description"
+                class="flex justify-between items-center"
+              >
+                <span class="text-gray-300 text-sm">{{ improvement.description }}</span>
+                <span class="text-green-400 font-semibold">+{{ improvement.percentChange }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex gap-2 p-4 border-t border-gray-700 bg-gray-900/50">
+          <button 
+            @click="cancelConfirmModal"
+            class="flex-1 px-4 py-2.5 bg-gray-600 hover:bg-gray-500 rounded-lg text-white font-semibold transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            @click="confirmAddToList(pendingGadget, pendingLevels)"
+            class="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-500 rounded-lg text-white font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <IconPlus size="18" />
+            Add to List
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { 
-  IconX, 
-  IconChevronLeft, 
-  IconChevronRight, 
-  IconAlertCircle, 
-  IconAnchor, 
   IconSettings, 
-  IconChartDots, 
-  IconInfoCircle, 
+  IconShoppingCart,
+  IconShoppingCartOff,
   IconRefresh,
-  IconChartBar,
-  IconShare
+  IconTrash,
+  IconX,
+  IconCheck,
+  IconGripVertical,
+  IconArrowUp,
+  IconAlertCircle,
+  IconList,
+  IconChartDots,
+  IconShare,
+  IconPlus,
+  IconCalendar
 } from '@tabler/icons-vue';
-import { 
-  GADGETS, 
-  getGadgetLabel, 
-  calculateGadgetMultiplier, 
-  formatMultiplier 
-} from '@/constants/gadgets.js';
 import { useHunterStore } from '@/store/hunterStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
-import { calcGadgetCostDifference, formatGadgetCost, getGadgetCost as getGadgetCostFromUtils } from '@/utils/gadgetCostUtils';
-import { shouldEvaluate } from '@/services/evaluationCacheService';
-import GadgetSummaryModal from '@/components/gadget-calculator/GadgetSummaryModal.vue';
-import ToolValueControls from '@/composables/ToolValueControls.vue';
+import { useGadgetPlannerStore } from '@/store/gadgetPlannerStore';
+import { formatGadgetCost, calcGadgetCostDifference } from '@/utils/gadgetCostUtils';
+import { useBuildEvaluation } from '@/composables/useBuildEvaluation.js';
+import { useIsMobile } from '@/composables/useIsMobile.js';
 import SuffixInput from '@/composables/SuffixInput.vue';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
-import { useBuildEvaluation } from '@/composables/useBuildEvaluation.js';
+import HoursInTRInput from '@/composables/HoursInTRInput.vue';
+import ToolValueControls from '@/composables/ToolValueControls.vue';
+import GadgetLevelsModal from '@/components/gadget-calculator/GadgetLevelsModal.vue';
+import GadgetSummaryModal from '@/components/gadget-calculator/GadgetSummaryModal.vue';
+import Draggable from 'vuedraggable';
+import { GADGETS } from '@/constants/gadgets';
 
 // Stores
 const hunterStore = useHunterStore();
 const gemPlannerStore = useGemPlannerStore();
+const store = useGadgetPlannerStore();
 
-// Local state
-const isLoading = ref(true);
+// Mobile Detection
+const { isMobile } = useIsMobile();
+
+// Local State
+const isLoading = ref(false);
 const loadError = ref(null);
-const currentLevels = ref({});
-const targetLevels = ref({});
-const tessarectsPerDay = ref(0);
-const currentTesseracts = ref(0); // Current Tesseracts - ähnlich wie currentHBM im InscryptionPlanner
-const selectedBuildId = ref('');
-const cachedResults = ref({});
-const showMultipliers = ref(true);
-
-// State für Anchor of Ages Evaluationen (ähnlich wie Borge Buff 2 im InscryptionPlanner)
-const anchorEvaluations = ref({});
-const evaluatingAnchor = ref(false);
-const anchorEvaluationProgress = ref({});
-const anchorEvaluationEnabled = ref(false); // Toggle für Evaluation
-
-const showSummaryModal = ref(false);
-
-// NEUE REACTIVE VAR für Gadget Images
+const buyLevels = ref({}); // { gadgetId: number }
 const gadgetImages = ref({});
+const showLevelsModal = ref(false);
+const showSummaryModal = ref(false);
+const showConfirmModal = ref(false);
+const pendingGadget = ref(null);
+const pendingLevels = ref(0);
+const hoveredButton = ref(null); // { gadgetId, levels }
+const activeMobileTab = ref('available'); // 'available' or 'shopping'
+const cachedResults = ref({}); // Cache for build evaluation results
+
+// Reactive trigger for live updates
+const liveUpdateTrigger = ref(0);
+
+// Store-based reactive properties
+const shoppingList = computed({
+  get: () => store.shoppingList,
+  set: (value) => store.updateShoppingListOrder(value)
+});
+const selectedBuildId = computed({
+  get: () => store.settings.selectedBuildId,
+  set: (value) => store.updateSelectedBuild(value)
+});
+const tessarectsPerDay = computed({
+  get: () => store.settings.tessarectsPerDay,
+  set: (value) => store.updateTesseractsPerDay(value)
+});
+const evaluatingAnchor = computed(() => store.evaluatingAnchor);
+
+// Computed property for currentTesseracts that auto-updates
+const currentTesseracts = computed({
+  get() {
+    const _ = liveUpdateTrigger.value;
+    return store.getCurrentTesseractsWithProduction();
+  },
+  set(newValue) {
+    store.updateCurrentTesseracts(newValue);
+  }
+});
 
 // Computed properties
 const knoxBuilds = computed(() => {
-  // Alle Knox-Builds aus dem hunterStore holen
   return hunterStore.getBuildsForHunter('knox').filter(build => !build.isArchived);
 });
 
@@ -386,661 +853,537 @@ const selectedBuild = computed(() => {
   return knoxBuilds.value.find(build => String(build.id) === String(selectedBuildId.value));
 });
 
-// Use the build evaluation composable für Knox builds (für Anchor of Ages)
+// Use the build evaluation composable
 const { 
   evaluateBuildWithParams, 
   isEvaluating
 } = useBuildEvaluation({ hunterId: 'knox', buildData: selectedBuild }, () => {});
 
-// Anchor of Ages Evaluation Functions (ähnlich wie Borge Buff 2 im InscryptionPlanner)
-async function evaluateAnchorOfAgesLevels() {
-  if (!selectedBuild.value || evaluatingAnchor.value) {
+// Computed properties for Summary Modal
+const targetLevelsForSummary = computed(() => {
+  const targets = {};
+  GADGETS.forEach(gadget => {
+    const currentLevel = store.currentLevels[gadget.id] || 0;
+    const shoppingListLevels = shoppingList.value
+      .filter(item => item.gadgetId === gadget.id)
+      .reduce((sum, item) => sum + (item.toLevel - item.fromLevel), 0);
+    targets[gadget.id] = currentLevel + shoppingListLevels;
+  });
+  return targets;
+});
+
+const totalShoppingCostForSummary = computed(() => {
+  return store.totalShoppingCost;
+});
+
+const daysToSaveForSummary = computed(() => {
+  if (shoppingList.value.length === 0 || tessarectsPerDay.value <= 0) return 0;
+  
+  let cumulativeDays = 0;
+  let availableTesseracts = store.getCurrentTesseractsWithProduction();
+  let currentProduction = tessarectsPerDay.value;
+  
+  for (const item of shoppingList.value) {
+    if (item.gadgetId === 'anchor' && (item.toLevel - item.fromLevel) > 1) {
+      for (let level = item.fromLevel; level < item.toLevel; level++) {
+        const levelCost = calculateUpgradeCost('anchor', level, level + 1);
+        const remainingCost = Math.max(0, levelCost - availableTesseracts);
+        
+        if (remainingCost > 0 && currentProduction > 0) {
+          cumulativeDays += remainingCost / currentProduction;
+          availableTesseracts += (remainingCost / currentProduction) * currentProduction;
+        }
+        
+        availableTesseracts -= levelCost;
+        currentProduction = calculateAnchorProductionBoost(level, level + 1, currentProduction);
+      }
+    } else {
+      const remainingCost = Math.max(0, item.totalCost - availableTesseracts);
+      
+      if (remainingCost > 0 && currentProduction > 0) {
+        cumulativeDays += remainingCost / currentProduction;
+        availableTesseracts += (remainingCost / currentProduction) * currentProduction;
+      }
+      
+      availableTesseracts -= item.totalCost;
+      
+      if (item.gadgetId === 'anchor' && item.evaluation?.tesseractsPerDay) {
+        currentProduction = item.evaluation.tesseractsPerDay;
+      }
+    }
+  }
+  
+  return cumulativeDays;
+});
+
+// Functions
+function getCurrentLevel(gadgetId) {
+  const baseLevel = store.currentLevels[gadgetId] || 0;
+  
+  // Add levels from shopping list (temporary increase)
+  const shoppingListLevels = shoppingList.value
+    .filter(item => item.gadgetId === gadgetId)
+    .reduce((sum, item) => sum + (item.toLevel - item.fromLevel), 0);
+  
+  return baseLevel + shoppingListLevels;
+}
+
+// Get cumulative production at a specific index in shopping list
+function getProductionAtIndex(index) {
+  let production = tessarectsPerDay.value;
+  
+  // Apply all Anchor boosts from items before this index
+  for (let i = 0; i < index; i++) {
+    const item = shoppingList.value[i];
+    if (item.gadgetId === 'anchor' && item.evaluation?.tesseractsPerDay) {
+      production = item.evaluation.tesseractsPerDay;
+    }
+  }
+  
+  return production;
+}
+
+function calculateUpgradeCost(gadgetId, fromLevel, toLevel) {
+  return calcGadgetCostDifference(gadgetId, fromLevel, toLevel);
+}
+
+function calculateAnchorProductionBoost(fromLevel, toLevel, currentProduction) {
+  let totalBoostPercent = 0;
+  
+  for (let level = fromLevel + 1; level <= toLevel; level++) {
+    if (level % 10 === 0) {
+      // Milestone level (10, 20, 30, etc.): Gets remaining boost to reach 16% for last 10 levels
+      const previousNineLevels = 9 * 0.67;
+      const milestoneBonus = 16 - previousNineLevels; // ~9.97%
+      totalBoostPercent += milestoneBonus;
+    } else {
+      // Regular level: 0.67% boost
+      totalBoostPercent += 0.67;
+    }
+  }
+  
+  const newProduction = currentProduction * (1 + totalBoostPercent / 100);
+  return newProduction;
+}
+
+function addGadgetToListWithLevels(gadget, levels) {
+  if (!levels || levels <= 0) return;
+
+  // On mobile, show confirmation modal first
+  if (isMobile.value) {
+    pendingGadget.value = gadget;
+    pendingLevels.value = levels;
+    showConfirmModal.value = true;
     return;
   }
 
-  const currentLevel = currentLevels.value.anchor || 0;
-  const targetLevel = targetLevels.value.anchor || 0;
-  
-  if (targetLevel <= currentLevel) {
-    return; // Kein Upgrade geplant
-  }
-
-  try {
-    evaluatingAnchor.value = true;
-    anchorEvaluationProgress.value = {};
-    anchorEvaluations.value = {};
-
-    // Evaluiere jeden Level von current+1 bis target
-    for (let level = currentLevel + 1; level <= targetLevel; level++) {
-      anchorEvaluationProgress.value[level] = 'Evaluating...';
-
-      // Erstelle modifizierten Build mit diesem Anchor Level - DEEP COPY
-      const modifiedBuild = JSON.parse(JSON.stringify(selectedBuild.value));
-      
-      if (!modifiedBuild.overrides) {
-        modifiedBuild.overrides = {};
-      }
-      
-      // Setze Anchor Level in den Overrides
-      modifiedBuild.overrides['upgrades.gadgets.anchor'] = level;
-      
-      // Evaluiere den Build
-      const evaluationResult = await evaluateBuildWithParams(modifiedBuild);
-      
-      if (evaluationResult && evaluationResult.mat3) {
-        // Berechne die tägliche Tesseract-Produktion (wie im InscryptionPlanner)
-        const tesseractsPerRun = evaluationResult.mat3 || 0;
-        const avgRunTimeMinutes = evaluationResult.avgTime || 120;
-        const runsPerDay = 1440 / avgRunTimeMinutes; // 1440 Minuten in einem Tag
-        const dailyTesseracts = tesseractsPerRun * runsPerDay; // NICHT Math.floor hier, das kommt später
-        
-        anchorEvaluations.value[level] = {
-          level: level,
-          tesseractsPerDay: dailyTesseracts, // Speichere die genaue tägliche Produktion
-          evaluationResult: evaluationResult
-        };
-        anchorEvaluationProgress.value[level] = 'Complete';
-      } else {
-        anchorEvaluationProgress.value[level] = 'Failed';
-      }
-    }
-
-    // DETAILLIERTER EVALUATION SUMMARY LOG
-    console.log('='.repeat(80));
-    console.log('🔱 ANCHOR OF AGES EVALUATION COMPLETE 🔱');
-    console.log('='.repeat(80));
-    console.log(`📊 Evaluated Levels: ${currentLevel + 1} to ${targetLevel}`);
-    console.log(`🎯 Total Levels: ${targetLevel - currentLevel}`);
-    console.log(`⚡ Base Production: ${tessarectsPerDay.value} tesseracts/day`);
-    console.log(`💰 Available Tesseracts: ${currentTesseracts.value || 0}`);
-    console.log('');
-    
-    // Zeige alle Evaluation-Ergebnisse
-    console.log('📈 LEVEL-BY-LEVEL EVALUATION RESULTS:');
-    console.log('-'.repeat(50));
-    for (let level = currentLevel + 1; level <= targetLevel; level++) {
-      const evaluation = anchorEvaluations.value[level];
-      const singleCost = calculateSingleLevelCost('anchor', level);
-      
-      if (evaluation) {
-        const mat3PerRun = evaluation.evaluationResult?.mat3 || 0;
-        const avgTime = evaluation.evaluationResult?.avgTime || 120;
-        const runsPerDay = 1440 / avgTime;
-        const calculatedDaily = mat3PerRun * runsPerDay;
-        
-        console.log(`Level ${level}:`);
-        console.log(`  💎 Cost: ${formatGadgetCost(singleCost)} tesseracts`);
-        console.log(`  ⚡ Mat3 per Run: ${formatGadgetCost(mat3PerRun)}`);
-        console.log(`  ⏱️ Avg Time: ${avgTime} min`);
-        console.log(`  🔄 Runs per Day: ${runsPerDay.toFixed(2)}`);
-        console.log(`  🏭 Calculated Daily: ${formatGadgetCost(calculatedDaily)} (stored: ${formatGadgetCost(evaluation.tesseractsPerDay)})`);
-        console.log(`  📊 Avg Stage: ${evaluation.evaluationResult?.avgStage || 'N/A'}`);
-      } else {
-        console.log(`Level ${level}: ❌ EVALUATION FAILED`);
-        console.log(`  💎 Cost: ${formatGadgetCost(singleCost)} tesseracts`);
-      }
-      console.log('');
-    }
-    
-    // Simuliere die Zeitberechnung nochmal für den Log
-    console.log('🧮 TIME CALCULATION SIMULATION:');
-    console.log('-'.repeat(50));
-    let simCumulativeDays = 0;
-    let simAvailableTesseracts = currentTesseracts.value || 0;
-    let simCurrentProduction = tessarectsPerDay.value;
-    
-    for (let level = currentLevel + 1; level <= targetLevel; level++) {
-      const singleLevelCost = calculateSingleLevelCost('anchor', level);
-      const remainingCost = Math.max(0, singleLevelCost - simAvailableTesseracts);
-      
-      console.log(`Level ${level} Calculation:`);
-      console.log(`  💎 Level Cost: ${formatGadgetCost(singleLevelCost)}`);
-      console.log(`  💰 Available: ${formatGadgetCost(simAvailableTesseracts)}`);
-      console.log(`  🔴 Need to Farm: ${formatGadgetCost(remainingCost)}`);
-      console.log(`  ⚡ Current Production: ${formatGadgetCost(simCurrentProduction)}/day`);
-      
-      if (remainingCost > 0 && simCurrentProduction > 0) {
-        const daysForThisLevel = remainingCost / simCurrentProduction;
-        simCumulativeDays += daysForThisLevel;
-        console.log(`  ⏱️ Days to Farm: ${daysForThisLevel.toFixed(2)}`);
-        console.log(`  📅 Cumulative Days: ${simCumulativeDays.toFixed(2)}`);
-        
-        // Nach dem Warten haben wir genug produziert
-        simAvailableTesseracts += daysForThisLevel * simCurrentProduction;
-      } else {
-        console.log(`  ✅ Can afford immediately!`);
-      }
-      
-      // Nach dem Kauf reduzieren
-      simAvailableTesseracts -= singleLevelCost;
-      console.log(`  💰 After Purchase: ${formatGadgetCost(simAvailableTesseracts)}`);
-      
-      // Neue Produktion für nächstes Level
-      const evaluation = anchorEvaluations.value[level];
-      if (evaluation && evaluation.tesseractsPerDay) {
-        const newDailyTesseracts = evaluation.tesseractsPerDay;
-        if (newDailyTesseracts > simCurrentProduction) {
-          const oldProduction = simCurrentProduction;
-          simCurrentProduction = newDailyTesseracts;
-          console.log(`  🚀 Production Upgrade: ${formatGadgetCost(oldProduction)} → ${formatGadgetCost(simCurrentProduction)}/day`);
-        }
-      }
-      console.log('');
-    }
-    
-    console.log('🏁 FINAL SUMMARY:');
-    console.log(`  📅 Total Time Required: ${simCumulativeDays.toFixed(2)} days`);
-    console.log(`  ⚡ Final Production Rate: ${formatGadgetCost(simCurrentProduction)}/day`);
-    console.log('='.repeat(80));
-    
-  } catch (error) {
-    console.error('[GadgetCalculator] Anchor evaluation failed:', error);
-  } finally {
-    evaluatingAnchor.value = false;
-  }
+  // Desktop: Add directly
+  confirmAddToList(gadget, levels);
 }
 
-// Anchor Time Display - zeigt Evaluierungsfortschritt oder Zeit
-function getAnchorTimeDisplay() {
-  // Wenn gerade evaluiert wird, zeige Fortschritt
-  if (evaluatingAnchor.value) {
-    const currentLevel = currentLevels.value.anchor || 0;
-    const targetLevel = targetLevels.value.anchor || 0;
-    
-    if (targetLevel <= currentLevel) {
-      return 'No upgrade planned';
+function confirmAddToList(gadget, levels) {
+  // Start from base level + all existing shopping list items for this gadget
+  const baseLevel = store.currentLevels[gadget.id] || 0;
+  const existingShoppingListLevels = shoppingList.value
+    .filter(item => item.gadgetId === gadget.id)
+    .reduce((max, item) => Math.max(max, item.toLevel), baseLevel);
+  
+  const fromLevel = existingShoppingListLevels;
+  const toLevel = fromLevel + levels;
+  const totalCost = calculateUpgradeCost(gadget.id, fromLevel, toLevel);
+
+  const item = {
+    gadgetId: gadget.id,
+    gadgetName: gadget.name,
+    fromLevel: fromLevel,
+    toLevel: toLevel,
+    totalCost: totalCost,
+    evaluation: null
+  };
+
+  // Calculate production boost for Anchor (cumulative from previous items)
+  if (gadget.id === 'anchor' && tessarectsPerDay.value > 0) {
+    // Get production AFTER all previous anchor items in shopping list
+    let currentProduction = tessarectsPerDay.value;
+    for (const existingItem of shoppingList.value) {
+      if (existingItem.gadgetId === 'anchor' && existingItem.evaluation?.tesseractsPerDay) {
+        currentProduction = existingItem.evaluation.tesseractsPerDay;
+      }
     }
     
-    // Berechne wie viele Level evaluiert werden müssen
-    const totalLevels = targetLevel - currentLevel;
-    
-    // Zähle wie viele schon fertig sind
-    const completedLevels = Object.keys(anchorEvaluations.value).length;
-    
-    return `${completedLevels}/${totalLevels}`;
+    const newProduction = calculateAnchorProductionBoost(fromLevel, toLevel, currentProduction);
+    item.evaluation = {
+      tesseractsPerDay: newProduction,
+      previousProduction: currentProduction  // Store production BEFORE this item
+    };
   }
-  
-  // Sonst zeige normale Zeit
-  return formatAnchorSaveTime();
+
+  store.addToShoppingList(item);
+  showConfirmModal.value = false;
 }
 
-// Berechne individuelle Sparzeit für Anchor of Ages mit Level-by-Level Evaluation
-function formatAnchorSaveTime() {
-  const currentLevel = currentLevels.value.anchor || 0;
-  const targetLevel = targetLevels.value.anchor || 0;
+function calculateBoostImprovements(gadget, fromLevel, toLevel) {
+  const improvements = [];
   
-  console.log('[ANCHOR] formatAnchorSaveTime called:', { currentLevel, targetLevel });
-  
-  if (targetLevel <= currentLevel) {
-    console.log('[ANCHOR] No upgrade planned - target <= current');
-    return 'No upgrade planned';
-  }
-  
-  // Prüfe ob wir Evaluationen haben und diese verwendet werden sollen
-  const hasEvaluations = Object.keys(anchorEvaluations.value).length > 0;
-  const shouldUseEvaluations = hasEvaluations && anchorEvaluationEnabled.value;
-  
-  console.log('[ANCHOR] Evaluation status:', { 
-    hasEvaluations, 
-    anchorEvaluationEnabled: anchorEvaluationEnabled.value, 
-    shouldUseEvaluations,
-    evaluationsCount: Object.keys(anchorEvaluations.value).length,
-    evaluations: anchorEvaluations.value
+  gadget.boost.forEach(boost => {
+    const currentMulti = gadget.calculateMultiplier(fromLevel, boost.type);
+    const newMulti = gadget.calculateMultiplier(toLevel, boost.type);
+    const percentChange = ((newMulti / currentMulti - 1) * 100);
+    
+    improvements.push({
+      description: boost.description,
+      percentChange: percentChange.toFixed(2)
+    });
   });
   
-  if (!shouldUseEvaluations) {
-    // Normale Berechnung ohne Evaluation
-    console.log('[ANCHOR] Using normal calculation (no evaluations)');
-    return formatIndividualSaveTime('anchor');
+  return improvements;
+}
+
+function cancelConfirmModal() {
+  showConfirmModal.value = false;
+  pendingGadget.value = null;
+  pendingLevels.value = 0;
+}
+
+function handleModalKeydown(event) {
+  if (event.key === 'Escape' && showConfirmModal.value) {
+    cancelConfirmModal();
   }
+}
+
+
+
+function removeItem(itemId) {
+  store.removeFromShoppingList(itemId);
+}
+
+function markItemAsPurchased(itemId) {
+  const item = shoppingList.value.find(i => i.id === itemId);
+  if (!item) return;
+
+  // Deduct cost from current tesseracts
+  const currentAmount = store.getCurrentTesseractsWithProduction();
+  const remaining = Math.max(0, currentAmount - item.totalCost);
+  store.updateCurrentTesseracts(remaining);
+
+  // Update production if it's an anchor upgrade with evaluation
+  if (item.gadgetId === 'anchor' && item.evaluation?.tesseractsPerDay) {
+    store.updateTesseractsPerDay(item.evaluation.tesseractsPerDay);
+  }
+
+  // Mark as purchased (updates level and removes from list)
+  store.markAsPurchased(itemId);
+}
+
+function onDragEnd() {
+  // Order is automatically updated by v-model on Draggable
+  console.log('Shopping list reordered');
+}
+
+function formatItemHours(item) {
+  // Calculate cumulative hours including all previous items
+  let cumulativeHours = gemPlannerStore.getCurrentHoursInTR();
+  let availableTesseracts = store.getCurrentTesseractsWithProduction();
+  let currentProduction = tessarectsPerDay.value;
+
+  // Go through shopping list up to this item
+  const itemIndex = shoppingList.value.findIndex(i => i.id === item.id);
   
-  // Berechne kumulative Zeit mit steigender Produktion (ähnlich wie Inscryption Planner)
+  for (let i = 0; i <= itemIndex; i++) {
+    const listItem = shoppingList.value[i];
+    
+    // For Anchor items with multiple levels, calculate each level separately
+    if (listItem.gadgetId === 'anchor' && (listItem.toLevel - listItem.fromLevel) > 1) {
+      // Calculate level by level
+      for (let level = listItem.fromLevel; level < listItem.toLevel; level++) {
+        const levelCost = calculateUpgradeCost('anchor', level, level + 1);
+        const remainingCost = Math.max(0, levelCost - availableTesseracts);
+        
+        if (remainingCost > 0 && currentProduction > 0) {
+          const daysNeeded = remainingCost / currentProduction;
+          const hoursNeeded = daysNeeded * 24;
+          cumulativeHours += hoursNeeded;
+          availableTesseracts += daysNeeded * currentProduction;
+        }
+        
+        availableTesseracts -= levelCost;
+        
+        // Update production after each level
+        currentProduction = calculateAnchorProductionBoost(level, level + 1, currentProduction);
+      }
+    } else {
+      // Normal calculation for non-anchor or single-level items
+      const remainingCost = Math.max(0, listItem.totalCost - availableTesseracts);
+
+      if (remainingCost > 0 && currentProduction > 0) {
+        const daysNeeded = remainingCost / currentProduction;
+        const hoursNeeded = daysNeeded * 24;
+        cumulativeHours += hoursNeeded;
+        availableTesseracts += daysNeeded * currentProduction;
+      }
+
+      availableTesseracts -= listItem.totalCost;
+
+      // Update production if this item increases it
+      if (listItem.gadgetId === 'anchor' && listItem.evaluation?.tesseractsPerDay) {
+        currentProduction = listItem.evaluation.tesseractsPerDay;
+      }
+    }
+  }
+  const hours = Math.round(cumulativeHours);
+  return `@${hours}h`;
+}
+
+function formatAvailabilityDate(item) {
+  if (tessarectsPerDay.value <= 0) return null;
+  
+  // Calculate cumulative days including all previous items
   let cumulativeDays = 0;
-  let availableTesseracts = currentTesseracts.value || 0;
-  let currentProduction = tessarectsPerDay.value; // Basis-Produktion
+  let availableTesseracts = store.getCurrentTesseractsWithProduction();
+  let currentProduction = tessarectsPerDay.value;
+
+  // Go through shopping list up to this item
+  const itemIndex = shoppingList.value.findIndex(i => i.id === item.id);
   
-  console.log('[ANCHOR] Starting calculation:', {
-    initialAvailableTesseracts: availableTesseracts,
-    initialProduction: currentProduction,
-    levelsToProcess: targetLevel - currentLevel
-  });
-  
-  for (let level = currentLevel + 1; level <= targetLevel; level++) {
-    // Berechne die Kosten nur für diesen einen Level (nicht kumulativ)
-    const singleLevelCost = calculateSingleLevelCost('anchor', level);
-    const remainingCost = Math.max(0, singleLevelCost - availableTesseracts);
+  for (let i = 0; i <= itemIndex; i++) {
+    const listItem = shoppingList.value[i];
     
-    console.log(`[ANCHOR] Level ${level}:`, {
-      singleLevelCost,
-      availableTesseracts,
-      remainingCost,
-      currentProduction
+    // For Anchor items with multiple levels, calculate each level separately
+    if (listItem.gadgetId === 'anchor' && (listItem.toLevel - listItem.fromLevel) > 1) {
+      for (let level = listItem.fromLevel; level < listItem.toLevel; level++) {
+        const levelCost = calculateUpgradeCost('anchor', level, level + 1);
+        const remainingCost = Math.max(0, levelCost - availableTesseracts);
+        
+        if (remainingCost > 0 && currentProduction > 0) {
+          const daysNeeded = remainingCost / currentProduction;
+          cumulativeDays += daysNeeded;
+          availableTesseracts += daysNeeded * currentProduction;
+        }
+        
+        availableTesseracts -= levelCost;
+        currentProduction = calculateAnchorProductionBoost(level, level + 1, currentProduction);
+      }
+    } else {
+      const remainingCost = Math.max(0, listItem.totalCost - availableTesseracts);
+
+      if (remainingCost > 0 && currentProduction > 0) {
+        const daysNeeded = remainingCost / currentProduction;
+        cumulativeDays += daysNeeded;
+        availableTesseracts += daysNeeded * currentProduction;
+      }
+
+      availableTesseracts -= listItem.totalCost;
+
+      if (listItem.gadgetId === 'anchor' && listItem.evaluation?.tesseractsPerDay) {
+        currentProduction = listItem.evaluation.tesseractsPerDay;
+      }
+    }
+  }
+  
+  // Calculate the future date
+  const now = new Date();
+  const availableDate = new Date(now.getTime() + cumulativeDays * 24 * 60 * 60 * 1000);
+  
+  // Format based on days
+  if (cumulativeDays > 2) {
+    // Over 2 days: Show only date
+    return availableDate.toLocaleDateString('de-DE', { 
+      day: '2-digit', 
+      month: '2-digit',
+      year: 'numeric'
     });
-    
+  } else {
+    // Under 2 days: Show date + time
+    return availableDate.toLocaleString('de-DE', { 
+      day: '2-digit', 
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit', 
+      minute: '2-digit'
+    });
+  }
+}
+
+function formatTimeToSave() {
+  if (shoppingList.value.length === 0) return 'No items';
+  if (tessarectsPerDay.value <= 0) return 'Set production rate';
+
+  let cumulativeDays = 0;
+  let availableTesseracts = store.getCurrentTesseractsWithProduction();
+  let currentProduction = tessarectsPerDay.value;
+
+  for (const item of shoppingList.value) {
+    const remainingCost = Math.max(0, item.totalCost - availableTesseracts);
+
     if (remainingCost > 0 && currentProduction > 0) {
-      const daysForThisLevel = remainingCost / currentProduction;
-      cumulativeDays += daysForThisLevel;
-      
-      console.log(`[ANCHOR] Level ${level} - Need to wait:`, {
-        daysForThisLevel,
-        cumulativeDays
-      });
-      
-      // Nach dem Warten haben wir genug produziert + das was wir schon hatten
-      availableTesseracts += daysForThisLevel * currentProduction;
+      const daysNeeded = remainingCost / currentProduction;
+      cumulativeDays += daysNeeded;
+      availableTesseracts += daysNeeded * currentProduction;
     }
-    
-    // Nach dem Kauf: Verfügbare Tesseracts um die Kosten dieses Levels reduzieren
-    availableTesseracts -= singleLevelCost;
-    
-    console.log(`[ANCHOR] Level ${level} - After purchase:`, {
-      availableTesseractsAfterPurchase: availableTesseracts
-    });
-    
-    // WICHTIG: Neue Produktion für nächstes Level anwenden (wie InscryptionPlanner)
-    const evaluation = anchorEvaluations.value[level];
-    console.log(`[ANCHOR] Level ${level} - Checking for evaluation:`, {
-      hasEvaluation: !!evaluation,
-      evaluationTesseractsPerDay: evaluation?.tesseractsPerDay,
-      currentProduction,
-      evaluationData: evaluation
-    });
-    
-    if (evaluation && evaluation.tesseractsPerDay) {
-      // Berechne die neue tägliche Tesseract-Produktion aus der Evaluation
-      const newDailyTesseracts = evaluation.tesseractsPerDay; // KEIN Math.floor hier!
-      
-      console.log(`[ANCHOR] Level ${level} - Production comparison:`, {
-        oldProduction: currentProduction,
-        newDailyTesseracts,
-        willUpdate: newDailyTesseracts > currentProduction
-      });
-      
-      // AKTUALISIERE die currentProduction für nachfolgende Level
-      // Füge einen kleinen Toleranzwert hinzu um floating point Vergleichsprobleme zu vermeiden
-      const tolerance = currentProduction * 0.001; // 0.1% Toleranz
-      if (newDailyTesseracts > (currentProduction + tolerance)) {
-        const oldProduction = currentProduction;
-        currentProduction = newDailyTesseracts; // Verwende den genauen Wert
-        console.log(`[ANCHOR] Level ${level} - Production increased:`, {
-          oldProduction,
-          newProduction: currentProduction,
-          evaluationMat3: evaluation.evaluationResult?.mat3,
-          evaluationTime: evaluation.evaluationResult?.avgTime,
-          tolerance,
-          difference: newDailyTesseracts - oldProduction
-        });
-      } else {
-        console.log(`[ANCHOR] Level ${level} - Production NOT increased:`, {
-          newDailyTesseracts,
-          currentProduction,
-          tolerance,
-          difference: newDailyTesseracts - currentProduction,
-          wouldUpdateWithoutTolerance: newDailyTesseracts > currentProduction
-        });
-      }
-    } else {
-      console.log(`[ANCHOR] Level ${level} - No evaluation available for production update`);
+
+    availableTesseracts -= item.totalCost;
+
+    // Update production if item increases it
+    if (item.gadgetId === 'anchor' && item.evaluation?.tesseractsPerDay) {
+      currentProduction = item.evaluation.tesseractsPerDay;
     }
   }
+
+  const days = Math.floor(cumulativeDays);
+  const hours = Math.round((cumulativeDays - days) * 24);
+
+  if (days === 0) return `${hours}h`;
+  if (hours === 0) return `${days}d`;
+  return `${days}d ${hours}h`;
+}
+
+function resetProduction() {
+  store.resetAllLevels();
+  buyLevels.value = {};
+}
+
+async function updateFromSelectedBuild() {
+  if (!selectedBuildId.value || !selectedBuild.value) {
+    tessarectsPerDay.value = 0;
+    return;
+  }
+
+  const build = selectedBuild.value;
   
-  console.log('[ANCHOR] Final calculation result:', {
-    cumulativeDays,
-    finalResult: cumulativeDays <= 0 ? 'Available now' : `${cumulativeDays} days`
-  });
+  // Get result directly from cache (no async evaluation needed)
+  const result = cachedResults.value[build.id];
   
-  // Formatiere die Zeit wie bei anderen Gadgets
-  if (cumulativeDays === Infinity || cumulativeDays > 36500) return '☠️';
-  if (cumulativeDays <= 0) return 'Available now';
-  
-  if (cumulativeDays > 365) {
-    const years = Math.floor(cumulativeDays / 365);
-    const remainingDays = cumulativeDays % 365;
-    const months = Math.floor(remainingDays / 30);
+  if (result && result.mat3) {
+    const tesseractsPerRun = result.mat3 || 0;
+    const avgRunTimeMinutes = result.avgTime || 120;
+    const runsPerDay = 1440 / avgRunTimeMinutes;
+    const dailyTesseracts = Math.floor(tesseractsPerRun * runsPerDay);
     
-    if (months === 0) {
-      return `${years}y`;
-    } else {
-      return `${years}y, ${months}mo`;
-    }
-  }
-  
-  if (cumulativeDays > 60) {
-    return `${Math.floor(cumulativeDays)} days`;
-  }
-  
-  const fullDays = Math.floor(cumulativeDays);
-  const hours = Math.round((cumulativeDays - fullDays) * 24);
-  
-  if (fullDays === 0) {
-    return `${hours}h`;
-  } else if (hours === 0) {
-    return `${fullDays}d`;
+    store.updateTesseractsPerDay(dailyTesseracts);
+    console.log(`📊 Loaded production: ${dailyTesseracts} tesseracts/day from build "${build.name}"`);
   } else {
-    return `${fullDays}d ${hours}h`;
+    console.warn(`⚠️ No cached evaluation found for build "${build.name}" (ID: ${build.id})`);
+    tessarectsPerDay.value = 0;
   }
+
+  // Update Anchor level from selected build
+  updateCurrentAnchorFromBuild(build);
 }
 
-// Hilfsfunktion: Berechne Kosten für einen spezifischen Level (nur dieser eine Level)
-function calculateSingleLevelCost(gadgetId, level) {
-  if (level <= 0) return 0;
+function formatTotalHoursInTR() {
+  if (shoppingList.value.length === 0) return '-';
   
-  // Verwende die echte Kostenfunktion aus gadgetCostUtils.js
-  return getGadgetCostFromUtils(gadgetId, level);
-}
-
-// Hilfsfunktion: Berechne kumulative Kosten von current level bis zu einem level
-function calculateLevelCost(gadgetId, level) {
-  const currentGadgetLevel = currentLevels.value[gadgetId] || 0;
+  let cumulativeHours = gemPlannerStore.getCurrentHoursInTR();
+  let availableTesseracts = store.getCurrentTesseractsWithProduction();
+  let currentProduction = tessarectsPerDay.value;
   
-  // Verwende die echte Kostenfunktion aus gadgetCostUtils.js
-  return calcGadgetCostDifference(gadgetId, currentGadgetLevel, level);
-}
-
-// Trigger Anchor Evaluation nur bei manuellem Aufruf
-function triggerAnchorEvaluation() {
-  if (selectedBuild.value) {
-    anchorEvaluationEnabled.value = true;
-    evaluateAnchorOfAgesLevels();
-  }
-}
-
-const totalCost = computed(() => {
-  let cost = 0;
-  
-  for (const gadget of GADGETS) {
-    cost += getGadgetCost(gadget.id);
-  }
-  
-  return cost;
-});
-
-const daysToSave = computed(() => {
-  if (tessarectsPerDay.value <= 0) return Infinity;
-  
-  // Berücksichtige bereits verfügbare Tesseracts
-  const remainingCost = Math.max(0, totalCost.value - (currentTesseracts.value || 0));
-  if (remainingCost <= 0) return 0; // Bereits genug Tesseracts verfügbar
-  
-  return remainingCost / tessarectsPerDay.value;
-});
-
-const activeLevelCount = computed(() => {
-  return GADGETS.filter(gadget => hasLevelChanges(gadget.id)).length;
-});
-
-const totalGadgets = computed(() => GADGETS.length);
-
-// Tab-Index Hilfsfunktionen
-function getTabIndexForCurrentLevel(gadgetId) {
-  // Bestimme die Position des Gadget-Typs in der Liste
-  const gadgetIds = GADGETS.map(g => g.id);
-  const index = gadgetIds.indexOf(gadgetId);
-  // Weisen wir Current-Feldern Indizes 1-N zu (basierend auf der Anzahl der Gadgets)
-  return index + 1;
-}
-
-function getTabIndexForTargetLevel(gadgetId) {
-  // Bestimme die Position des Gadget-Typs in der Liste
-  const gadgetIds = GADGETS.map(g => g.id);
-  const index = gadgetIds.indexOf(gadgetId);
-  // Wir weisen Target-Feldern Indizes N+1-2N zu (nach allen Current-Feldern)
-  return GADGETS.length + index + 1;
-}
-
-// Neue Funktionen für Multiplikatoren
-function getBoostDescription(gadget) {
-  if (!gadget.boost || !Array.isArray(gadget.boost)) return '';
-  return gadget.boost.map(boost => boost.description).join(', ');
-}
-
-function calculateMultiplier(gadget, level, boostType) {
-  if (!gadget || !gadget.calculateMultiplier || level <= 0) return 1;
-  return gadget.calculateMultiplier(level, boostType);
-}
-
-function calculateMultiplierDifference(currentMulti, targetMulti) {
-  if (currentMulti === targetMulti) return '+0%';
-  
-  const percentIncrease = ((targetMulti / currentMulti) - 1) * 100;
-  
-  // Für große Prozentwerte Suffixe verwenden
-  if (percentIncrease >= 1000) {
-    const suffixes = ['', 'k', 'm', 'b', 't', 'qa', 'qu', 'sx', 'sp', 'oc', 'n', 'd'];
-    let tier = Math.floor(Math.log10(percentIncrease) / 3);
-    
-    if (tier >= suffixes.length) {
-      // Sehr große Zahlen als Exponentialform
-      return `+${percentIncrease.toExponential(2)}%`;
+  for (const item of shoppingList.value) {
+    // For Anchor items with multiple levels, calculate each level separately
+    if (item.gadgetId === 'anchor' && (item.toLevel - item.fromLevel) > 1) {
+      for (let level = item.fromLevel; level < item.toLevel; level++) {
+        const levelCost = calculateUpgradeCost('anchor', level, level + 1);
+        const remainingCost = Math.max(0, levelCost - availableTesseracts);
+        
+        if (remainingCost > 0 && currentProduction > 0) {
+          const daysNeeded = remainingCost / currentProduction;
+          const hoursNeeded = daysNeeded * 24;
+          cumulativeHours += hoursNeeded;
+          availableTesseracts += daysNeeded * currentProduction;
+        }
+        
+        availableTesseracts -= levelCost;
+        currentProduction = calculateAnchorProductionBoost(level, level + 1, currentProduction);
+      }
     } else {
-      // Normale Suffixdarstellung
-      const suffix = suffixes[tier];
-      const scaledValue = percentIncrease / Math.pow(10, tier * 3);
-      return `+${scaledValue.toFixed(2)}${suffix}%`;
+      const remainingCost = Math.max(0, item.totalCost - availableTesseracts);
+      
+      if (remainingCost > 0 && currentProduction > 0) {
+        const daysNeeded = remainingCost / currentProduction;
+        const hoursNeeded = daysNeeded * 24;
+        cumulativeHours += hoursNeeded;
+        availableTesseracts += daysNeeded * currentProduction;
+      }
+      
+      availableTesseracts -= item.totalCost;
+      
+      if (item.gadgetId === 'anchor' && item.evaluation?.tesseractsPerDay) {
+        currentProduction = item.evaluation.tesseractsPerDay;
+      }
     }
   }
   
-  // Kleine Prozente mit einer Dezimalstelle
-  return `+${percentIncrease.toFixed(1)}%`;
+  const hours = Math.round(cumulativeHours);
+  return `@${hours}h`;
 }
 
-// Methods
-function formatTimeToSave(days) {
-  if (days === Infinity) return 'N/A';
-  
-  // Wenn es mehr als 10 Jahre dauert...
-  if (days > 36500) { // 100 Jahre = 36500 Tage
-    return '☠️';
-  }
-  
-  // Wenn es mehr als 1 Jahr dauert, in Jahren und Monaten anzeigen
-  if (days > 365) {
-    const years = Math.floor(days / 365);
-    const remainingDays = days % 365;
-    const months = Math.floor(remainingDays / 30);
-    
-    if (months === 0) {
-      return `${years} year${years > 1 ? 's' : ''}`;
-    } else {
-      return `${years} year${years > 1 ? 's' : ''}, ${months} month${months > 1 ? 's' : ''}`;
-    }
-  }
-  
-  // Wenn es mehr als 60 Tage dauert, nur in Tagen anzeigen
-  if (days > 60) {
-    return `${Math.floor(days)} days`;
-  }
-  
-  // Normaler Fall: Tage und Stunden
-  const fullDays = Math.floor(days);
-  const hours = Math.round((days - fullDays) * 24);
-  
-  if (fullDays === 0) {
-    return `${hours} hours`;
-  } else if (hours === 0) {
-    return `${fullDays} days`;
+function updateCurrentAnchorFromBuild(build) {
+  if (!build) return;
+
+  let anchorLevel = 0;
+
+  if (build.overrides && build.overrides['upgrades.gadgets.anchor'] !== undefined) {
+    anchorLevel = build.overrides['upgrades.gadgets.anchor'];
+  } else if (build.upgrades && build.upgrades.gadgets && build.upgrades.gadgets.anchor !== undefined) {
+    anchorLevel = build.upgrades.gadgets.anchor;
   } else {
-    return `${fullDays} days ${hours} hours`;
+    const storeUpgrades = hunterStore.upgrades?.gadgets || {};
+    anchorLevel = storeUpgrades.anchor || 0;
   }
+
+  store.updateCurrentLevel('anchor', anchorLevel);
 }
 
-async function loadCachedResults() {
-  try {
-    console.log('[GadgetCalculator] Loading cached results for Knox builds...');
-    console.log('[GadgetCalculator] Available Knox builds:', knoxBuilds.value.map(b => ({ id: b.id, name: b.name })));
-    
-    // Cache für jeden Build einzeln prüfen
-    const allCachedResults = [];
-    
-    for (const build of knoxBuilds.value) {
-      console.log(`[GadgetCalculator] Prüfe Cache für Build "${build.name}" (ID: ${build.id})`);
-      
-      const cache = await shouldEvaluate({
-        hunterId: 'knox',
-        buildData: build,
-        hunterStore,
-        gemPlannerStore
-      });
-      
-      console.log(`[GadgetCalculator] Cache-Status für Build "${build.name}":`, cache);
-      
-      if (cache?.cachedResult) {
-        console.log(`[GadgetCalculator] Cache gefunden für Build "${build.name}":`, {
-          buildId: cache.cachedResult.buildId || 'none',
-          avgStage: cache.cachedResult.avgStage
-        });
-        
-        allCachedResults.push({
-          build,
-          result: cache.cachedResult,
-          cacheKey: cache.cacheKey
-        });
-      }
-    }
-    
-    console.log(`[GadgetCalculator] ${allCachedResults.length} von ${knoxBuilds.value.length} Builds haben Cache`);
-    
-    // Prüfe ob alle Cache-Einträge Build-IDs haben
-    const hasValidBuildIds = allCachedResults.every(entry => entry.result.buildId && entry.result.buildId !== 'none');
-    
-    if (hasValidBuildIds) {
-      // Ideal: Exakte Build-ID-Übereinstimmung
-      console.log('[GadgetCalculator] Verwende exakte Build-ID-Übereinstimmung');
-      for (const { build, result } of allCachedResults) {
-        if (result.buildId === build.id && result.avgStage && result.mat3) {
-          cachedResults.value[build.id] = result;
-          console.log(`[GadgetCalculator] ✓ Exakte Zuordnung für "${build.name}"`);
-        }
-      }
-    } else {
-      // Fallback: Intelligente Zuordnung für bestehende Cache-Einträge ohne Build-IDs
-      console.log('[GadgetCalculator] ⚠ Keine Build-IDs in Cache gefunden - verwende intelligente Zuordnung');
-      
-      if (allCachedResults.length === knoxBuilds.value.length) {
-        // Sortiere Builds nach ID (ascending) und Cache nach avgStage (ascending)
-        const sortedBuilds = allCachedResults.sort((a, b) => a.build.id.localeCompare(b.build.id));
-        const sortedByPerformance = [...allCachedResults].sort((a, b) => a.result.avgStage - b.result.avgStage);
-        
-        console.log('[GadgetCalculator] Build-Reihenfolge (nach ID):', sortedBuilds.map(b => b.build.name));
-        console.log('[GadgetCalculator] Cache-Reihenfolge (nach Performance):', sortedByPerformance.map(c => c.result.avgStage));
-        
-        // 1:1 Zuordnung: Schlechtester Build bekommt schlechteste Performance
-        for (let i = 0; i < sortedBuilds.length; i++) {
-          const buildEntry = sortedBuilds[i];
-          const cacheEntry = sortedByPerformance[i];
-          
-          if (cacheEntry.result.avgStage && cacheEntry.result.mat3) {
-            cachedResults.value[buildEntry.build.id] = cacheEntry.result;
-            console.log(`[GadgetCalculator] Zuordnung: "${buildEntry.build.name}" (ID: ${buildEntry.build.id}) -> avgStage: ${cacheEntry.result.avgStage}`);
-          }
-        }
-      } else {
-        console.log('[GadgetCalculator] ⚠ Anzahl Build/Cache-Einträge stimmt nicht überein');
-      }
-    }
-    
-    console.log('[GadgetCalculator] Final cachedResults:', Object.keys(cachedResults.value).length, 'results loaded');
-    
-  } catch (error) {
-    console.error('[GadgetCalculator] Error loading cached results:', error);
-    loadError.value = 'Failed to load build results';
-  }
-}
-
-async function loadGadgetImages() {
-  try {
-    // Lade alle Gadget-Bilder (1-15) dynamisch
-    const imagePromises = [];
-    for (let i = 1; i <= 15; i++) {
-      imagePromises.push(
-        import(`@/assets/gadgets/${i}.png`)
-          .then(module => ({ id: i, url: module.default }))
-          .catch(error => {
-            console.warn(`Could not load gadget image ${i}:`, error);
-            return { id: i, url: null };
-          })
-      );
-    }
-    
-    const results = await Promise.all(imagePromises);
-    
-    // Speichere die URLs in gadgetImages
-    results.forEach(result => {
-      gadgetImages.value[result.id] = result.url;
-    });
-    
-    console.log('Loaded gadget images:', gadgetImages.value);
-  } catch (error) {
-    console.error('Error loading gadget images:', error);
-  }
-}
-
-// NEUE FUNKTION - Hole Gadget Image URL
 function getGadgetImageUrl(gadgetId) {
-  const imageNumber = getGadgetImageNumber(gadgetId);
-  return gadgetImages.value[imageNumber] || null;
+  return gadgetImages.value[gadgetId] || null;
 }
 
-// Methods
 async function loadGadgetData() {
   try {
     isLoading.value = true;
     loadError.value = null;
-    
-    // Gadget Images zuerst laden
-    await loadGadgetImages();
-    
-    // Korrigiere den Aufruf von hasHunterData zu einer vorhandenen Methode im hunterStore
-    if (!hunterStore.hunterBuilds || !hunterStore.hunterBuilds.knox || hunterStore.hunterBuilds.knox.length === 0) {
-      await hunterStore.initHunterConfig('knox');
-    }
-    
-    // Cached Results laden
-    await loadCachedResults();
-    
-    // Load existing gadget levels from hunterStore
-    const storeUpgrades = hunterStore.upgrades?.gadgets || {};
-    
-    // Initialize levels from localStorage or store
-    const savedCurrentLevels = JSON.parse(localStorage.getItem('gadgetCalculator_currentLevels') || '{}');
-    const savedTargetLevels = JSON.parse(localStorage.getItem('gadgetCalculator_targetLevels') || '{}');
-    const savedReferenceBuildId = localStorage.getItem('gadgetCalculator_referenceBuildId');
-    const savedCurrentTesseracts = localStorage.getItem('gadgetCalculator_currentTesseracts');
-    
-    // Lade Multiplier-Ansicht-Einstellung
-    const savedShowMultipliers = localStorage.getItem('gadgetCalculator_showMultipliers');
-    if (savedShowMultipliers !== null) {
-      showMultipliers.value = savedShowMultipliers === 'true';
-    }
-    
-    // Lade Current Tesseracts
-    if (savedCurrentTesseracts !== null) {
-      currentTesseracts.value = Number(savedCurrentTesseracts) || 0;
-    }
-    
-    // Initialize with store values for wrench, zaptron, anchor
-    const newCurrentLevels = { ...savedCurrentLevels };
-    
-    // For wrench and zaptron, use store values if available
-    // Anchor wird aus dem ausgewählten Build geholt, nicht aus dem Store
-    if (storeUpgrades.wrench !== undefined) newCurrentLevels.wrench = storeUpgrades.wrench;
-    if (storeUpgrades.zaptron !== undefined) newCurrentLevels.zaptron = storeUpgrades.zaptron;
-    // Entfernt: if (storeUpgrades.anchor !== undefined) newCurrentLevels.anchor = storeUpgrades.anchor;
-    
-    // Set the values from localStorage or defaults
-    currentLevels.value = newCurrentLevels;
-    targetLevels.value = savedTargetLevels;
-    
-    if (savedReferenceBuildId) {
-      // Prüfen, ob der gespeicherte Build noch verfügbar ist
-      const buildExists = knoxBuilds.value.some(build => String(build.id) === String(savedReferenceBuildId));
-      
-      if (buildExists) {
-        selectedBuildId.value = savedReferenceBuildId;
-        updateFromSelectedBuild();
+
+    // Load all gadget images (1-15)
+    for (let i = 0; i < GADGETS.length; i++) {
+      try {
+        const imageNumber = i + 1; // Images are 1.png to 15.png
+        const module = await import(`@/assets/gadgets/${imageNumber}.png`);
+        const gadget = GADGETS[i];
+        if (gadget) {
+          gadgetImages.value[gadget.id] = module.default;
+        }
+      } catch (error) {
+        console.warn(`Could not load gadget image ${i + 1}:`, error);
       }
     }
-    
+
+    // Load cached evaluation results
+    await loadCachedResults();
+
+    // Initialize Wrench/Zaptron from hunterStore
+    const storeUpgrades = hunterStore.upgrades?.gadgets || {};
+    if (storeUpgrades.wrench !== undefined && !store.currentLevels.wrench) {
+      store.updateCurrentLevel('wrench', storeUpgrades.wrench);
+    }
+    if (storeUpgrades.zaptron !== undefined && !store.currentLevels.zaptron) {
+      store.updateCurrentLevel('zaptron', storeUpgrades.zaptron);
+    }
+
+    // Update tesseracts timestamp
+    store.resetTesseractsTimestamp();
+
+    // Check if saved build exists and update
+    if (store.settings.selectedBuildId) {
+      const buildExists = knoxBuilds.value.some(
+        build => String(build.id) === String(store.settings.selectedBuildId)
+      );
+      
+      if (buildExists) {
+        updateFromSelectedBuild();
+      } else {
+        store.updateSelectedBuild('');
+      }
+    }
+
     isLoading.value = false;
   } catch (error) {
     console.error('Error loading gadget data:', error);
@@ -1049,497 +1392,114 @@ async function loadGadgetData() {
   }
 }
 
-function updateFromSelectedBuild() {
-  console.log("updateFromSelectedBuild called");
-  console.log("Selected build ID:", selectedBuildId.value);
-  
-  if (!selectedBuildId.value) {
-    console.log("No build selected");
-    tessarectsPerDay.value = 0;
-    return;
-  }
-  
-  const build = selectedBuild.value;
-  console.log("Selected build:", build);
-  
-  if (build) {
-    // Hole gecachtes Ergebnis für diesen Build
-    const result = cachedResults.value[build.id];
-    console.log("Cached result for this build:", result);
+async function loadCachedResults() {
+  try {
+    // Import shouldEvaluate from evaluationCacheService
+    const { shouldEvaluate } = await import('@/services/evaluationCacheService');
     
-    if (result) {
-      // Tessarect-Produktion aus mat3 im gecachten Ergebnis holen
-      const tessarectsPerRun = result.mat3 || 0;
-      console.log("Tessarects per run:", tessarectsPerRun);
+    for (const build of knoxBuilds.value) {
+      const cache = await shouldEvaluate({
+        hunterId: 'knox',
+        buildData: build,
+        hunterStore,
+        gemPlannerStore
+      });
       
-      // Durchschnittliche Laufzeit aus den Ergebnissen holen
-      const avgRunTimeMinutes = result.avgTime || 120; // Default zu 120 Minuten, wenn nicht verfügbar
-      console.log("Average run time (minutes):", avgRunTimeMinutes);
-      
-      // Läufe pro Tag berechnen
-      const runsPerDay = 1440 / avgRunTimeMinutes; // 1440 Minuten in einem Tag
-      console.log("Runs per day:", runsPerDay);
-      
-      // Tägliche Tessarect-Produktion berechnen
-      const dailyTessarects = Math.floor(tessarectsPerRun * runsPerDay);
-      console.log("Daily tessarect production:", dailyTessarects);
-      
-      // Tessarects pro Tag aktualisieren
-      tessarectsPerDay.value = dailyTessarects;
-      
-      // In localStorage speichern
-      localStorage.setItem('gadgetCalculator_referenceBuildId', selectedBuildId.value);
-    } else {
-      console.log("No cached result found for this build");
-      tessarectsPerDay.value = 0;
-    }
-    
-    // WICHTIG: Aktualisiere den Current Anchor Level aus dem ausgewählten Build
-    updateCurrentAnchorFromBuild(build);
-  } else {
-    console.log("Build not found");
-    tessarectsPerDay.value = 0;
-  }
-}
-
-// Neue Funktion: Hole den aktuellen Anchor Level aus dem Build
-function updateCurrentAnchorFromBuild(build) {
-  if (!build) return;
-  
-  let anchorLevel = 0;
-  
-  // Prüfe Overrides zuerst (höchste Priorität)
-  if (build.overrides && build.overrides['upgrades.gadgets.anchor'] !== undefined) {
-    anchorLevel = build.overrides['upgrades.gadgets.anchor'];
-    console.log(`[GadgetCalculator] Anchor level from build overrides: ${anchorLevel}`);
-  } 
-  // Sonst schaue in den normalen upgrades des Builds
-  else if (build.upgrades && build.upgrades.gadgets && build.upgrades.gadgets.anchor !== undefined) {
-    anchorLevel = build.upgrades.gadgets.anchor;
-    console.log(`[GadgetCalculator] Anchor level from build upgrades: ${anchorLevel}`);
-  }
-  // Fallback zum hunterStore
-  else {
-    const storeUpgrades = hunterStore.upgrades?.gadgets || {};
-    anchorLevel = storeUpgrades.anchor || 0;
-    console.log(`[GadgetCalculator] Anchor level from hunterStore fallback: ${anchorLevel}`);
-  }
-  
-  // Aktualisiere nur den Anchor Level, behalte andere Gadget-Level bei
-  if (currentLevels.value.anchor !== anchorLevel) {
-    currentLevels.value.anchor = anchorLevel;
-    
-    // Stelle sicher, dass der Target Level nicht unter dem Current Level ist
-    if ((targetLevels.value.anchor || 0) < anchorLevel) {
-      targetLevels.value.anchor = anchorLevel;
-    }
-    
-    console.log(`[GadgetCalculator] Updated current anchor level to: ${anchorLevel}`);
-    
-    // Speichere die Änderungen
-    saveGadgetLevels();
-    
-    // Reset Anchor Evaluation da sich der Current Level geändert hat
-    anchorEvaluationEnabled.value = false;
-    anchorEvaluations.value = {};
-    anchorEvaluationProgress.value = {};
-  }
-}
-
-function hasLevelChanges(gadgetId) {
-  const current = currentLevels.value[gadgetId] || 0;
-  const target = targetLevels.value[gadgetId] || 0;
-  return target > current;
-}
-
-function getGadgetCost(gadgetId) {
-  const current = currentLevels.value[gadgetId] || 0;
-  const target = targetLevels.value[gadgetId] || 0;
-  
-  if (target <= current) return 0;
-  
-  return calcGadgetCostDifference(gadgetId, current, target);
-}
-
-function updateCurrentLevel(gadgetId, newValue) {
-  // Stelle sicher, dass der Wert nicht negativ ist
-  newValue = Math.max(0, Math.min(999, newValue));
-  
-  // Aktualisiere den aktuellen Level
-  currentLevels.value[gadgetId] = newValue;
-  
-  // Wenn der Ziellevel niedriger ist als der aktuelle, passe ihn an
-  if ((targetLevels.value[gadgetId] || 0) < newValue) {
-    targetLevels.value[gadgetId] = newValue;
-  }
-  
-  // Speichere die Werte
-  saveGadgetLevels();
-}
-
-function updateTargetLevel(gadgetId, newValue) {
-  // Prüfe, ob wir uns im Bearbeitungsmodus befinden - Prüfen auf <input> Element
-  const activeElement = document.activeElement;
-  const isEditing = activeElement.tagName.toLowerCase() === 'input';
-
-  // Konvertiere newValue zu einer Zahl (falls es ein String ist)
-  newValue = Number(newValue);
-  
-  // Wenn die Eingabe NaN ist, behalten wir den vorherigen Wert bei
-  if (isNaN(newValue)) {
-    return;
-  }
-  
-  // Trigger smooth transition when gadget card will change size
-  const willChangeLevelStatus = hasLevelChanges(gadgetId) !== (newValue > (currentLevels.value[gadgetId] || 0));
-  
-  if (willChangeLevelStatus && document.startViewTransition) {
-    document.documentElement.classList.add('in-page-transition');
-    const transition = document.startViewTransition(() => {
-      // Wenn wir im Bearbeitungsmodus sind ODER der Wert größer/gleich dem Current ist
-      if (isEditing || newValue >= (currentLevels.value[gadgetId] || 0)) {
-        // Aktualisiere den Ziel-Level ohne weitere Validierung
-        targetLevels.value[gadgetId] = newValue;
-      } else {
-        // Benutzer hat auf Minus-Button geklickt, aber Wert wäre unter Current
-        // Wert auf Current begrenzen
-        targetLevels.value[gadgetId] = currentLevels.value[gadgetId] || 0;
+      if (cache?.cachedResult) {
+        cachedResults.value[build.id] = cache.cachedResult;
       }
-      
-      // Speichere die Werte
-      saveGadgetLevels();
-    });
-    transition.finished.finally(() => {
-      document.documentElement.classList.remove('in-page-transition');
-    });
-  } else {
-    // Wenn wir im Bearbeitungsmodus sind ODER der Wert größer/gleich dem Current ist
-    if (isEditing || newValue >= (currentLevels.value[gadgetId] || 0)) {
-      // Aktualisiere den Ziel-Level ohne weitere Validierung
-      targetLevels.value[gadgetId] = newValue;
-    } else {
-      // Benutzer hat auf Minus-Button geklickt, aber Wert wäre unter Current
-      // Wert auf Current begrenzen
-      targetLevels.value[gadgetId] = currentLevels.value[gadgetId] || 0;
     }
-    
-    // Speichere die Werte
-    saveGadgetLevels();
+  } catch (error) {
+    console.error('[GadgetCalculator] Error loading cached results:', error);
   }
 }
 
-function finalizeTargetLevel(gadgetId, newVal = null) {
-  // Wenn ein Wert übergeben wurde, verwende diesen statt des bestehenden
-  if (newVal !== null) {
-    newVal = Number(newVal);
-    if (!isNaN(newVal)) {
-      // Stelle sicher, dass der Wert nicht unter Current ist
-      const current = currentLevels.value[gadgetId] || 0;
-      const finalValue = Math.max(current, newVal);
-      
-      // Trigger smooth transition if level status changes
-      const willChangeLevelStatus = hasLevelChanges(gadgetId) !== (finalValue > current);
-      
-      if (willChangeLevelStatus && document.startViewTransition) {
-        document.documentElement.classList.add('in-page-transition');
-        const transition = document.startViewTransition(() => {
-          targetLevels.value[gadgetId] = finalValue;
-          saveGadgetLevels();
-        });
-        transition.finished.finally(() => {
-          document.documentElement.classList.remove('in-page-transition');
-        });
-      } else {
-        targetLevels.value[gadgetId] = finalValue;
-        saveGadgetLevels();
-      }
-      return;
+// Live update interval
+let tesseractsUpdateInterval = null;
+
+// ESC key handler for modals
+function handleKeydown(event) {
+  if (event.key === 'Escape') {
+    if (showConfirmModal.value) {
+      cancelConfirmModal();
+    } else if (showSummaryModal.value) {
+      showSummaryModal.value = false;
+    } else if (showLevelsModal.value) {
+      showLevelsModal.value = false;
     }
   }
-  
-  // Fallback zum bestehenden Verhalten
-  const current = currentLevels.value[gadgetId] || 0;
-  const target = targetLevels.value[gadgetId] || 0;
-  
-  // Validiere den Wert nach der Bearbeitung - stelle sicher, dass er eine Zahl ist
-  const finalValue = isNaN(target) ? current : Math.max(current, target);
-  
-  // Trigger smooth transition if level status changes
-  const willChangeLevelStatus = hasLevelChanges(gadgetId) !== (finalValue > current);
-  
-  if (willChangeLevelStatus && document.startViewTransition) {
-    document.documentElement.classList.add('in-page-transition');
-    const transition = document.startViewTransition(() => {
-      targetLevels.value[gadgetId] = finalValue;
-      saveGadgetLevels();
-    });
-    transition.finished.finally(() => {
-      document.documentElement.classList.remove('in-page-transition');
-    });
-  } else {
-    targetLevels.value[gadgetId] = finalValue;
-    saveGadgetLevels();
-  }
 }
 
-// Individuelle Sparzeit für ein Gadget
-function formatIndividualSaveTime(gadgetId) {
-  const cost = getGadgetCost(gadgetId);
-  if (cost <= 0) return 'N/A';
-  if (tessarectsPerDay.value <= 0) return 'Set production rate';
+onMounted(async () => {
+  await loadGadgetData();
   
-  // Berücksichtige bereits verfügbare Tesseracts
-  const remainingCost = Math.max(0, cost - (currentTesseracts.value || 0));
-  if (remainingCost <= 0) return 'Available now'; // Bereits genug Tesseracts für dieses Gadget
-  
-  const days = remainingCost / tessarectsPerDay.value;
-  
-  // Wenn es mehr als 10 Jahre dauert...
-  if (days > 36500) { // 100 Jahre = 36500 Tage
-    return '☠️';
-  }
-  
-  // Wenn es mehr als 1 Jahr dauert, in Jahren und Monaten anzeigen
-  if (days > 365) {
-    const years = Math.floor(days / 365);
-    const remainingDays = days % 365;
-    const months = Math.floor(remainingDays / 30);
-    
-    if (months === 0) {
-      return `${years}y`;
-    } else {
-      return `${years}y, ${months}mo`;
-    }
-  }
-  
-  // Wenn es mehr als 60 Tage dauert, nur in Tagen anzeigen
-  if (days > 60) {
-    return `${Math.floor(days)}d`;
-  }
-  
-  // Normaler Fall: Tage und Stunden
-  const fullDays = Math.floor(days);
-  const hours = Math.round((days - fullDays) * 24);
-  
-  if (fullDays === 0) {
-    return `${hours}h`;
-  } else if (hours === 0) {
-    return `${fullDays}d`;
-  } else {
-    return `${fullDays}d, ${hours}h`;
-  }
-}
+  // Start live update interval
+  tesseractsUpdateInterval = setInterval(() => {
+    liveUpdateTrigger.value++;
+  }, 10000);
 
-// Hilfsfunktion um die Bildnummer zu ermitteln
-function getGadgetImageNumber(gadgetId) {
-  const gadgetIndex = GADGETS.findIndex(g => g.id === gadgetId);
-  return gadgetIndex + 1; // 1-basiert für die Dateinamen
-}
+  // Add ESC key listener
+  document.addEventListener('keydown', handleKeydown);
+});
 
-function resetAllLevels() {
-  // Reset target levels to match current levels
-  GADGETS.forEach(gadget => {
-    targetLevels.value[gadget.id] = currentLevels.value[gadget.id] || 0;
-  });
-  
-  saveGadgetLevels();
-}
+onUnmounted(() => {
+  if (tesseractsUpdateInterval) {
+    clearInterval(tesseractsUpdateInterval);
+    tesseractsUpdateInterval = null;
+  }
 
-function saveGadgetLevels() {
-  localStorage.setItem('gadgetCalculator_currentLevels', JSON.stringify(currentLevels.value));
-  localStorage.setItem('gadgetCalculator_targetLevels', JSON.stringify(targetLevels.value));
-  localStorage.setItem('gadgetCalculator_currentTesseracts', String(currentTesseracts.value || 0));
-}
+  // Remove ESC key listener
+  document.removeEventListener('keydown', handleKeydown);
+});
 
-// Watch für Änderungen am selectedBuildId, um Anchor-Level zu aktualisieren
+// Watch for build changes
 watch(selectedBuildId, (newBuildId) => {
   if (newBuildId && selectedBuild.value) {
     updateCurrentAnchorFromBuild(selectedBuild.value);
   }
 });
-
-// Watch für Änderungen am hunterStore
-watch(() => hunterStore.getBuildsForHunter('knox'), () => {
-  // Wenn sich die Builds im Store ändern, lade die Ergebnisse neu
-  loadCachedResults();
-}, { deep: true });
-
-// Watch für currentTesseracts Änderungen, um automatisch zu speichern
-watch(currentTesseracts, (newValue) => {
-  localStorage.setItem('gadgetCalculator_currentTesseracts', String(newValue || 0));
-});
-
-// Reset Anchor Evaluation wenn sich Level ändern
-watch(() => [targetLevels.value.anchor, currentLevels.value.anchor], () => {
-  // Reset evaluation state when levels change
-  anchorEvaluationEnabled.value = false;
-  anchorEvaluations.value = {};
-  anchorEvaluationProgress.value = {};
-});
-
-// Initialize on mount
-onMounted(async () => {
-  await loadGadgetData();
-});
 </script>
 
 <style scoped>
-/* Bestehende Styles bleiben gleich */
 .header {
   background: linear-gradient(to right, rgba(31, 41, 55, 0.95), rgba(17, 24, 39, 0.95));
 }
 
-/* View Transition für Gadget Cards */
-.gadget-card {
-  contain: layout;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-/* Erweiterte Gadget-Styles mit Hintergrundbildern */
-.gadget-card {
-  background: linear-gradient(to bottom, rgba(35, 39, 47, 0.9), rgba(28, 32, 38, 0.95));
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease-in-out;
-  position: relative;
+::-webkit-scrollbar-track {
+  background: rgba(31, 41, 55, 0.5);
+  border-radius: 4px;
 }
 
-.gadget-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  border-color: #22d3ee; /* cyan-400 */
+::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.8);
+  border-radius: 4px;
 }
 
-.gadget-card.active-gadget {
-  background: linear-gradient(to bottom, rgba(39, 51, 65, 0.98), rgba(28, 32, 38, 0.98));
-  box-shadow: 0 0 0 2px rgba(34,211,238,0.18), 0 0 12px 2px rgba(34,211,238,0.18);
-  border-color: #38bdf8; /* cyan-400, aber sehr subtil */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.9);
 }
 
-/* Hintergrundbild-Styles - BESSER SICHTBAR */
-.gadget-background {
-  background-size: 80px 80px;
-  background-repeat: no-repeat;
-  background-position: top 8px right 8px;
-  z-index: 1;
-  transition: none;
-  /* Schärfere Bilddarstellung */
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  /* VERBESSERTE SICHTBARKEIT */
-  opacity: 1;
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-in-out;
 }
 
-/* Content Overlay - WENIGER ÜBERDECKUNG */
-.gadget-content {
-  position: relative;
-  z-index: 10;
-  /* NEUE GRADIENT - MEHR TRANSPARENZ RECHTS OBE */
-  background: linear-gradient(
-    to right, 
-    rgba(35, 39, 47, 0.85) 0%, 
-    rgba(35, 39, 47, 0.6) 60%, 
-    rgba(35, 39, 47, 0.1) 85%,
-    transparent 100%
-  );
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-  /* ZUSÄTZLICHER GRADIENT VON OBEN */
-  background-image: 
-    linear-gradient(
-      to right, 
-      rgba(35, 39, 47, 0.85) 0%, 
-      rgba(35, 39, 47, 0.6) 60%, 
-      rgba(35, 39, 47, 0.1) 85%,
-      transparent 100%
-    ),
-    radial-gradient(
-      circle at top right, 
-      transparent 60px, 
-      rgba(35, 39, 47, 0.8) 80px
-    );
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-.custom-gadget-item.active-gadget .gadget-content {
-  /* AKTIVE GADGETS - NOCH WENIGER ÜBERDECKUNG */
-  background: linear-gradient(
-    to right, 
-    rgba(30, 41, 59, 0.8) 0%, 
-    rgba(30, 41, 59, 0.5) 60%, 
-    rgba(30, 41, 59, 0.1) 85%,
-    transparent 100%
-  );
-  background-image: 
-    linear-gradient(
-      to right, 
-      rgba(30, 41, 59, 0.8) 0%, 
-      rgba(30, 41, 59, 0.5) 60%, 
-      rgba(30, 41, 59, 0.1) 85%,
-      transparent 100%
-    ),
-    radial-gradient(
-      circle at top right, 
-      transparent 60px, 
-      rgba(30, 41, 59, 0.7) 80px
-    );
-}
-
-/* Enhanced Multipliers */
-.gadget-multipliers {
-  background: linear-gradient(
-    to bottom, 
-    rgba(23, 29, 35, 0.90), 
-    rgba(20, 25, 30, 0.90)
-  ) !important;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-/* Mobile Optimierung */
-@media (max-width: 640px) {
-  .gadget-background {
-    background-size: 60px 60px; /* Kleinere Bilder auf Mobile */
-    background-position: top 6px right 6px;
-    opacity: 1; /* Noch sichtbarer auf Mobile */
-  }
-  
-  .gadget-content {
-    /* Mobile: Weniger Overlay */
-    background: linear-gradient(
-      to right, 
-      rgba(35, 39, 47, 0.8) 0%, 
-      rgba(35, 39, 47, 0.4) 50%, 
-      transparent 80%
-    );
-    background-image: 
-      linear-gradient(
-        to right, 
-        rgba(35, 39, 47, 0.8) 0%, 
-        rgba(35, 39, 47, 0.4) 50%, 
-        transparent 80%
-      ),
-      radial-gradient(
-        circle at top right, 
-        transparent 45px, 
-        rgba(35, 39, 47, 0.7) 60px
-      );
-  }
-  
-  .custom-gadget-item.active-gadget .gadget-content {
-    background: linear-gradient(
-      to right, 
-      rgba(30, 41, 59, 0.75) 0%, 
-      rgba(30, 41, 59, 0.4) 50%, 
-      transparent 80%
-    );
-    background-image: 
-      linear-gradient(
-        to right, 
-        rgba(30, 41, 59, 0.75) 0%, 
-        rgba(30, 41, 59, 0.4) 50%, 
-        transparent 80%
-      ),
-      radial-gradient(
-        circle at top right, 
-        transparent 45px, 
-        rgba(30, 41, 59, 0.6) 60px
-      );
-  }
+.tooltip-arrow::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 20px;
+  border: 6px solid transparent;
+  border-top-color: rgb(31, 41, 55);
 }
 </style>

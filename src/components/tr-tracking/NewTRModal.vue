@@ -445,14 +445,17 @@ watch(() => formData.value.isActive, (newIsActive, oldIsActive) => {
     return;
   }
   
-  // If changing from active to completed, set current date/time
+  // If changing from active to completed, set current date/time ONLY if not already set
   if (oldIsActive === true && newIsActive === false) {
-    const now = new Date();
-    formData.value.endDate = now.getFullYear() + '-' + 
-                             String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-                             String(now.getDate()).padStart(2, '0');
-    formData.value.endTime = String(now.getHours()).padStart(2, '0') + ':' + 
-                             String(now.getMinutes()).padStart(2, '0');
+    // Only set end date/time if they are empty (not manually entered)
+    if (!formData.value.endDate || !formData.value.endTime) {
+      const now = new Date();
+      formData.value.endDate = now.getFullYear() + '-' + 
+                               String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                               String(now.getDate()).padStart(2, '0');
+      formData.value.endTime = String(now.getHours()).padStart(2, '0') + ':' + 
+                               String(now.getMinutes()).padStart(2, '0');
+    }
   }
   // If changing from completed to active, clear end date
   else if (oldIsActive === false && newIsActive === true) {

@@ -200,16 +200,9 @@ const maxNameLength = computed(() => {
   return 48;
 });
 
-// Hilfsfunktion um die Bildnummer zu ermitteln
-function getGadgetImageNumber(gadgetId) {
-  const gadgetIndex = GADGETS.findIndex(g => g.id === gadgetId);
-  return gadgetIndex + 1; // 1-basiert für die Dateinamen
-}
-
 // Hilfsfunktion um Gadget Image URL zu bekommen
 function getGadgetImageUrl(gadgetId) {
-  const imageNumber = getGadgetImageNumber(gadgetId);
-  return props.gadgetImages[imageNumber] || null;
+  return props.gadgetImages[gadgetId] || null;
 }
 
 // Sortiert und transformiert die Gadget-Daten für die Anzeige

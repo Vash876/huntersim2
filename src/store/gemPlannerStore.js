@@ -658,6 +658,7 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
       gemStates: gemStates.value,
       currentStats: currentStats.value,
       gemPlans: gemPlans.value,
+      hoursInTR: hoursInTR.value,
       exportedAt: new Date().toISOString(),
       version: '1.0'
     };

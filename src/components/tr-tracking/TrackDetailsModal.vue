@@ -4093,18 +4093,12 @@ input[type="number"] {
   border-color: rgba(59, 130, 246, 0.3) !important;
 }
 
-/* LR Reset Row Styling - rote Markierung für Loop Reset Einträge */
-:deep(.ag-grid-container) .ag-row.lr-reset-row {
-  background-color: rgba(220, 38, 38, 0.25) !important;
+/* LR Reset Row Styling - subtile Markierung für Loop Reset Einträge (nur gepinnte linke Spalte) */
+:deep(.ag-grid-container) .ag-row.lr-reset-row .ag-cell[col-id="date"] {
+  box-shadow: inset 3px 0 0 0 rgba(239, 68, 68, 0.7);
 }
-:deep(.ag-grid-container) .ag-row.lr-reset-row:hover {
-  background-color: rgba(220, 38, 38, 0.35) !important;
-}
-:deep(.ag-grid-container) .ag-row.lr-reset-row.ag-row-odd {
-  background-color: rgba(220, 38, 38, 0.30) !important;
-}
-:deep(.ag-grid-container) .ag-row.lr-reset-row.ag-row-odd:hover {
-  background-color: rgba(220, 38, 38, 0.40) !important;
+:deep(.ag-grid-container) .ag-row.lr-reset-row:hover .ag-cell[col-id="date"] {
+  box-shadow: inset 3px 0 0 0 rgba(239, 68, 68, 0.9);
 }
 </style>
 <style scoped>

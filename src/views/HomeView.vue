@@ -2,6 +2,31 @@
 const changelog = 
 [
   {
+    version: '2.11.0',
+    date: '2026-01-11',
+    changes: [
+      {
+        text: 'Gadget Planner',
+        subItems: [
+          'Now uses the same system as Inscryption Planner for better purchase planning',
+          'Gadget Levels need to be reentered',
+        ]
+      },
+      {
+        text: 'Inscryption Planner',
+        subItems: [
+          'Re-Added availability date/time display',
+        ]
+      },
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Replaced red background for new Loop Reset entries with subtle red left border',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.10.5',
     date: '2026-01-05',
     changes: [

@@ -499,8 +499,12 @@
                     </div>
                     
                     <!-- @Hour Display -->
-                    <div v-if="hellishBiomatterPerDay > 0" class="flex gap-2 pt-0.5">
+                    <div v-if="hellishBiomatterPerDay > 0" class="flex flex-col gap-0.5 pt-0.5">
                       <span class="text-cyan-400" title="@Hour in TR">{{ formatCumulativeHoursInTR(store.shoppingList.findIndex(listItem => listItem.id === item.id)) }}</span>
+                      <span v-if="formatAvailabilityDate(store.shoppingList.findIndex(listItem => listItem.id === item.id))" class="text-purple-400 text-[9px] flex items-center gap-1">
+                        <IconCalendar size="10" />
+                        {{ formatAvailabilityDate(store.shoppingList.findIndex(listItem => listItem.id === item.id)) }}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -787,8 +791,12 @@
                           </span>
                           <button v-else-if="hbmProductionDataMap[item.id]?.needsEvaluation && !hbmProductionDataMap[item.id]?.newHBMProduction" @click="triggerEvaluation(item)" class="text-red-400 hover:text-red-300">Eval</button>
                         </span>
-                        <span class="text-cyan-400" :title="hellishBiomatterPerDay > 0 ? '@Hour in TR' : ''">
+                        <span class="text-cyan-400 w-13" :title="hellishBiomatterPerDay > 0 ? '@Hour in TR' : ''">
                           <template v-if="hellishBiomatterPerDay > 0">{{ formatCumulativeHoursInTR(index) }}</template>
+                        </span>
+                        <span v-if="hellishBiomatterPerDay > 0 && formatAvailabilityDate(index)" class="text-purple-400 flex items-center gap-1 ml-2">
+                          <IconCalendar size="12" />
+                          {{ formatAvailabilityDate(index) }}
                         </span>
                       </div>
                     </div>
@@ -854,7 +862,8 @@ import {
   IconTrash,
   IconChevronUp,
   IconChevronDown,
-  IconWorld
+  IconWorld,
+  IconCalendar
 } from '@tabler/icons-vue';
 import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
@@ -2165,6 +2174,60 @@ function formatCumulativeHoursInTR(itemIndex) {
   if (hoursNeeded <= 0) return `@${Math.round(currentHoursInTR.value || 0)}h`;
   
   return `@${Math.round(totalHours)}h`;
+}
+
+// Berechnet das Verfügbarkeitsdatum für ein Item in der Shopping List
+function formatAvailabilityDate(itemIndex) {
+  let cumulativeDays = 0;
+  let availableHBM = currentHBM.value || 0;
+  let currentDailyProduction = hellishBiomatterPerDay.value;
+  
+  if (currentDailyProduction <= 0) return null;
+  
+  for (let i = 0; i <= itemIndex; i++) {
+    const item = store.shoppingList[i];
+    const remainingCost = Math.max(0, item.costSci - availableHBM);
+    
+    if (remainingCost > 0) {
+      if (currentDailyProduction <= 0) {
+        return null;
+      }
+      const daysForThisItem = remainingCost / currentDailyProduction;
+      cumulativeDays += daysForThisItem;
+      availableHBM += daysForThisItem * currentDailyProduction;
+    }
+    
+    availableHBM -= item.costSci;
+    
+    const itemHBMData = hbmProductionDataMap.value[item.id];
+    if (itemHBMData && itemHBMData.newHBMProduction > currentDailyProduction) {
+      currentDailyProduction = itemHBMData.newHBMProduction;
+    }
+  }
+  
+  if (cumulativeDays === Infinity || cumulativeDays > 36500) return null;
+  
+  const now = new Date();
+  const availableDate = new Date(now.getTime() + cumulativeDays * 24 * 60 * 60 * 1000);
+  
+  // German date format
+  if (cumulativeDays > 2) {
+    // More than 2 days away: Show only date
+    return availableDate.toLocaleDateString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  } else {
+    // Less than 2 days: Show date and time
+    return availableDate.toLocaleString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
 }
 
 // Handler für "Mark as Purchased" - fügt Item zu owned hinzu und entfernt es aus der Shopping List

@@ -566,6 +566,7 @@ import { useUltimaStore } from '@/store/ultimaStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useSyncStore } from '@/store/syncStore';
 import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
+import { useGadgetPlannerStore } from '@/store/gadgetPlannerStore';
 // import { useFAQStore } from '@/store/faqStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
 import { checkLocalStorageQuota } from '@/utils/storageCheck';
@@ -600,6 +601,7 @@ const ultimaStore = useUltimaStore();
 const gemPlannerStore = useGemPlannerStore();
 const syncStore = useSyncStore();
 const inscryptionPlannerStore = useInscryptionPlannerStore();
+const gadgetPlannerStore = useGadgetPlannerStore();
 // const faqStore = useFAQStore();
 const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBackupRestore();
 

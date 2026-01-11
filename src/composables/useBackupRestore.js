@@ -12,6 +12,7 @@ import { useInscryptionPlannerStore } from '@/store/inscryptionPlannerStore';
 import { useTSStore } from '@/store/tsStore';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useTokenPlannerStore } from '@/store/tokenPlannerStore';
+import { useGadgetPlannerStore } from '@/store/gadgetPlannerStore';
 
 export function useBackupRestore() {
   const hunterStore = useHunterStore();
@@ -23,6 +24,7 @@ export function useBackupRestore() {
   const tsStore = useTSStore();
   const missionPlannerStore = useMissionPlannerStore();
   const tokenPlannerStore = useTokenPlannerStore();
+  const gadgetPlannerStore = useGadgetPlannerStore();
 
   const isCreatingBackup = ref(false);
   const isRestoring = ref(false);
@@ -77,10 +79,8 @@ export function useBackupRestore() {
       // 2. TR-Planner Daten
       const trPlannerData = JSON.parse(JSON.stringify(trPlannerStore.$state));
       
-      // 3. Gadget Calculator Daten aus localStorage
-      const gadgetCurrentLevels = localStorage.getItem('gadgetCalculator_currentLevels');
-      const gadgetTargetLevels = localStorage.getItem('gadgetCalculator_targetLevels');
-      const gadgetReferenceBuildId = localStorage.getItem('gadgetCalculator_referenceBuildId');
+      // 3. Gadget Planner Daten (Pinia Store)
+      const gadgetPlannerData = gadgetPlannerStore.exportData();
       
       // 4. Mech Planner Daten aus localStorage
       const mechPlannerSettings = localStorage.getItem('mechPlanner_settings');
@@ -153,10 +153,8 @@ export function useBackupRestore() {
           gemPlannerStore: gemPlannerData,
           inscryptionPlannerStore: inscryptionPlannerData,
           tsStore: tsPlannerSettings,
+          gadgetPlannerStore: gadgetPlannerData,
           localStorage: {
-            gadgetCalculator_currentLevels: gadgetCurrentLevels ? JSON.parse(gadgetCurrentLevels) : {},
-            gadgetCalculator_targetLevels: gadgetTargetLevels ? JSON.parse(gadgetTargetLevels) : {},
-            gadgetCalculator_referenceBuildId: gadgetReferenceBuildId,
             mechPlanner_settings: mechPlannerSettings ? JSON.parse(mechPlannerSettings) : {},
             attrGN3Calculator_settings: attrGN3Settings ? JSON.parse(attrGN3Settings) : {},
             researchOverview_filters: researchOverviewSettings ? JSON.parse(researchOverviewSettings) : {},
@@ -432,6 +430,12 @@ export function useBackupRestore() {
         }
       }
       
+      // 6.8. Restore Gadget Planner Store
+      if (backupData.data.gadgetPlannerStore) {
+        console.log('📥 Restoring Gadget Planner data from backup...');
+        gadgetPlannerStore.importData(backupData.data.gadgetPlannerStore);
+      }
+      
       // 7. Restore localStorage data
       if (backupData.data.localStorage) {
         const localStorageData = backupData.data.localStorage;
@@ -457,17 +461,6 @@ export function useBackupRestore() {
           }
           
           console.log('✅ TR Tracking localStorage data restored');
-        }
-        
-        // Gadget Calculator
-        if (localStorageData.gadgetCalculator_currentLevels) {
-          localStorage.setItem('gadgetCalculator_currentLevels', JSON.stringify(localStorageData.gadgetCalculator_currentLevels));
-        }
-        if (localStorageData.gadgetCalculator_targetLevels) {
-          localStorage.setItem('gadgetCalculator_targetLevels', JSON.stringify(localStorageData.gadgetCalculator_targetLevels));
-        }
-        if (localStorageData.gadgetCalculator_referenceBuildId) {
-          localStorage.setItem('gadgetCalculator_referenceBuildId', localStorageData.gadgetCalculator_referenceBuildId);
         }
         
         // Mech Planner
