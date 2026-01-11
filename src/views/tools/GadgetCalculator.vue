@@ -560,7 +560,7 @@
           </div>
 
           <!-- Shopping List Items -->
-          <div class="p-4 space-y-3 max-h-[700px] overflow-y-auto">
+          <div class="p-4 space-y-3 overflow-y-auto">
             <!-- Empty State -->
             <div v-if="shoppingList.length === 0" class="p-12 text-center">
               <IconShoppingCartOff size="48" class="mx-auto text-gray-600 mb-3" />

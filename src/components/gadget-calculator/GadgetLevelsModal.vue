@@ -51,6 +51,7 @@
                 :minValue="0"
                 :maxValue="999"
                 :step="1"
+                :autoEdit="true"
               />
             </div>
           </div>
