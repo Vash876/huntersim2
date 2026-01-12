@@ -308,7 +308,7 @@
  (data $42 (i32.const 11420) ",\00\00\00\03\00\00\00\00\00\00\00\17\00\00\00\18\00\00\00\10 \00\00\00\00\00\00`,\00\00\00\00\00\000 ")
  (data $43 (i32.const 11468) ",\00\00\00\03\00\00\00\00\00\00\00\17\00\00\00\18\00\00\00\10 \00\00\00\00\00\00`,\00\00\00\00\00\000 ")
  (data $44 (i32.const 11520) "\18\00\00\00 \00\00\00 \00\00\00 \00\00\00\00\00\00\00 \00\00\00\04A\00\00\00\00\00\00 \00\00\00\04A\00\00\10\t\12\00 \00\00\00\04A\00\00\00\00\00\00 \00\00\00\04A\00\00$\t\00\00 \00\00\00\04A\00\00\00\00\00\00 \00\00\00\04A\00\00$\1a\00\00\02\t\00\00\04A")
- (export "multiWasm" (func $assembly/evalBorge/multi))
+ (export "multiWasm" (func $assembly/evalOzzy/multi))
  (export "testMultiFunction" (func $assembly/index/testMultiFunction))
  (export "HunterType.BORGE" (global $assembly/index/HunterType.BORGE))
  (export "HunterType.OZZY" (global $assembly/index/HunterType.OZZY))
@@ -592,7 +592,7 @@
    local.get $1
    global.set $~lib/rt/itcms/iter
   end
-  block $__inlined_func$~lib/rt/itcms/Object#unlink$2378
+  block $__inlined_func$~lib/rt/itcms/Object#unlink$2379
    local.get $0
    i32.load offset=4
    i32.const -4
@@ -616,7 +616,7 @@
      call $~lib/builtins/abort
      unreachable
     end
-    br $__inlined_func$~lib/rt/itcms/Object#unlink$2378
+    br $__inlined_func$~lib/rt/itcms/Object#unlink$2379
    end
    local.get $0
    i32.load offset=8
@@ -2905,6 +2905,227 @@
   f64.const 0
   f64.max
   f64.add
+  local.get $0
+  i32.const 400
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.005
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 410
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.005
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 420
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.005
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 430
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.004
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 440
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.004
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 450
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.004
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 460
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.004
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 470
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.004
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 480
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.004
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 490
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.004
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  f64.const 1
+  f64.max
+  f64.const 1.01
+  local.get $0
+  i32.const 350
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0
+  f64.max
+  call $~lib/math/NativeMath.pow
+  f64.mul
+ )
+ (func $assembly/evalOzzy/multi (param $0 i32) (result f64)
+  local.get $0
+  i32.const 149
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.006
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.const 1
+  f64.add
+  local.get $0
+  i32.const 199
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.006
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 249
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.006
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 299
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.006
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 309
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.003
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 319
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.003
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 329
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.004
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 339
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.004
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 349
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.005
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 359
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.005
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 369
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.006
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 379
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.006
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
+  local.get $0
+  i32.const 389
+  i32.sub
+  f64.convert_i32_s
+  f64.const 0.007
+  f64.mul
+  f64.const 0
+  f64.max
+  f64.add
   f64.const 1
   f64.max
   f64.const 1.01
@@ -3139,7 +3360,7 @@
     local.get $0
     i32.const 1000
     i32.rem_s
-    call $assembly/evalBorge/multi
+    call $assembly/evalOzzy/multi
     f64.add
     local.set $1
     local.get $0
@@ -6329,36 +6550,51 @@
    f64.store offset=48
   end
   local.get $0
-  i32.const 300
+  i32.const 401
   i32.ge_s
   if
    global.get $~lib/memory/__stack_pointer
    local.get $2
    i32.store offset=4
    local.get $2
-   local.get $3
-   i32.const 3
-   i32.sub
-   f64.convert_i32_s
-   f64.const 0
-   f64.max
-   f64.const 0.01
-   f64.mul
-   f64.const 0.04
-   f64.add
-   f64.const 0.04
-   f64.const 0
+   f64.const 0.095
+   f64.const 0.055
    local.get $1
    select
-   f64.add
    f64.store offset=56
   else
-   global.get $~lib/memory/__stack_pointer
-   local.get $2
-   i32.store offset=4
-   local.get $2
-   f64.const 0
-   f64.store offset=56
+   local.get $0
+   i32.const 300
+   i32.ge_s
+   if
+    global.get $~lib/memory/__stack_pointer
+    local.get $2
+    i32.store offset=4
+    local.get $2
+    local.get $3
+    i32.const 3
+    i32.sub
+    f64.convert_i32_s
+    f64.const 0
+    f64.max
+    f64.const 0.01
+    f64.mul
+    f64.const 0.04
+    f64.add
+    f64.const 0.04
+    f64.const 0
+    local.get $1
+    select
+    f64.add
+    f64.store offset=56
+   else
+    global.get $~lib/memory/__stack_pointer
+    local.get $2
+    i32.store offset=4
+    local.get $2
+    f64.const 0
+    f64.store offset=56
+   end
   end
   global.get $~lib/memory/__stack_pointer
   local.get $2
@@ -7678,7 +7914,7 @@
   f64.const 0
   f64.store offset=96
   local.get $0
-  call $assembly/evalBorge/multi
+  call $assembly/evalOzzy/multi
   local.set $3
   global.get $~lib/memory/__stack_pointer
   local.get $2
@@ -16641,7 +16877,7 @@
     select
     local.set $1
    end
-   block $__inlined_func$~lib/rt/itcms/__renew$2320
+   block $__inlined_func$~lib/rt/itcms/__renew$2321
     local.get $3
     i32.const 20
     i32.sub
@@ -16659,7 +16895,7 @@
      i32.store offset=16
      local.get $3
      local.set $2
-     br $__inlined_func$~lib/rt/itcms/__renew$2320
+     br $__inlined_func$~lib/rt/itcms/__renew$2321
     end
     local.get $1
     local.get $4
@@ -17105,7 +17341,7 @@
    global.get $~lib/memory/__stack_pointer
    local.get $1
    i32.store
-   block $__inlined_func$~lib/string/String#concat$2389
+   block $__inlined_func$~lib/string/String#concat$2390
     local.get $1
     i32.const 20
     i32.sub
@@ -17124,7 +17360,7 @@
      global.set $~lib/memory/__stack_pointer
      i32.const 8176
      local.set $0
-     br $__inlined_func$~lib/string/String#concat$2389
+     br $__inlined_func$~lib/string/String#concat$2390
     end
     global.get $~lib/memory/__stack_pointer
     local.get $0
@@ -28845,7 +29081,7 @@
           i32.const 0
           local.set $4
           loop $for-loop|0
-           block $__inlined_func$assembly/evalKnox/knoxTorpedo$2368
+           block $__inlined_func$assembly/evalKnox/knoxTorpedo$2369
             global.get $~lib/memory/__stack_pointer
             global.get $assembly/evalKnox/currentKnox
             local.tee $2
@@ -28929,7 +29165,7 @@
               i32.const 4
               i32.add
               global.set $assembly/evalKnox/leftoverTorpedos
-              br $__inlined_func$assembly/evalKnox/knoxTorpedo$2368
+              br $__inlined_func$assembly/evalKnox/knoxTorpedo$2369
              end
              local.get $4
              i32.const 1

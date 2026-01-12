@@ -336,11 +336,19 @@
               @update:modelValue="store.updateShoppingListOrder($event)"
               handle=".grip-handle"
               :animation="200"
+              @start="onDragStart"
+              @end="onDragEnd"
               item-key="id"
               class="space-y-2"
             >
               <template #item="{ element: item }">
-                <div class="bg-gray-700/40 rounded-lg border border-gray-600/30 hover:border-gray-500/50 transition-all">
+                <div 
+                  class="bg-gray-700/40 rounded-lg transition-all"
+                  :class="{
+                    'border-2 border-red-500': invalidDragItems.has(item.id),
+                    'border border-gray-600/30 hover:border-gray-500/50': !invalidDragItems.has(item.id)
+                  }"
+                >
                   <div class="p-3">
                     <div class="flex items-center gap-3">
                       <div class="grip-handle cursor-move text-gray-500 hover:text-gray-300 transition-colors">
@@ -594,12 +602,19 @@
               v-model="shoppingList"
               handle=".grip-handle"
               :animation="200"
+              @start="onDragStart"
               @end="onDragEnd"
               item-key="id"
               class="space-y-2"
             >
               <template #item="{ element: item, index }">
-                <div class="bg-gray-700/30 rounded-lg p-2 transition-all duration-200 hover:bg-gray-700/50 border border-transparent">
+                <div 
+                  class="bg-gray-700/30 rounded-lg p-2 transition-all duration-200 hover:bg-gray-700/50"
+                  :class="{
+                    'border-2 border-red-500': invalidDragItems.has(item.id),
+                    'border border-transparent': !invalidDragItems.has(item.id)
+                  }"
+                >
                   <!-- Main Row: All key info in one line -->
                   <div class="flex items-center gap-2">
                     <div class="grip-handle text-gray-500 hover:text-gray-300 cursor-grab flex-shrink-0">
@@ -851,6 +866,9 @@ const tessarectsPerDay = computed({
   set: (value) => store.updateTesseractsPerDay(value)
 });
 const evaluatingAnchor = computed(() => store.evaluatingAnchor);
+
+// State for visual drag validation warnings
+const invalidDragItems = ref(new Set());
 
 // Computed property for currentTesseracts that auto-updates
 const currentTesseracts = computed({
@@ -1121,8 +1139,70 @@ function markItemAsPurchased(itemId) {
   store.markAsPurchased(itemId);
 }
 
+// Backup der ursprünglichen Liste vor dem Drag
+let dragBackup = [];
+
+// Handler für Drag-Start - speichere die ursprüngliche Reihenfolge
+function onDragStart(evt) {
+  dragBackup = [...store.shoppingList];
+}
+
+// Validiert ob die aktuelle Reihenfolge für jedes Gadget korrekt ist
+function validateGadgetOrder() {
+  const gadgetGroups = {};
+  const invalidItems = new Set();
+  
+  // Gruppiere Items nach Gadget ID
+  store.shoppingList.forEach((item, index) => {
+    if (!gadgetGroups[item.gadgetId]) {
+      gadgetGroups[item.gadgetId] = [];
+    }
+    gadgetGroups[item.gadgetId].push({ item, index });
+  });
+  
+  // Prüfe jede Gadget-Gruppe
+  for (const [gadgetId, items] of Object.entries(gadgetGroups)) {
+    if (items.length > 1) {
+      // Sortiere nach Position in der Liste
+      items.sort((a, b) => a.index - b.index);
+      
+      // Prüfe ob die toLevel in aufsteigender Reihenfolge sind
+      for (let i = 1; i < items.length; i++) {
+        const prevLevel = items[i - 1].item.toLevel;
+        const currentLevel = items[i].item.toLevel;
+        
+        if (currentLevel <= prevLevel) {
+          // Markiere beide betroffenen Items als invalid
+          invalidItems.add(items[i - 1].item.id);
+          invalidItems.add(items[i].item.id);
+        }
+      }
+    }
+  }
+  
+  return { isValid: invalidItems.size === 0, invalidItems };
+}
+
+// Handler für das Drag-Ende-Event der Shopping List
 function onDragEnd() {
-  // Order is automatically updated by v-model on Draggable
+  // Validiere die neue Reihenfolge
+  const validation = validateGadgetOrder();
+  
+  if (!validation.isValid) {
+    // Zeige visuelle Warnung für betroffene Items
+    invalidDragItems.value = validation.invalidItems;
+    
+    // Stelle die ursprüngliche Reihenfolge wieder her
+    store.shoppingList.splice(0, store.shoppingList.length, ...dragBackup);
+    
+    // Entferne die visuelle Warnung nach 1 Sekunde
+    setTimeout(() => {
+      invalidDragItems.value.clear();
+    }, 1000);
+    
+    return;
+  }
+  
   console.log('Shopping list reordered');
 }
 

@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.11.2',
+    date: '2026-01-12',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added Borge stages 401-500',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.11.1',
     date: '2026-01-11',
     changes: [
