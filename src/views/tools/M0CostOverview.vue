@@ -9,8 +9,46 @@
       <!-- Info Banner -->
       <div class="bg-blue-900/30 border border-blue-800 rounded-lg p-3 mb-4 text-center">
         <p class="text-blue-200 text-sm">
-          This tool displays m0 upgrade costs from level 1 to 1000.
+          This tool displays m0 upgrade costs from level 1 to 
+          <span @click="showCostListModal = true">
+            1000
+          </span>.
         </p>
+      </div>
+
+      <!-- Cost List Modal -->
+      <div 
+        v-if="showCostListModal" 
+        class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4"
+        @click.self="showCostListModal = false"
+      >
+        <div 
+          class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in border border-gray-700"
+          @click.stop
+        >
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-3 border-b border-gray-600 flex justify-between items-center">
+            <h2 class="text-lg font-bold text-white flex items-center">
+              <IconList size="18" class="mr-2 text-green-400" />
+              m0 Costs (Level 1-1000)
+            </h2>
+            <button @click="showCostListModal = false" class="p-1.5 rounded-full hover:bg-gray-700 transition-colors">
+              <IconX size="16" />
+            </button>
+          </div>
+
+          <!-- Content -->
+          <div class="p-4 max-h-[70vh] overflow-y-auto">
+            <pre class="bg-gray-900 p-4 rounded text-white text-sm font-mono whitespace-pre select-all border border-gray-700">{{ costList }}</pre>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex justify-end pt-2 border-t border-gray-700 px-4 pb-4">
+            <button @click="showCostListModal = false" class="px-3 py-1.5 bg-gray-600 hover:bg-gray-500 rounded-md transition-colors">
+              Close
+            </button>
+          </div>
+        </div>
       </div>
       
   <!-- Filter und Einstellungen -->
@@ -235,14 +273,16 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { 
   IconFilter, 
   IconRefresh, 
   IconList, 
-  IconSearch
+  IconSearch,
+  IconX
 } from '@tabler/icons-vue';
 import { getM0Cost, formatM0Cost, getM0CostDecimal } from '@/utils/m0CostUtils.js';
+import { formatNumberDecimal } from '@/composables/format';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import shardsIcon from '@/assets/general/shards.png';
 import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
@@ -255,8 +295,21 @@ const levelRange = ref(10);
 const currentM0LevelRaw = ref(1);
 const levelRangeRaw = ref(10);
 
+// Modal State
+const showCostListModal = ref(false);
+
 // Initialize gem planner store
 const gemPlannerStore = useGemPlannerStore();
+
+// Cost List for Modal
+const costList = computed(() => {
+  const lines = [];
+  for (let level = 1; level <= 1000; level++) {
+    const cost = getM0CostDecimal(level);
+    lines.push(`${formatNumberDecimal(cost)}`);
+  }
+  return lines.join('\n');
+});
 
 // Generic smooth transition wrapper
 function withSmoothTransition(updateFn) {
@@ -574,9 +627,21 @@ watch([currentM0Level, levelRange], () => {
   saveFilters();
 });
 
+// ESC key handling for modal
+function handleKeydown(event) {
+  if (event.key === 'Escape' && showCostListModal.value) {
+    showCostListModal.value = false;
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   loadFilters();
+  document.addEventListener('keydown', handleKeydown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown);
 });
 </script>
 
