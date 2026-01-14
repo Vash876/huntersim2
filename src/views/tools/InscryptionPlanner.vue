@@ -52,11 +52,25 @@
               <div class="font-medium text-white text-sm mb-1 flex items-center gap-1">
                 Current HBM
                 <InfoTooltip 
-                  content="<strong>Auto-updating HBM:</strong><br/>• Grows automatically based on daily production<br/>• Updates live<br/>• Deducted automatically when marking items as purchased"
+                  content="<strong>Auto-updating HBM:</strong><br/>• Grows automatically based on daily production<br/>• Updates live every 10 seconds<br/>• Deducted automatically when marking items as purchased<br/>• Can be toggled on/off with the button below"
                   placement="top"
                 />
               </div>
-              <div class="text-xs text-gray-400 mb-2">Amount you have saved</div>
+              <div class="text-xs text-gray-400 mb-2 flex items-center justify-between">
+                <span>Amount you have saved</span>
+                <button
+                  @click="store.settings.autoUpdateHBM = !store.settings.autoUpdateHBM"
+                  :class="[
+                    'px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
+                    store.settings.autoUpdateHBM
+                      ? 'bg-green-600/20 text-green-400 hover:bg-green-600/30'
+                      : 'bg-gray-600/20 text-gray-400 hover:bg-gray-600/30'
+                  ]"
+                  :title="store.settings.autoUpdateHBM ? 'Auto-update: ON' : 'Auto-update: OFF'"
+                >
+                  {{ store.settings.autoUpdateHBM ? 'Auto ON' : 'Auto OFF' }}
+                </button>
+              </div>
               <SuffixInput
                 v-model="currentHBM"
                 placeholder="0"

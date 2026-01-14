@@ -8,6 +8,7 @@ export const useGadgetPlannerStore = defineStore('gadgetPlanner', () => {
     selectedBuildId: '',
     tessarectsPerDay: 0,
     showMultipliers: true,
+    autoUpdateTesseracts: true, // Auto-update tesseracts based on production
     // Tesseracts tracking with timestamp (auto-incrementing)
     currentTesseracts: {
       value: 0,
@@ -66,6 +67,11 @@ export const useGadgetPlannerStore = defineStore('gadgetPlanner', () => {
           : 0,
         timestamp: Date.now()
       };
+      return settings.value.currentTesseracts.value;
+    }
+
+    // If auto-update is disabled, return current value without production
+    if (!settings.value.autoUpdateTesseracts) {
       return settings.value.currentTesseracts.value;
     }
 
@@ -138,6 +144,8 @@ export const useGadgetPlannerStore = defineStore('gadgetPlanner', () => {
   function updateShowMultipliers(show) {
     settings.value.showMultipliers = show;
   }
+
+
 
   // Level Management Functions
   /**

@@ -63,8 +63,8 @@
               <td class="px-3 py-2">
                 <span :class="getTypeClass(enemy)">{{ enemy.type }}</span>
               </td>
-              <td class="px-3 py-2 text-right font-mono text-pink-400">{{ formatNumber(enemy.hp) }}</td>
-              <td class="px-3 py-2 text-right font-mono text-red-400">{{ formatNumber(enemy.atk) }}</td>
+              <td class="px-3 py-2 text-right font-mono text-pink-400">{{ formatNumber(enemy.hp, 4) }}</td>
+              <td class="px-3 py-2 text-right font-mono text-red-400">{{ formatNumber(enemy.atk, 4) }}</td>
               <td class="px-3 py-2 text-right font-mono text-green-400">{{ formatNumber(enemy.regen) }}</td>
               <td class="px-3 py-2 text-right font-mono text-amber-600">{{ ((1 - enemy.dr) * 100).toFixed(1) }}%</td>
               <td class="px-3 py-2 text-right font-mono text-yellow-200">{{ (enemy.evade * 100).toFixed(2) }}%</td>
@@ -215,12 +215,44 @@ function getTypeClass(enemy) {
 }
 
 // Number formatting
-function formatNumber(num) {
-  if (num >= 1e12) return (num / 1e12).toFixed(2) + 't';
-  if (num >= 1e9) return (num / 1e9).toFixed(2) + 'b';
-  if (num >= 1e6) return (num / 1e6).toFixed(2) + 'm';
-  if (num >= 1e3) return (num / 1e3).toFixed(2) + 'k';
-  return num.toFixed(2);
+function formatNumber(value, decimals = 2) {
+  if (typeof value !== 'number' || isNaN(value)) {
+    return '0';
+  }
+  
+  // Sonderbehandlung für Werte sehr nahe bei Null
+  if (Math.abs(value) < 0.01) {
+    return '0';
+  }
+  
+  // Behandlung für kleine Werte zwischen 0.01 und 1
+  if (Math.abs(value) < 1) {
+    return value.toFixed(decimals);
+  }
+  
+  const absValue = Math.abs(value);
+  const suffixes = ['','k','m','b','t','qa','qu','sx','sp','o','n','d'];
+  
+  // Berechne die Größenordnung korrekt
+  let tier = Math.max(0, Math.min(Math.floor(Math.log10(absValue) / 3), suffixes.length - 1));
+  
+  // Ab 1e36 (größer als "d" = 1e33) verwende wissenschaftliche Notation
+  if (absValue >= 1e36) {
+    const exponent = Math.floor(Math.log10(absValue));
+    const mantissa = value / Math.pow(10, exponent);
+    return `${mantissa.toFixed(decimals)}e${exponent}`;
+  }
+  
+  // Für Werte < 1000, zeige ohne Suffix
+  if (tier === 0) {
+    return value.toFixed(decimals);
+  }
+  
+  const suffix = suffixes[tier];
+  const scaledValue = value / Math.pow(10, tier * 3);
+  
+  // Formatiere die skalierte Zahl mit gewünschten Dezimalstellen + Suffix
+  return `${scaledValue.toFixed(decimals)}${suffix}`;
 }
 </script>
 

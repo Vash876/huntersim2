@@ -406,6 +406,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
+import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { formatSuffixInput } from '@/composables/format.js';
 import Decimal from 'break_infinity.js';
 import {
@@ -440,6 +441,7 @@ import Draggable from 'vuedraggable';
 
 // Store
 const trTrackingStore = useTRTrackingStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // Reactive data
 const showResourceSettingsModal = ref(false);
@@ -903,40 +905,52 @@ function editTrack(track) {
 function handleTrackUpdate(updateData) {
   const { action, trackId, entryId, entry } = updateData;
   
-  console.log('handleTrackUpdate called with:', updateData);
+  // Helper function to update global hours in TR
+  const updateGlobalHoursInTR = (trackId, entry) => {
+    // Check if this is the newest track (first in sorted list)
+    const isNewestTrack = trTracks.value[0]?.id === trackId;
+    
+    if (isNewestTrack && entry.values && entry.values['hours-in-tr']) {
+      const hoursInTRValue = entry.values['hours-in-tr'];
+      
+      // Parse time format "HH:MM" to decimal hours
+      if (typeof hoursInTRValue === 'string' && hoursInTRValue.includes(':')) {
+        const [hours, minutes] = hoursInTRValue.split(':').map(Number);
+        const totalHours = hours + (minutes / 60);
+        gemPlannerStore.updateHoursInTR(totalHours);
+      } else if (typeof hoursInTRValue === 'number') {
+        gemPlannerStore.updateHoursInTR(hoursInTRValue);
+      }
+    }
+  };
   
   switch (action) {
     case 'addEntry':
-      console.log('Adding entry to track:', trackId, entry);
       trTrackingStore.addEntry(trackId, entry);
+      updateGlobalHoursInTR(trackId, entry);
       break;
     case 'updateEntry':
-      console.log('Updating entry in track:', trackId, entry);
       trTrackingStore.updateEntry(trackId, entry.id, entry);
+      updateGlobalHoursInTR(trackId, entry);
       break;
     case 'deleteEntry':
-      console.log('Deleting entry from track:', trackId, entryId);
       trTrackingStore.deleteEntry(trackId, entryId);
       break;
     case 'updateResourceOrder':
-      console.log('Updating resource order for track:', trackId, updateData.resourceOrder);
       // For now, we'll just log this. The resource order could be saved per track if needed.
       // This would require extending the store to save column order per track
       break;
     case 'complete':
-      console.log('Completing track:', trackId);
       trTrackingStore.completeTRTrack(trackId);
       showTrackDetailsModal.value = false;
       currentTrack.value = null;
       break;
     case 'delete':
-      console.log('Deleting track:', trackId);
       trTrackingStore.deleteTRTrack(trackId);
       showTrackDetailsModal.value = false;
       currentTrack.value = null;
       break;
     case 'showProgress':
-      console.log('Showing progress modal');
       showTrackDetailsModal.value = false;
       showProgressModal.value = true;
       return; // Don't close modals or reset currentTrack

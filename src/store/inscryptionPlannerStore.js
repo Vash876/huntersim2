@@ -25,6 +25,7 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
     sortBy: 'id', // 'id' or 'cost'
     sortOrder: 'asc', // 'asc' or 'desc'
     hideOwned: false,
+    autoUpdateHBM: true, // Auto-update HBM based on production
     // HBM tracking with timestamp
     currentHBM: {
       value: 0,

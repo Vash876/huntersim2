@@ -49,11 +49,25 @@
               <div class="font-medium text-white text-sm mb-1 flex items-center gap-1">
                 Current Tesseracts
                 <InfoTooltip 
-                  content="<strong>Auto-updating Tesseracts:</strong><br/>• Grows automatically based on daily production<br/>• Updates live<br/>• Deducted automatically when marking items as purchased"
+                  content="<strong>Auto-updating Tesseracts:</strong><br/>• Grows automatically based on daily production<br/>• Updates live every 10 seconds<br/>• Deducted automatically when marking items as purchased<br/>• Can be toggled on/off with the button below"
                   placement="top"
                 />
               </div>
-              <div class="text-xs text-gray-400 mb-2">Amount you have saved</div>
+              <div class="text-xs text-gray-400 mb-2 flex items-center justify-between">
+                <span>Amount you have saved</span>
+                <button
+                  @click="store.settings.autoUpdateTesseracts = !store.settings.autoUpdateTesseracts"
+                  :class="[
+                    'px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
+                    store.settings.autoUpdateTesseracts
+                      ? 'bg-green-600/20 text-green-400 hover:bg-green-600/30'
+                      : 'bg-gray-600/20 text-gray-400 hover:bg-gray-600/30'
+                  ]"
+                  :title="store.settings.autoUpdateTesseracts ? 'Auto-update: ON' : 'Auto-update: OFF'"
+                >
+                  {{ store.settings.autoUpdateTesseracts ? 'Auto ON' : 'Auto OFF' }}
+                </button>
+              </div>
               
               <SuffixInput
                 v-model="currentTesseracts"
@@ -282,22 +296,22 @@
                       </div>
                     </div>
                     
-                    <!-- +10 Button -->
+                    <!-- +X Button (to next 10) -->
                     <div class="flex flex-col items-center gap-0.5">
                       <button
-                        @click="addGadgetToListWithLevels(gadget, 10)"
-                        @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 10 }"
+                        @click="addGadgetToListWithLevels(gadget, getLevelsToNextTen(gadget.id))"
+                        @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: getLevelsToNextTen(gadget.id) }"
                         @mouseleave="hoveredButton = null"
                         class="text-xs px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors text-white font-semibold w-11"
                       >
-                        +10
+                        +{{ getLevelsToNextTen(gadget.id) }}
                       </button>
                       <div class="text-center">
                         <div class="text-[9px] text-amber-400 whitespace-nowrap">
-                          {{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)) }}
+                          {{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + getLevelsToNextTen(gadget.id))) }}
                         </div>
                         <div class="text-[9px] text-cyan-400 whitespace-nowrap">
-                          {{ formatTimeToAfford(calculateTimeToAfford(gadget.id, 10)) }}
+                          {{ formatTimeToAfford(calculateTimeToAfford(gadget.id, getLevelsToNextTen(gadget.id))) }}
                         </div>
                       </div>
                     </div>
@@ -426,13 +440,15 @@
               <IconList size="20" class="mr-2 text-cyan-400" />
               Available Gadgets
             </h3>
-            <button 
-              @click="showLevelsModal = true" 
-              class="bg-cyan-700 hover:bg-cyan-600 text-white px-2 py-1 text-xs rounded-lg flex items-center transition-colors"
-            >
-              <IconSettings size="14" class="mr-1" />
-              Manage Levels
-            </button>
+            <div class="flex items-center gap-2">
+              <button 
+                @click="showLevelsModal = true" 
+                class="bg-cyan-700 hover:bg-cyan-600 text-white px-2 py-1 text-xs rounded-lg flex items-center transition-colors"
+              >
+                <IconSettings size="14" class="mr-1" />
+                Manage Levels
+              </button>
+            </div>
           </div>
           
           <div class="p-4 space-y-2">
@@ -500,10 +516,10 @@
                         +1
                       </button>
                       <div class="text-center">
-                        <div class="text-[9px] text-amber-400 whitespace-nowrap">
+                        <div class="text-amber-400 whitespace-nowrap" style="font-size: 11px">
                           {{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 1)) }}
                         </div>
-                        <div class="text-[9px] text-cyan-400 whitespace-nowrap">
+                        <div class="text-cyan-400 whitespace-nowrap" style="font-size: 11px">
                           {{ formatTimeToAfford(calculateTimeToAfford(gadget.id, 1)) }}
                         </div>
                       </div>
@@ -527,34 +543,34 @@
                       </div>
                     </div>
                     
-                    <!-- +10 Button -->
+                    <!-- +X Button (to next 10) -->
                     <div class="flex flex-col items-center gap-0.5 relative">
                       <button
-                        @click="addGadgetToListWithLevels(gadget, 10)"
-                        @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: 10 }"
+                        @click="addGadgetToListWithLevels(gadget, getLevelsToNextTen(gadget.id))"
+                        @mouseenter="hoveredButton = { gadgetId: gadget.id, levels: getLevelsToNextTen(gadget.id) }"
                         @mouseleave="hoveredButton = null"
                         class="text-xs px-2 py-1 bg-cyan-600 hover:bg-cyan-500 rounded transition-colors text-white font-semibold w-11"
                       >
-                        +10
+                        +{{ getLevelsToNextTen(gadget.id) }}
                       </button>
                       <div class="text-center">
-                        <div class="text-[9px] text-amber-400 whitespace-nowrap">
-                          {{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)) }}
+                        <div class="text-amber-400 whitespace-nowrap" style="font-size: 11px">
+                          {{ formatGadgetCost(calculateUpgradeCost(gadget.id, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + getLevelsToNextTen(gadget.id))) }}
                         </div>
-                        <div class="text-[9px] text-cyan-400 whitespace-nowrap">
-                          {{ formatTimeToAfford(calculateTimeToAfford(gadget.id, 10)) }}
+                        <div class="text-cyan-400 whitespace-nowrap" style="font-size: 11px">
+                          {{ formatTimeToAfford(calculateTimeToAfford(gadget.id, getLevelsToNextTen(gadget.id))) }}
                         </div>
                       </div>
                       
-                      <!-- Tooltip for +10 -->
+                      <!-- Tooltip for +X -->
                       <div 
-                        v-if="hoveredButton?.gadgetId === gadget.id && hoveredButton?.levels === 10 && !isMobile"
+                        v-if="hoveredButton?.gadgetId === gadget.id && hoveredButton?.levels === getLevelsToNextTen(gadget.id) && !isMobile"
                         class="absolute bottom-full mb-2 right-0 bg-gray-900 border border-gray-600 rounded-lg p-2 shadow-xl z-50 min-w-[160px] tooltip-arrow"
                       >
                         <div class="text-[10px] text-gray-400 mb-1 font-semibold">Improvements:</div>
                         <div class="space-y-0.5">
                           <div 
-                            v-for="improvement in calculateBoostImprovements(gadget, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + 10)" 
+                            v-for="improvement in calculateBoostImprovements(gadget, getCurrentLevel(gadget.id), getCurrentLevel(gadget.id) + getLevelsToNextTen(gadget.id))" 
                             :key="improvement.description"
                             class="flex justify-between items-center gap-2"
                           >
@@ -810,6 +826,7 @@ import {
   IconChartDots,
   IconShare,
   IconPlus,
+  IconMinus,
   IconCalendar
 } from '@tabler/icons-vue';
 import { useHunterStore } from '@/store/hunterStore';
@@ -964,6 +981,12 @@ function getCurrentLevel(gadgetId) {
     .reduce((sum, item) => sum + (item.toLevel - item.fromLevel), 0);
   
   return baseLevel + shoppingListLevels;
+}
+
+function getLevelsToNextTen(gadgetId) {
+  const currentLevel = getCurrentLevel(gadgetId);
+  const nextTen = Math.ceil((currentLevel + 1) / 10) * 10;
+  return nextTen - currentLevel;
 }
 
 // Get cumulative production at a specific index in shopping list
@@ -1137,6 +1160,14 @@ function markItemAsPurchased(itemId) {
 
   // Mark as purchased (updates level and removes from list)
   store.markAsPurchased(itemId);
+
+  // Update hunterStore for wrench, zaptron, and anchor (global variables)
+  if (['wrench', 'zaptron', 'anchor'].includes(item.gadgetId)) {
+    if (!hunterStore.upgrades.gadgets) {
+      hunterStore.upgrades.gadgets = {};
+    }
+    hunterStore.upgrades.gadgets[item.gadgetId] = item.toLevel;
+  }
 }
 
 // Backup der ursprünglichen Liste vor dem Drag
@@ -1485,13 +1516,16 @@ async function loadGadgetData() {
     // Load cached evaluation results
     await loadCachedResults();
 
-    // Initialize Wrench/Zaptron from hunterStore
+    // Initialize Wrench/Zaptron/Anchor from hunterStore (sync global variables to gadget planner)
     const storeUpgrades = hunterStore.upgrades?.gadgets || {};
-    if (storeUpgrades.wrench !== undefined && !store.currentLevels.wrench) {
+    if (storeUpgrades.wrench !== undefined) {
       store.updateCurrentLevel('wrench', storeUpgrades.wrench);
     }
-    if (storeUpgrades.zaptron !== undefined && !store.currentLevels.zaptron) {
+    if (storeUpgrades.zaptron !== undefined) {
       store.updateCurrentLevel('zaptron', storeUpgrades.zaptron);
+    }
+    if (storeUpgrades.anchor !== undefined) {
+      store.updateCurrentLevel('anchor', storeUpgrades.anchor);
     }
 
     // Update tesseracts timestamp

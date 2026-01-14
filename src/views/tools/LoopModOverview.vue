@@ -1305,6 +1305,15 @@ watch([mpValue, mpRange], () => {
   saveFilters();
 });
 
+// Watch für Auto-Update von All Time Highest MP
+watch(mpValue, (newMpValue) => {
+  if (newMpValue > allTimeHighestMP.value) {
+    allTimeHighestMP.value = newMpValue;
+    allTimeHighestMPRaw.value = newMpValue;
+    saveFilters();
+  }
+});
+
 // Lifecycle
 onMounted(async () => {
   loadFilters();

@@ -2,6 +2,26 @@
 const changelog = 
 [
   {
+    version: '2.11.3',
+    date: '2026-01-14',
+    changes: [
+      {
+        text: 'Gadget Planner',
+        subItems: [
+          'Changed +10 button to flexible +X button that automatically shows levels to next 10-milestone',
+          'Hunter Gadgets (Wrench, Zaptron, Anchor) now update global Hunter Gadget variables when purchased',
+          'Added toggle button to enable/disable auto-updating of Current Tesseracts based on production',
+        ]
+      },
+      {
+        text: 'Inscryption Planner',
+        subItems: [
+          'Added toggle button to enable/disable auto-updating of Current HBM based on production',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.11.2',
     date: '2026-01-12',
     changes: [

@@ -628,6 +628,15 @@ watch([rpValue, rpRange], () => {
   saveFilters();
 });
 
+// Watch für Auto-Update von All Time Highest RP
+watch(rpValue, (newRpValue) => {
+  if (newRpValue > allTimeHighestRP.value) {
+    allTimeHighestRP.value = newRpValue;
+    allTimeHighestRPRaw.value = newRpValue;
+    saveFilters();
+  }
+});
+
 // Lifecycle
 onMounted(async () => {
   loadFilters();
