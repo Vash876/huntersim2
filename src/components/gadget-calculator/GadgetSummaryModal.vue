@@ -1,15 +1,15 @@
 <template>
   <div 
     v-if="isVisible" 
-    class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4 pb-[70px] pt-[530px] sm:py-0"
+    class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4"
     @click.self="close"
   >
     <div 
-      class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden animate-fade-in border border-gray-700"
+      class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden animate-fade-in border border-gray-700 flex flex-col"
       @click.stop
     >
       <!-- Header mit Schließen-Button -->
-      <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-4 border-b border-gray-600 flex justify-between items-center">
+      <div class="bg-gradient-to-r from-gray-700 to-gray-800 p-4 border-b border-gray-600 flex justify-between items-center flex-shrink-0">
         <h3 class="text-xl font-bold text-white flex items-center">
           <IconShare size="20" class="mr-2 text-blue-400" />
           Gadget Upgrade Summary
@@ -23,7 +23,7 @@
       </div>
       
       <!-- Body -->
-      <div class="p-2 space-y-4">        
+      <div class="p-2 space-y-4 overflow-y-auto flex-1">        
         <!-- Summary Header -->
         <div class="bg-gray-700/50 rounded-md p-3 border border-gray-600/50">
           <div class="grid grid-cols-3 gap-3">
@@ -53,10 +53,32 @@
           </div>
         </div>
         
+        <!-- Tab Buttons -->
+        <div class="flex gap-2">
+          <button
+            @click="activeTab = 'upgrades'"
+            class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+            :class="activeTab === 'upgrades' 
+              ? 'bg-blue-600 text-white' 
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+          >
+            Upgrades
+          </button>
+          <button
+            @click="activeTab = 'statistics'"
+            class="px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+            :class="activeTab === 'statistics' 
+              ? 'bg-cyan-600 text-white' 
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'"
+          >
+            Statistics
+          </button>
+        </div>
+        
         <!-- Gadget Table -->
         <div class="bg-gray-700/50 rounded-md border border-gray-600/50 overflow-hidden">
-          <!-- Table Header -->
-          <div class="grid grid-cols-14 md:grid-cols-20 p-2 md:p-2 py-5 md:py-2 bg-gray-600/70 text-xs font-medium text-gray-300 border-b border-gray-600">
+          <!-- Table Header - Upgrades -->
+          <div v-if="activeTab === 'upgrades'" class="grid grid-cols-14 md:grid-cols-20 p-2 md:p-2 py-5 md:py-2 bg-gray-600/70 text-xs font-medium text-gray-300 border-b border-gray-600">
             <div class="col-span-2 md:col-span-1"></div>
             <div class="col-span-10 px-2 hidden md:block">GADGET</div>
             <div class="col-span-3 md:col-span-2 px-2 text-center">CURRENT</div>
@@ -65,8 +87,17 @@
             <div class="col-span-3 md:col-span-3 px-2 text-right">COST</div>
           </div>
           
-          <!-- Table Body -->
-          <div class="text-sm">
+          <!-- Table Header - Statistics -->
+          <div v-else class="grid grid-cols-14 md:grid-cols-20 p-2 md:p-2 py-5 md:py-2 bg-gray-600/70 text-xs font-medium text-gray-300 border-b border-gray-600">
+            <div class="col-span-2 md:col-span-1"></div>
+            <div class="col-span-6 md:col-span-10 px-2 hidden md:block">GADGET</div>
+            <div class="col-span-3 md:col-span-2 px-2 text-center">CURRENT</div>
+            <div class="col-span-4 md:col-span-4 px-2 text-right">SPENT</div>
+            <div class="col-span-3 md:col-span-3 px-2 text-right">%</div>
+          </div>
+          
+          <!-- Table Body - Upgrades -->
+          <div v-if="activeTab === 'upgrades'" class="text-sm">
             <div 
               v-for="gadget in sortedGadgetData" 
               :key="gadget.id"
@@ -106,6 +137,42 @@
                   {{ formatGadgetCost(gadget.cost) }}
                 </span>
                 <span v-else class="text-gray-500">-</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Table Body - Statistics -->
+          <div v-else class="text-sm">
+            <div 
+              v-for="gadget in statisticsData" 
+              :key="gadget.id"
+              class="grid grid-cols-14 md:grid-cols-20 p-1 md:p-2 md:py-2 border-b border-gray-600/30 hover:bg-gray-600/20"
+            >
+              <div class="col-span-2 md:col-span-1 px-1 flex items-center justify-center min-w-0">
+                <img 
+                  v-if="gadget.imageUrl" 
+                  :src="gadget.imageUrl" 
+                  :alt="gadget.label"
+                  class="w-6 h-6 md:w-6 md:h-6 object-contain flex-shrink-0"
+                  style="min-width: 30px; min-height: 30px;"
+                />
+              </div>
+              <div 
+                class="col-span-6 md:col-span-10 px-2 text-white font-medium items-center hidden md:flex"
+                :title="gadget.label"  
+              >
+                {{ gadget.truncatedLabel }}  
+              </div>
+              <div class="col-span-3 md:col-span-2 px-2 text-center text-gray-300 flex items-center justify-center">{{ gadget.level }}</div>
+              <div class="col-span-4 md:col-span-4 px-2 text-right flex items-center justify-end">
+                <span class="text-amber-400">
+                  {{ formatGadgetCost(gadget.spent) }}
+                </span>
+              </div>
+              <div class="col-span-3 md:col-span-3 px-2 text-right flex items-center justify-end">
+                <span class="font-medium" :style="{ color: getPercentageColor(gadget.percentage) }">
+                  {{ gadget.percentage }}%
+                </span>
               </div>
             </div>
           </div>
@@ -187,6 +254,7 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 const copySuccess = ref('');
 const copyFail = ref('');
+const activeTab = ref('upgrades'); // 'upgrades' oder 'statistics'
 
 // Funktion zum Kürzen der Gadget-Namen
 function truncateGadgetName(name, maxLength) {
@@ -203,6 +271,23 @@ const maxNameLength = computed(() => {
 // Hilfsfunktion um Gadget Image URL zu bekommen
 function getGadgetImageUrl(gadgetId) {
   return props.gadgetImages[gadgetId] || null;
+}
+
+// Berechne dynamische Farbe basierend auf Prozentsatz (rot → gelb → grün)
+function getPercentageColor(percentage) {
+  const percent = parseFloat(percentage);
+  if (percent <= 0) return '#6B7280'; // gray-500 für 0%
+  
+  // Clamp zwischen 0 und 15 (bei 15 Gadgets wäre 6.67% der Durchschnitt)
+  // Wir normalisieren so, dass ~10% grün ist
+  const normalized = Math.min(percent / 10, 1);
+  
+  // HSL Interpolation: 0 (rot) → 60 (gelb) → 120 (grün)
+  const hue = normalized * 120;
+  const saturation = 70;
+  const lightness = 50;
+  
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
 // Sortiert und transformiert die Gadget-Daten für die Anzeige
@@ -222,6 +307,37 @@ const sortedGadgetData = computed(() => {
       target,
       hasChanges,
       cost
+    };
+  });
+});
+
+// Berechne Gesamtkosten aller Gadgets für Statistics Tab
+const totalSpent = computed(() => {
+  let total = 0;
+  GADGETS.forEach(gadget => {
+    const currentLevel = props.currentLevels[gadget.id] || 0;
+    if (currentLevel > 0) {
+      total += calcGadgetCostDifference(gadget.id, 0, currentLevel);
+    }
+  });
+  return total;
+});
+
+// Statistics Tab Daten
+const statisticsData = computed(() => {
+  return GADGETS.map(gadget => {
+    const level = props.currentLevels[gadget.id] || 0;
+    const spent = level > 0 ? calcGadgetCostDifference(gadget.id, 0, level) : 0;
+    const percentage = totalSpent.value > 0 ? ((spent / totalSpent.value) * 100).toFixed(1) : '0.0';
+    
+    return {
+      id: gadget.id,
+      label: gadget.label,
+      truncatedLabel: truncateGadgetName(gadget.label, maxNameLength.value),
+      imageUrl: getGadgetImageUrl(gadget.id),
+      level,
+      spent,
+      percentage
     };
   });
 });

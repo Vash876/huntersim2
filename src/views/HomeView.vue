@@ -11,6 +11,7 @@ const changelog =
           'Changed +10 button to flexible +X button that automatically shows levels to next 10-milestone',
           'Hunter Gadgets (Wrench, Zaptron, Anchor) now update global Hunter Gadget variables when purchased',
           'Added toggle button to enable/disable auto-updating of Current Tesseracts based on production',
+          'Added Statistics Tab in Summary Modal.'
         ]
       },
       {
