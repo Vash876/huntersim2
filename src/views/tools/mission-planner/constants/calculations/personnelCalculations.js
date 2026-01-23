@@ -1,5 +1,6 @@
 import Decimal from 'break_infinity.js';
 import { PERSONNEL_TYPES } from '../personnel';
+import { formatNumber } from '@/composables/format.js';
 
 /**
  * Personnel Calculations for Mission & Relic Planner
@@ -139,27 +140,11 @@ export function calculateAllPersonnelStats(cellsExponent) {
   return results;
 }
 
-/**
- * Format power value for display
- * 
- * @param {number} power - Power value
- * @returns {string} Formatted power string
- */
-export function formatPower(power) {
-  if (power >= 1000000) {
-    return (power / 1000000).toFixed(2) + 'M';
-  } else if (power >= 1000) {
-    return (power / 1000).toFixed(2) + 'K';
-  } else {
-    return power.toFixed(1);
-  }
-}
-
 export default {
   calculateAffordablePersonnel,
   calculateEvolutionLevel,
   calculatePowerPerUnit,
   calculateTotalPower,
   calculateAllPersonnelStats,
-  formatPower
+  formatNumber
 };

@@ -4,7 +4,6 @@ import { useStorage } from '@vueuse/core';
 import { MODIFIERS, getDefaultModifierValues } from '@/views/tools/mission-planner/constants/modifiers';
 import {
   calculateAllPersonnelStats,
-  formatPower,
   getLoopmodEffectsBreakdown,
   getResearchEffectsBreakdown,
   getRelicEffectsBreakdown,
@@ -22,9 +21,9 @@ import {
   calculateMissionStats,
   calculatePowerFor2SecondCap,
   formatCompletionTime,
-  formatNumber,
   FARM_MIN_TIME_SECONDS
 } from '@/views/tools/mission-planner/constants/missionCalculator';
+import { formatNumber } from '@/composables/format';
 import { FARM_MISSIONS, CAMPAIGN_MISSIONS, isFarmMission, DEFAULT_FILL_ORDER, CAMPAIGN_FINAL_MULTIPLIERS } from '@/views/tools/mission-planner/constants/missions';
 import {
   optimizeFarmMissions,
@@ -333,11 +332,11 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       totalCount,
       totalPower,
       formatted: {
-        t1Power: formatPower(t1TotalPower),
-        t2Power: formatPower(t2TotalPower),
-        t3Power: formatPower(t3TotalPower),
-        t4Power: formatPower(t4TotalPower),
-        totalPower: formatPower(totalPower),
+        t1Power: formatNumber(t1TotalPower),
+        t2Power: formatNumber(t2TotalPower),
+        t3Power: formatNumber(t3TotalPower),
+        t4Power: formatNumber(t4TotalPower),
+        totalPower: formatNumber(totalPower),
       }
     };
   });
@@ -555,6 +554,46 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     };
   });
 
+  // ============================================
+  // COMPUTED - Mission Statistics
+  // ============================================
+  
+  /**
+   * Current farm mission statistics including missions per hour
+   */
+  const farmMissionStats = computed(() => {
+    const stats = getCurrentMissionStats();
+    
+    // Calculate total missions per hour from all farm missions
+    let totalMissionsPerHour = 0;
+    for (const mission of stats.missions) {
+      totalMissionsPerHour += mission.completionsPerHour || 0;
+    }
+    
+    // Apply Trait Sphere 7 multiplier (x2 missions if active)
+    const traitSphere7Active = modifierValues.value.trait_sphere_07 || false;
+    const traitSphere7Multiplier = traitSphere7Active ? 2 : 1;
+    
+    // Apply Ferrick Card multiplier (x1.2 missions if active)
+    const ferrickCardActive = modifierValues.value.ferrick_card || false;
+    const ferrickCardMultiplier = ferrickCardActive ? 1.2 : 1;
+    
+    // Combined mission multiplier
+    const missionMultiplier = traitSphere7Multiplier * ferrickCardMultiplier;
+    
+    const finalMissionsPerHour = totalMissionsPerHour * missionMultiplier;
+    const finalMissionsPerDay = finalMissionsPerHour * 24;
+    
+    return {
+      ...stats,
+      totalMissionsPerHour: finalMissionsPerHour,
+      totalMissionsPerDay: finalMissionsPerDay,
+      traitSphere7Active,
+      ferrickCardActive,
+      missionMultiplier
+    };
+  });
+
   // All calculated effects combined (for easy access)
   const calculatedEffects = computed(() => ({
     // Personnel
@@ -563,6 +602,10 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     // Mission Effects
     missionSpeed: Math.round(missionSpeedMultiplier.value * 100),
     missionSpeedMultiplier: missionSpeedMultiplier.value,
+    
+    // Farm Mission Statistics
+    farmMissionsPerHour: farmMissionStats.value.totalMissionsPerHour,
+    farmMissionsPerDay: farmMissionStats.value.totalMissionsPerDay,
     
     // Fragments
     farmFragments: farmFragments.value,
@@ -1586,7 +1629,7 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
 
   /**
    * Calculate estimated time for the selected campaign
-   * Based on actually assigned personnel (same as farms)
+   * Based on actually assigned personnel 
    */
   function getSelectedCampaignEstimatedTime() {
     const campaign = getSelectedCampaignData();
@@ -3584,6 +3627,7 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     campaignFragments,
     totalCampaignFragments,
     calculatedEffects,
+    farmMissionStats,
     
     // Computed - Mission Calculation Helpers
     powerPerTier,

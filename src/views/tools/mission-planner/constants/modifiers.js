@@ -436,6 +436,14 @@ export const MODIFIERS = {
       description: 'x1.25 all fragments (farm + campaign)'
     },
     {
+      id: 'ferrick_card',
+      name: 'Ferrick Card',
+      type: 'boolean',
+      category: MODIFIER_CATEGORIES.OTHER,
+      defaultValue: true,
+      description: 'x1.25 all fragments (farm + campaign)'
+    },
+    {
       id: 'eternal_milestone',
       name: '#0 The Eternal Milestone',
       type: 'readonly',

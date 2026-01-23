@@ -624,6 +624,19 @@
                   <span class="text-purple-400 font-mono">{{ calculatedEffects.campaignFragmentsValue }}</span>
                 </div>
               </div>
+
+              <div class="bg-gray-800/70 rounded p-2 border border-gray-700/30">
+                <div class="flex items-center justify-between text-sm">
+                  <span class="text-gray-300 flex items-center gap-1.5">
+                    <IconBrandSpeedtest size="16" class="text-blue-400" />
+                    Farm Missions
+                  </span>
+                  <div class="text-right">
+                    <div class="text-blue-400 font-mono text-sm">{{ calculatedEffects.farmMissionsPerHour }}/h</div>
+                    <div class="text-blue-300 font-mono text-xs">{{ calculatedEffects.farmMissionsPerDay }}/d</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
       </div>
@@ -836,21 +849,23 @@ const calculatedEffects = computed(() => {
   return {
     t1Power: personnel.formatted.t1Power,
     t1PowerPerUnit: personnel.t1.powerPerUnit.toFixed(1),
-    t1Count: personnel.t1.count,
+    t1Count: personnel.t1.count.toLocaleString('en-US'),
     t2Power: personnel.formatted.t2Power,
     t2PowerPerUnit: personnel.t2.powerPerUnit.toFixed(1),
-    t2Count: personnel.t2.count,
+    t2Count: personnel.t2.count.toLocaleString('en-US'),
     t3Power: personnel.formatted.t3Power,
     t3PowerPerUnit: personnel.t3.powerPerUnit.toFixed(1),
-    t3Count: personnel.t3.count,
+    t3Count: personnel.t3.count.toLocaleString('en-US'),
     t4Power: personnel.formatted.t4Power,
     t4PowerPerUnit: personnel.t4.powerPerUnit.toFixed(1),
-    t4Count: personnel.t4.count,
-    totalCount: personnel.totalCount,
+    t4Count: personnel.t4.count.toLocaleString('en-US'),
+    totalCount: personnel.totalCount.toLocaleString('en-US'),
     totalPower: personnel.formatted.totalPower,
-    missionSpeed: effects.missionSpeed,
+    missionSpeed: effects.missionSpeed.toLocaleString('en-US'),
     farmFragmentsValue: effects.farmFragments.formatted,
-    campaignFragmentsValue: effects.campaignFragments.formatted,
+    campaignFragmentsValue: parseFloat(effects.campaignFragments.formatted).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}),
+    farmMissionsPerHour: Math.round(effects.farmMissionsPerHour || 0).toLocaleString('en-US'),
+    farmMissionsPerDay: Math.round(effects.farmMissionsPerDay || 0).toLocaleString('en-US'),
   };
 });
 
