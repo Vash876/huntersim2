@@ -1045,7 +1045,21 @@ export const allBoosts = [
     orbcalc: true,
     permanent: true,
     tooltip: '0',
-    multiplier: (value) => Math.pow(1.14, value),
+    multiplier: (value, allValues) => {
+      // Get Exodus level from gem data (context-aware)
+      let gemData;
+      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+        gemData = window.__PLAN_CONTEXT__.gemData;
+      } else {
+        gemData = getGemDataFromStore();
+      }
+      const exodusLevel = gemData.levels?.exodus || 5; // Default to 5 since unlock requires exodus-5
+      
+      // Formula from exodus.js: (1.1^level)^(1 + exodusLevel*0.1 - 0.1)
+      const innerBase = Math.pow(1.1, value);
+      const outerExponent = 1 + (exodusLevel * 0.1) - 0.1;
+      return Math.pow(innerBase, outerExponent);
+    },
   },
 
   // Trinkets
