@@ -289,7 +289,6 @@ export const OVERRIDES = {
     "upgrades.researches.res81",     // Research#81
     "upgrades.researches.res95",     // Research#95
     "upgrades.researches.res105",    // Research#105
-    "upgrades.researches.res_ultima",
   ],
 
   // Construction Milestones
@@ -459,7 +458,6 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.creation_gem6",    // Creation Gem Node 6
   "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
   "upgrades.relics.t2r7",                     // Relic T2R7
-  "upgrades.researches.res_ultima",
 ];
 
 export const STATS_RESULT_LABELS = [

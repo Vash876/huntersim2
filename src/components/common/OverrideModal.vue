@@ -800,10 +800,10 @@ async function loadOverrideData() {
                   maxValue = upgrade.maxLevel || null;
                   type = upgrade.type || "numeric";
                   
-                  // Dynamisches maxLevel für Tier 1 Relics basierend auf res_ultima
+                  // Dynamisches maxLevel für Tier 1 Relics basierend auf Exodus GN3
                   if (upgradeType === 'relics' && isTier1Relic(upgradeId)) {
-                    const resUltimaLevel = hunterStore.getUpgradeValue('researches', 'res_ultima') || 0;
-                    const bonus = getTier1RelicMaxLevelBonus(resUltimaLevel);
+                    const exodusNode3Active = gemPlannerStore.gemStates?.exodus?.nodes?.[2] || false;
+                    const bonus = getTier1RelicMaxLevelBonus(exodusNode3Active);
                     maxValue = (upgrade.maxLevel || 100) + bonus;
                   }
                   
@@ -1269,37 +1269,9 @@ const visibleCategories = computed(() => {
         return true;
       }
       
-      // Spezielle Logik für res_ultima - nur anzeigen wenn Exodus Node 3 aktiv ist
-      if (param.key === 'upgrades.researches.res_ultima') {
-        const exodusGem3Key = 'upgrades.gems_nodes.exodus_gem3';
-        
-        // Prüfe aktuellen Override-Status für exodus gem3
-        const exodusGem3Override = localOverrides.value[exodusGem3Key];
-        
-        // Prüfe global state für exodus gem3
-        const exodusGem3Param = parameterData.value
-          .flatMap(cat => cat.params)
-          .find(p => p.key === exodusGem3Key);
-        const exodusGem3GlobalValue = exodusGem3Param?.globalValue || 0;
-        
-        // Bestimme den aktuellen effektiven Wert für exodus gem3
-        const exodusGem3EffectiveValue = (exodusGem3Override !== null && exodusGem3Override !== undefined) 
-          ? exodusGem3Override 
-          : exodusGem3GlobalValue;
-        
-        const isExodusGem3Active = exodusGem3EffectiveValue > 0;
-        
-        return isExodusGem3Active;
-      }
-      
-      // Spezielle Logik für Researches mit unlock-Bedingungen (außer res_ultima, das oben behandelt wird)
+      // Spezielle Logik für Researches mit unlock-Bedingungen
       if (param.key.startsWith('upgrades.researches.')) {
         const researchId = param.key.split('.')[2];
-        
-        // res_ultima wird oben separat behandelt
-        if (researchId === 'res_ultima') {
-          return true;
-        }
         
         const research = UPGRADES.researches?.find(r => r.id === researchId);
         
@@ -1678,29 +1650,17 @@ function getValueColorClass(paramKey, globalValue) {
 
 // Bestimmt den normalen Step für einen Parameter
 function getParamStep(param) {
-  // res_ultima hat spezielle Step-Größe von 300k
-  if (param.key === 'upgrades.researches.res_ultima') {
-    return 300000;
-  }
   return param.step || 1;
 }
 
 // Bestimmt den schnellen Step für einen Parameter
 function getParamFastStep(param) {
-  // res_ultima hat spezielle Fast-Step-Größe von 1.5M
-  if (param.key === 'upgrades.researches.res_ultima') {
-    return 1500000;
-  }
   return param.fastStep || 10;
 }
 
 // Formatiert den Parameterwert - nutzt formatNumber für große Zahlen
 function formatParamValue(param, value) {
-  // res_ultima: 1 Dezimalstelle ab 1M, sonst keine
-  if (param.key === 'upgrades.researches.res_ultima') {
-    return formatNumber(value, value >= 1000000 ? 1 : 0);
-  }
-  // Andere große Zahlen ohne Dezimalstellen
+  // Große Zahlen ohne Dezimalstellen
   if (param.maxValue && param.maxValue >= 100000) {
     return formatNumber(value, 0);
   }
@@ -1783,14 +1743,14 @@ watch(() => props.isVisible, (newValue) => {
   }
 });
 
-// Watch für res_ultima Änderungen - aktualisiert Tier 1 Relic maxLevel dynamisch
-watch(() => localOverrides.value['upgrades.researches.res_ultima'], (newResUltima) => {
+// Watch für Exodus GN3 Änderungen - aktualisiert Tier 1 Relic maxLevel dynamisch
+watch(() => localOverrides.value['upgrades.gems_nodes.exodus_gem3'], (newExodusGem3) => {
   if (!props.isVisible) return;
   
-  // Berechne den effektiven res_ultima Wert (Override oder Global)
-  const globalResUltima = hunterStore.getUpgradeValue('researches', 'res_ultima') || 0;
-  const effectiveResUltima = newResUltima !== null ? newResUltima : globalResUltima;
-  const bonus = getTier1RelicMaxLevelBonus(effectiveResUltima);
+  // Berechne ob Exodus GN3 aktiv ist (Override oder Global)
+  const globalExodusGem3 = gemPlannerStore.gemStates?.exodus?.nodes?.[2] || false;
+  const exodusNode3Active = newExodusGem3 !== null ? Boolean(newExodusGem3) : globalExodusGem3;
+  const bonus = getTier1RelicMaxLevelBonus(exodusNode3Active);
   
   // Aktualisiere maxLevel für alle Tier 1 Relics in parameterData
   parameterData.value.forEach(category => {

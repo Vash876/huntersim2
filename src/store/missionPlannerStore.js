@@ -21,9 +21,9 @@ import {
   calculateMissionStats,
   calculatePowerFor2SecondCap,
   formatCompletionTime,
+  formatNumber,
   FARM_MIN_TIME_SECONDS
 } from '@/views/tools/mission-planner/constants/missionCalculator';
-import { formatNumber } from '@/composables/format';
 import { FARM_MISSIONS, CAMPAIGN_MISSIONS, isFarmMission, DEFAULT_FILL_ORDER, CAMPAIGN_FINAL_MULTIPLIERS } from '@/views/tools/mission-planner/constants/missions';
 import {
   optimizeFarmMissions,
@@ -332,11 +332,11 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       totalCount,
       totalPower,
       formatted: {
-        t1Power: formatNumber(t1TotalPower),
-        t2Power: formatNumber(t2TotalPower),
-        t3Power: formatNumber(t3TotalPower),
-        t4Power: formatNumber(t4TotalPower),
-        totalPower: formatNumber(totalPower),
+        t1Power: t1TotalPower.toFixed(1),
+        t2Power: t2TotalPower.toFixed(1),
+        t3Power: t3TotalPower.toFixed(1),
+        t4Power: t4TotalPower.toFixed(1),
+        totalPower: totalPower.toFixed(1),
       }
     };
   });
@@ -574,12 +574,8 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     const traitSphere7Active = modifierValues.value.trait_sphere_07 || false;
     const traitSphere7Multiplier = traitSphere7Active ? 2 : 1;
     
-    // Apply Ferrick Card multiplier (x1.2 missions if active)
-    const ferrickCardActive = modifierValues.value.ferrick_card || false;
-    const ferrickCardMultiplier = ferrickCardActive ? 1.2 : 1;
-    
-    // Combined mission multiplier
-    const missionMultiplier = traitSphere7Multiplier * ferrickCardMultiplier;
+    // Mission multiplier
+    const missionMultiplier = traitSphere7Multiplier;
     
     const finalMissionsPerHour = totalMissionsPerHour * missionMultiplier;
     const finalMissionsPerDay = finalMissionsPerHour * 24;
@@ -589,7 +585,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       totalMissionsPerHour: finalMissionsPerHour,
       totalMissionsPerDay: finalMissionsPerDay,
       traitSphere7Active,
-      ferrickCardActive,
       missionMultiplier
     };
   });

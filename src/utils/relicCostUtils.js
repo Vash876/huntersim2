@@ -6,13 +6,13 @@
 const TIER_1_RELIC_IDS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7', 'r8', 'r9', 'r10', 'r11', 'r12', 'r13', 'r14', 'r15', 'r16', 'r17', 'r18', 'r19', 'r20'];
 
 /**
- * Berechnet den Max-Level-Bonus für Tier 1 Relics basierend auf res_ultima
- * @param {number} resUltimaLevel - Der aktuelle res_ultima Wert (z.B. 300000, 600000, etc.)
- * @returns {number} - Der Bonus auf das Max-Level (1 pro 300000 res_ultima)
+ * Berechnet den Max-Level-Bonus für Tier 1 Relics
+ * Gibt +5 zurück wenn Exodus GN3 aktiv ist, sonst 0
+ * @param {boolean} exodusNode3Active - Ob Exodus Gem Node 3 aktiv ist
+ * @returns {number} - Der Bonus auf das Max-Level (+5 wenn aktiv, sonst 0)
  */
-export function getTier1RelicMaxLevelBonus(resUltimaLevel) {
-  if (!resUltimaLevel || resUltimaLevel <= 0) return 0;
-  return Math.floor(resUltimaLevel / 300000);
+export function getTier1RelicMaxLevelBonus(exodusNode3Active = false) {
+  return exodusNode3Active ? 5 : 0;
 }
 
 /**
@@ -25,17 +25,17 @@ export function isTier1Relic(relicId) {
 }
 
 /**
- * Berechnet das effektive Max-Level für ein Relic unter Berücksichtigung des res_ultima Bonus
+ * Berechnet das effektive Max-Level für ein Relic unter Berücksichtigung des Exodus GN3 Bonus
  * @param {string} relicId - Die Relic ID (z.B. 'r4', 'r7', etc.)
  * @param {number} baseMaxLevel - Das Basis Max-Level des Relics
- * @param {number} resUltimaLevel - Der aktuelle res_ultima Wert
+ * @param {boolean} exodusNode3Active - Ob Exodus Gem Node 3 aktiv ist
  * @returns {number} - Das effektive Max-Level
  */
-export function getEffectiveRelicMaxLevel(relicId, baseMaxLevel, resUltimaLevel = 0) {
+export function getEffectiveRelicMaxLevel(relicId, baseMaxLevel, exodusNode3Active = false) {
   if (!isTier1Relic(relicId)) {
     return baseMaxLevel;
   }
-  return baseMaxLevel + getTier1RelicMaxLevelBonus(resUltimaLevel);
+  return baseMaxLevel + getTier1RelicMaxLevelBonus(exodusNode3Active);
 }
 
 /**

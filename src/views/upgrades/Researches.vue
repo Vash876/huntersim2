@@ -21,18 +21,8 @@
           :incrementFast="incrementFast"
           :decrementFast="decrementFast"
         >
-          <!-- Spezielle Anzeige für res_ultima (Relic Bonus) -->
-          <div v-if="research.special === 'relic_bonus'" class="bg-gray-900/50 p-3 rounded-md w-full mb-4">
-            <div class="flex justify-between items-center py-1">
-              <span class="text-gray-400 text-sm">Tier 1 Relics Max Lvl</span>
-              <span class="text-purple-300 font-medium text-sm">
-                +{{ Math.floor(getResearchLevel({ id: research.id }) / 300000) }}
-              </span>
-            </div>
-          </div>
-          
-          <!-- Standard-Effekt-Box mit Hunter-Multiplikatoren -->
-          <div v-else class="bg-gray-900/50 p-3 rounded-md w-full mb-4">
+          <!-- Effekt-Box mit Hunter-Multiplikatoren -->
+          <div class="bg-gray-900/50 p-3 rounded-md w-full mb-4">
             
             <!-- Hunter-spezifische Multiplikatoren -->
             <div 

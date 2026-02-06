@@ -125,10 +125,10 @@ const relics = ref([]);
 const loading = ref(true);
 const category = 'relics'; // Die Kategorie dieser View
 
-// res_ultima Bonus für Tier 1 Relics
+// Exodus GN3 Bonus für Tier 1 Relics (+5 wenn aktiv)
 const tier1MaxLevelBonus = computed(() => {
-  const resUltimaLevel = hunterStore.getUpgradeValue('researches', 'res_ultima') || 0;
-  return getTier1RelicMaxLevelBonus(resUltimaLevel);
+  const exodusNode3Active = gemPlannerStore.gemStates?.exodus?.nodes?.[2] || false;
+  return getTier1RelicMaxLevelBonus(exodusNode3Active);
 });
 
 // Tier 1 Relics (tier undefined oder 1) mit dynamischem maxLevel

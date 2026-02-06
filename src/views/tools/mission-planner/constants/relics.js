@@ -183,7 +183,7 @@ export function getRelicBaseCostMaxLevel(relicId) {
 /**
  * Get max level for a relic
  * @param {string} relicId - The relic ID (e.g., 'r5', 'r6')
- * @param {number} bonusLevels - Additional max levels from bonuses (e.g., Exodus Node 3)
+ * @param {number} bonusLevels - Additional max levels from bonuses (e.g., Exodus Node 3, Power Node 1)
  * @returns {number} The maximum achievable level
  */
 export function getRelicMaxLevel(relicId, bonusLevels = 0) {
@@ -193,17 +193,11 @@ export function getRelicMaxLevel(relicId, bonusLevels = 0) {
   if (!relic && !data) return 0;
   
   // Get base max level from RELICS definition (preferred) or RELIC_DATA
-  let baseMax = relic?.maxLevel || data?.maxLevel || 100;
+  const baseMax = relic?.maxLevel || data?.maxLevel || 100;
   
-  // Apply bonus levels (e.g., from Exodus Node 3)
-  let maxWithBonus = baseMax + bonusLevels;
-  
-  // For fixed-cost relics, cap at available cost data
-  if (data?.fixedCosts) {
-    maxWithBonus = Math.min(maxWithBonus, data.fixedCosts.length);
-  }
-  
-  return maxWithBonus;
+  // Apply bonus levels (e.g., from Exodus Node 3, Power Node 1)
+  // No cap - upgrades can exceed available cost data
+  return baseMax + bonusLevels;
 }
 
 /**

@@ -334,7 +334,6 @@ export const OVERRIDES = {
     "upgrades.researches.res81",     // Research#81
     "upgrades.researches.res95",     // Research#95
     "upgrades.researches.res105",    // Research#105
-    "upgrades.researches.res_ultima",// Exodus Gem Node 3, Research Ultima Count
   ],
 
   // Loopmods
@@ -510,7 +509,6 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
   "upgrades.gems_nodes.evolution_gem6",   // Evolution Gem Node 6
   "upgrades.relics.t2r7",                  // Relic T2R7
-  "upgrades.researches.res_ultima",
 ];
 
 export const STATS_RESULT_LABELS = [

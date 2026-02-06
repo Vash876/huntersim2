@@ -330,17 +330,7 @@ export const MODIFIERS = {
       type: 'readonly',
       category: MODIFIER_CATEGORIES.GEMS,
       defaultValue: false,
-      description: 'Max level for Tier 1 relics +1 per level (R5: +2, R14: unchanged)'
-    },
-    {
-      id: 'exodus_node_3_level',
-      name: 'Exodus GN#3 Level',
-      type: 'number',
-      category: MODIFIER_CATEGORIES.GEMS,
-      defaultValue: 0,
-      min: 0,
-      max: 5,
-      description: 'Level of Exodus GN#3 (increases max relic levels)'
+      description: 'Max level for Tier 1 relics +5 (R5: +10, R14: unchanged)'
     },
     // Power Gem
     {
@@ -433,14 +423,6 @@ export const MODIFIERS = {
       type: 'boolean',
       category: MODIFIER_CATEGORIES.OTHER,
       defaultValue: false,
-      description: 'x1.25 all fragments (farm + campaign)'
-    },
-    {
-      id: 'ferrick_card',
-      name: 'Ferrick Card',
-      type: 'boolean',
-      category: MODIFIER_CATEGORIES.OTHER,
-      defaultValue: true,
       description: 'x1.25 all fragments (farm + campaign)'
     },
     {

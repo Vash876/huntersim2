@@ -459,8 +459,9 @@ function syncRelicToModifiers(relicId, level) {
 // Get max level for a relic (including Exodus Node 3 and Power Node 1 bonuses)
 // Uses the centralized function from relics.js which handles fixedCosts limits
 function getRelicMaxLevel(relicId) {
-  // Exodus Node 3 bonus: +1 max level per level (except R14, R5 gets +2)
-  const exodusNode3Level = missionPlannerStore.modifierValues.exodus_node_3_level || 0;
+  // Exodus Node 3 bonus: automatically +5 when active (except R14, R5 gets +10)
+  // Read directly from gemPlannerStore - nodes[2] is Node 3 (0-indexed)
+  const exodusNode3Active = gemPlannerStore.gemStates?.exodus?.nodes?.[2] || false;
   
   // Power Node 1 bonus: +3 max level for R5 and R6 only
   // Read directly from gemPlannerStore since it's not synced to modifierValues
@@ -470,14 +471,14 @@ function getRelicMaxLevel(relicId) {
   // R14 is excluded from all bonuses
   if (relicId === 'r14') return getRelicMaxLevelFromData(relicId, 0);
   
-  // R5 gets +2 per Exodus Node 3 level AND +3 from Power Node 1
-  if (relicId === 'r5') return getRelicMaxLevelFromData(relicId, (exodusNode3Level * 2) + powerNode1Bonus);
+  // R5 gets +10 when Exodus Node 3 is active (+2 per level * 5 levels) AND +3 from Power Node 1
+  if (relicId === 'r5') return getRelicMaxLevelFromData(relicId, (exodusNode3Active ? 10 : 0) + powerNode1Bonus);
   
-  // R6 gets +1 per Exodus Node 3 level AND +3 from Power Node 1
-  if (relicId === 'r6') return getRelicMaxLevelFromData(relicId, exodusNode3Level + powerNode1Bonus);
+  // R6 gets +5 when Exodus Node 3 is active AND +3 from Power Node 1
+  if (relicId === 'r6') return getRelicMaxLevelFromData(relicId, (exodusNode3Active ? 5 : 0) + powerNode1Bonus);
   
-  // All other Tier 1 relics get +1 max level per Exodus Node 3 level
-  return getRelicMaxLevelFromData(relicId, exodusNode3Level);
+  // All other Tier 1 relics get +5 max level when Exodus Node 3 is active
+  return getRelicMaxLevelFromData(relicId, exodusNode3Active ? 5 : 0);
 }
 
 // Check if a relic has valid cost data for a specific level

@@ -969,10 +969,10 @@ const hunterInfo = computed(() => getHunterById(props.hunterId));
 const hunterName = computed(() => hunterInfo.value.name);
 const hunterColor = computed(() => hunterInfo.value.color);
 
-// Dynamischer Tier 1 Relic Max Level Bonus basierend auf res_ultima
+// Dynamischer Tier 1 Relic Max Level Bonus basierend auf Exodus GN3
 const tier1RelicMaxLevelBonus = computed(() => {
-  const resUltimaLevel = hunterStore.getUpgradeValue('researches', 'res_ultima') || 0;
-  return getTier1RelicMaxLevelBonus(resUltimaLevel);
+  const exodusNode3Active = gemPlannerStore.gemStates?.exodus?.nodes?.[2] || false;
+  return getTier1RelicMaxLevelBonus(exodusNode3Active);
 });
 
 // Computed upgradesByCurrency mit dynamischen maxLevels für Tier 1 Relics
