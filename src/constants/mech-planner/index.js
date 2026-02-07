@@ -232,12 +232,6 @@ export const mechs = [
     timeCost: 5e18,
     timeMaxLevels: 30,
     timeCostTiers: [
-      { minLevel: 55, multiplier: 16.2 },
-      { minLevel: 50, multiplier: 10.125 },
-      { minLevel: 45, multiplier: 6.328125 },
-      { minLevel: 40, multiplier: 4.21875 },
-      { minLevel: 35, multiplier: 2.8125 },
-      { minLevel: 30, multiplier: 1.875 },
       { minLevel: 0, multiplier: 1.4 }
     ],
     multiIncrease: 5,
@@ -260,12 +254,6 @@ export const mechs = [
     timeCost: 5e18,
     timeMaxLevels: 30,
     timeCostTiers: [
-      { minLevel: 55, multiplier: 16.2 },
-      { minLevel: 50, multiplier: 10.125 },
-      { minLevel: 45, multiplier: 6.328125 },
-      { minLevel: 40, multiplier: 4.21875 },
-      { minLevel: 35, multiplier: 2.8125 },
-      { minLevel: 30, multiplier: 1.875 },
       { minLevel: 0, multiplier: 1.4 }
     ],
     multiIncrease: 5,
@@ -288,12 +276,6 @@ export const mechs = [
     timeCost: 5e18,
     timeMaxLevels: 30,
     timeCostTiers: [
-      { minLevel: 55, multiplier: 16.2 },
-      { minLevel: 50, multiplier: 10.125 },
-      { minLevel: 45, multiplier: 6.328125 },
-      { minLevel: 40, multiplier: 4.21875 },
-      { minLevel: 35, multiplier: 2.8125 },
-      { minLevel: 30, multiplier: 1.875 },
       { minLevel: 0, multiplier: 1.4 }
     ],
     multiIncrease: 5,
