@@ -918,6 +918,7 @@ import {
 } from '@tabler/icons-vue';
 import { useLootIcons } from '../../composables/useLootIcons';
 import { useHunterStore } from '../../store/hunterStore';
+import { useGemPlannerStore } from '../../store/gemPlannerStore';
 import { getHunterById } from '../../constants/hunters';
 import { UPGRADES } from '../../constants/upgrades';
 import { calcCostDifference, calcKnoxSalvoCostDifference, formatCost } from '../../utils/statCostUtils';
@@ -944,6 +945,7 @@ const emit = defineEmits(['close', 'applyOverrides']);
 
 // Store
 const hunterStore = useHunterStore();
+const gemPlannerStore = useGemPlannerStore();
 
 // UI State
 const isLoading = ref(true);
