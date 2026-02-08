@@ -385,9 +385,9 @@
                         </div>
                         <!-- Mobile: Tess: WERT @Hours Datum -->
                         <div class="flex flex-col gap-0.5 text-[10px] mt-0.5">
-                          <template v-if="item.evaluation && item.evaluation.tesseractsPerDay">
+                          <template v-if="item.gadgetId === 'anchor'">
                             <span class="text-green-400">
-                              Tess: {{ formatGadgetCost(item.evaluation.previousProduction || tessarectsPerDay) }}/d → {{ formatGadgetCost(item.evaluation.tesseractsPerDay) }}/d
+                              Tess: {{ formatGadgetCost(getProductionAtIndex(index)) }}/d → {{ formatGadgetCost(getProductionAfterItem(item)) }}/d
                             </span>
                           </template>
                           <template v-else-if="getProductionAtIndex(index) > 0">
@@ -653,9 +653,9 @@
                       </div>
                       <!-- Bottom line: Tess: WERT @Hours Datum -->
                       <div class="flex items-center text-xs mt-0.5">
-                        <template v-if="item.evaluation && item.evaluation.tesseractsPerDay">
+                        <template v-if="item.gadgetId === 'anchor'">
                           <span class="text-green-400 w-40">
-                            Tess: {{ formatGadgetCost(item.evaluation.previousProduction || tessarectsPerDay) }}/d → {{ formatGadgetCost(item.evaluation.tesseractsPerDay) }}/d
+                            Tess: {{ formatGadgetCost(getProductionAtIndex(index)) }}/d → {{ formatGadgetCost(getProductionAfterItem(item)) }}/d
                           </span>
                         </template>
                         <template v-else-if="getProductionAtIndex(index) > 0">
@@ -962,8 +962,9 @@ const daysToSaveForSummary = computed(() => {
       
       availableTesseracts -= item.totalCost;
       
-      if (item.gadgetId === 'anchor' && item.evaluation?.tesseractsPerDay) {
-        currentProduction = item.evaluation.tesseractsPerDay;
+      // Update production dynamically
+      if (item.gadgetId === 'anchor') {
+        currentProduction = calculateAnchorProductionBoost(item.fromLevel, item.toLevel, currentProduction);
       }
     }
   }
@@ -989,15 +990,33 @@ function getLevelsToNextTen(gadgetId) {
   return nextTen - currentLevel;
 }
 
-// Get cumulative production at a specific index in shopping list
+// Get cumulative production at a specific index in shopping list (dynamically calculated)
 function getProductionAtIndex(index) {
   let production = tessarectsPerDay.value;
   
   // Apply all Anchor boosts from items before this index
   for (let i = 0; i < index; i++) {
     const item = shoppingList.value[i];
-    if (item.gadgetId === 'anchor' && item.evaluation?.tesseractsPerDay) {
-      production = item.evaluation.tesseractsPerDay;
+    if (item.gadgetId === 'anchor') {
+      production = calculateAnchorProductionBoost(item.fromLevel, item.toLevel, production);
+    }
+  }
+  
+  return production;
+}
+
+// Get production AFTER a specific item (including its boost if it's an Anchor)
+function getProductionAfterItem(item) {
+  const index = shoppingList.value.findIndex(i => i.id === item.id);
+  if (index === -1) return tessarectsPerDay.value;
+  
+  let production = tessarectsPerDay.value;
+  
+  // Apply all Anchor boosts up to and including this item
+  for (let i = 0; i <= index; i++) {
+    const listItem = shoppingList.value[i];
+    if (listItem.gadgetId === 'anchor') {
+      production = calculateAnchorProductionBoost(listItem.fromLevel, listItem.toLevel, production);
     }
   }
   
@@ -1084,26 +1103,9 @@ function confirmAddToList(gadget, levels) {
     gadgetName: gadget.name,
     fromLevel: fromLevel,
     toLevel: toLevel,
-    totalCost: totalCost,
-    evaluation: null
+    totalCost: totalCost
+    // Note: No evaluation stored - production is calculated dynamically
   };
-
-  // Calculate production boost for Anchor (cumulative from previous items)
-  if (gadget.id === 'anchor' && tessarectsPerDay.value > 0) {
-    // Get production AFTER all previous anchor items in shopping list
-    let currentProduction = tessarectsPerDay.value;
-    for (const existingItem of shoppingList.value) {
-      if (existingItem.gadgetId === 'anchor' && existingItem.evaluation?.tesseractsPerDay) {
-        currentProduction = existingItem.evaluation.tesseractsPerDay;
-      }
-    }
-    
-    const newProduction = calculateAnchorProductionBoost(fromLevel, toLevel, currentProduction);
-    item.evaluation = {
-      tesseractsPerDay: newProduction,
-      previousProduction: currentProduction  // Store production BEFORE this item
-    };
-  }
 
   store.addToShoppingList(item);
   showConfirmModal.value = false;
@@ -1153,9 +1155,10 @@ function markItemAsPurchased(itemId) {
   const remaining = Math.max(0, currentAmount - item.totalCost);
   store.updateCurrentTesseracts(remaining);
 
-  // Update production if it's an anchor upgrade with evaluation
-  if (item.gadgetId === 'anchor' && item.evaluation?.tesseractsPerDay) {
-    store.updateTesseractsPerDay(item.evaluation.tesseractsPerDay);
+  // Update production if it's an anchor upgrade (calculated dynamically)
+  if (item.gadgetId === 'anchor') {
+    const newProduction = getProductionAfterItem(item);
+    store.updateTesseractsPerDay(newProduction);
   }
 
   // Mark as purchased (updates level and removes from list)
@@ -1281,9 +1284,9 @@ function formatItemHours(item) {
 
       availableTesseracts -= listItem.totalCost;
 
-      // Update production if this item increases it
-      if (listItem.gadgetId === 'anchor' && listItem.evaluation?.tesseractsPerDay) {
-        currentProduction = listItem.evaluation.tesseractsPerDay;
+      // Update production if this item increases it (calculated dynamically)
+      if (listItem.gadgetId === 'anchor') {
+        currentProduction = calculateAnchorProductionBoost(listItem.fromLevel, listItem.toLevel, currentProduction);
       }
     }
   }
@@ -1331,8 +1334,9 @@ function formatAvailabilityDate(item) {
 
       availableTesseracts -= listItem.totalCost;
 
-      if (listItem.gadgetId === 'anchor' && listItem.evaluation?.tesseractsPerDay) {
-        currentProduction = listItem.evaluation.tesseractsPerDay;
+      // Update production dynamically
+      if (listItem.gadgetId === 'anchor') {
+        currentProduction = calculateAnchorProductionBoost(listItem.fromLevel, listItem.toLevel, currentProduction);
       }
     }
   }
@@ -1380,9 +1384,9 @@ function formatTimeToSave() {
 
     availableTesseracts -= item.totalCost;
 
-    // Update production if item increases it
-    if (item.gadgetId === 'anchor' && item.evaluation?.tesseractsPerDay) {
-      currentProduction = item.evaluation.tesseractsPerDay;
+    // Update production if item increases it (calculated dynamically)
+    if (item.gadgetId === 'anchor') {
+      currentProduction = calculateAnchorProductionBoost(item.fromLevel, item.toLevel, currentProduction);
     }
   }
 
@@ -1463,8 +1467,9 @@ function formatTotalHoursInTR() {
       
       availableTesseracts -= item.totalCost;
       
-      if (item.gadgetId === 'anchor' && item.evaluation?.tesseractsPerDay) {
-        currentProduction = item.evaluation.tesseractsPerDay;
+      // Update production dynamically
+      if (item.gadgetId === 'anchor') {
+        currentProduction = calculateAnchorProductionBoost(item.fromLevel, item.toLevel, currentProduction);
       }
     }
   }
@@ -1488,6 +1493,47 @@ function updateCurrentAnchorFromBuild(build) {
   }
 
   store.updateCurrentLevel('anchor', anchorLevel);
+}
+
+// Sync gadget levels from hunterStore and clean up shopping list
+function syncGadgetLevelsFromHunterStore() {
+  const storeUpgrades = hunterStore.upgrades?.gadgets || {};
+  
+  ['wrench', 'zaptron', 'anchor'].forEach(gadgetId => {
+    const newLevel = storeUpgrades[gadgetId];
+    const currentLevel = store.currentLevels[gadgetId] ?? 0;
+    
+    if (newLevel !== undefined && newLevel !== currentLevel) {
+      // Update the current level in store
+      store.updateCurrentLevel(gadgetId, newLevel);
+      
+      // Clean up shopping list: remove/adjust items that are now obsolete
+      if (newLevel > currentLevel) {
+        const itemsToRemove = [];
+        
+        shoppingList.value.forEach(item => {
+          if (item.gadgetId === gadgetId) {
+            if (item.toLevel <= newLevel) {
+              // Item is completely purchased - remove it
+              itemsToRemove.push(item.id);
+            } else if (item.fromLevel < newLevel) {
+              // Item partially overlaps - adjust fromLevel and recalculate cost
+              item.fromLevel = newLevel;
+              item.levels = item.toLevel - item.fromLevel;
+              item.totalCost = calculateUpgradeCost(gadgetId, item.fromLevel, item.toLevel);
+            }
+          }
+        });
+        
+        // Remove obsolete items
+        itemsToRemove.forEach(id => store.removeFromShoppingList(id));
+        
+        if (itemsToRemove.length > 0) {
+          console.log(`🛒 Cleaned up ${itemsToRemove.length} obsolete ${gadgetId} items from shopping list`);
+        }
+      }
+    }
+  });
 }
 
 function getGadgetImageUrl(gadgetId) {
@@ -1516,17 +1562,8 @@ async function loadGadgetData() {
     // Load cached evaluation results
     await loadCachedResults();
 
-    // Initialize Wrench/Zaptron/Anchor from hunterStore (sync global variables to gadget planner)
-    const storeUpgrades = hunterStore.upgrades?.gadgets || {};
-    if (storeUpgrades.wrench !== undefined) {
-      store.updateCurrentLevel('wrench', storeUpgrades.wrench);
-    }
-    if (storeUpgrades.zaptron !== undefined) {
-      store.updateCurrentLevel('zaptron', storeUpgrades.zaptron);
-    }
-    if (storeUpgrades.anchor !== undefined) {
-      store.updateCurrentLevel('anchor', storeUpgrades.anchor);
-    }
+    // Sync gadget levels from hunterStore and clean up obsolete shopping list items
+    syncGadgetLevelsFromHunterStore();
 
     // Update tesseracts timestamp
     store.resetTesseractsTimestamp();
@@ -1618,6 +1655,16 @@ watch(selectedBuildId, (newBuildId) => {
     updateCurrentAnchorFromBuild(selectedBuild.value);
   }
 });
+
+// Watch for gadget level changes in hunterStore (e.g. from Upgrades page)
+watch(
+  () => hunterStore.upgrades?.gadgets,
+  () => {
+    // Sync gadget levels and clean up obsolete shopping list items
+    syncGadgetLevelsFromHunterStore();
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped>

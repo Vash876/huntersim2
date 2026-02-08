@@ -3,7 +3,22 @@
     <div class="max-w-7xl mx-auto">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-red-400">Borge Enemy Stats Debug</h1>
+        <h1 class="text-2xl font-bold" :class="hunterTitleClass">{{ activeHunter }} Enemy Stats</h1>
+      </div>
+
+      <!-- Hunter Tabs -->
+      <div class="flex gap-1 mb-1">
+        <button
+          v-for="hunter in hunters"
+          :key="hunter.id"
+          @click="activeHunter = hunter.id"
+          class="px-4 py-2 rounded-t-lg font-semibold transition-colors"
+          :class="activeHunter === hunter.id 
+            ? `${hunter.bgActive} ${hunter.textActive}` 
+            : 'bg-gray-800 text-gray-400 hover:bg-gray-700'"
+        >
+          {{ hunter.id }}
+        </button>
       </div>
 
       <!-- Filter Controls -->
@@ -28,6 +43,17 @@
             :step="10"
             :fastStep="100"
             @update:value="toStage = $event"
+          />
+        </div>
+        <div v-if="activeHunter === 'Knox'">
+          <label class="text-sm text-gray-400 block mb-1">Presence of a God Level</label>
+          <ToolValueControls
+            :value="knoxPogLevel"
+            :minValue="0"
+            :maxValue="10"
+            :step="1"
+            :fastStep="5"
+            @update:value="knoxPogLevel = $event"
           />
         </div>
       </div>
@@ -63,8 +89,8 @@
               <td class="px-3 py-2">
                 <span :class="getTypeClass(enemy)">{{ enemy.type }}</span>
               </td>
-              <td class="px-3 py-2 text-right font-mono text-pink-400">{{ formatNumber(enemy.hp, 4) }}</td>
-              <td class="px-3 py-2 text-right font-mono text-red-400">{{ formatNumber(enemy.atk, 4) }}</td>
+              <td class="px-3 py-2 text-right font-mono text-pink-400">{{ formatNumber(enemy.hp, 3) }}</td>
+              <td class="px-3 py-2 text-right font-mono text-red-400">{{ formatNumber(enemy.atk, 3) }}</td>
               <td class="px-3 py-2 text-right font-mono text-green-400">{{ formatNumber(enemy.regen) }}</td>
               <td class="px-3 py-2 text-right font-mono text-amber-600">{{ ((1 - enemy.dr) * 100).toFixed(1) }}%</td>
               <td class="px-3 py-2 text-right font-mono text-yellow-200">{{ (enemy.evade * 100).toFixed(2) }}%</td>
@@ -84,13 +110,31 @@
 import { ref, computed } from 'vue';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 
+// Hunter tabs
+const hunters = [
+  { id: 'Borge', bgActive: 'bg-red-900', textActive: 'text-red-400' },
+  { id: 'Ozzy', bgActive: 'bg-green-900', textActive: 'text-green-400' },
+  { id: 'Knox', bgActive: 'bg-blue-900', textActive: 'text-blue-400' }
+];
+const activeHunter = ref('Borge');
+
+const hunterTitleClass = computed(() => {
+  switch (activeHunter.value) {
+    case 'Borge': return 'text-red-400';
+    case 'Ozzy': return 'text-green-400';
+    case 'Knox': return 'text-blue-400';
+    default: return 'text-white';
+  }
+});
+
 // Filter state
 const fromStage = ref(400);
+const knoxPogLevel = ref(0); // Presence of a God (reduces enemy ATK by 3% per level, max 10)
 const toStage = ref(500);
 const filterType = ref('all');
 
-// Multi function (same as evalBorge.ts)
-function multi(enemyNum) {
+// ===== BORGE =====
+function borgeMulti(enemyNum) {
   return Math.max(1, 1 +
     Math.max(0, (enemyNum - 149) * 0.006) +
     Math.max(0, (enemyNum - 199) * 0.006) +
@@ -118,9 +162,8 @@ function multi(enemyNum) {
   ) * Math.pow(1.01, Math.max(0, enemyNum - 350));
 }
 
-// Calculate enemy stats (same formulas as evalBorge.ts)
-function calculateEnemy(enemyNum) {
-  const multiVal = multi(enemyNum);
+function calculateBorgeEnemy(enemyNum) {
+  const multiVal = borgeMulti(enemyNum);
   const floorDiv = Math.floor(Math.max(0, enemyNum - 1) / 100);
   const isBoss = enemyNum > 0 && enemyNum % 100 === 0;
   const is300 = enemyNum === 300;
@@ -146,7 +189,6 @@ function calculateEnemy(enemyNum) {
   
   let effect = 0;
   if (enemyNum >= 401) {
-    // From Stage 401: 5.5% for normal enemies, 9.5% for bosses (Dev-Update)
     effect = 0.055 + (isBoss ? 0.04 : 0);
   } else if (enemyNum >= 300) {
     effect = 0.04 + 0.01 * Math.max(0, floorDiv - 3) + (isBoss ? 0.04 : 0);
@@ -155,7 +197,6 @@ function calculateEnemy(enemyNum) {
   const regen = Math.max(0, 0.08 * Math.max(0, enemyNum - 1) * multiVal * Math.pow(1.052, floorDiv)) * (isBoss ? 1.92 : 1) * (is300 ? 0.9 : 1);
   const atkSpd = (4.526 - 0.006 * enemyNum) * (isBoss ? 2.42 : 1);
   
-  // Determine type and abilities
   let type = 'Normal';
   if (is400) type = 'Boss #400';
   else if (is300) type = 'Boss #300';
@@ -163,31 +204,149 @@ function calculateEnemy(enemyNum) {
   else if (enemyNum === 100) type = 'Boss #100';
   else if (isBoss) type = `Boss #${enemyNum}`;
   
-  return {
-    stage: enemyNum,
-    type,
-    isBoss,
-    hp,
-    atk,
-    critRate,
-    critDmg,
-    dr,
-    evade,
-    effect,
-    regen,
-    atkSpd,
-    hasEnrage: isBoss,
-    hasBonusAttack: enemyNum >= 200 && isBoss,
-    hasDemonicFury: enemyNum >= 300 && isBoss,
-    hasInfernalBulk: enemyNum >= 400 && isBoss
-  };
+  return { stage: enemyNum, type, isBoss, hp, atk, critRate, critDmg, dr, evade, effect, regen, atkSpd };
 }
 
-// Generate all enemies
+// ===== OZZY =====
+function ozzyMulti(enemyNum) {
+  return Math.max(1, 1 +
+    Math.max(0, (enemyNum - 149) * 0.006) +
+    Math.max(0, (enemyNum - 199) * 0.006) +
+    Math.max(0, (enemyNum - 249) * 0.006) +
+    Math.max(0, (enemyNum - 299) * 0.006) +
+    Math.max(0, (enemyNum - 309) * 0.003) +
+    Math.max(0, (enemyNum - 319) * 0.003) +
+    Math.max(0, (enemyNum - 329) * 0.004) +
+    Math.max(0, (enemyNum - 339) * 0.004) +
+    Math.max(0, (enemyNum - 349) * 0.005) +
+    Math.max(0, (enemyNum - 359) * 0.005) +
+    Math.max(0, (enemyNum - 369) * 0.006) +
+    Math.max(0, (enemyNum - 379) * 0.006) +
+    Math.max(0, (enemyNum - 389) * 0.007)
+  ) * Math.pow(1.01, Math.max(0, enemyNum - 350));
+}
+
+function calculateOzzyEnemy(enemyNum) {
+  const multiVal = ozzyMulti(enemyNum);
+  const floorDiv = Math.floor(Math.max(0, enemyNum - 1) / 100);
+  const isBoss = enemyNum > 0 && enemyNum % 100 === 0;
+  const is300 = enemyNum === 300;
+  
+  const hp = (11 + 6 * enemyNum) * multiVal * Math.pow(2.9, floorDiv) * (isBoss ? 48 : 1) * (is300 ? 0.94 : 1);
+  const atk = (1.35 + 0.75 * enemyNum) * multiVal * Math.pow(2.7, floorDiv) * (isBoss ? 3 : 1) * (is300 ? 0.94 : 1);
+  
+  const critRate = Math.min(0.25, 0.0994 + 0.0006 * enemyNum + (isBoss ? 0.1 : 0));
+  const critDmg = Math.min(2.5, 1.03 + 0.008 * enemyNum);
+  
+  let dr = 1;
+  if (enemyNum >= 200) {
+    dr = 1 - (Math.max(0, floorDiv - 2) * 0.02 + 0.04) - (isBoss ? 0.05 : 0);
+  } else {
+    dr = 1 - (isBoss ? 0.05 : 0);
+  }
+  
+  let evade = 0;
+  if (enemyNum >= 100) {
+    evade = 0.01 + 0.01 * Math.max(0, floorDiv - 1);
+  }
+  
+  let effect = 0;
+  if (enemyNum >= 300) {
+    effect = 0.08 + 0.01 * Math.max(0, floorDiv - 3);
+  }
+  
+  const regen = Math.max(0, -0.08 + 0.1 * enemyNum * multiVal * Math.pow(1.25, floorDiv)) * (isBoss ? 6 : 1) * (is300 ? 0.97 : 1);
+  const atkSpd = (3.2 - 0.004 * enemyNum) * (isBoss ? 2.45 : 1);
+  
+  let type = 'Normal';
+  if (is300) type = 'Boss #300';
+  else if (enemyNum === 200) type = 'Boss #200';
+  else if (enemyNum === 100) type = 'Boss #100';
+  else if (isBoss) type = `Boss #${enemyNum}`;
+  
+  return { stage: enemyNum, type, isBoss, hp, atk, critRate, critDmg, dr, evade, effect, regen, atkSpd };
+}
+
+// ===== KNOX =====
+function knoxMulti(enemyNum) {
+  return Math.max(1, 1 + (enemyNum - 49) * 0.006 +
+    Math.max(0, (enemyNum - 99) * 0.006) +
+    Math.max(0, (enemyNum - 119) * 0.01) +
+    Math.max(0, (enemyNum - 129) * 0.008) +
+    Math.max(0, (enemyNum - 139) * 0.006) +
+    Math.max(0, (enemyNum - 149) * 0.006) +
+    Math.max(0, (enemyNum - 159) * 0.006) +
+    Math.max(0, (enemyNum - 169) * 0.006) +
+    Math.max(0, (enemyNum - 179) * 0.006) +
+    Math.max(0, (enemyNum - 189) * 0.006) +
+    Math.max(0, (enemyNum - 199) * 0.006) +
+    Math.max(0, (enemyNum - 219) * 0.02) +
+    Math.max(0, (enemyNum - 249) * 0.006) +
+    Math.max(0, (enemyNum - 299) * 0.006) +
+    Math.max(0, (enemyNum - 309) * 0.003) +
+    Math.max(0, (enemyNum - 319) * 0.02) +
+    Math.max(0, (enemyNum - 329) * 0.004) +
+    Math.max(0, (enemyNum - 339) * 0.004) +
+    Math.max(0, (enemyNum - 349) * 0.005) +
+    Math.max(0, (enemyNum - 359) * 0.005) +
+    Math.max(0, (enemyNum - 369) * 0.006) +
+    Math.max(0, (enemyNum - 379) * 0.006) +
+    Math.max(0, (enemyNum - 389) * 0.007)
+  );
+}
+
+// ====== BALANCING VARIABLE ======
+// Boss 200 Stat Reduction (0.1 = 10% weaker, 0.2 = 20% weaker, etc.)
+const KNOX_BOSS_200_STAT_REDUCTION = 0;
+// ================================
+
+function calculateKnoxEnemy(enemyNum, pogLevel = 0) {
+  const multiVal = knoxMulti(enemyNum);
+  const floorDiv = Math.floor(Math.max(0, enemyNum - 1) / 100);
+  const isBoss = enemyNum > 0 && enemyNum % 100 === 0;
+  const is200 = enemyNum === 200;
+  const boss200Mult = is200 ? (1 - KNOX_BOSS_200_STAT_REDUCTION) : 1;
+  
+  const hp = (7 + 9 * enemyNum) * multiVal * Math.pow(3.2, floorDiv) * (isBoss ? 120 : 1) * boss200Mult;
+  const baseAtk = (2.4 + 1.4 * enemyNum) * multiVal * Math.pow(2.7, floorDiv) * (isBoss ? 4 : 1) * boss200Mult;
+  const atk = baseAtk * (1 - pogLevel * 0.03); // Presence of a God: -3% ATK per level
+  
+  const critRate = Math.min(0.25, 0.0994 + 0.0006 * enemyNum + (isBoss ? 0.1 : 0));
+  const critDmg = Math.min(2.5, 1.032 + 0.008 * enemyNum);
+  
+  let dr = 1;
+  if (enemyNum >= 200) {
+    dr = 1 - (Math.max(0, floorDiv - 2) * 0.02 + 0.04) - (isBoss ? 0.05 : 0);
+  } else {
+    dr = 1 - (isBoss ? 0.05 : 0);
+  }
+  
+  const evade = 0.01;
+  
+  const regen = 0.04 * enemyNum * multiVal * Math.pow(1.4, floorDiv) * (isBoss ? 2 : 1) * boss200Mult;
+  const atkSpd = (6.005 - 0.005 * enemyNum) * (isBoss ? 2.85 : 1);
+  
+  let type = 'Normal';
+  if (enemyNum === 200) type = 'Boss #200';
+  else if (enemyNum === 100) type = 'Boss #100';
+  else if (isBoss) type = `Boss #${enemyNum}`;
+  
+  // Knox has no effect stat
+  return { stage: enemyNum, type, isBoss, hp, atk, critRate, critDmg, dr, evade, effect: 0, regen, atkSpd };
+}
+
+// Generate enemies based on active hunter
 const allEnemies = computed(() => {
   const enemies = [];
+  
   for (let i = 1; i <= 500; i++) {
-    enemies.push(calculateEnemy(i));
+    if (activeHunter.value === 'Borge') {
+      enemies.push(calculateBorgeEnemy(i));
+    } else if (activeHunter.value === 'Ozzy') {
+      enemies.push(calculateOzzyEnemy(i));
+    } else {
+      enemies.push(calculateKnoxEnemy(i, knoxPogLevel.value));
+    }
   }
   return enemies;
 });
@@ -220,12 +379,10 @@ function formatNumber(value, decimals = 2) {
     return '0';
   }
   
-  // Sonderbehandlung für Werte sehr nahe bei Null
   if (Math.abs(value) < 0.01) {
     return '0';
   }
   
-  // Behandlung für kleine Werte zwischen 0.01 und 1
   if (Math.abs(value) < 1) {
     return value.toFixed(decimals);
   }
@@ -233,17 +390,14 @@ function formatNumber(value, decimals = 2) {
   const absValue = Math.abs(value);
   const suffixes = ['','k','m','b','t','qa','qu','sx','sp','o','n','d'];
   
-  // Berechne die Größenordnung korrekt
   let tier = Math.max(0, Math.min(Math.floor(Math.log10(absValue) / 3), suffixes.length - 1));
   
-  // Ab 1e36 (größer als "d" = 1e33) verwende wissenschaftliche Notation
   if (absValue >= 1e36) {
     const exponent = Math.floor(Math.log10(absValue));
     const mantissa = value / Math.pow(10, exponent);
     return `${mantissa.toFixed(decimals)}e${exponent}`;
   }
   
-  // Für Werte < 1000, zeige ohne Suffix
   if (tier === 0) {
     return value.toFixed(decimals);
   }
@@ -251,7 +405,6 @@ function formatNumber(value, decimals = 2) {
   const suffix = suffixes[tier];
   const scaledValue = value / Math.pow(10, tier * 3);
   
-  // Formatiere die skalierte Zahl mit gewünschten Dezimalstellen + Suffix
   return `${scaledValue.toFixed(decimals)}${suffix}`;
 }
 </script>
