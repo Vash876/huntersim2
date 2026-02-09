@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { getDefaultStatsValues } from '@/constants/gem-planner/stats.js';
+import { GEMS } from '@/constants/gem-planner/index.js';
 
 // Helper function to generate unique IDs
 function generateId() {
@@ -70,6 +71,36 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
     );
   });
 
+  // Migration: Remove obsolete upgrade keys that no longer exist in gem definitions
+  function migrateObsoleteUpgrades() {
+    let hasChanges = false;
+    
+    Object.keys(gemStates.value).forEach(gemId => {
+      const gemDef = GEMS[gemId];
+      if (!gemDef || !gemDef.upgrades) return;
+      
+      // Get valid upgrade IDs from current gem definition
+      const validUpgradeIds = new Set(gemDef.upgrades.map(u => u.id));
+      
+      const gemState = gemStates.value[gemId];
+      if (!gemState?.upgrades) return;
+      
+      // Find and remove obsolete keys
+      Object.keys(gemState.upgrades).forEach(upgradeId => {
+        if (!validUpgradeIds.has(upgradeId)) {
+          console.log(`Migration: Removing obsolete upgrade '${upgradeId}' from gem '${gemId}'`);
+          delete gemState.upgrades[upgradeId];
+          hasChanges = true;
+        }
+      });
+    });
+    
+    if (hasChanges) {
+      saveToStorage();
+      console.log('Migration: Obsolete upgrades removed and saved');
+    }
+  }
+
   // Methods
   function init() {
     if (isInitialized.value) return;
@@ -93,6 +124,9 @@ export const useGemPlannerStore = defineStore('gemPlanner', () => {
         
         // Load gem states
         gemStates.value = data.gemStates || {};
+        
+        // Migration: Remove obsolete upgrade keys that no longer exist in gem definitions
+        migrateObsoleteUpgrades();
         
         // Load current stats
         currentStats.value = { availableOO: 0, ...(data.currentStats || {}) };

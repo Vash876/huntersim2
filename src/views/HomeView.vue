@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.11.4',
+    date: '2026-02-09',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added Boss#200 ability for Knox',
+        ]
+      },
+      {
+        text: 'm0 Cost Overview',
+        subItems: [
+          'Fixed bug in Exodus GN#4 bonus calculation',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.11.3',
     date: '2026-01-14',
     changes: [
