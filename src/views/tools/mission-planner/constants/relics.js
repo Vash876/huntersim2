@@ -298,7 +298,7 @@ export const RELICS = {
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r4,
-    description: 'Borge & Ozzy HP +3%',
+    description: 'Borge & Ozzy HP +1.03x',
   },
   r5: {
     id: 'r5',
@@ -369,7 +369,7 @@ export const RELICS = {
     effectPerLevel: 0.5,
     isAdditive: true,
     getCost: RELIC_COSTS.r11,
-    description: 'Campaign Max Crew +50%',
+    description: 'Campaign Max Crew +1.5x',
   },
   r12: {
     id: 'r12',
@@ -409,7 +409,7 @@ export const RELICS = {
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r16,
-    description: 'Borge ATK +3%',
+    description: 'Borge ATK +1.03x',
   },
   r17: {
     id: 'r17',
@@ -417,7 +417,7 @@ export const RELICS = {
     tier: 1,
     maxLevel: 200,
     getCost: RELIC_COSTS.r17,
-    description: 'Ozzy ATK +3%',
+    description: 'Ozzy ATK +1.03x',
   },
   r18: {
     id: 'r18',
@@ -448,7 +448,7 @@ export const RELICS = {
   t2r1: {
     id: 't2r1',
     name: 'Tier 2 Relic 1',
-    description: 'TBD',
+    description: '+1 Ultima Level',
     tier: 2,
     maxLevel: 10,
     getCost: RELIC_COSTS.t2r1,
@@ -456,7 +456,7 @@ export const RELICS = {
   t2r2: {
     id: 't2r2',
     name: 'Tier 2 Relic 2',
-    description: 'TBD',
+    description: 'Mats x1.8',
     tier: 2,
     maxLevel: 100,
     getCost: RELIC_COSTS.t2r2,
@@ -464,7 +464,7 @@ export const RELICS = {
   t2r3: {
     id: 't2r3',
     name: 'Tier 2 Relic 3',
-    description: 'TBD',
+    description: 'Ouro Ship 1 free Level',
     tier: 2,
     maxLevel: 80,
     getCost: RELIC_COSTS.t2r3,
@@ -472,7 +472,7 @@ export const RELICS = {
   t2r4: {
     id: 't2r4',
     name: 'Tier 2 Relic 4',
-    description: 'TBD',
+    description: 'Catchup Timer +1.02x',
     tier: 2,
     maxLevel: 25,
     getCost: RELIC_COSTS.t2r4,
@@ -480,7 +480,7 @@ export const RELICS = {
   t2r5: {
     id: 't2r5',
     name: 'Tier 2 Relic 5',
-    description: 'TBD',
+    description: 'Knox Loot x1.08',
     tier: 2,
     maxLevel: 100,
     getCost: RELIC_COSTS.t2r5,
@@ -488,7 +488,7 @@ export const RELICS = {
   t2r6: {
     id: 't2r6',
     name: 'Tier 2 Relic 6',
-    description: 'TBD',
+    description: 'LP Upgrades +0.02^',
     tier: 2,
     maxLevel: 40,
     getCost: RELIC_COSTS.t2r6,
@@ -496,7 +496,7 @@ export const RELICS = {
   t2r7: {
     id: 't2r7',
     name: 'Tier 2 Relic 7',
-    description: 'TBD',
+    description: 'Borge, Ozzy & Knox ATK x1.02',
     tier: 2,
     maxLevel: 40,
     getCost: RELIC_COSTS.t2r7,
@@ -504,7 +504,7 @@ export const RELICS = {
   t2r8: {
     id: 't2r8',
     name: 'Tier 2 Relic 8',
-    description: 'Increase farm and campaign fragments',
+    description: 'All Frags x1.021',
     tier: 2,
     maxLevel: 21,
     effectType: 'all_fragments_multiplier',
@@ -516,7 +516,7 @@ export const RELICS = {
   t2r9: {
     id: 't2r9',
     name: 'Tier 2 Relic 9',
-    description: 'TBD',
+    description: 'LP +100',
     tier: 2,
     maxLevel: 100,
     getCost: RELIC_COSTS.t2r9,
@@ -524,7 +524,7 @@ export const RELICS = {
   t2r10: {
     id: 't2r10',
     name: 'Tier 2 Relic 10',
-    description: 'TBD',
+    description: 'OO +0.05% per mech owned',
     tier: 2,
     maxLevel: 5,
     getCost: RELIC_COSTS.t2r10,
