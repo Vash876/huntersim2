@@ -37,7 +37,16 @@ const RELIC_DATA = {
   r19: { bonus: 365,   baseCost: 666,  additive: 1289, exp0: 2446,  fixedCosts: [666, 1289, 2446, 4569, 8428, 15390, 27871, 50121, 3140000] },
   r20: { bonus: 2,     baseCost: 1000, additive: 50,   exp0: 1.2,   exp10: 1,     exp20: 1,      exp30: 1,     exp40: 1,    exp50: null },
   // Tier 2 Relics
-  t2r8: { bonus: 1.021, baseCost: 0, additive: 0, exp0: 1, maxLevel: 21 }, // Fragment multiplier for farms and campaigns
+  t2r1: { bonus: 0, baseCost: 120000, additive: 0, exp0: 1, fixedCosts: [120000, 4070000, 75020000, 1270000000, 19840000000, 293670000000, 4200000000000, 58690000000000, 805070000000000, 10890000000000000], maxLevel: 10 },
+  t2r2: { bonus: 0, baseCost: 120000, additive: 100000, exp0: 1.085, exp10: null, exp20: 1.04, exp30: null, exp40: null, exp50: null, maxLevel: 100 },
+  t2r3: { bonus: 0, baseCost: 550000, additive: 78672, exp0: 1.702, exp10: 1.019, exp20: null, exp30: null, exp40: null, exp50: null, maxLevel: 80 },
+  t2r4: { bonus: 0, baseCost: 3240000, additive: 0, exp0: 1, fixedCosts: [3240000, 4270000, 5620000, 7410000, 10530000, 14970000, 21270000, 30230000, 46380000, 71130000, 109090000, 167260000, 276910000, 458360000, 758570000, 1260000000, 2240000000, 4010000000, 7160000000, 12780000000, 24640000000, 47510000000, 91580000000, 176530000000, 367420000000], maxLevel: 25 },
+  t2r5: { baseCost: 1350000, additive: 320000, exp0: 1.4, exp5: 1.0418, exp10: 1.0406, exp15: 1.0405, exp20: 1.0398, exp25: 1.0402, maxLevel: 100 },
+  t2r6: { baseCost: 1060000, additive: 1718500, exp0: 1.2507, fixedFirstLevels: [1060000, 3740000], maxLevel: 40 },
+  t2r7: { baseCost: 300000, additive: 850320, exp0: 1.70990, fixedFirstLevels: [300000, 1970000], maxLevel: 40 },
+  t2r8: { bonus: 1.021, baseCost: 2540000, additive: 1014380, exp0: 1.71900, maxLevel: 21 }, // Fragment multiplier for farms and campaigns
+  t2r9: { baseCost: 800000, additive: 80000, exp0: 1.45, maxLevel: 100 },
+  t2r10: { fixedCosts: [6000000, 1920000000, 611000000000, 195000000000000, 62200000000000000], maxLevel: 5 },
 };
 
 // Cost type categorization
@@ -50,14 +59,19 @@ const ROUND_RELICS = [2, 3, 4]; // FLEX = ROUND to 3 decimals
  * cost = floor((baseCost + additive * lvl) * exp0^lvl * exp10^(lvl-9) * exp20^(lvl-19) * ...)
  */
 function calculateFloorCost(data, lvl) {
-  const { baseCost, additive, exp0, exp10, exp20, exp30, exp40, exp50 } = data;
+  const { baseCost, additive, exp0, exp5, exp10, exp15, exp20, exp25, exp30, exp35, exp40, exp45, exp50 } = data;
   
   let cost = (baseCost + additive * lvl) * Math.pow(exp0, lvl);
   
+  if (lvl >= 5  && exp5)  cost *= Math.pow(exp5,  lvl - 4);
   if (lvl >= 10 && exp10) cost *= Math.pow(exp10, lvl - 9);
+  if (lvl >= 15 && exp15) cost *= Math.pow(exp15, lvl - 14);
   if (lvl >= 20 && exp20) cost *= Math.pow(exp20, lvl - 19);
+  if (lvl >= 25 && exp25) cost *= Math.pow(exp25, lvl - 24);
   if (lvl >= 30 && exp30) cost *= Math.pow(exp30, lvl - 29);
+  if (lvl >= 35 && exp35) cost *= Math.pow(exp35, lvl - 34);
   if (lvl >= 40 && exp40) cost *= Math.pow(exp40, lvl - 39);
+  if (lvl >= 45 && exp45) cost *= Math.pow(exp45, lvl - 44);
   if (lvl >= 50 && exp50) cost *= Math.pow(exp50, lvl - 49);
   
   return Math.floor(cost);
@@ -67,14 +81,19 @@ function calculateFloorCost(data, lvl) {
  * Calculate cost using ROUND formula (same as FLOOR but rounded to 3 decimals)
  */
 function calculateRoundCost(data, lvl) {
-  const { baseCost, additive, exp0, exp10, exp20, exp30, exp40, exp50 } = data;
+  const { baseCost, additive, exp0, exp5, exp10, exp15, exp20, exp25, exp30, exp35, exp40, exp45, exp50 } = data;
   
   let cost = (baseCost + additive * lvl) * Math.pow(exp0, lvl);
   
+  if (lvl >= 5  && exp5)  cost *= Math.pow(exp5,  lvl - 4);
   if (lvl >= 10 && exp10) cost *= Math.pow(exp10, lvl - 9);
+  if (lvl >= 15 && exp15) cost *= Math.pow(exp15, lvl - 14);
   if (lvl >= 20 && exp20) cost *= Math.pow(exp20, lvl - 19);
+  if (lvl >= 25 && exp25) cost *= Math.pow(exp25, lvl - 24);
   if (lvl >= 30 && exp30) cost *= Math.pow(exp30, lvl - 29);
+  if (lvl >= 35 && exp35) cost *= Math.pow(exp35, lvl - 34);
   if (lvl >= 40 && exp40) cost *= Math.pow(exp40, lvl - 39);
+  if (lvl >= 45 && exp45) cost *= Math.pow(exp45, lvl - 44);
   if (lvl >= 50 && exp50) cost *= Math.pow(exp50, lvl - 49);
   
   return Math.round(cost * 1000) / 1000;
@@ -125,16 +144,45 @@ export const RELIC_COSTS = {
   r19: (level) => calculateFixedCost(RELIC_DATA.r19, level),
   r20: (level) => calculateFloorCost(RELIC_DATA.r20, level),
   // Tier 2 Relics - TODO: Add when formulas are known
-  t2r1: (level) => 0,
-  t2r2: (level) => 0,
-  t2r3: (level) => 0,
-  t2r4: (level) => 0,
-  t2r5: (level) => 0,
-  t2r6: (level) => 0,
-  t2r7: (level) => 0,
-  t2r8: (level) => 0,
-  t2r9: (level) => 0,
-  t2r10: (level) => 0,
+  t2r1: (level) => calculateFixedCost(RELIC_DATA.t2r1, level),
+  t2r2: (level) => calculateFloorCost(RELIC_DATA.t2r2, level),
+  t2r3: (level) => calculateFloorCost(RELIC_DATA.t2r3, level),
+  t2r4: (level) => calculateFixedCost(RELIC_DATA.t2r4, level),
+  t2r5: (level) => calculateFloorCost(RELIC_DATA.t2r5, level),
+  t2r6: (level) => {
+    const d = RELIC_DATA.t2r6;
+    if (level < d.fixedFirstLevels.length) return d.fixedFirstLevels[level];
+    let cost = (d.baseCost + d.additive * level) * Math.pow(d.exp0, level);
+    if (level >= 8)  cost *= Math.pow(1.0586, level - 7);
+    if (level >= 12) cost *= Math.pow(1.0595, level - 11);
+    if (level >= 16) cost *= Math.pow(1.0587, level - 15);
+    if (level >= 20) cost *= Math.pow(1.0607, level - 19);
+    if (level >= 24) cost *= Math.pow(1.0596, level - 23);
+    if (level >= 28) cost *= Math.pow(1.0594, level - 27); // estimated
+    if (level >= 32) cost *= Math.pow(1.0594, level - 31); // estimated
+    if (level >= 36) cost *= Math.pow(1.0594, level - 35); // estimated
+    if (level >= 40) cost *= Math.pow(1.0594, level - 39); // estimated
+    return Math.floor(cost);
+  },
+  t2r7: (level) => {
+    const d = RELIC_DATA.t2r7;
+    if (level < d.fixedFirstLevels.length) return d.fixedFirstLevels[level];
+    let cost = (d.baseCost + d.additive * level) * Math.pow(d.exp0, level);
+    if (level >= 8) cost *= Math.pow(1.0901, level - 7);
+    return Math.floor(cost);
+  },
+  t2r8: (level) => {
+    const d = RELIC_DATA.t2r8;
+    let cost = (d.baseCost + d.additive * level) * Math.pow(d.exp0, level);
+    if (level >= 4)  cost *= Math.pow(1.2095, level - 3);
+    if (level >= 8)  cost *= Math.pow(1.2100, level - 7);
+    if (level >= 12) cost *= Math.pow(1.2099, level - 11);
+    if (level >= 16) cost *= Math.pow(1.2098, level - 15); // estimated
+    if (level >= 20) cost *= Math.pow(1.2098, level - 19); // estimated
+    return Math.floor(cost);
+  },
+  t2r9: (level) => calculateFloorCost(RELIC_DATA.t2r9, level),
+  t2r10: (level) => calculateFixedCost(RELIC_DATA.t2r10, level),
 };
 
 /**
@@ -402,7 +450,7 @@ export const RELICS = {
     name: 'Tier 2 Relic 1',
     description: 'TBD',
     tier: 2,
-    maxLevel: 100,
+    maxLevel: 10,
     getCost: RELIC_COSTS.t2r1,
   },
   t2r2: {
@@ -418,7 +466,7 @@ export const RELICS = {
     name: 'Tier 2 Relic 3',
     description: 'TBD',
     tier: 2,
-    maxLevel: 100,
+    maxLevel: 80,
     getCost: RELIC_COSTS.t2r3,
   },
   t2r4: {
@@ -426,7 +474,7 @@ export const RELICS = {
     name: 'Tier 2 Relic 4',
     description: 'TBD',
     tier: 2,
-    maxLevel: 100,
+    maxLevel: 25,
     getCost: RELIC_COSTS.t2r4,
   },
   t2r5: {
@@ -442,7 +490,7 @@ export const RELICS = {
     name: 'Tier 2 Relic 6',
     description: 'TBD',
     tier: 2,
-    maxLevel: 100,
+    maxLevel: 40,
     getCost: RELIC_COSTS.t2r6,
   },
   t2r7: {
@@ -450,7 +498,7 @@ export const RELICS = {
     name: 'Tier 2 Relic 7',
     description: 'TBD',
     tier: 2,
-    maxLevel: 100,
+    maxLevel: 40,
     getCost: RELIC_COSTS.t2r7,
   },
   t2r8: {
@@ -478,7 +526,7 @@ export const RELICS = {
     name: 'Tier 2 Relic 10',
     description: 'TBD',
     tier: 2,
-    maxLevel: 100,
+    maxLevel: 5,
     getCost: RELIC_COSTS.t2r10,
   },
 };

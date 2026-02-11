@@ -194,13 +194,103 @@
 
     <!-- Tier 2 Relics (only show if Power Gem Level >= 3) -->
     <div v-if="showTier2Relics" class="mt-2">
-      <div class="flex items-center gap-2 border-l-2 border-purple-500/50 pl-2 mb-2">
+      <div class="flex items-center gap-2 border-l-2 border-amber-500/50 pl-2 mb-2">
         <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
-        <h3 class="text-sm font-semibold text-purple-400">Tier 2 Relics</h3>
-        <span class="text-[10px] text-gray-500 bg-gray-700/50 px-1.5 py-0.5 rounded">Coming Soon</span>
+        <h3 class="text-sm font-semibold text-amber-400">Tier 2 Relics</h3>
       </div>
-      <div class="bg-gray-800/30 rounded-lg p-4 text-center text-gray-500 text-xs border border-gray-700/30">
-        Tier 2 relic formulas will be added soon
+
+      <div class="flex flex-col gap-1.5">
+        <div 
+          v-for="relic in tier2Relics" 
+          :key="relic.id"
+          :class="[
+            'bg-gray-800/60 rounded-lg p-2 border-l-2 transition-colors',
+            hasTargetSet(relic.id) ? 'border-l-amber-500 bg-amber-900/10' : 'border-l-gray-600'
+          ]"
+        >
+          <!-- Compact Row: ID + Level + Target + Buy -->
+          <div class="flex items-center gap-2">
+            <!-- Relic ID with Icon -->
+            <div class="flex items-center gap-1 w-14">
+              <img 
+                v-if="hasRelicIcon(relic.id)"
+                :ref="el => setRelicIconRef(el, relic.id)"
+                :src="getRelicIconUrl(relic.id)" 
+                :alt="relic.id" 
+                :data-description="RELICS[relic.id]?.description"
+                class="w-6 h-6 object-contain cursor-help"
+              />
+              <span class="text-white font-semibold font-mono text-xs">#{{ relic.id.replace(/^t2r/i, '') }}</span>
+            </div>
+            
+            <!-- Level Control -->
+            <div class="flex items-center gap-1 flex-1">
+              <span class="text-[9px] text-gray-500">Lv</span>
+              <ToolValueControls
+                :value="getRelicLevel(relic.id)"
+                @update:value="updateRelicLevel(relic.id, $event)"
+                :min-value="0"
+                :max-value="getRelicMaxLevel(relic.id)"
+                :step="1"
+                :fast-step="10"
+                :show-fast-controls="false"
+                :auto-edit="true"
+                class="w-[70px]"
+                value-class="text-white text-xs"
+              />
+            </div>
+            
+            <!-- Target Control -->
+            <div class="flex items-center flex-1">
+              <ToolValueControls
+                :value="getTargetLevel(relic.id)"
+                @update:value="updateTargetLevel(relic.id, $event)"
+                :min-value="getRelicLevel(relic.id)"
+                :max-value="getRelicMaxLevel(relic.id)"
+                :step="1"
+                :fast-step="10"
+                :show-fast-controls="false"
+                :auto-edit="true"
+                class="w-[70px]"
+                value-class="text-cyan-400 text-xs"
+              />
+            </div>
+            
+            <!-- Buy Button -->
+            <button
+              v-if="canBuyNextLevel(relic.id)"
+              @click="buyNextLevel(relic.id)"
+              class="p-1 rounded bg-green-900/40 text-green-400 border border-green-600/30"
+            >
+              <IconCheck :size="12" />
+            </button>
+            <span v-else class="w-6"></span>
+            
+            <!-- Max Badge -->
+            <span class="text-[9px] text-gray-500">/{{ getRelicMaxLevel(relic.id) }}</span>
+          </div>
+
+          <!-- Always show Next Cost + Invested -->
+          <div class="flex items-center justify-between mt-1.5 text-[10px] px-1">
+            <span class="text-gray-500">Next: 
+              <span v-if="getRelicNextCost(relic.id) === Infinity" class="text-green-400 font-mono">MAX</span>
+              <span v-else-if="getRelicNextCost(relic.id) === null" class="text-gray-500 font-mono">?</span>
+              <span v-else class="text-yellow-400 font-mono">{{ formatNumber(getRelicNextCost(relic.id)) }}</span>
+            </span>
+            <span class="text-gray-500">Inv: <span class="text-amber-400/80 font-mono">{{ formatNumber(getRelicTotalInvested(relic.id)) }}</span></span>
+          </div>
+
+          <!-- Target Stats Row (only if target set) -->
+          <div v-if="hasTargetSet(relic.id)" class="flex items-center justify-between mt-1 text-[10px] px-1 pt-1 border-t border-gray-700/30">
+            <span class="text-gray-500">Target Cost: 
+              <span v-if="getTargetCost(relic.id) === null" class="text-gray-500 font-mono">?</span>
+              <span v-else class="text-cyan-400 font-mono">{{ formatNumber(getTargetCost(relic.id)) }}</span>
+            </span>
+            <span class="text-gray-500">ETA: 
+              <span :class="getEstimatedTime(relic.id) === '?' ? 'text-gray-500' : 'text-green-400'" class="font-mono">{{ getEstimatedTime(relic.id) }}</span>
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -213,7 +303,8 @@ import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { formatNumber } from '@/composables/format';
 import { 
-  getTier1Relics, 
+  getTier1Relics,
+  getTier2Relics,
   calculateTotalCost, 
   getRelicMaxLevel as getRelicMaxLevelFromData,
   hasValidCostForLevel,
@@ -268,13 +359,15 @@ const currentHoursInTR = computed(() => gemPlannerStore.getCurrentHoursInTR());
 // Tier 1 relics list
 const tier1Relics = computed(() => getTier1Relics());
 
+// Tier 2 relics list
+const tier2Relics = computed(() => getTier2Relics());
+
 // Handle reset targets button
 function handleResetTargets() {
-  for (let i = 1; i <= 20; i++) {
-    const relicId = `r${i}`;
-    const currentLevel = missionPlannerStore.relicLevels[relicId] || 0;
-    missionPlannerStore.relicTargetLevels[relicId] = currentLevel;
-  }
+  [...tier1Relics.value, ...tier2Relics.value].forEach(relic => {
+    const currentLevel = missionPlannerStore.relicLevels[relic.id] || 0;
+    missionPlannerStore.relicTargetLevels[relic.id] = currentLevel;
+  });
 }
 
 // Frags per day
@@ -410,6 +503,9 @@ function getRelicMaxLevel(relicId) {
   const powerNode1Active = gemPlannerStore.gemStates?.power?.nodes?.[0] || false;
   const powerNode1Bonus = powerNode1Active ? 3 : 0;
   
+  // Tier 2 relics have no gem bonuses
+  if (relicId.startsWith('t2')) return getRelicMaxLevelFromData(relicId, 0);
+  
   // R14 is excluded from all bonuses
   if (relicId === 'r14') return getRelicMaxLevelFromData(relicId, 0);
   
@@ -544,11 +640,11 @@ function getRelicTotalInvested(relicId) {
   return calculateTotalCost(relicId, 0, levelToCalculate);
 }
 
-// Total investment
+// Total investment (Tier 1 + Tier 2)
 const totalRelicInvestment = computed(() => {
   let total = 0;
-  Object.keys(relicLevels.value).forEach(relicId => {
-    const invested = getRelicTotalInvested(relicId);
+  [...tier1Relics.value, ...tier2Relics.value].forEach(relic => {
+    const invested = getRelicTotalInvested(relic.id);
     if (invested && !isNaN(invested)) {
       total += invested;
     }
@@ -561,7 +657,7 @@ const totalTargetsSummary = computed(() => {
   let totalCost = 0;
   let targetCount = 0;
   
-  tier1Relics.value.forEach(relic => {
+  [...tier1Relics.value, ...tier2Relics.value].forEach(relic => {
     const cost = getTargetCost(relic.id);
     if (cost !== null && cost > 0) {
       totalCost += cost;

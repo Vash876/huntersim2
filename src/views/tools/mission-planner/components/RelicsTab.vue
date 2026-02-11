@@ -255,10 +255,156 @@
       <h3 class="text-sm font-semibold text-purple-400 mb-2 flex items-center gap-2 border-l-2 border-purple-500/50 pl-2">
         <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
         Tier 2 Relics
-        <span class="text-xs text-gray-500 font-normal bg-gray-700/50 px-1.5 py-0.5 rounded">(Coming Soon)</span>
       </h3>
-      <div class="bg-gray-700/30 rounded-lg p-4 text-center text-gray-500 text-xs border border-gray-700/30">
-        Tier 2 relic formulas will be added soon
+      
+      <div class="overflow-x-auto">
+        <table class="text-xs w-full rounded-lg overflow-hidden border border-gray-700/30">
+          <thead class="bg-gray-700/80 text-gray-300">
+            <tr>
+              <th class="px-2 py-1.5 text-left rounded-tl-lg">ID</th>
+              <th class="px-2 py-1.5 text-center">Level</th>
+              <th class="px-2 py-1.5 text-center">Target</th>
+              <th class="px-2 py-1.5 text-center">Buy</th>
+              <th class="px-2 py-1.5 text-right">Max</th>
+              <th class="px-2 py-1.5 text-right">Target Cost</th>
+              <th class="px-2 py-1.5 text-right">Est. Time</th>
+              <th class="px-2 py-1.5 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <img src="@/assets/general/fragments.png" alt="Fragments" class="w-3 h-3" />
+                  <span>Next Cost</span>
+                </div>
+              </th>
+              <th class="px-2 py-1.5 text-right rounded-tr-lg">
+                <div class="flex items-center justify-end gap-1">
+                  <img src="@/assets/general/fragments.png" alt="Fragments" class="w-3 h-3" />
+                  <span>Invested</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr 
+              v-for="(relic, index) in tier2Relics" 
+              :key="relic.id"
+              :class="[
+                index % 2 === 0 ? 'bg-gray-800/30' : 'bg-gray-800/50',
+                'border-l-2 hover:bg-gray-700/40',
+                hasTargetSet(relic.id) ? 'border-l-purple-500' : 'border-l-transparent'
+              ]"
+            >
+              <!-- ID with Icon -->
+              <td class="px-2 py-1.5">
+                <div class="flex items-center gap-1.5">
+                  <img 
+                    v-if="hasRelicIcon(relic.id)"
+                    :ref="el => setRelicIconRef(el, relic.id)"
+                    :src="getRelicIconUrl(relic.id)" 
+                    :alt="relic.id" 
+                    :data-description="relic.description"
+                    class="w-6 h-6 object-contain cursor-help"
+                  />
+                  <span class="font-mono font-semibold text-white">{{ relic.id.replace(/^t2r/i, '#') }}</span>
+                </div>
+              </td>
+              
+              <!-- Level Input -->
+              <td class="px-2 py-1.5">
+                <div class="flex justify-center">
+                  <ToolValueControls
+                    :value="getRelicLevel(relic.id)"
+                    @update:value="updateRelicLevel(relic.id, $event)"
+                    :min-value="0"
+                    :max-value="getRelicMaxLevel(relic.id)"
+                    :step="1"
+                    :fast-step="10"
+                    :show-fast-controls="false"
+                    :auto-edit="true"
+                    class="w-[80px]"
+                    value-class="text-white text-xs"
+                  />
+                </div>
+              </td>
+              
+              <!-- Target Level Input -->
+              <td class="px-2 py-1.5">
+                <div class="flex justify-center">
+                  <ToolValueControls
+                    :value="getTargetLevel(relic.id)"
+                    @update:value="updateTargetLevel(relic.id, $event)"
+                    :min-value="getRelicLevel(relic.id)"
+                    :max-value="getRelicMaxLevel(relic.id)"
+                    :step="1"
+                    :fast-step="10"
+                    :show-fast-controls="false"
+                    :auto-edit="true"
+                    class="w-[80px]"
+                    value-class="text-purple-400 text-xs"
+                  />
+                </div>
+              </td>
+              
+              <!-- Buy Next Level Button -->
+              <td class="px-2 py-1.5">
+                <div class="flex justify-center">
+                  <button
+                    v-if="canBuyNextLevel(relic.id)"
+                    @click="buyNextLevel(relic.id)"
+                    class="p-1 rounded bg-green-900/40 hover:bg-green-600/40 text-green-400 border border-green-600/30 shadow-[0_0_6px_rgba(34,197,94,0.2)]"
+                    :title="`Buy level ${getRelicLevel(relic.id) + 1} for ${formatNumber(getRelicNextCostFromCurrent(relic.id))} frags`"
+                  >
+                    <IconCheck size="16" />
+                  </button>
+                  <span v-else class="text-gray-600">-</span>
+                </div>
+              </td>
+              
+              <!-- Max Level -->
+              <td class="px-2 py-1.5 text-right text-gray-400 font-mono">
+                {{ getRelicMaxLevel(relic.id) }}
+              </td>
+              
+              <!-- Target Cost -->
+              <td class="px-2 py-1.5 text-right font-mono"
+                :class="getTargetCost(relic.id) === 0 ? 'text-gray-500' : (getTargetCost(relic.id) === null ? 'text-gray-500' : 'text-purple-400')"
+                :title="getTargetCost(relic.id) === null ? 'Cost formula not available for these levels' : ''"
+              >
+                {{ getTargetCost(relic.id) === 0 ? '-' : (getTargetCost(relic.id) === null ? '?' : formatNumber(getTargetCost(relic.id))) }}
+              </td>
+              
+              <!-- Estimated Time -->
+              <td class="px-2 py-1.5 text-right font-mono"
+                :class="getTargetCost(relic.id) === 0 || getTargetCost(relic.id) === null ? 'text-gray-500' : 'text-green-400'"
+              >
+                {{ getEstimatedTime(relic.id) }}
+              </td>
+              
+              <!-- Next Cost -->
+              <td class="px-2 py-1.5 text-right font-mono" 
+                :class="getRelicNextCost(relic.id) === Infinity ? 'text-gray-500' : (getRelicNextCost(relic.id) === null ? 'text-gray-500' : 'text-amber-400')"
+                :title="getRelicNextCost(relic.id) === null ? 'Cost formula not available for this level' : ''"
+              >
+                {{ getRelicNextCost(relic.id) === Infinity ? 'MAX' : (getRelicNextCost(relic.id) === null ? '?' : formatNumber(getRelicNextCost(relic.id))) }}
+              </td>
+              
+              <!-- Invested -->
+              <td class="px-2 py-1.5 text-right text-amber-400/80 font-mono">
+                {{ formatNumber(getRelicTotalInvested(relic.id)) }}
+              </td>
+            </tr>
+          </tbody>
+          <!-- Footer -->
+          <tfoot class="bg-gray-700/60 border-t border-gray-600">
+            <tr>
+              <td colspan="8" class="px-2 py-2 text-right font-semibold text-gray-300">Total Invested:</td>
+              <td class="px-2 py-2 text-right text-amber-400 font-bold font-mono">
+                <div class="flex items-center justify-end gap-1">
+                  <img src="@/assets/general/fragments.png" alt="Fragments" class="w-3.5 h-3.5" />
+                  <span>{{ formatNumber(totalTier2Investment) }}</span>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
     </div>
   </div>
@@ -275,6 +421,7 @@ import {
   RELICS, 
   RELIC_COSTS, 
   getTier1Relics, 
+  getTier2Relics,
   calculateTotalCost, 
   getRelicMaxLevel as getRelicMaxLevelFromData,
   hasValidCostForLevel,
@@ -323,6 +470,9 @@ function handleFragmentsUpdate(value) {
 
 // Tier 1 relics list
 const tier1Relics = computed(() => getTier1Relics());
+
+// Tier 2 relics list
+const tier2Relics = computed(() => getTier2Relics());
 
 // Total fragments per day from store (frags per hour * 24)
 const fragsPerDay = computed(() => {
@@ -459,6 +609,9 @@ function syncRelicToModifiers(relicId, level) {
 // Get max level for a relic (including Exodus Node 3 and Power Node 1 bonuses)
 // Uses the centralized function from relics.js which handles fixedCosts limits
 function getRelicMaxLevel(relicId) {
+  // Tier 2 relics: no gem bonuses, use base max level
+  if (relicId.startsWith('t2')) return getRelicMaxLevelFromData(relicId, 0);
+  
   // Exodus Node 3 bonus: automatically +5 when active (except R14, R5 gets +10)
   // Read directly from gemPlannerStore - nodes[2] is Node 3 (0-indexed)
   const exodusNode3Active = gemPlannerStore.gemStates?.exodus?.nodes?.[2] || false;
@@ -610,11 +763,23 @@ function getRelicTotalInvested(relicId) {
   return calculateTotalCost(relicId, 0, levelToCalculate);
 }
 
-// Computed: Total investment across all relics
+// Computed: Total investment across all relics (Tier 1 + Tier 2)
 const totalRelicInvestment = computed(() => {
   let total = 0;
-  Object.keys(relicLevels.value).forEach(relicId => {
-    const invested = getRelicTotalInvested(relicId);
+  [...tier1Relics.value, ...tier2Relics.value].forEach(relic => {
+    const invested = getRelicTotalInvested(relic.id);
+    if (invested && !isNaN(invested)) {
+      total += invested;
+    }
+  });
+  return total;
+});
+
+// Computed: Total Tier 2 investment
+const totalTier2Investment = computed(() => {
+  let total = 0;
+  tier2Relics.value.forEach(relic => {
+    const invested = getRelicTotalInvested(relic.id);
     if (invested && !isNaN(invested)) {
       total += invested;
     }
@@ -628,8 +793,8 @@ const totalTargetsSummary = computed(() => {
   let targetCount = 0;
   let hasMissingCosts = false;
   
-  // Sum up costs for all relics with targets set
-  tier1Relics.value.forEach(relic => {
+  // Sum up costs for all relics with targets set (T1 + T2)
+  [...tier1Relics.value, ...tier2Relics.value].forEach(relic => {
     const cost = getTargetCost(relic.id);
     if (cost === null) {
       hasMissingCosts = true;
@@ -709,7 +874,7 @@ const totalTargetsSummary = computed(() => {
 
 // Reset all target levels to current levels
 function resetAllTargets() {
-  tier1Relics.value.forEach(relic => {
+  [...tier1Relics.value, ...tier2Relics.value].forEach(relic => {
     const currentLevel = getRelicLevel(relic.id);
     missionPlannerStore.relicTargetLevels[relic.id] = currentLevel;
   });
@@ -779,7 +944,7 @@ onMounted(() => {
   syncFromHunterStore();
   
   // Initialize target levels to current levels (only if not already set)
-  tier1Relics.value.forEach(relic => {
+  [...tier1Relics.value, ...tier2Relics.value].forEach(relic => {
     const currentLevel = getRelicLevel(relic.id);
     const currentTarget = missionPlannerStore.relicTargetLevels[relic.id] || 0;
     // Only initialize if target is below current level
