@@ -1,32 +1,25 @@
 <template>
   <div class="p-4 sm:p-6 max-w-[1440px] mx-auto">
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
-      <!-- Überschrift -->
-      <h2 class="text-3xl font-bold mb-8 text-center text-white">Inscryptions</h2>
+      <h2 class="text-3xl font-bold mb-8 text-center text-white md:hidden">Inscryptions</h2>
 
       <!-- Filter-Leiste mit Hunter-Filter und Hide Maxed Toggle -->
       <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <!-- Leerer Platzhalter links für Balance -->
         <div class="w-1/4 hidden md:block"></div>
         
-        <!-- Hunter-Filter in der Mitte -->
-        <div class="flex justify-center space-x-4 flex-wrap gap-2 md:w-2/4">
+        <!-- Hunter-Filter als Segmented Control -->
+        <div class="inline-flex bg-gray-800/60 rounded-xl p-1 gap-1 md:w-auto">
           <button
             v-for="hunter in hunters"
             :key="hunter.id"
             @click="selectedHunter = hunter.id"
-            class="px-4 py-2 rounded-md transition-colors"
-            :class="{
-              'bg-red-600 text-white': selectedHunter === hunter.id && hunter.color === 'red',
-              'bg-green-600 text-white': selectedHunter === hunter.id && hunter.color === 'green',
-              'bg-blue-600 text-white': selectedHunter === hunter.id && hunter.color === 'blue',
-              'bg-purple-600 text-white': selectedHunter === hunter.id && hunter.color === 'purple',
-              'bg-red-600/30 text-white hover:bg-red-600/50': selectedHunter !== hunter.id && hunter.color === 'red',
-              'bg-green-600/30 text-white hover:bg-green-600/50': selectedHunter !== hunter.id && hunter.color === 'green',
-              'bg-blue-600/30 text-white hover:bg-blue-600/50': selectedHunter !== hunter.id && hunter.color === 'blue',
-              'bg-purple-600/30 text-white hover:bg-purple-600/50': selectedHunter !== hunter.id && hunter.color === 'purple',
-              'bg-gray-700/50 text-gray-300 hover:bg-gray-700': selectedHunter !== hunter.id && !hunter.color
-            }"
+            class="relative px-5 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200"
+            :class="[
+              selectedHunter === hunter.id 
+                ? hunterActiveClass(hunter.color) 
+                : hunterInactiveClass(hunter.color)
+            ]"
           >
             {{ hunter.name }}
           </button>
@@ -34,23 +27,25 @@
         
         <!-- Toggle für "Hide Maxed" rechts -->
         <div class="flex justify-end items-center md:w-1/4">
-          <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 p-3">
-            <div class="flex items-center justify-between">
-              <span class="text-gray-300 text-sm font-medium mr-4">Hide Maxed:</span>
+          <div class="bg-gray-800/40 rounded-lg border border-gray-700/40 px-3 py-2">
+            <div class="flex items-center gap-3">
+              <span class="text-gray-400 text-sm">Hide Maxed</span>
               <button 
                 @click="hideMaxed = !hideMaxed" 
-                class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
-                :class="{
-                  'bg-green-600': hideMaxed,
-                  'bg-gray-600': !hideMaxed
-                }"
+                class="relative inline-flex h-5 w-11 items-center rounded-full transition-all duration-300 focus:outline-none"
+                :class="hideMaxed 
+                  ? 'bg-gradient-to-r from-green-700 to-green-500 border border-green-400/30 shadow-sm shadow-green-500/25' 
+                  : 'bg-gray-700/60 border border-gray-600/40'"
               >
+                <span
+                  v-if="hideMaxed"
+                  class="absolute h-3 w-3 rounded-full transition-all duration-300 blur-[5px] translate-x-[1.45rem] bg-green-400"
+                ></span>
                 <span 
-                  class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
-                  :class="{
-                    'translate-x-6': hideMaxed,
-                    'translate-x-1': !hideMaxed
-                  }"
+                  class="relative inline-block h-3.5 w-3.5 transform rounded-full transition-all duration-300"
+                  :class="hideMaxed 
+                    ? 'translate-x-[1.4rem] bg-white shadow-md' 
+                    : 'translate-x-1 bg-gray-500 shadow-sm'"
                 ></span>
               </button>
             </div>
@@ -159,6 +154,27 @@ const selectedHunter = ref('borge');
 const hunters = HUNTERS;
 
 const hideMaxed = ref(false);
+
+// Hunter-Tab aktive Klasse
+function hunterActiveClass(color) {
+  const map = {
+    'red': 'bg-gradient-to-b from-red-500/90 to-red-700/90 text-white shadow-sm',
+    'green': 'bg-gradient-to-b from-green-500/90 to-green-700/90 text-white shadow-sm',
+    'blue': 'bg-gradient-to-b from-blue-500/90 to-blue-700/90 text-white shadow-sm',
+    'purple': 'bg-gradient-to-b from-purple-500/90 to-purple-700/90 text-white shadow-sm',
+  };
+  return map[color] || 'bg-gray-700 text-white shadow-sm';
+}
+
+function hunterInactiveClass(color) {
+  const map = {
+    'red': 'text-gray-500 hover:text-red-400 hover:bg-red-500/10',
+    'green': 'text-gray-500 hover:text-green-400 hover:bg-green-500/10',
+    'blue': 'text-gray-500 hover:text-blue-400 hover:bg-blue-500/10',
+    'purple': 'text-gray-500 hover:text-purple-400 hover:bg-purple-500/10',
+  };
+  return map[color] || 'text-gray-500 hover:text-gray-300';
+}
 
 // Gefilterte Inscryptions basierend auf ausgewähltem Hunter
 const filteredInscryptions = computed(() => {

@@ -2,8 +2,16 @@
 <template>
   <div class="p-4 sm:p-6 max-w-[1440px] mx-auto">
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
-      <!-- Überschrift -->
-      <h2 class="text-3xl font-bold mb-8 text-center text-white">Gadgets</h2>
+      <h2 class="text-3xl font-bold mb-8 text-center text-white md:hidden">Gadgets</h2>
+
+      <!-- Reward Overlay -->
+      <div 
+        v-if="showReward" 
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 cursor-pointer"
+        @click="dismissReward"
+      >
+        <img :src="rewardImg" class="max-w-[90vw] max-h-[80vh] rounded-xl shadow-2xl" />
+      </div>
 
       <!-- Grid mit Upgrades -->
       <UpgradeGrid :loading="loading" :columns="3">
@@ -43,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useHunterStore } from '@/store/hunterStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { 
@@ -54,6 +62,7 @@ import {
 import { useButtonControls } from '@/utils/useButtonControls.js';
 import UpgradeGrid from '@/components/upgrades/UpgradeGrid.vue';
 import UpgradeCard from '@/components/upgrades/UpgradeCard.vue';
+import rewardImg from '@/assets/meme/1.png';
 
 // Store für Upgrades
 const hunterStore = useHunterStore();
@@ -63,6 +72,22 @@ const gemPlannerStore = useGemPlannerStore();
 const allGadgets = ref([]);
 const loading = ref(true);
 const category = 'gadgets'; // Die Kategorie dieser View
+
+// Completion reward state
+const showReward = ref(false);
+
+const isFullyCompleted = computed(() => {
+  if (!allGadgets.value.length) return false;
+  return allGadgets.value.every(g => hunterStore.getUpgradeValue(category, g.id) >= 1000);
+});
+
+watch(isFullyCompleted, (val) => {
+  if (val) showReward.value = true;
+}, { immediate: false });
+
+function dismissReward() {
+  showReward.value = false;
+}
 
 // Computed für verfügbare Gadgets basierend auf Gem-Leveln
 const gadgets = computed(() => {
@@ -93,6 +118,8 @@ onMounted(async () => {
     console.error(`Fehler beim Laden der ${category}:`, error);
   } finally {
     loading.value = false;
+    // Check completion state on mount
+    if (isFullyCompleted.value) showReward.value = true;
   }
 });
 
@@ -114,7 +141,7 @@ function updateGadgetLevel(item, newLevel) {
  * Bestimmt die Farbe für ein Gadget
  */
 function getGadgetColor(gadget) {
-  return gadget.color || getUpgradeColor(gadget, category) || 'purple';
+  return gadget.color || getUpgradeColor(gadget, category) || 'gray';
 }
 
 // useButtonControls initialisieren mit den richtigen Funktions-Signaturen

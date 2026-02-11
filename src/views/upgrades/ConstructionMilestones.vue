@@ -1,8 +1,7 @@
 <template>
   <div class="p-4 sm:p-6 max-w-[1440px] mx-auto">
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
-      <!-- Überschrift -->
-      <h2 class="text-3xl font-bold mb-8 text-center text-white">Construction Milestones</h2>
+      <h2 class="text-3xl font-bold mb-8 text-center text-white md:hidden">Construction Milestones</h2>
 
       <!-- Grid mit Milestones -->
       <UpgradeGrid :loading="loading" :columns="3">
@@ -191,7 +190,7 @@ function toggleMilestoneBoolean(item) {
  * Liefert die visuelle Farbe für ein Milestone
  */
 function getMilestoneColor(milestone) {
-  return 'purple'; // Lila für Construction Milestones
+  return 'gray'; // Grau für Construction Milestones (neutral)
 }
 
 /**

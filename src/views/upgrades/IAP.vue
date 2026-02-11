@@ -2,8 +2,7 @@
 <template>
   <div class="p-4 sm:p-6 max-w-[1440px] mx-auto">
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
-      <!-- Überschrift -->
-      <h2 class="text-3xl font-bold mb-8 text-center text-white">In-App Purchases</h2>
+      <h2 class="text-3xl font-bold mb-8 text-center text-white md:hidden">In-App Purchases</h2>
 
       <!-- Grid mit IAPs -->
       <UpgradeGrid :loading="loading" :columns="3">
@@ -11,7 +10,7 @@
           v-for="purchase in iaps"
           :key="purchase.id"
           :item="purchase"
-          :color="'purple'"
+          :color="'gray'"
           :getLevel="getIAPValue"
           :toggleBoolean="toggleIAPBoolean"
         >

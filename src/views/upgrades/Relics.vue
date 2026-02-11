@@ -2,14 +2,17 @@
 <template>
   <div class="p-4 sm:p-6 max-w-[1440px] mx-auto">
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
-      <!-- Überschrift -->
-      <h2 class="text-3xl font-bold mb-8 text-center text-white">Relics</h2>
+      <h2 class="text-3xl font-bold mb-8 text-center text-white md:hidden">Relics</h2>
 
       <!-- Tier 1 Relics -->
-      <div class="mb-8">
-        <h3 class="text-lg font-semibold text-purple-400 mb-4 border-b border-purple-400/30 pb-2">
-          Tier 1
-        </h3>
+      <div class="mb-10">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-500/40 to-transparent"></div>
+          <div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-500/10 border border-gray-500/20">
+            <span class="text-gray-400 font-bold text-sm tracking-wider uppercase">Tier 1</span>
+          </div>
+          <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-500/40 to-transparent"></div>
+        </div>
         <UpgradeGrid :loading="loading" :columns="3">
           <UpgradeCard
             v-for="relic in tier1Relics"
@@ -52,10 +55,14 @@
       </div>
 
       <!-- Tier 2 Relics (nur wenn unlocked) -->
-      <div v-if="tier2Relics.length > 0 && hasTier2Unlocked" class="mt-8">
-        <h3 class="text-lg font-semibold text-purple-400 mb-4 border-b border-purple-400/30 pb-2">
-          Tier 2
-        </h3>
+      <div v-if="tier2Relics.length > 0 && hasTier2Unlocked" class="mt-10">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-500/40 to-transparent"></div>
+          <div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-500/10 border border-gray-500/20">
+            <span class="text-gray-400 font-bold text-sm tracking-wider uppercase">Tier 2</span>
+          </div>
+          <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-500/40 to-transparent"></div>
+        </div>
         <UpgradeGrid :loading="loading" :columns="3">
           <UpgradeCard
             v-for="relic in tier2Relics"

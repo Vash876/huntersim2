@@ -2,8 +2,7 @@
 <template>
   <div class="p-4 sm:p-6 max-w-[1440px] mx-auto">
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
-      <!-- Überschrift -->
-      <h2 class="text-3xl font-bold mb-8 text-center text-white">Diamond Specials</h2>
+      <h2 class="text-3xl font-bold mb-8 text-center text-white md:hidden">Diamond Specials</h2>
 
       <!-- Grid mit Upgrades -->
       <UpgradeGrid :loading="loading" :columns="3">
@@ -11,7 +10,7 @@
           v-for="special in diamondSpecials"
           :key="special.id"
           :item="special"
-          :color="getUpgradeColor(special, category) || 'purple'"
+          :color="getUpgradeColor(special, category) || 'gray'"
           :getLevel="getSpecialLevel"
           :handleStart="handleStart"
           :handleEnd="handleEnd"

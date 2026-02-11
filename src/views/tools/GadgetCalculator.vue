@@ -2,7 +2,7 @@
   <div class="p-0 sm:p-6 max-w-[1440px] mx-auto">
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8 border border-gray-800/80">
       <!-- Header -->
-      <h2 class="text-2xl font-bold mb-4 text-center text-white">
+      <h2 class="text-2xl font-bold mb-4 text-center text-white md:hidden">
         <span>Gadget Planner</span>
       </h2>
       

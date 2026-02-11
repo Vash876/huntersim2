@@ -224,6 +224,7 @@ export const NAVIGATION = {
           id: 'trplanner',
           name: 'TR Planner',
           path: '/tools/tr-planner',
+          color: 'purple',
           icon: IconTRPlanner
         },
         // {
@@ -236,6 +237,7 @@ export const NAVIGATION = {
           id: 'trtracking',
           name: 'TR Tracking',
           path: '/tools/tr-tracking',
+          color: 'green',
           icon: IconChartLine
         },
         // {
@@ -250,6 +252,7 @@ export const NAVIGATION = {
           path: '/tools/gadget-calculator',
           unlock: 'exodus',
           unlock_lvl: 4,
+          color: 'cyan',
           icon: IconTool
         },
         {
@@ -258,24 +261,28 @@ export const NAVIGATION = {
           path: '/tools/mech-planner',
           unlock: 'exodus',
           unlock_lvl: 2,
+          color: 'amber',
           icon: IconRobot
         },
         {
           id: 'tsplanner',
           name: 'Trait Sphere Planner',
           path: '/tools/ts-planner',
+          color: 'purple',
           icon: IconHexagon
         },
         {
           id: 'inscryptionplanner',
           name: 'Inscryption Planner',
           path: '/tools/inscryption-planner',
+          color: 'red',
           icon: IconWriting
         },
         {
           id: 'tokenplanner',
           name: 'Token Planner',
           path: '/tools/token-planner',
+          color: 'yellow',
           icon: IconCoins
         },
         // {
@@ -303,12 +310,14 @@ export const NAVIGATION = {
           unlock: 'attraction',
           unlock_lvl: 1,
           unlock_node: 3,
+          color: 'cyan',
           icon: IconAbacus
         },
         {
           id: 'ultimatecalculator',
           name: 'Ultima Calculator',
           path: '/tools/ultima-calculator',
+          color: 'purple',
           icon: IconCrown
         }
       ]

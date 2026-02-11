@@ -18,7 +18,7 @@
     </div>
     
     <!-- Dekorativer Farbverlauf an der Oberseite -->
-    <div class="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+    <div class="h-1 gradient-scroll"></div>
     
     <!-- Desktop Navigation -->
     <div class="flex items-center justify-between px-6 py-3 max-w-7xl mx-auto">
@@ -59,137 +59,27 @@
             <component :is="hunter.icon" class="w-5 h-5 mr-1.5" />
             <span>{{ hunter.name }}</span>
           </router-link>
-          <!-- Upgrades Button -->
-          <div class="relative mx-0.5">
-            <button 
-              class="px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center hover:bg-gray-750"
-              :class="[activeCategory === 'Upgrades' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-300 hover:text-white']"
-              @click="toggleCategory('Upgrades')"
-            >
-              <IconArrowUpCircle size="18" class="mr-1.5" />
-              <span>Upgrades</span>
-              <IconChevronDown 
-                size="16" 
-                class="ml-1.5 transition-transform duration-200"
-                :class="{'rotate-180': activeCategory === 'Upgrades'}"
-              />
-            </button>
-            
-            <!-- Upgrades Mega Menu (Dropdown) -->
-            <div 
-              class="absolute top-full right-0 mt-2 bg-gray-800 rounded-xl shadow-xl transform transition-all duration-100 origin-top-right z-50 border border-gray-700 w-[600px] overflow-hidden" 
-              :class="activeCategory === 'Upgrades' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'"
-            >                
-              <div class="p-4">
-                <div class="grid grid-cols-3 gap-6">
-                  <div v-for="(category, index) in navigation.upgradeCategories" :key="index" class="space-y-1">
-                    <h3 class="text-sm font-bold text-gray-300 mb-2 px-2 flex items-center">
-                      <span class="h-4 w-1 rounded-r bg-blue-500 mr-2"></span>
-                      {{ category.name }}
-                    </h3>
-                    <router-link 
-                      v-for="(link, linkIndex) in category.links" 
-                      :key="linkIndex" 
-                      :to="link.path"
-                      class="flex items-center px-3 py-1.5 rounded-lg transition-colors duration-200"
-                      :class="[$route.path === link.path ? 'bg-blue-900/30 text-blue-200' : 'hover:bg-gray-700/50 text-gray-300 hover:text-white']"
-                      @click="activeCategory = null"
-                    >
-                      <component :is="link.icon" class="w-4 h-4 mr-2 text-gray-400" />
-                      <span class="text-sm">{{ link.label }}</span>
-                    </router-link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- Upgrades Link -->
+          <router-link 
+            to="/upgrades"
+            class="px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center mx-0.5 hover:bg-gray-750"
+            :class="[$route.path.startsWith('/upgrades/') && $route.path !== '/upgrades/gems' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-300 hover:text-white']"
+          >
+            <IconArrowUpCircle size="18" class="mr-1.5" />
+            <span>Upgrades</span>
+          </router-link>
         </div> 
 
         <div class="bg-gray-800/90 rounded-xl p-1 mr-2 flex items-center">
-          <!-- Tools Button -->
-          <div class="relative mx-0.5">
-            <button 
-              class="px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center hover:bg-gray-750"
-              :class="[activeCategory === 'Tools' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-300 hover:text-white']"
-              @click="toggleCategory('Tools')"
-            >
-              <IconTools size="18" class="mr-1.5" />
-              <span>Tools</span>
-              <IconChevronDown 
-                size="16" 
-                class="ml-1.5 transition-transform duration-200"
-                :class="{'rotate-180': activeCategory === 'Tools'}"
-              />
-            </button>
-            
-            <!-- Tools Dropdown Menu -->
-            <div 
-              class="absolute top-full right-0 mt-2 bg-gray-800 rounded-xl shadow-xl transform transition-all duration-100 origin-top-right z-50 border border-gray-700 w-[500px] overflow-hidden" 
-              :class="activeCategory === 'Tools' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'"
-            >                
-              <div class="p-4">
-                <div class="grid grid-cols-2 gap-6">
-                  <!-- Links: Planning & Calculators -->
-                  <div class="space-y-4">
-                    <div v-for="category in navigation.toolCategories.slice(0, 2)" :key="category.name">
-                      <h3 class="text-sm font-bold text-gray-300 mb-2 px-2 flex items-center">
-                        <span 
-                          class="h-4 w-1 rounded-r mr-2"
-                          :class="{
-                            'bg-blue-500': category.color === 'blue',
-                            'bg-green-500': category.color === 'green',
-                            'bg-purple-500': category.color === 'purple'
-                          }"
-                        ></span>
-                        {{ category.name }}
-                      </h3>
-                      <div class="space-y-1">
-                        <router-link 
-                          v-for="tool in category.tools" 
-                          :key="tool.id"
-                          :to="tool.path" 
-                          class="flex items-center px-3 py-1.5 rounded-lg transition-colors duration-200"
-                          :class="[$route.path === tool.path ? 'bg-blue-900/30 text-blue-200' : 'hover:bg-gray-700/50 text-gray-300 hover:text-white']"
-                          @click="activeCategory = null"
-                        >
-                          <component :is="tool.icon" class="w-4 h-4 mr-2 text-gray-400" />
-                          <span class="text-sm">{{ tool.name }}</span>
-                        </router-link>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Rechts: Data Overview -->
-                  <div v-for="category in navigation.toolCategories.slice(2)" :key="category.name">
-                    <h3 class="text-sm font-bold text-gray-300 mb-2 px-2 flex items-center">
-                      <span 
-                        class="h-4 w-1 rounded-r mr-2"
-                        :class="{
-                          'bg-blue-500': category.color === 'blue',
-                          'bg-green-500': category.color === 'green',
-                          'bg-purple-500': category.color === 'purple'
-                        }"
-                      ></span>
-                      {{ category.name }}
-                    </h3>
-                    <div class="space-y-1">
-                      <router-link 
-                        v-for="tool in category.tools" 
-                        :key="tool.id"
-                        :to="tool.path" 
-                        class="flex items-center px-3 py-1.5 rounded-lg transition-colors duration-200"
-                        :class="[$route.path === tool.path ? 'bg-blue-900/30 text-blue-200' : 'hover:bg-gray-700/50 text-gray-300 hover:text-white']"
-                        @click="activeCategory = null"
-                      >
-                        <component :is="tool.icon" class="w-4 h-4 mr-2 text-gray-400" />
-                        <span class="text-sm">{{ tool.name }}</span>
-                      </router-link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- Tools Link -->
+          <router-link 
+            to="/tools"
+            class="px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center mx-0.5 hover:bg-gray-750"
+            :class="[$route.path.startsWith('/tools/') ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-300 hover:text-white']"
+          >
+            <IconTools size="18" class="mr-1.5" />
+            <span>Tools</span>
+          </router-link>
         </div>
 
         <div class="bg-gray-800/90 rounded-xl p-1 flex items-center">
@@ -718,6 +608,21 @@ a {
 /* View Transitions: Schließe Dropdowns und Overlays aus dem Screenshot aus */
 header > div > nav > div > div.relative > div.absolute {
   view-transition-name: none !important;
+}
+
+/* Wandernder Farbverlauf */
+.gradient-scroll {
+  background: linear-gradient(
+    90deg,
+    #3b82f6, #8b5cf6, #ec4899, #8b5cf6, #3b82f6, #8b5cf6, #ec4899, #8b5cf6, #3b82f6
+  );
+  background-size: 200% 100%;
+  animation: gradient-scroll 128s linear infinite;
+}
+
+@keyframes gradient-scroll {
+  0% { background-position: 0% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* Toast Animation */

@@ -75,8 +75,8 @@ export function getUpgradeColor(upgrade, category) {
   let hunterIds = [];
   
   if (upgrade.hunter === 'all') {
-    // Wenn explizit für alle Hunter, verwende lila
-    return 'purple';
+    // Wenn explizit für alle Hunter, verwende grau (neutral)
+    return 'gray';
   } else if (upgrade.hunter) {
     // Wenn hunter-Info im Upgrade vorhanden
     hunterIds = upgrade.hunter.split(',');
@@ -90,8 +90,8 @@ export function getUpgradeColor(upgrade, category) {
     const hunter = HUNTERS.find(h => h.id === hunterIds[0]);
     return hunter ? hunter.color : 'gray';
   } else if (hunterIds.length > 1) {
-    // Wenn mehrere Hunter, verwende lila
-    return 'purple';
+    // Wenn mehrere Hunter, verwende grau (neutral)
+    return 'gray';
   }
   
   // Fallback, wenn keine Hunter gefunden wurden

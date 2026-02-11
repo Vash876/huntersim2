@@ -2,7 +2,7 @@
   <div class="p-0 sm:p-6 max-w-[1440px] mx-auto">
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8 border border-gray-800/80">
       <!-- Überschrift -->
-  <h2 class="text-3xl font-bold mb-6 text-center text-white">Diamond Ultima Calculator</h2>
+  <h2 class="text-3xl font-bold mb-6 text-center text-white md:hidden">Diamond Ultima Calculator</h2>
       
       <!-- TR Count und Total Levels mit responsiver Anpassung -->
       <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">

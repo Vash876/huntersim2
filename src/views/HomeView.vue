@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.11.5',
+    date: '2026-02-11',
+    changes: [
+      {
+        text: 'UI Improvements',
+        subItems: [
+          'Replaced dropdown menus with dedicated sidebar navigation for Upgrades and Tools sections',
+          'Redesigned Upgrade Cards',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.11.4',
     date: '2026-02-09',
     changes: [

@@ -32,115 +32,61 @@ const routes = [
     // Hier würde deine Build-Formular-Komponente importiert werden
     component: () => import('../views/BuildFormView.vue')
   },*/
-  // Upgrade Routes
-  {
-    path: '/upgrades/relics',
-    name: 'Relics',
-    component: () => import('../views/upgrades/Relics.vue')
-  },
-  {
-    path: '/upgrades/researches',
-    name: 'Researches',
-    component: () => import('../views/upgrades/Researches.vue')
-  },
-  {
-    path: '/upgrades/gadgets',
-    name: 'Gadgets',
-    component: () => import('../views/upgrades/Gadgets.vue')
-  },
+  // Gems Route (standalone, nicht im Tab-Layout)
   {
     path: '/upgrades/gems',
     name: 'Gems',
     component: () => import('../views/upgrades/Gems.vue')
   },
+  // Upgrade Routes (nested unter UpgradesLayout mit Tab-Navigation)
   {
-    path: '/upgrades/inscryptions',
-    name: 'Inscryptions',
-    component: () => import('../views/upgrades/Inscryptions.vue')
-  },
-  {
-    path: '/upgrades/loopmods',
-    name: 'LoopMods',
-    component: () => import('../views/upgrades/LoopMods.vue')
-  },
-  {
-    path: '/upgrades/milestones',
-    name: 'Milestones',
-    component: () => import('../views/upgrades/Milestones.vue')
-  },
-  {
-    path: '/upgrades/cms',
-    name: 'Construction Milestones',
-    component: () => import('../views/upgrades/ConstructionMilestones.vue')
-  },
-  {
-    path: '/upgrades/trinkets',
-    name: 'Trinkets',
-    component: () => import('../views/upgrades/Trinkets.vue')
-  },
-  {
-    path: '/upgrades/diamondspecials',
-    name: 'Diamond Specials',
-    component: () => import('../views/upgrades/DiamondSpecials.vue')
-  },
-  {
-    path: '/upgrades/diamondcards',
-    name: 'Diamond Cards',
-    component: () => import('../views/upgrades/DiamondCards.vue')
-  },
-  {
-    path: '/upgrades/iap',
-    name: 'IAP',
-    component: () => import('../views/upgrades/IAP.vue')
-  },
-  {
-    path: '/upgrades/ultima',
-    name: 'Ultima',
-    component: () => import('../views/upgrades/Ultima.vue')
+    path: '/upgrades',
+    component: () => import('../views/upgrades/UpgradesLayout.vue'),
+    children: [
+      { path: 'relics',          name: 'Relics',                  component: () => import('../views/upgrades/Relics.vue') },
+      { path: 'researches',      name: 'Researches',              component: () => import('../views/upgrades/Researches.vue') },
+      { path: 'gadgets',         name: 'Gadgets',                 component: () => import('../views/upgrades/Gadgets.vue') },
+      { path: 'inscryptions',    name: 'Inscryptions',            component: () => import('../views/upgrades/Inscryptions.vue') },
+      { path: 'loopmods',        name: 'LoopMods',                component: () => import('../views/upgrades/LoopMods.vue') },
+      { path: 'milestones',      name: 'Milestones',              component: () => import('../views/upgrades/Milestones.vue') },
+      { path: 'cms',             name: 'Construction Milestones', component: () => import('../views/upgrades/ConstructionMilestones.vue') },
+      { path: 'trinkets',        name: 'Trinkets',                component: () => import('../views/upgrades/Trinkets.vue') },
+      { path: 'diamondspecials', name: 'Diamond Specials',        component: () => import('../views/upgrades/DiamondSpecials.vue') },
+      { path: 'diamondcards',    name: 'Diamond Cards',           component: () => import('../views/upgrades/DiamondCards.vue') },
+      { path: 'iap',             name: 'IAP',                     component: () => import('../views/upgrades/IAP.vue') },
+      { path: 'ultima',          name: 'Ultima',                  component: () => import('../views/upgrades/Ultima.vue') },
+    ]
   },
 
 
-  // Tools Routes
-  /*/ Other Routes*/
+  // Tools Routes (nested unter ToolsLayout mit Sidebar-Navigation)
   {
-    path: '/tools/tr-planner',
-    name: 'TR Planner',
-    component: () => import('../views/tools/TRPlanner.vue'),
+    path: '/tools',
+    component: () => import('../views/tools/ToolsLayout.vue'),
+    children: [
+      { path: 'tr-planner',           name: 'TR Planner',             component: () => import('../views/tools/TRPlanner.vue') },
+      { path: 'tr-tracking',          name: 'TR Tracking',            component: () => import('../views/tools/TRTracking.vue') },
+      { path: 'gem-plannner',         name: 'Gem Planner',            component: () => import('../views/tools/GemPlanner.vue') },
+      { path: 'gadget-calculator',    name: 'Gadget Calculator',      component: () => import('../views/tools/GadgetCalculator.vue') },
+      { path: 'mech-planner',         name: 'Mech Planner',           component: () => import('../views/tools/MechPlanner.vue') },
+      { path: 'ts-planner',           name: 'Trait Sphere Planner',   component: () => import('../views/tools/TSPlanner.vue') },
+      { path: 'loopmod-overview',     name: 'Loop Mod Overview',      component: () => import('../views/tools/LoopModOverview.vue') },
+      { path: 'research-overview',    name: 'Research Overview',      component: () => import('../views/tools/ResearchOverview.vue') },
+      { path: 'build-repository',     name: 'Build Repository',       component: () => import('../views/tools/BuildRepository.vue') },
+      { path: 'm0cost-overview',      name: 'M0 Cost Overview',       component: () => import('../views/tools/M0CostOverview.vue') },
+      { path: 'attgn3-calculator',    name: 'AttGN#3 Calculator',     component: () => import('../views/tools/AttrGN3Calculator.vue') },
+      { path: 'ultima-calculator',    name: 'Ultima Calculator',      component: () => import('../views/tools/UltimaCalculator.vue') },
+      { path: 'inscryption-planner',  name: 'Inscryption Planner',    component: () => import('../views/tools/InscryptionPlanner.vue') },
+      { path: 'token-planner',        name: 'Token Planner',          component: () => import('../views/tools/token-planner/TokenPlanner.vue') },
+      { path: 'mission-relic-planner', name: 'Mission & Relic Planner', component: () => import('../views/tools/mission-planner/MissionPlanner.vue') },
+      { path: 'tr-planner-new',       name: 'TR Planner (New)',       component: () => import('../views/tools/tr-planner/TRPlannerNew.vue') },
+    ]
   },
+  // Token Debug (standalone, nicht im Sidebar-Layout)
   {
-    path: '/tools/tr-tracking',
-    name: 'TR Tracking',
-    component: () => import('../views/tools/TRTracking.vue'),
-  },
-  {
-    path: '/tools/gem-plannner',
-    name: 'Gem Planner',
-    component: () => import('../views/tools/GemPlanner.vue'),
-  },
-  {
-    path: '/tools/gadget-calculator',
-    name: 'Gadget Calculator',    
-    component: () => import('../views/tools/GadgetCalculator.vue'),
-  },
-  {
-    path: '/tools/mech-planner',
-    name: 'Mech Planner',
-    component: () => import('../views/tools/MechPlanner.vue'),
-  },
-  {
-    path: '/tools/ts-planner',
-    name: 'Trait Sphere Planner',
-    component: () => import('../views/tools/TSPlanner.vue'),
-  },
-  {
-    path: '/tools/loopmod-overview',
-    name: 'Loop Mod Overview',
-    component: () => import('../views/tools/LoopModOverview.vue'),
-  },
-  {
-    path: '/tools/research-overview',
-    name: 'Research Overview',
-    component: () => import('../views/tools/ResearchOverview.vue'),
+    path: '/tools/token-planner/debug',
+    name: 'Token Debug',
+    component: () => import('../views/tools/token-planner/TokenDebug.vue'),
   },
   // Admin Panel - nur in Development verfügbar
   ...(import.meta.env.DEV ? [{
@@ -149,51 +95,6 @@ const routes = [
     component: () => import('../views/AdminPanel.vue'),
     meta: { requiresAuth: true }
   }] : []),
-  {
-    path: '/tools/build-repository',
-    name: 'Build Repository',
-    component: () => import('../views/tools/BuildRepository.vue'),
-  },
-  {
-    path: '/tools/m0cost-overview',
-    name: 'M0 Cost Overview',
-    component: () => import('../views/tools/M0CostOverview.vue'),
-  },
-  {
-    path: '/tools/attgn3-calculator',
-    name: 'AttGN#3 Calculator',
-    component: () => import('../views/tools/AttrGN3Calculator.vue'),
-  },
-  {
-    path: '/tools/ultima-calculator',
-    name: 'Ultima Calculator',
-    component: () => import('../views/tools/UltimaCalculator.vue'),
-  },
-  {
-    path: '/tools/inscryption-planner',
-    name: 'Inscryption Planner',
-    component: () => import('../views/tools/InscryptionPlanner.vue'),
-  },
-  {
-    path: '/tools/token-planner',
-    name: 'Token Planner',
-    component: () => import('../views/tools/token-planner/TokenPlanner.vue'),
-  },
-  {
-    path: '/tools/token-planner/debug',
-    name: 'Token Debug',
-    component: () => import('../views/tools/token-planner/TokenDebug.vue'),
-  },
-  {
-    path: '/tools/mission-relic-planner',
-    name: 'Mission & Relic Planner',
-    component: () => import('../views/tools/mission-planner/MissionPlanner.vue'),
-  },
-  {
-    path: '/tools/tr-planner-new',
-    name: 'TR Planner (New)',
-    component: () => import('../views/tools/tr-planner/TRPlannerNew.vue'),
-  },
 
   // Debug Routes
   {

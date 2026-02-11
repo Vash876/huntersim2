@@ -601,7 +601,7 @@ export const UPGRADES = {
       name: 'Exodus Gem',
       type: 'level',
       maxLevel: 4,
-      color: "purple",
+      color: "gray",
       nodes: [
         { id: 'gem1', name: 'Exodus Gem Node #1', type: 'boolean' },
         { id: 'gem2', name: 'Exodus Gem Node #2', type: 'boolean' },
@@ -663,7 +663,7 @@ export const UPGRADES = {
       name: 'Power Gem',
       type: 'level',
       maxLevel: 3,
-      color: "purple",
+      color: "gray",
       nodes: [
         { id: 'gem6', name: 'Power Gem Node #6', type: 'boolean' } // Knox starting at lvl 30 gains hp +1,5%, atk +1% and regen +0.5% every lvl
       ]

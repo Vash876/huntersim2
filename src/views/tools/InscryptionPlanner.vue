@@ -2,7 +2,7 @@
   <div class="p-0 sm:p-6 max-w-[1440px] mx-auto">
     <div class="bg-gray-900/95 rounded-xl border border-gray-800 p-4 sm:p-8">
       <!-- Header -->
-      <h2 class="text-2xl font-bold mb-4 text-center text-white flex items-center justify-center gap-2">
+      <h2 class="text-2xl font-bold mb-4 text-center text-white flex items-center justify-center gap-2 md:hidden">
         Inscryption Planner
       </h2>
 

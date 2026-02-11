@@ -70,7 +70,7 @@
         <div
           v-for="gem in gemList"
           :key="gem.id"
-          class="bg-gray-900/80 border border-gray-700/50 rounded-xl hover:border-purple-500/50 transition-all duration-300 ease-in-out"
+          class="bg-gray-900/80 border border-gray-700/50 rounded-xl hover:border-gray-500/50 transition-all duration-300 ease-in-out"
         >
           <!-- Gem Header - Fixed height to prevent layout jumps -->
           <div 
