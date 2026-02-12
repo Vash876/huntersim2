@@ -1,8 +1,17 @@
+// Module-level cache: überlebt SPA-Navigation, wird bei Page Refresh gelöscht
+let cachedData = null;
+
 export function useLoopModData() {
   const LOOP_MOD_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSuA9mNH247uQbM1RrsPN8h0zbszvTVBR87Zt3FmQguuk5lQTvYLc3mA9f8W6ZsI_BYCuhhcG-bzi2c/pub?gid=868365929&single=true&output=csv';
   const TIER_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSuA9mNH247uQbM1RrsPN8h0zbszvTVBR87Zt3FmQguuk5lQTvYLc3mA9f8W6ZsI_BYCuhhcG-bzi2c/pub?gid=754030021&single=true&output=csv';
 
   async function fetchLoopModData() {
+    // Cached Daten zurückgeben falls vorhanden
+    if (cachedData) {
+      console.log('Using cached loop mod data');
+      return cachedData;
+    }
+
     try {
       console.log('Loading loop mod data from Google Sheets...');
       
@@ -18,10 +27,12 @@ export function useLoopModData() {
       const loopModCsv = await loopModResponse.text();
       const tierCsv = await tierResponse.text();
       
-      return {
+      cachedData = {
         loopMods: parseLoopModCsv(loopModCsv),
         tiers: parseTierCsv(tierCsv)
       };
+      
+      return cachedData;
     } catch (error) {
       console.error('Error fetching loop mod data:', error);
       throw error;

@@ -1,8 +1,16 @@
+// Module-level cache: überlebt SPA-Navigation, wird bei Page Refresh gelöscht
+let cachedData = null;
+
 export function useResearchData() {
-  // TODO: Ersetze mit deiner Google Sheets URL für Research Daten
   const RESEARCH_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSuA9mNH247uQbM1RrsPN8h0zbszvTVBR87Zt3FmQguuk5lQTvYLc3mA9f8W6ZsI_BYCuhhcG-bzi2c/pub?gid=1551291973&single=true&output=csv';
 
   async function fetchResearchData() {
+    // Cached Daten zurückgeben falls vorhanden
+    if (cachedData) {
+      console.log('Using cached research data');
+      return cachedData;
+    }
+
     try {
       console.log('Loading research data from Google Sheets...');
       
@@ -13,7 +21,8 @@ export function useResearchData() {
       }
       
       const csvText = await response.text();
-      return parseResearchCsv(csvText);
+      cachedData = parseResearchCsv(csvText);
+      return cachedData;
     } catch (error) {
       console.error('Error fetching research data:', error);
       throw error;

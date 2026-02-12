@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.11.6',
+    date: '2026-02-12',
+    changes: [
+      {
+        text: 'Loop Mod Overview, Research Overview & Inscryption Planner',
+        subItems: [
+          'Added caching for Google Sheets data, navigating between tools no longer re-fetches data every time',
+          'Data is automatically refreshed on page reload',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.11.5',
     date: '2026-02-11',
     changes: [

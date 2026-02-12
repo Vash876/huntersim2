@@ -4,6 +4,9 @@ import { useStorage } from '@vueuse/core';
 import { formatNumber } from '@/composables/format.js';
 import { useHunterStore } from '@/store/hunterStore.js';
 
+// Module-level cache for Google Sheets CSV data (survives SPA navigation, clears on page refresh)
+let cachedCSVData = null;
+
 export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () => {
   // CSV Data (not persistent, loaded fresh each time)
   const inscryptionsData = ref([]); // Now contains only Rank 1 entries for metadata
@@ -165,6 +168,13 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
       isLoading.value = true;
       error.value = null;
 
+      // Use cached data if available (survives SPA navigation)
+      if (cachedCSVData) {
+        inscryptionsData.value = cachedCSVData;
+        isLoading.value = false;
+        return;
+      }
+
       const response = await fetch(
         'https://docs.google.com/spreadsheets/d/e/2PACX-1vSuA9mNH247uQbM1RrsPN8h0zbszvTVBR87Zt3FmQguuk5lQTvYLc3mA9f8W6ZsI_BYCuhhcG-bzi2c/pub?gid=1059394957&single=true&output=csv'
       );
@@ -175,6 +185,9 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
 
       const csvText = await response.text();
       const data = parseCSV(csvText);
+      
+      // Cache the parsed data at module level
+      cachedCSVData = data;
       
       // Wrap the state change in a view transition for smooth appearance
       if (document.startViewTransition) {
