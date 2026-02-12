@@ -16,10 +16,10 @@
         <span class="text-sm text-gray-400 ml-2">(Boss Stages Only)</span>
       </h3>
       
-      <div class="relative h-[300px]" ref="chartContainer">
+      <div class="relative h-[300px]">
         <!-- Loading overlay -->
         <div 
-          v-if="!chartData"
+          v-if="!hasChartData"
           class="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-700/30"
         >
           <div class="text-center">
@@ -28,12 +28,11 @@
           </div>
         </div>
         
-        <!-- Chart Component -->
-        <Bar
-          v-if="chartData"
-          :key="chartRenderKey"
-          :data="chartData"
-          :options="chartOptions"
+        <!-- ECharts Component -->
+        <v-chart
+          v-if="hasChartData"
+          :option="chartOption"
+          autoresize
           class="w-full h-full"
         />
       </div>
@@ -68,10 +67,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { computed, onMounted } from 'vue';
 import { IconTrophy, IconBulb } from '@tabler/icons-vue';
-import { Bar } from 'vue-chartjs';
-import debounce from 'lodash/debounce';
+import VChart from 'vue-echarts';
+import '@/utils/echarts';
+import { darkTooltip, darkXAxis, darkYAxis, darkGrid } from '@/utils/echarts';
 import { useHunterStore } from '@/store/hunterStore';
 
 const hunterStore = useHunterStore();
@@ -103,20 +103,7 @@ const props = defineProps({
   }
 });
 
-const chartRef = ref(null);
-const chartContainer = ref(null);
-const chart = ref(null);
-const canvasKey = ref(0);
-const isChartReady = ref(false);
-const isInitializing = ref(false);
-
-// Chart state for Vue-chartjs
-const chartRenderKey = ref(0);
-
-// Force chart update function
-function forceChartUpdate() {
-  chartRenderKey.value += 1;
-}
+const hasChartData = computed(() => availableRevives.value.length > 0);
 
 const maxBossStage = computed(() => {
   if (!props.bossKillsByRevive?.length) return null;
@@ -290,138 +277,60 @@ const optimalRevive = computed(() => {
   return best;
 });
 
-// Chart Data mit korrigierten Daten
-const chartData = computed(() => {
-  if (availableRevives.value.length === 0) return null;
+// Chart Data mit korrigierten Daten - ECharts option
+const chartOption = computed(() => {
+  if (availableRevives.value.length === 0) return {};
   
   const colors = colorMaps[props.color] || colorMaps.blue;
+  const labels = availableRevives.value.map(r => getReviveLabel(r));
+  const data = availableRevives.value.map(r => getBossKillRate(r));
   
   return {
-    labels: availableRevives.value.map(r => getReviveLabel(r)),
-    datasets: [{
-      label: 'Boss Kill Rate (%)',
-      data: availableRevives.value.map(r => getBossKillRate(r)),
-      backgroundColor: colors.primary,
-      borderColor: colors.border,
-      borderWidth: 2,
-      borderRadius: 4,
-      borderSkipped: false,
+    backgroundColor: 'transparent',
+    animation: false,
+    grid: darkGrid,
+    tooltip: {
+      ...darkTooltip,
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: (params) => {
+        const p = params[0];
+        const revive = availableRevives.value[p.dataIndex];
+        const attempts = getBossAttempts(revive);
+        const sampleSize = effectiveBossData.value.sampleSize;
+        return `<strong>${p.name}</strong><br/>Boss Kill Rate: ${p.value.toFixed(1)}%<br/>Total Attempts: ${attempts}<br/>Sample Size: ${sampleSize}`;
+      }
+    },
+    xAxis: {
+      type: 'category',
+      data: labels,
+      ...darkXAxis
+    },
+    yAxis: {
+      type: 'value',
+      min: 0,
+      max: 100,
+      ...darkYAxis,
+      axisLabel: {
+        ...darkYAxis.axisLabel,
+        formatter: (v) => `${v}%`
+      },
+      name: 'Boss Kill Rate (%)',
+      nameTextStyle: { color: '#9ca3af', fontSize: 12 }
+    },
+    series: [{
+      type: 'bar',
+      data: data,
+      itemStyle: {
+        color: colors.primary,
+        borderColor: colors.border,
+        borderWidth: 2,
+        borderRadius: [4, 4, 0, 0]
+      },
+      barMaxWidth: 60
     }]
   };
 });
-
-// Chart Options
-const chartOptions = computed(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  animation: {
-    duration: 0
-  },
-  layout: {
-    padding: {
-      top: 10,
-      bottom: 10,
-      left: 10,
-      right: 10
-    }
-  },
-  plugins: {
-    // Explicitly disable zoom plugin on this chart
-    zoom: false,
-    legend: {
-      display: false
-    },
-    tooltip: {
-      backgroundColor: 'rgba(31, 41, 55, 0.95)',
-      titleColor: '#f9fafb',
-      bodyColor: '#e5e7eb',
-      borderColor: '#6b7280',
-      borderWidth: 1,
-      cornerRadius: 8,
-      displayColors: true,
-      callbacks: {
-        label: (context) => {
-          try {
-            const revive = availableRevives.value[context.dataIndex];
-            const attempts = getBossAttempts(revive);
-            const effectiveSampleSize = effectiveBossData.value.sampleSize; 
-            
-            return [
-              `Boss Kill Rate: ${context.parsed.y.toFixed(1)}%`,
-              `Total Attempts: ${attempts}`,
-              `Sample Size: ${effectiveSampleSize}`
-            ];
-          } catch (e) {
-            return 'Data not available';
-          }
-        }
-      }
-    }
-  },
-  scales: {
-    x: {
-      display: true,
-      grid: {
-        color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
-        drawOnChartArea: true,
-        drawTicks: true
-      },
-      ticks: {
-        color: '#9ca3af',
-        font: {
-          size: 11
-        },
-        maxTicksLimit: 8,
-        display: true
-      }
-    },
-    y: {
-      beginAtZero: true,
-      max: 100,
-      display: true,
-      position: 'left',
-      grid: {
-        color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
-        drawOnChartArea: true,
-        drawTicks: true
-      },
-      ticks: {
-        color: '#9ca3af',
-        font: {
-          size: 11
-        },
-        maxTicksLimit: 8,
-        display: true,
-        callback: (value) => `${value}%`
-      },
-      title: {
-        display: true,
-        text: 'Boss Kill Rate (%)',
-        color: '#9ca3af',
-        font: {
-          size: 12
-        }
-      }
-    }
-  },
-  interaction: {
-    intersect: false,
-    mode: 'index'
-  },
-  elements: {
-    bar: {
-      borderRadius: 4,
-      borderSkipped: false
-    }
-  }
-}));
-
-// Watch for changes that should trigger chart re-render
-watch([() => props.bossKillsByRevive, () => props.color, () => props.isVisible], () => {
-  forceChartUpdate();
-}, { deep: true });
 
 // Cleanup beim Component Mount
 onMounted(() => {

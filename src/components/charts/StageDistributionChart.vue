@@ -2,20 +2,16 @@
   <div class="flex flex-col gap-4">
     <!-- Chart Container -->
     <div class="bg-gray-700/30 border border-gray-600 p-4 rounded-md">
-      <div class="h-[250px] relative bg-transparent" :key="`stage-chart-container-${chartRenderKey}`">
-        <!-- Bar Chart -->
-        <div v-if="chartData && props.isVisible" class="w-full h-full">
-          <Bar
-            :data="chartData"
-            :options="chartOptions"
-            :key="`stage-bar-${chartRenderKey}`"
-            class="w-full h-full"
-          />
-        </div>
-        
-        <!-- Loading overlay - nur sichtbar wenn nicht bereit -->
+      <div class="h-[250px] relative bg-transparent">
+        <v-chart 
+          v-if="hasData && props.isVisible" 
+          :option="chartOption" 
+          autoresize 
+          class="w-full h-full"
+        />
+        <!-- Loading overlay -->
         <div 
-          v-if="!chartData || !props.isVisible"
+          v-if="!hasData || !props.isVisible"
           class="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-700/30"
         >
           <div class="text-center">
@@ -45,74 +41,40 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
+import { computed } from 'vue';
+import VChart from 'vue-echarts';
+import '@/utils/echarts';
 import { getColorRGB } from '../builds/utils/BuildComparisonUtils';
 import { formatNumber } from '@/composables/format.js';
-import { Bar } from 'vue-chartjs';
+import { darkTooltip, darkXAxis, darkYAxis, darkGrid } from '@/utils/echarts';
 
 const props = defineProps({
-  distribution: {
-    type: Array,
-    required: true
-  },
-  avgStage: {
-    type: Number,
-    default: 0
-  },
-  maxStage: {
-    type: Number,
-    default: null
-  },
-  minStage: {
-    type: Number,
-    default: null
-  },
-  sampleSize: {
-    type: Number,
-    default: 1000
-  },
-  color: {
-    type: String,
-    default: 'gray'
-  },
-  isVisible: {
-    type: Boolean,
-    default: true
-  }
+  distribution: { type: Array, required: true },
+  avgStage: { type: Number, default: 0 },
+  maxStage: { type: Number, default: null },
+  minStage: { type: Number, default: null },
+  sampleSize: { type: Number, default: 1000 },
+  color: { type: String, default: 'gray' },
+  isVisible: { type: Boolean, default: true }
 });
 
-// Chart state
-const chartRenderKey = ref(0);
+const hasData = computed(() => props.distribution && props.distribution.length > 0);
 
-// Force chart update function
-function forceChartUpdate() {
-  chartRenderKey.value += 1;
-}
-
-// Watch for changes that should trigger chart re-render
-watch([() => props.distribution, () => props.color, () => props.isVisible], () => {
-  forceChartUpdate();
-}, { deep: true });
-
-// Computed properties
 const computedMinStage = computed(() => {
   if (props.minStage !== null) return props.minStage;
-  if (!props.distribution || !props.distribution.length) return null;
-  
+  if (!hasData.value) return null;
   return props.distribution.reduce((min, item) => {
     return item.count > 0 && item.stage < min ? item.stage : min;
   }, Infinity);
 });
 
-// Chart data
-const chartData = computed(() => {
-  if (!props.distribution || !props.distribution.length) return null;
+const chartOption = computed(() => {
+  if (!hasData.value) return {};
   
   const stages = [];
   const frequencies = [];
   const totalCount = props.distribution.reduce((sum, item) => sum + item.count, 0);
   
-  // Validate and clean data
   props.distribution.forEach(item => {
     if (item.stage !== undefined && item.count !== undefined && typeof item.count === 'number') {
       stages.push(String(item.stage));
@@ -120,108 +82,85 @@ const chartData = computed(() => {
     }
   });
   
-  // Use proper color conversion like ProgressModal
   const colorRGB = getColorRGB(props.color);
   const borderColor = `rgba(${colorRGB}, 1)`;
-  const backgroundColor = `rgba(${colorRGB}, 0.25)`;
+  const [r, g, b] = colorRGB.split(',').map(s => parseInt(s.trim()));
+  const highlightColor = `rgba(${Math.min(r + 60, 255)}, ${Math.min(g + 60, 255)}, ${Math.min(b + 60, 255)}, 0.8)`;
   
-  return {
-    labels: stages,
-    datasets: [{
-      label: 'Stage Frequency',
+  const series = [
+    {
+      type: 'bar',
       data: frequencies,
-      backgroundColor: backgroundColor,
-      borderColor: borderColor,
-      borderWidth: 2,
-      totalCount: totalCount,
-    }]
-  };
-});
-
-// Chart options - fresh object each time to prevent Chart.js mutation leaks
-const chartOptions = computed(() => {
-  return {
-    responsive: true,
-    maintainAspectRatio: false,
-    layout: {
-      padding: { top: 10, bottom: 10, left: 10, right: 10 }
-    },
-    plugins: {
-      legend: { display: false },
-      // Explicitly disable zoom plugin on this chart
-      zoom: false,
-      tooltip: {
-        backgroundColor: 'rgba(31, 41, 55, 0.95)',
-        titleColor: '#f9fafb',
-        bodyColor: '#e5e7eb',
-        borderColor: '#6b7280',
-        borderWidth: 1,
-        cornerRadius: 8,
-        displayColors: true,
-        callbacks: {
-          title: function(context) {
-            return `Stage ${context[0].label}`;
-          },
-          label: function(context) {
-            const count = context.parsed.y;
-            const dataset = context.chart.data.datasets[context.datasetIndex];
-            const totalCount = dataset.totalCount || context.chart.data.datasets[0].data.reduce((sum, val) => sum + val, 0);
-            const percentage = ((count / totalCount) * 100).toFixed(1);
-            return `Count: ${formatNumber(count)} (${percentage}%)`;
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        type: 'category',
-        display: true,
-        grid: {
-          color: 'rgba(75, 85, 99, 0.3)',
-          drawOnChartArea: true,
-          drawTicks: true
+      itemStyle: {
+        color: {
+          type: 'linear', x: 0, y: 0, x2: 1, y2: 1,
+          colorStops: [
+            { offset: 0, color: highlightColor },
+            { offset: 0.3, color: `rgba(${colorRGB}, 0.6)` },
+            { offset: 1, color: `rgba(${colorRGB}, 0.2)` }
+          ]
         },
-        ticks: {
-          color: '#9ca3af',
-          font: { size: 11 },
-          maxTicksLimit: 8,
-          display: true,
-          callback: function(value, index) {
-            const labels = this.chart.data.labels;
-            const step = Math.ceil(labels.length / 8);
-            return index % step === 0 ? labels[index] : '';
-          }
+        borderColor: borderColor,
+        borderWidth: 1,
+        borderRadius: [3, 3, 0, 0],
+        shadowColor: 'rgba(0, 0, 0, 0.4)',
+        shadowBlur: 6,
+        shadowOffsetX: 2,
+        shadowOffsetY: 2
+      },
+      emphasis: {
+        itemStyle: {
+          color: {
+            type: 'linear', x: 0, y: 0, x2: 1, y2: 1,
+            colorStops: [
+              { offset: 0, color: `rgba(${Math.min(r + 80, 255)}, ${Math.min(g + 80, 255)}, ${Math.min(b + 80, 255)}, 0.95)` },
+              { offset: 0.3, color: `rgba(${colorRGB}, 0.8)` },
+              { offset: 1, color: `rgba(${colorRGB}, 0.4)` }
+            ]
+          },
+          shadowBlur: 10,
+          shadowOffsetX: 3,
+          shadowOffsetY: 3
         }
       },
-      y: {
-        type: 'linear',
-        display: true,
-        position: 'left',
-        grid: {
-          color: 'rgba(75, 85, 99, 0.3)',
-          drawOnChartArea: true,
-          drawTicks: true
-        },
-        beginAtZero: true,
-        min: 0,
-        ticks: {
-          color: '#9ca3af',
-          font: { size: 11 },
-          maxTicksLimit: 8,
-          callback: function(value) {
-            if (typeof value === 'number') {
-              return formatNumber(value);
-            }
-            return '';
-          }
-        }
+      barMaxWidth: 30
+    }
+  ];
+  
+  return {
+    backgroundColor: 'transparent',
+    animation: false,
+    grid: darkGrid,
+    tooltip: {
+      ...darkTooltip,
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: (params) => {
+        const p = params[0];
+        const count = p.value;
+        const percentage = ((count / totalCount) * 100).toFixed(1);
+        return `<strong>Stage ${p.name}</strong><br/>Count: ${formatNumber(count)} (${percentage}%)`;
       }
     },
-    interaction: {
-      intersect: false,
-      mode: 'index'
+    xAxis: {
+      type: 'category',
+      data: stages,
+      ...darkXAxis,
+      axisLabel: {
+        ...darkXAxis.axisLabel,
+        interval: Math.max(0, Math.ceil(stages.length / 8) - 1)
+      }
     },
-    animation: { duration: 0 }
+    yAxis: {
+      type: 'value',
+      min: 0,
+      ...darkYAxis,
+      axisLabel: {
+        ...darkYAxis.axisLabel,
+        formatter: (v) => formatNumber(v)
+      }
+    },
+    series: series
   };
 });
 
@@ -231,11 +170,3 @@ function formatStage(stage) {
   return stage % 1 === 0 ? stage.toString() : stage.toFixed(1);
 }
 </script>
-
-<style scoped>
-.chart-container {
-  position: relative;
-  height: 250px;
-  width: 100%;
-}
-</style>

@@ -121,7 +121,7 @@
           <div class="mb-3 flex justify-between items-center">
             <div class="text-xs text-gray-400">
               <span class="font-medium">Mouse Controls:</span> 
-              Scroll to zoom X-axis • Ctrl+scroll to zoom • Drag to pan • Ctrl+drag for box zoom
+              Click to place crosshair • Drag crosshair to move • Scroll to zoom • Drag slider to pan
             </div>
             <div class="flex gap-2">
               <button
@@ -134,12 +134,15 @@
           </div>
           
           <div class="h-96 relative">
-            <Line
+            <v-chart
               ref="chartRef"
-              :key="`line-${chartRenderKey}`"
-              :data="chartData"
-              :options="chartOptions"
-              :plugins="[crosshairPlugin]"
+              :option="chartOption"
+              autoresize
+              class="w-full h-full"
+              style="cursor: crosshair;"
+              @zr:mousedown="onMouseDown"
+              @zr:mousemove="onMouseMove"
+              @zr:mouseup="onMouseUp"
             />
           </div>
             
@@ -237,13 +240,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onUnmounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { formatNumber, formatSuffixInput } from '@/composables/format.js';
 import { IconX, IconTrendingUp, IconChartLine, IconClockHour2, IconCalendarEvent } from '@tabler/icons-vue';
-import { Line } from 'vue-chartjs';
-import { getRelativePosition } from 'chart.js/helpers';
-
-// Chart.js components registered centrally in main.js
+import VChart from 'vue-echarts';
+import '@/utils/echarts';
+import { darkTooltip, darkXAxis, darkYAxis, darkGrid } from '@/utils/echarts';
 
 const props = defineProps({
   show: Boolean,
@@ -262,453 +264,353 @@ defineEmits(['close']);
 // Chart state
 const chartSelectedResources = ref([]);
 const enabledTracks = ref([]);
-const xAxisType = ref('timeInTR'); // 'timestamp' or 'timeInTR'
-const chartRenderKey = ref(0);
-const chartRef = ref(null); // Reference to chart instance
+const xAxisType = ref('timeInTR');
+const chartRef = ref(null);
 
-// Custom wheel event listener for normal scroll X-axis zoom
-let wheelEventListener = null;
-let mouseEventListeners = { mousedown: null, mousemove: null, mouseup: null };
+// Crosshair state
+const crosshairDataX = ref(null);
+const crosshairValues = ref([]);
+const isDragging = ref(false);
 
-// Setup custom wheel listener when chart is ready
-function setupCustomWheelListener() {
-  if (chartRef.value && chartRef.value.chart && chartRef.value.chart.canvas) {
-    const canvas = chartRef.value.chart.canvas;
-    
-    // Remove existing listener
-    if (wheelEventListener) {
-      canvas.removeEventListener('wheel', wheelEventListener);
-    }
-    
-    wheelEventListener = (event) => {
-      if (event.ctrlKey) {
-        // Ctrl+Scroll: Y-axis zoom (let Chart.js plugin handle this)
-        return;
-      } else {
-        // Normal scroll: X-axis zoom (custom implementation)
-        event.preventDefault();
-        
-        const chart = chartRef.value.chart;
-        if (!chart) return;
-        
-        const xAxis = chart.scales.x;
-        if (!xAxis) return;
-        
-        // Get zoom factor
-        const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
-        
-        // Calculate new min/max for X-axis
-        const range = xAxis.max - xAxis.min;
-        const center = (xAxis.max + xAxis.min) / 2;
-        const newRange = range * zoomFactor;
-        
-        const newMin = center - newRange / 2;
-        const newMax = center + newRange / 2;
-        
-        // Apply zoom to X-axis
-        chart.zoomScale('x', { min: newMin, max: newMax }, 'none');
-        chart.update('none');
-      }
-    };
-    
-    canvas.addEventListener('wheel', wheelEventListener, { passive: false });
-  }
-}
-
-// Setup mouse listeners for crosshair dragging
-function setupMouseListeners() {
-  if (chartRef.value && chartRef.value.chart && chartRef.value.chart.canvas) {
-    const canvas = chartRef.value.chart.canvas;
-    const chart = chartRef.value.chart;
-    
-    // Remove existing listeners
-    if (mouseEventListeners.mousedown) {
-      canvas.removeEventListener('mousedown', mouseEventListeners.mousedown);
-    }
-    if (mouseEventListeners.mousemove) {
-      canvas.removeEventListener('mousemove', mouseEventListeners.mousemove);
-    }
-    
-    mouseEventListeners.mousedown = (event) => {
-      console.log('Canvas mousedown event!', event);
-      
-      const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      
-      console.log('MouseDown at canvas position:', x, 'crosshair at:', crosshairPosition.value);
-      
-      // Check if mousedown is near existing crosshair
-      if (crosshairPosition.value !== null) {
-        const distance = Math.abs(x - crosshairPosition.value);
-        console.log('Distance to existing crosshair:', distance);
-        if (distance < 15) {
-          console.log('Starting drag mode on canvas mousedown');
-          isDragging.value = true;
-          canvas.style.cursor = 'grabbing';
-          
-          // Setup global drag handlers
-          const handleMouseMove = (e) => {
-            if (isDragging.value) {
-              const rect = canvas.getBoundingClientRect();
-              const mouseX = e.clientX - rect.left;
-              
-              // Clamp to chart area
-              const chartArea = chart.chartArea;
-              const clampedX = Math.max(chartArea.left, Math.min(chartArea.right, mouseX));
-              
-              const dataX = chart.scales.x.getValueForPixel(clampedX);
-              
-              console.log('Dragging to:', clampedX, 'dataX:', dataX);
-              crosshairPosition.value = clampedX;
-              updateCrosshairValues(chart, dataX);
-              chart.update('none');
-            }
-          };
-          
-          const handleMouseUp = () => {
-            console.log('MouseUp - stopping drag');
-            isDragging.value = false;
-            canvas.style.cursor = 'default';
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-          };
-          
-          document.addEventListener('mousemove', handleMouseMove);
-          document.addEventListener('mouseup', handleMouseUp);
-          
-          event.preventDefault();
-          return;
-        }
-      }
-      
-      console.log('MouseDown not near crosshair - ignoring');
-    };
-    
-    mouseEventListeners.mousemove = (event) => {
-      if (!isDragging.value) {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        
-        // Change cursor when hovering near crosshair
-        if (crosshairPosition.value !== null) {
-          const distance = Math.abs(mouseX - crosshairPosition.value);
-          if (distance < 15) {
-            canvas.style.cursor = 'grab';
-          } else {
-            canvas.style.cursor = 'default';
-          }
-        } else {
-          canvas.style.cursor = 'default';
-        }
-      }
-    };
-    
-    canvas.addEventListener('mousedown', mouseEventListeners.mousedown);
-    canvas.addEventListener('mousemove', mouseEventListeners.mousemove);
-  }
-}
-
-// Cleanup wheel listener
-function cleanupWheelListener() {
-  if (wheelEventListener && chartRef.value?.chart?.canvas) {
-    chartRef.value.chart.canvas.removeEventListener('wheel', wheelEventListener);
-    wheelEventListener = null;
-  }
-}
-
-// Cleanup mouse listeners
-function cleanupMouseListeners() {
-  if (chartRef.value?.chart?.canvas) {
-    const canvas = chartRef.value.chart.canvas;
-    if (mouseEventListeners.mousedown) {
-      canvas.removeEventListener('mousedown', mouseEventListeners.mousedown);
-    }
-    if (mouseEventListeners.mousemove) {
-      canvas.removeEventListener('mousemove', mouseEventListeners.mousemove);
-    }
-  }
-  mouseEventListeners = { mousedown: null, mousemove: null, mouseup: null };
-}
+// Use log10 scale for resources with extreme value ranges
+const LOG_SCALE_RESOURCES = ['attgn3-buff', 'mat3-borge', 'mat3-ozzy', 'mat3-knox'];
+const useLogScale = computed(() => {
+  return chartSelectedResources.value.some(id => LOG_SCALE_RESOURCES.includes(id));
+});
 
 // Initialize chart resources when modal opens
 watch(() => props.show, (newShow) => {
   if (newShow && chartableResources.value.length > 0) {
-    // Select MP by default for single resource view
     const defaultResources = ['mp'];
     const availableDefaults = defaultResources.filter(id => 
       chartableResources.value.some(r => r.id === id)
     );
     
-    // If MP not available, take first available resource
     if (availableDefaults.length === 0 && chartableResources.value.length > 0) {
       availableDefaults.push(chartableResources.value[0].id);
     }
     
-    chartSelectedResources.value = [availableDefaults[0]]; // Only one resource
-    
-    // Enable all tracks by default
+    chartSelectedResources.value = [availableDefaults[0]];
     enabledTracks.value = availableTracks.value.map(track => track.id);
     
-    forceChartUpdate();
+    // Initialize crosshair at 24 hours
+    crosshairDataX.value = 24;
+    updateCrosshairValues(24);
   }
 }, { immediate: true });
 
-// Watch for changes that should trigger chart re-render
-watch([chartSelectedResources, enabledTracks, xAxisType], () => {
-  forceChartUpdate();
-}, { deep: true });
-
-// Watch for enabled tracks changes to update crosshair values immediately
+// Watch for enabled tracks changes to update crosshair values
 watch(enabledTracks, () => {
-  if (chartRef.value?.chart && crosshairPosition.value !== null) {
-    const chart = chartRef.value.chart;
-    const dataX = chart.scales.x.getValueForPixel(crosshairPosition.value);
-    updateCrosshairValues(chart, dataX);
+  if (crosshairDataX.value !== null) {
+    updateCrosshairValues(crosshairDataX.value);
   }
 }, { deep: true });
 
-// Watch for chart reference changes to setup wheel listener
-watch(chartRef, (newRef) => {
-  if (newRef && newRef.chart) {
-    nextTick(() => {
-      setupCustomWheelListener();
-      setupMouseListeners();
-      
-      // Initialize crosshair at 24 hours if modal is open and no crosshair exists
-      if (props.show && crosshairPosition.value === null) {
-        setTimeout(() => {
-          const chart = newRef.chart;
-          if (chart.scales.x) {
-            const targetDataX = 24;
-            const pixelX = chart.scales.x.getPixelForValue(targetDataX);
-            
-            console.log('Chart ready - initializing crosshair at 24h, pixelX:', pixelX);
-            if (pixelX && !isNaN(pixelX)) {
-              crosshairPosition.value = pixelX;
-              updateCrosshairValues(chart, targetDataX);
-              chart.update('none');
-            }
-          }
-        }, 200);
-      }
-    });
-  }
-}, { immediate: true });
-
-// Cleanup on unmount
-onUnmounted(() => {
-  cleanupWheelListener();
-  cleanupMouseListeners();
-});
-
-// Force chart update function
-function forceChartUpdate() {
-  chartRenderKey.value += 1;
-  // Setup wheel listener after chart re-render and restore crosshair
-  nextTick(() => {
-    setTimeout(() => {
-      setupCustomWheelListener();
-      setupMouseListeners();
-      // Restore crosshair position from saved data-space value
-      if (crosshairDataX.value !== null && chartRef.value?.chart?.scales?.x) {
-        const chart = chartRef.value.chart;
-        const pixelX = chart.scales.x.getPixelForValue(crosshairDataX.value);
-        if (pixelX && !isNaN(pixelX)) {
-          crosshairPosition.value = pixelX;
-          updateCrosshairValues(chart, crosshairDataX.value);
-          chart.update('none');
-        }
-      }
-    }, 100);
-  });
-}
-
-// Reset chart zoom function
+// Reset chart zoom
 function resetChartZoom() {
-  if (chartRef.value && chartRef.value.chart) {
-    chartRef.value.chart.resetZoom();
+  if (chartRef.value) {
+    chartRef.value.dispatchAction({ type: 'dataZoom', start: 0, end: 100 });
   }
 }
 
-// Filter out notes and other non-relevant resources from chartable resources
+// Convert pixel position to data X value within the grid
+function getDataXFromPixel(pixelX, pixelY) {
+  const chart = chartRef.value;
+  if (!chart) return null;
+  const pointInPixel = [pixelX, pixelY];
+  if (!chart.containPixel('grid', pointInPixel)) return null;
+  const dataPoint = chart.convertFromPixel({ seriesIndex: 0 }, pointInPixel);
+  return dataPoint ? dataPoint[0] : null;
+}
+
+// Handle mousedown to start crosshair placement/drag
+function onMouseDown(params) {
+  const xValue = getDataXFromPixel(params.offsetX, params.offsetY);
+  if (xValue !== null) {
+    isDragging.value = true;
+    crosshairDataX.value = xValue;
+    updateCrosshairValues(xValue);
+  }
+}
+
+// Handle mousemove for crosshair dragging
+function onMouseMove(params) {
+  if (!isDragging.value) return;
+  const xValue = getDataXFromPixel(params.offsetX, params.offsetY);
+  if (xValue !== null) {
+    crosshairDataX.value = xValue;
+    updateCrosshairValues(xValue);
+  }
+}
+
+// Handle mouseup to stop dragging
+function onMouseUp() {
+  isDragging.value = false;
+}
+
+// Filter out notes and other non-relevant resources
 const chartableResources = computed(() => {
   const excludeFromCharts = ['notes', 'hours-in-tr', 'daily-farm-frags', 'current-camp', 'camp-timer'];
   return props.selectedResources.filter(resource => !excludeFromCharts.includes(resource.id));
-});
-
-// Use log10 scale for resources with extreme value ranges (attgn3-buff, daily hunter mats)
-const LOG_SCALE_RESOURCES = ['attgn3-buff', 'mat3-borge', 'mat3-ozzy', 'mat3-knox'];
-const useLogScale = computed(() => {
-  return chartSelectedResources.value.some(id => LOG_SCALE_RESOURCES.includes(id));
 });
 
 // Get tracks that have actual data
 const availableTracks = computed(() => {
   return props.tracks
     .filter(track => track.entries && track.entries.length > 0)
-    .sort((a, b) => {
-      // Sort by TR count (ascending - smallest first)
-      const trCountA = a.trCount || 0;
-      const trCountB = b.trCount || 0;
-      return trCountA - trCountB;
-    });
+    .sort((a, b) => (a.trCount || 0) - (b.trCount || 0));
 });
 
-// Check if Time in TR data is available across all tracks
+// Check if Time in TR data is available
 const hasTimeInTRData = computed(() => {
   return availableTracks.value.some(track => 
     track.entries && track.entries.some(entry => entry.values && entry.values['hours-in-tr'])
   );
 });
 
-// Get top 4 resources for statistics
-const getTopResources = () => {
-  // Not used anymore since we removed statistics
-  return [];
-};
+// Parse value to log10 for resources with extreme ranges
+function parseLog10Value(val) {
+  if (val === null || val === undefined || val === '') return null;
+  const str = String(val).trim();
+  if (str === '0') return null;
+  const eMatch = str.match(/^(\d+\.?\d*)[eE]\+?(\d+)$/);
+  if (eMatch) {
+    const mantissa = parseFloat(eMatch[1]);
+    const exponent = parseInt(eMatch[2]);
+    if (mantissa <= 0) return null;
+    return Math.log10(mantissa) + exponent;
+  }
+  const num = parseFloat(str);
+  if (!isFinite(num) || num <= 0) return null;
+  return Math.log10(num);
+}
 
-const crosshairPosition = ref(null);
-const crosshairDataX = ref(null); // Track crosshair position in data space (survives chart re-renders)
-const crosshairValues = ref([]);
-const isDragging = ref(false);
+function parseChartValue(val) {
+  if (typeof val === 'string' && val.includes(':')) return NaN;
+  const num = parseFloat(val);
+  return isFinite(num) ? num : 0;
+}
 
-// Crosshair plugin
-const crosshairPlugin = {
-  id: 'crosshair',
-  afterDraw: (chart) => {
-    // Auto-initialize crosshair if not set and modal is open
-    if (crosshairPosition.value === null && props.show && chart.scales.x) {
-      const targetDataX = 24;
-      const pixelX = chart.scales.x.getPixelForValue(targetDataX);
+// Track colors
+const trackColors = [
+  '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b',
+  '#ef4444', '#ec4899', '#6366f1', '#84cc16'
+];
+
+// Build chart datasets (used by both chartOption and crosshair interpolation)
+const chartDatasets = computed(() => {
+  if (!chartSelectedResources.value.length || !enabledTracks.value.length) return [];
+  
+  const datasets = [];
+  const tracksToShow = availableTracks.value.filter(track => enabledTracks.value.includes(track.id));
+  
+  chartSelectedResources.value.forEach(resourceId => {
+    const resource = chartableResources.value.find(r => r.id === resourceId);
+    if (!resource) return;
+    
+    tracksToShow.forEach((track, trackIndex) => {
+      const sortedEntries = [...track.entries].sort((a, b) => new Date(a.date) - new Date(b.date));
       
-      if (pixelX && !isNaN(pixelX)) {
-        crosshairPosition.value = pixelX;
-        updateCrosshairValues(chart, targetDataX);
+      const data = sortedEntries.map(entry => {
+        const yValue = useLogScale.value
+          ? parseLog10Value(entry.values?.[resourceId])
+          : parseChartValue(entry.values?.[resourceId]);
+        if (xAxisType.value === 'timeInTR') {
+          const timeInTR = parseFloat(entry.values?.['hours-in-tr']) || 0;
+          return [timeInTR, yValue];
+        } else {
+          return [new Date(entry.date).getTime(), yValue];
+        }
+      }).filter(point => {
+        if (point[1] === null || point[1] === undefined) return false;
+        if (xAxisType.value === 'timeInTR') return point[0] >= 0;
+        return true;
+      });
+      
+      const trackColor = trackColors[trackIndex % trackColors.length];
+      
+      datasets.push({
+        name: `${resource.name} - TR#${track.trCount || 0} - ${track.name}`,
+        data: data,
+        color: trackColor,
+        resourceId: resourceId,
+        trackId: track.id,
+        trCount: track.trCount || 0
+      });
+    });
+  });
+  
+  return datasets;
+});
+
+// ECharts option
+const chartOption = computed(() => {
+  if (!chartDatasets.value.length) return null;
+  
+  const series = chartDatasets.value.map(ds => ({
+    name: ds.name,
+    type: 'line',
+    data: ds.data,
+    lineStyle: { color: ds.color, width: 2 },
+    itemStyle: { color: ds.color },
+    symbolSize: 4,
+    showSymbol: true,
+    smooth: 0.4,
+    emphasis: { focus: 'series' }
+  }));
+  
+  // Add crosshair markLine if set
+  if (crosshairDataX.value !== null && series.length > 0) {
+    series[0].markLine = {
+      silent: true,
+      symbol: ['none', 'none'],
+      lineStyle: { color: '#9ca3af', width: 1, type: 'dashed' },
+      label: { show: false },
+      data: [{ xAxis: crosshairDataX.value }],
+      animation: false
+    };
+  }
+  
+  const xAxisConfig = xAxisType.value === 'timeInTR' ? {
+    type: 'value',
+    ...darkXAxis,
+    name: 'Time in TR (hours)',
+    nameLocation: 'center',
+    nameGap: 30,
+    nameTextStyle: { color: '#e5e7eb', fontSize: 12 },
+    axisLabel: {
+      ...darkXAxis.axisLabel,
+      formatter: (v) => `${Math.round(v)}h`
+    }
+  } : {
+    type: 'time',
+    ...darkXAxis,
+    name: 'Log Time',
+    nameLocation: 'center',
+    nameGap: 30,
+    nameTextStyle: { color: '#e5e7eb', fontSize: 12 }
+  };
+  
+  const yAxisConfig = {
+    type: 'value',
+    ...darkYAxis,
+    scale: useLogScale.value,
+    name: useLogScale.value ? 'log₁₀ scale' : undefined,
+    nameTextStyle: useLogScale.value ? { color: '#e5e7eb', fontSize: 12 } : undefined,
+    axisLabel: {
+      ...darkYAxis.axisLabel,
+      formatter: (v) => {
+        if (!useLogScale.value) return formatNumber(v);
+        const realValue = Math.pow(10, v);
+        if (!isFinite(realValue)) return `1e${Math.round(v)}`;
+        return formatNumber(realValue);
       }
     }
-    
-    if (crosshairPosition.value !== null) {
-      const ctx = chart.ctx;
-      const chartArea = chart.chartArea;
-      
-      ctx.save();
-      ctx.strokeStyle = '#ef4444'; // Red crosshair line
-      ctx.lineWidth = 3;
-      ctx.setLineDash([]);
-      
-      // Draw draggable handle at top
-      const handleY = chartArea.top - 10;
-      const handleSize = 6;
-      
-      // Handle background
-      ctx.fillStyle = '#ef4444';
-      ctx.fillRect(crosshairPosition.value - handleSize/2, handleY - handleSize/2, handleSize, handleSize);
-      
-      // Crosshair line
-      ctx.beginPath();
-      ctx.moveTo(crosshairPosition.value, chartArea.top);
-      ctx.lineTo(crosshairPosition.value, chartArea.bottom);
-      ctx.stroke();
-      
-      ctx.restore();
-    }
-  }
-};
-
-// crosshairPlugin is passed as local plugin via :plugins prop, NOT registered globally
-// This prevents it from appearing on other charts in the application
-
-// Calculate interpolated values for crosshair
-function updateCrosshairValues(chart, xValue) {
-  // Save data-space X for restoring after chart re-renders
-  crosshairDataX.value = xValue;
+  };
   
+  return {
+    backgroundColor: 'transparent',
+    animation: false,
+    grid: { ...darkGrid, bottom: 80, right: 30, top: 60 },
+    legend: {
+      type: 'scroll',
+      show: true,
+      top: 0,
+      itemGap: 14,
+      textStyle: { color: '#e5e7eb', fontSize: 11 },
+      pageTextStyle: { color: '#e5e7eb' },
+      pageIconColor: '#9ca3af',
+      pageIconInactiveColor: '#4b5563'
+    },
+    tooltip: {
+      show: false // We use crosshair display instead
+    },
+    xAxis: xAxisConfig,
+    yAxis: yAxisConfig,
+    dataZoom: [
+      { type: 'inside', xAxisIndex: 0 },
+      { type: 'slider', xAxisIndex: 0, bottom: 10, height: 20,
+        textStyle: { color: '#9ca3af' },
+        borderColor: 'rgba(75, 85, 99, 0.5)',
+        fillerColor: 'rgba(59, 130, 246, 0.15)',
+        handleStyle: { color: '#6b7280' }
+      }
+    ],
+    series: series
+  };
+});
+
+// Calculate interpolated values for crosshair 
+function updateCrosshairValues(xValue) {
   const values = [];
-  
-  // Group datasets by resource for difference calculation
   const resourceGroups = {};
   
-  chart.data.datasets.forEach((dataset, datasetIndex) => {
-    if (!dataset.data.length) return;
+  chartDatasets.value.forEach(ds => {
+    if (!ds.data.length) return;
+    if (!enabledTracks.value.includes(ds.trackId)) return;
     
-    // Only include datasets for enabled tracks
-    if (!enabledTracks.value.includes(dataset.trackId)) return;
-    
-    const resourceId = dataset.resourceId;
-    if (!resourceGroups[resourceId]) {
-      resourceGroups[resourceId] = [];
-    }
+    const resourceId = ds.resourceId;
+    if (!resourceGroups[resourceId]) resourceGroups[resourceId] = [];
     
     // Find closest data points for interpolation
-    const data = dataset.data;
     let leftPoint = null;
     let rightPoint = null;
     
-    for (let i = 0; i < data.length; i++) {
-      const point = data[i];
-      const pointX = xAxisType.value === 'timeInTR' ? point.x : new Date(point.x).getTime();
-      const targetX = xAxisType.value === 'timeInTR' ? xValue : xValue;
+    for (let i = 0; i < ds.data.length; i++) {
+      const point = ds.data[i];
+      const pointX = point[0];
       
-      if (pointX <= targetX) {
-        leftPoint = { ...point, x: pointX };
+      if (pointX <= xValue) {
+        leftPoint = { x: pointX, y: point[1] };
       }
-      if (pointX >= targetX && !rightPoint) {
-        rightPoint = { ...point, x: pointX };
+      if (pointX >= xValue && !rightPoint) {
+        rightPoint = { x: pointX, y: point[1] };
         break;
       }
     }
     
     let interpolatedY = null;
-    const targetX = xAxisType.value === 'timeInTR' ? xValue : xValue;
     
     if (leftPoint && rightPoint && leftPoint.x !== rightPoint.x) {
-      // Linear interpolation between two points
-      const ratio = (targetX - leftPoint.x) / (rightPoint.x - leftPoint.x);
+      const ratio = (xValue - leftPoint.x) / (rightPoint.x - leftPoint.x);
       interpolatedY = leftPoint.y + (rightPoint.y - leftPoint.y) * ratio;
     } else if (leftPoint) {
-      // Use left point if no right point
       interpolatedY = leftPoint.y;
     } else if (rightPoint) {
-      // Use right point if no left point
       interpolatedY = rightPoint.y;
     }
     
     if (interpolatedY !== null) {
       resourceGroups[resourceId].push({
-        label: dataset.label,
+        label: ds.name,
         value: interpolatedY,
-        resourceId: dataset.resourceId,
-        color: dataset.borderColor,
-        trCount: extractTRCount(dataset.label) // Extract TR count from label
+        resourceId: ds.resourceId,
+        color: ds.color,
+        trCount: ds.trCount
       });
     }
   });
   
   // Calculate differences and flatten groups
   Object.values(resourceGroups).forEach(group => {
-    // Sort by TR count (ascending - oldest first)
     group.sort((a, b) => (a.trCount || 0) - (b.trCount || 0));
     
-    // Calculate differences
     for (let i = 0; i < group.length; i++) {
       const item = group[i];
       if (i > 0) {
-        // Calculate difference from previous TR
         const prevItem = group[i - 1];
         if (LOG_SCALE_RESOURCES.includes(item.resourceId) && useLogScale.value) {
-          // For log-scale resources: compute real difference from log values
           const realValue = Math.pow(10, item.value);
           const prevRealValue = Math.pow(10, prevItem.value);
           item.difference = isFinite(realValue) && isFinite(prevRealValue)
             ? realValue - prevRealValue
-            : item.value - prevItem.value; // fallback to log diff if overflow
+            : item.value - prevItem.value;
           item.diffIsReal = isFinite(realValue) && isFinite(prevRealValue);
         } else {
           item.difference = item.value - prevItem.value;
           item.diffIsReal = false;
         }
       } else {
-        // For the oldest TR, set difference to 0
         item.difference = 0;
       }
       values.push(item);
@@ -724,405 +626,22 @@ function extractTRCount(label) {
   return match ? parseInt(match[1]) : 0;
 }
 
-// Initialize crosshair at 24 hours when modal opens
+// Initialize crosshair when modal opens
 watch(() => props.show, (newShow) => {
   if (newShow) {
-    // Reset crosshair when modal opens
-    crosshairPosition.value = null;
     crosshairValues.value = [];
-    
-    // Wait for chart to be ready and initialize
-    nextTick(() => {
-      setTimeout(() => {
-        if (chartRef.value?.chart?.scales?.x) {
-          const chart = chartRef.value.chart;
-          const targetDataX = 24;
-          const pixelX = chart.scales.x.getPixelForValue(targetDataX);
-          
-          console.log('Modal opened - initializing crosshair at 24h, pixelX:', pixelX);
-          crosshairPosition.value = pixelX;
-          updateCrosshairValues(chart, targetDataX);
-          chart.update('none');
-        }
-      }, 100);
-    });
+    // Initialize crosshair at 24h after a short delay
+    setTimeout(() => {
+      crosshairDataX.value = 24;
+      updateCrosshairValues(24);
+    }, 100);
   }
 });
-const darkThemeOptions = computed(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  layout: {
-    padding: {
-      top: 10,
-      bottom: 10,
-      left: 10,
-      right: 10
-    }
-  },
-  plugins: {
-    legend: {
-      position: 'top',
-      labels: {
-        color: '#e5e7eb',
-        usePointStyle: true,
-        padding: 20,
-        font: {
-          size: 12
-        }
-      }
-    },
-    tooltip: {
-      backgroundColor: 'rgba(31, 41, 55, 0.95)',
-      titleColor: '#f9fafb',
-      bodyColor: '#e5e7eb',
-      borderColor: '#6b7280',
-      borderWidth: 1,
-      cornerRadius: 8,
-      displayColors: true,
-      external: function(context) {
-        // Custom tooltip logic for Time in TR mode
-        if (xAxisType.value === 'timeInTR' && context.tooltip.dataPoints?.length > 0) {
-          const chart = context.chart;
-          const activePoint = context.tooltip.dataPoints[0];
-          const activeX = activePoint.parsed.x;
-          const maxDifference = 24; // 24 hours max difference
-          
-          // Find all data points within 24h range across all datasets
-          const nearbyPoints = [];
-          chart.data.datasets.forEach((dataset, datasetIndex) => {
-            dataset.data.forEach((point, pointIndex) => {
-              if (Math.abs(point.x - activeX) <= maxDifference) {
-                nearbyPoints.push({
-                  datasetIndex,
-                  pointIndex,
-                  dataset,
-                  point,
-                  label: dataset.label,
-                  resourceId: dataset.resourceId
-                });
-              }
-            });
-          });
-          
-          // Override the tooltip with nearby points
-          if (nearbyPoints.length > 0) {
-            context.tooltip.dataPoints = nearbyPoints.map(np => ({
-              datasetIndex: np.datasetIndex,
-              dataIndex: np.pointIndex,
-              parsed: { x: np.point.x, y: np.point.y },
-              dataset: np.dataset,
-              label: np.label
-            }));
-          }
-        }
-        
-        // Let Chart.js handle the rest
-        return false;
-      },
-      callbacks: {
-        title: function(context) {
-          if (xAxisType.value === 'timeInTR') {
-            const timeInTR = context[0].parsed.x;
-            return `Time in TR: ${timeInTR}h`;
-          } else {
-            return context[0].label;
-          }
-        },
-        label: function(context) {
-          const resourceId = context.dataset.resourceId;
-          const value = context.parsed.y;
-          return `${context.dataset.label}: ${formatResourceValue(resourceId, value)}`;
-        }
-      }
-    },
-    zoom: {
-      pan: {
-        enabled: true,
-        mode: 'xy',
-        modifierKey: null,
-      },
-      zoom: {
-        wheel: {
-          enabled: true,
-          speed: 0.1,
-          modifierKey: 'ctrl', // Ctrl+wheel for Y-axis zoom
-        },
-        pinch: {
-          enabled: true,
-          mode: 'xy' // Allow both axes for touch devices
-        },
-        drag: {
-          enabled: true,
-          mode: 'xy', // Allow both x and y selection for box zoom
-          modifierKey: 'ctrl', // Ctrl+drag for box zoom on both axes
-        },
-      },
-      limits: {
-        y: {min: 'original', max: 'original'},
-        x: {min: 'original', max: 'original'}
-      }
-    }
-  },
-  scales: {
-    x: {
-      type: xAxisType.value === 'timeInTR' ? 'linear' : 'time',
-      display: true,
-      title: {
-        display: true,
-        text: xAxisType.value === 'timeInTR' ? 'Time in TR (hours)' : 'Log Time',
-        color: '#e5e7eb',
-        font: {
-          size: 12
-        }
-      },
-      grid: {
-        color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
-        drawOnChartArea: true,
-        drawTicks: true
-      },
-      ticks: {
-        color: '#9ca3af',
-        font: {
-          size: 11
-        },
-        ...(xAxisType.value === 'timeInTR' && {
-          stepSize: 24, // Show every 24 hours
-          callback: function(value) {
-            return `${Math.round(value)}h`;
-          }
-        }),
-        ...(xAxisType.value !== 'timeInTR' && {
-          maxTicksLimit: 8,
-          autoSkip: true
-        })
-      },
-      ...(xAxisType.value !== 'timeInTR' && {
-        time: {
-          tooltipFormat: 'Pp',
-          displayFormats: {
-            minute: 'HH:mm',
-            hour: 'dd.MM HH:mm',
-            day: 'dd.MM.yyyy'
-          }
-        }
-      })
-    },
-    y: {
-      type: 'linear',
-      display: true,
-      position: 'left',
-      title: useLogScale.value ? {
-        display: true,
-        text: 'log\u2081\u2080 scale',
-        color: '#e5e7eb',
-        font: { size: 12 }
-      } : { display: false },
-      ticks: {
-        callback: function(v) {
-          if (!useLogScale.value) return formatNumber(v);
-          const realValue = Math.pow(10, v);
-          if (!isFinite(realValue)) return `1e${Math.round(v)}`;
-          return formatNumber(realValue);
-        },
-        maxTicksLimit: 8,
-        color: '#9ca3af',
-        font: { size: 11 }
-      },
-      grid: {
-        color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)'
-      }
-    }
-  },
-  elements: {
-    line: {
-      tension: 0.4
-    },
-    point: {
-      radius: 4,
-      hoverRadius: 7
-    }
-  },
-  interaction: {
-    intersect: false,
-    mode: 'none' // Disable normal tooltips
-  },
-  plugins: {
-    tooltip: {
-      enabled: false // Disable tooltips completely
-    },
-    legend: {
-      position: 'top',
-      labels: {
-        color: '#e5e7eb',
-        usePointStyle: true,
-        padding: 20,
-        font: {
-          size: 11
-        }
-      }
-    },
-    zoom: {
-      pan: {
-        enabled: true,
-        mode: 'xy',
-        modifierKey: null,
-      },
-      zoom: {
-        wheel: {
-          enabled: true,
-          speed: 0.1,
-          modifierKey: 'ctrl', // Ctrl+wheel for Y-axis zoom
-        },
-        pinch: {
-          enabled: true,
-          mode: 'xy' // Allow both axes for touch devices
-        },
-        drag: {
-          enabled: true,
-          mode: 'xy', // Allow both x and y selection for box zoom
-          modifierKey: 'ctrl', // Ctrl+drag for box zoom on both axes
-        },
-      },
-      limits: {
-        y: {min: 'original', max: 'original'},
-        x: {min: 'original', max: 'original'}
-      }
-    }
-  },
-  animation: {
-    duration: 0
-  }
-}));
-
-const chartOptions = computed(() => darkThemeOptions.value);
-
-// Chart data generators
-const chartData = computed(() => {
-  if (!chartSelectedResources.value.length || !enabledTracks.value.length) return null;
-  
-  const datasets = [];
-  
-  // Get enabled tracks
-  const tracksToShow = availableTracks.value.filter(track => enabledTracks.value.includes(track.id));
-  
-  // For each resource and each track, create a separate dataset
-  chartSelectedResources.value.forEach(resourceId => {
-    const resource = chartableResources.value.find(r => r.id === resourceId);
-    if (!resource) return;
-    
-    tracksToShow.forEach((track, trackIndex) => {
-      const sortedEntries = [...track.entries].sort((a, b) => new Date(a.date) - new Date(b.date));
-      
-      const data = sortedEntries.map((entry) => {
-        const yValue = useLogScale.value
-          ? parseLog10Value(entry.values?.[resourceId])
-          : parseChartValue(entry.values?.[resourceId]);
-        if (xAxisType.value === 'timeInTR') {
-          const timeInTR = parseFloat(entry.values?.['hours-in-tr']) || 0;
-          return { x: timeInTR, y: yValue };
-        } else {
-          return { x: new Date(entry.date), y: yValue };
-        }
-      }).filter(point => {
-        if (point.y === null || point.y === undefined) return false;
-        if (xAxisType.value === 'timeInTR') {
-          return point.x >= 0;
-        } else {
-          return point.x && point.y !== undefined;
-        }
-      });
-      
-      // Use solid lines for all tracks with different colors
-      const trackColors = [
-        '#8b5cf6', // purple
-        '#06b6d4', // cyan
-        '#10b981', // emerald
-        '#f59e0b', // amber
-        '#ef4444', // red
-        '#ec4899', // pink
-        '#6366f1', // indigo
-        '#84cc16', // lime
-      ];
-      
-      const trackColor = trackColors[trackIndex % trackColors.length];
-      
-      datasets.push({
-        label: `${resource.name} - TR#${track.trCount || 0} - ${track.name}`,
-        data: data,
-        borderColor: trackColor,
-        backgroundColor: trackColor + '20',
-        borderWidth: 2,
-        fill: false,
-        resourceId: resourceId,
-        trackId: track.id,
-        pointRadius: 2,
-        pointHoverRadius: 4
-      });
-    });
-  });
-  
-  return {
-    datasets: datasets
-  };
-});
-
-const barChartData = computed(() => {
-  // Not used anymore, but keeping for compatibility
-  return null;
-});
-
-const improvementChartData = computed(() => {
-  // Not used anymore, but keeping for compatibility
-  return null;
-});
-
-// Helper functions
-function parseChartValue(val) {
-  if (typeof val === 'string' && val.includes(':')) return NaN;
-  const num = parseFloat(val);
-  return isFinite(num) ? num : 0;
-}
-
-// Parse value to log10 for attgn3-buff (handles scientific notation beyond JS Number range like "1e333")
-function parseLog10Value(val) {
-  if (val === null || val === undefined || val === '') return null;
-  const str = String(val).trim();
-  if (str === '0') return null; // log(0) is undefined
-  // Handle scientific notation (e.g. "1.5e200", "1e333")
-  const eMatch = str.match(/^(\d+\.?\d*)[eE]\+?(\d+)$/);
-  if (eMatch) {
-    const mantissa = parseFloat(eMatch[1]);
-    const exponent = parseInt(eMatch[2]);
-    if (mantissa <= 0) return null;
-    return Math.log10(mantissa) + exponent;
-  }
-  const num = parseFloat(str);
-  if (!isFinite(num) || num <= 0) return null;
-  return Math.log10(num);
-}
-
-function getTrackPeakValue(track, resourceId) {
-  if (!track.entries || track.entries.length === 0) return 0;
-  
-  const values = track.entries
-    .map(entry => entry.values?.[resourceId] || 0)
-    .filter(value => value > 0);
-    
-  return values.length > 0 ? Math.max(...values) : 0;
-}
 
 function selectResource(resourceId) {
   const forbidden = ['hours-in-tr', 'notes', 'daily-farm-frags', 'current-camp', 'camp-timer'];
   if (forbidden.includes(resourceId)) return;
-  
-  // Only allow one resource at a time
   chartSelectedResources.value = [resourceId];
-  
-  nextTick(() => {
-    forceChartUpdate();
-  });
 }
 
 function toggleTrackInChart(trackId) {
@@ -1132,14 +651,9 @@ function toggleTrackInChart(trackId) {
   } else {
     enabledTracks.value.push(trackId);
   }
-  
-  nextTick(() => {
-    forceChartUpdate();
-  });
 }
 
 function formatResourceValue(resourceId, value) {
-  // When log scale is active, values are in log10 space → convert back and format with suffixes
   if (LOG_SCALE_RESOURCES.includes(resourceId) && useLogScale.value) {
     if (value === 0 || value === null) return '0';
     const realValue = Math.pow(10, value);

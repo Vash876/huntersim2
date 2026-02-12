@@ -40,7 +40,7 @@
         </div>
         
         <!-- Modal-Inhalt -->
-        <div class="content-container" style="min-height: 400px; max-height: 70vh; overflow-y: auto;">
+        <div class="content-container" style="min-height: 420px; max-height: 70vh; overflow-y: auto;">
           <div class="p-5">
             <!-- Stage Distribution Tab -->
             <div v-if="activeTab === 'distribution'">
@@ -53,6 +53,21 @@
                 :sample-size="sampleSize"   
                 :color="color"
                 :is-visible="activeTab === 'distribution'"
+              />
+              <div v-else class="flex items-center justify-center h-[300px] text-gray-400">
+                No data available. Please evaluate the build again.
+              </div>
+            </div>
+
+            <!-- Cumulative Distribution Tab -->
+            <div v-if="activeTab === 'cumulative'">
+              <CumulativeDistributionChart 
+                v-if="distribution"
+                :distribution="distribution"
+                :avg-stage="avgStage"
+                :sample-size="sampleSize"
+                :color="color"
+                :is-visible="activeTab === 'cumulative'"
               />
               <div v-else class="flex items-center justify-center h-[300px] text-gray-400">
                 No data available. Please evaluate the build again.
@@ -245,8 +260,9 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import { IconChartBar, IconX, IconGraph, IconRuler, IconHeart, IconTrophy, IconPackage, IconDiamond, IconHexagon, IconHexagons, IconBrightness } from '@tabler/icons-vue';
+import { IconChartBar, IconX, IconGraph, IconRuler, IconHeart, IconTrophy, IconPackage, IconDiamond, IconHexagon, IconHexagons, IconBrightness, IconChartAreaLine } from '@tabler/icons-vue';
 import StageDistributionChart from '@/components/charts/StageDistributionChart.vue';
+import CumulativeDistributionChart from '@/components/charts/CumulativeDistributionChart.vue';
 import ReviveDistributionChart from '@/components/charts/ReviveDistributionChart.vue';
 import BossKillByReviveChart from '@/components/charts/BossKillByReviveChart.vue';
 import { formatNumber } from '@/composables/format.js';
@@ -337,6 +353,7 @@ const getMaterialLabel = (key) => {
 const tabs = computed(() => {
   const baseTabs = [
     { id: 'distribution', label: 'Stage Distribution', icon: IconGraph },
+    { id: 'cumulative', label: 'Stage Odds', icon: IconChartAreaLine },
     { id: 'revive', label: 'Revive Distribution', icon: IconHeart }
   ];
   

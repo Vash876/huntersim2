@@ -795,7 +795,7 @@
                       <!-- Bottom line: Buff + HBM + Times - fixed widths for alignment -->
                       <div class="flex items-center text-xs text-gray-400 mt-0.5">
                         <span class="w-12 truncate text-green-400">{{ item.buffPerRank || '' }}</span>
-                        <span class="w-22">HBM: <span class="text-blue-400">{{ formatNumber(hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}/d</span></span>
+                        <span class="w-24">HBM: <span class="text-blue-400">{{ formatNumber(hbmProductionDataMap[item.id]?.currentHBMProduction || 0) }}/d</span></span>
                         <span class="w-22">
                           <template v-if="hbmProductionDataMap[item.id]?.newHBMProduction && hbmProductionDataMap[item.id]?.newHBMProduction !== hbmProductionDataMap[item.id]?.currentHBMProduction">
                             → <span class="text-yellow-400">{{ formatNumber(hbmProductionDataMap[item.id]?.newHBMProduction) }}/d</span>

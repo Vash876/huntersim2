@@ -308,17 +308,16 @@
             
             <!-- Chart.js Graph Container -->
             <div class="h-60 w-full">
-              <div v-if="!chartData" class="flex items-center justify-center h-full text-gray-400">
+              <div v-if="!chartOption" class="flex items-center justify-center h-full text-gray-400">
                 <div class="text-center">
                   <div class="animate-spin w-8 h-8 border-2 border-gray-600 border-t-gray-400 rounded-full mx-auto mb-2"></div>
                   <div class="text-sm">Loading chart...</div>
                 </div>
               </div>
-              <Bar
-                v-if="chartData"
-                :key="chartRenderKey"
-                :data="chartData"
-                :options="chartOptions"
+              <v-chart
+                v-if="chartOption"
+                :option="chartOption"
+                autoresize
                 class="w-full h-full"
               />
             </div>
@@ -361,14 +360,15 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, watch, nextTick } from 'vue';
+import { computed, ref } from 'vue';
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import { getM0Cost, formatM0Cost, calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
 import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe, getRuleOfConsistencyExponent } from '@/utils/loopModCostUtils';
-// Chart.js components registered centrally in main.js
-import { Bar } from 'vue-chartjs';
+import VChart from 'vue-echarts';
+import '@/utils/echarts';
+import { darkTooltip, darkXAxis, darkYAxis, darkGrid } from '@/utils/echarts';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { allBoosts } from '@/constants/tr-planner';
 import { formatNumber } from '@/composables/format';
@@ -1048,20 +1048,6 @@ function handleDelete(planId) {
 }
 
 
-// Chart.js components registered centrally in main.js
-
-// Chart-Referenz
-const chartRef = ref(null);
-let trRequirementsChart = null;
-
-// Chart state for Vue-chartjs
-const chartRenderKey = ref(0);
-
-// Force chart update function
-function forceChartUpdate() {
-  chartRenderKey.value += 1;
-}
-
 // Anzahl der zukünftigen TRs, die projiziert werden sollen
 const futureTRsToProject = ref(10);
 
@@ -1109,8 +1095,8 @@ const futureTRProjections = computed(() => {
   return projections;
 });
 
-// Chart Data für Vue-chartjs
-const chartData = computed(() => {
+// ECharts option (replaces chartData + chartOptions)
+const chartOption = computed(() => {
   if (!futureTRProjections.value.length) return null;
   
   const labels = futureTRProjections.value.map(proj => `TR${proj.trCount}`);
@@ -1118,145 +1104,64 @@ const chartData = computed(() => {
   const availableData = futureTRProjections.value.map(proj => proj.orbsAvailable);
   
   return {
-    labels: labels,
-    datasets: [
+    backgroundColor: 'transparent',
+    animation: false,
+    grid: { ...darkGrid, bottom: 50 },
+    legend: {
+      show: true,
+      top: 0,
+      textStyle: { color: '#9ca3af', fontSize: 11 }
+    },
+    tooltip: {
+      ...darkTooltip,
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      formatter: (params) => {
+        const label = params[0].name;
+        return `<strong>${label}</strong><br/>` + params.map(p => 
+          `${p.marker} ${p.seriesName}: ${formatNumber(p.value)}`
+        ).join('<br/>');
+      }
+    },
+    xAxis: {
+      type: 'category',
+      data: labels,
+      ...darkXAxis,
+      axisLabel: { ...darkXAxis.axisLabel, rotate: labels.length > 10 ? 45 : 0 }
+    },
+    yAxis: {
+      type: 'log',
+      ...darkYAxis,
+      axisLabel: {
+        ...darkYAxis.axisLabel,
+        formatter: (v) => formatNumber(v)
+      }
+    },
+    series: [
       {
-        label: 'TR Requirement',
+        name: 'TR Requirement',
+        type: 'bar',
         data: requirementData,
-        backgroundColor: 'rgba(239, 68, 68, 0.25)',
-        borderColor: 'rgba(239, 68, 68, 1)',
-        borderWidth: 2
+        itemStyle: {
+          color: 'rgba(239, 68, 68, 0.25)',
+          borderColor: 'rgba(239, 68, 68, 1)',
+          borderWidth: 2,
+          borderRadius: [4, 4, 0, 0]
+        },
+        barMaxWidth: 40
       },
       {
-        label: 'All-Time Orbs',
-        data: availableData,
-        backgroundColor: 'rgba(74, 222, 128, 0.25)',
-        borderColor: 'rgba(74, 222, 128, 1)',
-        borderWidth: 2,
+        name: 'All-Time Orbs',
         type: 'line',
-        fill: false,
-        tension: 0.1,
-        pointBackgroundColor: 'rgba(74, 222, 128, 1)',
-        pointRadius: 3
+        data: availableData,
+        lineStyle: { color: 'rgba(74, 222, 128, 1)', width: 2 },
+        itemStyle: { color: 'rgba(74, 222, 128, 1)' },
+        symbolSize: 6,
+        smooth: 0.1
       }
     ]
   };
 });
-
-// Chart Options im ProgressModal Stil
-const chartOptions = computed(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  animation: {
-    duration: 0
-  },
-  layout: {
-    padding: {
-      top: 10,
-      bottom: 10,
-      left: 10,
-      right: 10
-    }
-  },
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top',
-      labels: {
-        color: '#9ca3af',
-        font: {
-          size: 11
-        }
-      }
-    },
-    tooltip: {
-      backgroundColor: 'rgba(31, 41, 55, 0.95)',
-      titleColor: '#f9fafb',
-      bodyColor: '#e5e7eb',
-      borderColor: '#6b7280',
-      borderWidth: 1,
-      cornerRadius: 8,
-      displayColors: true,
-      mode: 'index',
-      intersect: false,
-      callbacks: {
-        label: function(context) {
-          let label = context.dataset.label || '';
-          if (label) {
-            label += ': ';
-          }
-          if (context.parsed.y !== null) {
-            label += formatNumber(context.parsed.y);
-          }
-          return label;
-        }
-      }
-    }
-  },
-  scales: {
-    x: {
-      display: true,
-      grid: {
-        color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
-        drawOnChartArea: true,
-        drawTicks: true
-      },
-      ticks: {
-        color: '#9ca3af',
-        font: {
-          size: 11
-        },
-        maxTicksLimit: 8,
-        display: true
-      }
-    },
-    y: {
-      type: 'logarithmic',
-      display: true,
-      position: 'left',
-      grid: {
-        color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
-        drawOnChartArea: true,
-        drawTicks: true
-      },
-      ticks: {
-        color: '#9ca3af',
-        font: {
-          size: 11
-        },
-        maxTicksLimit: 8,
-        display: true,
-        callback: function(value) {
-          return formatNumber(value);
-        }
-      }
-    }
-  },
-  interaction: {
-    intersect: false,
-    mode: 'index'
-  },
-  elements: {
-    line: {
-      tension: 0.1
-    },
-    point: {
-      radius: 3,
-      hoverRadius: 6
-    },
-    bar: {
-      borderRadius: 4,
-      borderSkipped: false
-    }
-  }
-}));
-
-// Watch for changes that should trigger chart re-render
-watch([futureTRProjections, futureTRsToProject], () => {
-  forceChartUpdate();
-}, { deep: true });
 
 // Berechne die Upgrade-Kosten für alle verbesserten Boosts
 const upgradeCosts = computed(() => {

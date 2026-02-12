@@ -104,7 +104,7 @@
             <div class="mb-3 flex justify-between items-center">
               <div class="text-xs text-gray-400">
                 <span class="font-medium">Mouse Controls:</span> 
-                Drag to pan X & Y • Scroll for X-zoom • Ctrl+scroll for zoom • Ctrl+drag for box zoom
+                Scroll to zoom • Drag slider to pan
               </div>
               <button
                 @click="resetChartZoom"
@@ -136,50 +136,14 @@
             </div>
             
             <!-- Chart Display -->
-            <div class="h-[500px] relative bg-transparent" :key="`chart-container-${chartRenderKey}`">
-              <!-- Line Chart -->
-              <div v-if="activeChartType === 'line' && chartData" class="w-full h-full">
-                <Line
-                  ref="chartRef"
-                  :data="chartData"
-                  :options="chartOptions"
-                  :key="`line-${chartRenderKey}`"
-                  class="w-full h-full"
-                />
-              </div>
-              
-              <!-- Bar Chart -->
-              <div v-if="activeChartType === 'bar' && chartData" class="w-full h-full">
-                <Bar
-                  ref="chartRef"
-                  :data="chartData"
-                  :options="chartOptions"
-                  :key="`bar-${chartRenderKey}`"
-                  class="w-full h-full"
-                />
-              </div>
-              
-              <!-- Area Chart -->
-              <div v-if="activeChartType === 'area' && areaChartData" class="w-full h-full">
-                <Line
-                  ref="chartRef"
-                  :data="areaChartData"
-                  :options="chartOptions"
-                  :key="`area-${chartRenderKey}`"
-                  class="w-full h-full"
-                />
-              </div>
-              
-              <!-- Gains Chart -->
-              <div v-if="activeChartType === 'gains' && gainsChartData" class="w-full h-full">
-                <Bar
-                  ref="chartRef"
-                  :data="gainsChartData"
-                  :options="gainsChartOptions"
-                  :key="`gains-${chartRenderKey}`"
-                  class="w-full h-full"
-                />
-              </div>
+            <div class="h-[500px] relative bg-transparent">
+              <v-chart
+                v-if="chartOption"
+                ref="chartRef"
+                :option="chartOption"
+                autoresize
+                class="w-full h-full"
+              />
             </div>
           </div>
         </div>
@@ -247,11 +211,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { formatNumber, formatSuffixInput } from '@/composables/format.js';
 import { IconX, IconChartLine, IconTrendingUp, IconClockHour2, IconCalendarEvent } from '@tabler/icons-vue';
-import { Line, Bar } from 'vue-chartjs';
-// Chart.js components registered centrally in main.js
+import VChart from 'vue-echarts';
+import '@/utils/echarts';
+import { darkTooltip, darkXAxis, darkYAxis, darkGrid } from '@/utils/echarts';
 
 const props = defineProps({
   show: Boolean,
@@ -268,8 +233,7 @@ defineEmits(['close']);
 const activeChartType = ref('line');
 const chartSelectedResources = ref([]);
 const xAxisType = ref('timeInTR'); // 'timestamp' or 'timeInTR' - Default: Time in TR
-const chartRenderKey = ref(0); // Force chart re-render
-const chartRef = ref(null); // Reference to chart instance
+const chartRef = ref(null); // Reference to ECharts instance
 
 const chartTypes = [
   { id: 'line', name: 'Progress' },
@@ -278,70 +242,12 @@ const chartTypes = [
   { id: 'gains', name: 'Gains' }
 ];
 
-// Custom wheel event listener for Ctrl+Scroll X-axis zoom
-let wheelEventListener = null;
-
-// Setup custom wheel listener when chart is ready
-function setupCustomWheelListener() {
-  if (chartRef.value && chartRef.value.chart && chartRef.value.chart.canvas) {
-    const canvas = chartRef.value.chart.canvas;
-    
-    // Remove existing listener
-    if (wheelEventListener) {
-      canvas.removeEventListener('wheel', wheelEventListener);
-    }
-    
-    wheelEventListener = (event) => {
-      if (event.ctrlKey) {
-        // Ctrl+Scroll: Y-axis zoom (let Chart.js plugin handle this)
-        return;
-      } else {
-        // Normal scroll: X-axis zoom (custom implementation)
-        event.preventDefault();
-        
-        const chart = chartRef.value.chart;
-        if (!chart) return;
-        
-        const xAxis = chart.scales.x;
-        if (!xAxis) return;
-        
-        // Get zoom factor
-        const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
-        
-        // Calculate new min/max for X-axis
-        const range = xAxis.max - xAxis.min;
-        const center = (xAxis.max + xAxis.min) / 2;
-        const newRange = range * zoomFactor;
-        
-        const newMin = center - newRange / 2;
-        const newMax = center + newRange / 2;
-        
-        // Apply zoom to X-axis
-        chart.zoomScale('x', { min: newMin, max: newMax }, 'none');
-        chart.update('none');
-      }
-    };
-    
-    canvas.addEventListener('wheel', wheelEventListener, { passive: false });
-  }
-}
-
-// Cleanup wheel listener
-function cleanupWheelListener() {
-  if (wheelEventListener && chartRef.value?.chart?.canvas) {
-    chartRef.value.chart.canvas.removeEventListener('wheel', wheelEventListener);
-    wheelEventListener = null;
-  }
-}
-
 // Initialize chart resources when modal opens
 watch(() => props.show, (newShow) => {
   if (newShow && chartableResources.value.length > 0) {
-    // Load saved chart resources from localStorage
     const savedResources = loadChartResourcesFromStorage();
     
     if (savedResources && savedResources.length > 0) {
-      // Filter saved resources to only include available ones
       const availableSavedResources = savedResources.filter(id => 
         chartableResources.value.some(r => r.id === id)
       );
@@ -349,58 +255,23 @@ watch(() => props.show, (newShow) => {
       if (availableSavedResources.length > 0) {
         chartSelectedResources.value = availableSavedResources;
       } else {
-        // Fallback to defaults if saved resources are not available
         setDefaultChartResources();
       }
     } else {
-      // No saved resources, use defaults
       setDefaultChartResources();
     }
-    
-    // Force chart re-render when modal opens
-    forceChartUpdate();
   }
 }, { immediate: true });
-
-// Watch for changes that should trigger chart re-render
-watch([activeChartType, chartSelectedResources, xAxisType], () => {
-  forceChartUpdate();
-}, { deep: true });
 
 // Watch for chartSelectedResources changes to save to localStorage
 watch(chartSelectedResources, (newResources) => {
   saveChartResourcesToStorage(newResources);
 }, { deep: true });
 
-// Watch for chart reference changes to setup wheel listener
-watch(chartRef, (newRef) => {
-  if (newRef && newRef.chart) {
-    nextTick(() => {
-      setupCustomWheelListener();
-    });
-  }
-}, { immediate: true });
-
-// Cleanup on unmount
-onUnmounted(() => {
-  cleanupWheelListener();
-});
-
-// Force chart update function
-function forceChartUpdate() {
-  chartRenderKey.value += 1;
-  // Setup wheel listener after chart re-render
-  nextTick(() => {
-    setTimeout(() => {
-      setupCustomWheelListener();
-    }, 100);
-  });
-}
-
 // Reset chart zoom function
 function resetChartZoom() {
-  if (chartRef.value && chartRef.value.chart) {
-    chartRef.value.chart.resetZoom();
+  if (chartRef.value) {
+    chartRef.value.dispatchAction({ type: 'dataZoom', start: 0, end: 100 });
   }
 }
 
@@ -432,633 +303,194 @@ const filteredEntries = computed(() => {
   return sortedEntries.value;
 });
 
-const chartLabels = computed(() => {
-  if (xAxisType.value === 'timeInTR') {
-    // Check if Time in TR is available
-    const hasTimeInTR = filteredEntries.value.some(entry => entry.values && entry.values['hours-in-tr']);
-    
-    if (!hasTimeInTR) {
-      // Fallback to timestamp if Time in TR is not available - use Date objects for time axis
-      console.warn('Time in TR data not available, falling back to timestamps');
-      return filteredEntries.value.map(entry => new Date(entry.date));
-    }
-    
-    // Use "Time in TR" values for X-axis - keep as strings for category axis
-    return filteredEntries.value.map(entry => {
-      const timeInTR = entry.values['hours-in-tr'] || '0:00';
-      return timeInTR;
-    });
-  } else {
-    // Use Date objects for proper time axis formatting
-    return filteredEntries.value.map(entry => new Date(entry.date));
-  }
-});
-
-// Dark theme colors - make reactive to xAxisType changes
-const darkThemeOptions = computed(() => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  layout: {
-    padding: {
-      top: 10,
-      bottom: 10,
-      left: 10,
-      right: 10
-    }
-  },
-  plugins: {
-    legend: {
-      position: 'top',
-      labels: {
-        color: '#e5e7eb',
-        usePointStyle: true,
-        padding: 20,
-        font: {
-          size: 12
-        }
-      }
-    },
-    tooltip: {
-      backgroundColor: 'rgba(31, 41, 55, 0.95)',
-      titleColor: '#f9fafb',
-      bodyColor: '#e5e7eb',
-      borderColor: '#6b7280',
-      borderWidth: 1,
-      cornerRadius: 8,
-      displayColors: true,
-      callbacks: {
-        title: function(context) {
-          if (xAxisType.value === 'timeInTR') {
-            return `Time in TR: ${context[0].label}`;
-          } else {
-            return context[0].label;
-          }
-        },
-        label: function(context) {
-          const value = context.parsed.y;
-          const resourceId = context.dataset.resourceId;
-          
-          // Special formatting for oo-accum
-          if (resourceId === 'oo-accum') {
-            return `${context.dataset.label}: ${formatSuffixInput(value)}`;
-          }
-          
-          return `${context.dataset.label}: ${formatNumber(value)}`;
-        }
-      }
-    },
-    zoom: {
-      pan: {
-        enabled: true,
-        mode: 'xy', // Enable panning on both X and Y axes
-        modifierKey: null, // No modifier key needed for panning
-        scaleMode: 'xy', // Allow scaling on both axes during pan
-      },
-      zoom: {
-        wheel: {
-          enabled: true,
-          speed: 0.1,
-          modifierKey: 'ctrl', // Ctrl+wheel for Y-axis zoom
-        },
-        pinch: {
-          enabled: true,
-          mode: 'xy' // Allow both axes for touch devices
-        },
-        drag: {
-          enabled: true,
-          mode: 'xy', // Allow both x and y selection for box zoom
-          modifierKey: 'ctrl', // Ctrl+drag for box zoom on both axes
-        },
-      },
-      // Remove limits to allow free panning/zooming within filtered data
-      limits: {}
-    }
-  },
-  scales: {
-    x: {
-      type: xAxisType.value === 'timeInTR' ? 'category' : 'time',
-      display: true,
-      title: {
-        display: true,
-        text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
-        color: '#e5e7eb',
-        font: {
-          size: 12,
-          weight: 'bold'
-        }
-      },
-      grid: {
-        color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
-        drawOnChartArea: true,
-        drawTicks: true
-      },
-      ticks: {
-        color: '#9ca3af',
-        font: {
-          size: 11
-        },
-        maxTicksLimit: 8,
-        display: true,
-        autoSkip: true
-      },
-      ...(xAxisType.value !== 'timeInTR' && {
-        time: {
-          tooltipFormat: 'Pp',
-          displayFormats: {
-            minute: 'HH:mm',
-            hour: 'dd.MM HH:mm',
-            day: 'dd.MM.yyyy'
-          }
-        }
-      })
-    },
-    y: {
-      type: 'linear',     
-      display: true,
-      position: 'left',
-      suggestedMin: 0,
-      ticks: {
-        callback: v => formatNumber(v),
-        maxTicksLimit: 8,
-        color: '#9ca3af',
-        font: { size: 11 }
-      },
-      grid: {
-        color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)'
-      }
-    }
-  },
-  elements: {
-    line: {
-      tension: 0.4
-    },
-    point: {
-      radius: 3,
-      hoverRadius: 6
-    }
-  },
-  interaction: {
-    intersect: false,
-    mode: 'index'
-  },
-  // Isolate this chart instance
-  animation: {
-    duration: 0
-  },
-  datasets: {
-    line: {
-      pointBackgroundColor: 'rgba(255, 255, 255, 0.8)'
-    },
-    bar: {
-      backgroundColor: 'rgba(255, 255, 255, 0.8)',
-      borderWidth: 1,
-      barThickness: 'flex',
-      maxBarThickness: 50
-    }
-  }
-}));
-
-const chartOptions = computed(() => {
-  // Calculate dynamic Y-axis range based on selected data (auto scaling)
-  let yAxisConfig = {
-    display: true,
-    position: 'left',
-    grid: {
-      color: 'rgba(75, 85, 99, 0.3)',
-      borderColor: 'rgba(75, 85, 99, 0.5)',
-      drawOnChartArea: true,
-      drawTicks: true
-    },
-    ticks: {
-      color: '#9ca3af',
-      font: {
-        size: 11
-      },
-      maxTicksLimit: 8,
-      display: true,
-      callback: function(value) {
-        return formatNumber(value);
-      }
-    }
-  };
-
-  // X-Axis configuration
-  let xAxisConfig = {
-    type: xAxisType.value === 'timeInTR' ? 'category' : 'time',
-    display: true,
-    title: {
-      display: true,
-      text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
-      color: '#9ca3af',
-      font: {
-        size: 12
-      }
-    },
-    grid: {
-      color: 'rgba(75, 85, 99, 0.3)',
-      borderColor: 'rgba(75, 85, 99, 0.5)',
-      drawOnChartArea: true,
-      drawTicks: true
-    },
-    ticks: {
-      color: '#9ca3af',
-      font: {
-        size: 11
-      },
-      maxTicksLimit: 8,
-      display: true,
-      autoSkip: true
-    },
-    ...(xAxisType.value !== 'timeInTR' && {
-      time: {
-        tooltipFormat: 'Pp',
-        displayFormats: {
-          minute: 'HH:mm',
-          hour: 'dd.MM HH:mm',
-          day: 'dd.MM.yyyy'
-        }
-      }
-    })
-  };
-
-  // Apply automatic Y-axis scaling based on data
-  if (chartData.value && chartData.value.datasets.length > 0) {
-    let allValues = [];
-    chartData.value.datasets.forEach(dataset => {
-      const values = dataset.data
-        .filter(val => val !== null && val !== undefined)
-        .map(val => {
-          // Handle both simple numbers and x/y objects with robust parsing
-          const raw = typeof val === 'object' && val?.y !== undefined ? val.y : val;
-          const num = parseFloat(raw);
-          return isFinite(num) ? num : 0;
-        });
-      allValues = allValues.concat(values);
-    });
-
-    if (allValues.length > 0) {
-      const minValue = Math.min(...allValues);
-      const maxValue = Math.max(...allValues);
-      const range = maxValue - minValue;
-      
-      if (range > 0) {
-        const padding = range * 0.1;
-        
-        // Smart scaling: start from 0 if data is close to 0, otherwise fit to data
-        if (minValue > range * 0.3) {
-          yAxisConfig.suggestedMin = Math.max(0, minValue - padding);
-          yAxisConfig.suggestedMax = maxValue + padding;
-        } else {
-          yAxisConfig.suggestedMin = 0;
-          yAxisConfig.suggestedMax = maxValue + padding;
-        }
-      }
-    }
-  }
-
-  return {
-    ...darkThemeOptions.value,
-    // Add unique ID to prevent data sharing between charts
-    chartId: `chart-${chartRenderKey.value}-${Date.now()}`,
-    plugins: {
-      ...darkThemeOptions.value.plugins,
-      tooltip: {
-        ...darkThemeOptions.value.plugins.tooltip,
-        callbacks: {
-          title: function(context) {
-            if (xAxisType.value === 'timeInTR') {
-              return `Time in TR: ${context[0].label}`;
-            } else {
-              return context[0].label;
-            }
-          },
-          label: function(context) {
-            const value = context.parsed.y;
-            const resourceId = context.dataset.resourceId;
-            
-            // Special formatting for oo-accum
-            if (resourceId === 'oo-accum') {
-              return `${context.dataset.label}: ${formatSuffixInput(value)}`;
-            }
-            
-            return `${context.dataset.label}: ${formatNumber(value)}`;
-          }
-        }
-      }
-    },
-    scales: {
-      x: xAxisConfig,
-      y: yAxisConfig
-    },
-    // Force chart destruction and recreation
-    animation: {
-      duration: 0
-    },
-    // Unique responsive setting to force reflow
-    responsive: true,
-    maintainAspectRatio: false
-  };
-});
-
-const gainsChartOptions = computed(() => {
-  // Calculate dynamic Y-axis range for gains chart (auto scaling)
-  let yAxisConfig = {
-    display: true,
-    position: 'left',
-    grid: {
-      color: 'rgba(75, 85, 99, 0.3)',
-      borderColor: 'rgba(75, 85, 99, 0.5)',
-      drawOnChartArea: true,
-      drawTicks: true
-    },
-    ticks: {
-      color: '#9ca3af',
-      font: {
-        size: 11
-      },
-      maxTicksLimit: 8,
-      display: true,
-      callback: function(value) {
-        const prefix = value >= 0 ? '+' : '';
-        return prefix + formatNumber(Math.abs(value));
-      }
-    }
-  };
-
-  // Apply automatic Y-axis scaling for gains chart
-  if (gainsChartData.value && gainsChartData.value.datasets.length > 0) {
-    let allValues = [];
-    gainsChartData.value.datasets.forEach(dataset => {
-      const values = dataset.data
-        .filter(val => val !== null && val !== undefined)
-        .map(val => {
-          // Handle both simple numbers and x/y objects with robust parsing
-          const raw = typeof val === 'object' && val?.y !== undefined ? val.y : val;
-          const num = parseFloat(raw);
-          return isFinite(num) ? num : 0;
-        });
-      allValues = allValues.concat(values);
-    });
-
-    if (allValues.length > 0) {
-      const minValue = Math.min(...allValues);
-      const maxValue = Math.max(...allValues);
-      const range = Math.max(Math.abs(minValue), Math.abs(maxValue));
-      
-      if (range > 0) {
-        const padding = range * 0.1;
-        
-        // Auto mode: center around 0 with smart padding
-        yAxisConfig.suggestedMin = minValue - padding;
-        yAxisConfig.suggestedMax = maxValue + padding;
-      }
-    }
-  }
-
-  return {
-    ...darkThemeOptions.value,
-    // Add unique ID to prevent data sharing between charts
-    chartId: `gains-chart-${chartRenderKey.value}-${Date.now()}`,
-    plugins: {
-      ...darkThemeOptions.value.plugins,
-      tooltip: {
-        ...darkThemeOptions.value.plugins.tooltip,
-        callbacks: {
-          title: function(context) {
-            if (xAxisType.value === 'timeInTR') {
-              return `Time in TR: ${context[0].label}`;
-            } else {
-              return context[0].label;
-            }
-          },
-          label: function(context) {
-            const value = context.parsed.y;
-            const resourceId = context.dataset.resourceId;
-            const prefix = value >= 0 ? '+' : '';
-            
-            if (resourceId === 'oo-accum') {
-              return `${context.dataset.label}: ${prefix}${formatSuffixInput(Math.abs(value))}`;
-            }
-            
-            return `${context.dataset.label}: ${prefix}${formatNumber(value)}`;
-          }
-        }
-      }
-    },
-    scales: {
-      ...darkThemeOptions.value.scales,
-      x: {
-        ...darkThemeOptions.value.scales.x,
-        type: xAxisType.value === 'timeInTR' ? 'category' : 'time',
-        title: {
-          display: true,
-          text: xAxisType.value === 'timeInTR' ? 'Time in TR' : 'Log Time',
-          color: '#9ca3af',
-          font: {
-            size: 12
-          }
-        },
-        ...(xAxisType.value !== 'timeInTR' && {
-          time: {
-            tooltipFormat: 'Pp',
-            displayFormats: {
-              minute: 'HH:mm',
-              hour: 'dd.MM HH:mm',
-              day: 'dd.MM.yyyy'
-            }
-          }
-        })
-      },
-      y: yAxisConfig
-    },
-    // Force chart destruction and recreation
-    animation: {
-      duration: 0
-    },
-    // Unique responsive setting to force reflow
-    responsive: true,
-    maintainAspectRatio: false
-  };
-});
-
 // Robust data sanitization function
 const parseChartValue = (val) => {
-  // Block time-like strings that contain colons
   if (typeof val === 'string' && val.includes(':')) return NaN;
   const num = parseFloat(val);
   return isFinite(num) ? num : 0;
 };
 
-// Chart data generators
-const chartData = computed(() => {
+// Format resource value for tooltip
+function formatResourceValue(resourceId, value) {
+  if (resourceId === 'oo-accum') return formatSuffixInput(value);
+  return formatNumber(value);
+}
+
+// Unified ECharts option computed - handles all 4 chart types
+const chartOption = computed(() => {
   if (!chartSelectedResources.value.length || !filteredEntries.value.length) return null;
   
-  const datasets = chartSelectedResources.value.map(resourceId => {
-    const resource = chartableResources.value.find(r => r.id === resourceId);
-    if (!resource) return null;
-    
-    let data;
-    if (xAxisType.value === 'timeInTR') {
-      // For Time in TR, use traditional labels + data array structure
-      data = filteredEntries.value.map(entry => parseChartValue(entry.values?.[resourceId]));
-    } else {
-      // For timestamp axis, use x/y object structure for proper time axis
-      data = filteredEntries.value.map(entry => ({
-        x: new Date(entry.date),
-        y: parseChartValue(entry.values?.[resourceId])
-      }));
-    }
-    
-    // Use the exact color from settings, ensuring it includes opacity for background
-    const borderColor = resource.color;
-    const backgroundColor = resource.color.length === 9 
-      ? resource.color.slice(0, 7) + '20' // If color has alpha, replace with 20
-      : resource.color + '20'; // If no alpha, add 20
-    
-    return {
-      label: resource.name,
-      data: data,
-      borderColor: borderColor,
-      backgroundColor: backgroundColor,
-      borderWidth: activeChartType.value === 'bar' ? 1 : 2,
-      fill: false,
-      resourceId: resourceId
-    };
-  }).filter(Boolean);
+  const isGains = activeChartType.value === 'gains';
+  const isArea = activeChartType.value === 'area';
+  const isBar = activeChartType.value === 'bar';
+  const entries = filteredEntries.value;
   
-  const result = {
-    datasets: datasets
-  };
-  
-  // Debug log for chart data validation
-  console.log('Chart dataset data:', datasets.map(d => ({ 
-    label: d.label, 
-    resourceId: d.resourceId,
-    sampleData: d.data.slice(0, 3) 
-  })));
-  console.log('All chartSelectedResources:', chartSelectedResources.value);
-  
-  // Only add labels for category axis (Time in TR)
+  // Build category labels for timeInTR mode
+  let categoryLabels = null;
   if (xAxisType.value === 'timeInTR') {
-    result.labels = chartLabels.value;
+    const hasTimeInTR = entries.some(entry => entry.values?.['hours-in-tr']);
+    if (hasTimeInTR) {
+      categoryLabels = isGains 
+        ? entries.slice(1).map(entry => entry.values?.['hours-in-tr'] || '0:00')
+        : entries.map(entry => entry.values?.['hours-in-tr'] || '0:00');
+    }
   }
   
-  return result;
-});
-
-const areaChartData = computed(() => {
-  if (!chartSelectedResources.value.length || !filteredEntries.value.length) return null;
-  
-  const datasets = chartSelectedResources.value.map(resourceId => {
+  // Build series for each selected resource
+  const series = chartSelectedResources.value.map(resourceId => {
     const resource = chartableResources.value.find(r => r.id === resourceId);
     if (!resource) return null;
     
-    let data;
-    if (xAxisType.value === 'timeInTR') {
-      // For Time in TR, use traditional labels + data array structure
-      data = filteredEntries.value.map(entry => parseChartValue(entry.values?.[resourceId]));
-    } else {
-      // For timestamp axis, use x/y object structure for proper time axis
-      data = filteredEntries.value.map(entry => ({
-        x: new Date(entry.date),
-        y: parseChartValue(entry.values?.[resourceId])
-      }));
-    }
+    const color = resource.color;
+    const bgColor = color.length === 9 ? color.slice(0, 7) : color;
     
-    // Use the exact color from settings
-    const borderColor = resource.color;
-    const backgroundColor = resource.color.length === 9 
-      ? resource.color.slice(0, 7) + '30' // If color has alpha, replace with 30
-      : resource.color + '30'; // If no alpha, add 30
-    
-    return {
-      label: resource.name,
-      data: data,
-      borderColor: borderColor,
-      backgroundColor: backgroundColor,
-      borderWidth: 2,
-      fill: true,
-      resourceId: resourceId
-    };
-  }).filter(Boolean);
-  
-  const result = {
-    datasets: datasets
-  };
-  
-  // Only add labels for category axis (Time in TR)
-  if (xAxisType.value === 'timeInTR') {
-    result.labels = chartLabels.value;
-  }
-  
-  return result;
-});
-
-const gainsChartData = computed(() => {
-  if (!chartSelectedResources.value.length || filteredEntries.value.length < 2) return null;
-  
-  const datasets = chartSelectedResources.value.map(resourceId => {
-    const resource = chartableResources.value.find(r => r.id === resourceId);
-    if (!resource) return null;
-    
-    let data;
-    if (xAxisType.value === 'timeInTR') {
-      // For Time in TR, use traditional labels + data array structure
-      const gains = [];
-      for (let i = 1; i < filteredEntries.value.length; i++) {
-        const current = parseChartValue(filteredEntries.value[i].values?.[resourceId]);
-        const previous = parseChartValue(filteredEntries.value[i - 1].values?.[resourceId]);
-        gains.push(current - previous);
+    if (isGains) {
+      // Gains chart: differences between consecutive entries
+      const data = [];
+      for (let i = 1; i < entries.length; i++) {
+        const current = parseChartValue(entries[i].values?.[resourceId]);
+        const previous = parseChartValue(entries[i - 1].values?.[resourceId]);
+        const gain = current - previous;
+        
+        if (xAxisType.value === 'timeInTR') {
+          data.push(gain);
+        } else {
+          data.push([new Date(entries[i].date).getTime(), gain]);
+        }
       }
-      data = gains;
+      
+      return {
+        name: resource.name,
+        type: 'bar',
+        data: data,
+        resourceId: resourceId,
+        itemStyle: { color: bgColor + '80', borderColor: color, borderWidth: 1 },
+        barMaxWidth: 50
+      };
     } else {
-      // For timestamp axis, use x/y object structure for proper time axis
-      data = [];
-      for (let i = 1; i < filteredEntries.value.length; i++) {
-        const current = parseChartValue(filteredEntries.value[i].values?.[resourceId]);
-        const previous = parseChartValue(filteredEntries.value[i - 1].values?.[resourceId]);
-        data.push({
-          x: new Date(filteredEntries.value[i].date),
-          y: current - previous
+      // Line/Area/Bar chart
+      const data = entries.map(entry => {
+        const value = parseChartValue(entry.values?.[resourceId]);
+        if (xAxisType.value === 'timeInTR') {
+          return value;
+        } else {
+          return [new Date(entry.date).getTime(), value];
+        }
+      });
+      
+      const seriesType = isBar ? 'bar' : 'line';
+      
+      return {
+        name: resource.name,
+        type: seriesType,
+        data: data,
+        resourceId: resourceId,
+        lineStyle: seriesType === 'line' ? { color: color, width: 2 } : undefined,
+        itemStyle: { color: color },
+        symbolSize: seriesType === 'line' ? 6 : undefined,
+        showSymbol: seriesType === 'line',
+        smooth: seriesType === 'line' ? 0.4 : undefined,
+        areaStyle: isArea ? { opacity: 0.2 } : undefined,
+        barMaxWidth: seriesType === 'bar' ? 50 : undefined
+      };
+    }
+  }).filter(Boolean);
+  
+  // X-axis config
+  const xAxisConfig = xAxisType.value === 'timeInTR' ? {
+    type: 'category',
+    data: categoryLabels,
+    ...darkXAxis,
+    name: 'Time in TR',
+    nameLocation: 'center',
+    nameGap: 30,
+    nameTextStyle: { color: '#9ca3af', fontSize: 12 }
+  } : {
+    type: 'time',
+    ...darkXAxis,
+    name: 'Log Time',
+    nameLocation: 'center',
+    nameGap: 30,
+    nameTextStyle: { color: '#9ca3af', fontSize: 12 }
+  };
+  
+  // Y-axis label formatter
+  const yLabelFormatter = isGains 
+    ? (v) => { const prefix = v >= 0 ? '+' : ''; return prefix + formatNumber(Math.abs(v)); }
+    : (v) => formatNumber(v);
+  
+  return {
+    backgroundColor: 'transparent',
+    animation: false,
+    grid: { ...darkGrid, bottom: 80, right: 30 },
+    legend: {
+      show: true,
+      top: 0,
+      textStyle: { color: '#e5e7eb', fontSize: 12 }
+    },
+    tooltip: {
+      ...darkTooltip,
+      trigger: 'axis',
+      axisPointer: { type: isBar || isGains ? 'shadow' : 'cross' },
+      formatter: (params) => {
+        if (!params || !params.length) return '';
+        const firstParam = params[0];
+        let title;
+        if (xAxisType.value === 'timeInTR') {
+          title = `Time in TR: ${firstParam.name || firstParam.axisValue}`;
+        } else {
+          const date = new Date(firstParam.value[0]);
+          title = date.toLocaleString();
+        }
+        
+        let body = `<strong>${title}</strong>`;
+        params.forEach(p => {
+          const value = xAxisType.value === 'timeInTR' ? p.value : p.value[1];
+          const resourceId = p.seriesName;
+          const resource = chartableResources.value.find(r => r.name === resourceId);
+          const rid = resource?.id || '';
+          
+          let formattedValue;
+          if (isGains) {
+            const prefix = value >= 0 ? '+' : '';
+            formattedValue = rid === 'oo-accum' 
+              ? prefix + formatSuffixInput(Math.abs(value))
+              : prefix + formatNumber(Math.abs(value));
+          } else {
+            formattedValue = rid === 'oo-accum' 
+              ? formatSuffixInput(value) 
+              : formatNumber(value);
+          }
+          
+          body += `<br/>${p.marker} ${p.seriesName}: ${formattedValue}`;
         });
+        return body;
       }
-    }
-    
-    // Use the exact color from settings
-    const borderColor = resource.color;
-    const backgroundColor = resource.color.length === 9 
-      ? resource.color.slice(0, 7) + '80' // If color has alpha, replace with 80
-      : resource.color + '80'; // If no alpha, add 80
-    
-    return {
-      label: resource.name,
-      data: data,
-      backgroundColor: backgroundColor,
-      borderColor: borderColor,
-      borderWidth: 1,
-      barThickness: 'flex', // Make bars more visible
-      maxBarThickness: 50, // Limit maximum bar width
-      resourceId: resourceId
-    };
-  }).filter(Boolean);
-  
-  const result = {
-    datasets: datasets
+    },
+    xAxis: xAxisConfig,
+    yAxis: {
+      type: 'value',
+      ...darkYAxis,
+      axisLabel: {
+        ...darkYAxis.axisLabel,
+        formatter: yLabelFormatter
+      }
+    },
+    dataZoom: [
+      { type: 'inside', xAxisIndex: 0 },
+      { type: 'slider', xAxisIndex: 0, bottom: 10, height: 20,
+        textStyle: { color: '#9ca3af' },
+        borderColor: 'rgba(75, 85, 99, 0.5)',
+        fillerColor: 'rgba(59, 130, 246, 0.15)',
+        handleStyle: { color: '#6b7280' }
+      }
+    ],
+    series: series
   };
-  
-  // Only add labels for category axis (Time in TR)
-  if (xAxisType.value === 'timeInTR') {
-    result.labels = chartLabels.value.slice(1); // Skip first label since we start from index 1
-  }
-  
-  return result;
 });
 
 // Methods
 function toggleResourceInChart(resourceId) {
-  // Block forbidden resources from being added to charts
   const forbidden = ['hours-in-tr', 'notes', 'daily-farm-frags', 'current-camp', 'camp-timer', 'attgn3-buff'];
   if (forbidden.includes(resourceId)) return;
   
@@ -1066,15 +498,10 @@ function toggleResourceInChart(resourceId) {
   if (index > -1) {
     chartSelectedResources.value.splice(index, 1);
   } else {
-    // Limit to 5 resources for performance
     if (chartSelectedResources.value.length < 5) {
       chartSelectedResources.value.push(resourceId);
     }
   }
-  // Force chart update immediately after resource change
-  nextTick(() => {
-    forceChartUpdate();
-  });
 }
 
 // Local Storage functions for chart resources

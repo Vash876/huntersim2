@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.11.7',
+    date: '2026-02-12',
+    changes: [
+      {
+        text: 'Charts',
+        subItems: [
+          'Upgraded chart engine for better performance and reliability',
+          'Added new "Stage Odds" tab showing the probability of reaching each stage',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.11.6',
     date: '2026-02-12',
     changes: [
