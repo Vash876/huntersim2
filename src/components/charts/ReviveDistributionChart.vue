@@ -169,7 +169,6 @@ const chartData = computed(() => {
       backgroundColor: backgroundColor,
       borderColor: borderColor,
       borderWidth: 2,
-      fill: false
     };
   });
   
@@ -179,19 +178,16 @@ const chartData = computed(() => {
   };
 });
 
-// Dark theme options - exakt wie ProgressModal
-const darkThemeOptions = {
+// Chart options - fresh object each time to prevent Chart.js mutation leaks
+const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   layout: {
-    padding: {
-      top: 10,
-      bottom: 10,
-      left: 10,
-      right: 10
-    }
+    padding: { top: 10, bottom: 10, left: 10, right: 10 }
   },
   plugins: {
+    // Explicitly disable zoom plugin on this chart
+    zoom: false,
     legend: {
       display: true,
       position: 'top',
@@ -199,9 +195,7 @@ const darkThemeOptions = {
         color: '#e5e7eb',
         usePointStyle: true,
         padding: 20,
-        font: {
-          size: 12
-        }
+        font: { size: 12 }
       }
     },
     tooltip: {
@@ -220,7 +214,6 @@ const darkThemeOptions = {
           const count = context.parsed.y;
           const datasetLabel = context.dataset.label;
           
-          // Berechne Total für diese Stage
           const stageTotal = availableRevives.value.reduce((sum, revive) => {
             return sum + (processedData.value.reviveData[revive][context.dataIndex] || 0);
           }, 0);
@@ -240,19 +233,17 @@ const darkThemeOptions = {
   },
   scales: {
     x: {
+      type: 'category',
       display: true,
       stacked: true,
       grid: {
         color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
         drawOnChartArea: true,
         drawTicks: true
       },
       ticks: {
         color: '#9ca3af',
-        font: {
-          size: 11
-        },
+        font: { size: 11 },
         maxTicksLimit: 8,
         display: true,
         callback: function(value, index) {
@@ -263,123 +254,31 @@ const darkThemeOptions = {
       }
     },
     y: {
+      type: 'linear',
       display: true,
       position: 'left',
       stacked: true,
       grid: {
         color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
         drawOnChartArea: true,
         drawTicks: true
       },
+      beginAtZero: true,
       ticks: {
         color: '#9ca3af',
-        font: {
-          size: 11
-        },
+        font: { size: 11 },
         maxTicksLimit: 8,
-        display: true,
         callback: function(value) {
           return formatNumber(value);
         }
-      },
-      suggestedMin: 0
-    }
-  },
-  elements: {
-    line: {
-      tension: 0.4
-    },
-    point: {
-      radius: 3,
-      hoverRadius: 6
+      }
     }
   },
   interaction: {
     intersect: false,
     mode: 'index'
   },
-  // Isolate this chart instance
-  animation: {
-    duration: 0
-  },
-  datasets: {
-    line: {
-      pointBackgroundColor: 'rgba(255, 255, 255, 0.8)'
-    },
-    bar: {
-      backgroundColor: 'rgba(255, 255, 255, 0.8)'
-    }
-  }
-};
-
-const chartOptions = computed(() => ({
-  ...darkThemeOptions,
-  // Add unique ID to prevent data sharing between charts
-  chartId: `revive-distribution-chart-${chartRenderKey.value}-${Date.now()}`,
-  plugins: {
-    ...darkThemeOptions.plugins,
-    tooltip: {
-      ...darkThemeOptions.plugins.tooltip,
-      callbacks: {
-        title: function(context) {
-          return `Stage ${context[0].label}`;
-        },
-        label: function(context) {
-          const count = context.parsed.y;
-          const datasetLabel = context.dataset.label;
-          
-          // Berechne Total für diese Stage
-          const stageTotal = availableRevives.value.reduce((sum, revive) => {
-            return sum + (processedData.value.reviveData[revive][context.dataIndex] || 0);
-          }, 0);
-          
-          const percentage = stageTotal > 0 ? ((count / stageTotal) * 100).toFixed(1) : 0;
-          return `${datasetLabel}: ${formatNumber(count)} (${percentage}%)`;
-        },
-        footer: function(context) {
-          const index = context[0].dataIndex;
-          const total = availableRevives.value.reduce((sum, revive) => {
-            return sum + (processedData.value.reviveData[revive][index] || 0);
-          }, 0);
-          return `Total Deaths: ${formatNumber(total)}`;
-        }
-      }
-    }
-  },
-  scales: {
-    ...darkThemeOptions.scales,
-    x: {
-      ...darkThemeOptions.scales.x,
-      ticks: {
-        ...darkThemeOptions.scales.x.ticks,
-        callback: function(value, index) {
-          const labels = this.chart.data.labels;
-          const step = Math.ceil(labels.length / 8);
-          return index % step === 0 ? labels[index] : '';
-        }
-      }
-    },
-    y: {
-      ...darkThemeOptions.scales.y,
-      beginAtZero: true,
-      ticks: {
-        ...darkThemeOptions.scales.y.ticks,
-        maxTicksLimit: 8,
-        stepSize: undefined,
-        callback: function(value) {
-          return formatNumber(value);
-        }
-      }
-    }
-  },
-  // Force chart destruction and recreation
-  animation: {
-    duration: 0
-  },
-  // Unique responsive setting to force reflow
-  responsive: true,
-  maintainAspectRatio: false
+  animation: { duration: 0 }
 }));
 
 // Funktionen für Revive-Handling

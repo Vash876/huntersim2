@@ -326,6 +326,8 @@ const chartOptions = computed(() => ({
     }
   },
   plugins: {
+    // Explicitly disable zoom plugin on this chart
+    zoom: false,
     legend: {
       display: false
     },

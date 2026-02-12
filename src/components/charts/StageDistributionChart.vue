@@ -115,163 +115,49 @@ const chartData = computed(() => {
   // Validate and clean data
   props.distribution.forEach(item => {
     if (item.stage !== undefined && item.count !== undefined && typeof item.count === 'number') {
-      stages.push(String(item.stage)); // Ensure string labels for X-axis
-      frequencies.push(Number(item.count)); // Ensure numeric values for Y-axis
+      stages.push(String(item.stage));
+      frequencies.push(Number(item.count));
     }
-  });
-  
-  console.log('Chart Data Debug:', {
-    stages: stages.slice(0, 5),
-    frequencies: frequencies.slice(0, 5),
-    totalCount,
-    dataLength: stages.length
   });
   
   // Use proper color conversion like ProgressModal
   const colorRGB = getColorRGB(props.color);
   const borderColor = `rgba(${colorRGB}, 1)`;
-  const backgroundColor = `rgba(${colorRGB}, 0.25)`; // 0.25 = 40/255 for transparency
+  const backgroundColor = `rgba(${colorRGB}, 0.25)`;
   
   return {
-    labels: stages, // X-axis: Stage numbers as strings
+    labels: stages,
     datasets: [{
       label: 'Stage Frequency',
-      data: frequencies, // Y-axis: Count values as numbers
+      data: frequencies,
       backgroundColor: backgroundColor,
       borderColor: borderColor,
       borderWidth: 2,
-      fill: false,
       totalCount: totalCount,
     }]
   };
 });
 
-// Dark theme options - exakt wie ProgressModal
-const darkThemeOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  layout: {
-    padding: {
-      top: 10,
-      bottom: 10,
-      left: 10,
-      right: 10
-    }
-  },
-  plugins: {
-    legend: {
-      display: false
-    },
-    tooltip: {
-      backgroundColor: 'rgba(31, 41, 55, 0.95)',
-      titleColor: '#f9fafb',
-      bodyColor: '#e5e7eb',
-      borderColor: '#6b7280',
-      borderWidth: 1,
-      cornerRadius: 8,
-      displayColors: true,
-      callbacks: {
-        title: function(context) {
-          return `Stage ${context[0].label}`;
-        },
-        label: function(context) {
-          const count = context.parsed.y;
-          const totalCount = context.dataset.totalCount;
-          const percentage = ((count / totalCount) * 100).toFixed(1);
-          return `Count: ${formatNumber(count)} (${percentage}%)`;
-        }
-      }
-    }
-  },
-  scales: {
-    x: {
-      display: true,
-      grid: {
-        color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
-        drawOnChartArea: true,
-        drawTicks: true
-      },
-      ticks: {
-        color: '#9ca3af',
-        font: {
-          size: 11
-        },
-        maxTicksLimit: 8,
-        display: true,
-        callback: function(value, index) {
-          const labels = this.chart.data.labels;
-          const step = Math.ceil(labels.length / 8);
-          return index % step === 0 ? labels[index] : '';
-        }
-      }
-    },
-    y: {
-      display: true,
-      position: 'left',
-      grid: {
-        color: 'rgba(75, 85, 99, 0.3)',
-        borderColor: 'rgba(75, 85, 99, 0.5)',
-        drawOnChartArea: true,
-        drawTicks: true
-      },
-      ticks: {
-        color: '#9ca3af',
-        font: {
-          size: 11
-        },
-        maxTicksLimit: 8,
-        display: true,
-        callback: function(value) {
-          return formatNumber(value);
-        }
-      },
-      suggestedMin: 0,
-      beginAtZero: true
-    }
-  },
-  elements: {
-    line: {
-      tension: 0.4
-    },
-    point: {
-      radius: 3,
-      hoverRadius: 6
-    }
-  },
-  interaction: {
-    intersect: false,
-    mode: 'index'
-  },
-  // Isolate this chart instance
-  animation: {
-    duration: 0
-  },
-  datasets: {
-    line: {
-      pointBackgroundColor: 'rgba(255, 255, 255, 0.8)'
-    },
-    bar: {
-      backgroundColor: 'rgba(255, 255, 255, 0.8)'
-    }
-  }
-};
-
+// Chart options - fresh object each time to prevent Chart.js mutation leaks
 const chartOptions = computed(() => {
-  
   return {
-    ...darkThemeOptions,
-    // Add unique ID to prevent data sharing between charts
-    chartId: `stage-distribution-chart-${chartRenderKey.value}-${Date.now()}`,
-    // Force destroy previous chart instances
-    destroy: true,
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: { top: 10, bottom: 10, left: 10, right: 10 }
+    },
     plugins: {
-      ...darkThemeOptions.plugins,
-      legend: {
-        display: false
-      },
+      legend: { display: false },
+      // Explicitly disable zoom plugin on this chart
+      zoom: false,
       tooltip: {
-        ...darkThemeOptions.plugins.tooltip,
+        backgroundColor: 'rgba(31, 41, 55, 0.95)',
+        titleColor: '#f9fafb',
+        bodyColor: '#e5e7eb',
+        borderColor: '#6b7280',
+        borderWidth: 1,
+        cornerRadius: 8,
+        displayColors: true,
         callbacks: {
           title: function(context) {
             return `Stage ${context[0].label}`;
@@ -288,19 +174,16 @@ const chartOptions = computed(() => {
     },
     scales: {
       x: {
-        type: 'category', // Explicitly set scale type
+        type: 'category',
         display: true,
         grid: {
           color: 'rgba(75, 85, 99, 0.3)',
-          borderColor: 'rgba(75, 85, 99, 0.5)',
           drawOnChartArea: true,
           drawTicks: true
         },
         ticks: {
           color: '#9ca3af',
-          font: {
-            size: 11
-          },
+          font: { size: 11 },
           maxTicksLimit: 8,
           display: true,
           callback: function(value, index) {
@@ -311,26 +194,21 @@ const chartOptions = computed(() => {
         }
       },
       y: {
-        type: 'linear', // Explicitly set scale type
+        type: 'linear',
         display: true,
         position: 'left',
         grid: {
           color: 'rgba(75, 85, 99, 0.3)',
-          borderColor: 'rgba(75, 85, 99, 0.5)',
           drawOnChartArea: true,
           drawTicks: true
         },
         beginAtZero: true,
-        min: 0, // Force minimum value
+        min: 0,
         ticks: {
           color: '#9ca3af',
-          font: {
-            size: 11
-          },
+          font: { size: 11 },
           maxTicksLimit: 8,
-          stepSize: undefined,
           callback: function(value) {
-            // Ensure we only show numeric iteration counts
             if (typeof value === 'number') {
               return formatNumber(value);
             }
@@ -339,13 +217,11 @@ const chartOptions = computed(() => {
         }
       }
     },
-    // Force chart destruction and recreation
-    animation: {
-      duration: 0
+    interaction: {
+      intersect: false,
+      mode: 'index'
     },
-    // Unique responsive setting to force reflow
-    responsive: true,
-    maintainAspectRatio: false
+    animation: { duration: 0 }
   };
 });
 
