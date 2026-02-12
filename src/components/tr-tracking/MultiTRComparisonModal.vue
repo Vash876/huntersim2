@@ -139,6 +139,7 @@
               :key="`line-${chartRenderKey}`"
               :data="chartData"
               :options="chartOptions"
+              :plugins="[crosshairPlugin]"
             />
           </div>
             
@@ -172,7 +173,7 @@
                         'text-gray-400 bg-gray-700/30': item.difference === 0
                       }"
                     >
-                      {{ item.difference > 0 ? '+' : item.difference < 0 ? '' : '' }}{{ item.difference === 0 ? '0' : formatResourceValue(item.resourceId, item.difference) }}
+                      {{ item.difference > 0 ? '+' : item.difference < 0 ? '' : '' }}{{ item.difference === 0 ? '0' : item.diffIsReal ? formatNumber(item.difference) : formatResourceValue(item.resourceId, item.difference) }}
                     </span>
                   </div>
                 </div>
@@ -240,32 +241,9 @@ import { ref, computed, watch, nextTick, onUnmounted } from 'vue';
 import { formatNumber, formatSuffixInput } from '@/composables/format.js';
 import { IconX, IconTrendingUp, IconChartLine, IconClockHour2, IconCalendarEvent } from '@tabler/icons-vue';
 import { Line } from 'vue-chartjs';
-import zoomPlugin from 'chartjs-plugin-zoom';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale
-} from 'chart.js';
 import { getRelativePosition } from 'chart.js/helpers';
 
-// Register Chart.js plugins
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale,
-  zoomPlugin
-);
+// Chart.js components registered centrally in main.js
 
 const props = defineProps({
   show: Boolean,
@@ -526,11 +504,21 @@ onUnmounted(() => {
 // Force chart update function
 function forceChartUpdate() {
   chartRenderKey.value += 1;
-  // Setup wheel listener after chart re-render
+  // Setup wheel listener after chart re-render and restore crosshair
   nextTick(() => {
     setTimeout(() => {
       setupCustomWheelListener();
       setupMouseListeners();
+      // Restore crosshair position from saved data-space value
+      if (crosshairDataX.value !== null && chartRef.value?.chart?.scales?.x) {
+        const chart = chartRef.value.chart;
+        const pixelX = chart.scales.x.getPixelForValue(crosshairDataX.value);
+        if (pixelX && !isNaN(pixelX)) {
+          crosshairPosition.value = pixelX;
+          updateCrosshairValues(chart, crosshairDataX.value);
+          chart.update('none');
+        }
+      }
     }, 100);
   });
 }
@@ -544,8 +532,14 @@ function resetChartZoom() {
 
 // Filter out notes and other non-relevant resources from chartable resources
 const chartableResources = computed(() => {
-  const excludeFromCharts = ['notes', 'hours-in-tr', 'daily-farm-frags', 'current-camp', 'camp-timer', 'attgn3-buff'];
+  const excludeFromCharts = ['notes', 'hours-in-tr', 'daily-farm-frags', 'current-camp', 'camp-timer'];
   return props.selectedResources.filter(resource => !excludeFromCharts.includes(resource.id));
+});
+
+// Use log10 scale for resources with extreme value ranges (attgn3-buff, daily hunter mats)
+const LOG_SCALE_RESOURCES = ['attgn3-buff', 'mat3-borge', 'mat3-ozzy', 'mat3-knox'];
+const useLogScale = computed(() => {
+  return chartSelectedResources.value.some(id => LOG_SCALE_RESOURCES.includes(id));
 });
 
 // Get tracks that have actual data
@@ -574,6 +568,7 @@ const getTopResources = () => {
 };
 
 const crosshairPosition = ref(null);
+const crosshairDataX = ref(null); // Track crosshair position in data space (survives chart re-renders)
 const crosshairValues = ref([]);
 const isDragging = ref(false);
 
@@ -620,11 +615,14 @@ const crosshairPlugin = {
   }
 };
 
-// Register crosshair plugin
-ChartJS.register(crosshairPlugin);
+// crosshairPlugin is passed as local plugin via :plugins prop, NOT registered globally
+// This prevents it from appearing on other charts in the application
 
 // Calculate interpolated values for crosshair
 function updateCrosshairValues(chart, xValue) {
+  // Save data-space X for restoring after chart re-renders
+  crosshairDataX.value = xValue;
+  
   const values = [];
   
   // Group datasets by resource for difference calculation
@@ -697,7 +695,18 @@ function updateCrosshairValues(chart, xValue) {
       if (i > 0) {
         // Calculate difference from previous TR
         const prevItem = group[i - 1];
-        item.difference = item.value - prevItem.value;
+        if (LOG_SCALE_RESOURCES.includes(item.resourceId) && useLogScale.value) {
+          // For log-scale resources: compute real difference from log values
+          const realValue = Math.pow(10, item.value);
+          const prevRealValue = Math.pow(10, prevItem.value);
+          item.difference = isFinite(realValue) && isFinite(prevRealValue)
+            ? realValue - prevRealValue
+            : item.value - prevItem.value; // fallback to log diff if overflow
+          item.diffIsReal = isFinite(realValue) && isFinite(prevRealValue);
+        } else {
+          item.difference = item.value - prevItem.value;
+          item.diffIsReal = false;
+        }
       } else {
         // For the oldest TR, set difference to 0
         item.difference = 0;
@@ -903,8 +912,19 @@ const darkThemeOptions = computed(() => ({
       type: 'linear',
       display: true,
       position: 'left',
+      title: useLogScale.value ? {
+        display: true,
+        text: 'log\u2081\u2080 scale',
+        color: '#e5e7eb',
+        font: { size: 12 }
+      } : { display: false },
       ticks: {
-        callback: v => formatNumber(v),
+        callback: function(v) {
+          if (!useLogScale.value) return formatNumber(v);
+          const realValue = Math.pow(10, v);
+          if (!isFinite(realValue)) return `1e${Math.round(v)}`;
+          return formatNumber(realValue);
+        },
         maxTicksLimit: 8,
         color: '#9ca3af',
         font: { size: 11 }
@@ -996,23 +1016,21 @@ const chartData = computed(() => {
       const sortedEntries = [...track.entries].sort((a, b) => new Date(a.date) - new Date(b.date));
       
       const data = sortedEntries.map((entry) => {
+        const yValue = useLogScale.value
+          ? parseLog10Value(entry.values?.[resourceId])
+          : parseChartValue(entry.values?.[resourceId]);
         if (xAxisType.value === 'timeInTR') {
           const timeInTR = parseFloat(entry.values?.['hours-in-tr']) || 0;
-          return {
-            x: timeInTR, // Use time in TR as X coordinate
-            y: parseChartValue(entry.values?.[resourceId])
-          };
+          return { x: timeInTR, y: yValue };
         } else {
-          return {
-            x: new Date(entry.date), // Use timestamp as X coordinate
-            y: parseChartValue(entry.values?.[resourceId])
-          };
+          return { x: new Date(entry.date), y: yValue };
         }
       }).filter(point => {
+        if (point.y === null || point.y === undefined) return false;
         if (xAxisType.value === 'timeInTR') {
-          return point.x >= 0; // Filter out invalid time values
+          return point.x >= 0;
         } else {
-          return point.x && point.y !== undefined; // Filter out invalid dates
+          return point.x && point.y !== undefined;
         }
       });
       
@@ -1067,6 +1085,24 @@ function parseChartValue(val) {
   return isFinite(num) ? num : 0;
 }
 
+// Parse value to log10 for attgn3-buff (handles scientific notation beyond JS Number range like "1e333")
+function parseLog10Value(val) {
+  if (val === null || val === undefined || val === '') return null;
+  const str = String(val).trim();
+  if (str === '0') return null; // log(0) is undefined
+  // Handle scientific notation (e.g. "1.5e200", "1e333")
+  const eMatch = str.match(/^(\d+\.?\d*)[eE]\+?(\d+)$/);
+  if (eMatch) {
+    const mantissa = parseFloat(eMatch[1]);
+    const exponent = parseInt(eMatch[2]);
+    if (mantissa <= 0) return null;
+    return Math.log10(mantissa) + exponent;
+  }
+  const num = parseFloat(str);
+  if (!isFinite(num) || num <= 0) return null;
+  return Math.log10(num);
+}
+
 function getTrackPeakValue(track, resourceId) {
   if (!track.entries || track.entries.length === 0) return 0;
   
@@ -1103,6 +1139,13 @@ function toggleTrackInChart(trackId) {
 }
 
 function formatResourceValue(resourceId, value) {
+  // When log scale is active, values are in log10 space → convert back and format with suffixes
+  if (LOG_SCALE_RESOURCES.includes(resourceId) && useLogScale.value) {
+    if (value === 0 || value === null) return '0';
+    const realValue = Math.pow(10, value);
+    if (!isFinite(realValue)) return `1e${Math.round(value)}`;
+    return formatNumber(realValue);
+  }
   if (resourceId === 'oo-accum' || resourceId === 'lr-ticks' || resourceId === 'attgn3-buff') {
     return formatSuffixInput(value);
   }

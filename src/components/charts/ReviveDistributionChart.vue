@@ -40,26 +40,7 @@ import { ref, computed, watch, nextTick } from 'vue';
 import { getColorRGB } from '../builds/utils/BuildComparisonUtils';
 import { formatNumber } from '@/composables/format.js';
 import { IconBulb } from '@tabler/icons-vue';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
 import { Bar } from 'vue-chartjs';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 const props = defineProps({
   deathDistribution: {

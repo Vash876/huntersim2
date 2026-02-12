@@ -70,28 +70,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { IconTrophy, IconBulb } from '@tabler/icons-vue';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js';
 import { Bar } from 'vue-chartjs';
 import debounce from 'lodash/debounce';
 import { useHunterStore } from '@/store/hunterStore';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 const hunterStore = useHunterStore();
 

@@ -367,18 +367,7 @@ import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCo
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
 import { getM0Cost, formatM0Cost, calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
 import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe, getRuleOfConsistencyExponent } from '@/utils/loopModCostUtils';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  LogarithmicScale
-} from 'chart.js';
+// Chart.js components registered centrally in main.js
 import { Bar } from 'vue-chartjs';
 import { useTRPlannerStore } from '@/store/orbStore';
 import { allBoosts } from '@/constants/tr-planner';
@@ -396,19 +385,6 @@ import {
   IconCircle
 } from '@tabler/icons-vue';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  LogarithmicScale
-);
 
 const props = defineProps({
   isVisible: {
@@ -1072,18 +1048,7 @@ function handleDelete(planId) {
 }
 
 
-// Chart.js registrieren
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  LogarithmicScale
-);
+// Chart.js components registered centrally in main.js
 
 // Chart-Referenz
 const chartRef = ref(null);

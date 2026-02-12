@@ -251,33 +251,7 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { formatNumber, formatSuffixInput } from '@/composables/format.js';
 import { IconX, IconChartLine, IconTrendingUp, IconClockHour2, IconCalendarEvent } from '@tabler/icons-vue';
 import { Line, Bar } from 'vue-chartjs';
-import zoomPlugin from 'chartjs-plugin-zoom';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale
-} from 'chart.js';
-
-// Register Chart.js plugins
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale,
-  zoomPlugin
-);
+// Chart.js components registered centrally in main.js
 
 const props = defineProps({
   show: Boolean,

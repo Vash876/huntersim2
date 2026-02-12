@@ -103,6 +103,56 @@
           </UpgradeCard>
         </UpgradeGrid>
       </div>
+
+      <!-- Tier 3 Relics (nur wenn unlocked) -->
+      <div v-if="tier3Relics.length > 0 && hasTier3Unlocked" class="mt-10">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-500/40 to-transparent"></div>
+          <div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-500/10 border border-gray-500/20">
+            <span class="text-gray-400 font-bold text-sm tracking-wider uppercase">Tier 3</span>
+          </div>
+          <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-500/40 to-transparent"></div>
+        </div>
+        <UpgradeGrid :loading="loading" :columns="3">
+          <UpgradeCard
+            v-for="relic in tier3Relics"
+            :key="relic.id"
+            :item="relic"
+            :color="getUpgradeColor(relic, category)"
+            :getLevel="getRelicLevel"
+            :handleStart="handleStart"
+            :handleEnd="handleEnd"
+            :handleTouchMove="handleTouchMove"
+            :increment="increment"
+            :decrement="decrement"
+            :incrementFast="incrementFast"
+            :decrementFast="decrementFast"
+          >
+            <!-- Effekt-Box mit einer Zeile pro Hunter -->
+            <div class="bg-gray-900/50 p-3 rounded-md w-full mb-4">
+              <div 
+                v-for="hunter in getHuntersForItem(relic)"
+                :key="`${relic.id}-${hunter.id}`"
+                class="flex justify-between items-center py-1"
+              >
+                <span class="text-gray-400 text-sm">
+                  {{ hunter.name }} {{ relic.multitext || 'Bonus' }}
+                </span>
+                <span 
+                  class="text-white font-medium text-sm"
+                  :class="{
+                    'text-red-300': hunter.color === 'red',
+                    'text-green-300': hunter.color === 'green',
+                    'text-blue-300': hunter.color === 'blue'
+                  }"
+                >
+                  {{ formatRelicValue(relic, getRelicLevel({ id: relic.id })) }}
+                </span>
+              </div>
+            </div>
+          </UpgradeCard>
+        </UpgradeGrid>
+      </div>
     </div>
   </div>
 </template>
@@ -153,17 +203,29 @@ const tier2Relics = computed(() => {
   return relics.value.filter(r => r.tier === 2);
 });
 
+// Tier 3 Relics
+const tier3Relics = computed(() => {
+  return relics.value.filter(r => r.tier === 3);
+});
+
 // Prüfen ob Tier 2 freigeschaltet ist
 // Tier 2 Relics haben unlock_gem und unlock_lvl Properties
 const hasTier2Unlocked = computed(() => {
-  // Prüfe für alle Tier 2 Relics die Unlock-Bedingungen
-  // Wenn mindestens ein Tier 2 Relic unlocked ist, zeige die Sektion
   return tier2Relics.value.some(relic => {
     if (!relic.unlock_gem || !relic.unlock_lvl) {
-      return true; // Kein Unlock-Requirement = immer sichtbar
+      return true;
     }
-    
-    // Hole das Gem-Level aus dem gemPlannerStore
+    const gemLevel = gemPlannerStore.gemStates?.[relic.unlock_gem]?.level || 0;
+    return gemLevel >= relic.unlock_lvl;
+  });
+});
+
+// Prüfen ob Tier 3 freigeschaltet ist
+const hasTier3Unlocked = computed(() => {
+  return tier3Relics.value.some(relic => {
+    if (!relic.unlock_gem || !relic.unlock_lvl) {
+      return true;
+    }
     const gemLevel = gemPlannerStore.gemStates?.[relic.unlock_gem]?.level || 0;
     return gemLevel >= relic.unlock_lvl;
   });
@@ -193,6 +255,7 @@ function updateRelicLevel(item, newLevel) {
   // Nutze tier1Relics für Tier 1 (mit dynamischem maxLevel) oder relics für andere
   const relic = tier1Relics.value.find(r => r.id === item.id) 
     || tier2Relics.value.find(r => r.id === item.id)
+    || tier3Relics.value.find(r => r.id === item.id)
     || relics.value.find(r => r.id === item.id);
   if (!relic) return;
   

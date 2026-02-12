@@ -10,11 +10,13 @@ import 'tippy.js/dist/tippy.css';
 // Chart.js Date Adapter - MUST be imported before Chart.js usage
 import 'chartjs-adapter-date-fns'
 
-// Register global Chart.js components
+// Register ALL Chart.js components centrally to prevent cross-chart contamination
+// DO NOT use ChartJS.register() in individual components!
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  LogarithmicScale,
   TimeScale,
   PointElement,
   LineElement,
@@ -24,10 +26,12 @@ import {
   Legend,
   Filler
 } from 'chart.js';
+import zoomPlugin from 'chartjs-plugin-zoom';
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  LogarithmicScale,
   TimeScale,
   PointElement,
   LineElement,
@@ -35,7 +39,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  zoomPlugin
 );
 
 const pinia = createPinia()

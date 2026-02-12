@@ -48,8 +48,6 @@
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { getColorRGB } from '../builds/utils/BuildComparisonUtils';
 import { formatNumber } from '@/composables/format.js';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 import { Bar } from 'vue-chartjs';
 
 const props = defineProps({
