@@ -494,7 +494,7 @@ const chartOption = computed(() => {
   const yAxisConfig = {
     type: 'value',
     ...darkYAxis,
-    scale: useLogScale.value,
+    scale: true,
     name: useLogScale.value ? 'log₁₀ scale' : undefined,
     nameTextStyle: useLogScale.value ? { color: '#e5e7eb', fontSize: 12 } : undefined,
     axisLabel: {
@@ -511,7 +511,7 @@ const chartOption = computed(() => {
   return {
     backgroundColor: 'transparent',
     animation: false,
-    grid: { ...darkGrid, bottom: 80, right: 30, top: 60 },
+    grid: { ...darkGrid, bottom: 80, right: 60, top: 60 },
     legend: {
       type: 'scroll',
       show: true,
@@ -529,7 +529,14 @@ const chartOption = computed(() => {
     yAxis: yAxisConfig,
     dataZoom: [
       { type: 'inside', xAxisIndex: 0 },
+      { type: 'inside', yAxisIndex: 0 },
       { type: 'slider', xAxisIndex: 0, bottom: 10, height: 20,
+        textStyle: { color: '#9ca3af' },
+        borderColor: 'rgba(75, 85, 99, 0.5)',
+        fillerColor: 'rgba(59, 130, 246, 0.15)',
+        handleStyle: { color: '#6b7280' }
+      },
+      { type: 'slider', yAxisIndex: 0, right: 0, width: 20,
         textStyle: { color: '#9ca3af' },
         borderColor: 'rgba(75, 85, 99, 0.5)',
         fillerColor: 'rgba(59, 130, 246, 0.15)',
