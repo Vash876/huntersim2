@@ -273,7 +273,7 @@ const crosshairValues = ref([]);
 const isDragging = ref(false);
 
 // Use log10 scale for resources with extreme value ranges
-const LOG_SCALE_RESOURCES = ['attgn3-buff', 'mat3-borge', 'mat3-ozzy', 'mat3-knox'];
+const LOG_SCALE_RESOURCES = ['attgn3-buff', 'mat3-borge', 'mat3-ozzy', 'mat3-knox', 'oo-accum'];
 const useLogScale = computed(() => {
   return chartSelectedResources.value.some(id => LOG_SCALE_RESOURCES.includes(id));
 });
@@ -503,7 +503,8 @@ const chartOption = computed(() => {
         if (!useLogScale.value) return formatNumber(v);
         const realValue = Math.pow(10, v);
         if (!isFinite(realValue)) return `1e${Math.round(v)}`;
-        return formatNumber(realValue);
+        const hasSuffixResource = chartSelectedResources.value.some(id => ['oo-accum'].includes(id));
+        return hasSuffixResource ? formatSuffixInput(realValue) : formatNumber(realValue);
       }
     }
   };
@@ -665,6 +666,7 @@ function formatResourceValue(resourceId, value) {
     if (value === 0 || value === null) return '0';
     const realValue = Math.pow(10, value);
     if (!isFinite(realValue)) return `1e${Math.round(value)}`;
+    if (['oo-accum', 'lr-ticks'].includes(resourceId)) return formatSuffixInput(realValue);
     return formatNumber(realValue);
   }
   if (resourceId === 'oo-accum' || resourceId === 'lr-ticks' || resourceId === 'attgn3-buff') {
