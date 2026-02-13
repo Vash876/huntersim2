@@ -51,7 +51,7 @@ const IconMilestone = {
   }
 };
 
-const IconCifiSword = {
+const IconMissions = {
   template: `
     <svg 
       :width="size || 20" 
@@ -183,6 +183,7 @@ const IconResearch = {
 // Account IDs with access to secret/beta tools
 export const SECRET_ACCESS_IDS = [
   'b378c604-d969-4aab-99e1-bf8f52446c49',
+  '7ec04bf0-bb17-4e85-ada8-d2fdc2df946d',
 ];
 
 // localStorage cache for secret access (avoids async auth delay on direct URL navigation)
@@ -400,7 +401,7 @@ export const NAVIGATION = {
           name: 'Mission & Relic Planner',
           path: '/tools/mission-relic-planner',
           color: 'purple',
-          icon: IconCifiSword,
+          icon: IconMissions,
           secret: true
         }
       ]
