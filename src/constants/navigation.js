@@ -184,6 +184,7 @@ const IconResearch = {
 export const SECRET_ACCESS_IDS = [
   'b378c604-d969-4aab-99e1-bf8f52446c49',
   '7ec04bf0-bb17-4e85-ada8-d2fdc2df946d',
+  '0f88f5d6-0a5a-43d1-b71d-84c1486698fa',
 ];
 
 // localStorage cache for secret access (avoids async auth delay on direct URL navigation)
