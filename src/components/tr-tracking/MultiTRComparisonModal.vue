@@ -33,9 +33,11 @@
 
       <!-- Content -->
       <div class="p-3 space-y-3">
-        <!-- Chart Controls -->
+        <!-- Chart Controls + Current Values Grid -->
         <div class="bg-gray-700/30 rounded-lg p-3">
-          <div class="flex flex-col gap-3">
+          <div class="grid grid-cols-1 lg:grid-cols-[4fr_1fr] gap-3">
+            <!-- Left: Controls -->
+            <div class="flex flex-col gap-3">
             <!-- X-Axis Selection -->
             <div>
               <div class="text-xs text-gray-400 mb-2">X-Axis:</div>
@@ -79,13 +81,13 @@
                   v-for="resource in chartableResources"
                   :key="resource.id"
                   @click="selectResource(resource.id)"
+                  class="px-2 py-1 text-xs rounded-md border transition-colors"
                   :class="[
-                    'px-2 py-1 text-xs rounded-md border transition-colors',
                     chartSelectedResources.includes(resource.id)
-                      ? 'border-transparent text-white'
+                      ? 'bg-gray-800 border-gray-600'
                       : 'border-gray-600 text-gray-300 hover:border-gray-500'
                   ]"
-                  :style="chartSelectedResources.includes(resource.id) ? { backgroundColor: resource.color, borderColor: resource.color } : {}"
+                  :style="chartSelectedResources.includes(resource.id) ? { borderLeftWidth: '6px', borderLeftColor: resource.color } : {}"
                 >
                   {{ resource.name }}
                 </button>
@@ -97,19 +99,66 @@
               <div class="text-xs text-gray-400 mb-2">TR Tracks:</div>
               <div class="flex flex-wrap gap-1">
                 <button
-                  v-for="track in availableTracks"
+                  v-for="(track, idx) in availableTracks"
                   :key="track.id"
                   @click="toggleTrackInChart(track.id)"
+                  class="px-2 py-1 text-xs rounded-md border transition-all duration-150"
                   :class="[
-                    'px-2 py-1 text-xs rounded-md border transition-colors',
                     enabledTracks.includes(track.id)
-                      ? 'bg-green-600 border-green-600 text-white'
-                      : 'border-gray-600 text-gray-300 hover:border-gray-500'
+                      ? 'text-gray-200 border-gray-600'
+                      : 'text-gray-500 border-gray-700',
+                    hoveredTrackId === track.id && 'ring-1 brightness-125'
                   ]"
+                  :style="{
+                    borderLeftWidth: enabledTracks.includes(track.id) ? '6px' : undefined,
+                    borderLeftColor: enabledTracks.includes(track.id) ? trackColors[idx % trackColors.length] : undefined,
+                    ringColor: hoveredTrackId === track.id ? trackColors[idx % trackColors.length] : undefined,
+                    boxShadow: hoveredTrackId === track.id ? `0 0 0 1px ${trackColors[idx % trackColors.length]}` : undefined
+                  }"
                 >
                   TR#{{ track.trCount || 0 }} - {{ track.name }}
                   <span class="ml-1 text-xs opacity-75">({{ track.entries.length }})</span>
                 </button>
+              </div>
+            </div>
+            </div>
+
+            <!-- Right: Current Values -->
+            <div 
+              v-if="crosshairValues.length > 0" 
+              class="bg-gray-800/90 border border-gray-600 rounded-lg p-2 self-start"
+              style="backdrop-filter: blur(8px);"
+            >
+              <div class="text-xs font-medium text-gray-300 mb-2">Current Values:</div>
+              <div class="space-y-1">
+                <div 
+                  v-for="item in crosshairValues.slice().reverse()" 
+                  :key="item.label"
+                  class="flex justify-between items-center text-xs transition-all duration-150 rounded px-1 -mx-1"
+                  :class="hoveredTrackId === item.trackId ? 'bg-gray-700/60' : 'opacity-100'"
+                  :style="hoveredTrackId && hoveredTrackId !== item.trackId ? { opacity: 0.35 } : {}"
+                >
+                  <div class="flex items-center min-w-0">
+                    <div 
+                      class="w-2 h-2 rounded-full mr-2 flex-shrink-0" 
+                      :style="{ backgroundColor: item.color }"
+                    ></div>
+                    <span class="text-gray-300 truncate">TR#{{ item.trCount }}</span>
+                  </div>
+                  <div class="flex items-center gap-2 ml-2 flex-shrink-0">
+                    <span class="font-mono text-white">{{ formatResourceValue(item.resourceId, item.value) }}</span>
+                    <span 
+                      class="font-mono text-xs px-1 py-0.5 rounded"
+                      :class="{
+                        'text-green-400 bg-green-900/30': item.difference > 0,
+                        'text-red-400 bg-red-900/30': item.difference < 0,
+                        'text-gray-400 bg-gray-700/30': item.difference === 0
+                      }"
+                    >
+                      {{ item.difference > 0 ? '+' : item.difference < 0 ? '' : '' }}{{ item.difference === 0 ? '0' : item.diffIsReal ? formatNumber(item.difference) : formatResourceValue(item.resourceId, item.difference) }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -143,76 +192,9 @@
               @zr:mousedown="onMouseDown"
               @zr:mousemove="onMouseMove"
               @zr:mouseup="onMouseUp"
+              @mouseover="onSeriesHighlight"
+              @mouseout="onSeriesDownplay"
             />
-          </div>
-            
-          <!-- Crosshair Values Display -->
-          <div 
-            v-if="crosshairValues.length > 0" 
-            class="mt-3 bg-gray-800/90 border border-gray-600 rounded-lg p-2 max-w-md ml-auto"
-            style="backdrop-filter: blur(8px);"
-          >
-              <div class="text-xs font-medium text-gray-300 mb-2">Current Values:</div>
-              <div class="space-y-1">
-                <div 
-                  v-for="item in crosshairValues.slice().reverse()" 
-                  :key="item.label"
-                  class="flex justify-between items-center text-xs"
-                >
-                  <div class="flex items-center">
-                    <div 
-                      class="w-2 h-2 rounded-full mr-2" 
-                      :style="{ backgroundColor: item.color }"
-                    ></div>
-                    <span class="text-gray-300 truncate">{{ item.label }}</span>
-                  </div>
-                  <div class="flex items-center gap-2 ml-2">
-                    <span class="font-mono text-white">{{ formatResourceValue(item.resourceId, item.value) }}</span>
-                    <span 
-                      class="font-mono text-xs px-1 py-0.5 rounded"
-                      :class="{
-                        'text-green-400 bg-green-900/30': item.difference > 0,
-                        'text-red-400 bg-red-900/30': item.difference < 0,
-                        'text-gray-400 bg-gray-700/30': item.difference === 0
-                      }"
-                    >
-                      {{ item.difference > 0 ? '+' : item.difference < 0 ? '' : '' }}{{ item.difference === 0 ? '0' : item.diffIsReal ? formatNumber(item.difference) : formatResourceValue(item.resourceId, item.difference) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-        </div>
-
-        <!-- TR Tracks Summary -->
-        <div class="bg-gray-700/20 rounded-lg p-3">
-          <h4 class="text-sm font-medium text-white mb-3">TR Tracks Summary</h4>
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <div
-              v-for="track in availableTracks"
-              :key="track.id"
-              class="bg-gray-700/30 rounded-md p-2"
-            >
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-sm font-medium text-white">TR#{{ track.trCount || 0 }} - {{ track.name }}</span>
-                <span 
-                  class="text-xs px-2 py-0.5 rounded-full"
-                  :class="{
-                    'bg-green-900/50 text-green-300': track.isActive,
-                    'bg-blue-900/50 text-blue-300': !track.isActive
-                  }"
-                >
-                  {{ track.isActive ? 'Active' : 'Completed' }}
-                </span>
-              </div>
-              <div class="text-xs text-gray-400">
-                Started: {{ formatDate(track.startDate) }} • 
-                {{ track.entries.length }} entries
-              </div>
-              <div v-if="!track.isActive && track.endDate" class="text-xs text-gray-400">
-                Completed: {{ formatDate(track.endDate) }}
-              </div>
-            </div>
           </div>
         </div>
 
@@ -224,16 +206,6 @@
             Create at least 2 TR tracks to compare progress across multiple TRs
           </p>
         </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="flex justify-end pt-2 border-t border-gray-700 px-3 pb-3">
-        <button
-          @click="$emit('close')"
-          class="px-3 py-1.5 bg-gray-600 text-gray-200 rounded-md hover:bg-gray-500 transition-colors text-xs"
-        >
-          Close
-        </button>
       </div>
     </div>
   </div>
@@ -271,6 +243,7 @@ const chartRef = ref(null);
 const crosshairDataX = ref(null);
 const crosshairValues = ref([]);
 const isDragging = ref(false);
+const hoveredTrackId = ref(null);
 
 // Use log10 scale for resources with extreme value ranges
 const LOG_SCALE_RESOURCES = ['attgn3-buff', 'mat3-borge', 'mat3-ozzy', 'mat3-knox', 'oo-accum'];
@@ -346,6 +319,17 @@ function onMouseMove(params) {
 // Handle mouseup to stop dragging
 function onMouseUp() {
   isDragging.value = false;
+}
+
+// Handle series hover to highlight corresponding track button
+function onSeriesHighlight(params) {
+  if (params.seriesIndex != null && chartDatasets.value[params.seriesIndex]) {
+    hoveredTrackId.value = chartDatasets.value[params.seriesIndex].trackId;
+  }
+}
+
+function onSeriesDownplay() {
+  hoveredTrackId.value = null;
 }
 
 // Filter out notes and other non-relevant resources
@@ -456,6 +440,7 @@ const chartOption = computed(() => {
     symbolSize: 4,
     showSymbol: true,
     smooth: 0.4,
+    triggerLineEvent: true,
     emphasis: { focus: 'series' }
   }));
   
@@ -512,17 +497,8 @@ const chartOption = computed(() => {
   return {
     backgroundColor: 'transparent',
     animation: false,
-    grid: { ...darkGrid, bottom: 80, right: 60, top: 60 },
-    legend: {
-      type: 'scroll',
-      show: true,
-      top: 0,
-      itemGap: 14,
-      textStyle: { color: '#e5e7eb', fontSize: 11 },
-      pageTextStyle: { color: '#e5e7eb' },
-      pageIconColor: '#9ca3af',
-      pageIconInactiveColor: '#4b5563'
-    },
+    grid: { ...darkGrid, bottom: 80, right: 60, top: 20 },
+    legend: { show: false },
     tooltip: {
       show: false // We use crosshair display instead
     },
@@ -594,7 +570,8 @@ function updateCrosshairValues(xValue) {
         value: interpolatedY,
         resourceId: ds.resourceId,
         color: ds.color,
-        trCount: ds.trCount
+        trCount: ds.trCount,
+        trackId: ds.trackId
       });
     }
   });
