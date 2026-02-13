@@ -1,4 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { SECRET_ACCESS_IDS, checkAndCacheSecretAccess, hasSecretAccessCached } from '../constants/navigation';
+import { neonAuthService } from '../services/neonAuthService';
+import { watch } from 'vue';
 import HunterView from '../views/HunterView.vue';
 
 const routes = [
@@ -78,7 +81,42 @@ const routes = [
       { path: 'ultima-calculator',    name: 'Ultima Calculator',      component: () => import('../views/tools/UltimaCalculator.vue') },
       { path: 'inscryption-planner',  name: 'Inscryption Planner',    component: () => import('../views/tools/InscryptionPlanner.vue') },
       { path: 'token-planner',        name: 'Token Planner',          component: () => import('../views/tools/token-planner/TokenPlanner.vue') },
-      { path: 'mission-relic-planner', name: 'Mission & Relic Planner', component: () => import('../views/tools/mission-planner/MissionPlanner.vue') },
+      { path: 'mission-relic-planner', name: 'Mission & Relic Planner', component: () => import('../views/tools/mission-planner/MissionPlanner.vue'),
+        beforeEnter: async (to, from, next) => {
+          // Fast-path: localStorage cache (synchron verfügbar)
+          if (hasSecretAccessCached()) {
+            // Verifiziere im Hintergrund ob noch berechtigt
+            if (!neonAuthService.isLoading.value) {
+              const userId = neonAuthService.getUserId();
+              if (!checkAndCacheSecretAccess(userId)) {
+                next({ name: 'NotFound' });
+                return;
+              }
+            }
+            next();
+            return;
+          }
+          
+          // Kein Cache: warte auf Auth-Initialisierung
+          if (neonAuthService.isLoading.value) {
+            await new Promise(resolve => {
+              const unwatch = watch(() => neonAuthService.isLoading.value, (loading) => {
+                if (!loading) {
+                  unwatch();
+                  resolve();
+                }
+              }, { immediate: true });
+            });
+          }
+          
+          const userId = neonAuthService.getUserId();
+          if (checkAndCacheSecretAccess(userId)) {
+            next();
+          } else {
+            next({ name: 'NotFound' });
+          }
+        }
+      },
       { path: 'tr-planner-new',       name: 'TR Planner (New)',       component: () => import('../views/tools/tr-planner/TRPlannerNew.vue') },
     ]
   },

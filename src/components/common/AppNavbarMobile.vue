@@ -492,7 +492,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { NAVIGATION } from '../../constants/navigation';
+import { NAVIGATION, SECRET_ACCESS_IDS, hasSecretAccessCached } from '../../constants/navigation';
 import { getAllHunters } from '../../constants/hunters';
 import { useRoute } from 'vue-router';
 import { neonAuthService } from '@/services/neonAuthService';
@@ -560,7 +560,13 @@ const navigation = computed(() => {
   });
   
   // Filter toolCategories
-  filteredNavigation.toolCategories = NAVIGATION.toolCategories.map(category => ({
+  const userId = neonAuthService.getUserId();
+  const hasSecretAccess = SECRET_ACCESS_IDS.includes(userId) || hasSecretAccessCached();
+  
+  filteredNavigation.toolCategories = NAVIGATION.toolCategories.filter(category => {
+    if (category.secret && !hasSecretAccess) return false;
+    return true;
+  }).map(category => ({
     ...category,
     tools: category.tools.filter(tool => {
       // Prüfe ob das Tool Unlock-Bedingungen hat

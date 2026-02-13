@@ -46,8 +46,9 @@
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
-import { NAVIGATION } from '@/constants/navigation';
+import { NAVIGATION, SECRET_ACCESS_IDS, hasSecretAccessCached } from '@/constants/navigation';
 import { useStorage } from '@vueuse/core';
+import { neonAuthService } from '@/services/neonAuthService';
 
 const route = useRoute();
 const router = useRouter();
@@ -90,23 +91,33 @@ const lastToolTab = useStorage('lastToolTab', '/tools/tr-planner');
 
 // Gem-basierter Filter (gleiche Logik wie in Navbar)
 const filteredToolCategories = computed(() => {
-  return NAVIGATION.toolCategories.map(category => ({
-    ...category,
-    tools: category.tools.filter(tool => {
-      if (!tool.unlock || !tool.unlock_lvl) return true;
-      
-      const gemState = gemPlannerStore.getGemState(tool.unlock);
-      if (!gemState) return false;
-      if (gemState.level < tool.unlock_lvl) return false;
-      
-      if (tool.unlock_node !== undefined) {
-        const nodeIndex = tool.unlock_node - 1;
-        if (!gemState.nodes || !gemState.nodes[nodeIndex]) return false;
-      }
-      
-      return true;
-    })
-  })).filter(category => category.tools.length > 0);
+  const userId = neonAuthService.getUserId();
+  const hasSecretAccess = SECRET_ACCESS_IDS.includes(userId) || hasSecretAccessCached();
+  
+  return NAVIGATION.toolCategories.map(category => {
+    // Secret-Kategorien nur für berechtigte User
+    if (category.secret && !hasSecretAccess) {
+      return { ...category, tools: [] };
+    }
+    
+    return {
+      ...category,
+      tools: category.tools.filter(tool => {
+        if (!tool.unlock || !tool.unlock_lvl) return true;
+        
+        const gemState = gemPlannerStore.getGemState(tool.unlock);
+        if (!gemState) return false;
+        if (gemState.level < tool.unlock_lvl) return false;
+        
+        if (tool.unlock_node !== undefined) {
+          const nodeIndex = tool.unlock_node - 1;
+          if (!gemState.nodes || !gemState.nodes[nodeIndex]) return false;
+        }
+        
+        return true;
+      })
+    };
+  }).filter(category => category.tools.length > 0);
 });
 
 // Alle verfügbaren Pfade (für Redirect-Validierung)

@@ -4,6 +4,7 @@
  */
 import { ref, computed } from 'vue';
 import { stackClientApp } from './stackAuth';
+import { checkAndCacheSecretAccess } from '../constants/navigation';
 
 class NeonAuthService {
   constructor() {
@@ -28,9 +29,13 @@ class NeonAuthService {
       if (currentUser) {
         this.user.value = currentUser;
         this.isAuthenticated.value = true;
+        // Update secret access cache
+        checkAndCacheSecretAccess(currentUser.id);
       } else {
         this.user.value = null;
         this.isAuthenticated.value = false;
+        // Clear secret access cache if not logged in
+        checkAndCacheSecretAccess(null);
       }
 
       // Stack Auth doesn't have onUserChange, we'll poll for changes or use events
@@ -52,6 +57,7 @@ class NeonAuthService {
       if (currentUser) {
         this.user.value = currentUser;
         this.isAuthenticated.value = true;
+        checkAndCacheSecretAccess(currentUser.id);
         
         // Trigger the callback if it exists
         if (this.onAuthStateChanged) {
@@ -60,6 +66,7 @@ class NeonAuthService {
       } else {
         this.user.value = null;
         this.isAuthenticated.value = false;
+        checkAndCacheSecretAccess(null);
         
         // Trigger the callback if it exists
         if (this.onAuthStateChanged) {
@@ -177,6 +184,8 @@ class NeonAuthService {
       
       this.user.value = null;
       this.isAuthenticated.value = false;
+      // Clear secret access cache on logout
+      checkAndCacheSecretAccess(null);
       
       return true;
     } catch (error) {
