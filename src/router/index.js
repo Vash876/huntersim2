@@ -51,7 +51,7 @@ const routes = [
       { path: 'gadgets',         name: 'Gadgets',                 component: () => import('../views/upgrades/Gadgets.vue') },
       { path: 'inscryptions',    name: 'Inscryptions',            component: () => import('../views/upgrades/Inscryptions.vue') },
       { path: 'loopmods',        name: 'LoopMods',                component: () => import('../views/upgrades/LoopMods.vue') },
-      { path: 'milestones',      name: 'Milestones',              component: () => import('../views/upgrades/Milestones.vue') },
+      { path: 'shardmilestones',  name: 'Milestones',              component: () => import('../views/upgrades/Milestones.vue') },
       { path: 'cms',             name: 'Construction Milestones', component: () => import('../views/upgrades/ConstructionMilestones.vue') },
       { path: 'trinkets',        name: 'Trinkets',                component: () => import('../views/upgrades/Trinkets.vue') },
       { path: 'diamondspecials', name: 'Diamond Specials',        component: () => import('../views/upgrades/DiamondSpecials.vue') },
@@ -117,6 +117,7 @@ const routes = [
           }
         }
       },
+      { path: 'miscellaneous',         name: 'Miscellaneous',          component: () => import('../views/tools/miscellaneous/Miscellaneous.vue') },
       { path: 'tr-planner-new',       name: 'TR Planner (New)',       component: () => import('../views/tools/tr-planner/TRPlannerNew.vue') },
     ]
   },

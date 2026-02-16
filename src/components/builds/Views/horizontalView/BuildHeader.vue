@@ -108,6 +108,13 @@
         <IconShare size="16" />
       </button>
       <button 
+        @click="emit('screenshot')"
+        class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+        title="Screenshot to clipboard"
+      >
+        <IconCamera size="16" />
+      </button>
+      <button 
         @click="emit('reevaluate', buildData)"
         class="p-1.5 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
         title="Re-evaluate Build"
@@ -138,7 +145,8 @@ import { ref, nextTick, computed } from 'vue';
 import { 
   IconEdit, IconEditCircle, IconCopy, IconShare, IconArchive, 
   IconArchiveOff, IconTrash, IconGripVertical, 
-  IconAdjustmentsHorizontal, IconChartBar, IconScale, IconRefresh
+  IconAdjustmentsHorizontal, IconChartBar, IconScale, IconRefresh,
+  IconCamera
 } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -167,7 +175,8 @@ const props = defineProps({
 const emit = defineEmits([
   'edit', 'clone', 'archive', 'delete', 
   'overridesBuild', 'showCode', 'showDistribution',
-  'nameChanged', 'upgradeComparison', 'reevaluate', 'overrideCosts'
+  'nameChanged', 'upgradeComparison', 'reevaluate', 'overrideCosts',
+  'screenshot'
 ]);
 
 // Name editing state

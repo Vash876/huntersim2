@@ -598,7 +598,7 @@
                 <div class="flex items-center justify-between text-sm">
                   <span class="text-gray-300 flex items-center gap-1.5">
                     <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
-                    Farm Fragments
+                    Farm Frags
                   </span>
                   <span class="text-cyan-400 font-mono">{{ calculatedEffects.farmFragmentsValue }}</span>
                 </div>
@@ -608,7 +608,7 @@
                 <div class="flex items-center justify-between text-sm">
                   <span class="text-gray-300 flex items-center gap-1.5">
                     <img src="@/assets/general/fragments.png" alt="Fragments" class="w-4 h-4" />
-                    Campaign Fragments
+                    Campaign Frags
                   </span>
                   <span class="text-purple-400 font-mono">{{ calculatedEffects.campaignFragmentsValue }}</span>
                 </div>
@@ -657,7 +657,7 @@ import rpIcon from '@/assets/general/rp.png';
 // ============================================
 // CONFIGURATION - Adjust this value as needed
 // ============================================
-const MIN_HEIGHT_PX = 717; // Minimum height in pixels
+const MIN_HEIGHT_PX = 730; // Minimum height in pixels
 
 // Store
 const missionPlannerStore = useMissionPlannerStore();

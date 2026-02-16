@@ -471,6 +471,7 @@ const chartOption = computed(() => {
     yAxis: {
       type: 'value',
       ...darkYAxis,
+      min: isGains ? undefined : 'dataMin',
       axisLabel: {
         ...darkYAxis.axisLabel,
         formatter: yLabelFormatter

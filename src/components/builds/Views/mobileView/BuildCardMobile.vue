@@ -1,5 +1,6 @@
 <template>
   <div 
+    ref="cardRootEl"
     class="build-compact border-l-4 bg-gray-800 rounded-lg shadow-md mb-3 overflow-hidden transition-all duration-200"
     :class="[
       isReferenceBuild ? 'border-yellow-500' : `border-${hunterColor}-500`
@@ -516,6 +517,13 @@
             <IconShare size="16" />
           </button>
           <button 
+            @click="handleScreenshot"
+            class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+            title="Screenshot to clipboard"
+          >
+            <IconCamera size="16" />
+          </button>
+          <button 
             @click="handleReevaluate"
             class="p-1 rounded-md text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
             title="Re-evaluate Build"
@@ -594,7 +602,8 @@ import {
   IconShare, IconRefresh, IconArchive, IconArchiveOff, IconTrash, 
   IconGripVertical, IconAdjustmentsHorizontal, IconChartBar, IconScale,
   IconBrightness, IconDiamond, IconHexagon, IconHexagons,
-  IconReportMoney, IconStairs, IconClock, IconHeartFilled, IconSword 
+  IconReportMoney, IconStairs, IconClock, IconHeartFilled, IconSword,
+  IconCamera
 } from '@tabler/icons-vue';
 import { useRoute } from 'vue-router';
 import { useBuildEvaluation } from '@/composables/useBuildEvaluation';
@@ -634,6 +643,7 @@ const hunterStore = useHunterStore();
 
 // Route und Refs
 const route = useRoute();
+const cardRootEl = ref(null);
 const menuContainer = ref(null);
 const showMenu = ref(false);
 const showCodeModal = ref(false);
@@ -695,6 +705,16 @@ const {
   showToastMessage,
   getCurrentResults
 } = useBuildEvaluation(props, emit);
+
+// Screenshot der gesamten Karte
+async function handleScreenshot() {
+  const { captureScreenshot } = await import('@/composables/useCardScreenshot.js');
+  const ok = await captureScreenshot(cardRootEl.value, {
+    filename: `${props.buildData?.name || 'build'}.png`,
+  });
+  if (ok) showToastMessage('Screenshot copied to clipboard', 'success');
+  else showToastMessage('Screenshot failed', 'error');
+}
 
 // Computed: Build-Daten mit effektiven Overrides (Category + Build)
 const buildDataWithEffectiveOverrides = computed(() => {

@@ -1,11 +1,12 @@
 /**
  * Simplified Sync Store - Cloud Backup/Restore Integration
- * Uses existing backup/restore functionality from Settings for seamless sync
+ * Uses useBackupRestore composable for backup/restore logic
  */
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { neonAuthService } from '@/services/neonAuthService';
 import { databaseService } from '@/services/databaseService';
+import { useBackupRestore } from '@/composables/useBackupRestore';
 
 export const useSyncStore = defineStore('sync', () => {
   // State
@@ -19,6 +20,9 @@ export const useSyncStore = defineStore('sync', () => {
   // Sync Throttling
   const MIN_SYNC_INTERVAL = 10000; // 10 Sekunden zwischen Syncs
   const APP_VERSION = '2.7.0';
+
+  // Reuse backup/restore logic from composable
+  const { createBackup, restoreFromBackup } = useBackupRestore();
 
   // Computed
   const userDisplayName = computed(() => {
@@ -91,325 +95,13 @@ export const useSyncStore = defineStore('sync', () => {
     }
   }
 
+  // Delegate to shared composable - single source of truth for backup/restore
   async function createLocalBackup() {
-    try {
-      const { useHunterStore } = await import('@/store/hunterStore');
-      const { useTRPlannerStore } = await import('@/store/orbStore');
-      const { useTRTrackingStore } = await import('@/store/trTrackingStore');
-      const { useUltimaStore } = await import('@/store/ultimaStore');
-      const { useGemPlannerStore } = await import('@/store/gemPlannerStore');
-      const { useInscryptionPlannerStore } = await import('@/store/inscryptionPlannerStore');
-      const { useTSStore } = await import('@/store/tsStore');
-      const { useMissionPlannerStore } = await import('@/store/missionPlannerStore');
-      const { useTokenPlannerStore } = await import('@/store/tokenPlannerStore');
-      const { useGadgetPlannerStore } = await import('@/store/gadgetPlannerStore');
-
-      const hunterStore = useHunterStore();
-      const trPlannerStore = useTRPlannerStore();
-      const trTrackingStore = useTRTrackingStore();
-      const ultimaStore = useUltimaStore();
-      const gemPlannerStore = useGemPlannerStore();
-      const inscryptionPlannerStore = useInscryptionPlannerStore();
-      const tsStore = useTSStore();
-      const missionPlannerStore = useMissionPlannerStore();
-      const tokenPlannerStore = useTokenPlannerStore();
-      const gadgetPlannerStore = useGadgetPlannerStore();
-
-      // Create backup data (same as Settings createBackup)
-      const hunterStoreState = JSON.parse(JSON.stringify(hunterStore.$state));
-      if (hunterStoreState.evaluationCache) {
-        delete hunterStoreState.evaluationCache;
-      }
-
-      const backupData = {
-        data: {
-          hunterStore: hunterStoreState,
-          trPlannerStore: JSON.parse(JSON.stringify(trPlannerStore.$state)),
-          trTrackingStore: trTrackingStore.exportData(),
-          ultimaStore: JSON.parse(JSON.stringify(ultimaStore.$state)),
-          gemPlannerStore: gemPlannerStore.exportData(),
-          inscryptionPlannerStore: JSON.parse(JSON.stringify(inscryptionPlannerStore.$state)),
-          tsStore: JSON.parse(JSON.stringify(tsStore.settings)),
-          missionPlannerStore: missionPlannerStore.exportData(),
-          tokenPlannerStore: tokenPlannerStore.exportData(),
-          gadgetPlannerStore: gadgetPlannerStore.exportData(),
-          localStorage: {
-            mechPlanner_settings: JSON.parse(localStorage.getItem('mechPlanner_settings') || '{}'),
-            attrGN3Calculator_settings: JSON.parse(localStorage.getItem('attrGN3Calculator_settings') || '{}'),
-            researchOverview_filters: JSON.parse(localStorage.getItem('researchOverview_filters') || '{}'),
-            loopModOverview_filters: JSON.parse(localStorage.getItem('loopModOverview_filters') || '{}'),
-            m0CostOverview_filters: JSON.parse(localStorage.getItem('m0CostOverview_filters') || '{}'),
-            trPlanOrderIds: JSON.parse(localStorage.getItem('trPlanOrderIds') || '[]'),
-            huntersim_high_iterations_mode: localStorage.getItem('huntersim_high_iterations_mode'),
-            gems_showOnlySimRelevant: JSON.parse(localStorage.getItem('gems_showOnlySimRelevant') || 'false'),
-            inscryption_shopping_list: JSON.parse(localStorage.getItem('inscryption-shopping-list') || '[]'),
-            inscryption_owned: JSON.parse(localStorage.getItem('inscryption-owned') || '{}'),
-            inscryption_planner_settings: JSON.parse(localStorage.getItem('inscryption-planner-settings') || '{}'),
-            inscryption_planner_selectedBuildId: localStorage.getItem('inscryption-planner-selectedBuildId')
-          }
-        },
-        version: '2.1.0',
-        timestamp: new Date().toISOString(),
-        type: 'hunter-simulator-backup'
-      };
-
-      return btoa(JSON.stringify(backupData));
-    } catch (error) {
-      console.error('Failed to create local backup:', error);
-      throw error;
-    }
+    return await createBackup();
   }
 
   async function restoreLocalBackup(backupCode) {
-    try {
-      if (!backupCode || typeof backupCode !== 'string') {
-        throw new Error('Invalid backup code: not a string');
-      }
-
-      let backupData;
-      
-      // Try parsing as JSON first (in case it's stored as unencoded JSON)
-      try {
-        backupData = JSON.parse(backupCode);
-      } catch (jsonError) {
-        // If JSON parsing fails, try Base64 decode
-        
-        // Validate Base64 format
-        const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
-        if (!base64Regex.test(backupCode)) {
-          throw new Error('Invalid backup code: not valid Base64 format');
-        }
-
-        try {
-          const decoded = atob(backupCode);
-          backupData = JSON.parse(decoded);
-        } catch (decodeError) {
-          console.error('Base64 decode error:', decodeError);
-          throw new Error('Invalid backup code: failed to decode Base64');
-        }
-      }
-      
-      if (!backupData || !backupData.data || backupData.type !== 'hunter-simulator-backup') {
-        throw new Error('Invalid backup format');
-      }
-
-      const { useHunterStore } = await import('@/store/hunterStore');
-      const { useTRPlannerStore } = await import('@/store/orbStore');
-      const { useTRTrackingStore } = await import('@/store/trTrackingStore');
-      const { useUltimaStore } = await import('@/store/ultimaStore');
-      const { useGemPlannerStore } = await import('@/store/gemPlannerStore');
-      const { useInscryptionPlannerStore } = await import('@/store/inscryptionPlannerStore');
-      const { useTSStore } = await import('@/store/tsStore');
-      const { useMissionPlannerStore } = await import('@/store/missionPlannerStore');
-      const { useTokenPlannerStore } = await import('@/store/tokenPlannerStore');
-      const { useGadgetPlannerStore } = await import('@/store/gadgetPlannerStore');
-
-      const hunterStore = useHunterStore();
-      const trPlannerStore = useTRPlannerStore();
-      const trTrackingStore = useTRTrackingStore();
-      const ultimaStore = useUltimaStore();
-      const gemPlannerStore = useGemPlannerStore();
-      const inscryptionPlannerStore = useInscryptionPlannerStore();
-      const tsStore = useTSStore();
-      const missionPlannerStore = useMissionPlannerStore();
-      const tokenPlannerStore = useTokenPlannerStore();
-      const gadgetPlannerStore = useGadgetPlannerStore();
-
-      // Restore stores (same as Settings restoreFromBackup)
-      if (backupData.data.hunterStore) {
-        const currentCache = hunterStore.$state.evaluationCache ? 
-          { ...hunterStore.$state.evaluationCache } : {};
-        
-        Object.keys(hunterStore.$state).forEach(key => {
-          if (key !== 'evaluationCache') {
-            if (Array.isArray(hunterStore.$state[key])) {
-              hunterStore.$state[key] = [];
-            } else if (typeof hunterStore.$state[key] === 'object' && hunterStore.$state[key] !== null) {
-              hunterStore.$state[key] = {};
-            } else {
-              hunterStore.$state[key] = null;
-            }
-          }
-        });
-        
-        for (const key in backupData.data.hunterStore) {
-          if (key !== 'evaluationCache' && key in hunterStore.$state) {
-            hunterStore.$state[key] = backupData.data.hunterStore[key];
-          }
-        }
-        
-        if (currentCache && Object.keys(currentCache).length > 0) {
-          hunterStore.$state.evaluationCache = currentCache;
-        }
-      }
-
-      if (backupData.data.trPlannerStore) {
-        Object.keys(backupData.data.trPlannerStore).forEach(key => {
-          if (key in trPlannerStore.$state) {
-            trPlannerStore.$state[key] = backupData.data.trPlannerStore[key];
-          }
-        });
-      }
-
-      if (backupData.data.trTrackingStore) {
-        console.log('📥 Restoring TR Tracking data from cloud backup...');
-        await trTrackingStore.importData(backupData.data.trTrackingStore);
-        console.log('✅ TR Tracking data restored successfully');
-      }
-
-      if (backupData.data.ultimaStore) {
-        Object.keys(backupData.data.ultimaStore).forEach(key => {
-          if (key in ultimaStore.$state) {
-            ultimaStore.$state[key] = backupData.data.ultimaStore[key];
-          }
-        });
-      }
-
-      // Restore Gem Planner Store
-      if (backupData.data.gemPlannerStore) {
-        console.log('📥 Restoring Gem Planner data from cloud backup...');
-        const importSuccess = gemPlannerStore.importData(backupData.data.gemPlannerStore);
-        if (!importSuccess) {
-          console.warn('⚠️ Failed to import Gem Planner data from cloud, but continuing with other data...');
-        }
-      }
-
-      // Restore Inscryption Planner Store
-      if (backupData.data.inscryptionPlannerStore) {
-        console.log('📥 Restoring Inscryption Planner data from cloud backup...');
-        Object.keys(backupData.data.inscryptionPlannerStore).forEach(key => {
-          if (key in inscryptionPlannerStore.$state) {
-            inscryptionPlannerStore.$state[key] = backupData.data.inscryptionPlannerStore[key];
-          }
-        });
-      }
-
-      // Restore TS Planner Store
-      if (backupData.data.tsStore) {
-        console.log('📥 Restoring Trait Sphere Planner data from cloud backup...');
-        Object.keys(backupData.data.tsStore).forEach(key => {
-          if (key in tsStore.settings) {
-            tsStore.settings[key] = backupData.data.tsStore[key];
-          }
-        });
-      }
-      // Backward compatibility: Restore from old localStorage format if present
-      else if (backupData.data.localStorage?.traitSpherePlanner_settings) {
-        console.log('📥 Restoring Trait Sphere Planner data from old localStorage format...');
-        const oldSettings = backupData.data.localStorage.traitSpherePlanner_settings;
-        Object.keys(oldSettings).forEach(key => {
-          if (key in tsStore.settings) {
-            tsStore.settings[key] = oldSettings[key];
-          }
-        });
-      }
-
-      // Restore Mission Planner Store
-      if (backupData.data.missionPlannerStore) {
-        console.log('📥 Restoring Mission Planner data from cloud backup...');
-        const importSuccess = missionPlannerStore.importData(backupData.data.missionPlannerStore);
-        if (!importSuccess) {
-          console.warn('⚠️ Failed to import Mission Planner data from cloud, but continuing with other data...');
-        }
-      }
-
-      // Restore Token Planner Store
-      if (backupData.data.tokenPlannerStore) {
-        console.log('📥 Restoring Token Planner data from cloud backup...');
-        const importSuccess = tokenPlannerStore.importData(backupData.data.tokenPlannerStore);
-        if (!importSuccess) {
-          console.warn('⚠️ Failed to import Token Planner data from cloud, but continuing with other data...');
-        }
-      }
-
-      // Restore Gadget Planner Store
-      if (backupData.data.gadgetPlannerStore) {
-        console.log('📥 Restoring Gadget Planner data from cloud backup...');
-        gadgetPlannerStore.importData(backupData.data.gadgetPlannerStore);
-      }
-
-      // Restore localStorage
-      if (backupData.data.localStorage) {
-        const localStorageData = backupData.data.localStorage;
-        if (localStorageData.mechPlanner_settings) {
-          localStorage.setItem('mechPlanner_settings', JSON.stringify(localStorageData.mechPlanner_settings));
-        }
-        if (localStorageData.attrGN3Calculator_settings) {
-          localStorage.setItem('attrGN3Calculator_settings', JSON.stringify(localStorageData.attrGN3Calculator_settings));
-        }
-        // Note: traitSpherePlanner_settings is now handled by tsStore, not localStorage
-        if (localStorageData.researchOverview_filters) {
-          localStorage.setItem('researchOverview_filters', JSON.stringify(localStorageData.researchOverview_filters));
-        }
-        if (localStorageData.loopModOverview_filters) {
-          localStorage.setItem('loopModOverview_filters', JSON.stringify(localStorageData.loopModOverview_filters));
-        }
-        if (localStorageData.m0CostOverview_filters) {
-          localStorage.setItem('m0CostOverview_filters', JSON.stringify(localStorageData.m0CostOverview_filters));
-        }
-        if (localStorageData.trPlanOrderIds) {
-          localStorage.setItem('trPlanOrderIds', JSON.stringify(localStorageData.trPlanOrderIds));
-        }
-        if (localStorageData.huntersim_high_iterations_mode !== undefined) {
-          localStorage.setItem('huntersim_high_iterations_mode', localStorageData.huntersim_high_iterations_mode);
-        }
-        
-        // Inscryption Planner localStorage
-        if (localStorageData.inscryption_shopping_list) {
-          localStorage.setItem('inscryption-shopping-list', JSON.stringify(localStorageData.inscryption_shopping_list));
-        }
-        if (localStorageData.inscryption_owned) {
-          localStorage.setItem('inscryption-owned', JSON.stringify(localStorageData.inscryption_owned));
-        }
-        if (localStorageData.inscryption_planner_settings) {
-          localStorage.setItem('inscryption-planner-settings', JSON.stringify(localStorageData.inscryption_planner_settings));
-        }
-        if (localStorageData.inscryption_planner_selectedBuildId) {
-          localStorage.setItem('inscryption-planner-selectedBuildId', localStorageData.inscryption_planner_selectedBuildId);
-        }
-        
-        // Mission Planner localStorage - backward compatibility for old backups
-        // Only restore from localStorage if missionPlannerStore data was not present
-        if (!backupData.data.missionPlannerStore) {
-          if (localStorageData.mission_planner_modifiers) {
-            localStorage.setItem('mission-planner-modifiers', JSON.stringify(localStorageData.mission_planner_modifiers));
-          }
-          if (localStorageData.mission_planner_settings) {
-            localStorage.setItem('mission-planner-settings', JSON.stringify(localStorageData.mission_planner_settings));
-          }
-          if (localStorageData.mission_planner_assignments) {
-            localStorage.setItem('mission-planner-assignments', JSON.stringify(localStorageData.mission_planner_assignments));
-          }
-          if (localStorageData.mission_planner_manual_missions) {
-            localStorage.setItem('mission-planner-manual-missions', JSON.stringify(localStorageData.mission_planner_manual_missions));
-          }
-          if (localStorageData.mission_planner_fill_order) {
-            localStorage.setItem('mission-planner-fill-order', JSON.stringify(localStorageData.mission_planner_fill_order));
-          }
-          if (localStorageData.mission_planner_selected_campaign !== undefined) {
-            localStorage.setItem('mission-planner-selected-campaign', JSON.stringify(localStorageData.mission_planner_selected_campaign));
-          }
-          if (localStorageData.mission_planner_relic_levels) {
-            localStorage.setItem('mission-planner-relic-levels', JSON.stringify(localStorageData.mission_planner_relic_levels));
-          }
-          if (localStorageData.mission_planner_campaign_fill_order !== undefined) {
-            localStorage.setItem('mission-planner-campaign-fill-order', JSON.stringify(localStorageData.mission_planner_campaign_fill_order));
-          }
-          if (localStorageData.mission_planner_campaign_manual_mode !== undefined) {
-            localStorage.setItem('mission-planner-campaign-manual-mode', JSON.stringify(localStorageData.mission_planner_campaign_manual_mode));
-          }
-        }
-        
-        // Gem Planner settings
-        if (localStorageData.gems_showOnlySimRelevant !== undefined) {
-          localStorage.setItem('gems_showOnlySimRelevant', JSON.stringify(localStorageData.gems_showOnlySimRelevant));
-        }
-      }
-
-    } catch (error) {
-      console.error('Failed to restore local backup:', error);
-      throw error;
-    }
+    return await restoreFromBackup(backupCode);
   }
 
   async function syncToServer() {

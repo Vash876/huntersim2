@@ -2,6 +2,25 @@
 const changelog = 
 [
   {
+    version: '2.12.0',
+    date: '2026-02-16',
+    changes: [
+      {
+        text: '<b class="text-yellow-400">NEW:</b> Miscellaneous Tools Page',
+        subItems: [
+          'Modular widget system with drag & drop reordering and show/hide toggles',
+        ]
+      },
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Integrated Upgrades Sidebar directly into Hunter pages for quicker access (can be hidden in Settings)',
+          'Added screenshot button to capture build cards and copy them to clipboard',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.11.7',
     date: '2026-02-12',
     changes: [

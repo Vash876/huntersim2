@@ -161,7 +161,7 @@ import {
   IconEdit, IconEditCircle, IconCopy, IconArchive, IconArchiveOff,
   IconTrash, IconGripVertical, IconDotsVertical, IconAdjustments,
   IconShare, IconRefresh, IconChartBar, IconX, IconCloudUpload,
-  IconAdjustmentsHorizontal, IconScale, IconPlayerPlay
+  IconAdjustmentsHorizontal, IconScale, IconPlayerPlay, IconCamera
 } from '@tabler/icons-vue';
 
 const props = defineProps({
@@ -175,7 +175,8 @@ const props = defineProps({
 const emit = defineEmits([
   'edit', 'clone', 'archive', 'delete', 'nameChanged', 
   'overrides', 'share', 'reevaluate', 'showDistribution', 
-  'showUploadDialog', 'upgradeComparison', 'liveSimulation', 'overrideCosts'
+  'showUploadDialog', 'upgradeComparison', 'liveSimulation', 'overrideCosts',
+  'screenshot'
 ]);
 
 const isEditingName = ref(false);

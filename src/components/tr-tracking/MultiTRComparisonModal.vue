@@ -1,11 +1,11 @@
 <template>
   <div 
     v-if="show" 
-    class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4"
+    class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-4 mobile-modal-container"
     @click.self="$emit('close')"
   >
     <div 
-      class="bg-gray-800 rounded-xl shadow-2xl w-[95%] max-h-[95vh] overflow-y-auto animate-fade-in border border-gray-700"
+      class="bg-gray-800 rounded-xl shadow-2xl w-[95%] max-h-[90vh] md:max-h-[95vh] overflow-y-auto animate-fade-in border border-gray-700"
       @click.stop
     >
       <!-- Header -->
@@ -111,9 +111,9 @@
                   ]"
                   :style="{
                     borderLeftWidth: enabledTracks.includes(track.id) ? '6px' : undefined,
-                    borderLeftColor: enabledTracks.includes(track.id) ? trackColors[idx % trackColors.length] : undefined,
-                    ringColor: hoveredTrackId === track.id ? trackColors[idx % trackColors.length] : undefined,
-                    boxShadow: hoveredTrackId === track.id ? `0 0 0 1px ${trackColors[idx % trackColors.length]}` : undefined
+                    borderLeftColor: enabledTracks.includes(track.id) ? trackColors[enabledTracks.indexOf(track.id) % trackColors.length] : undefined,
+                    ringColor: hoveredTrackId === track.id ? trackColors[enabledTracks.indexOf(track.id) % trackColors.length] : undefined,
+                    boxShadow: hoveredTrackId === track.id ? `0 0 0 1px ${trackColors[enabledTracks.indexOf(track.id) % trackColors.length]}` : undefined
                   }"
                 >
                   TR#{{ track.trCount || 0 }} - {{ track.name }}
@@ -480,6 +480,7 @@ const chartOption = computed(() => {
     type: 'value',
     ...darkYAxis,
     scale: true,
+    min: 'dataMin',
     name: useLogScale.value ? 'log₁₀ scale' : undefined,
     nameTextStyle: useLogScale.value ? { color: '#e5e7eb', fontSize: 12 } : undefined,
     axisLabel: {
@@ -663,6 +664,17 @@ function formatDate(dateString) {
 </script>
 
 <style scoped>
+.mobile-modal-container {
+  padding-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .mobile-modal-container {
+    padding-bottom: var(--mobile-safe-bottom, 70px);
+    padding-top: 80px;
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.2s ease-in-out;
 }

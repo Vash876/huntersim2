@@ -459,6 +459,46 @@
         </div>
       </div> -->
 
+      <!-- Interface Settings -->
+      <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mt-8">
+        <div class="header p-4 flex justify-between items-center">
+          <h3 class="text-lg font-semibold text-white flex items-center">
+            <IconLayout size="20" class="mr-2 text-teal-400" />
+            Interface
+          </h3>
+        </div>
+        
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h4 class="text-white text-md font-medium">Upgrades Sidebar in Hunter View</h4>
+              <p class="text-gray-300 text-sm mt-1">
+                Show the upgrades navigation sidebar on the Hunter View page.
+                <span class="text-amber-400">Disable if the sidebar takes up too much space on your screen.</span>
+              </p>
+            </div>
+            <div class="flex items-center">
+              <button 
+                @click="toggleHunterViewSidebar" 
+                class="relative inline-flex h-6 w-12 items-center rounded-full transition-colors focus:outline-none"
+                :class="{
+                  'bg-teal-600': hunterViewSidebarEnabled,
+                  'bg-gray-600': !hunterViewSidebarEnabled
+                }"
+              >
+                <span 
+                  class="inline-block h-5 w-5 transform rounded-full bg-white transition-transform"
+                  :class="{
+                    'translate-x-6': hunterViewSidebarEnabled,
+                    'translate-x-1': !hunterViewSidebarEnabled
+                  }"
+                ></span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Enthusiast Mode -->
       <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mt-8">
         <div class="header p-4 flex justify-between items-center">
@@ -590,7 +630,8 @@ import {
   IconAdjustments,
   IconQuestionMark,
   IconShield,
-  IconWand
+  IconWand,
+  IconLayout
 } from '@tabler/icons-vue';
 
 // Stores
@@ -613,6 +654,7 @@ const showResetConfirmation = ref(false);
 const fileInput = ref(null);
 const toast = ref({ show: false, message: '', type: 'info' });
 const highIterationsEnabled = ref(false);
+const hunterViewSidebarEnabled = ref(true);
 
 // Quick Fix Storage state
 const isQuickFixing = ref(false);
@@ -650,6 +692,10 @@ onMounted(async () => {
   // High Iterations Mode aus dem localStorage laden
   const highIterationsMode = localStorage.getItem('huntersim_high_iterations_mode');
   highIterationsEnabled.value = highIterationsMode === 'true';
+  
+  // Hunter View Sidebar Setting laden
+  const sidebarSetting = localStorage.getItem('huntersim_hunter_sidebar');
+  hunterViewSidebarEnabled.value = sidebarSetting !== 'false'; // default: true
   
   // Initialisiere Hunter Level Settings beim Start
   hunterStore.initHunterLevelSettings('borge');
@@ -936,6 +982,20 @@ function toggleHighIterationsMode() {
     showToast('High iterations mode enabled - Up to 100,000 iterations available', 'info');
   } else {
     showToast('High iterations mode disabled - Max iterations reset to 4,000', 'info');
+  }
+}
+
+// Toggle Hunter View Sidebar
+function toggleHunterViewSidebar() {
+  hunterViewSidebarEnabled.value = !hunterViewSidebarEnabled.value;
+  localStorage.setItem('huntersim_hunter_sidebar', hunterViewSidebarEnabled.value);
+  
+  if (hunterViewSidebarEnabled.value) {
+    showToast('Upgrades sidebar enabled in Hunter View', 'info');
+  } else {
+    showToast('Upgrades sidebar disabled in Hunter View', 'info');
+    // Hint auch zurücksetzen wenn Sidebar deaktiviert wird
+    localStorage.removeItem('huntersim_sidebar_hint_dismissed');
   }
 }
 

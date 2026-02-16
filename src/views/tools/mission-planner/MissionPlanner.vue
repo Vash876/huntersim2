@@ -193,7 +193,7 @@
     </div>
 
     <!-- 2-Column Layout: Modifiers Panel (Left) + Missions (Right) -->
-    <div class="grid grid-cols-1 lg:grid-cols-[4fr_5fr] gap-3">
+    <div class="grid grid-cols-1 lg:grid-cols-[12fr_13fr] gap-3">
       <!-- Left: Modifiers Panel -->
       <div class="lg:max-h-[calc(100vh-200px)] lg:sticky lg:top-4">
         <ModifiersPanel />

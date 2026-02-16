@@ -31,11 +31,6 @@
                 @update:model-value="gemPlannerStore.updateHoursInTR($event)"
               />
             </div>
-            <!-- Frags per Day -->
-            <div class="flex items-center gap-1.5 bg-green-900/30 px-2 py-1 rounded-md border border-green-700/30">
-              <span class="text-gray-400">Rate:</span>
-              <span class="text-green-400 font-bold">+{{ formatNumber(fragsPerDay) }}/day</span>
-            </div>
           </div>
           <!-- Total Invested -->
           <div class="flex items-center gap-1.5 text-xs bg-amber-900/30 px-2 py-1 rounded-md border border-amber-700/30">

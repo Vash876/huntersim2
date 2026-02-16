@@ -1,6 +1,16 @@
 <template>
   <div class="stats-container">  
-    <h4 class="section-title">Main Statistics</h4>  
+    <div class="flex items-center justify-between">
+      <h4 class="section-title">Main Statistics</h4>
+      <button 
+        @click="emit('screenshot')"
+        class="action-button-compact"
+        title="Screenshot to clipboard"
+      >
+        <IconCamera :size="16" />
+      </button>
+    </div>
+    <div class="border-b border-gray-700/40 -mt-2 mb-1"></div>
     <!-- Grid für wichtigsten Spielstatistiken -->
     <div class="stats-grid">
       <!-- Loot Score -->
@@ -95,7 +105,7 @@
 import { computed } from 'vue';
 import { 
   IconReportMoney, IconStairs, IconClock, IconRepeat, 
-  IconArrowUp, IconArrowDown, IconEqual 
+  IconArrowUp, IconArrowDown, IconEqual, IconCamera
 } from '@tabler/icons-vue';
 import { 
   formatNumber, formatStage, formatTime, 
@@ -112,6 +122,8 @@ const props = defineProps({
   hunterColor: { type: String, required: true },
   resultLabels: { type: Object, required: true }
 });
+
+const emit = defineEmits(['screenshot']);
 </script>
 
 <style scoped>
@@ -119,7 +131,6 @@ const props = defineProps({
   font-weight: 600;
   font-size: 0.95rem;
   color: rgba(229, 231, 235, 1);
-  border-bottom: 1px solid rgba(75, 85, 99, 0.4);
   padding-bottom: 0.5rem;
 }
 
@@ -173,6 +184,21 @@ const props = defineProps({
 .stat-range {
   font-size: 0.6875rem;
   color: rgba(156, 163, 175, 0.8);
+}
+
+.action-button-compact {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: rgba(55, 65, 81, 0.3);
+  color: rgba(209, 213, 219, 1);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.action-button-compact:hover {
+  background-color: rgba(75, 85, 99, 0.5);
 }
 
 /* Nur für sehr kleine Bildschirme alles untereinander */

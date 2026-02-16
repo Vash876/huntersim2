@@ -1,5 +1,5 @@
 <template>
-  <div class="result-card border-l-4 bg-gray-800 rounded-lg shadow-xl overflow-hidden transition-all duration-200 hover:shadow-2xl"
+  <div ref="cardRootEl" class="result-card border-l-4 bg-gray-800 rounded-lg shadow-xl overflow-hidden transition-all duration-200 hover:shadow-2xl"
        :class="[isReferenceBuild ? 'border-yellow-500' : `border-${hunterColor}-500`]">
     
     <!-- Header-Komponente -->
@@ -22,6 +22,7 @@
       @upgradeComparison="handleUpgradeComparison"
       @liveSimulation="showLiveSimulationModal = true"
       @overrideCosts="showOverrideCostsModal = true"
+      @screenshot="handleScreenshot"
     />
     
     <div class="p-4 pb-3 pt-2">
@@ -65,6 +66,7 @@
           :is-reference-build="isReferenceBuild"
           :hunter-color="hunterColor"
           :result-labels="resultLabels"
+          @screenshot="handleScreenshot"
         />
         
         <!-- Ressourcen -->
@@ -195,6 +197,7 @@ const emit = defineEmits([
 // State und Refs
 const route = useRoute();
 const hunterStore = useHunterStore();
+const cardRootEl = ref(null);
 const showCodeModal = ref(false);
 const showDistributionModal = ref(false);
 const showUploadDialog = ref(false);
@@ -223,6 +226,16 @@ const {
   getCurrentResults,
   showToastMessage
 } = useBuildEvaluation(props, emit);
+
+// Screenshot der gesamten Karte
+async function handleScreenshot() {
+  const { captureScreenshot } = await import('@/composables/useCardScreenshot.js');
+  const ok = await captureScreenshot(cardRootEl.value, {
+    filename: `${props.buildData?.name || 'build'}.png`,
+  });
+  if (ok) showToastMessage('Screenshot copied to clipboard', 'success');
+  else showToastMessage('Screenshot failed', 'error');
+}
 
 // Funktion zum Importieren eines Builds aus einem Code
 function importBuild(build) {

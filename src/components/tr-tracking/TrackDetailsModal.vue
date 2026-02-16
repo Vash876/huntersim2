@@ -1204,7 +1204,7 @@ const buildColumnDefs = () => {
             displayValue = formatSuffixInput(currentValue);
           }
           
-          if (!shouldShowDifference || !isWholeNumber) {
+          if (!shouldShowDifference || currentValue === 0) {
             return displayValue;
           }
           
@@ -2007,30 +2007,17 @@ function calculatePredictedLRTicks() {
 }
 
 // Helper: Check if a LR Reset occurred for a given entry (compared to previous)
+// Uses AttGN3 buff: if current value is higher than previous, a LR was completed
 function isLRResetEntry(entry, previousEntry) {
   if (!previousEntry) return false;
   
-  const currentTicks = entry.values?.['lr-ticks'] || 0;
-  const previousTicks = previousEntry.values?.['lr-ticks'] || 0;
+  const currentBuff = parseSuffixInput(entry.values?.['attgn3-buff']);
+  const previousBuff = parseSuffixInput(previousEntry.values?.['attgn3-buff']);
   
-  // If current ticks is 0 or previous is 0, can't determine reset
-  if (currentTicks === 0 || previousTicks === 0) return false;
+  // If either value is missing or zero, can't determine reset
+  if (!currentBuff || !previousBuff) return false;
   
-  // Calculate expected ticks based on time difference
-  const expectedTicks = calculateExpectedTicks(previousEntry.date, entry.date);
-  
-  // Expected total ticks = previous ticks + expected increase
-  const expectedTotalTicks = previousTicks + expectedTicks;
-  
-  // Allow 20% tolerance for manual input inaccuracy
-  const tolerance = 0.20;
-  const minExpectedTicks = expectedTotalTicks * (1 - tolerance);
-  
-  // If current ticks are significantly lower than expected minimum, it's a LR Reset
-  // (current should be at least close to previous + expected increase)
-  const isReset = currentTicks < minExpectedTicks;
-  
-  return isReset;
+  return currentBuff > previousBuff;
 }
 
 // Helper: Get entry by index in chronological order (oldest first)
@@ -2390,6 +2377,10 @@ function getTimeInLR() {
   // Get current LR Ticks from tracking data
   const currentTicksInLR = latestValues['lr-ticks'] || 0;
   
+  console.log('🔍 getTimeInLR Debug:');
+  console.log('- currentTicksInLR:', currentTicksInLR);
+  console.log('- latestValues:', latestValues);
+  
   if (currentTicksInLR === 0) return '0d 0h';
   
   // Get calculator settings from localStorage
@@ -2404,6 +2395,10 @@ function getTimeInLR() {
   const tickSpeed = savedSettings.tickSpeed || 1.5;
   const ticksPerTick = savedSettings.ticksPerTick || 1;
   
+  console.log('- tickSpeed:', tickSpeed);
+  console.log('- ticksPerTick:', ticksPerTick);
+  console.log('- savedSettings:', savedSettings);
+  
   if (tickSpeed === 0 || ticksPerTick === 0) return '0d 0h';
   
   // Calculate base time in LR from ticks (same logic as AttGN3 Calculator)
@@ -2412,6 +2407,9 @@ function getTimeInLR() {
   
   // Each tick event lasts tickSpeed seconds
   const baseSecondsInLR = actualTickEvents * tickSpeed;
+  
+  console.log('- actualTickEvents:', actualTickEvents);
+  console.log('- baseSecondsInLR:', baseSecondsInLR);
   
   // Add live time elapsed since last log entry
   let liveSecondsElapsed = 0;
@@ -2427,18 +2425,30 @@ function getTimeInLR() {
     const lastEntryTime = new Date(lastEntry.date);
     const now = currentTime.value;
     
+    console.log('- lastEntry.date:', lastEntry.date);
+    console.log('- lastEntryTime:', lastEntryTime);
+    console.log('- now (currentTime.value):', now);
+    console.log('- track.isActive:', props.track.isActive);
+    
     // Only add live time if the track is active (not completed)
     if (props.track.isActive && !isNaN(lastEntryTime.getTime()) && now > lastEntryTime) {
       const millisecondsElapsed = now - lastEntryTime;
       liveSecondsElapsed = millisecondsElapsed / 1000;
+      console.log('- millisecondsElapsed:', millisecondsElapsed);
+      console.log('- liveSecondsElapsed:', liveSecondsElapsed);
     }
   }
   
   // Total seconds = base time from ticks + live elapsed time
   const totalSecondsInLR = baseSecondsInLR + liveSecondsElapsed;
   
+  console.log('- liveSecondsElapsed:', liveSecondsElapsed);
+  console.log('- totalSecondsInLR:', totalSecondsInLR);
+  
   // Convert seconds to days
   const daysInLR = totalSecondsInLR / 86400;
+  
+  console.log('- daysInLR:', daysInLR);
   
   // Format in days, hours and minutes (as requested)
   if (daysInLR === 0) return '0d 0h 0m';
@@ -2448,13 +2458,24 @@ function getTimeInLR() {
   const wholeHours = Math.floor((totalMinutes % (24 * 60)) / 60);
   const remainingMinutes = totalMinutes % 60;
   
+  console.log('- totalMinutes:', totalMinutes);
+  console.log('- wholeDays:', wholeDays);
+  console.log('- wholeHours:', wholeHours);
+  console.log('- remainingMinutes:', remainingMinutes);
+  
+  let result;
   if (wholeDays > 0) {
-    return `${wholeDays}d ${wholeHours}h ${remainingMinutes}m`;
+    result = `${wholeDays}d ${wholeHours}h ${remainingMinutes}m`;
   } else if (wholeHours > 0) {
-    return `${wholeHours}h ${remainingMinutes}m`;
+    result = `${wholeHours}h ${remainingMinutes}m`;
   } else {
-    return `${remainingMinutes}m`;
+    result = `${remainingMinutes}m`;
   }
+  
+  console.log('- Final result:', result);
+  console.log('🔍 getTimeInLR Debug End\n');
+  
+  return result;
 }
 
 // Get latest values from the most recent entry

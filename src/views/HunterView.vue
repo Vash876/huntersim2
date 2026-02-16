@@ -1,6 +1,10 @@
 <!-- filepath: /c:/Users/igorn/projects/huntersim2/src/views/HunterView.vue -->
 <template>
-  <div class="px-0.5 py-4 container mx-auto">
+  <div class="flex min-h-[calc(100vh-64px)]">
+    <UpgradesSidebar v-if="showSidebar" showHint />
+
+    <!-- Content Area -->
+    <div class="flex-1 min-w-0 px-0.5 py-4 container mx-auto">
     <!-- Top Section mit integriertem Header und Aktionsleiste -->
     <div class="mb-6 rounded-lg overflow-hidden shadow-lg">
       <!-- Header mit Farb-Gradient -->
@@ -906,11 +910,12 @@
       @close="closeCategoryOverrideModal"
       @categoryOverridesUpdated="onCategoryOverridesUpdated"
     />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, provide, watchEffect, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, provide, watchEffect, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { NAVIGATION } from '../constants/navigation';
 import { useHunterStore } from '../store/hunterStore';
@@ -957,6 +962,7 @@ import MobileLootFilterModal from '@/components/common/MobileLootFilterModal.vue
 import GadgetsCostModal from '@/components/common/GadgetsCostModal.vue';
 import SeedToggle from '@/components/common/SeedToggle.vue';
 import TemporaryUpgradesDropdown from '@/components/common/TemporaryUpgradesDropdown.vue';
+import UpgradesSidebar from '@/components/common/UpgradesSidebar.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -964,6 +970,9 @@ const importCodeFromUrl = ref('');
 
 const hunterStore = useHunterStore();
 const gemPlannerStore = useGemPlannerStore();
+
+// Sidebar Setting
+const showSidebar = ref(localStorage.getItem('huntersim_hunter_sidebar') !== 'false');
 
 // Track if we're in an in-page transition (add/delete)
 const isInPageTransition = ref(false);
@@ -1683,6 +1692,11 @@ watch(
 
 // Lifecycle hooks - Consolidated onMounted
 onMounted(async () => {
+  // Listen for toast events from child components
+  const toastHandler = (e) => showToastMessage(e.detail.message, e.detail.type);
+  document.addEventListener('app-toast', toastHandler);
+  onUnmounted(() => document.removeEventListener('app-toast', toastHandler));
+
   // Initialize hunter config and categories
   await hunterStore.initHunterConfig(route.params.hunterId);
   hunterStore.initBuildCategories(route.params.hunterId);

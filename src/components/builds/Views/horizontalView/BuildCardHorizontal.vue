@@ -24,7 +24,8 @@
         @showDistribution="showDistributionModal = true"
         @reevaluate="handleReevaluate"
         @upgradeComparison="handleUpgradeComparison" 
-        @overrideCosts="showOverrideCostsModal = true" 
+        @overrideCosts="showOverrideCostsModal = true"
+        @screenshot="handleScreenshot"
       />
       
       <!-- Build-Ergebnisse (Loot, Statistiken) -->
@@ -124,6 +125,16 @@ const hunterStore = useHunterStore();
 
 // DOM-Refs
 const buildElement = ref(null);
+
+// Screenshot der gesamten Karte
+async function handleScreenshot() {
+  const { captureScreenshot } = await import('@/composables/useCardScreenshot.js');
+  const ok = await captureScreenshot(buildElement.value, {
+    filename: `${props.buildData?.name || 'build'}.png`,
+  });
+  if (ok) showToastMessage('Screenshot copied to clipboard', 'success');
+  else showToastMessage('Screenshot failed', 'error');
+}
 
 // UI-State
 const showCodeModal = ref(false);

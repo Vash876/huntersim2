@@ -436,11 +436,7 @@ export function useBuildEvaluation(props, emit) {
 
   // Hilfsfunktion für Toasts
   function showToastMessage(message, type = 'success') {
-    if (window.toast && typeof window.toast === 'function') {
-      window.toast[type](message);
-    } else {
-      console.log(`Toast message (${type}):`, message);
-    }
+    document.dispatchEvent(new CustomEvent('app-toast', { detail: { message, type } }));
   }
   
   // Watches für Änderungen einrichten
@@ -824,5 +820,6 @@ async function compareScenarios(scenarioIncrementsData, getGlobalValueFn, calcul
     evaluateBuildWithParams,
     compareScenarios,
     getCurrentResults,
+    showToastMessage,
   };
 }

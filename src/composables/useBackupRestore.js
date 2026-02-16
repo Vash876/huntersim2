@@ -13,6 +13,7 @@ import { useTSStore } from '@/store/tsStore';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useTokenPlannerStore } from '@/store/tokenPlannerStore';
 import { useGadgetPlannerStore } from '@/store/gadgetPlannerStore';
+import { useMiscStore } from '@/views/tools/miscellaneous/store.js';
 
 export function useBackupRestore() {
   const hunterStore = useHunterStore();
@@ -25,6 +26,7 @@ export function useBackupRestore() {
   const missionPlannerStore = useMissionPlannerStore();
   const tokenPlannerStore = useTokenPlannerStore();
   const gadgetPlannerStore = useGadgetPlannerStore();
+  const miscStore = useMiscStore();
 
   const isCreatingBackup = ref(false);
   const isRestoring = ref(false);
@@ -136,12 +138,17 @@ export function useBackupRestore() {
       const inscryptionOwned = localStorage.getItem('inscryption-owned');
       const inscryptionPlannerSettings = localStorage.getItem('inscryption-planner-settings');
       const inscryptionSelectedBuildId = localStorage.getItem('inscryption-planner-selectedBuildId');
+      const sidebarHintDismissed = localStorage.getItem('huntersim_sidebar_hint_dismissed');
+      const inscryptionsHideMaxed = localStorage.getItem('inscryptions_hideMaxed');
       
       // 16. Mission Planner Daten (Pinia Store mit exportData)
       const missionPlannerData = missionPlannerStore.exportData();
       
       // 17. Token Planner Daten (Pinia Store mit exportData)
       const tokenPlannerData = tokenPlannerStore.exportData();
+      
+      // 18. Miscellaneous Store Daten (Widget-Reihenfolge, Sichtbarkeit, Inputs)
+      const miscStoreData = miscStore.exportData();
       
       // Backup-Datenpaket erstellen
       const backupData = {
@@ -166,13 +173,16 @@ export function useBackupRestore() {
             inscryption_shopping_list: inscryptionShoppingList ? JSON.parse(inscryptionShoppingList) : [],
             inscryption_owned: inscryptionOwned ? JSON.parse(inscryptionOwned) : {},
             inscryption_planner_settings: inscryptionPlannerSettings ? JSON.parse(inscryptionPlannerSettings) : {},
-            inscryption_planner_selectedBuildId: inscryptionSelectedBuildId
+            inscryption_planner_selectedBuildId: inscryptionSelectedBuildId,
+            huntersim_sidebar_hint_dismissed: sidebarHintDismissed,
+            inscryptions_hideMaxed: inscryptionsHideMaxed ? JSON.parse(inscryptionsHideMaxed) : false
           },
           missionPlannerStore: missionPlannerData,
           tokenPlannerStore: tokenPlannerData,
+          miscStore: miscStoreData,
           storageInfo: storageInfo
         },
-        version: '2.1.0', // Version erhöht für IndexedDB-Kompatibilität
+        version: '2.1.0', 
         timestamp: new Date().toISOString(),
         type: 'hunter-simulator-backup'
       };
@@ -436,6 +446,15 @@ export function useBackupRestore() {
         gadgetPlannerStore.importData(backupData.data.gadgetPlannerStore);
       }
       
+      // 6.9. Restore Miscellaneous Store
+      if (backupData.data.miscStore) {
+        console.log('📥 Restoring Miscellaneous data from backup...');
+        const importSuccess = miscStore.importData(backupData.data.miscStore);
+        if (!importSuccess) {
+          console.warn('⚠️ Failed to import Miscellaneous data, but continuing with other data...');
+        }
+      }
+      
       // 7. Restore localStorage data
       if (backupData.data.localStorage) {
         const localStorageData = backupData.data.localStorage;
@@ -513,6 +532,12 @@ export function useBackupRestore() {
         // Gem Planner settings
         if (localStorageData.gems_showOnlySimRelevant !== undefined) {
           localStorage.setItem('gems_showOnlySimRelevant', JSON.stringify(localStorageData.gems_showOnlySimRelevant));
+        }
+        if (localStorageData.huntersim_sidebar_hint_dismissed !== undefined) {
+          localStorage.setItem('huntersim_sidebar_hint_dismissed', localStorageData.huntersim_sidebar_hint_dismissed);
+        }
+        if (localStorageData.inscryptions_hideMaxed !== undefined) {
+          localStorage.setItem('inscryptions_hideMaxed', JSON.stringify(localStorageData.inscryptions_hideMaxed));
         }
       }
       
