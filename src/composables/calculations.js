@@ -515,7 +515,7 @@ function calculateGemNodeOrbMultiplier(planStats) {
   if (temporalLevel >= 3) { // Temporal Level 3 erforderlich für Nodes 5&6
     // Temporal Node #5 (ID 4): 1.1x
     if (temporalNodes.includes(4)) {
-      multiplier *= 1.1;
+      multiplier *= 1.05;
     }
     
     // Temporal Node #6 (ID 5): 1.15x
