@@ -209,6 +209,21 @@ const router = createRouter({
   }
 })
 
+// Handle chunk load failures after new deployments
+// When a new version is deployed, old JS chunks no longer exist on the server.
+// This catches the resulting import errors and reloads the page once to get the new chunks.
+router.onError((error, to) => {
+  const chunkFailedMessage = /Loading chunk|Failed to fetch dynamically imported module|Importing a module script failed/;
+  if (chunkFailedMessage.test(error.message)) {
+    // Prevent infinite reload loops by checking sessionStorage
+    const reloadKey = 'chunk-reload-' + to.fullPath;
+    if (!sessionStorage.getItem(reloadKey)) {
+      sessionStorage.setItem(reloadKey, '1');
+      window.location.assign(to.fullPath);
+    }
+  }
+});
+
 // View Transitions API - Smooth Page Transitions
 router.beforeResolve((to, from) => {
   // Feature Detection: Prüfe ob Browser View Transitions unterstützt

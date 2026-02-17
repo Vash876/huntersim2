@@ -667,15 +667,14 @@ const gridOptions = ref({
   columnDefs: [],
   rowData: [],
   getRowId: (params) => params.data.id, // Add row ID function to help AG Grid track rows
-  getRowClass: (params) => {
-    // Check if this entry represents a LR Reset
-    if (params.data && params.data.id) {
+  rowClassRules: {
+    'lr-reset-row': (params) => {
+      if (!params.data || !params.data.id) return false;
       const previousEntry = findPreviousEntryChronologically(params.data.id);
-      if (isLRResetEntry(params.data, previousEntry)) {
-        return 'lr-reset-row';
-      }
+      const result = isLRResetEntry(params.data, previousEntry);
+      if (result) console.log('🔴 LR Reset detected for entry:', params.data.id);
+      return result;
     }
-    return null;
   },
   suppressMovableColumns: false, // Allow column moving by default
   suppressMoveWhenColumnDragging: false, // Allow live movement during drag
@@ -2011,13 +2010,25 @@ function calculatePredictedLRTicks() {
 function isLRResetEntry(entry, previousEntry) {
   if (!previousEntry) return false;
   
-  const currentBuff = parseSuffixInput(entry.values?.['attgn3-buff']);
-  const previousBuff = parseSuffixInput(previousEntry.values?.['attgn3-buff']);
+  const rawCurrent = entry.values?.['attgn3-buff'];
+  const rawPrevious = previousEntry.values?.['attgn3-buff'];
   
-  // If either value is missing or zero, can't determine reset
-  if (!currentBuff || !previousBuff) return false;
+  // Skip if either value is missing
+  if (rawCurrent === undefined || rawCurrent === null || rawCurrent === '' || rawCurrent === 0) return false;
+  if (rawPrevious === undefined || rawPrevious === null || rawPrevious === '' || rawPrevious === 0) return false;
   
-  return currentBuff > previousBuff;
+  try {
+    // Use Decimal for precise comparison of very large numbers (up to 1e308+)
+    const currentBuff = new Decimal(rawCurrent);
+    const previousBuff = new Decimal(rawPrevious);
+    
+    if (currentBuff.eq(0) || previousBuff.eq(0)) return false;
+    
+    // LR Reset = buff increased (buff accumulates and gets applied on LR)
+    return currentBuff.gt(previousBuff);
+  } catch (e) {
+    return false;
+  }
 }
 
 // Helper: Get entry by index in chronological order (oldest first)
