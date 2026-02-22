@@ -5,6 +5,7 @@
  */
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { useStorage } from '@vueuse/core';
 import {
   ensureUserProfile,
   findUserByFriendCode,
@@ -56,6 +57,9 @@ export const useFriendsStore = defineStore('friends', () => {
   const isInitialized = ref(false);
   const lastRefresh = ref(null);
   const error = ref(null);
+
+  // Persisted hidden friend track IDs (included in backups)
+  const hiddenFriendTrackIds = useStorage('cifi-hidden-friend-tracks', []);
 
   // ---- Computed ----
   const friendCode = computed(() => myProfile.value?.friendCode || '');
@@ -258,6 +262,53 @@ export const useFriendsStore = defineStore('friends', () => {
     return tracks;
   }
 
+  // ---- Hidden Tracks ----
+
+  /** Hide a friend's track */
+  function hideFriendTrack(trackId) {
+    if (!hiddenFriendTrackIds.value.includes(trackId)) {
+      hiddenFriendTrackIds.value = [...hiddenFriendTrackIds.value, trackId];
+    }
+  }
+
+  /** Unhide a friend's track */
+  function unhideFriendTrack(trackId) {
+    hiddenFriendTrackIds.value = hiddenFriendTrackIds.value.filter(id => id !== trackId);
+  }
+
+  /** Unhide all friend tracks */
+  function unhideAllFriendTracks() {
+    hiddenFriendTrackIds.value = [];
+  }
+
+  /** Check if a friend track is hidden */
+  function isFriendTrackHidden(trackId) {
+    return hiddenFriendTrackIds.value.includes(trackId);
+  }
+
+  // ---- Export / Import (for backup system) ----
+
+  /** Export persistent settings for backup */
+  function exportData() {
+    return {
+      hiddenFriendTrackIds: [...hiddenFriendTrackIds.value]
+    };
+  }
+
+  /** Import persistent settings from backup */
+  function importData(data) {
+    if (!data) return false;
+    try {
+      if (Array.isArray(data.hiddenFriendTrackIds)) {
+        hiddenFriendTrackIds.value = data.hiddenFriendTrackIds;
+      }
+      return true;
+    } catch (err) {
+      console.error('Failed to import friends store data:', err);
+      return false;
+    }
+  }
+
   /** Refresh everything (friends + tracks) — only on explicit user action */
   async function refreshAll() {
     isLoading.value = true;
@@ -283,6 +334,7 @@ export const useFriendsStore = defineStore('friends', () => {
     pendingSent,
     friendsTracks,
     mySharedTrackIds,
+    hiddenFriendTrackIds,
     isLoading,
     isInitialized,
     lastRefresh,
@@ -304,6 +356,12 @@ export const useFriendsStore = defineStore('friends', () => {
     isTrackShared,
     loadMySharedTracks,
     loadFriendsTracks,
-    refreshAll
+    refreshAll,
+    hideFriendTrack,
+    unhideFriendTrack,
+    unhideAllFriendTracks,
+    isFriendTrackHidden,
+    exportData,
+    importData
   };
 });

@@ -284,7 +284,6 @@ import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { formatSuffixInput } from '@/composables/format.js';
 import { generateId } from '@/utils/base58';
 import Decimal from 'break_infinity.js';
-import { useStorage } from '@vueuse/core';
 
 const props = defineProps({
   show: Boolean
@@ -299,9 +298,8 @@ const isRefreshing = ref(false);
 const expandedTrackId = ref(null);
 const activeTab = ref('visible');
 
-// Persisted hidden track IDs
-const hiddenTrackIdsArray = useStorage('cifi-hidden-friend-tracks', []);
-const hiddenTrackIds = computed(() => new Set(hiddenTrackIdsArray.value));
+// Hidden track IDs from store (persisted + included in backups)
+const hiddenTrackIds = computed(() => new Set(friendsStore.hiddenFriendTrackIds));
 
 // Computed
 const friendsTracks = computed(() => friendsStore.friendsTracks || []);
@@ -329,18 +327,16 @@ const groupedHiddenTracks = computed(() => groupByFriend(hiddenTracksList.value)
 
 // Hide / Unhide
 function hideTrack(trackId) {
-  if (!hiddenTrackIdsArray.value.includes(trackId)) {
-    hiddenTrackIdsArray.value = [...hiddenTrackIdsArray.value, trackId];
-  }
+  friendsStore.hideFriendTrack(trackId);
   if (expandedTrackId.value === trackId) expandedTrackId.value = null;
 }
 
 function unhideTrack(trackId) {
-  hiddenTrackIdsArray.value = hiddenTrackIdsArray.value.filter(id => id !== trackId);
+  friendsStore.unhideFriendTrack(trackId);
 }
 
 function unhideAll() {
-  hiddenTrackIdsArray.value = [];
+  friendsStore.unhideAllFriendTracks();
 }
 
 // Expand / Collapse

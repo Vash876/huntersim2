@@ -14,6 +14,7 @@ import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useTokenPlannerStore } from '@/store/tokenPlannerStore';
 import { useGadgetPlannerStore } from '@/store/gadgetPlannerStore';
 import { useMiscStore } from '@/views/tools/miscellaneous/store.js';
+import { useFriendsStore } from '@/store/friendsStore';
 
 export function useBackupRestore() {
   const hunterStore = useHunterStore();
@@ -27,6 +28,7 @@ export function useBackupRestore() {
   const tokenPlannerStore = useTokenPlannerStore();
   const gadgetPlannerStore = useGadgetPlannerStore();
   const miscStore = useMiscStore();
+  const friendsStore = useFriendsStore();
 
   const isCreatingBackup = ref(false);
   const isRestoring = ref(false);
@@ -150,6 +152,9 @@ export function useBackupRestore() {
       // 18. Miscellaneous Store Daten (Widget-Reihenfolge, Sichtbarkeit, Inputs)
       const miscStoreData = miscStore.exportData();
       
+      // 19. Friends Store Daten (hidden track IDs)
+      const friendsStoreData = friendsStore.exportData();
+      
       // Backup-Datenpaket erstellen
       const backupData = {
         data: {
@@ -180,6 +185,7 @@ export function useBackupRestore() {
           missionPlannerStore: missionPlannerData,
           tokenPlannerStore: tokenPlannerData,
           miscStore: miscStoreData,
+          friendsStore: friendsStoreData,
           storageInfo: storageInfo
         },
         version: '2.1.0', 
@@ -452,6 +458,15 @@ export function useBackupRestore() {
         const importSuccess = miscStore.importData(backupData.data.miscStore);
         if (!importSuccess) {
           console.warn('⚠️ Failed to import Miscellaneous data, but continuing with other data...');
+        }
+      }
+      
+      // 6.10. Restore Friends Store (hidden track IDs)
+      if (backupData.data.friendsStore) {
+        console.log('📥 Restoring Friends data from backup...');
+        const importSuccess = friendsStore.importData(backupData.data.friendsStore);
+        if (!importSuccess) {
+          console.warn('⚠️ Failed to import Friends data, but continuing with other data...');
         }
       }
       
