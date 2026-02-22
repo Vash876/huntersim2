@@ -120,6 +120,9 @@ export const useFriendsStore = defineStore('friends', () => {
 
       await refreshFriends(user.uid);
       await loadMySharedTracks();
+      if (friends.value.length > 0) {
+        await loadFriendsTracks();
+      }
 
       isInitialized.value = true;
       lastRefresh.value = Date.now();

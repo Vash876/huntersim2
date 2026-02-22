@@ -123,7 +123,8 @@
             </div>
 
             <!-- Friends Tracks Section -->
-            <div v-if="friendsStore.isInitialized && friendsStore.friendsTracks.length > 0">
+            <div v-if="friendsStore.isInitialized && friendsAvailableTracks.length > 0">
+              <!-- Visible Friends Tracks -->
               <div class="flex items-center gap-2 mb-2">
                 <div class="text-xs text-gray-400">Friends' Tracks:</div>
                 <button
@@ -134,12 +135,12 @@
                     : 'border-gray-600 text-gray-400 hover:text-gray-300'"
                 >
                   <IconUsersGroup size="12" class="inline mr-1" />
-                  {{ showFriendsTracks ? 'Hide' : 'Show' }} ({{ friendsStore.friendsTracks.length }})
+                  {{ showFriendsTracks ? 'Hide' : 'Show' }} ({{ visibleFriendsAvailableTracks.length }})
                 </button>
               </div>
               <div v-if="showFriendsTracks" class="flex flex-wrap gap-1">
                 <button
-                  v-for="fTrack in friendsAvailableTracks"
+                  v-for="fTrack in visibleFriendsAvailableTracks"
                   :key="fTrack.id"
                   @click="toggleFriendsTrackInChart(fTrack.id)"
                   class="px-2 py-1 text-xs rounded-md border transition-all duration-150"
@@ -158,6 +159,41 @@
                   {{ friendsStore.getFriendDisplayName(fTrack.ownerId, fTrack.ownerName) }}: TR#{{ fTrack.trackMeta?.trCount || 0 }} - {{ fTrack.trackMeta?.name || '?' }}
                   <span class="ml-1 text-xs opacity-75">({{ (fTrack.entries || []).length }})</span>
                 </button>
+              </div>
+
+              <!-- Hidden Friends Tracks -->
+              <div v-if="showFriendsTracks && hiddenFriendsAvailableTracks.length > 0" class="mt-2">
+                <button
+                  @click="showHiddenFriendsTracks = !showHiddenFriendsTracks"
+                  class="text-xs px-2 py-0.5 rounded-md border transition-colors mb-1"
+                  :class="showHiddenFriendsTracks
+                    ? 'bg-gray-700/60 border-gray-500/50 text-gray-300'
+                    : 'border-gray-700 text-gray-500 hover:text-gray-400'"
+                >
+                  {{ showHiddenFriendsTracks ? '▾' : '▸' }} Hidden ({{ hiddenFriendsAvailableTracks.length }})
+                </button>
+                <div v-if="showHiddenFriendsTracks" class="flex flex-wrap gap-1 mt-1">
+                  <button
+                    v-for="fTrack in hiddenFriendsAvailableTracks"
+                    :key="fTrack.id"
+                    @click="toggleFriendsTrackInChart(fTrack.id)"
+                    class="px-2 py-1 text-xs rounded-md border transition-all duration-150 opacity-60"
+                    :class="[
+                      enabledFriendsTracks.includes(fTrack.id)
+                        ? 'text-gray-200 border-indigo-600'
+                        : 'text-gray-500 border-gray-700'
+                    ]"
+                    :style="{
+                      borderLeftWidth: enabledFriendsTracks.includes(fTrack.id) ? '6px' : undefined,
+                      borderLeftColor: enabledFriendsTracks.includes(fTrack.id) 
+                        ? friendsTrackColorMap[fTrack.id] 
+                        : undefined
+                    }"
+                  >
+                    {{ friendsStore.getFriendDisplayName(fTrack.ownerId, fTrack.ownerName) }}: TR#{{ fTrack.trackMeta?.trCount || 0 }} - {{ fTrack.trackMeta?.name || '?' }}
+                    <span class="ml-1 text-xs opacity-75">({{ (fTrack.entries || []).length }})</span>
+                  </button>
+                </div>
               </div>
             </div>
             </div>
@@ -458,6 +494,18 @@ const friendsAvailableTracks = computed(() => {
     .filter(t => t.entries && t.entries.length > 0)
     .sort((a, b) => (a.trackMeta?.trCount || 0) - (b.trackMeta?.trCount || 0));
 });
+
+// Visible (not hidden) friends tracks
+const visibleFriendsAvailableTracks = computed(() => {
+  return friendsAvailableTracks.value.filter(t => !friendsStore.isFriendTrackHidden(t.id));
+});
+
+// Hidden friends tracks
+const hiddenFriendsAvailableTracks = computed(() => {
+  return friendsAvailableTracks.value.filter(t => friendsStore.isFriendTrackHidden(t.id));
+});
+
+const showHiddenFriendsTracks = ref(false);
 
 function toggleFriendsTrackInChart(trackId) {
   const idx = enabledFriendsTracks.value.indexOf(trackId);
