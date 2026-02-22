@@ -106,9 +106,18 @@ export async function sendFriendRequest(fromUid, toUid) {
 
   const id = friendshipId(fromUid, toUid);
   const ref = doc(db, 'friendships', id);
-  const snap = await getDoc(ref);
 
-  if (snap.exists()) {
+  // getDoc may throw permission-denied if the document doesn't exist yet,
+  // because the read rule requires request.auth.uid in resource.data.users
+  // and resource.data is empty for non-existent documents.
+  let snap = null;
+  try {
+    snap = await getDoc(ref);
+  } catch (e) {
+    // Permission-denied → document doesn't exist yet, proceed to create
+  }
+
+  if (snap && snap.exists()) {
     const data = snap.data();
     if (data.status === 'accepted') return { status: 'already_friends' };
     // If the OTHER user sent a pending request → auto-accept
