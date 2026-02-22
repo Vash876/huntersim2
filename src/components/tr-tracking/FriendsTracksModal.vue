@@ -312,7 +312,10 @@ function groupByFriend(tracks) {
   tracks.forEach(track => {
     const uid = track.ownerId;
     if (!groups[uid]) {
-      groups[uid] = { uid, name: track.ownerName || 'Unknown', tracks: [] };
+      // Prefer profile displayName from friends list (current nickname) over ownerName (snapshot from share time)
+      const friend = friendsStore.friends.find(f => f.uid === uid);
+      const name = friend?.profile?.displayName || track.ownerName || 'Unknown';
+      groups[uid] = { uid, name, tracks: [] };
     }
     groups[uid].tracks.push(track);
   });

@@ -45,6 +45,10 @@ function clearCache() {
   try { sessionStorage.removeItem(CACHE_KEY); } catch (e) {}
 }
 
+// Clear friends cache on every page load (F5) so data is always fresh from Firestore.
+// The cache only helps during SPA navigation within the same page load.
+clearCache();
+
 export const useFriendsStore = defineStore('friends', () => {
   // ---- State ----
   const myProfile = ref(null);
