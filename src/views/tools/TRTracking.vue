@@ -43,6 +43,22 @@
               <span>Import</span>
             </button>
 
+            <!-- Friends Tracks -->
+            <button
+              v-if="isUserAuthenticated && (!friendsStore.isInitialized || friendsStore.friendCount > 0)"
+              @click="showFriendsTracksModal = true"
+              :disabled="!friendsStore.isInitialized"
+              class="relative flex items-center space-x-2 px-5 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 text-white font-semibold shadow-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-wait text-xs sm:text-sm"
+            >
+              <div v-if="!friendsStore.isInitialized" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <IconUsersGroup v-else size="18" />
+              <span>Friends</span>
+              <span 
+                v-if="friendsStore.isInitialized && friendsStore.friendsTracks.length > 0" 
+                class="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] bg-indigo-400 text-xs rounded-full px-1"
+              >{{ friendsStore.friendsTracks.length }}</span>
+            </button>
+
             <!-- Multi-TR Comparison -->
             <button
               @click="openMultiTRComparisonModal"
@@ -270,6 +286,21 @@
                       <IconShare size="15" />
                     </button>
                     <button
+                      v-if="isUserAuthenticated"
+                      @click.stop="toggleCloudShare(track)"
+                      :disabled="!friendsReady"
+                      class="p-1 rounded transition-colors"
+                      :class="!friendsReady
+                        ? 'text-gray-600 cursor-wait'
+                        : friendsStore.isTrackShared(track.id) 
+                          ? 'text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/20' 
+                          : 'text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20'"
+                      :title="!friendsReady ? 'Loading...' : friendsStore.isTrackShared(track.id) ? 'Shared with friends (click to unshare)' : 'Share with friends'"
+                    >
+                      <IconCloud v-if="friendsReady && friendsStore.isTrackShared(track.id)" size="15" />
+                      <IconCloudOff v-else size="15" />
+                    </button>
+                    <button
                       @click="editTrack(track)"
                       class="p-1 text-gray-400 hover:text-yellow-400 hover:bg-yellow-900/20 rounded transition-colors"
                       title="Edit Track Settings"
@@ -400,11 +431,17 @@
       @confirm="confirmDialog"
       @cancel="cancelDialog"
     />
+
+    <FriendsTracksModal
+      :show="showFriendsTracksModal"
+      @close="showFriendsTracksModal = false"
+      @import="handleFriendsTrackImport"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { formatSuffixInput } from '@/composables/format.js';
@@ -424,7 +461,10 @@ import {
   IconTrendingUp,
   IconGripVertical,
   IconArchive,
-  IconArchiveOff
+  IconArchiveOff,
+  IconCloud,
+  IconCloudOff,
+  IconUsersGroup
 } from '@tabler/icons-vue';
 
 // Components
@@ -437,11 +477,23 @@ import ShareTrackModal from '@/components/tr-tracking/ShareTrackModal.vue';
 import MultiTRComparisonModal from '@/components/tr-tracking/MultiTRComparisonModal.vue';
 import BuildSelectionModal from '@/components/tr-tracking/BuildSelectionModal.vue';
 import AlertDialog from '@/components/common/AlertDialog.vue';
+import FriendsTracksModal from '@/components/tr-tracking/FriendsTracksModal.vue';
 import Draggable from 'vuedraggable';
+
+import { useFriendsStore } from '@/store/friendsStore';
+import { neonAuthService } from '@/services/neonAuthService';
 
 // Store
 const trTrackingStore = useTRTrackingStore();
 const gemPlannerStore = useGemPlannerStore();
+const friendsStore = useFriendsStore();
+
+// Friends loading state
+const mySharedTracksLoaded = ref(false);
+
+// Show friends UI elements as soon as user is authenticated
+const isUserAuthenticated = computed(() => neonAuthService.isAuthenticated.value);
+const friendsReady = computed(() => friendsStore.isInitialized && mySharedTracksLoaded.value);
 
 // Reactive data
 const showResourceSettingsModal = ref(false);
@@ -453,6 +505,7 @@ const showImportModal = ref(false);
 const showShareTrackModal = ref(false);
 const showMultiTRComparisonModal = ref(false);
 const showBuildSelectionModal = ref(false);
+const showFriendsTracksModal = ref(false);
 const currentTrack = ref(null);
 const showArchive = ref(false);
 
@@ -1067,6 +1120,25 @@ function handleImport(trackData) {
   showImportModal.value = false;
 }
 
+// Handle import from friends tracks
+function handleFriendsTrackImport(trackData) {
+  trTrackingStore.createTRTrack(trackData);
+}
+
+// Toggle cloud share for a track
+async function toggleCloudShare(track) {
+  if (!friendsStore.isInitialized) return;
+  try {
+    if (friendsStore.isTrackShared(track.id)) {
+      await friendsStore.stopSharingTrack(track.id);
+    } else {
+      await friendsStore.shareTrack(track, 'friends');
+    }
+  } catch (err) {
+    console.error('Cloud share toggle failed:', err);
+  }
+}
+
 // Handle Hunter Build Selection
 function handleBuildSelectionSave(data) {
   // Update the store with hunter production settings
@@ -1075,6 +1147,17 @@ function handleBuildSelectionSave(data) {
   console.log('Hunter Build Selection saved:', data);
   showBuildSelectionModal.value = false;
 }
+
+// When friends store becomes ready, mark shared tracks as loaded (data comes from cache)
+watch(() => friendsStore.isInitialized, (initialized) => {
+  if (initialized) {
+    // Data is already in the store (loaded from session cache or first init)
+    // No additional Firestore reads needed
+    mySharedTracksLoaded.value = true;
+  } else {
+    mySharedTracksLoaded.value = false;
+  }
+}, { immediate: true });
 
 // Lifecycle
 onMounted(async () => {
