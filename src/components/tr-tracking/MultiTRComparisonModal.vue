@@ -155,7 +155,7 @@
                       : undefined
                   }"
                 >
-                  {{ fTrack.ownerName }}: TR#{{ fTrack.trackMeta?.trCount || 0 }} - {{ fTrack.trackMeta?.name || '?' }}
+                  {{ friendsStore.getFriendDisplayName(fTrack.ownerId, fTrack.ownerName) }}: TR#{{ fTrack.trackMeta?.trCount || 0 }} - {{ fTrack.trackMeta?.name || '?' }}
                   <span class="ml-1 text-xs opacity-75">({{ (fTrack.entries || []).length }})</span>
                 </button>
               </div>
@@ -534,7 +534,7 @@ const chartDatasets = computed(() => {
       
       const fColor = friendsTrackColorMap.value[fTrack.id] || friendsTrackColors[fIdx % friendsTrackColors.length];
       const trCount = fTrack.trackMeta?.trCount || 0;
-      const friendName = fTrack.ownerName || '?';
+      const friendName = friendsStore.getFriendDisplayName(fTrack.ownerId, fTrack.ownerName);
       
       datasets.push({
         name: `${resource.name} - ${friendName} TR#${trCount} - ${fTrack.trackMeta?.name || '?'}`,

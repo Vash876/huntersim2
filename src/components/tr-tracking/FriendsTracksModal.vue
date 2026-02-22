@@ -360,14 +360,15 @@ async function refreshTracks() {
 }
 
 function importTrack(track) {
+  const displayName = friendsStore.getFriendDisplayName(track.ownerId, track.ownerName);
   // Convert shared track format back to local track format
   const localTrack = {
-    name: `${track.ownerName}'s ${track.trackMeta?.name || 'Track'}`,
+    name: `${displayName}'s ${track.trackMeta?.name || 'Track'}`,
     trCount: track.trackMeta?.trCount || 1,
     startDate: track.trackMeta?.startDate || new Date().toISOString().split('T')[0],
     endDate: track.trackMeta?.endDate || null,
     isActive: false, // imported tracks are always completed
-    notes: `Imported from ${track.ownerName}'s shared tracks`,
+    notes: `Imported from ${displayName}'s shared tracks`,
     initialValues: track.initialValues || {},
     targetGoals: track.targetGoals || {},
     resourceOrder: track.resourceOrder || [],

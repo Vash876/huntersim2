@@ -71,6 +71,12 @@ export const useFriendsStore = defineStore('friends', () => {
   const pendingCount = computed(() => pendingIncoming.value.length);
   const hasPending = computed(() => pendingIncoming.value.length > 0);
 
+  /** Get current display name for a friend by UID (prefers profile nickname over ownerName fallback) */
+  function getFriendDisplayName(uid, fallback = 'Unknown') {
+    const friend = friends.value.find(f => f.uid === uid);
+    return friend?.profile?.displayName || fallback;
+  }
+
   // ---- Init ----
 
   /**
@@ -113,6 +119,7 @@ export const useFriendsStore = defineStore('friends', () => {
       );
 
       await refreshFriends(user.uid);
+      await loadMySharedTracks();
 
       isInitialized.value = true;
       lastRefresh.value = Date.now();
@@ -365,6 +372,7 @@ export const useFriendsStore = defineStore('friends', () => {
     unhideFriendTrack,
     unhideAllFriendTracks,
     isFriendTrackHidden,
+    getFriendDisplayName,
     exportData,
     importData
   };

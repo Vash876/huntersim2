@@ -286,16 +286,13 @@
                       <IconShare size="15" />
                     </button>
                     <button
-                      v-if="isUserAuthenticated"
+                      v-if="isUserAuthenticated && friendsReady"
                       @click.stop="toggleCloudShare(track)"
-                      :disabled="!friendsReady"
                       class="p-1 rounded transition-colors"
-                      :class="!friendsReady
-                        ? 'text-gray-600 cursor-wait'
-                        : friendsStore.isTrackShared(track.id) 
+                      :class="friendsStore.isTrackShared(track.id) 
                           ? 'text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/20' 
                           : 'text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20'"
-                      :title="!friendsReady ? 'Loading...' : friendsStore.isTrackShared(track.id) ? 'Shared with friends (click to unshare)' : 'Share with friends'"
+                      :title="friendsStore.isTrackShared(track.id) ? 'Shared with friends (click to unshare)' : 'Share with friends'"
                     >
                       <IconCloud v-if="friendsReady && friendsStore.isTrackShared(track.id)" size="15" />
                       <IconCloudOff v-else size="15" />
