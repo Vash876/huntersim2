@@ -6,6 +6,14 @@ const changelog =
     date: '2026-02-22',
     changes: [
       {
+        text: '<b>Cloud Provider Migration</b>',
+        subItems: [
+          'Migrated to a new cloud provider',
+          'You need to sign in again to enable cloud sync features',
+          'After signing in, check your display name in Account Settings and update it if needed',
+        ]
+      },
+      {
         text: '<b class="text-yellow-400">NEW:</b> Friends System for TR Tracking',
         subItems: [
           'Share your TR tracks with friends via cloud sync',
