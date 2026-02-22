@@ -558,6 +558,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     
     try {
       await idbService.saveTRTrack(trTracks.value[index]);
+      syncSharedTrack(trackData.id);
       return true;
     } catch (error) {
       console.error('Failed to update track:', error);
@@ -613,6 +614,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     
     try {
       await idbService.saveTRTrack(track);
+      syncSharedTrack(trackId);
       return true;
     } catch (error) {
       console.error('Failed to update track settings:', error);
@@ -634,6 +636,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     try {
       await idbService.saveTRTrack(track);
       console.log('Resource order updated and saved to storage');
+      syncSharedTrack(trackId);
       return true;
     } catch (error) {
       console.error('Failed to update resource order:', error);
@@ -646,6 +649,17 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     if (index === -1) return false;
 
     try {
+      // Also remove from cloud if shared
+      try {
+        const { useFriendsStore } = await import('@/store/friendsStore');
+        const friendsStore = useFriendsStore();
+        if (friendsStore.isInitialized && friendsStore.isTrackShared(trackId)) {
+          await friendsStore.stopSharingTrack(trackId);
+        }
+      } catch (e) {
+        console.warn('Could not remove cloud share for deleted track:', e);
+      }
+
       await idbService.deleteTRTrack(trackId);
       trTracks.value.splice(index, 1);
       return true;
@@ -660,11 +674,12 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     if (!track) return false;
 
     track.isActive = false;
-    track.endDate = new Date().toISOString(); // Komplette ISO-Zeit statt nur .split('T')[0]
+    track.endDate = new Date().toISOString();
     track.updatedAt = new Date().toISOString();
     
     try {
       await idbService.saveTRTrack(track);
+      syncSharedTrack(trackId);
       return true;
     } catch (error) {
       console.error('Failed to complete track:', error);
@@ -704,6 +719,35 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     }
   }
 
+  // Helper: Re-sync a shared track to the cloud after local changes (5s debounce per track)
+  const _syncTimers = new Map();
+
+  function syncSharedTrack(trackId) {
+    // Clear existing timer for this track
+    if (_syncTimers.has(trackId)) {
+      clearTimeout(_syncTimers.get(trackId));
+    }
+
+    // Set new 5s debounce timer
+    const timer = setTimeout(async () => {
+      _syncTimers.delete(trackId);
+      try {
+        const { useFriendsStore } = await import('@/store/friendsStore');
+        const friendsStore = useFriendsStore();
+        if (friendsStore.isInitialized && friendsStore.isTrackShared(trackId)) {
+          const track = trTracks.value.find(t => t.id === trackId);
+          if (track) {
+            await friendsStore.shareTrack(track);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not sync shared track to cloud:', e);
+      }
+    }, 5000);
+
+    _syncTimers.set(trackId, timer);
+  }
+
   async function addEntry(trackId, entryData) {
     const track = trTracks.value.find(track => track.id === trackId);
     if (!track) return false;
@@ -724,6 +768,8 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     
     try {
       await idbService.saveTrackEntry(trackId, newEntry);
+      // Re-sync to cloud if shared
+      syncSharedTrack(trackId);
       return newEntry;
     } catch (error) {
       console.error('Failed to add entry:', error);
@@ -751,6 +797,8 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     
     try {
       await idbService.saveTrackEntry(trackId, track.entries[entryIndex]);
+      // Re-sync to cloud if shared
+      syncSharedTrack(trackId);
       return true;
     } catch (error) {
       console.error('Failed to update entry:', error);
@@ -770,6 +818,8 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     
     try {
       await idbService.deleteTrackEntry(entryId);
+      // Re-sync to cloud if shared
+      syncSharedTrack(trackId);
       return true;
     } catch (error) {
       console.error('Failed to delete entry:', error);

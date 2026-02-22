@@ -68,12 +68,10 @@ export const useSyncStore = defineStore('sync', () => {
     // Initial auth state update
     updateAuthState();
     
-    // Register for auth state changes
-    if (neonAuthService.onAuthStateChanged) {
-      neonAuthService.onAuthStateChanged = (user) => {
-        updateAuthState();
-      };
-    }
+    // Register for auth state changes (Firebase onAuthStateChanged fires callback)
+    neonAuthService.onAuthStateChanged = (user) => {
+      updateAuthState();
+    };
     
     // Also poll for auth state changes every 5 seconds as backup
     setInterval(() => {

@@ -92,13 +92,11 @@ export default defineConfig({
     },
     target: 'esnext',
     sourcemap: false,
-    // Stack Auth Module handling
+    // Stack Auth removed - now using Firebase
     rollupOptions: {
       external: [],
       output: {
-        manualChunks: {
-          'stack-auth': ['@stackframe/stack', '@stackframe/react']
-        }
+        manualChunks: {}
       }
     },
     commonjsOptions: {
@@ -106,19 +104,17 @@ export default defineConfig({
       transformMixedEsModules: true
     },
     // Entferne sensible Environment Variables aus Production Build
-    define: {
-      'import.meta.env.VITE_NEON_DATABASE_URL': JSON.stringify(''), // Entfernt in Production
-    }
+    define: {}
   },
   optimizeDeps: {
-    include: ['@stackframe/stack', '@stackframe/react'],
+    include: ['firebase/app', 'firebase/auth', 'firebase/firestore/lite'],
     exclude: [],
     esbuildOptions: {
       target: 'esnext'
     }
   },
   ssr: {
-    noExternal: ['@stackframe/stack', '@stackframe/react']
+    noExternal: []
   },
   resolve: {
     alias: {

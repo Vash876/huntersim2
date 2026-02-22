@@ -111,9 +111,9 @@
                   ]"
                   :style="{
                     borderLeftWidth: enabledTracks.includes(track.id) ? '6px' : undefined,
-                    borderLeftColor: enabledTracks.includes(track.id) ? trackColors[enabledTracks.indexOf(track.id) % trackColors.length] : undefined,
-                    ringColor: hoveredTrackId === track.id ? trackColors[enabledTracks.indexOf(track.id) % trackColors.length] : undefined,
-                    boxShadow: hoveredTrackId === track.id ? `0 0 0 1px ${trackColors[enabledTracks.indexOf(track.id) % trackColors.length]}` : undefined
+                    borderLeftColor: enabledTracks.includes(track.id) ? trackColorMap[track.id] : undefined,
+                    ringColor: hoveredTrackId === track.id ? trackColorMap[track.id] : undefined,
+                    boxShadow: hoveredTrackId === track.id ? `0 0 0 1px ${trackColorMap[track.id]}` : undefined
                   }"
                 >
                   TR#{{ track.trCount || 0 }} - {{ track.name }}
@@ -121,9 +121,49 @@
                 </button>
               </div>
             </div>
+
+            <!-- Friends Tracks Section -->
+            <div v-if="friendsStore.isInitialized && friendsStore.friendsTracks.length > 0">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="text-xs text-gray-400">Friends' Tracks:</div>
+                <button
+                  @click="showFriendsTracks = !showFriendsTracks"
+                  class="text-xs px-2 py-0.5 rounded-md border transition-colors"
+                  :class="showFriendsTracks 
+                    ? 'bg-indigo-900/40 border-indigo-500/50 text-indigo-300' 
+                    : 'border-gray-600 text-gray-400 hover:text-gray-300'"
+                >
+                  <IconUsersGroup size="12" class="inline mr-1" />
+                  {{ showFriendsTracks ? 'Hide' : 'Show' }} ({{ friendsStore.friendsTracks.length }})
+                </button>
+              </div>
+              <div v-if="showFriendsTracks" class="flex flex-wrap gap-1">
+                <button
+                  v-for="fTrack in friendsAvailableTracks"
+                  :key="fTrack.id"
+                  @click="toggleFriendsTrackInChart(fTrack.id)"
+                  class="px-2 py-1 text-xs rounded-md border transition-all duration-150"
+                  :class="[
+                    enabledFriendsTracks.includes(fTrack.id)
+                      ? 'text-gray-200 border-indigo-600'
+                      : 'text-gray-500 border-gray-700'
+                  ]"
+                  :style="{
+                    borderLeftWidth: enabledFriendsTracks.includes(fTrack.id) ? '6px' : undefined,
+                    borderLeftColor: enabledFriendsTracks.includes(fTrack.id) 
+                      ? friendsTrackColorMap[fTrack.id] 
+                      : undefined
+                  }"
+                >
+                  {{ fTrack.ownerName }}: TR#{{ fTrack.trackMeta?.trCount || 0 }} - {{ fTrack.trackMeta?.name || '?' }}
+                  <span class="ml-1 text-xs opacity-75">({{ (fTrack.entries || []).length }})</span>
+                </button>
+              </div>
+            </div>
             </div>
 
             <!-- Right: Current Values -->
+
             <div 
               v-if="crosshairValues.length > 0" 
               class="bg-gray-800/90 border border-gray-600 rounded-lg p-2 self-start"
@@ -143,7 +183,7 @@
                       class="w-2 h-2 rounded-full mr-2 flex-shrink-0" 
                       :style="{ backgroundColor: item.color }"
                     ></div>
-                    <span class="text-gray-300 truncate">TR#{{ item.trCount }}</span>
+                    <span class="text-gray-300 truncate">{{ item.friendName ? `${item.friendName} ` : '' }}TR#{{ item.trCount }}</span>
                   </div>
                   <div class="flex items-center gap-2 ml-2 flex-shrink-0">
                     <span class="font-mono text-white">{{ formatResourceValue(item.resourceId, item.value) }}</span>
@@ -165,7 +205,7 @@
         </div>
 
         <!-- Chart Section -->
-        <div v-if="enabledTracks.length > 0 && chartSelectedResources.length > 0" class="bg-gray-700/20 rounded-lg p-3">
+        <div v-if="(enabledTracks.length > 0 || enabledFriendsTracks.length > 0) && chartSelectedResources.length > 0" class="bg-gray-700/20 rounded-lg p-3">
           <!-- Chart Help & Controls -->
           <div class="mb-3 flex justify-between items-center">
             <div class="text-xs text-gray-400">
@@ -214,7 +254,8 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { formatNumber, formatSuffixInput } from '@/composables/format.js';
-import { IconX, IconTrendingUp, IconChartLine, IconClockHour2, IconCalendarEvent } from '@tabler/icons-vue';
+import { IconX, IconTrendingUp, IconChartLine, IconClockHour2, IconCalendarEvent, IconUsersGroup } from '@tabler/icons-vue';
+import { useFriendsStore } from '@/store/friendsStore';
 import VChart from 'vue-echarts';
 import '@/utils/echarts';
 import { darkTooltip, darkXAxis, darkYAxis, darkGrid } from '@/utils/echarts';
@@ -233,9 +274,13 @@ const props = defineProps({
 
 defineEmits(['close']);
 
+const friendsStore = useFriendsStore();
+
 // Chart state
 const chartSelectedResources = ref([]);
 const enabledTracks = ref([]);
+const enabledFriendsTracks = ref([]);
+const showFriendsTracks = ref(false);
 const xAxisType = ref('timeInTR');
 const chartRef = ref(null);
 
@@ -265,6 +310,8 @@ watch(() => props.show, (newShow) => {
     
     chartSelectedResources.value = [availableDefaults[0]];
     enabledTracks.value = availableTracks.value.map(track => track.id);
+    enabledFriendsTracks.value = [];
+    showFriendsTracks.value = false;
     
     // Initialize crosshair at 24 hours
     crosshairDataX.value = 24;
@@ -273,7 +320,7 @@ watch(() => props.show, (newShow) => {
 }, { immediate: true });
 
 // Watch for enabled tracks changes to update crosshair values
-watch(enabledTracks, () => {
+watch([enabledTracks, enabledFriendsTracks], () => {
   if (crosshairDataX.value !== null) {
     updateCrosshairValues(crosshairDataX.value);
   }
@@ -381,9 +428,49 @@ const trackColors = [
   '#ef4444', '#ec4899', '#6366f1', '#84cc16'
 ];
 
+// Friends track colors (different palette to distinguish)
+const friendsTrackColors = [
+  '#f472b6', '#a78bfa', '#34d399', '#fbbf24',
+  '#fb923c', '#38bdf8', '#c084fc', '#a3e635'
+];
+
+// Stable color maps based on position in availableTracks (sorted by trCount)
+// This ensures buttons and chart always use the same color for a track
+const trackColorMap = computed(() => {
+  const map = {};
+  availableTracks.value.forEach((track, idx) => {
+    map[track.id] = trackColors[idx % trackColors.length];
+  });
+  return map;
+});
+
+const friendsTrackColorMap = computed(() => {
+  const map = {};
+  friendsAvailableTracks.value.forEach((track, idx) => {
+    map[track.id] = friendsTrackColors[idx % friendsTrackColors.length];
+  });
+  return map;
+});
+
+// Friends tracks that have entries
+const friendsAvailableTracks = computed(() => {
+  return (friendsStore.friendsTracks || [])
+    .filter(t => t.entries && t.entries.length > 0)
+    .sort((a, b) => (a.trackMeta?.trCount || 0) - (b.trackMeta?.trCount || 0));
+});
+
+function toggleFriendsTrackInChart(trackId) {
+  const idx = enabledFriendsTracks.value.indexOf(trackId);
+  if (idx > -1) {
+    enabledFriendsTracks.value.splice(idx, 1);
+  } else {
+    enabledFriendsTracks.value.push(trackId);
+  }
+}
+
 // Build chart datasets (used by both chartOption and crosshair interpolation)
 const chartDatasets = computed(() => {
-  if (!chartSelectedResources.value.length || !enabledTracks.value.length) return [];
+  if (!chartSelectedResources.value.length || (!enabledTracks.value.length && !enabledFriendsTracks.value.length)) return [];
   
   const datasets = [];
   const tracksToShow = availableTracks.value.filter(track => enabledTracks.value.includes(track.id));
@@ -392,6 +479,7 @@ const chartDatasets = computed(() => {
     const resource = chartableResources.value.find(r => r.id === resourceId);
     if (!resource) return;
     
+    // Own tracks
     tracksToShow.forEach((track, trackIndex) => {
       const sortedEntries = [...track.entries].sort((a, b) => new Date(a.date) - new Date(b.date));
       
@@ -411,7 +499,7 @@ const chartDatasets = computed(() => {
         return true;
       });
       
-      const trackColor = trackColors[trackIndex % trackColors.length];
+      const trackColor = trackColorMap.value[track.id] || trackColors[trackIndex % trackColors.length];
       
       datasets.push({
         name: `${resource.name} - TR#${track.trCount || 0} - ${track.name}`,
@@ -420,6 +508,42 @@ const chartDatasets = computed(() => {
         resourceId: resourceId,
         trackId: track.id,
         trCount: track.trCount || 0
+      });
+    });
+    
+    // Friends tracks
+    const friendsToShow = friendsAvailableTracks.value.filter(t => enabledFriendsTracks.value.includes(t.id));
+    friendsToShow.forEach((fTrack, fIdx) => {
+      const sortedEntries = [...fTrack.entries].sort((a, b) => new Date(a.date) - new Date(b.date));
+      
+      const data = sortedEntries.map(entry => {
+        const yValue = useLogScale.value
+          ? parseLog10Value(entry.values?.[resourceId])
+          : parseChartValue(entry.values?.[resourceId]);
+        if (xAxisType.value === 'timeInTR') {
+          const timeInTR = parseFloat(entry.values?.['hours-in-tr']) || 0;
+          return [timeInTR, yValue];
+        } else {
+          return [new Date(entry.date).getTime(), yValue];
+        }
+      }).filter(point => {
+        if (point[1] === null || point[1] === undefined) return false;
+        if (xAxisType.value === 'timeInTR') return point[0] >= 0;
+        return true;
+      });
+      
+      const fColor = friendsTrackColorMap.value[fTrack.id] || friendsTrackColors[fIdx % friendsTrackColors.length];
+      const trCount = fTrack.trackMeta?.trCount || 0;
+      const friendName = fTrack.ownerName || '?';
+      
+      datasets.push({
+        name: `${resource.name} - ${friendName} TR#${trCount} - ${fTrack.trackMeta?.name || '?'}`,
+        data: data,
+        color: fColor,
+        resourceId: resourceId,
+        trackId: fTrack.id,
+        trCount: trCount,
+        isFriend: true
       });
     });
   });
@@ -532,7 +656,12 @@ function updateCrosshairValues(xValue) {
   
   chartDatasets.value.forEach(ds => {
     if (!ds.data.length) return;
-    if (!enabledTracks.value.includes(ds.trackId)) return;
+    // Skip tracks that are not enabled (own or friends)
+    if (ds.isFriend) {
+      if (!enabledFriendsTracks.value.includes(ds.trackId)) return;
+    } else {
+      if (!enabledTracks.value.includes(ds.trackId)) return;
+    }
     
     const resourceId = ds.resourceId;
     if (!resourceGroups[resourceId]) resourceGroups[resourceId] = [];
@@ -572,7 +701,8 @@ function updateCrosshairValues(xValue) {
         resourceId: ds.resourceId,
         color: ds.color,
         trCount: ds.trCount,
-        trackId: ds.trackId
+        trackId: ds.trackId,
+        friendName: ds.isFriend ? ds.name.split(' - ')[1]?.split(' TR#')[0] || '' : null
       });
     }
   });

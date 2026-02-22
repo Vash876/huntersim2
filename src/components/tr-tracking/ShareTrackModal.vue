@@ -23,23 +23,55 @@
       </div>
 
       <!-- Modal content -->
-      <div class="p-5">
-        <p class="text-sm text-gray-300 mb-4">
-          Copy your TR tracking plan code:
-        </p>
-        
-        <div class="mb-4">
-          <textarea
-            ref="codeTextarea"
-            :value="trackCode"
-            readonly
-            class="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white text-sm h-40 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none font-mono"
-            @click="selectCode"
-          ></textarea>
+      <div class="p-5 space-y-4">
+        <!-- Cloud Share Section (Friends) -->
+        <div v-if="isLoggedIn" class="p-3 bg-indigo-900/20 border border-indigo-500/30 rounded-lg">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <IconCloud size="18" class="text-indigo-400" />
+              <span class="text-sm font-medium text-indigo-200">Share with Friends</span>
+            </div>
+            <button
+              @click="toggleCloudShare"
+              :disabled="cloudShareLoading"
+              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+              :class="isSharedToCloud ? 'bg-indigo-600' : 'bg-gray-600'"
+            >
+              <span
+                class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                :class="isSharedToCloud ? 'translate-x-6' : 'translate-x-1'"
+              ></span>
+            </button>
+          </div>
+          <p class="text-xs text-gray-400">
+            {{ isSharedToCloud 
+              ? 'This track is visible to your friends. They can view it and include it in comparisons.' 
+              : 'Toggle to share this track with your friends list.' }}
+          </p>
+          <div v-if="cloudShareLoading" class="flex items-center gap-2 mt-2 text-xs text-indigo-300">
+            <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-400"></div>
+            <span>Updating...</span>
+          </div>
+          <div v-if="cloudShareError" class="mt-2 text-xs text-red-400">{{ cloudShareError }}</div>
         </div>
-        
-        <!-- Copy button -->
-        <div class="mb-4">
+
+        <!-- Code Share Section -->
+        <div>
+          <p class="text-sm text-gray-300 mb-3">
+            Or share via track code:
+          </p>
+          
+          <div class="mb-3">
+            <textarea
+              ref="codeTextarea"
+              :value="trackCode"
+              readonly
+              class="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white text-sm h-32 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none font-mono"
+              @click="selectCode"
+            ></textarea>
+          </div>
+          
+          <!-- Copy button -->
           <button 
             @click="copyCode" 
             :class="{ 
@@ -55,11 +87,9 @@
         </div>
         
         <div class="p-3 bg-blue-900/20 border border-blue-500/30 rounded-md">
-          <p class="text-xs text-blue-300 mb-1">
-            <strong>TR Track Code:</strong>
-          </p>
           <p class="text-xs text-gray-400">
-            Share this code with others to let them import your complete TR tracking plan including all tracking data.
+            <strong class="text-blue-300">Track Code</strong> — anyone with this code can import your complete TR tracking plan.
+            <span v-if="isLoggedIn" class="block mt-1"><strong class="text-indigo-300">Friends Share</strong> — your friends see the track live without needing a code.</span>
           </p>
         </div>
       </div>
@@ -69,7 +99,9 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { IconShare, IconX, IconCopy, IconCheck } from '@tabler/icons-vue';
+import { IconShare, IconX, IconCopy, IconCheck, IconCloud } from '@tabler/icons-vue';
+import { compressTrack } from '@/utils/trackCompression';
+import { useFriendsStore } from '@/store/friendsStore';
 
 // Props
 const props = defineProps({
@@ -80,58 +112,28 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['close']);
 
+// Store
+const friendsStore = useFriendsStore();
+
 // Refs
 const codeTextarea = ref(null);
 const copied = ref(false);
+const cloudShareLoading = ref(false);
+const cloudShareError = ref('');
 
 // Computed
+const isLoggedIn = computed(() => friendsStore.isInitialized && !!friendsStore.myProfile);
+
+const isSharedToCloud = computed(() => {
+  if (!props.track) return false;
+  return friendsStore.isTrackShared(props.track.id);
+});
+
 const trackCode = computed(() => {
   if (!props.track) return '';
   
   try {
-    // Create a complete shareable version of the track (including tracking data)
-    const shareableTrack = {
-      name: props.track.name,
-      startDate: props.track.startDate,
-      notes: props.track.notes || '',
-      trCount: props.track.trCount,
-      targetGoals: { ...props.track.targetGoals },
-      initialValues: { ...props.track.initialValues },
-      // Include all tracking entries
-      entries: props.track.entries || [],
-      selectedResources: props.track.selectedResources || [],
-      resourceOrder: props.track.resourceOrder || [],
-      isActive: props.track.isActive,
-      createdAt: props.track.createdAt,
-      updatedAt: props.track.updatedAt,
-      version: '1.0'
-    };
-    
-    // Use much more aggressive compression by removing repetitive data and using very short keys
-    const compressed = {
-      n: shareableTrack.name,
-      s: shareableTrack.startDate,
-      nt: shareableTrack.notes,
-      t: shareableTrack.trCount,
-      g: shareableTrack.targetGoals,
-      i: shareableTrack.initialValues,
-      e: shareableTrack.entries.map(entry => [
-        entry.date,
-        entry.values,
-        entry.notes || '',
-        entry.id
-      ]),
-      r: shareableTrack.selectedResources,
-      o: shareableTrack.resourceOrder,
-      a: shareableTrack.isActive ? 1 : 0,
-      c: shareableTrack.createdAt,
-      u: shareableTrack.updatedAt,
-      v: '2'  // Version 2 for new format
-    };
-    
-    // Convert to JSON and use URL-safe base64 without padding
-    const jsonStr = JSON.stringify(compressed);
-    return btoa(jsonStr).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    return compressTrack(props.track);
   } catch (error) {
     console.error('Error generating track code:', error);
     return '';
@@ -139,6 +141,25 @@ const trackCode = computed(() => {
 });
 
 // Methods
+async function toggleCloudShare() {
+  if (!props.track) return;
+  cloudShareLoading.value = true;
+  cloudShareError.value = '';
+  
+  try {
+    if (isSharedToCloud.value) {
+      await friendsStore.stopSharingTrack(props.track.id);
+    } else {
+      await friendsStore.shareTrack(props.track, 'friends');
+    }
+  } catch (err) {
+    console.error('Cloud share toggle failed:', err);
+    cloudShareError.value = err.message || 'Failed to update sharing';
+  } finally {
+    cloudShareLoading.value = false;
+  }
+}
+
 const selectCode = () => {
   if (codeTextarea.value) {
     codeTextarea.value.select();
@@ -157,7 +178,6 @@ const copyCode = async () => {
     setTimeout(() => { copied.value = false; }, 2000);
   } catch (err) {
     console.error('Failed to copy code:', err);
-    // Fallback
     try {
       selectCode();
       const success = document.execCommand('copy');
@@ -176,6 +196,10 @@ const copyCode = async () => {
 watch(() => props.show, (newVal) => {
   if (!newVal) {
     copied.value = false;
+    cloudShareError.value = '';
+  } else if (newVal && isLoggedIn.value) {
+    // Refresh shared track IDs when opening modal
+    friendsStore.loadMySharedTracks();
   }
 });
 </script>

@@ -313,7 +313,20 @@
         </div>
 
         <!-- Account Management -->
-        <div class="pb-3 border-b border-gray-700">
+        <div class="pb-3 border-b border-gray-700 space-y-2">
+          <button
+            @click="showFriendsModal = true; activeSection = null"
+            class="w-full text-left px-3 py-2 text-sm bg-indigo-900/20 text-indigo-300 hover:bg-indigo-900/30 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <IconUsersGroup size="18" />
+            <span>Friends</span>
+            <span 
+              v-if="friendsStore.hasPending" 
+              class="ml-auto inline-flex items-center justify-center w-5 h-5 bg-red-500 text-[10px] rounded-full text-white font-bold"
+            >
+              {{ friendsStore.pendingCount }}
+            </span>
+          </button>
           <button
             @click="openAccountSettings"
             class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded-lg flex items-center space-x-2 transition-colors"
@@ -416,6 +429,13 @@
             <span class="text-xs mt-1 font-medium text-slate-300">Account</span>
           </div>
           <span v-if="activeSection === 'account'" class="active-indicator"></span>
+          <!-- Friend request badge -->
+          <span 
+            v-if="friendsStore.hasPending" 
+            class="absolute top-0 right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] text-white font-bold"
+          >
+            {{ friendsStore.pendingCount }}
+          </span>
         </button>
         
         <!-- Misc (Settings etc.) -->
@@ -445,6 +465,12 @@
   <AccountSettingsModal 
     :show="showAccountSettings"
     @close="showAccountSettings = false"
+  />
+
+  <!-- Friends Modal -->
+  <FriendsModal
+    :show="showFriendsModal"
+    @close="showFriendsModal = false"
   />
 
   <!-- Toast Notification -->
@@ -497,10 +523,12 @@ import { getAllHunters } from '../../constants/hunters';
 import { useRoute } from 'vue-router';
 import { neonAuthService } from '@/services/neonAuthService';
 import { useSyncStore } from '@/store/syncStore';
+import { useFriendsStore } from '@/store/friendsStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
 import NeonAuthModal from '@/components/common/NeonAuthModal.vue';
 import AccountSettingsModal from '@/components/common/AccountSettingsModal.vue';
+import FriendsModal from '@/components/common/FriendsModal.vue';
 import { 
   IconArrowUpCircle,
   IconSettings,
@@ -517,13 +545,15 @@ import {
   IconCircleCheck,
   IconAlertCircle,
   IconInfoCircle,
-  IconDiamond
+  IconDiamond,
+  IconUsersGroup
 } from '@tabler/icons-vue';
 
 const hunters = getAllHunters();
 const route = useRoute();
 const activeSection = ref(null);
 const syncStore = useSyncStore();
+const friendsStore = useFriendsStore();
 const gemPlannerStore = useGemPlannerStore();
 const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBackupRestore();
 
@@ -671,6 +701,7 @@ watch(() => gemPlannerStore.gemStates, (newGems) => {
 
 const showAuthModal = ref(false);
 const showAccountSettings = ref(false);
+const showFriendsModal = ref(false);
 const syncAction = ref(null);
 const syncNotification = ref({ show: false, message: '', type: 'info' });
 const isWaitingForAuth = ref(false); // New state for timeout period
@@ -689,6 +720,11 @@ onMounted(() => {
   isWaitingForAuth.value = true;
   setTimeout(() => {
     isWaitingForAuth.value = false;
+    // Initialize friends store if user is already authenticated
+    const user = neonAuthService.getCurrentUser();
+    if (user) {
+      friendsStore.init(user);
+    }
   }, 5000);
 });
 
@@ -728,7 +764,11 @@ function toggleSection(section) {
 function handleAuthSuccess(type) {
   showAuthModal.value = false;
   activeSection.value = null;
-  // Optional: Auto-sync nach Login
+  // Initialize friends store when user signs in
+  const user = neonAuthService.getCurrentUser();
+  if (user) {
+    friendsStore.init(user);
+  }
 }
 
 async function signOut() {

@@ -96,6 +96,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { IconDownload, IconX, IconAlertTriangle, IconChartLine } from '@tabler/icons-vue';
+import { decompressTrack } from '@/utils/trackCompression';
 
 // Props
 const props = defineProps({
@@ -130,68 +131,9 @@ const validateTrackCode = async () => {
   isValidating.value = true;
   
   try {
-    // Restore URL-safe base64 and add padding if needed
-    let base64Code = code.replace(/-/g, '+').replace(/_/g, '/');
-    while (base64Code.length % 4) {
-      base64Code += '=';
-    }
+    const track = decompressTrack(code);
     
-    // Parse track code
-    const compressed = JSON.parse(atob(base64Code));
-    
-    // Check format version and decompress accordingly
-    let track;
-    if (compressed.v === '2') {
-      // New ultra-compressed format - version 2
-      track = {
-        name: compressed.n,
-        startDate: compressed.s,
-        notes: compressed.nt || '',
-        trCount: compressed.t,
-        targetGoals: compressed.g || {},
-        initialValues: compressed.i || {},
-        entries: (compressed.e || []).map(entryArray => ({
-          date: entryArray[0],
-          values: entryArray[1],
-          notes: entryArray[2] || '',
-          id: entryArray[3]
-        })),
-        selectedResources: compressed.r || [],
-        resourceOrder: compressed.o || [],
-        isActive: compressed.a === 1,
-        createdAt: compressed.c,
-        updatedAt: compressed.u,
-        version: '2.0'
-      };
-    } else if (compressed.n && compressed.sd) {
-      // Old compressed format - version 1
-      track = {
-        name: compressed.n,
-        startDate: compressed.sd,
-        notes: compressed.nt || '',
-        trCount: compressed.tc,
-        targetGoals: compressed.tg || {},
-        initialValues: compressed.iv || {},
-        entries: (compressed.e || []).map(entry => ({
-          date: entry.d,
-          values: entry.v,
-          notes: entry.n,
-          id: entry.i
-        })),
-        selectedResources: compressed.sr || [],
-        resourceOrder: compressed.ro || [],
-        isActive: compressed.a,
-        createdAt: compressed.ca,
-        updatedAt: compressed.ua,
-        version: compressed.ver || '1.0'
-      };
-    } else {
-      // Original uncompressed format
-      track = compressed;
-    }
-    
-    // Validate required fields
-    if (!track.name || !track.startDate || !track.trCount) {
+    if (!track) {
       errorMessage.value = 'Invalid track code. Missing required fields.';
       validatedTrack.value = null;
     } else {

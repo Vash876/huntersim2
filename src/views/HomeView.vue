@@ -2,6 +2,29 @@
 const changelog = 
 [
   {
+    version: '2.13.0',
+    date: '2026-02-22',
+    changes: [
+      {
+        text: '<b class="text-yellow-400">NEW:</b> Friends System for TR Tracking',
+        subItems: [
+          'Share your TR tracks with friends via cloud sync',
+          'Friends management with unique friend codes for easy connecting',
+          'View and compare friends\' TR progress in Multi-TR comparison charts',
+          'Display name updates automatically sync to all shared tracks',
+        ]
+      },
+      {
+        text: 'TR Tracker Cloud Features',
+        subItems: [
+          'Automatic cloud sync for TR tracking data',
+          'Track sharing with visibility controls',
+          'Friends tracks tab in Multi-TR comparison with color-coded charts',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.12.0',
     date: '2026-02-16',
     changes: [

@@ -160,6 +160,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { neonAuthService } from '@/services/neonAuthService';
+import { databaseService } from '@/services/databaseService';
 import { useSyncStore } from '@/store/syncStore';
 import { useHunterStore } from '@/store/hunterStore';
 import { 
@@ -215,40 +216,9 @@ async function saveDisplayName() {
   }
 
   try {
-    // Try to update the display name through the auth service
-    try {
-      await neonAuthService.updateUserDisplayName(newDisplayName.value.trim());
-    } catch (authError) {
-      console.warn('Auth service update failed, trying direct Stack Auth:', authError);
-      
-      // Fallback: Try direct Stack Auth methods
-      const { stackClientApp } = await import('@/services/stackAuth');
-      
-      let updateSuccess = false;
-      const trimmedName = newDisplayName.value.trim();
-      
-      // Try different Stack Auth update methods
-      if (stackClientApp.updateUser) {
-        await stackClientApp.updateUser({ displayName: trimmedName });
-        updateSuccess = true;
-      } else if (stackClientApp.updateCurrentUser) {
-        await stackClientApp.updateCurrentUser({ displayName: trimmedName });
-        updateSuccess = true;
-      } else if (stackClientApp.updateProfile) {
-        await stackClientApp.updateProfile({ displayName: trimmedName });
-        updateSuccess = true;
-      }
-      
-      if (!updateSuccess) {
-        throw new Error('No suitable update method found in Stack Auth');
-      }
-      
-      // Refresh auth state
-      await neonAuthService.refreshAuthState();
-    }
-    
+    await neonAuthService.updateUserDisplayName(newDisplayName.value.trim());
     editingName.value = false;
-    newDisplayName.value = '';    
+    newDisplayName.value = '';
   } catch (error) {
     console.error('Failed to update display name:', error);
     alert(`Failed to update display name: ${error.message}`);
@@ -267,18 +237,8 @@ async function deleteAccount() {
       throw new Error('No user ID found');
     }
 
-    // Call delete backup API
-    const response = await fetch('/.netlify/functions/delete-backup', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userId })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Delete failed: ${response.status}`);
-    }
+    // Delete backup from Firestore
+    await databaseService.deleteUserBackup(userId);
 
     // Sign out user
     await neonAuthService.signOut();

@@ -127,13 +127,6 @@ const routes = [
     name: 'Token Debug',
     component: () => import('../views/tools/token-planner/TokenDebug.vue'),
   },
-  // Admin Panel - nur in Development verfügbar
-  ...(import.meta.env.DEV ? [{
-    path: '/admin',
-    name: 'Admin Panel',
-    component: () => import('../views/AdminPanel.vue'),
-    meta: { requiresAuth: true }
-  }] : []),
 
   // Debug Routes
   {
@@ -148,35 +141,11 @@ const routes = [
     name: 'Settings',
     component: () => import('../views/SettingsView.vue')
   },
-  // OAuth Callback Route
-  {
-    path: '/handler/oauth-callback',
-    name: 'OAuthCallback',
-    component: () => import('../components/common/OAuthCallback.vue')
-  },
-  // Stack Auth sign-in route (redirect to home with modal)
-  {
-    path: '/handler/sign-in',
-    name: 'StackSignIn',
-    beforeEnter: (to, from, next) => {
-      // Redirect to home with sign-in modal triggered
-      const returnTo = to.query.after_auth_return_to || '/';
-      next({ path: '/', query: { signIn: 'true', returnTo } });
-    }
-  },
-  // Catch all Stack Auth handler routes
+  // Legacy OAuth routes — redirect to home (Firebase uses popup, no callback needed)
   {
     path: '/handler/:pathMatch(.*)*',
-    name: 'StackHandlers',
-    beforeEnter: (to, from, next) => {
-      // If it's the OAuth callback, handle it properly
-      if (to.path === '/handler/oauth-callback') {
-        next({ name: 'OAuthCallback', query: to.query });
-      } else {
-        // For any other handler route, redirect to home
-        next('/');
-      }
-    }
+    name: 'LegacyHandlers',
+    redirect: '/'
   },
   // 404 Route
   {

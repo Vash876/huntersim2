@@ -433,7 +433,7 @@ import { useTRTrackingStore } from '@/store/trTrackingStore';
 import { useHunterStore } from '@/store/hunterStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { exportTrack } from '@/utils/trImportExport';
-import { getM0Cost } from '@/constants/m0Costs';
+import { getM0CostDecimal, formatM0Cost } from '@/utils/m0CostUtils';
 import { formatNumber, formatSuffixInput, parseSuffixInput } from '@/composables/format.js';
 import { shouldEvaluate } from '@/services/evaluationCacheService';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
@@ -3077,10 +3077,12 @@ function formatM0Progress() {
   
   if (goalM0 === 0) return '-';
   
-  // Calculate required shards for M0 goal
-  const requiredShards = getM0Cost(goalM0);
-  const difference = requiredShards - currentShards;
+  // Get required shards exponent for M0 goal
+  const requiredShards = getM0CostDecimal(goalM0);
+  const requiredExp = requiredShards.e;
   
+  // currentShards is already an exponent 
+  const difference = requiredExp - currentShards;
   if (difference <= 0) {
     return '✓ Goal Reached!';
   } else {

@@ -110,12 +110,18 @@
             <div v-else class="relative">
               <button
                 @click="toggleCategory('Account')"
-                class="px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center hover:bg-gray-750"
+                class="px-3 py-1.5 rounded-lg transition-colors duration-200 flex items-center hover:bg-gray-750 relative"
                 :class="[activeCategory === 'Account' ? 'bg-gray-700 text-white shadow-sm' : 'text-gray-300 hover:text-white']"
               >
                 <div class="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2">
                   {{ (neonAuthService.getUserDisplayName() || 'U').charAt(0).toUpperCase() }}
                 </div>
+                <span 
+                  v-if="friendsStore.hasPending" 
+                  class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] text-white font-bold"
+                >
+                  {{ friendsStore.pendingCount }}
+                </span>
                 <span class="hidden lg:inline">{{ neonAuthService.getUserDisplayName() || 'User' }}</span>
                 <IconChevronDown 
                   size="16" 
@@ -200,8 +206,21 @@
                     </button>
                   </div>
 
-                  <!-- Account Management -->
+                  <!-- Friends & Account Management -->
                   <div class="py-3 space-y-1 border-b border-gray-700">
+                    <button
+                      @click="openFriendsModal"
+                      class="w-full text-left px-3 py-2 text-sm text-indigo-300 hover:bg-indigo-900/20 rounded flex items-center space-x-2"
+                    >
+                      <IconUsersGroup size="18" />
+                      <span>Friends</span>
+                      <span 
+                        v-if="friendsStore.hasPending" 
+                        class="ml-auto inline-flex items-center justify-center w-5 h-5 bg-red-500 text-[10px] rounded-full text-white font-bold"
+                      >
+                        {{ friendsStore.pendingCount }}
+                      </span>
+                    </button>
                     <button
                       @click="openAccountSettings"
                       class="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/50 rounded flex items-center space-x-2"
@@ -260,6 +279,12 @@
       @close="showAccountSettings = false"
     />
 
+    <!-- Friends Modal -->
+    <FriendsModal
+      :show="showFriendsModal"
+      @close="showFriendsModal = false"
+    />
+
     <!-- Sync Notification -->
     <Transition name="toast">
       <div 
@@ -292,10 +317,12 @@ import { NAVIGATION, SECRET_ACCESS_IDS, hasSecretAccessCached } from '../../cons
 import { useRoute } from 'vue-router';
 import { neonAuthService } from '@/services/neonAuthService';
 import { useSyncStore } from '@/store/syncStore';
+import { useFriendsStore } from '@/store/friendsStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useBackupRestore } from '@/composables/useBackupRestore';
 import NeonAuthModal from '@/components/common/NeonAuthModal.vue';
 import AccountSettingsModal from '@/components/common/AccountSettingsModal.vue';
+import FriendsModal from '@/components/common/FriendsModal.vue';
 import { 
   IconTargetArrow, 
   IconChevronDown, 
@@ -311,11 +338,13 @@ import {
   IconCircleCheck,
   IconAlertCircle,
   IconInfoCircle,
-  IconDiamond
+  IconDiamond,
+  IconUsersGroup
 } from '@tabler/icons-vue';
 
 const route = useRoute();
 const syncStore = useSyncStore();
+const friendsStore = useFriendsStore();
 const gemPlannerStore = useGemPlannerStore();
 const { createBackup, restoreFromBackup, isCreatingBackup, isRestoring } = useBackupRestore();
 
@@ -457,6 +486,7 @@ watch(() => gemPlannerStore.gemStates, (newGems) => {
 const activeCategory = ref(null);
 const showAuthModal = ref(false);
 const showAccountSettings = ref(false);
+const showFriendsModal = ref(false);
 const syncAction = ref(null); // 'upload', 'download', or null
 const syncNotification = ref({ show: false, message: '', type: 'info' });
 const isWaitingForAuth = ref(false); // New state for timeout period
@@ -475,6 +505,11 @@ onMounted(() => {
   isWaitingForAuth.value = true;
   setTimeout(() => {
     isWaitingForAuth.value = false;
+    // Initialize friends store if user is already authenticated
+    const user = neonAuthService.getCurrentUser();
+    if (user) {
+      friendsStore.init(user);
+    }
   }, 5000);
 });
 
@@ -511,6 +546,16 @@ async function signOut() {
 
 function handleAuthSuccess(type) {
   showAuthModal.value = false;
+  activeCategory.value = null;
+  // Initialize friends store when user signs in
+  const user = neonAuthService.getCurrentUser();
+  if (user) {
+    friendsStore.init(user);
+  }
+}
+
+function openFriendsModal() {
+  showFriendsModal.value = true;
   activeCategory.value = null;
 }
 
