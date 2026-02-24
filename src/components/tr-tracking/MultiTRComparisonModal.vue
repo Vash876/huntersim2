@@ -124,7 +124,7 @@
 
             <!-- Friends Tracks Section -->
             <div v-if="friendsStore.isInitialized && friendsAvailableTracks.length > 0">
-              <!-- Visible Friends Tracks -->
+              <!-- Header -->
               <div class="flex items-center gap-2 mb-2">
                 <div class="text-xs text-gray-400">Friends' Tracks:</div>
                 <button
@@ -135,12 +135,106 @@
                     : 'border-gray-600 text-gray-400 hover:text-gray-300'"
                 >
                   <IconUsersGroup size="12" class="inline mr-1" />
-                  {{ showFriendsTracks ? 'Hide' : 'Show' }} ({{ visibleFriendsAvailableTracks.length }})
+                  {{ showFriendsTracks ? 'Hide Tracks' : 'Show Tracks' }} ({{ friendsAvailableTracks.length }})
                 </button>
               </div>
+
+              <!-- Filter Bar -->
+              <div v-if="showFriendsTracks" class="flex flex-wrap items-center gap-2 mb-2">
+                <!-- Search -->
+                <div class="relative">
+                  <IconSearch size="12" class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input
+                    v-model="friendSearchQuery"
+                    type="text"
+                    placeholder="Search..."
+                    class="pl-6 pr-2 py-1 text-xs bg-gray-800 border border-gray-600 rounded-md text-gray-200 placeholder-gray-500 focus:border-indigo-500 focus:outline-none w-36"
+                  />
+                </div>
+
+                <!-- Friend Filter Toggle -->
+                <button
+                  @click="showFriendFilter = !showFriendFilter"
+                  class="flex items-center gap-1 text-xs px-2 py-1 rounded-md border transition-colors"
+                  :class="enabledFriendUids.size > 0
+                    ? 'bg-indigo-900/40 border-indigo-500/50 text-indigo-300'
+                    : showFriendFilter
+                      ? 'bg-gray-700/60 border-gray-500/50 text-gray-300'
+                      : 'border-gray-600 text-gray-400 hover:text-gray-300'"
+                >
+                  <IconFilter size="12" />
+                  Friends{{ enabledFriendUids.size > 0 ? ` (${enabledFriendUids.size}/${uniqueFriends.length})` : '' }}
+                </button>
+
+                <!-- Match count -->
+                <span v-if="friendSearchQuery || enabledFriendUids.size > 0 || ooFilterActive" class="text-xs text-gray-500">
+                  {{ filteredVisibleFriendsTracks.length }} match{{ filteredVisibleFriendsTracks.length !== 1 ? 'es' : '' }}
+                </span>
+
+                <!-- Clear filters -->
+                <button
+                  v-if="friendSearchQuery || enabledFriendUids.size > 0 || ooFilterActive"
+                  @click="friendSearchQuery = ''; enabledFriendUids = new Set(); resetOORange()"
+                  class="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                >
+                  Clear
+                </button>
+              </div>
+
+              <!-- Friend Filter Checkboxes -->
+              <div v-if="showFriendsTracks && showFriendFilter" class="flex flex-wrap gap-1 mb-2 p-2 bg-gray-800/60 rounded-md border border-gray-700/50">
+                <button
+                  @click="selectAllFriends"
+                  class="px-2 py-0.5 text-xs rounded border transition-colors"
+                  :class="enabledFriendUids.size === 0
+                    ? 'bg-indigo-900/40 border-indigo-500/50 text-indigo-300'
+                    : 'border-gray-600 text-gray-400 hover:text-gray-300'"
+                >
+                  All
+                </button>
+                <button
+                  v-for="friend in uniqueFriends"
+                  :key="friend.uid"
+                  @click="toggleFriendUid(friend.uid)"
+                  class="px-2 py-0.5 text-xs rounded border transition-colors"
+                  :class="enabledFriendUids.size === 0 || enabledFriendUids.has(friend.uid)
+                    ? 'bg-indigo-900/30 border-indigo-500/40 text-indigo-200'
+                    : 'border-gray-700 text-gray-500 hover:text-gray-400'"
+                >
+                  {{ friend.name }}
+                  <span class="opacity-60">({{ friend.trackCount }})</span>
+                </button>
+              </div>
+
+              <!-- OO Range Slider -->
+              <div v-if="showFriendsTracks" class="mb-2 p-2 bg-gray-800/40 rounded-md border border-gray-700/40">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs text-gray-400">
+                    OO Range:
+                    <span :class="ooFilterActive ? 'text-purple-300 font-medium' : 'text-gray-500'">{{ ooMinDisplay }}</span>
+                    <span class="text-gray-600 mx-0.5">–</span>
+                    <span :class="ooFilterActive ? 'text-purple-300 font-medium' : 'text-gray-500'">{{ ooMaxDisplay }}</span>
+                  </span>
+                  <button v-if="ooFilterActive" @click="resetOORange" class="text-xs text-gray-500 hover:text-gray-300 transition-colors">Reset</button>
+                </div>
+                <div class="oo-range-container">
+                  <div class="oo-range-track"></div>
+                  <div class="oo-range-fill" :style="ooRangeFillStyle"></div>
+                  <input type="range" class="oo-range-input" min="0" :max="OO_SLIDER_MAX" step="1"
+                    :value="ooRangeMin" @input="onOORangeMinInput" />
+                  <input type="range" class="oo-range-input" min="0" :max="OO_SLIDER_MAX" step="1"
+                    :value="ooRangeMax" @input="onOORangeMaxInput" />
+                </div>
+                <div class="flex justify-between text-[9px] text-gray-600 mt-0.5 select-none" style="padding: 0 6px;">
+                  <span>0</span><span>1k</span><span>1m</span><span>1b</span><span>1t</span><span>1qa</span><span>1qu</span><span>1sx</span><span>1sp</span><span>1o</span><span>1n</span><span>1d</span><span>∞</span>
+                </div>
+                <div class="text-[10px] text-gray-600 mt-1 italic">OO = Lifetime OO at TR start</div>
+              </div>
+
+              <!-- Visible Friends Tracks -->
               <div v-if="showFriendsTracks" class="flex flex-wrap gap-1">
                 <button
-                  v-for="fTrack in visibleFriendsAvailableTracks"
+                  v-for="fTrack in filteredVisibleFriendsTracks"
                   :key="fTrack.id"
                   @click="toggleFriendsTrackInChart(fTrack.id)"
                   class="px-2 py-1 text-xs rounded-md border transition-all duration-150"
@@ -158,11 +252,15 @@
                 >
                   {{ friendsStore.getFriendDisplayName(fTrack.ownerId, fTrack.ownerName) }}: TR#{{ fTrack.trackMeta?.trCount || 0 }} - {{ fTrack.trackMeta?.name || '?' }}
                   <span class="ml-1 text-xs opacity-75">({{ (fTrack.entries || []).length }})</span>
+                  <span v-if="getTrackStartOO(fTrack) > 0" class="ml-1 text-[10px] text-purple-400/70">{{ formatSuffixInput(getTrackStartOO(fTrack)) }}</span>
                 </button>
+                <span v-if="filteredVisibleFriendsTracks.length === 0 && (friendSearchQuery || enabledFriendUids.size > 0 || ooFilterActive)" class="text-xs text-gray-500 italic py-1">
+                  No tracks match filter
+                </span>
               </div>
 
               <!-- Hidden Friends Tracks -->
-              <div v-if="showFriendsTracks && hiddenFriendsAvailableTracks.length > 0" class="mt-2">
+              <div v-if="showFriendsTracks && filteredHiddenFriendsTracks.length > 0" class="mt-2">
                 <button
                   @click="showHiddenFriendsTracks = !showHiddenFriendsTracks"
                   class="text-xs px-2 py-0.5 rounded-md border transition-colors mb-1"
@@ -170,11 +268,11 @@
                     ? 'bg-gray-700/60 border-gray-500/50 text-gray-300'
                     : 'border-gray-700 text-gray-500 hover:text-gray-400'"
                 >
-                  {{ showHiddenFriendsTracks ? '▾' : '▸' }} Hidden ({{ hiddenFriendsAvailableTracks.length }})
+                  {{ showHiddenFriendsTracks ? '▾' : '▸' }} Hidden ({{ filteredHiddenFriendsTracks.length }})
                 </button>
                 <div v-if="showHiddenFriendsTracks" class="flex flex-wrap gap-1 mt-1">
                   <button
-                    v-for="fTrack in hiddenFriendsAvailableTracks"
+                    v-for="fTrack in filteredHiddenFriendsTracks"
                     :key="fTrack.id"
                     @click="toggleFriendsTrackInChart(fTrack.id)"
                     class="px-2 py-1 text-xs rounded-md border transition-all duration-150 opacity-60"
@@ -192,6 +290,7 @@
                   >
                     {{ friendsStore.getFriendDisplayName(fTrack.ownerId, fTrack.ownerName) }}: TR#{{ fTrack.trackMeta?.trCount || 0 }} - {{ fTrack.trackMeta?.name || '?' }}
                     <span class="ml-1 text-xs opacity-75">({{ (fTrack.entries || []).length }})</span>
+                    <span v-if="getTrackStartOO(fTrack) > 0" class="ml-1 text-[10px] text-purple-400/70">{{ formatSuffixInput(getTrackStartOO(fTrack)) }}</span>
                   </button>
                 </div>
               </div>
@@ -289,9 +388,10 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { formatNumber, formatSuffixInput } from '@/composables/format.js';
-import { IconX, IconTrendingUp, IconChartLine, IconClockHour2, IconCalendarEvent, IconUsersGroup } from '@tabler/icons-vue';
+import { formatNumber, formatSuffixInput, parseSuffixInput } from '@/composables/format.js';
+import { IconX, IconTrendingUp, IconChartLine, IconClockHour2, IconCalendarEvent, IconUsersGroup, IconSearch, IconFilter } from '@tabler/icons-vue';
 import { useFriendsStore } from '@/store/friendsStore';
+import { useTRTrackingStore } from '@/store/trTrackingStore';
 import VChart from 'vue-echarts';
 import '@/utils/echarts';
 import { darkTooltip, darkXAxis, darkYAxis, darkGrid } from '@/utils/echarts';
@@ -311,14 +411,71 @@ const props = defineProps({
 defineEmits(['close']);
 
 const friendsStore = useFriendsStore();
+const trTrackingStore = useTRTrackingStore();
 
-// Chart state
-const chartSelectedResources = ref([]);
-const enabledTracks = ref([]);
-const enabledFriendsTracks = ref([]);
-const showFriendsTracks = ref(false);
-const xAxisType = ref('timeInTR');
+// Chart state - backed by store for persistence
+const chartSelectedResources = ref([...trTrackingStore.comparisonSettings.chartSelectedResources]);
+const enabledTracks = ref([...trTrackingStore.comparisonSettings.enabledTracks]);
+const enabledFriendsTracks = ref([...trTrackingStore.comparisonSettings.enabledFriendsTracks]);
+const showFriendsTracks = ref(trTrackingStore.comparisonSettings.showFriendsTracks);
+const xAxisType = ref(trTrackingStore.comparisonSettings.xAxisType || 'timeInTR');
 const chartRef = ref(null);
+
+// Friends filter state - backed by store for persistence
+const showHiddenFriendsTracks = ref(trTrackingStore.comparisonSettings.showHiddenFriendsTracks);
+const friendSearchQuery = ref(trTrackingStore.comparisonSettings.friendSearchQuery || '');
+const enabledFriendUids = ref(new Set(trTrackingStore.comparisonSettings.enabledFriendUids || []));
+const showFriendFilter = ref(trTrackingStore.comparisonSettings.showFriendFilter);
+
+// OO Range filter
+const OO_SLIDER_MAX = 72; // 72 positions → exponent 0..36 in 0.5 steps
+const ooRangeMin = ref(trTrackingStore.comparisonSettings.ooRangeMin ?? 0);
+const ooRangeMax = ref(trTrackingStore.comparisonSettings.ooRangeMax ?? OO_SLIDER_MAX);
+
+function sliderToOO(pos) {
+  if (pos <= 0) return 0;
+  return Math.pow(10, pos * 0.5);
+}
+
+const ooFilterActive = computed(() => ooRangeMin.value > 0 || ooRangeMax.value < OO_SLIDER_MAX);
+
+const ooMinDisplay = computed(() => {
+  const val = sliderToOO(ooRangeMin.value);
+  return val === 0 ? '0' : formatSuffixInput(val);
+});
+
+const ooMaxDisplay = computed(() => {
+  return ooRangeMax.value >= OO_SLIDER_MAX ? '∞' : formatSuffixInput(sliderToOO(ooRangeMax.value));
+});
+
+const ooRangeFillStyle = computed(() => {
+  const left = (ooRangeMin.value / OO_SLIDER_MAX) * 100;
+  const right = 100 - (ooRangeMax.value / OO_SLIDER_MAX) * 100;
+  return { left: `${left}%`, right: `${right}%` };
+});
+
+function onOORangeMinInput(e) {
+  const val = parseInt(e.target.value);
+  ooRangeMin.value = Math.min(val, ooRangeMax.value);
+}
+
+function onOORangeMaxInput(e) {
+  const val = parseInt(e.target.value);
+  ooRangeMax.value = Math.max(val, ooRangeMin.value);
+}
+
+function resetOORange() {
+  ooRangeMin.value = 0;
+  ooRangeMax.value = OO_SLIDER_MAX;
+}
+
+// Get starting OO value from a track's initialValues
+function getTrackStartOO(track) {
+  // Friend tracks have initialValues at top level, own tracks too
+  const oo = track.initialValues?.ooLifetime;
+  if (oo === undefined || oo === null || oo === '') return 0;
+  return typeof oo === 'string' ? parseSuffixInput(oo) : Number(oo);
+}
 
 // Crosshair state
 const crosshairDataX = ref(null);
@@ -335,25 +492,82 @@ const useLogScale = computed(() => {
 // Initialize chart resources when modal opens
 watch(() => props.show, (newShow) => {
   if (newShow && chartableResources.value.length > 0) {
-    const defaultResources = ['mp'];
-    const availableDefaults = defaultResources.filter(id => 
-      chartableResources.value.some(r => r.id === id)
-    );
+    const saved = trTrackingStore.comparisonSettings;
+    const hasSavedResources = saved.chartSelectedResources && saved.chartSelectedResources.length > 0;
     
-    if (availableDefaults.length === 0 && chartableResources.value.length > 0) {
-      availableDefaults.push(chartableResources.value[0].id);
+    if (hasSavedResources) {
+      // Restore saved settings - filter to still-valid resources/tracks
+      const validResourceIds = chartableResources.value.map(r => r.id);
+      chartSelectedResources.value = saved.chartSelectedResources.filter(id => validResourceIds.includes(id));
+      if (chartSelectedResources.value.length === 0) {
+        chartSelectedResources.value = [validResourceIds[0] || 'mp'];
+      }
+      
+      const validTrackIds = availableTracks.value.map(t => t.id);
+      enabledTracks.value = saved.enabledTracks.filter(id => validTrackIds.includes(id));
+      // If no saved tracks match (e.g. all deleted), enable all
+      if (enabledTracks.value.length === 0 && saved.enabledTracks.length > 0) {
+        enabledTracks.value = validTrackIds;
+      }
+      
+      enabledFriendsTracks.value = [...saved.enabledFriendsTracks];
+      showFriendsTracks.value = saved.showFriendsTracks;
+      xAxisType.value = saved.xAxisType || 'timeInTR';
+      friendSearchQuery.value = saved.friendSearchQuery || '';
+      enabledFriendUids.value = new Set(saved.enabledFriendUids || []);
+      showFriendFilter.value = saved.showFriendFilter;
+      showHiddenFriendsTracks.value = saved.showHiddenFriendsTracks;
+      ooRangeMin.value = saved.ooRangeMin ?? 0;
+      ooRangeMax.value = saved.ooRangeMax ?? OO_SLIDER_MAX;
+    } else {
+      // First time defaults
+      const defaultResources = ['mp'];
+      const availableDefaults = defaultResources.filter(id => 
+        chartableResources.value.some(r => r.id === id)
+      );
+      
+      if (availableDefaults.length === 0 && chartableResources.value.length > 0) {
+        availableDefaults.push(chartableResources.value[0].id);
+      }
+      
+      chartSelectedResources.value = [availableDefaults[0]];
+      enabledTracks.value = availableTracks.value.map(track => track.id);
+      enabledFriendsTracks.value = [];
+      showFriendsTracks.value = false;
+      friendSearchQuery.value = '';
+      enabledFriendUids.value = new Set();
+      showFriendFilter.value = false;
+      showHiddenFriendsTracks.value = false;
+      ooRangeMin.value = 0;
+      ooRangeMax.value = OO_SLIDER_MAX;
     }
-    
-    chartSelectedResources.value = [availableDefaults[0]];
-    enabledTracks.value = availableTracks.value.map(track => track.id);
-    enabledFriendsTracks.value = [];
-    showFriendsTracks.value = false;
     
     // Initialize crosshair at 24 hours
     crosshairDataX.value = 24;
     updateCrosshairValues(24);
   }
 }, { immediate: true });
+
+// Persist comparison settings to store on changes
+watch(
+  [chartSelectedResources, enabledTracks, enabledFriendsTracks, showFriendsTracks, xAxisType, friendSearchQuery, enabledFriendUids, showFriendFilter, showHiddenFriendsTracks, ooRangeMin, ooRangeMax],
+  () => {
+    trTrackingStore.updateComparisonSettings({
+      chartSelectedResources: chartSelectedResources.value,
+      enabledTracks: enabledTracks.value,
+      enabledFriendsTracks: enabledFriendsTracks.value,
+      showFriendsTracks: showFriendsTracks.value,
+      xAxisType: xAxisType.value,
+      friendSearchQuery: friendSearchQuery.value,
+      enabledFriendUids: [...enabledFriendUids.value], // Set → Array for serialization
+      showFriendFilter: showFriendFilter.value,
+      showHiddenFriendsTracks: showHiddenFriendsTracks.value,
+      ooRangeMin: ooRangeMin.value,
+      ooRangeMax: ooRangeMax.value
+    });
+  },
+  { deep: true }
+);
 
 // Watch for enabled tracks changes to update crosshair values
 watch([enabledTracks, enabledFriendsTracks], () => {
@@ -505,7 +719,88 @@ const hiddenFriendsAvailableTracks = computed(() => {
   return friendsAvailableTracks.value.filter(t => friendsStore.isFriendTrackHidden(t.id));
 });
 
-const showHiddenFriendsTracks = ref(false);
+// Unique friends derived from available tracks
+const uniqueFriends = computed(() => {
+  const map = new Map();
+  friendsAvailableTracks.value.forEach(t => {
+    if (!map.has(t.ownerId)) {
+      map.set(t.ownerId, {
+        uid: t.ownerId,
+        name: friendsStore.getFriendDisplayName(t.ownerId, t.ownerName),
+        trackCount: 0
+      });
+    }
+    map.get(t.ownerId).trackCount++;
+  });
+  return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+});
+
+// Apply friend filter + search to visible tracks
+const filteredVisibleFriendsTracks = computed(() => {
+  return applyFriendsFilter(visibleFriendsAvailableTracks.value);
+});
+
+// Apply friend filter + search to hidden tracks
+const filteredHiddenFriendsTracks = computed(() => {
+  return applyFriendsFilter(hiddenFriendsAvailableTracks.value);
+});
+
+function applyFriendsFilter(tracks) {
+  let result = tracks;
+  
+  // Filter by selected friends
+  if (enabledFriendUids.value.size > 0) {
+    result = result.filter(t => enabledFriendUids.value.has(t.ownerId));
+  }
+  
+  // Filter by search query
+  const q = friendSearchQuery.value.trim().toLowerCase();
+  if (q) {
+    result = result.filter(t => {
+      const friendName = friendsStore.getFriendDisplayName(t.ownerId, t.ownerName).toLowerCase();
+      const trackName = (t.trackMeta?.name || '').toLowerCase();
+      const trNum = String(t.trackMeta?.trCount || '');
+      return friendName.includes(q) || trackName.includes(q) || trNum.includes(q);
+    });
+  }
+  
+  // Filter by OO range
+  if (ooFilterActive.value) {
+    const minOO = sliderToOO(ooRangeMin.value);
+    const maxOO = sliderToOO(ooRangeMax.value);
+    result = result.filter(t => {
+      const trackOO = getTrackStartOO(t);
+      if (trackOO === 0) return ooRangeMin.value === 0; // tracks without OO data only pass if min is 0
+      if (ooRangeMin.value > 0 && trackOO < minOO) return false;
+      if (ooRangeMax.value < OO_SLIDER_MAX && trackOO > maxOO) return false;
+      return true;
+    });
+  }
+  
+  return result;
+}
+
+function toggleFriendUid(uid) {
+  const s = new Set(enabledFriendUids.value);
+  if (s.has(uid)) {
+    s.delete(uid);
+  } else {
+    s.add(uid);
+  }
+  enabledFriendUids.value = s;
+}
+
+function selectAllFriends() {
+  enabledFriendUids.value = new Set();
+}
+
+function selectNoFriends() {
+  enabledFriendUids.value = new Set(uniqueFriends.value.map(f => f.uid));
+  // Actually "select none" means we want an empty filter that shows nothing
+  // But our logic is: empty set = all shown. So for "none" we need a special approach.
+  // Let's use a different approach: if set contains ALL uids, clear enabled friends tracks
+  enabledFriendsTracks.value = [];
+}
 
 function toggleFriendsTrackInChart(trackId) {
   const idx = enabledFriendsTracks.value.indexOf(trackId);
@@ -866,5 +1161,82 @@ function formatDate(dateString) {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+/* Dual-thumb OO range slider */
+.oo-range-container {
+  position: relative;
+  height: 24px;
+}
+
+.oo-range-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  transform: translateY(-50%);
+  background: #374151;
+  border-radius: 2px;
+}
+
+.oo-range-fill {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  background: #7c3aed;
+  border-radius: 2px;
+}
+
+.oo-range-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+}
+
+.oo-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #a78bfa;
+  border: 2px solid #7c3aed;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.15s;
+}
+
+.oo-range-input::-webkit-slider-thumb:hover {
+  background: #c4b5fd;
+}
+
+.oo-range-input::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #a78bfa;
+  border: 2px solid #7c3aed;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.15s;
+}
+
+.oo-range-input::-moz-range-thumb:hover {
+  background: #c4b5fd;
+}
+
+.oo-range-input::-moz-range-track {
+  background: transparent;
+  border: none;
 }
 </style>

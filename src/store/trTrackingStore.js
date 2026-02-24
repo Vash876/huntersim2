@@ -146,6 +146,21 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     totalDailyMat3Production: 0
   });
 
+  // Multi-TR Comparison Settings (persisted)
+  const comparisonSettings = ref({
+    chartSelectedResources: [],       // selected resource IDs for chart
+    enabledTracks: [],                // enabled own track IDs
+    enabledFriendsTracks: [],         // enabled friends track IDs
+    showFriendsTracks: false,         // friends section expanded
+    xAxisType: 'timeInTR',           // x-axis mode
+    friendSearchQuery: '',            // search text filter
+    enabledFriendUids: [],            // friend filter UIDs (stored as array, used as Set in modal)
+    showFriendFilter: false,          // friend checkboxes visible
+    showHiddenFriendsTracks: false,   // hidden section visible
+    ooRangeMin: 0,                    // OO range slider min position (0-72, log scale)
+    ooRangeMax: 72                    // OO range slider max position (0-72, log scale)
+  });
+
   // Computed
   const activeTracks = computed(() => trTracks.value.filter(track => track.isActive && !track.isArchived));
   const completedTracks = computed(() => trTracks.value.filter(track => !track.isActive && !track.isArchived));
@@ -299,6 +314,24 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         };
       }
 
+      // Load comparison settings
+      const savedComparisonSettings = await idbService.loadTRSettings('comparisonSettings');
+      if (savedComparisonSettings) {
+        comparisonSettings.value = {
+          chartSelectedResources: savedComparisonSettings.chartSelectedResources || [],
+          enabledTracks: savedComparisonSettings.enabledTracks || [],
+          enabledFriendsTracks: savedComparisonSettings.enabledFriendsTracks || [],
+          showFriendsTracks: savedComparisonSettings.showFriendsTracks || false,
+          xAxisType: savedComparisonSettings.xAxisType || 'timeInTR',
+          friendSearchQuery: savedComparisonSettings.friendSearchQuery || '',
+          enabledFriendUids: savedComparisonSettings.enabledFriendUids || [],
+          showFriendFilter: savedComparisonSettings.showFriendFilter || false,
+          showHiddenFriendsTracks: savedComparisonSettings.showHiddenFriendsTracks || false,
+          ooRangeMin: savedComparisonSettings.ooRangeMin ?? 0,
+          ooRangeMax: savedComparisonSettings.ooRangeMax ?? 72
+        };
+      }
+
       // Load custom resources
       const savedCustomResources = await idbService.loadTRSettings('customResources');
       if (savedCustomResources) {
@@ -368,6 +401,9 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       
       // Save hunter build settings
       await idbService.saveTRSettings('hunterBuildSettings', hunterBuildSettings.value);
+      
+      // Save comparison settings
+      await idbService.saveTRSettings('comparisonSettings', comparisonSettings.value);
       
       console.log('💾 Saved TR settings to IndexedDB');
     } catch (error) {
@@ -478,6 +514,11 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     
     await saveToStorage();
     console.log('✅ Hunter build settings updated and saved');
+  }
+
+  async function updateComparisonSettings(settings) {
+    comparisonSettings.value = { ...comparisonSettings.value, ...settings };
+    await idbService.saveTRSettings('comparisonSettings', comparisonSettings.value);
   }
 
   async function createTRTrack(trackData) {
@@ -865,7 +906,8 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         resource => !DEFAULT_AVAILABLE_RESOURCES.find(def => def.id === resource.id)
       ),
       trTracks: trTracks.value,
-      hunterBuildSettings: hunterBuildSettings.value
+      hunterBuildSettings: hunterBuildSettings.value,
+      comparisonSettings: comparisonSettings.value
     };
   }
 
@@ -894,6 +936,24 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       if (data.hunterBuildSettings) {
         hunterBuildSettings.value = data.hunterBuildSettings;
         console.log(`📥 Imported hunter build settings`);
+      }
+      
+      // Import comparisonSettings
+      if (data.comparisonSettings) {
+        comparisonSettings.value = {
+          chartSelectedResources: data.comparisonSettings.chartSelectedResources || [],
+          enabledTracks: data.comparisonSettings.enabledTracks || [],
+          enabledFriendsTracks: data.comparisonSettings.enabledFriendsTracks || [],
+          showFriendsTracks: data.comparisonSettings.showFriendsTracks || false,
+          xAxisType: data.comparisonSettings.xAxisType || 'timeInTR',
+          friendSearchQuery: data.comparisonSettings.friendSearchQuery || '',
+          enabledFriendUids: data.comparisonSettings.enabledFriendUids || [],
+          showFriendFilter: data.comparisonSettings.showFriendFilter || false,
+          showHiddenFriendsTracks: data.comparisonSettings.showHiddenFriendsTracks || false,
+          ooRangeMin: data.comparisonSettings.ooRangeMin ?? 0,
+          ooRangeMax: data.comparisonSettings.ooRangeMax ?? 72
+        };
+        console.log(`📥 Imported comparison settings`);
       }
       
       if (data.trTracks) {
@@ -1026,6 +1086,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     trTracks,
     isInitialized,
     hunterBuildSettings,
+    comparisonSettings,
 
     // Computed
     activeTracks,
@@ -1063,6 +1124,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     importMultipleTracksData,
     updateStandardResourceColor,
     updateCustomResource,
-    updateHunterBuildSettings
+    updateHunterBuildSettings,
+    updateComparisonSettings
   };
 });

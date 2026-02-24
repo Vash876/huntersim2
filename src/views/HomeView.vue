@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.13.1',
+    date: '2026-02-24',
+    changes: [
+      {
+        text: 'TR Tracker',
+        subItems: [
+          'Added filter system for Multi-TR Comparison: text search, friend filter, and OO range slider with logarithmic scale',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.13.0',
     date: '2026-02-22',
     changes: [
