@@ -204,7 +204,7 @@ export const SECRET_ACCESS_IDS = [
   'SYhV35HFwSMFTvaU71vfgDWTZvK2',
   'UufQdy4NE3XdoBYCTJkyZCbNmh43',
   'URao56O4GfODV9EIKm2sAdMyo0B2',
-  '07mBPuZmvKMa7113v7btA8Qd8hr1',
+  'Nq1uE1VlDoT2YTBUZjdC0LzAWjy1',
 ];
 
 // localStorage cache for secret access (avoids async auth delay on direct URL navigation)
