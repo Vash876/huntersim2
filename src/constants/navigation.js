@@ -201,8 +201,8 @@ const IconResearch = {
 
 // Account IDs with access to secret/beta tools
 export const SECRET_ACCESS_IDS = [
-  'b378c604-d969-4aab-99e1-bf8f52446c49',
-  '7ec04bf0-bb17-4e85-ada8-d2fdc2df946d',
+  'SYhV35HFwSMFTvaU71vfgDWTZvK2',
+  'UufQdy4NE3XdoBYCTJkyZCbNmh43',
   '0f88f5d6-0a5a-43d1-b71d-84c1486698fa',
 ];
 
