@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.13.2',
+    date: '2026-02-25',
+    changes: [
+      {
+        text: 'Account & Privacy',
+        subItems: [
+          'New users are now prompted to choose a nickname on first login instead of using their Google real name',
+          'Existing users will also be asked to confirm or change their display name on next login',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.13.1',
     date: '2026-02-24',
     changes: [

@@ -4,6 +4,7 @@ import AppNavbar from './components/common/AppNavbar.vue';
 import AppNavbarMobile from './components/common/AppNavbarMobile.vue';
 import AppFooter from './components/common/AppFooter.vue';
 import FAQ from './components/common/FAQ.vue';
+import WelcomeUsernameModal from './components/common/WelcomeUsernameModal.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
 import { useSyncStore } from './store/syncStore';
@@ -144,6 +145,9 @@ function dismissWarning() {
     <div class="block md:hidden">
       <AppNavbarMobile />
     </div>
+    
+    <!-- Global Modals -->
+    <WelcomeUsernameModal />
     
     <!-- FAQ Component -->
     <!-- <FAQ /> -->

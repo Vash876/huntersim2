@@ -13,7 +13,7 @@ import {
   updateProfile
 } from 'firebase/auth';
 import {
-  doc, updateDoc, collection, query, where, getDocs, serverTimestamp
+  doc, getDoc, updateDoc, collection, query, where, getDocs, serverTimestamp, writeBatch
 } from 'firebase/firestore/lite';
 import { checkAndCacheSecretAccess } from '../constants/navigation';
 
@@ -36,8 +36,20 @@ class NeonAuthService {
   }
 
   _setupAuthListener() {
-    onAuthStateChanged(auth, (firebaseUser) => {
+    onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        // Check Firestore profile to see if this user has already set a username.
+        // This seeds the localStorage flag so _mapUser shows the correct name.
+        try {
+          const userRef = doc(db, 'users', firebaseUser.uid);
+          const snap = await getDoc(userRef);
+          if (snap.exists() && snap.data().hasSetUsername) {
+            localStorage.setItem(`cifi_hasSetUsername_${firebaseUser.uid}`, 'true');
+          }
+        } catch (e) {
+          // Firestore read failed — will fall back to 'CIFI Player', not critical
+        }
+
         this.user.value = this._mapUser(firebaseUser);
         this.isAuthenticated.value = true;
         checkAndCacheSecretAccess(firebaseUser.uid);
@@ -63,14 +75,23 @@ class NeonAuthService {
    */
   _mapUser(firebaseUser) {
     if (!firebaseUser) return null;
+    // Use Firebase Auth displayName only if the user has explicitly set it.
+    // For brand-new Google sign-ins the Auth displayName equals the Google real name,
+    // which we don't want to leak. The Firestore profile starts with hasSetUsername: false
+    // and the WelcomeUsernameModal forces the user to pick a nickname.
+    // Once they do, updateUserDisplayName() writes the chosen name to Firebase Auth,
+    // so subsequent _mapUser calls will pick it up correctly.
+    // We use a localStorage flag to know if the user has set their name.
+    const hasSet = localStorage.getItem(`cifi_hasSetUsername_${firebaseUser.uid}`);
+    const safeName = hasSet === 'true' ? firebaseUser.displayName : 'CIFI Player';
     return {
       uid: firebaseUser.uid,
       id: firebaseUser.uid,                // Compatibility alias for syncStore
       email: firebaseUser.email,
       primaryEmail: firebaseUser.email,     // Compatibility alias for old templates
-      displayName: firebaseUser.displayName,
+      displayName: safeName,
       photoURL: firebaseUser.photoURL,
-      name: firebaseUser.displayName        // Compatibility alias
+      name: safeName                        // Compatibility alias
     };
   }
 
@@ -164,6 +185,8 @@ class NeonAuthService {
 
       // 1. Update Firebase Auth profile
       await updateProfile(firebaseUser, { displayName: trimmedName });
+      // Mark that the user has explicitly set their username
+      localStorage.setItem(`cifi_hasSetUsername_${firebaseUser.uid}`, 'true');
       this.user.value = this._mapUser(firebaseUser);
 
       // 2. Update Firestore users/{uid} document
@@ -171,6 +194,7 @@ class NeonAuthService {
         const userRef = doc(db, 'users', firebaseUser.uid);
         await updateDoc(userRef, {
           displayName: trimmedName,
+          hasSetUsername: true,
           updatedAt: serverTimestamp()
         });
       } catch (err) {
@@ -184,12 +208,21 @@ class NeonAuthService {
           where('ownerId', '==', firebaseUser.uid)
         );
         const snap = await getDocs(q);
-        const updatePromises = snap.docs.map(d =>
-          updateDoc(d.ref, { ownerName: trimmedName, updatedAt: serverTimestamp() })
-        );
-        await Promise.all(updatePromises);
+        
         if (snap.docs.length > 0) {
-          console.log(`Updated ownerName in ${snap.docs.length} shared tracks`);
+          // Use writeBatch to update all tracks atomically
+          // Firestore batches support up to 500 operations per batch
+          const batch = writeBatch(db);
+          
+          snap.docs.forEach(d => {
+            batch.update(d.ref, { 
+              ownerName: trimmedName, 
+              updatedAt: serverTimestamp() 
+            });
+          });
+          
+          await batch.commit();
+          console.log(`Updated ownerName in ${snap.docs.length} shared tracks via batch`);
         }
       } catch (err) {
         console.warn('Failed to update shared tracks ownerName:', err);

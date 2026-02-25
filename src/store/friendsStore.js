@@ -70,6 +70,7 @@ export const useFriendsStore = defineStore('friends', () => {
   const friendCount = computed(() => friends.value.length);
   const pendingCount = computed(() => pendingIncoming.value.length);
   const hasPending = computed(() => pendingIncoming.value.length > 0);
+  const needsUsernamePrompt = computed(() => myProfile.value !== null && myProfile.value.hasSetUsername !== true);
 
   /** Get current display name for a friend by UID (prefers profile nickname over ownerName fallback) */
   function getFriendDisplayName(uid, fallback = 'Unknown') {
@@ -358,6 +359,7 @@ export const useFriendsStore = defineStore('friends', () => {
     friendCount,
     pendingCount,
     hasPending,
+    needsUsernamePrompt,
     // Actions
     init,
     reset,

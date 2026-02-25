@@ -62,10 +62,11 @@ export async function ensureUserProfile(uid, displayName, photoURL, email) {
   }
 
   const profile = {
-    displayName: displayName || 'Hunter',
+    displayName: 'CIFI Player', // Default name, user will be prompted to change it
     photoURL: photoURL || null,
     email: email || null,
     friendCode,
+    hasSetUsername: false,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp()
   };
