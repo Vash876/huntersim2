@@ -1199,7 +1199,8 @@ const upgradeCosts = computed(() => {
       }
       // Relics (kosten Fragments)
       else if (boost.category === 'relic') {
-        const relicId = `r${boost.key.replace('r', '')}`;
+        // T2 Relics direkt verwenden, sonst boost.key
+        const relicId = boost.key;
         for (let level = boost.startValue + 1; level <= boost.endValue; level++) {
           costs.fragments += getRelicCost(relicId, level);
         }

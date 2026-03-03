@@ -36,17 +36,18 @@ const RELIC_DATA = {
   r18: { bonus: 365,   baseCost: 60,   additive: 6,    exp0: 1.03,  exp10: 1.01,  exp20: 1.02,   exp30: 1,     exp40: null, exp50: null, maxLevel: 200 },
   r19: { bonus: 365,   baseCost: 666,  additive: 1289, exp0: 2446,  fixedCosts: [666, 1289, 2446, 4569, 8428, 15390, 27871, 50121, 3140000] },
   r20: { bonus: 2,     baseCost: 1000, additive: 50,   exp0: 1.2,   exp10: 1,     exp20: 1,      exp30: 1,     exp40: 1,    exp50: null },
-  // Tier 2 Relics
-  t2r1: { bonus: 0, baseCost: 120000, additive: 0, exp0: 1, fixedCosts: [120000, 4070000, 75020000, 1270000000, 19840000000, 293670000000, 4200000000000, 58690000000000, 805070000000000, 10890000000000000], maxLevel: 10 },
-  t2r2: { bonus: 0, baseCost: 120000, additive: 100000, exp0: 1.085, exp10: null, exp20: 1.04, exp30: null, exp40: null, exp50: null, maxLevel: 100 },
-  t2r3: { bonus: 0, baseCost: 550000, additive: 78672, exp0: 1.702, exp10: 1.019, exp20: null, exp30: null, exp40: null, exp50: null, maxLevel: 80 },
-  t2r4: { bonus: 0, baseCost: 3240000, additive: 0, exp0: 1, fixedCosts: [3240000, 4270000, 5620000, 7410000, 10530000, 14970000, 21270000, 30230000, 46380000, 71130000, 109090000, 167260000, 276910000, 458360000, 758570000, 1260000000, 2240000000, 4010000000, 7160000000, 12780000000, 24640000000, 47510000000, 91580000000, 176530000000, 367420000000], maxLevel: 25 },
-  t2r5: { baseCost: 1350000, additive: 320000, exp0: 1.4, exp5: 1.0418, exp10: 1.0406, exp15: 1.0405, exp20: 1.0398, exp25: 1.0402, maxLevel: 100 },
-  t2r6: { baseCost: 1060000, additive: 1718500, exp0: 1.2507, fixedFirstLevels: [1060000, 3740000], maxLevel: 40 },
-  t2r7: { baseCost: 300000, additive: 850320, exp0: 1.70990, fixedFirstLevels: [300000, 1970000], maxLevel: 40 },
-  t2r8: { bonus: 1.021, baseCost: 2540000, additive: 1014380, exp0: 1.71900, maxLevel: 21 }, // Fragment multiplier for farms and campaigns
+  // Tier 2 Relics - Official formulas from dev
+  // Formula: floor((startCost + additive * lvl) * exp0^lvl * iterative^max(0, lvl - threshold))
+  t2r1: { bonus: 0, baseCost: 120000, additive: 250000, exp0: 11, iterativeExp: 1.1, iterativeThreshold: 3, maxLevel: 10 },
+  t2r2: { bonus: 0, baseCost: 120000, additive: 100000, exp0: 1.085, iterativeExp: 1.04, iterativeThreshold: 20, maxLevel: 100 },
+  t2r3: { bonus: 0, baseCost: 550000, additive: 80000, exp0: 1.7, iterativeExp: 1.02, iterativeThreshold: 10, maxLevel: 80 },
+  t2r4: { bonus: 0, baseCost: 3000000, additive: 50000, exp0: 1.2, iterativeExp: 1.08, iterativeN: 4, maxLevel: 25 },
+  t2r5: { bonus: 0, baseCost: 1300000, additive: 300000, exp0: 1.35, iterativeExp: 1.04, iterativeN: 5, maxLevel: 100 },
+  t2r6: { bonus: 0, baseCost: 1000000, additive: 2000000, exp0: 1.11, iterativeExp: 1.06, iterativeN: 4, maxLevel: 40 },
+  t2r7: { bonus: 0, baseCost: 300000, additive: 850000, exp0: 1.71, iterativeExp: 1.09, iterativeThreshold: 8, maxLevel: 40 },
+  t2r8: { bonus: 1.021, baseCost: 2100000, additive: 840000, exp0: 1.42, iterativeExp: 1.21, iterativeN: 4, maxLevel: 21 },
   t2r9: { baseCost: 800000, additive: 80000, exp0: 1.45, maxLevel: 100 },
-  t2r10: { fixedCosts: [6000000, 1920000000, 611000000000, 195000000000000, 62200000000000000], maxLevel: 5 },
+  t2r10: { bonus: 0, baseCost: 6000000, additive: 80000, exp0: 15, iterativeExp: 21, iterativeThreshold: 1, maxLevel: 5 },
 };
 
 // Cost type categorization
@@ -110,6 +111,23 @@ function calculateFixedCost(data, lvl) {
 }
 
 /**
+ * Calculate cost for Tier 2 relics
+ * Formula: floor((baseCost + additive * lvl) * exp0^lvl * iterativeExp^max(0, lvl - threshold + 1))
+ */
+function calculateT2Cost(data, lvl) {
+  const { baseCost, additive, exp0, iterativeExp, iterativeThreshold } = data;
+  
+  let cost = (baseCost + additive * lvl) * Math.pow(exp0, lvl);
+  
+  // Apply iterative multiplier if level >= threshold
+  if (iterativeExp && iterativeThreshold && lvl >= iterativeThreshold) {
+    cost *= Math.pow(iterativeExp, lvl - iterativeThreshold + 1);
+  }
+  
+  return Math.floor(cost);
+}
+
+/**
  * Get the relic number from relic ID (e.g., 'r5' -> 5, 'r12' -> 12)
  */
 function getRelicNumber(relicId) {
@@ -143,46 +161,69 @@ export const RELIC_COSTS = {
   r18: (level) => calculateFloorCost(RELIC_DATA.r18, level),
   r19: (level) => calculateFixedCost(RELIC_DATA.r19, level),
   r20: (level) => calculateFloorCost(RELIC_DATA.r20, level),
-  // Tier 2 Relics - TODO: Add when formulas are known
-  t2r1: (level) => calculateFixedCost(RELIC_DATA.t2r1, level),
-  t2r2: (level) => calculateFloorCost(RELIC_DATA.t2r2, level),
-  t2r3: (level) => calculateFloorCost(RELIC_DATA.t2r3, level),
-  t2r4: (level) => calculateFixedCost(RELIC_DATA.t2r4, level),
-  t2r5: (level) => calculateFloorCost(RELIC_DATA.t2r5, level),
+  // Tier 2 Relics - Official formulas from dev
+  t2r1: (level) => calculateT2Cost(RELIC_DATA.t2r1, level),
+  t2r2: (level) => calculateT2Cost(RELIC_DATA.t2r2, level),
+  t2r3: (level) => calculateT2Cost(RELIC_DATA.t2r3, level),
+  t2r4: (level) => {
+    // Special formula: multiple thresholds every n=4 levels
+    const d = RELIC_DATA.t2r4;
+    let cost = (d.baseCost + d.additive * level) * Math.pow(d.exp0, level);
+    
+    // Calculate total iterations: for each threshold 0, 4, 8, ... <= level
+    let totalIterations = 0;
+    for (let i = 0; i * d.iterativeN <= level; i++) {
+      totalIterations += level - (d.iterativeN * i - 1);
+    }
+    cost *= Math.pow(d.iterativeExp, totalIterations);
+    
+    return Math.floor(cost);
+  },
+  t2r5: (level) => {
+    // Special formula: multiple thresholds every n=5 levels
+    const d = RELIC_DATA.t2r5;
+    let cost = (d.baseCost + d.additive * level) * Math.pow(d.exp0, level);
+    
+    // Calculate total iterations: for each threshold 0, 5, 10, ... <= level
+    let totalIterations = 0;
+    for (let i = 0; i * d.iterativeN <= level; i++) {
+      totalIterations += level - (d.iterativeN * i - 1);
+    }
+    cost *= Math.pow(d.iterativeExp, totalIterations);
+    
+    return Math.floor(cost);
+  },
   t2r6: (level) => {
+    // Special formula: multiple thresholds every n=4 levels
     const d = RELIC_DATA.t2r6;
-    if (level < d.fixedFirstLevels.length) return d.fixedFirstLevels[level];
     let cost = (d.baseCost + d.additive * level) * Math.pow(d.exp0, level);
-    if (level >= 8)  cost *= Math.pow(1.0586, level - 7);
-    if (level >= 12) cost *= Math.pow(1.0595, level - 11);
-    if (level >= 16) cost *= Math.pow(1.0587, level - 15);
-    if (level >= 20) cost *= Math.pow(1.0607, level - 19);
-    if (level >= 24) cost *= Math.pow(1.0596, level - 23);
-    if (level >= 28) cost *= Math.pow(1.0594, level - 27); // estimated
-    if (level >= 32) cost *= Math.pow(1.0594, level - 31); // estimated
-    if (level >= 36) cost *= Math.pow(1.0594, level - 35); // estimated
-    if (level >= 40) cost *= Math.pow(1.0594, level - 39); // estimated
+    
+    // Calculate total iterations: for each threshold 0, 4, 8, ... <= level
+    let totalIterations = 0;
+    for (let i = 0; i * d.iterativeN <= level; i++) {
+      totalIterations += level - (d.iterativeN * i - 1);
+    }
+    cost *= Math.pow(d.iterativeExp, totalIterations);
+    
     return Math.floor(cost);
   },
-  t2r7: (level) => {
-    const d = RELIC_DATA.t2r7;
-    if (level < d.fixedFirstLevels.length) return d.fixedFirstLevels[level];
-    let cost = (d.baseCost + d.additive * level) * Math.pow(d.exp0, level);
-    if (level >= 8) cost *= Math.pow(1.0901, level - 7);
-    return Math.floor(cost);
-  },
+  t2r7: (level) => calculateT2Cost(RELIC_DATA.t2r7, level),
   t2r8: (level) => {
+    // Special formula: multiple thresholds every n=4 levels
     const d = RELIC_DATA.t2r8;
     let cost = (d.baseCost + d.additive * level) * Math.pow(d.exp0, level);
-    if (level >= 4)  cost *= Math.pow(1.2095, level - 3);
-    if (level >= 8)  cost *= Math.pow(1.2100, level - 7);
-    if (level >= 12) cost *= Math.pow(1.2099, level - 11);
-    if (level >= 16) cost *= Math.pow(1.2098, level - 15); // estimated
-    if (level >= 20) cost *= Math.pow(1.2098, level - 19); // estimated
+    
+    // Calculate total iterations: for each threshold 0, 4, 8, ... <= level
+    let totalIterations = 0;
+    for (let i = 0; i * d.iterativeN <= level; i++) {
+      totalIterations += level - (d.iterativeN * i - 1);
+    }
+    cost *= Math.pow(d.iterativeExp, totalIterations);
+    
     return Math.floor(cost);
   },
   t2r9: (level) => calculateFloorCost(RELIC_DATA.t2r9, level),
-  t2r10: (level) => calculateFixedCost(RELIC_DATA.t2r10, level),
+  t2r10: (level) => calculateT2Cost(RELIC_DATA.t2r10, level),
 };
 
 /**

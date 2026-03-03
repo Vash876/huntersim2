@@ -2083,9 +2083,10 @@ function finalizeAllTimeOrbsInput() {
   
   // Für Relics
   if (boost.category === 'relic') {
-    // Ermitteln des Relic-Typs
+    // Ermitteln des Relic-Typs (T2 Relics direkt, sonst formatieren)
+    const relicId = boost.key.startsWith('t2r') ? boost.key : boost.key;
     for (let level = currentLevel + 1; level <= targetLevel; level++) {
-      totalCost += getRelicCost(`r${boost.key.replace('r', '')}`, level);
+      totalCost += getRelicCost(relicId, level);
     }
     return formatRelicCost(totalCost);
   }

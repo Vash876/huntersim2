@@ -391,18 +391,15 @@ function getBoostCost(boost, currentValue, targetValue) {
 
     switch(category) {
       case 'relic':
-        // Berechne Relic-Kosten für jedes Level einzeln
-        if (boost.key.startsWith('r')) {
-          for (let level = currentValue + 1; level <= targetValue; level++) {
-            totalCost += getRelicCost(boost.key, level);
-          }
-          return {
-            value: totalCost,
-            formattedValue: formatRelicCost(totalCost),
-            type: 'fragments'
-          };
+        // Berechne Relic-Kosten für jedes Level einzeln (T1 und T2 Relics)
+        for (let level = currentValue + 1; level <= targetValue; level++) {
+          totalCost += getRelicCost(boost.key, level);
         }
-        break;
+        return {
+          value: totalCost,
+          formattedValue: formatRelicCost(totalCost),
+          type: 'fragments'
+        };
         
       case 'inscryption':
         // Berechne Inscryption-Kosten für jedes Level einzeln

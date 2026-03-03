@@ -5,7 +5,7 @@
  */
 import { db, storage } from './firebase';
 import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore/lite';
-import { ref as storageRef, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref as storageRef, uploadString, getBytes, deleteObject } from 'firebase/storage';
 
 export class DatabaseService {
   /**
@@ -54,9 +54,10 @@ export class DatabaseService {
       if (data.hasStorageBackup || !backupCode) {
         try {
           const backupRef = storageRef(storage, `backups/${userId}`);
-          const url = await getDownloadURL(backupRef);
-          const response = await fetch(url);
-          backupCode = await response.text();
+          // Use getBytes instead of getDownloadURL + fetch to avoid CORS issues
+          const arrayBuffer = await getBytes(backupRef);
+          const decoder = new TextDecoder('utf-8');
+          backupCode = decoder.decode(arrayBuffer);
         } catch (storageErr) {
           console.warn('Could not fetch backup from storage, falling back to Firestore if available', storageErr);
           if (!backupCode) throw storageErr; // If we don't have a fallback, throw

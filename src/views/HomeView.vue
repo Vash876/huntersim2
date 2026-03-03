@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.13.3',
+    date: '2026-03-04',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Added T2 relic costs',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Added T2 relic costs',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.13.2',
     date: '2026-02-25',
     changes: [

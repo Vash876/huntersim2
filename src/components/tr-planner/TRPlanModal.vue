@@ -3482,7 +3482,8 @@ function handleTRUpdate() {
   let totalCost = 0;
   
   if (boost.category === 'relic') {
-    const relicId = `r${boost.key.replace('r', '')}`;
+    // T2 Relics direkt verwenden, sonst boost.key
+    const relicId = boost.key;
     for (let level = currentLevel + 1; level <= targetLevel; level++) {
       totalCost += getRelicCost(relicId, level);
     }

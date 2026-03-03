@@ -119,6 +119,122 @@ function calculateRelic19(level) {
 }
 
 /**
+ * T2 Relic 5 Kosten berechnen (Multi-threshold every 5 levels)
+ * @param {number} level - Das aktuelle Level (1-indexed)
+ * @returns {number} - Die berechneten Kosten
+ */
+function calculateT2Relic5(level) {
+  const baseCost = 1300000, additive = 300000, exp0 = 1.35;
+  const iterativeExp = 1.04, iterativeN = 5;
+  
+  // Convert to 0-indexed for formula
+  const lvl = level - 1;
+  
+  let cost = (baseCost + additive * lvl) * Math.pow(exp0, lvl);
+  
+  // Calculate total iterations: for each threshold 0, 5, 10, ... <= lvl
+  let totalIterations = 0;
+  for (let i = 0; i * iterativeN <= lvl; i++) {
+    totalIterations += lvl - (iterativeN * i - 1);
+  }
+  cost *= Math.pow(iterativeExp, totalIterations);
+  
+  return Math.floor(cost);
+}
+
+/**
+ * T2 Relic 4 Kosten berechnen (Multi-threshold every 4 levels)
+ * @param {number} level - Das aktuelle Level (1-indexed)
+ * @returns {number} - Die berechneten Kosten
+ */
+function calculateT2Relic4(level) {
+  const baseCost = 3000000, additive = 50000, exp0 = 1.2;
+  const iterativeExp = 1.08, iterativeN = 4;
+  
+  // Convert to 0-indexed for formula
+  const lvl = level - 1;
+  
+  let cost = (baseCost + additive * lvl) * Math.pow(exp0, lvl);
+  
+  // Calculate total iterations: for each threshold 0, 4, 8, ... <= lvl
+  let totalIterations = 0;
+  for (let i = 0; i * iterativeN <= lvl; i++) {
+    totalIterations += lvl - (iterativeN * i - 1);
+  }
+  cost *= Math.pow(iterativeExp, totalIterations);
+  
+  return Math.floor(cost);
+}
+
+/**
+ * T2 Relic 7 Kosten berechnen (Single threshold at level 8)
+ * @param {number} level - Das aktuelle Level (1-indexed)
+ * @returns {number} - Die berechneten Kosten
+ */
+function calculateT2Relic7(level) {
+  const baseCost = 300000, additive = 850000, exp0 = 1.71;
+  const iterativeExp = 1.09, iterativeThreshold = 8;
+  
+  // Convert to 0-indexed for formula
+  const lvl = level - 1;
+  
+  let cost = (baseCost + additive * lvl) * Math.pow(exp0, lvl);
+  
+  // Apply iterative multiplier if lvl >= threshold
+  if (lvl >= iterativeThreshold) {
+    cost *= Math.pow(iterativeExp, lvl - iterativeThreshold + 1);
+  }
+  
+  return Math.floor(cost);
+}
+
+/**
+ * T2 Relic 8 Kosten berechnen (Multi-threshold every 4 levels)
+ * @param {number} level - Das aktuelle Level (1-indexed)
+ * @returns {number} - Die berechneten Kosten
+ */
+function calculateT2Relic8(level) {
+  const baseCost = 2100000, additive = 840000, exp0 = 1.42;
+  const iterativeExp = 1.21, iterativeN = 4;
+  
+  // Convert to 0-indexed for formula
+  const lvl = level - 1;
+  
+  let cost = (baseCost + additive * lvl) * Math.pow(exp0, lvl);
+  
+  // Calculate total iterations: for each threshold 0, 4, 8, ... <= lvl
+  let totalIterations = 0;
+  for (let i = 0; i * iterativeN <= lvl; i++) {
+    totalIterations += lvl - (iterativeN * i - 1);
+  }
+  cost *= Math.pow(iterativeExp, totalIterations);
+  
+  return Math.floor(cost);
+}
+
+/**
+ * T2 Relic 10 Kosten berechnen (Single threshold at level 1 with 21x multiplier)
+ * @param {number} level - Das aktuelle Level (1-indexed)
+ * @returns {number} - Die berechneten Kosten
+ */
+function calculateT2Relic10(level) {
+  const baseCost = 6000000, additive = 80000, exp0 = 15;
+  const iterativeExp = 21, iterativeThreshold = 1;
+  
+  // Convert to 0-indexed for formula
+  const lvl = level - 1;
+  
+  let cost = (baseCost + additive * lvl) * Math.pow(exp0, lvl);
+  
+  // Apply iterative multiplier if lvl >= threshold
+  if (lvl >= iterativeThreshold) {
+    cost *= Math.pow(iterativeExp, lvl - iterativeThreshold + 1);
+  }
+  
+  return Math.floor(cost);
+}
+
+/**
  * Berechnet die Kosten für ein bestimmtes Relic basierend auf dem Typ und Level
  * @param {string} relicType - Typ des Relics (relic04, relic07, etc.)
  * @param {number} level - Das Level
@@ -146,6 +262,16 @@ function getRelicCost(relicType, level) {
     case 'relic19':
     case 'r19':
       return calculateRelic19(level);
+    case 't2r5':
+      return calculateT2Relic5(level);
+    case 't2r7':
+      return calculateT2Relic7(level);
+    case 't2r4':
+      return calculateT2Relic4(level);
+    case 't2r8':
+      return calculateT2Relic8(level);
+    case 't2r10':
+      return calculateT2Relic10(level);
     default:
       console.error(`Unknown relic type: ${relicType}`);
       return 0;
