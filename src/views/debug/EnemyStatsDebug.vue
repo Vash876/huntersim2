@@ -155,10 +155,10 @@ function borgeMulti(enemyNum) {
     Math.max(0, (enemyNum - 430) * 0.004) +
     Math.max(0, (enemyNum - 440) * 0.004) +
     Math.max(0, (enemyNum - 450) * 0.004) +
-    Math.max(0, (enemyNum - 460) * 0.004) +
-    Math.max(0, (enemyNum - 470) * 0.004) +
-    Math.max(0, (enemyNum - 480) * 0.004) +
-    Math.max(0, (enemyNum - 490) * 0.004)
+    Math.max(0, (enemyNum - 460) * 0.006) +
+    Math.max(0, (enemyNum - 470) * 0.006) +
+    Math.max(0, (enemyNum - 480) * 0.006) +
+    Math.max(0, (enemyNum - 490) * 0.006)
   ) * Math.pow(1.01, Math.max(0, enemyNum - 350));
 }
 

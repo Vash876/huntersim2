@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.13.4',
+    date: '2026-03-05',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Adjusted Borge Boss 300 & 400 stats to improve boss kill rate matching with in-game results',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.13.3',
     date: '2026-03-04',
     changes: [

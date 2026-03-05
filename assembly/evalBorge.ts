@@ -11,7 +11,7 @@ function ck(chance: f64): boolean {
 
 // Multi-Funktion 
 function multi(enemyNum: i32): f64 {
-  return Math.max(1, 1 +
+  let baseMulti = 1 +
     Math.max(0, (enemyNum - 149) * 0.006) +
     Math.max(0, (enemyNum - 199) * 0.006) +
     Math.max(0, (enemyNum - 249) * 0.006) +
@@ -31,11 +31,14 @@ function multi(enemyNum: i32): f64 {
     Math.max(0, (enemyNum - 430) * 0.004) +
     Math.max(0, (enemyNum - 440) * 0.004) +
     Math.max(0, (enemyNum - 450) * 0.004) +
-    Math.max(0, (enemyNum - 460) * 0.004) +
-    Math.max(0, (enemyNum - 470) * 0.004) +
-    Math.max(0, (enemyNum - 480) * 0.004) +
-    Math.max(0, (enemyNum - 490) * 0.004)
-  ) * Math.pow(1.01, Math.max(0, enemyNum - 350) as f64);
+    Math.max(0, (enemyNum - 460) * 0.006) +
+    Math.max(0, (enemyNum - 470) * 0.006) +
+    Math.max(0, (enemyNum - 480) * 0.006) +
+    Math.max(0, (enemyNum - 490) * 0.006);
+  
+  let powMulti = Math.pow(1.01, Math.max(0, enemyNum - 350) as f64);
+  
+  return Math.max(1, baseMulti) * powMulti;
 }
 
 // Min-Funktion für mehrere Werte
@@ -57,8 +60,6 @@ class Enemy {
   atkSpd: f64;
   enrage: i32;
   stunEnd: f64;
-  
-  // Infernal Bulk (Boss #400)
   infernalBulkTimer: f64;
   baseAtk: f64;
 
@@ -69,17 +70,25 @@ class Enemy {
     const is300 = enemyNum === 300;
     const is400 = enemyNum === 400;
     
-    this.maxHp = (9 + 4 * enemyNum) * multiVal * Math.pow(2.85, floorDiv as f64) * (isBoss ? 90 : 1) * (is300 ? 0.9 : 1);
+    this.maxHp = (9 + 4 * enemyNum) 
+      * multiVal 
+      * Math.pow(2.85, floorDiv as f64) 
+      * (isBoss ? 90 : 1) 
+      * (is300 ? 0.87 : 1)
+      * (is400 ? 0.97 : 1);
     this.hp = 1;
-    this.atk = (2.5 + 0.7 * enemyNum) * multiVal * Math.pow(2.85, floorDiv as f64) * (isBoss ? 3.63 : 1) * (is300 ? 0.9 : 1);
+    this.atk = (2.5 + 0.7 * enemyNum) 
+      * multiVal 
+      * Math.pow(2.85, floorDiv as f64) 
+      * (isBoss ? 3.63 : 1) 
+      * (is300 ? 0.87 : 1)
+      * (is400 ? 0.97 : 1);
     
     // Store base ATK for Infernal Bulk calculations
     this.baseAtk = this.atk;
     
-    // Boss #400 starts with one Infernal Bulk activation already applied
     if (is400) {
-      //this.atk += 2780; // Pre-combat Infernal Bulk activation (+2780 ATK)
-      this.infernalBulkTimer = 10.0; // First in-combat activation after 10 seconds
+      this.infernalBulkTimer = 10.0; 
     } else {
       this.infernalBulkTimer = 0;
     }
@@ -100,7 +109,7 @@ class Enemy {
     }
     
     if (enemyNum >= 401) {
-      // Ab Stage 401: 5.5% für normale Enemies, 9.5% für Bosse (Dev-Update)
+      // At Stage 401: 5.5% for normal Enemies, 9.5% for Bosses
       this.effect = 0.055 + (isBoss ? 0.04 : 0);
     } else if (enemyNum >= 300) {
       this.effect = 0.04 + 0.01 * Math.max(0, floorDiv - 3) + (isBoss ? 0.04 : 0);
@@ -108,14 +117,21 @@ class Enemy {
       this.effect = 0;
     }
     
-    this.regen = Math.max(0, 0.08 * Math.max(0, enemyNum - 1) * multiVal * Math.pow(1.052, floorDiv as f64)) * (isBoss ? 1.92 : 1) * (is300 ? 0.9 : 1);
+    this.regen = Math.max(0, 
+      0.08 * Math.max(0, enemyNum - 1) 
+      * multiVal 
+      * Math.pow(1.052, floorDiv as f64)
+    ) 
+      * (isBoss ? 1.92 : 1) 
+      * (is300 ? 0.87 : 1)
+      * (is400 ? 0.97 : 1);
     this.atkSpd = (4.526 - 0.006 * enemyNum) * (isBoss ? 2.42 : 1);
     this.enrage = 0;
     this.stunEnd = 0;
   }
 }
 
-// Boss Stats Struktur
+// Boss Stats Structure
 class BossStats {
   hp: f64;
   kills: i32;
@@ -126,7 +142,7 @@ class BossStats {
   }
 }
 
-// Vorberechnete Enemies
+// Pre Calculated Enemies
 const ENEMIES = new StaticArray<Enemy>(1001);
 function initEnemies(): void {
   for (let i = 0; i <= 1000; i++) {
@@ -134,7 +150,7 @@ function initEnemies(): void {
   }
 }
 
-// Borge Character Struktur
+// Borge Character Structure
 class Borge {
   // Basis Stats
   lvl: i32;
@@ -163,7 +179,7 @@ class Borge {
   remainingBullets: i32;
   time: f64;
   
-  // Talente
+  // Talents
   revival: i32;
   life: i32;
   ua: i32;
@@ -174,7 +190,7 @@ class Borge {
   fow: i32;
   ultimaTalent: i32;
   
-  // Pfade
+  // Attributes
   ares: i32;
   ylith: i32;
   spartan: i32;
@@ -331,8 +347,17 @@ let currentCreaGalvTrinketsCount: i32 = 0;
 
 // Regen function
 function regen(): void {
-  currentBorge.hp = Math.min(currentBorge.currentMaxHp, currentBorge.hp + currentBorge.currentRegen + currentBorge.inhaler * 0.0008 * (currentBorge.currentMaxHp - currentBorge.hp));
-  currentEnemy.hp = Math.min(currentEnemy.maxHp, currentEnemy.hp + currentEnemy.regen * (1 - currentBorge.omen * 0.08 / (currentEnem > 0 && currentEnem % 1000 === 0 ? 2 : 1)));
+  currentBorge.hp = Math.min(
+    currentBorge.currentMaxHp, 
+    currentBorge.hp + currentBorge.currentRegen 
+      + currentBorge.inhaler * 0.0008 * (currentBorge.currentMaxHp - currentBorge.hp)
+  );
+  
+  currentEnemy.hp = Math.min(
+    currentEnemy.maxHp, 
+    currentEnemy.hp + currentEnemy.regen 
+      * (1 - currentBorge.omen * 0.08 / (currentEnem > 0 && currentEnem % 1000 === 0 ? 2 : 1))
+  );
   nextRegen = currentTime + 1;
   
   if (currentEnemy.hp <= 0) { 
@@ -359,7 +384,7 @@ function fury(enabled: boolean): void {
 function infernalBulk(): void {
   if (currentEnem === 4000) {
     // Add +2778 ATK
-    currentEnemy.atk += 2778;
+    currentEnemy.atk += 2778.595;
     // Next activation in 10 seconds
     nextInfernalBulk = currentTime + 10.0;
   } else {
@@ -370,7 +395,9 @@ function infernalBulk(): void {
 
 // Enemy Attack function
 function enemyAttack(isBonus: boolean = false): void {
-  let dmg = currentEnemy.atk * (1 - 0.01 * currentBorge.mino - 0.03 * currentCreaGem4) * (1 - currentBorge.currentDr);
+  let dmg = currentEnemy.atk 
+    * (1 - 0.01 * currentBorge.mino - 0.03 * currentCreaGem4) 
+    * (1 - currentBorge.currentDr);
   
   if (currentEnem > 0 && currentEnem % 1000 === 0) {
     currentEnemy.enrage++;
@@ -412,7 +439,9 @@ function enemyAttack(isBonus: boolean = false): void {
       helltouchBaseDamage = dmg;
     }
     
-    currentEnemy.hp -= 0.08 * currentBorge.helltouch * helltouchBaseDamage * (currentEnem > 0 && currentEnem % 1000 === 0 ? 0.1 : 1);
+    currentEnemy.hp -= 0.08 * currentBorge.helltouch 
+      * helltouchBaseDamage 
+      * (currentEnem > 0 && currentEnem % 1000 === 0 ? 0.1 : 1);
   }
   
   if (currentEnemy.hp <= 0) {
@@ -461,15 +490,14 @@ function killEnemy(): void {
     currentEnem++;
   }
   
-  // Enemy nur einmal und korrekt erstellen
+  // Create Enemy instance if new enemy
   if (currentEnem % 10 === 0) {
     let enemyIndex = Math.min(1000, Math.floor(currentEnem / 10)) as i32;
     currentEnemy = ENEMIES[enemyIndex]; 
     
     // Reset Infernal Bulk ATK to base value for new enemy
-    // Only Boss #400 should have the pre-combat Infernal Bulk bonus
     if (currentEnem === 4000) {
-      currentEnemy.atk = currentEnemy.baseAtk; // Pre-combat Infernal Bulk
+      currentEnemy.atk = currentEnemy.baseAtk; 
     } else {
       currentEnemy.atk = currentEnemy.baseAtk; // Reset to base ATK
     }
@@ -500,7 +528,8 @@ function killEnemy(): void {
   }
   
   trampleDamage = 0;
-  currentEnemy.hp = currentEnemy.maxHp * (1 - 0.04 * currentBorge.pog * (currentEnem > 0 && currentEnem % 1000 === 0 ? 0.5 : 1));
+  currentEnemy.hp = currentEnemy.maxHp 
+    * (1 - 0.04 * currentBorge.pog * (currentEnem > 0 && currentEnem % 1000 === 0 ? 0.5 : 1));
   currentEnemy.enrage = 0;
   currentEnemy.stunEnd = 0;
   
@@ -537,7 +566,11 @@ function killEnemy(): void {
 // Attack function
 function atk(isAthena: boolean = false): void {
   let evaded = currentEnemy.evade > 0 && ck(currentEnemy.evade);
-  let dmg = evaded ? 0 : (currentBorge.currentAtk * (1 + 0.1 * currentBorge.bfb * (1 - currentBorge.hp / currentBorge.currentMaxHp)) * (isAthena ? currentBorge.critPower * 1.5 : (ck(currentBorge.currentCritRate) ? currentBorge.critPower : 1)));
+  let dmg = evaded ? 0 : (
+    currentBorge.currentAtk 
+    * (1 + 0.1 * currentBorge.bfb * (1 - currentBorge.hp / currentBorge.currentMaxHp)) 
+    * (isAthena ? currentBorge.critPower * 1.5 : (ck(currentBorge.currentCritRate) ? currentBorge.critPower : 1))
+  );
   
   currentEnemy.hp -= dmg * currentEnemy.dr;
   
@@ -557,9 +590,13 @@ function atk(isAthena: boolean = false): void {
   
   if (!evaded) {
     if (currentBorge.impacts && ck(currentBorge.currentEffect)) {
-      nextEnemAtk += currentBorge.impacts * 0.1 / (currentEnem > 0 && currentEnem % 1000 === 0 ? 2 : 1) - Math.max(0, currentEnemy.stunEnd - currentTime);
-      nextBossBonusAtk += currentBorge.impacts * 0.1 / (currentEnem > 0 && currentEnem % 1000 === 0 ? 2 : 1) - Math.max(0, currentEnemy.stunEnd - currentTime);
-      currentEnemy.stunEnd = currentTime + currentBorge.impacts * 0.1 / (currentEnem > 0 && currentEnem % 1000 === 0 ? 2 : 1);
+      let stunDuration = currentBorge.impacts * 0.1 
+        / (currentEnem > 0 && currentEnem % 1000 === 0 ? 2 : 1);
+      let stunRemaining = Math.max(0, currentEnemy.stunEnd - currentTime);
+      
+      nextEnemAtk += stunDuration - stunRemaining;
+      nextBossBonusAtk += stunDuration - stunRemaining;
+      currentEnemy.stunEnd = currentTime + stunDuration;
     }
     if (currentBorge.fow && ck(currentBorge.currentEffect)) {
       fowRemaining = currentBorge.fow * 0.1;
@@ -636,7 +673,8 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
   borge.evadeStacks = 0;
   borge.hp = borge.maxHp;
   borge.currentMaxHp = borge.maxHp;
-  borge.currentAtk = borge.atk * (attr > 0 ? Math.pow(Math.pow(1.08, catchup99gu as f64), 1 + attr * 0.1 - 0.1) : 1);
+  borge.currentAtk = borge.atk 
+    * (attr > 0 ? Math.pow(Math.pow(1.08, catchup99gu as f64), 1 + attr * 0.1 - 0.1) : 1);
   borge.currentRegen = borge.regen;
   borge.currentDr = borge.dr;
   borge.currentEffect = borge.effect;
@@ -667,7 +705,7 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
     currentBorge.maxRevives = borge.revival;
   }
   
-  // Haupt-Kampfschleife
+  // Main Combat Loop
   while (borge.hp > 0) {
     currentTime = minAll(nextAtk, nextEnemAtk, nextRegen, nextAthena, nextBossBonusAtk, nextFury, nextInfernalBulk);
     
@@ -716,8 +754,15 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
 
   let stageGrowth: f64 = 1.051;
   let enemiesInSection: i32 = 1010;
-  let excludedXpMultis = (attrGN2 ? 1.5 : 1) * Math.pow(2, Math.floor((currentMaxStage - 1) / 100) as f64) * Math.pow(2, r19 as f64);
-  let includedMultis = (1 + borge.timeless * 0.14) * gadgetLootMulti * (card ? 1.05 : 1) * (1 + i60 * 0.03) * (temp_gem6 > 0 ? 1.03 : 1);
+  let excludedXpMultis = (attrGN2 ? 1.5 : 1) 
+    * Math.pow(2, Math.floor((currentMaxStage - 1) / 100) as f64) 
+    * Math.pow(2, r19 as f64);
+  
+  let includedMultis = (1 + borge.timeless * 0.14) 
+    * gadgetLootMulti 
+    * (card ? 1.05 : 1) 
+    * (1 + i60 * 0.03) 
+    * (temp_gem6 > 0 ? 1.03 : 1);
   
   // Research95: Kumulativer Multiplier (level 1: 1.02, level 2: 1.02*1.03, etc.)
   let research95Multi: f64 = 1;
@@ -725,9 +770,44 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
     research95Multi *= (1 + (i + 1) * 0.01);
   }
   
-  let excludedMultis = Math.max(special, 1) * (iap ? 1.25 : 1) * Math.max(ultima, 1) * Math.pow(1.05, scavengers as f64) * Math.pow(1.02, m0 as f64) * Math.pow(1.05, r7 as f64) * (attrGN3 ? 1.25 : 1) * (Math.pow(Math.pow(1.07, lootgu as f64), 1 + attr * 0.1 - 0.1)) * Math.pow(1.1, i14 as f64) * Math.pow(1.1, i80 as f64) * Math.pow(1.08, i44 as f64) * (research81 >= 1 ? 1.1 : 1) * (research81 >= 4 ? 1.2 : 1) * research95Multi * (research105 >= 1 ? 1.2 : 1) * (research105 >= 4 ? 1.3 : 1) * (cm46 > 0 ? 1.03 : 1) * (cm47 > 0 ? 1.02 : 1) * (cm48 > 0 ? 1.07 : 1) * (cm51 > 0 ? 1.05 : 1) * (cm53 > 0 ? 1.02 : 1) * (cm54 > 0 ? 1.02 : 1) * (cm57 > 0 ? 1.1 : 1) * Math.pow(1.02, stelzi as f64) * Math.pow(1.08, i103 as f64) * (1 + exodus_temporalEvolutionCount * 0.002) * (inno_gem5 > 0 ? 1.3 : 1) * (evo_gem2 > 0 ? 1.1 : 1);
+  let excludedMultis = Math.max(special, 1) 
+    * (iap ? 1.25 : 1) 
+    * Math.max(ultima, 1) 
+    * Math.pow(1.05, scavengers as f64) 
+    * Math.pow(1.02, m0 as f64) 
+    * Math.pow(1.05, r7 as f64) 
+    * (attrGN3 ? 1.25 : 1) 
+    * (Math.pow(Math.pow(1.07, lootgu as f64), 1 + attr * 0.1 - 0.1)) 
+    * Math.pow(1.1, i14 as f64) 
+    * Math.pow(1.1, i80 as f64) 
+    * Math.pow(1.08, i44 as f64) 
+    * (research81 >= 1 ? 1.1 : 1) 
+    * (research81 >= 4 ? 1.2 : 1) 
+    * research95Multi 
+    * (research105 >= 1 ? 1.2 : 1) 
+    * (research105 >= 4 ? 1.3 : 1) 
+    * (cm46 > 0 ? 1.03 : 1) 
+    * (cm47 > 0 ? 1.02 : 1) 
+    * (cm48 > 0 ? 1.07 : 1) 
+    * (cm51 > 0 ? 1.05 : 1) 
+    * (cm53 > 0 ? 1.02 : 1) 
+    * (cm54 > 0 ? 1.02 : 1) 
+    * (cm57 > 0 ? 1.1 : 1) 
+    * Math.pow(1.02, stelzi as f64) 
+    * Math.pow(1.08, i103 as f64) 
+    * (1 + exodus_temporalEvolutionCount * 0.002) 
+    * (inno_gem5 > 0 ? 1.3 : 1) 
+    * (evo_gem2 > 0 ? 1.1 : 1);
   
-  let loopLoot = normalized * ((Math.pow(stageGrowth, Math.floor(Math.min(currentEnem, enemiesInSection - 10) / 10) as f64) - 1) / (stageGrowth - 1) * 10 + (Math.min(currentEnem, enemiesInSection - 10) - Math.floor(Math.min(currentEnem, enemiesInSection - 10) / 10) * 10) * Math.pow(stageGrowth, Math.floor(Math.min(currentEnem, enemiesInSection - 10) / 10) as f64)) * includedMultis * (1 + borge.ll * 0.2 * borge.effect);
+  let loopLoot = normalized 
+    * (
+      (Math.pow(stageGrowth, Math.floor(Math.min(currentEnem, enemiesInSection - 10) / 10) as f64) - 1) 
+      / (stageGrowth - 1) * 10 
+      + (Math.min(currentEnem, enemiesInSection - 10) - Math.floor(Math.min(currentEnem, enemiesInSection - 10) / 10) * 10) 
+      * Math.pow(stageGrowth, Math.floor(Math.min(currentEnem, enemiesInSection - 10) / 10) as f64)
+    ) 
+    * includedMultis 
+    * (1 + borge.ll * 0.2 * borge.effect);
   
   let bonusMulti: f64 = 1;
   let tempEnem = currentEnem;
@@ -744,10 +824,26 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
 
     bonusMulti *= Math.pow(stageGrowth, 100);
 
-    let mat1Bonus = bonusMulti * mat1[mat1.length - 1] * 800 * includedMultis * excludedMultis;
-    let mat2Bonus = bonusMulti * mat2[mat2.length - 1] * 600 * includedMultis * excludedMultis;
-    let mat3Bonus = bonusMulti * mat3[mat3.length - 1] * 400 * includedMultis * excludedMultis;
-    let xpBonus = bonusMulti * xp[xp.length - 1] * 300 * includedMultis * excludedMultis * excludedXpMultis;
+    let mat1Bonus = bonusMulti 
+      * mat1[mat1.length - 1] * 800 
+      * includedMultis 
+      * excludedMultis;
+    
+    let mat2Bonus = bonusMulti 
+      * mat2[mat2.length - 1] * 600 
+      * includedMultis 
+      * excludedMultis;
+    
+    let mat3Bonus = bonusMulti 
+      * mat3[mat3.length - 1] * 400 
+      * includedMultis 
+      * excludedMultis;
+    
+    let xpBonus = bonusMulti 
+      * xp[xp.length - 1] * 300 
+      * includedMultis 
+      * excludedMultis 
+      * excludedXpMultis;
     
     bonusMat1 += mat1Bonus;
     bonusMat2 += mat2Bonus;
@@ -761,14 +857,40 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
 
     bonusMulti *= 5;
 
-    loopLoot += bonusMulti * normalized * stageGrowth * ((Math.pow(stageGrowth, Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) as f64) - 1) / (stageGrowth - 1) * 10 + (Math.min(tempEnem, enemiesInSection - 10) - Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) * 10) * Math.pow(stageGrowth, Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) as f64)) * includedMultis * (1 + borge.ll * 0.2 * borge.effect);
+    loopLoot += bonusMulti 
+      * normalized 
+      * stageGrowth 
+      * (
+        (Math.pow(stageGrowth, Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) as f64) - 1) 
+        / (stageGrowth - 1) * 10 
+        + (Math.min(tempEnem, enemiesInSection - 10) - Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) * 10) 
+        * Math.pow(stageGrowth, Math.floor(Math.min(tempEnem, enemiesInSection - 10) / 10) as f64)
+      ) 
+      * includedMultis 
+      * (1 + borge.ll * 0.2 * borge.effect);
   }
   
   // Calculate average materials for accumulation
-  let currentMat1 = loopLoot * 3 / 10 * arrayAverage(mat1) / normalized * excludedMultis + bonusMat1;
-  let currentMat2 = loopLoot * 3 / 10 * arrayAverage(mat2) / normalized * excludedMultis + bonusMat2;
-  let currentMat3 = loopLoot * 3 / 10 * arrayAverage(mat3) / normalized * excludedMultis + bonusMat3;
-  let currentXp = loopLoot * 1 / 10 * arrayAverage(xp) / normalized * excludedMultis * excludedXpMultis + bonusXp;
+  let currentMat1 = loopLoot * 3 / 10 
+    * arrayAverage(mat1) / normalized 
+    * excludedMultis 
+    + bonusMat1;
+  
+  let currentMat2 = loopLoot * 3 / 10 
+    * arrayAverage(mat2) / normalized 
+    * excludedMultis 
+    + bonusMat2;
+  
+  let currentMat3 = loopLoot * 3 / 10 
+    * arrayAverage(mat3) / normalized 
+    * excludedMultis 
+    + bonusMat3;
+  
+  let currentXp = loopLoot * 1 / 10 
+    * arrayAverage(xp) / normalized 
+    * excludedMultis 
+    * excludedXpMultis 
+    + bonusXp;
   
   borge.mat1 += currentMat1;
   borge.mat2 += currentMat2;
@@ -830,8 +952,10 @@ export function EVALBORGE_WASM(
   initEnemies();
   
   // Gadget/Creation Multipliers 
-  const gadgetMulti = Math.pow(1.001, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
-  const gadgetLootMulti = Math.pow(1.005, gadget as f64) * Math.pow(1.02, Math.floor(gadget / 10) as f64);
+  const gadgetMulti = Math.pow(1.001, gadget as f64) 
+    * Math.pow(1.02, Math.floor(gadget / 10) as f64);
+  const gadgetLootMulti = Math.pow(1.005, gadget as f64) 
+    * Math.pow(1.02, Math.floor(gadget / 10) as f64);
   const crea4GUMulti = 1.0 + (creaBorgeStat as f64) * 0.01;
   
   // Borge erstellen und konfigurieren
@@ -848,16 +972,60 @@ export function EVALBORGE_WASM(
   }
   
   // Base Stats 
-  borge.maxHp = (43 + i3 * 6 + i27 * 24 + (2.5 + Math.floor(hp / 5) * 0.01) * hp) * gadgetMulti * (1 + 0.03 * r4) * (card ? 1.03 : 1) * (creaGN1 ? 1.2 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.015) : 1) * (1 + i60 * 0.03) * (evoGN3 ? 1.0777 : 1) * (1 + 0.05 * i84) * crea4GUMulti * (temp_gem6 > 0 ? 1.03 : 1) * creaGem5HpBonus;
+  borge.maxHp = (43 + i3 * 6 + i27 * 24 + (2.5 + Math.floor(hp / 5) * 0.01) * hp) 
+    * gadgetMulti 
+    * (1 + 0.03 * r4) 
+    * (card ? 1.03 : 1) 
+    * (creaGN1 ? 1.2 : 1) 
+    * (creaGN2 ? 1.02 : 1) 
+    * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.015) : 1) 
+    * (1 + i60 * 0.03) 
+    * (evoGN3 ? 1.0777 : 1) 
+    * (1 + 0.05 * i84) 
+    * crea4GUMulti 
+    * (temp_gem6 > 0 ? 1.03 : 1) 
+    * creaGem5HpBonus;
   
-  borge.atk = (3 + i13 + 2 * impacts + (0.5 + Math.floor(atk / 10) * 0.01) * atk) * gadgetMulti * (1 + 0.03 * r16) * (innoGN3 ? 1.03 : 1) * (card ? 1.03 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.01) : 1) * (1 + i60 * 0.03) * Math.pow(1.05, i87 as f64) * crea4GUMulti * (temp_gem6 > 0 ? 1.03 : 1) * Math.pow(1.02, t2r7 as f64);
+  borge.atk = (3 + i13 + 2 * impacts + (0.5 + Math.floor(atk / 10) * 0.01) * atk) 
+    * gadgetMulti 
+    * (1 + 0.03 * r16) 
+    * (innoGN3 ? 1.03 : 1) 
+    * (card ? 1.03 : 1) 
+    * (creaGN2 ? 1.02 : 1) 
+    * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.01) : 1) 
+    * (1 + i60 * 0.03) 
+    * Math.pow(1.05, i87 as f64) 
+    * crea4GUMulti 
+    * (temp_gem6 > 0 ? 1.03 : 1) 
+    * Math.pow(1.02, t2r7 as f64);
   
-  borge.regen = (0.02 + 0.04 * ylith + (0.03 + Math.floor(regen / 30) * 0.01) * regen) * gadgetMulti * (card ? 1.03 : 1) * (creaGN2 ? 1.02 : 1) * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.005) : 1) * (evoGN3 ? 1.0777 : 1) * crea4GUMulti;
+  borge.regen = (0.02 + 0.04 * ylith + (0.03 + Math.floor(regen / 30) * 0.01) * regen) 
+    * gadgetMulti 
+    * (card ? 1.03 : 1) 
+    * (creaGN2 ? 1.02 : 1) 
+    * (creaGN3 ? 1 + Math.max(0, (lvl - 39) * 0.005) : 1) 
+    * (evoGN3 ? 1.0777 : 1) 
+    * crea4GUMulti;
   
-  borge.dr = 0.0144 * (dr as f64) + (creaGN2 ? 0.02 : 0) + i24 * 0.004 + i91 * 0.002;
+  borge.dr = 0.0144 * (dr as f64) 
+    + (creaGN2 ? 0.02 : 0) 
+    + i24 * 0.004 
+    + i91 * 0.002;
+  
   borge.evade = 0.0034 * (evade as f64) + 0.01;
-  borge.effect = 0.005 * (effect as f64) + 0.04 + (innoGN3 ? 0.03 : 0) + (creaGN2 ? 0.02 : 0) + i11 * 0.02 + i89 * 0.002;
-  borge.critRate = 0.05 + 0.0018 * (critRate as f64) + (creaGN2 ? 0.02 : 0) + i4 * 0.0065 + i88 * 0.004;
+  
+  borge.effect = 0.005 * (effect as f64) 
+    + 0.04 
+    + (innoGN3 ? 0.03 : 0) 
+    + (creaGN2 ? 0.02 : 0) 
+    + i11 * 0.02 
+    + i89 * 0.002;
+  
+  borge.critRate = 0.05 
+    + 0.0018 * (critRate as f64) 
+    + (creaGN2 ? 0.02 : 0) 
+    + i4 * 0.0065 
+    + i88 * 0.004;
   borge.critPower = 0.01 * (critPower as f64) + 1.3;
   
   // Exodus Gem 4: Construction Milestone ATK Speed Bonus
@@ -899,34 +1067,47 @@ export function EVALBORGE_WASM(
   borge.inhaler = inhaler;
   
   // PrepBorge
-  borge.maxHp *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.01 * borge.ares);
-  borge.regen *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.009 * borge.ylith);
-  borge.atk   *= (1 + 0.01 * borge.ultimaTalent) * (1 + 0.002 * borge.ares) * (1 + 0.01 * borge.mino);
+  borge.maxHp *= (1 + 0.01 * borge.ultimaTalent) 
+    * (1 + 0.01 * borge.ares);
+  
+  borge.regen *= (1 + 0.01 * borge.ultimaTalent) 
+    * (1 + 0.009 * borge.ylith);
+  
+  borge.atk *= (1 + 0.01 * borge.ultimaTalent) 
+    * (1 + 0.002 * borge.ares) 
+    * (1 + 0.01 * borge.mino);
+  
   borge.dr += 0.015 * borge.spartan;
-  borge.critRate += 0.044 * borge.punches + 0.004 * borge.hermes;
-  // Evolution Gem 6: +2% Crit Chance für Borge
+  
+  borge.critRate += 0.044 * borge.punches 
+    + 0.004 * borge.hermes;
+  // Evolution GN6: +2% Crit Chance for Borge
   if (evo_gem6 > 0) {
     borge.critRate += 0.02;
   }
-  borge.critPower += 0.08 * borge.punches + 0.01 * borge.hermes;
-  borge.effect += 0.012 * borge.sensors + 0.004 * borge.hermes;
+  borge.critPower += 0.08 * borge.punches 
+    + 0.01 * borge.hermes;
+  
+  borge.effect += 0.012 * borge.sensors 
+    + 0.004 * borge.hermes;
+  
   borge.evade += 0.016 * borge.sensors;
   borge.lifesteal = 0.0111 * borge.baal;
   
-  // Simulation laufen lassen
+  // Run simulation
   for (let i = 0; i < iters; i++) {
     sim(borge, maxStage, attr, catchup99gu, reviveCd, trample > 0, special, iap > 0, ultima, scavengers, m0, r7, r19, attrGN2 > 0, attrGN3 > 0, lootgu, i14, i80, i44, research81, research95, research105, cm46, cm47, cm48, cm51, cm53, cm54, cm57, gadgetLootMulti, card > 0, i60, evo_gem2, evoGN3, tempGN4, stelzi, i103, exodus_gem1, exodus_temporalEvolutionCount, exodus_gem4, exodus_constructionMilestoneCount, temp_gem6, inno_gem5, crea_gem4, crea_gem5, crea_galvTrinketsCount);
   }
 
-  // lastBorge für Export-Funktionen setzen
+  // Set lastBorge for export functions
   lastBorge = borge;
 
   
-  // Ergebnis zurückgeben (Loot per minute)
+  // Return result (Loot per minute)
   return borge.ls * 60;
 }
 
-// Test-Funktion
+// Test function
 export function testEnemyCreation(): f64 {
   initEnemies();
   let sum: f64 = 0;
@@ -937,7 +1118,7 @@ export function testEnemyCreation(): f64 {
   return sum;
 }
 
-// Zusätzliche Export-Funktionen für detaillierte Ergebnisse
+// Export functions to get lastBorge stats
 let lastBorge: Borge = new Borge();
 
 export function getLastAvgStage(): f64 { 
