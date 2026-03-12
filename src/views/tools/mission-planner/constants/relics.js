@@ -20,21 +20,21 @@ const RELIC_DATA = {
   r2:  { bonus: 11,    baseCost: 0.6,  additive: 0.2,  exp0: 1.09,  exp10: 1.006, exp20: 1.007,  exp30: 1.022, exp40: null, exp50: null },
   r3:  { bonus: 0.03,  baseCost: 0.7,  additive: 0.5,  exp0: 1.12,  exp10: 1.02,  exp20: 1.04,   exp30: 1.07,  exp40: null,    exp50: null },
   r4:  { bonus: 0.03,  baseCost: 0.8,  additive: 0.4,  exp0: 1.12,  exp10: 1.02,  exp20: 1.015,  exp30: 1,     exp40: null, exp50: null },
-  r5:  { bonus: 0.001, baseCost: 1,    additive: 120,  exp0: 4400,  fixedCosts: [1, 120, 4400, 6200, 15200, 18500, 24000, 30000, 44000, 56000, 72000, 144000] },
-  r6:  { bonus: 2.75,  baseCost: 30,   additive: 450,  exp0: 1070,  fixedCosts: [30, 450, 1070, 2500, 6700, 7000, 7600, 8500, 12000, 16000, 32000, 2510000] },
+  r5:  { bonus: 0.001, baseCost: 1,    additive: 120,  exp0: 4400,  fixedCosts: [1, 120, 4400, 6200, 15200, 18500, 24000, 30000, 44000, 56000, 72000, 144000, 216000, 288000, 360000, 432000, 504000, 576000, 648000, 720000, 792000] },
+  r6:  { bonus: 2.75,  baseCost: 30,   additive: 450,  exp0: 1070,  fixedCosts: [30, 450, 1070, 2500, 6700, 7000, 7600, 8500, 12000, 16000, 32000, 2510000, 5000000, 7500000, 10000000, 12500000] },
   r7:  { bonus: 1.05,  baseCost: 2,    additive: 1.8,  exp0: 1.14,  exp10: 1.01,  exp20: 1.02,   exp30: 1,     exp40: 1,    exp50: null },
   r8:  { bonus: 5,     baseCost: 5,    additive: 4,    exp0: 1.2,   exp10: 1.1,   exp20: 1,      exp30: 1,     exp40: null, exp50: null },
   r9:  { bonus: 1.08,  baseCost: 8,    additive: 1.8,  exp0: 1.18,  exp10: 1.03,  exp20: 1.08,   exp30: 1,     exp40: 1,    exp50: 1 },
-  r10: { bonus: 1.08,  baseCost: 2,    additive: 15,   exp0: 72,    fixedCosts: [2, 15, 72, 257, 594, 1691, 3140, 18861, 139150] },
-  r11: { bonus: 2,     baseCost: 3,    additive: 65,   exp0: 305,   fixedCosts: [3, 65, 305, 2055, 4805, 8555, 15000, 27500, 575000] },
+  r10: { bonus: 1.08,  baseCost: 2,    additive: 15,   exp0: 72,    fixedCosts: [2, 15, 72, 257, 594, 1691, 3140, 18861, 139150, 539370, 2200000, 9000000, 36000000] },
+  r11: { bonus: 2,     baseCost: 3,    additive: 65,   exp0: 305,   fixedCosts: [3, 65, 305, 2055, 4805, 8555, 15000, 27500, 575000, 750000, 1000000, 1500000, 2000000] },
   r12: { bonus: 0.5,   baseCost: 50,   additive: 30,   exp0: 1.09,  exp10: 1.01,  exp20: 1,      exp30: 1,     exp40: 1.00372, exp50: null },
   r13: { bonus: 468,   baseCost: 10,   additive: 1.13, exp0: 1.013, exp10: 1.012, exp20: 1,      exp30: 1,     exp40: 1,    exp50: 1.00378, maxLevel: 200 },
   r14: { bonus: 468,   baseCost: 20,   additive: 100,  exp0: 320,   fixedCosts: [20, 100, 320, 880, 2240, 5440, 12800, 29440] },
-  r15: { bonus: 1,     baseCost: 30,   additive: 140,  exp0: 440,   fixedCosts: [30, 140, 440, 1200, 3040, 7360, 17280, 39680] },
+  r15: { bonus: 1,     baseCost: 30,   additive: 140,  exp0: 440,   fixedCosts: [30, 140, 440, 1200, 3040, 7360, 17280, 39680, 89000, 196000, 420000, 880000, 1800000] },
   r16: { bonus: 0.03,  baseCost: 40,   additive: 5,    exp0: 1.08,  exp10: 1.028, exp20: 1,      exp30: 1,     exp40: null, exp50: null },
   r17: { bonus: 0.03,  baseCost: 50,   additive: 6,    exp0: 1.1,   exp10: 1.037, exp20: 1,      exp30: 1,     exp40: null, exp50: null },
   r18: { bonus: 365,   baseCost: 60,   additive: 6,    exp0: 1.03,  exp10: 1.01,  exp20: 1.02,   exp30: 1,     exp40: null, exp50: null, maxLevel: 200 },
-  r19: { bonus: 365,   baseCost: 666,  additive: 1289, exp0: 2446,  fixedCosts: [666, 1289, 2446, 4569, 8428, 15390, 27871, 50121, 3140000] },
+  r19: { bonus: 365,   baseCost: 666,  additive: 1289, exp0: 2446,  fixedCosts: [666, 1289, 2446, 4569, 8428, 15390, 27871, 50121, 3140000, 16000000, 55000000, 180000000, 600000000] },
   r20: { bonus: 2,     baseCost: 1000, additive: 50,   exp0: 1.2,   exp10: 1,     exp20: 1,      exp30: 1,     exp40: 1,    exp50: null },
   // Tier 2 Relics - Official formulas from dev
   // Formula: floor((startCost + additive * lvl) * exp0^lvl * iterative^max(0, lvl - threshold))
@@ -307,7 +307,7 @@ export const RELICS = {
   // ==================== TIER 1 RELICS ====================
   r1: {
     id: 'r1',
-    name: 'Relic 1',
+    name: 'The Omnicrum Compendium',
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r1,
@@ -315,7 +315,7 @@ export const RELICS = {
   },
   r2: {
     id: 'r2',
-    name: 'Relic 2',
+    name: 'The Omni-Cell',
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r2,
@@ -323,7 +323,7 @@ export const RELICS = {
   },
   r3: {
     id: 'r3',
-    name: 'Relic 3',
+    name: 'The Time-Glider Engine',
     tier: 1,
     maxLevel: 100, 
     effectType: 'mission_speed',
@@ -335,7 +335,7 @@ export const RELICS = {
   },
   r4: {
     id: 'r4',
-    name: 'Relic 4',
+    name: 'The Disk of Dawn',
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r4,
@@ -343,7 +343,7 @@ export const RELICS = {
   },
   r5: {
     id: 'r5',
-    name: 'Relic 5',
+    name: 'The Portable Pocket Dimension Storage Unit',
     tier: 1,
     maxLevel: 8,
     canBeUpgraded: true, // Max level can be increased by other upgrades
@@ -355,7 +355,7 @@ export const RELICS = {
   },
   r6: {
     id: 'r6',
-    name: 'Relic 6',
+    name: 'The Spaceshop Sized Pocket Dimension Storage Unit',
     tier: 1,
     maxLevel: 8,
     canBeUpgraded: true, // Max level can be increased by other upgrades
@@ -370,7 +370,7 @@ export const RELICS = {
   },
   r7: {
     id: 'r7',
-    name: 'Relic 7',
+    name: 'Manifestation Core: Titan',
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r7,
@@ -378,7 +378,7 @@ export const RELICS = {
   },
   r8: {
     id: 'r8',
-    name: 'Relic 8',
+    name: 'The C.O.O.R.S',
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r8,
@@ -386,7 +386,7 @@ export const RELICS = {
   },
   r9: {
     id: 'r9',
-    name: 'Relic 9',
+    name: 'Fractalized Ether Crystal',
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r9,
@@ -394,7 +394,7 @@ export const RELICS = {
   },
   r10: {
     id: 'r10',
-    name: 'Relic 10',
+    name: 'The Feii Constructatron',
     tier: 1,
     maxLevel: 8,
     getCost: RELIC_COSTS.r10,
@@ -402,7 +402,7 @@ export const RELICS = {
   },
   r11: {
     id: 'r11',
-    name: 'Relic 11',
+    name: 'The Lahnarian Fleet Carrier',
     tier: 1,
     maxLevel: 8, 
     effectType: 'campaign_max_crew',
@@ -414,7 +414,7 @@ export const RELICS = {
   },
   r12: {
     id: 'r12',
-    name: 'Relic 12',
+    name: 'The Sirred Zagreus Circumnavigator',
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r12,
@@ -422,7 +422,7 @@ export const RELICS = {
   },
   r13: {
     id: 'r13',
-    name: 'Relic 13',
+    name: 'The C.H.A.D Bank Cap Capacitor',
     tier: 1,
     maxLevel: 200,
     getCost: RELIC_COSTS.r13,
@@ -430,7 +430,7 @@ export const RELICS = {
   },
   r14: {
     id: 'r14',
-    name: 'Relic 14',
+    name: 'The Liquid Luni Lesstrogen Tank',
     tier: 1,
     maxLevel: 8,
     getCost: RELIC_COSTS.r14,
@@ -438,7 +438,7 @@ export const RELICS = {
   },
   r15: {
     id: 'r15',
-    name: 'Relic 15',
+    name: 'The Tulstandstof Mech Creator Kit',
     tier: 1,
     maxLevel: 8,
     getCost: RELIC_COSTS.r15,
@@ -446,7 +446,7 @@ export const RELICS = {
   },
   r16: {
     id: 'r16',
-    name: 'Relic 16',
+    name: 'The Long-Range Artillery Crawler',
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r16,
@@ -454,7 +454,7 @@ export const RELICS = {
   },
   r17: {
     id: 'r17',
-    name: 'Relic 17',
+    name: 'The Bee-Gone Companion Drone',
     tier: 1,
     maxLevel: 200,
     getCost: RELIC_COSTS.r17,
@@ -462,7 +462,7 @@ export const RELICS = {
   },
   r18: {
     id: 'r18',
-    name: 'Relic 18',
+    name: 'The Cosmic Chromos Communication Cell',
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r18,
@@ -470,7 +470,7 @@ export const RELICS = {
   },
   r19: {
     id: 'r19',
-    name: 'Relic 19',
+    name: 'The Book Of Mephisto',
     tier: 1,
     maxLevel: 8,
     getCost: RELIC_COSTS.r19,
@@ -478,7 +478,7 @@ export const RELICS = {
   },
   r20: {
     id: 'r20',
-    name: 'Relic 20',
+    name: 'The Chrystonian Prism',
     tier: 1,
     maxLevel: 100,
     getCost: RELIC_COSTS.r20,
@@ -488,7 +488,7 @@ export const RELICS = {
   // ==================== TIER 2 RELICS ====================
   t2r1: {
     id: 't2r1',
-    name: 'Tier 2 Relic 1',
+    name: 'The Abysuus Amplifier',
     description: '+1 Ultima Level',
     tier: 2,
     maxLevel: 10,
@@ -496,7 +496,7 @@ export const RELICS = {
   },
   t2r2: {
     id: 't2r2',
-    name: 'Tier 2 Relic 2',
+    name: 'Wangbian Wheel of Fortune',
     description: 'Mats x1.8',
     tier: 2,
     maxLevel: 100,
@@ -504,7 +504,7 @@ export const RELICS = {
   },
   t2r3: {
     id: 't2r3',
-    name: 'Tier 2 Relic 3',
+    name: 'Ouroboros Spare Component',
     description: 'Ouro Ship 1 free Level',
     tier: 2,
     maxLevel: 80,
@@ -512,7 +512,7 @@ export const RELICS = {
   },
   t2r4: {
     id: 't2r4',
-    name: 'Tier 2 Relic 4',
+    name: 'The Heavenroad Reactor',
     description: 'Catchup Timer +1.02x',
     tier: 2,
     maxLevel: 25,
@@ -520,7 +520,7 @@ export const RELICS = {
   },
   t2r5: {
     id: 't2r5',
-    name: 'Tier 2 Relic 5',
+    name: 'The Gorgon Eye',
     description: 'Knox Loot x1.08',
     tier: 2,
     maxLevel: 100,
@@ -528,7 +528,7 @@ export const RELICS = {
   },
   t2r6: {
     id: 't2r6',
-    name: 'Tier 2 Relic 6',
+    name: 'Taskmaster Ylith\'s Wisdom',
     description: 'LP Upgrades +0.02^',
     tier: 2,
     maxLevel: 40,
@@ -536,7 +536,7 @@ export const RELICS = {
   },
   t2r7: {
     id: 't2r7',
-    name: 'Tier 2 Relic 7',
+    name: 'Arthur\'s Sword',
     description: 'Borge, Ozzy & Knox ATK x1.02',
     tier: 2,
     maxLevel: 40,
@@ -544,7 +544,7 @@ export const RELICS = {
   },
   t2r8: {
     id: 't2r8',
-    name: 'Tier 2 Relic 8',
+    name: 'The D21',
     description: 'All Frags x1.021',
     tier: 2,
     maxLevel: 21,
@@ -556,7 +556,7 @@ export const RELICS = {
   },
   t2r9: {
     id: 't2r9',
-    name: 'Tier 2 Relic 9',
+    name: 'The Exceptional Experience Datalog',
     description: 'LP +100',
     tier: 2,
     maxLevel: 100,
@@ -564,7 +564,7 @@ export const RELICS = {
   },
   t2r10: {
     id: 't2r10',
-    name: 'Tier 2 Relic 10',
+    name: 'Nim\'s Micronebula',
     description: 'OO +0.05% per mech owned',
     tier: 2,
     maxLevel: 5,

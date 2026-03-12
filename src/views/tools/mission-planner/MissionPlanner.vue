@@ -9,7 +9,7 @@
             <svg class="w-5 h-5 text-blue-300 fill-current flex-shrink-0" viewBox="0 0 133.33333 133.33333" xmlns="http://www.w3.org/2000/svg">
               <path d="M 48.700769,96.005782 17.470982,64.672447 h -0.833514 -0.833515 l -3.161868,3.365654 -3.161867,3.365653 8.572516,8.649398 8.572516,8.6494 -12.9764,12.976398 -12.97640104,12.9764 V 57.6639 0.67244981 H 62.984938 125.29742 L 109.6516,16.359141 94.005779,32.045834 v 1.296625 1.296626 l 18.939641,18.973501 18.93965,18.973501 -3.21566,3.422921 -3.21567,3.422922 L 96.052222,50.052189 66.6507,20.672449 h -1.423375 -1.423374 l -3.173289,3.377811 -3.173289,3.377811 22.274203,22.30315 22.274194,22.303149 -0.0505,8.652372 -0.0505,8.65237 -28.723499,-29.146653 -28.723424,-29.146653 -3.825034,3.664614 -3.825033,3.664615 37.932333,38.761633 37.932327,38.761642 -0.0421,0.7204 -0.0421,0.72041 -3.47623,3.95613 -3.47623,3.95613 L 63.152556,82.295242 20.669396,39.339114 h -1.099388 -1.099389 l -3.176071,3.380774 -3.176072,3.380773 36.943652,36.961331 36.943651,36.961338 v 1.45124 1.45125 l -2.43832,2.20665 -2.438321,2.20665 h -0.599291 -0.599291 z" />
             </svg>
-            <h1 class="text-lg font-bold text-white">Mission & Relic Planner</h1>
+            <h1 class="text-lg font-bold text-white">Mission Planner</h1>
           </div>
           <p class="text-[10px] text-gray-400 mt-1 ml-7">{{ creditsText }}</p>
         </div>
@@ -67,20 +67,6 @@
             Campaigns
           </div>
         </button>
-        <button
-          @click="activeTab = 'relics'"
-          :class="[
-            'px-3 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-colors',
-            activeTab === 'relics' 
-              ? 'bg-purple-900/50 text-purple-400' 
-              : 'bg-gray-800/50 text-gray-400'
-          ]"
-        >
-          <div class="flex items-center gap-1.5">
-            <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
-            Relics
-          </div>
-        </button>
       </div>
 
       <!-- Mobile Tab Content -->
@@ -91,7 +77,6 @@
           @open-campaign-modal="showCampaignModal = true"
         />
         <CampaignsTabMobile v-if="activeTab === 'campaigns'" />
-        <RelicsTabMobile v-if="activeTab === 'relics'" />
       </div>
     </template>
 
@@ -108,7 +93,7 @@
                 <path d="M 48.700769,96.005782 17.470982,64.672447 h -0.833514 -0.833515 l -3.161868,3.365654 -3.161867,3.365653 8.572516,8.649398 8.572516,8.6494 -12.9764,12.976398 -12.97640104,12.9764 V 57.6639 0.67244981 H 62.984938 125.29742 L 109.6516,16.359141 94.005779,32.045834 v 1.296625 1.296626 l 18.939641,18.973501 18.93965,18.973501 -3.21566,3.422921 -3.21567,3.422922 L 96.052222,50.052189 66.6507,20.672449 h -1.423375 -1.423374 l -3.173289,3.377811 -3.173289,3.377811 22.274203,22.30315 22.274194,22.303149 -0.0505,8.652372 -0.0505,8.65237 -28.723499,-29.146653 -28.723424,-29.146653 -3.825034,3.664614 -3.825033,3.664615 37.932333,38.761633 37.932327,38.761642 -0.0421,0.7204 -0.0421,0.72041 -3.47623,3.95613 -3.47623,3.95613 L 63.152556,82.295242 20.669396,39.339114 h -1.099388 -1.099389 l -3.176071,3.380774 -3.176072,3.380773 36.943652,36.961331 36.943651,36.961338 v 1.45124 1.45125 l -2.43832,2.20665 -2.438321,2.20665 h -0.599291 -0.599291 z" />
               </svg>
               <div>
-                <h1 class="text-xl font-bold">Mission & Relic Planner</h1>
+                <h1 class="text-xl font-bold">Mission Planner</h1>
                 <p class="text-[10px] text-gray-400">{{ creditsText }}</p>
               </div>
             </div>
@@ -228,22 +213,10 @@
                 <span>Campaigns</span>
               </div>
             </button>
-            <button
-              @click="activeTab = 'relics'"
-              class="px-4 py-2 font-semibold text-xs border-b-2"
-              :class="activeTab === 'relics' 
-                ? 'bg-purple-900/30 text-purple-400 border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.3)]' 
-                : 'text-gray-400 hover:text-purple-300 hover:bg-purple-900/20 hover:border-purple-500/50 border-transparent'"
-            >
-              <div class="flex items-center gap-1.5">
-                <img src="@/assets/general/relics2.png" alt="Relics" class="w-3.5 h-4" />
-                <span>Relics</span>
-              </div>
-            </button>
           </div>
           
-          <!-- Buttons (not shown in Relics tab) -->
-          <div v-if="activeTab !== 'relics'" class="flex gap-1.5 pr-2">
+          <!-- Buttons -->
+          <div class="flex gap-1.5 pr-2">
             <!-- Fill Order Settings Button (only in Farms tab) -->
             <button
               v-if="activeTab === 'missions'"
@@ -260,18 +233,6 @@
             >
               <IconRefresh size="14" />
               Reset
-            </button>
-          </div>
-          
-          <!-- Reset Targets Button (only shown in Relics tab) -->
-          <div v-if="activeTab === 'relics'" class="flex gap-1.5 pr-2">
-            <button
-              @click="handleResetTargets"
-              class="px-2.5 py-1 rounded text-xs font-semibold bg-gray-600 hover:bg-gray-700 text-white transition-colors flex items-center gap-1"
-              title="Reset all relic targets to current levels"
-            >
-              <IconRefresh size="14" />
-              Reset Targets
             </button>
           </div>
         </div>
@@ -519,8 +480,7 @@
         </div>
       </div>
 
-      <!-- Relics Tab -->
-      <RelicsTab v-if="activeTab === 'relics'" />
+      <!-- Relics Tab removed - now standalone Relic Planner tool -->
     </div>
   </div>
     </template>
@@ -562,8 +522,7 @@ import ModifiersPanelMobile from '@/views/tools/mission-planner/components/Modif
 import CampaignSelectModal from '@/views/tools/mission-planner/components/CampaignSelectModal.vue';
 import CampaignsTab from '@/views/tools/mission-planner/components/CampaignsTab.vue';
 import CampaignsTabMobile from '@/views/tools/mission-planner/components/CampaignsTabMobile.vue';
-import RelicsTab from '@/views/tools/mission-planner/components/RelicsTab.vue';
-import RelicsTabMobile from '@/views/tools/mission-planner/components/RelicsTabMobile.vue';
+// RelicsTab removed – now standalone Relic Planner tool
 import FarmsTabMobile from '@/views/tools/mission-planner/components/FarmsTabMobile.vue';
 import SummaryBarMobile from '@/views/tools/mission-planner/components/SummaryBarMobile.vue';
 import FillOrderSettingsModal from '@/views/tools/mission-planner/components/FillOrderSettingsModal.vue';
@@ -581,8 +540,8 @@ const creditsText = Math.random() < 0.5
   : 'Original spreadsheet by Anders & Alp';
 
 // Valid tabs for each view
-const desktopTabs = ['missions', 'campaigns', 'relics'];
-const mobileTabs = ['modifiers', 'missions', 'campaigns', 'relics'];
+const desktopTabs = ['missions', 'campaigns'];
+const mobileTabs = ['modifiers', 'missions', 'campaigns'];
 
 // Tab state - use store's activeMainTab (persisted & can be set by notification click)
 // Ensure tab is valid for current view

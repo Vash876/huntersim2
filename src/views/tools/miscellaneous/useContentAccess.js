@@ -50,6 +50,9 @@ export function useContentAccess() {
   /** T2R6 Level in LP Calculator requires Power Gem level ≥ 3 */
   const canSeeT2R6 = hasGemLevel('power', 3);
 
+  /** LP RP requires Evolution Gem Node 2 */
+  const canSeeLP_RP = hasGemNode('evolution', 2);
+
   /** Evolution Gem Node 5 reduces RP interval from 80 → 75 */
   const hasReducedRPInterval = hasGemNode('evolution', 5);
 
@@ -65,6 +68,7 @@ export function useContentAccess() {
     canSeeTemporalUltima,
     canSeeResearch102,
     canSeeT2R6,
+    canSeeLP_RP,
     hasReducedRPInterval,
     rpInterval,
   };

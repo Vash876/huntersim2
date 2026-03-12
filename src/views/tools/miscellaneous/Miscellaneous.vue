@@ -56,7 +56,7 @@
         <template #item="{ element: widget }">
           <div
             class="relative flex flex-col rounded-xl overflow-hidden border backdrop-blur-sm transition-[shadow,border-color] duration-300 hover:shadow-md hover:border-white/[0.08]"
-            :class="[widget.border, widget.bg, widget.hoverShadow]"
+            :class="[widget.border, widget.bg, widget.hoverShadow, widget.colSpan || '']"
           >
             <!-- Top Accent Bar -->
             <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r" :class="widget.accent"></div>

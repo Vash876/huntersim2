@@ -42,6 +42,16 @@ export const WIDGETS = [
     accent: 'from-transparent via-amber-500 to-transparent',
     hoverShadow: 'hover:shadow-amber-900/20',
   },
+  // {
+  //   id: 'relicEfficiency',
+  //   label: 'Relic Efficiency',
+  //   component: defineAsyncComponent(() => import('./components/RelicEfficiencyCalc.vue')),
+  //   border: 'border-cyan-800/30',
+  //   bg: 'bg-gradient-to-br from-cyan-950/40 via-gray-800/60 to-gray-900/80',
+  //   accent: 'from-transparent via-cyan-500 to-transparent',
+  //   hoverShadow: 'hover:shadow-cyan-900/20',
+  //   colSpan: 'md:col-span-2 xl:col-span-4',
+  // },
 ];
 
 /** Map of id → widget definition for quick lookup */

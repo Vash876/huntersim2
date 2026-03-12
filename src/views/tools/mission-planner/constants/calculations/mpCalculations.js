@@ -177,12 +177,14 @@ export function calculateMissionSpeedMultiplier(loopmodLevels) {
  */
 export function calculateFarmFragsMultiplier(loopmodLevels) {
   let multiplier = 1.0;
-  
-  // MMA: The Me'Exe - *1.04 per level
-  const meexeLevel = loopmodLevels['mma_meexe'] || 0;
-  if (meexeLevel > 0) {
-    const mod = FRAGMENT_MODS['mma_meexe'];
-    multiplier *= Math.pow(mod.effects.farmFragsMultiplier, meexeLevel);
+
+  // Include all fragment loopmods that provide a farmFragsMultiplier effect.
+  for (const [id, mod] of Object.entries(FRAGMENT_MODS)) {
+    const level = loopmodLevels[id] || 0;
+    const farmMult = mod?.effects?.farmFragsMultiplier;
+    if (level > 0 && typeof farmMult === 'number') {
+      multiplier *= Math.pow(farmMult, level);
+    }
   }
   
   return multiplier;

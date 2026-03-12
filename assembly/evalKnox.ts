@@ -11,9 +11,9 @@ function ck(chance: f64): boolean {
 
 // Multi-Funktion für Knox Enemies 
 function knoxMulti(enemyNum: i32): f64 {
-  return Math.max(1, 1 + (enemyNum - 49) * 0.006 +
-    Math.max(0, (enemyNum - 99) * 0.006) +
-    Math.max(0, (enemyNum - 119) * 0.01) +
+  return Math.max(1, 1 + (enemyNum - 49)  * 0.006 +
+    Math.max(0, (enemyNum - 99) * 0.006)  +
+    Math.max(0, (enemyNum - 119) * 0.01)  +
     Math.max(0, (enemyNum - 129) * 0.008) +
     Math.max(0, (enemyNum - 139) * 0.006) +
     Math.max(0, (enemyNum - 149) * 0.006) +
@@ -22,11 +22,11 @@ function knoxMulti(enemyNum: i32): f64 {
     Math.max(0, (enemyNum - 179) * 0.006) +
     Math.max(0, (enemyNum - 189) * 0.006) +
     Math.max(0, (enemyNum - 199) * 0.006) +
-    Math.max(0, (enemyNum - 219) * 0.02) +
+    Math.max(0, (enemyNum - 219) * 0.02)  +
     Math.max(0, (enemyNum - 249) * 0.006) +
     Math.max(0, (enemyNum - 299) * 0.006) +
     Math.max(0, (enemyNum - 309) * 0.003) +
-    Math.max(0, (enemyNum - 319) * 0.02) +
+    Math.max(0, (enemyNum - 319) * 0.02)  +
     Math.max(0, (enemyNum - 329) * 0.004) +
     Math.max(0, (enemyNum - 339) * 0.004) +
     Math.max(0, (enemyNum - 349) * 0.005) +
@@ -43,6 +43,12 @@ function knoxMinAll(a: f64, b: f64, c: f64, d: f64, e: f64): f64 {
 }
 
 // Knox Enemy-Struktur
+
+// ====== BALANCING VARIABLE ======
+// Boss 200 Stat Reduction (0.1 = 10% weaker, 0.2 = 20% weaker, etc.)
+const KNOX_BOSS_200_STAT_REDUCTION: f64 = 0;
+// ================================
+
 class KnoxEnemy {
   maxHp: f64;
   hp: f64;
@@ -60,11 +66,13 @@ class KnoxEnemy {
     const multiVal = knoxMulti(enemyNum);
     const floorDiv = Math.floor(Math.max(0, enemyNum - 1) / 100) as i32;
     const isBoss = enemyNum > 0 && enemyNum % 100 === 0;
+    const is200 = enemyNum === 200;
+    const boss200Mult = is200 ? (1 - KNOX_BOSS_200_STAT_REDUCTION) : 1;
     
-    this.maxHp = (7 + 9 * enemyNum) * multiVal * Math.pow(3.2, floorDiv as f64) * (isBoss ? 120 : 1);
+    this.maxHp = (7 + 9 * enemyNum) * multiVal * Math.pow(3.2, floorDiv as f64) * (isBoss ? 120 : 1) * boss200Mult;
     this.hp = (7 + 9 * enemyNum) * multiVal * Math.pow(3.2, floorDiv as f64);
     
-    this.atk = (2.4 + 1.4 * enemyNum) * multiVal * Math.pow(2.7, floorDiv as f64) * (isBoss ? 4 : 1);
+    this.atk = (2.4 + 1.4 * enemyNum) * multiVal * Math.pow(2.7, floorDiv as f64) * (isBoss ? 4 : 1) * boss200Mult;
     
     this.critRate = Math.min(0.25, 0.0994 + 0.0006 * enemyNum + (isBoss ? 0.1 : 0));
     
@@ -76,9 +84,9 @@ class KnoxEnemy {
       this.dr = 1 - (isBoss ? 0.05 : 0);
     }
     
-    this.evade = 0.01 * Math.floor(enemyNum / 100);
+    this.evade = 0.01;
     
-    this.regen = 0.04 * enemyNum * multiVal * Math.pow(1.4, floorDiv as f64) * (isBoss ? 2 : 1);
+    this.regen = 0.04 * enemyNum * multiVal * Math.pow(1.4, floorDiv as f64) * (isBoss ? 2 : 1) * boss200Mult;
     
     this.atkSpd = (6.005 - 0.005 * enemyNum) * (isBoss ? 2.85 : 1);
     
@@ -326,6 +334,19 @@ let currentKnoxInnoGem5: i32 = 0;
 let currentKnoxPowGem6: i32 = 0;
 let currentKnoxCreaGem5: i32 = 0;
 let currentKnoxCreaGalvTrinketsCount: i32 = 0;
+let currentKnoxBoss200BulletCount: i32 = 0;
+let currentKnoxBoss200AtkMulti: f64 = 1.0;
+
+// Boss 200 Bullet Tracking - nach 30 Bullets kriegt der Boss +1% ATK (additiv)
+function knoxBoss200BulletHit(): void {
+  if (currentKnoxEnem === 2000) { // Boss 200 = Stage 200 = enemyNum 2000
+    currentKnoxBoss200BulletCount++;
+    if (currentKnoxBoss200BulletCount >= 30) {
+      currentKnoxBoss200AtkMulti += 0.01; // Additiv: 10 procs = x1.10
+      currentKnoxBoss200BulletCount = 0;
+    }
+  }
+}
 
 // Array-Hilfsfunktionen 
 function knoxArraySum(arr: StaticArray<f64>): f64 {
@@ -357,7 +378,11 @@ function knoxRegen(): void {
 
 // Enemy Attack function
 function knoxEnemyAttack(): void {
-  let dmg = currentKnoxEnemy.atk * (1 - currentKnox.pog * 0.03);
+  let atkMulti: f64 = 1.0;
+  if (currentKnoxEnem === 2000) {
+    atkMulti = currentKnoxBoss200AtkMulti;
+  }
+  let dmg = currentKnoxEnemy.atk * atkMulti * (1 - currentKnox.pog * 0.03);
   
   if (ck(currentKnoxEnemy.critRate)) {
     dmg *= currentKnoxEnemy.critDmg;
@@ -446,6 +471,8 @@ function knoxKillEnemy(extraTime: f64 = 0): void {
   }
   
   currentKnoxEnemy.enrage = 0;
+  currentKnoxBoss200BulletCount = 0; // Reset bullet counter when enemy dies
+  currentKnoxBoss200AtkMulti = 1.0; // Reset ATK multiplier when enemy dies
   
   // Catchup-Multiplier berechnen
   let catchupMult: f64 = 1;
@@ -505,7 +532,9 @@ function knoxBullet(): void {
     }
   }
   
-  currentKnoxEnemy.hp -= currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade) ? 0 : (finishCanTrigger ? currentKnox.currentAtk * (1 + currentKnox.finish * 0.2) * currentKnoxEnemy.dr : currentKnox.currentAtk * currentKnoxEnemy.dr);
+  let bulletEvaded = currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade);
+  currentKnoxEnemy.hp -= bulletEvaded ? 0 : (finishCanTrigger ? currentKnox.currentAtk * (1 + currentKnox.finish * 0.2) * currentKnoxEnemy.dr : currentKnox.currentAtk * currentKnoxEnemy.dr);
+  if (!bulletEvaded) knoxBoss200BulletHit();
   
   if (currentKnoxEnemy.hp <= 0) {
     knoxKillEnemy();
@@ -528,7 +557,9 @@ function knoxAtk(skipAtkReset: boolean = false): void {
   // Reset finish tracking für neuen Salvo (auch für Charge-Bonus-Salvos)
   currentKnox.finishTriggeredThisSalvo = false;
   
-  currentKnoxEnemy.hp -= currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade) ? 0 : currentKnox.currentAtk * currentKnoxEnemy.dr;
+  let evaded = currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade);
+  currentKnoxEnemy.hp -= evaded ? 0 : currentKnox.currentAtk * currentKnoxEnemy.dr;
+  if (!evaded) knoxBoss200BulletHit();
   
   if (currentKnoxEnemy.hp <= 0) {
     knoxKillEnemy();
@@ -563,7 +594,9 @@ function knoxAtk(skipAtkReset: boolean = false): void {
         }
       }
       
-      currentKnoxEnemy.hp -= currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade) ? 0 : (finishCanTrigger ? currentKnox.currentAtk * (1 + currentKnox.finish * 0.2) * currentKnoxEnemy.dr : currentKnox.currentAtk * currentKnoxEnemy.dr);
+      let loopEvaded = currentKnoxEnemy.evade > 0 && ck(currentKnoxEnemy.evade);
+      currentKnoxEnemy.hp -= loopEvaded ? 0 : (finishCanTrigger ? currentKnox.currentAtk * (1 + currentKnox.finish * 0.2) * currentKnoxEnemy.dr : currentKnox.currentAtk * currentKnoxEnemy.dr);
+      if (!loopEvaded) knoxBoss200BulletHit();
       if (currentKnoxEnemy.hp <= 0) {
         knoxKillEnemy(i * 0.1);
       }
@@ -621,6 +654,8 @@ function knoxSim(knox: Knox, maxStage: i32, respec: i32, attr: i32, catchup99gu:
   currentKnoxCreaGalvTrinketsCount = crea_galvTrinketsCount;
 
   leftoverTorpedos = 0;
+  currentKnoxBoss200BulletCount = 0;
+  currentKnoxBoss200AtkMulti = 1.0;
   
   if (respec && (knox.iters % Math.ceil(respec)) === 0) {
     knox.charge1 = 0;

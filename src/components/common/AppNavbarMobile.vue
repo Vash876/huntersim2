@@ -141,9 +141,10 @@
                 :key="tool.id"
                 :to="tool.path"
                 class="submenu-item"
-                @click="activeSection = null"
+                @click="tool.isNew && markToolAsSeen(tool.id); activeSection = null"
               >
-                <div class="modern-card" :class="getToolCardClass(category.color, tool)">
+                <div class="modern-card relative" :class="getToolCardClass(category.color, tool)">
+                  <span v-if="tool.isNew && !seenNewTools.includes(tool.id)" class="absolute top-1 right-1 text-[8px] font-bold bg-green-500 text-white px-1 py-0.5 rounded uppercase leading-none z-10">NEW</span>
                   <div class="card-content">
                     <component :is="tool.icon" class="w-7 h-7" :class="getToolIconClass(category.color, tool)" />
                     <div class="label" :class="getToolLabelClass(category.color, tool)">
@@ -253,23 +254,44 @@
           </div>
         </div>
 
-        <!-- Sync Status -->
+        <!-- Cloud Backup Status -->
         <div class="pb-3 border-b border-gray-700">
-          <div class="text-xs text-gray-400 mb-2">Sync Status</div>
-          <div class="flex items-center space-x-2">
-            <div 
-              class="w-2 h-2 rounded-full"
-              :class="{
-                'bg-green-500': !syncStore.isSyncing && !syncStore.lastSyncError,
-                'bg-yellow-500': syncStore.isSyncing,
-                'bg-red-500': syncStore.lastSyncError
-              }"
-            ></div>
-            <span class="text-xs text-gray-300">
-              {{ syncStore.isSyncing ? 'Syncing...' : 
-                 syncStore.lastSyncError ? 'Sync Error' : 
-                 syncStore.lastSyncTime ? `Last: ${formatSyncTime(syncStore.lastSyncTime)}` : 'Never synced' }}
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-gray-400">Cloud Backup</span>
+            <span v-if="syncStore.isSyncing || syncStore.lastSyncError" class="flex items-center gap-1 text-xs">
+              <span 
+                class="w-2 h-2 rounded-full inline-block"
+                :class="{
+                  'bg-yellow-400 animate-pulse': syncStore.isSyncing,
+                  'bg-red-500': syncStore.lastSyncError
+                }"
+              ></span>
+              <span :class="syncStore.lastSyncError ? 'text-red-400' : 'text-yellow-400'">
+                {{ syncStore.isSyncing ? 'Syncing...' : 'Error' }}
+              </span>
             </span>
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-gray-500 flex items-center gap-1">
+                <IconCloudUp size="11" />
+                Saved
+              </span>
+              <span 
+                class="text-xs font-mono"
+                :class="syncStore.lastUploadTime ? 'text-green-400' : 'text-gray-600'"
+              >{{ syncStore.lastUploadTime ? formatDateTime(syncStore.lastUploadTime) : '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-gray-500 flex items-center gap-1">
+                <IconCloudDown size="11" />
+                Loaded
+              </span>
+              <span 
+                class="text-xs font-mono"
+                :class="syncStore.lastDownloadTime ? 'text-blue-400' : 'text-gray-600'"
+              >{{ syncStore.lastDownloadTime ? formatDateTime(syncStore.lastDownloadTime) : '—' }}</span>
+            </div>
           </div>
         </div>
 
@@ -400,7 +422,10 @@
           @click="toggleSection('tools')"
         >
           <div class="nav-button-inner">
-            <IconTools size="22" class="mx-auto text-indigo-200" />
+            <div class="relative inline-block">
+              <IconTools size="22" class="text-indigo-200" />
+              <span v-if="hasNewTools" class="absolute -top-1 -right-1.5 w-2 h-2 bg-green-500 rounded-full"></span>
+            </div>
             <span class="text-xs mt-1 font-medium text-slate-300">Tools</span>
           </div>
           <span v-if="activeSection === 'tools'" class="active-indicator"></span>
@@ -518,6 +543,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import { useStorage } from '@vueuse/core';
 import { NAVIGATION, SECRET_ACCESS_IDS, hasSecretAccessCached } from '../../constants/navigation';
 import { getAllHunters } from '../../constants/hunters';
 import { useRoute } from 'vue-router';
@@ -552,6 +578,13 @@ import {
 const hunters = getAllHunters();
 const route = useRoute();
 const activeSection = ref(null);
+const seenNewTools = useStorage('hs2_seen_new_tools', []);
+
+function markToolAsSeen(toolId) {
+  if (!seenNewTools.value.includes(toolId)) {
+    seenNewTools.value = [...seenNewTools.value, toolId];
+  }
+}
 const syncStore = useSyncStore();
 const friendsStore = useFriendsStore();
 const gemPlannerStore = useGemPlannerStore();
@@ -660,6 +693,10 @@ const navigation = computed(() => {
   }));
   
   return filteredNavigation;
+});
+
+const hasNewTools = computed(() => {
+  return navigation.value.toolCategories.some(cat => cat.tools.some(t => t.isNew && !seenNewTools.value.includes(t.id)));
 });
 
 // Gefilterte Hunter mit vollständigen Daten (inkl. Bilder)
@@ -855,6 +892,27 @@ function formatSyncTime(timestamp) {
   if (diffMinutes < 60) return `${diffMinutes}m ago`;
   if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)}h ago`;
   return `${Math.floor(diffMinutes / 1440)}d ago`;
+}
+
+function formatDateTime(timestamp) {
+  if (!timestamp) return '—';
+  const date = new Date(timestamp);
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+
+  const isToday = date.toDateString() === now.toDateString();
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const isYesterday = date.toDateString() === yesterday.toDateString();
+
+  if (isToday) return `today ${time}`;
+  if (isYesterday) return `yday ${time}`;
+
+  const day = pad(date.getDate());
+  const month = date.toLocaleString('en', { month: 'short' });
+  const yearSuffix = date.getFullYear() !== now.getFullYear() ? ` ${date.getFullYear()}` : '';
+  return `${month} ${day}${yearSuffix} ${time}`;
 }
 
 // Helper-Funktionen für Tool-Farben

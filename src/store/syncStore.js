@@ -14,6 +14,8 @@ export const useSyncStore = defineStore('sync', () => {
   const currentUser = ref(null);
   const isSyncing = ref(false);
   const lastSyncTime = ref(null);
+  const lastUploadTime = ref(null);   // when this device last saved to cloud
+  const lastDownloadTime = ref(null); // when this device last loaded from cloud
   const lastSyncError = ref(null);
   const syncStatus = ref('idle'); // 'idle', 'syncing', 'success', 'error'
   
@@ -49,6 +51,24 @@ export const useSyncStore = defineStore('sync', () => {
     localStorage.setItem('sync_last_sync_time', now);
   }
 
+  function setLastUploadTime() {
+    const now = new Date().toISOString();
+    lastUploadTime.value = now;
+    lastDownloadTime.value = now; // after saving, this device is in sync with cloud
+    lastSyncTime.value = now;
+    localStorage.setItem('sync_last_upload_time', now);
+    localStorage.setItem('sync_last_download_time', now);
+    localStorage.setItem('sync_last_sync_time', now);
+  }
+
+  function setLastDownloadTime() {
+    const now = new Date().toISOString();
+    lastDownloadTime.value = now;
+    lastSyncTime.value = now;
+    localStorage.setItem('sync_last_download_time', now);
+    localStorage.setItem('sync_last_sync_time', now);
+  }
+
   function init() {
     const savedLastSync = localStorage.getItem('sync_last_sync_time');
     if (savedLastSync) {
@@ -64,6 +84,12 @@ export const useSyncStore = defineStore('sync', () => {
         lastSyncTime.value = savedLastSync;
       }
     }
+
+    const savedUpload = localStorage.getItem('sync_last_upload_time');
+    if (savedUpload) lastUploadTime.value = savedUpload;
+
+    const savedDownload = localStorage.getItem('sync_last_download_time');
+    if (savedDownload) lastDownloadTime.value = savedDownload;
     
     // Initial auth state update
     updateAuthState();
@@ -122,7 +148,7 @@ export const useSyncStore = defineStore('sync', () => {
       await databaseService.saveUserBackup(userId, backupCode, APP_VERSION);
 
       syncStatus.value = 'success';
-      setLastSyncTime();
+      setLastUploadTime();
 
     } catch (error) {
       console.error('SyncStore: Sync to cloud failed:', error);
@@ -153,14 +179,14 @@ export const useSyncStore = defineStore('sync', () => {
       
       if (!cloudBackup) {
         syncStatus.value = 'success';
-        setLastSyncTime();
+        setLastDownloadTime();
         return;
       }
 
       await restoreLocalBackup(cloudBackup.backup_code);
 
       syncStatus.value = 'success';
-      setLastSyncTime();
+      setLastDownloadTime();
 
     } catch (error) {
       console.error('SyncStore: Sync from cloud failed:', error);
@@ -178,6 +204,8 @@ export const useSyncStore = defineStore('sync', () => {
     currentUser,
     isSyncing,
     lastSyncTime,
+    lastUploadTime,
+    lastDownloadTime,
     lastSyncError,
     syncStatus,
     

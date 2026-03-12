@@ -539,6 +539,7 @@ import { IconAdjustments, IconPlus, IconBrandSpeedtest } from '@tabler/icons-vue
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
+import { useRelicPlannerStore } from '@/store/relicPlannerStore';
 import { formatNumber } from '@/composables/format';
 import ToolValueControls from '@/composables/ToolValueControls.vue';
 import ProfileSelector from './ProfileSelector.vue';
@@ -563,6 +564,10 @@ const MODIFIER_ICON_MAP = {
 const missionPlannerStore = useMissionPlannerStore();
 const gemPlannerStore = useGemPlannerStore();
 const hunterStore = useHunterStore();
+const relicPlannerStore = useRelicPlannerStore();
+
+// Mapping from modifier IDs → relic planner IDs (for bidirectional sync)
+const MODIFIER_TO_RELIC = { relic_3: 'r3', relic_5: 'r5', relic_6: 'r6', relic_11: 'r11', t2r8: 't2r8' };
 
 const activeTab = ref('gameProgress');
 
@@ -580,13 +585,30 @@ const eternalMilestoneLevel = computed(() => {
   return eternalMilestoneLevelBase.value;
 });
 
-// Initialize eternal milestone override on mount
+// Initialize eternal milestone override on mount; sync relic planner → mission planner
 onMounted(() => {
   // Set initial override value from hunterStore if not already set
   if (missionPlannerStore.modifierValues?.eternal_milestone_override === undefined) {
     missionPlannerStore.updateModifier('eternal_milestone_override', eternalMilestoneLevelBase.value);
   }
+  // Sync relic levels from relicPlannerStore into missionPlannerStore on load
+  Object.entries(MODIFIER_TO_RELIC).forEach(([modId, relicId]) => {
+    const lvl = relicPlannerStore.currentLevels?.[relicId] ?? 0;
+    if (lvl !== (missionPlannerStore.modifierValues?.[modId] ?? 0)) {
+      missionPlannerStore.updateModifier(modId, lvl);
+    }
+  });
 });
+
+// Watch relicPlannerStore → keep mission modifiers in sync
+watch(() => relicPlannerStore.currentLevels, (levels) => {
+  Object.entries(MODIFIER_TO_RELIC).forEach(([modId, relicId]) => {
+    const newLvl = levels?.[relicId] ?? 0;
+    if (newLvl !== (missionPlannerStore.modifierValues?.[modId] ?? 0)) {
+      missionPlannerStore.updateModifier(modId, newLvl);
+    }
+  });
+}, { deep: true });
 
 // Attraction Gem Level (required Level 3 to unlock Eternal Milestone)
 const attractionGemLevel = computed(() => {
@@ -735,9 +757,13 @@ function getModifierIconUrl(iconPath) {
   return MODIFIER_ICON_MAP[iconPath] || '';
 }
 
-// Update modifier
+// Update modifier; also write to relicPlannerStore if applicable
 function updateModifier(id, value) {
   missionPlannerStore.updateModifier(id, value);
+  const relicId = MODIFIER_TO_RELIC[id];
+  if (relicId !== undefined) {
+    relicPlannerStore.updateCurrentLevel(relicId, value);
+  }
 }
 
 // Calculated effects from store

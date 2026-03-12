@@ -408,7 +408,16 @@
                       
                       <div class="flex gap-1 flex-shrink-0">
                         <button 
-                          @click="markAsPurchased(item.id)" 
+                          @click="markOneLevelAsPurchased(item.id)"
+                          :class="(item.toLevel - item.fromLevel) > 1 ? 'text-green-700 hover:text-green-400' : 'invisible pointer-events-none'"
+                          class="p-0.5 flex items-center gap-0.5"
+                          title="Mark 1 level as purchased"
+                        >
+                          <IconCheck size="11" />
+                          <span class="text-[9px] font-bold leading-none">1</span>
+                        </button>
+                        <button 
+                          @click="markItemAsPurchased(item.id)" 
                           class="text-green-400 hover:text-green-300 p-0.5"
                           title="Mark as Purchased"
                         >
@@ -673,6 +682,15 @@
                     <!-- Right side: Price + Buttons -->
                     <div class="flex items-center gap-1 flex-shrink-0">
                       <span class="text-sm font-bold text-amber-400 w-20 text-right">{{ formatGadgetCost(item.totalCost) }}</span>
+                      <button 
+                        @click="markOneLevelAsPurchased(item.id)"
+                        :class="(item.toLevel - item.fromLevel) > 1 ? 'text-green-700 hover:text-green-400' : 'invisible pointer-events-none'"
+                        class="p-1 flex items-center gap-0.5"
+                        title="Mark 1 level as purchased"
+                      >
+                        <IconCheck size="12" />
+                        <span class="text-[9px] font-bold leading-none">1</span>
+                      </button>
                       <button @click="markItemAsPurchased(item.id)" class="text-green-400 hover:text-green-300 p-0.5" title="Mark as purchased">
                         <IconCheck size="16" />
                       </button>
@@ -1170,6 +1188,44 @@ function markItemAsPurchased(itemId) {
       hunterStore.upgrades.gadgets = {};
     }
     hunterStore.upgrades.gadgets[item.gadgetId] = item.toLevel;
+  }
+}
+
+function markOneLevelAsPurchased(itemId) {
+  const item = shoppingList.value.find(i => i.id === itemId);
+  if (!item || (item.toLevel - item.fromLevel) <= 1) return;
+
+  const prevFromLevel = item.fromLevel;
+  const newFromLevel = prevFromLevel + 1;
+  const oneLevelCost = calculateUpgradeCost(item.gadgetId, prevFromLevel, newFromLevel);
+
+  // Deduct 1-level cost
+  const currentAmount = store.getCurrentTesseractsWithProduction();
+  store.updateCurrentTesseracts(Math.max(0, currentAmount - oneLevelCost));
+
+  // Update anchor production for this single level
+  if (item.gadgetId === 'anchor') {
+    const indexInList = shoppingList.value.findIndex(i => i.id === itemId);
+    const prodBefore = getProductionAtIndex(indexInList);
+    store.updateTesseractsPerDay(calculateAnchorProductionBoost(prevFromLevel, newFromLevel, prodBefore));
+  }
+
+  // Commit 1 level in store
+  store.updateCurrentLevel(item.gadgetId, newFromLevel);
+
+  // Sync to hunterStore if applicable
+  if (['wrench', 'zaptron', 'anchor'].includes(item.gadgetId)) {
+    if (!hunterStore.upgrades.gadgets) hunterStore.upgrades.gadgets = {};
+    hunterStore.upgrades.gadgets[item.gadgetId] = newFromLevel;
+  }
+
+  // Advance item's fromLevel and recalculate remaining cost
+  item.fromLevel = newFromLevel;
+  item.totalCost = calculateUpgradeCost(item.gadgetId, newFromLevel, item.toLevel);
+
+  // Remove item if fully purchased
+  if (newFromLevel >= item.toLevel) {
+    store.removeFromShoppingList(itemId);
   }
 }
 

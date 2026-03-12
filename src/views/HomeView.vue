@@ -2,6 +2,30 @@
 const changelog = 
 [
   {
+    version: '2.14.0',
+    date: '2026-03-12',
+    changes: [
+      {
+        text: '<b class="text-yellow-400">NEW:</b> Relic Planner',
+        subItems: [
+          'Uses the same system as Inscryption and Gadget Planner',
+        ]
+      },
+      {
+        text: 'Cloud Sync',
+        subItems: [
+          'Added separate timestamps for last cloud save and last cloud load',
+        ]
+      },
+      {
+        text: 'Gadget Planner',
+        subItems: [
+          'Added single-level purchase button for multi-level shopping list items',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.13.4',
     date: '2026-03-05',
     changes: [

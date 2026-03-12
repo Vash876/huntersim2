@@ -15,6 +15,7 @@ import { useTokenPlannerStore } from '@/store/tokenPlannerStore';
 import { useGadgetPlannerStore } from '@/store/gadgetPlannerStore';
 import { useMiscStore } from '@/views/tools/miscellaneous/store.js';
 import { useFriendsStore } from '@/store/friendsStore';
+import { useRelicPlannerStore } from '@/store/relicPlannerStore';
 
 export function useBackupRestore() {
   const hunterStore = useHunterStore();
@@ -29,6 +30,7 @@ export function useBackupRestore() {
   const gadgetPlannerStore = useGadgetPlannerStore();
   const miscStore = useMiscStore();
   const friendsStore = useFriendsStore();
+  const relicPlannerStore = useRelicPlannerStore();
 
   const isCreatingBackup = ref(false);
   const isRestoring = ref(false);
@@ -142,6 +144,7 @@ export function useBackupRestore() {
       const inscryptionSelectedBuildId = localStorage.getItem('inscryption-planner-selectedBuildId');
       const sidebarHintDismissed = localStorage.getItem('huntersim_sidebar_hint_dismissed');
       const inscryptionsHideMaxed = localStorage.getItem('inscryptions_hideMaxed');
+      const seenNewTools = localStorage.getItem('hs2_seen_new_tools');
       
       // 16. Mission Planner Daten (Pinia Store mit exportData)
       const missionPlannerData = missionPlannerStore.exportData();
@@ -154,6 +157,9 @@ export function useBackupRestore() {
       
       // 19. Friends Store Daten (hidden track IDs)
       const friendsStoreData = friendsStore.exportData();
+
+      // 20. Relic Planner Daten (Pinia Store)
+      const relicPlannerData = relicPlannerStore.exportData();
       
       // Backup-Datenpaket erstellen
       const backupData = {
@@ -180,12 +186,14 @@ export function useBackupRestore() {
             inscryption_planner_settings: inscryptionPlannerSettings ? JSON.parse(inscryptionPlannerSettings) : {},
             inscryption_planner_selectedBuildId: inscryptionSelectedBuildId,
             huntersim_sidebar_hint_dismissed: sidebarHintDismissed,
-            inscryptions_hideMaxed: inscryptionsHideMaxed ? JSON.parse(inscryptionsHideMaxed) : false
+            inscryptions_hideMaxed: inscryptionsHideMaxed ? JSON.parse(inscryptionsHideMaxed) : false,
+            hs2_seen_new_tools: seenNewTools ? JSON.parse(seenNewTools) : []
           },
           missionPlannerStore: missionPlannerData,
           tokenPlannerStore: tokenPlannerData,
           miscStore: miscStoreData,
           friendsStore: friendsStoreData,
+          relicPlannerStore: relicPlannerData,
           storageInfo: storageInfo
         },
         version: '2.1.0', 
@@ -469,6 +477,15 @@ export function useBackupRestore() {
           console.warn('⚠️ Failed to import Friends data, but continuing with other data...');
         }
       }
+
+      // 6.11. Restore Relic Planner Store
+      if (backupData.data.relicPlannerStore) {
+        console.log('📥 Restoring Relic Planner data from backup...');
+        const importSuccess = relicPlannerStore.importData(backupData.data.relicPlannerStore);
+        if (!importSuccess) {
+          console.warn('⚠️ Failed to import Relic Planner data, but continuing with other data...');
+        }
+      }
       
       // 7. Restore localStorage data
       if (backupData.data.localStorage) {
@@ -553,6 +570,9 @@ export function useBackupRestore() {
         }
         if (localStorageData.inscryptions_hideMaxed !== undefined) {
           localStorage.setItem('inscryptions_hideMaxed', JSON.stringify(localStorageData.inscryptions_hideMaxed));
+        }
+        if (localStorageData.hs2_seen_new_tools !== undefined) {
+          localStorage.setItem('hs2_seen_new_tools', JSON.stringify(localStorageData.hs2_seen_new_tools));
         }
       }
       

@@ -202,6 +202,18 @@ export const FRAGMENT_MODS = {
       farmFragsMultiplier: 1.04, // *1.04 per level
     },
   },
+  // fem: {
+  //   id: 'fem',
+  //   name: 'Fragment Enhancement Module',
+  //   description: 'Increase farm fragments',
+  //   startCost: 10000,
+  //   costIncrement: 100,
+  //   maxLevel: 30,
+  //   effectType: 'farm_fragments',
+  //   effects: {
+  //     farmFragsMultiplier: 1.08, // *1.08 per level
+  //   },
+  // },
   boon_eternity: {
     id: 'boon_eternity',
     name: 'Boon: Eternity',

@@ -167,6 +167,25 @@ const IconConstructionMilestone = {
   }
 };
 
+const IconRelics = {
+  template: `
+    <svg 
+      :width="size || 20" 
+      :height="size || 20" 
+      viewBox="0 0 493.33334 493.33334" 
+      xmlns="http://www.w3.org/2000/svg"
+      :class="className"
+      fill="currentColor"
+    >
+      <path d="m 237.78929,474.95598 c -28.8782,-7.9457 -47.9964,-45.70752 -38.87064,-76.77636 4.37265,-14.88679 18.0092,-34.07952 26.02024,-36.62213 2.28725,-0.72594 4.32696,-252.61989 2.04559,-252.61989 -0.42164,0 -9.6541,12.61708 -36.09934,49.33333 -4.48962,6.23334 -10.11048,14.03334 -12.4908,17.33334 -2.38032,3.3 -7.28597,10.2 -10.90144,15.33333 -3.61547,5.13333 -11.10235,15.51317 -16.6375,23.06629 -5.53516,7.55313 -10.06392,14.02078 -10.06392,14.37256 0,0.35178 -2.25,3.55772 -5,7.12432 -2.75,3.5666 -8.3,11.1284 -12.33334,16.80402 -4.03333,5.67561 -8.08333,11.09698 -9,12.04748 -0.91666,0.95051 -1.66666,2.10624 -1.66666,2.56829 0,0.46205 -1.86368,3.15918 -4.1415,5.99362 -6.56886,8.17407 -7.49921,8.02343 49.55352,8.02343 h 51.92131 v 20.67661 20.67661 l -84.33333,-0.34327 -84.333339,-0.34328 -0.40041,-6.18681 c -0.36946,-5.7088 0.24066,-7.09951 7.89686,-18 4.56349,-6.49725 11.39944,-16.31319 15.19099,-21.81319 3.79155,-5.5 10.43797,-15.01857 14.76981,-21.15238 4.33185,-6.13381 10.27608,-14.61968 13.20941,-18.85749 8.323479,-12.02498 17.633439,-25.36074 22.798359,-32.65681 2.59566,-3.66667 9.92788,-14.09314 16.29384,-23.16995 6.36596,-9.07681 13.1826,-18.67681 15.14809,-21.33333 1.96548,-2.65653 5.21354,-7.53005 7.21791,-10.83005 2.00437,-3.3 4.01194,-6.3 4.46127,-6.66667 0.44933,-0.36667 3.94934,-5.16667 7.77779,-10.66667 3.82846,-5.5 13.20746,-18.83408 20.84222,-29.63129 7.63476,-10.797202 14.0867,-20.142184 14.33763,-20.76662 0.25093,-0.624436 3.03794,-4.690356 6.19335,-9.035379 8.37806,-11.536634 20.78428,-29.048524 32.92955,-46.481384 12.3082,-17.6667297 11.05735,-16.8168897 15.32143,-10.40955 1.82679,2.74499 3.7098,5.29089 4.18446,5.65756 0.47466,0.36667 2.58002,3.46659 4.67857,6.88872 2.09855,3.42213 8.01554,12.10584 13.14888,19.29714 11.78567,16.51057 12.05006,16.88616 19.67364,27.947815 3.48718,5.059812 9.18718,13.161459 12.66667,18.00366 10.76719,14.984038 20.85599,29.328128 29.91271,42.529328 12.07606,17.60224 22.02395,31.93074 29.0803,41.88597 3.3,4.6557 12.4148,17.68597 20.25512,28.95614 7.84032,11.27018 17.87444,25.59123 22.29805,31.82457 4.42361,6.23334 10.1293,14.33334 12.67931,18 26.7443,38.45566 32.8592,47.15717 35.28519,50.21088 3.13943,3.95176 3.84008,12.89805 1.21567,15.52246 -1.20993,1.20992 -21.68889,1.6 -84.00001,1.6 h -82.39999 v -20.66667 -20.66667 h 51.33333 c 46.13636,0 51.33333,-0.21567 51.33333,-2.13031 0,-2.25263 -13.11514,-21.58885 -16.61074,-24.48994 -1.13076,-0.93845 -2.05593,-2.21732 -2.05593,-2.84195 0,-0.62462 -5.80298,-9.10116 -12.89551,-18.83675 -16.68633,-22.90454 -41.91911,-57.99386 -49.64274,-69.03439 -3.33462,-4.76667 -14.32768,-19.99277 -24.42901,-33.83578 l -18.36606,-25.1691 v 126.14664 126.14666 l 6.33333,3.24776 c 61.06426,31.31403 24.48258,132.92506 -41.33552,114.81553 z"/>
+    </svg>
+  `,
+  props: {
+    size: { type: [Number, String], default: 20 },
+    className: { type: String, default: '' }
+  }
+};
+
 const IconResearch = {
   template: `
     <svg 
@@ -258,7 +277,7 @@ export const NAVIGATION = {
     {
       name: 'Core Upgrades',
       links: [
-        { label: 'Relics', path: '/upgrades/relics', icon: IconShield },
+        { label: 'Relics', path: '/upgrades/relics', icon: IconRelics },
         { label: 'Gadgets', path: '/upgrades/gadgets', icon: IconTool, unlock_gem: 'exodus', unlock_lvl: 4 },
         { label: 'Inscryptions', path: '/upgrades/inscryptions', icon: IconWriting },
       ]
@@ -316,6 +335,22 @@ export const NAVIGATION = {
         //   icon: IconDiamond
         // },
         {
+          id: 'inscryptionplanner',
+          name: 'Inscryption Planner',
+          path: '/tools/inscryption-planner',
+          color: 'red',
+          icon: IconWriting
+        },    
+        {
+          id: 'mechplanner',
+          name: 'Mech Planner',
+          path: '/tools/mech-planner',
+          unlock: 'exodus',
+          unlock_lvl: 2,
+          color: 'amber',
+          icon: IconRobot
+        },            
+        {
           id: 'gadgetcalculator',
           name: 'Gadget Planner',
           path: '/tools/gadget-calculator',
@@ -325,13 +360,12 @@ export const NAVIGATION = {
           icon: IconTool
         },
         {
-          id: 'mechplanner',
-          name: 'Mech Planner',
-          path: '/tools/mech-planner',
-          unlock: 'exodus',
-          unlock_lvl: 2,
-          color: 'amber',
-          icon: IconRobot
+          id: 'relicplanner',
+          name: 'Relic Planner',
+          path: '/tools/relic-planner',
+          color: 'purple',          
+          icon: IconRelics,
+          isNew: true, 
         },
         {
           id: 'tsplanner',
@@ -341,20 +375,12 @@ export const NAVIGATION = {
           icon: IconHexagon
         },
         {
-          id: 'inscryptionplanner',
-          name: 'Inscryption Planner',
-          path: '/tools/inscryption-planner',
-          color: 'red',
-          icon: IconWriting
-        },
-        {
           id: 'tokenplanner',
           name: 'Token Planner',
           path: '/tools/token-planner',
           color: 'yellow',
           icon: IconCoins
         },
-
         // {
         //   id: 'buildrepository',
         //   name: 'Build Repository',
@@ -427,8 +453,8 @@ export const NAVIGATION = {
       tools: [
         {
           id: 'missionplanner',
-          name: 'Mission & Relic Planner',
-          path: '/tools/mission-relic-planner',
+          name: 'Mission Planner',
+          path: '/tools/mission-planner',
           color: 'purple',
           icon: IconMissions,
           secret: true

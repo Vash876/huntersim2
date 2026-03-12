@@ -80,8 +80,9 @@ const routes = [
       { path: 'attgn3-calculator',    name: 'AttGN#3 Calculator',     component: () => import('../views/tools/AttrGN3Calculator.vue') },
       { path: 'ultima-calculator',    name: 'Ultima Calculator',      component: () => import('../views/tools/UltimaCalculator.vue') },
       { path: 'inscryption-planner',  name: 'Inscryption Planner',    component: () => import('../views/tools/InscryptionPlanner.vue') },
+      { path: 'relic-planner',        name: 'Relic Planner',          component: () => import('../views/tools/RelicPlanner.vue') },
       { path: 'token-planner',        name: 'Token Planner',          component: () => import('../views/tools/token-planner/TokenPlanner.vue') },
-      { path: 'mission-relic-planner', name: 'Mission & Relic Planner', component: () => import('../views/tools/mission-planner/MissionPlanner.vue'),
+      { path: 'mission-planner',      name: 'Mission Planner',        component: () => import('../views/tools/mission-planner/MissionPlanner.vue'),
         beforeEnter: async (to, from, next) => {
           // Fast-path: localStorage cache (synchron verfügbar)
           if (hasSecretAccessCached()) {

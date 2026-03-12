@@ -21,7 +21,7 @@
                   ? getActiveClasses(tool.color)
                   : getInactiveClasses(tool.color)
               ]"
-              @click="saveLastTab(tool.path)"
+              @click="saveLastTab(tool.path); tool.isNew && markToolAsSeen(tool.id)"
             >
               <component 
                 :is="tool.icon" 
@@ -29,6 +29,7 @@
                 :class="isActive(tool.path) ? getIconActive(tool.color) : getIconInactive(tool.color)" 
               />
               <span>{{ tool.name }}</span>
+              <span v-if="tool.isNew && !seenNewTools.includes(tool.id)" class="ml-auto text-[8px] font-bold bg-green-500 text-white px-1 py-0.5 rounded uppercase leading-none">NEW</span>
             </router-link>
           </div>
         </div>
@@ -49,6 +50,14 @@ import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { NAVIGATION, SECRET_ACCESS_IDS, hasSecretAccessCached } from '@/constants/navigation';
 import { useStorage } from '@vueuse/core';
 import { neonAuthService } from '@/services/neonAuthService';
+
+const seenNewTools = useStorage('hs2_seen_new_tools', []);
+
+function markToolAsSeen(toolId) {
+  if (!seenNewTools.value.includes(toolId)) {
+    seenNewTools.value = [...seenNewTools.value, toolId];
+  }
+}
 
 const route = useRoute();
 const router = useRouter();
