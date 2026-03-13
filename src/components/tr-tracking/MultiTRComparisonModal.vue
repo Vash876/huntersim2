@@ -965,8 +965,22 @@ const chartOption = computed(() => {
   return {
     backgroundColor: 'transparent',
     animation: false,
-    grid: { ...darkGrid, bottom: 80, right: 60, top: 20 },
-    legend: { show: false },
+    grid: { ...darkGrid, bottom: 80, right: 60, top: 50 },
+    legend: {
+      show: true,
+      type: 'scroll',
+      top: 5,
+      padding: [4, 8],
+      textStyle: { color: '#d1d5db', fontSize: 11 },
+      pageTextStyle: { color: '#9ca3af' },
+      pageIconColor: '#9ca3af',
+      pageIconInactiveColor: '#4b5563',
+      inactiveColor: '#4b5563',
+      icon: 'circle',
+      itemWidth: 10,
+      itemHeight: 10,
+      data: series.map(s => ({ name: s.name, itemStyle: { color: s.lineStyle.color } })),
+    },
     tooltip: {
       show: false // We use crosshair display instead
     },

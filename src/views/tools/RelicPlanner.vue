@@ -198,8 +198,62 @@
               Manage Levels
             </button>
           </div>
+          <!-- Sort Mode Buttons (Mobile) -->
+          <div class="px-4 pb-2 mt-3 flex gap-1 flex-wrap">
+            <button
+              v-for="mode in SORT_MODES"
+              :key="mode.id"
+              @click="sortMode = mode.id"
+              :class="[
+                'px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
+                sortMode === mode.id
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-700 text-gray-400 hover:text-white'
+              ]"
+            >{{ mode.label }}</button>
+          </div>
           <div class="p-4 space-y-4">
-            <!-- Tier 1 -->
+            <!-- Category mode -->
+            <template v-if="sortMode === 'category'">
+              <div v-for="section in categorySections" :key="section.name">
+                <h4 class="text-xs font-semibold text-purple-400 mb-2 border-l-2 border-purple-500/50 pl-2">{{ section.name }}</h4>
+                <div class="space-y-2">
+                  <div
+                    v-for="relic in section.relics"
+                    :key="relic.id"
+                    class="bg-gray-700/30 rounded-lg p-2.5 hover:bg-gray-700/50 transition-colors"
+                  >
+                    <div class="flex items-center gap-2">
+                      <div class="w-[40px] h-[40px] flex items-center justify-center flex-shrink-0">
+                        <img v-if="hasIcon(relic.id)" :src="getIconUrl(relic.id)" :alt="relic.id" class="w-[40px] h-[40px] object-contain" />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-[11px] font-semibold text-gray-300">#{{ relic.id.match(/r(\d+)/)?.[1] }}</div>
+                        <div class="text-[10px] text-gray-400 truncate mt-0.5">{{ relic.description }}</div>
+                      </div>
+                      <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="flex flex-col items-center gap-0.5">
+                          <div class="text-[11px] bg-gray-600/50 px-2 py-1 rounded font-mono whitespace-nowrap">
+                            {{ getQueuedLevel(relic.id) }} <span class="text-gray-500">/ {{ getRelicMaxLevel(relic.id) }}</span>
+                          </div>
+                          <div class="text-[9px] text-purple-400 whitespace-nowrap">{{ formatTimeToAfford(relic, 1) }}</div>
+                        </div>
+                        <div class="flex flex-col items-center gap-0.5">
+                          <button
+                            @click="addRelicToList(relic, 1)"
+                            :disabled="getQueuedLevel(relic.id) >= getRelicMaxLevel(relic.id) || getRelicCost(relic, 1) === null"
+                            class="text-xs px-2 py-1 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded transition-colors text-white font-semibold w-16"
+                          >Lvl {{ getQueuedLevel(relic.id) + 1 }}</button>
+                          <div class="text-[9px] text-amber-400 whitespace-nowrap">{{ getRelicCost(relic, 1) !== null ? formatNumber(getRelicCost(relic, 1)) : '?' }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+            <!-- Tier 1 (id / price sort) -->
+            <template v-else>
             <div>
               <h4 class="text-xs font-semibold text-green-400 mb-2 border-l-2 border-green-500/50 pl-2">Tier 1 Relics</h4>
               <div class="space-y-2">
@@ -213,15 +267,13 @@
                       <img v-if="hasIcon(relic.id)" :src="getIconUrl(relic.id)" :alt="relic.id" class="w-[40px] h-[40px] object-contain" />
                     </div>
                     <div class="flex-1 min-w-0">
-                      <div class="text-sm font-medium text-white truncate max-w-[140px]">
-                        {{ relicLabel(relic) }}
-                      </div>
+                      <div class="text-[11px] font-semibold text-gray-300">#{{ relic.id.match(/r(\d+)/)?.[1] }}</div>
                       <div class="text-[10px] text-gray-400 truncate mt-0.5">{{ relic.description }}</div>
                     </div>
                     <div class="flex items-center gap-1.5 flex-shrink-0">
                       <div class="flex flex-col items-center gap-0.5">
                         <div class="text-[11px] bg-gray-600/50 px-2 py-1 rounded font-mono whitespace-nowrap">
-                          Lvl {{ getQueuedLevel(relic.id) }} <span class="text-gray-500">/ {{ getRelicMaxLevel(relic.id) }}</span>
+                          {{ getQueuedLevel(relic.id) }} <span class="text-gray-500">/ {{ getRelicMaxLevel(relic.id) }}</span>
                         </div>
                         <div class="text-[9px] text-purple-400 whitespace-nowrap">{{ formatTimeToAfford(relic, 1) }}</div>
                       </div>
@@ -229,8 +281,8 @@
                         <button
                           @click="addRelicToList(relic, 1)"
                           :disabled="getQueuedLevel(relic.id) >= getRelicMaxLevel(relic.id) || getRelicCost(relic, 1) === null"
-                          class="text-xs px-2 py-1 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded transition-colors text-white font-semibold w-24"
-                        >Buy Lvl {{ getQueuedLevel(relic.id) + 1 }}</button>
+                          class="text-xs px-2 py-1 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded transition-colors text-white font-semibold w-16"
+                        >Lvl {{ getQueuedLevel(relic.id) + 1 }}</button>
                         <div class="text-[9px] text-amber-400 whitespace-nowrap">{{ getRelicCost(relic, 1) !== null ? formatNumber(getRelicCost(relic, 1)) : '?' }}</div>
                       </div>
                     </div>
@@ -257,15 +309,13 @@
                       <img v-if="hasIcon(relic.id)" :src="getIconUrl(relic.id)" :alt="relic.id" class="w-[32px] h-[32px] object-contain" />
                     </div>
                     <div class="flex-1 min-w-0">
-                      <div class="text-sm font-medium text-white truncate max-w-[140px]">
-                        {{ relicLabel(relic) }}
-                      </div>
+                      <div class="text-[11px] font-semibold text-gray-300">#{{ relic.id.match(/r(\d+)/)?.[1] }}</div>
                       <div class="text-[10px] text-gray-400 truncate mt-0.5">{{ relic.description }}</div>
                     </div>
                     <div class="flex items-center gap-1.5 flex-shrink-0">
                       <div class="flex flex-col items-center gap-0.5">
                         <div class="text-[11px] bg-gray-600/50 px-2 py-1 rounded font-mono whitespace-nowrap">
-                          Lvl {{ getQueuedLevel(relic.id) }} <span class="text-gray-500">/ {{ getRelicMaxLevel(relic.id) }}</span>
+                          {{ getQueuedLevel(relic.id) }} <span class="text-gray-500">/ {{ getRelicMaxLevel(relic.id) }}</span>
                         </div>
                         <div class="text-[9px] text-purple-400 whitespace-nowrap">{{ formatTimeToAfford(relic, 1) }}</div>
                       </div>
@@ -273,8 +323,8 @@
                         <button
                           @click="addRelicToList(relic, 1)"
                           :disabled="getQueuedLevel(relic.id) >= getRelicMaxLevel(relic.id) || getRelicCost(relic, 1) === null"
-                          class="text-xs px-2 py-1 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded transition-colors text-white font-semibold w-24"
-                        >Buy Lvl {{ getQueuedLevel(relic.id) + 1 }}</button>
+                          class="text-xs px-2 py-1 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded transition-colors text-white font-semibold w-16"
+                        >Lvl {{ getQueuedLevel(relic.id) + 1 }}</button>
                         <div class="text-[9px] text-amber-400 whitespace-nowrap">{{ getRelicCost(relic, 1) !== null ? formatNumber(getRelicCost(relic, 1)) : '?' }}</div>
                       </div>
                     </div>
@@ -291,6 +341,7 @@
                 <p v-if="powerGemLevel > 0" class="text-[10px] text-gray-500 mt-0.5">Current: Level {{ powerGemLevel }}</p>
               </div>
             </div>
+            </template>
           </div>
         </div>
 
@@ -372,17 +423,74 @@
               <IconList size="20" class="mr-2 text-purple-400" />
               Available Relics
             </h3>
-            <button
-              @click="showLevelsModal = true"
-              class="bg-purple-700 hover:bg-purple-600 text-white px-2 py-1 text-xs rounded-lg flex items-center transition-colors"
-            >
-              <IconSettings size="14" class="mr-1" />
-              Manage Levels
-            </button>
+            <div class="flex items-center gap-2">
+              <!-- Sort Mode Buttons (Desktop) -->
+              <div class="flex gap-1">
+                <button
+                  v-for="mode in SORT_MODES"
+                  :key="mode.id"
+                  @click="sortMode = mode.id"
+                  :class="[
+                    'px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
+                    sortMode === mode.id
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-700 text-gray-400 hover:text-white'
+                  ]"
+                >{{ mode.label }}</button>
+              </div>
+              <button
+                @click="showLevelsModal = true"
+                class="bg-purple-700 hover:bg-purple-600 text-white px-2 py-1 text-xs rounded-lg flex items-center transition-colors"
+              >
+                <IconSettings size="14" class="mr-1" />
+                Manage Levels
+              </button>
+            </div>
           </div>
           <div class="p-4 space-y-4">
 
-            <!-- Tier 1 Section -->
+            <!-- Category mode (Desktop) -->
+            <template v-if="sortMode === 'category'">
+              <div v-for="section in categorySections" :key="section.name">
+                <h4 class="text-xs font-semibold text-purple-400 mb-2 border-l-2 border-purple-500/50 pl-2">{{ section.name }}</h4>
+                <div class="space-y-2">
+                  <div
+                    v-for="relic in section.relics"
+                    :key="relic.id"
+                    class="bg-gray-700/30 rounded-lg p-2 hover:bg-gray-700/50 transition-colors"
+                  >
+                    <div class="flex items-center gap-2">
+                      <div class="w-[45px] h-[45px] flex items-center justify-center flex-shrink-0">
+                        <img v-if="hasIcon(relic.id)" :src="getIconUrl(relic.id)" :alt="relic.id" class="w-[45px] h-[45px] object-contain" />
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-sm font-medium text-white truncate">{{ relicLabel(relic) }}</div>
+                        <div class="text-[10px] text-gray-400 truncate mt-0.5">{{ relic.description }}</div>
+                      </div>
+                      <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <div class="flex flex-col items-center gap-0.5">
+                          <div class="text-[11px] bg-gray-600/50 px-2 py-1 rounded font-mono whitespace-nowrap">
+                            Lvl {{ getQueuedLevel(relic.id) }} <span class="text-gray-500">/ {{ getRelicMaxLevel(relic.id) }}</span>
+                          </div>
+                          <div class="whitespace-nowrap text-purple-400" style="font-size: 11px">{{ formatTimeToAfford(relic, 1) }}</div>
+                        </div>
+                        <div class="flex flex-col items-center gap-0.5">
+                          <button
+                            @click="addRelicToList(relic, 1)"
+                            :disabled="getQueuedLevel(relic.id) >= getRelicMaxLevel(relic.id) || getRelicCost(relic, 1) === null"
+                            class="text-xs px-2 py-1 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded transition-colors text-white font-semibold w-24"
+                          >Buy Lvl {{ getQueuedLevel(relic.id) + 1 }}</button>
+                          <div class="text-amber-400 whitespace-nowrap" style="font-size: 11px">{{ getRelicCost(relic, 1) !== null ? formatNumber(getRelicCost(relic, 1)) : '?' }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <!-- Tier 1 Section (id / price sort) -->
+            <template v-else>
             <div>
               <h4 class="text-xs font-semibold text-green-400 mb-2 border-l-2 border-green-500/50 pl-2">Tier 1 Relics</h4>
               <div class="space-y-2">
@@ -471,6 +579,7 @@
                 <p v-if="powerGemLevel > 0" class="text-[10px] text-gray-500 mt-0.5">Current: Level {{ powerGemLevel }}</p>
               </div>
             </div>
+            </template>
 
           </div>
         </div>
@@ -648,10 +757,88 @@ function getIconUrl(relicId) {
   return key ? relicIcons[key] : '';
 }
 
+//  Sort mode 
+const sortMode = ref('id'); // 'id' | 'category' | 'price-asc' | 'price-desc'
+
+const SORT_MODES = [
+  { id: 'id',         label: 'By Number' },
+  { id: 'category',   label: 'By Category' },
+  { id: 'price-asc',  label: 'Cost ↑' },
+  { id: 'price-desc', label: 'Cost ↓' },
+];
+
+const RELIC_CATEGORIES = {
+  'Main Game':   ['r1','r2','r8','r20','t2r1','t2r2','t2r6','t2r9'],
+  'Hunter':      ['r4','r7','r16','r17','r19','t2r5','t2r7'],
+  'Zeus & Ouro': ['r3','r5','r6','r9','r10','r11','t2r3','t2r4','t2r8','t2r10'],
+  'Other':       ['r12','r13','r14','r15','r18'],
+};
+
+function getRelicCategory(relicId) {
+  for (const [cat, ids] of Object.entries(RELIC_CATEGORIES)) {
+    if (ids.includes(relicId)) return cat;
+  }
+  return 'Other';
+}
+
 //  Relic lists 
-const tier1Relics = computed(() => Object.values(RELICS).filter(r => r.tier === 1 && getQueuedLevel(r.id) < getRelicMaxLevel(r.id)));
-const tier2Relics = computed(() => Object.values(RELICS).filter(r => r.tier === 2 && getQueuedLevel(r.id) < getRelicMaxLevel(r.id)));
-const allRelics = computed(() => [...tier1Relics.value, ...tier2Relics.value]);
+const availableRelics = computed(() =>
+  Object.values(RELICS).filter(r => {
+    if (r.tier === 2 && !tier2Unlocked.value) return false;
+    return getQueuedLevel(r.id) < getRelicMaxLevel(r.id);
+  })
+);
+
+function sortedRelicList(relics) {
+  if (sortMode.value === 'id') return relics;
+  if (sortMode.value === 'category') {
+    const catOrder = Object.keys(RELIC_CATEGORIES);
+    return [...relics].sort((a, b) => {
+      const catA = catOrder.indexOf(getRelicCategory(a.id));
+      const catB = catOrder.indexOf(getRelicCategory(b.id));
+      if (catA !== catB) return catA - catB;
+      return RELIC_CATEGORIES[getRelicCategory(a.id)]?.indexOf(a.id) - RELIC_CATEGORIES[getRelicCategory(b.id)]?.indexOf(b.id);
+    });
+  }
+  if (sortMode.value === 'price-asc') {
+    return [...relics].sort((a, b) => {
+      const ca = getRelicCost(a, 1) ?? Infinity;
+      const cb = getRelicCost(b, 1) ?? Infinity;
+      return ca - cb;
+    });
+  }
+  if (sortMode.value === 'price-desc') {
+    return [...relics].sort((a, b) => {
+      const ca = getRelicCost(a, 1) ?? -1;
+      const cb = getRelicCost(b, 1) ?? -1;
+      return cb - ca;
+    });
+  }
+  return relics;
+}
+
+const tier1Relics = computed(() => {
+  const base = availableRelics.value.filter(r => r.tier === 1);
+  return sortMode.value === 'id' ? base : sortedRelicList(base);
+});
+const tier2Relics = computed(() => {
+  const base = availableRelics.value.filter(r => r.tier === 2);
+  return sortMode.value === 'id' ? base : sortedRelicList(base);
+});
+const sortedAllRelics = computed(() => sortedRelicList(availableRelics.value));
+const allRelics = computed(() => availableRelics.value);
+
+// Category sections for category sort mode
+const categorySections = computed(() => {
+  const relics = sortedAllRelics.value;
+  const sections = [];
+  const catOrder = Object.keys(RELIC_CATEGORIES);
+  for (const cat of catOrder) {
+    const items = relics.filter(r => getRelicCategory(r.id) === cat);
+    if (items.length) sections.push({ name: cat, relics: items });
+  }
+  return sections;
+});
 
 // Target levels for summary modal (current + shopping list)
 const targetLevels = computed(() => {

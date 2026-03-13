@@ -36,6 +36,28 @@ export class DatabaseService {
   }
 
   /**
+   * Get only the metadata (updatedAt, appVersion) without downloading the full backup from storage.
+   * Cheap Firestore read — used to display the last cloud save time on any device.
+   * @param {string} userId - Firebase User UID
+   * @returns {{ updated_at: string|null, app_version: string|null }|null}
+   */
+  async getBackupMetadata(userId) {
+    try {
+      const docRef = doc(db, 'userBackups', userId);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) return null;
+      const data = docSnap.data();
+      return {
+        updated_at: data.updatedAt?.toDate?.()?.toISOString() || null,
+        app_version: data.appVersion || null,
+      };
+    } catch (error) {
+      console.warn('Failed to get backup metadata:', error);
+      return null;
+    }
+  }
+
+  /**
    * Get user backup from Firestore
    * @param {string} userId - Firebase User UID
    * @returns {Object|null} Backup object with backup_code, app_version, updated_at

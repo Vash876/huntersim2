@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.14.1',
+    date: '2026-03-13',
+    changes: [
+      {
+        text: 'Relic Planner',
+        subItems: [
+          'Added sort options: By Number, By Category, Cost ↑, Cost ↓',
+        ]
+      },
+      {
+        text: 'TR Tracker',
+        subItems: [
+          'Restored legend in Multi-TR Comparison chart',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.14.0',
     date: '2026-03-12',
     changes: [

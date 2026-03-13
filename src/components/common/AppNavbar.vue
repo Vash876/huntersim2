@@ -174,8 +174,8 @@
                         </span>
                         <span 
                           class="text-xs font-mono"
-                          :class="syncStore.lastUploadTime ? 'text-green-400' : 'text-gray-600'"
-                        >{{ syncStore.lastUploadTime ? formatDateTime(syncStore.lastUploadTime) : '—' }}</span>
+                          :class="syncStore.lastCloudSaveTime ? 'text-green-400' : 'text-gray-600'"
+                        >{{ syncStore.lastCloudSaveTime ? formatDateTime(syncStore.lastCloudSaveTime) : '—' }}</span>
                       </div>
                       <!-- Last loaded from cloud -->
                       <div class="flex items-center justify-between">
