@@ -109,14 +109,16 @@ function calcDR(level, hunterType) {
           case 59: return Math.ceil(36.25e18);       // 36,25qu = 36.25 × 10¹⁸
           case 60: return Math.ceil(1.20e21);        // 1,20sx = 1.20 × 10²¹
           case 61: return Math.ceil(39.96e21);       // 39,96sx = 39.96 × 10²¹
-          case 62: return Math.ceil(273.33e21);      // 273,33sx = 273.33 × 10²¹
-          case 63: return Math.ceil(5.45e24);        // 5,45sp = 5.45 × 10²⁴
-          case 64: return Math.ceil(109.43e24);      // 109,43sp = 109.43 × 10²⁴
-          case 65: return Math.ceil(2.22e27);        // 2,22o  = 2.22 × 10²⁷
-          case 66: return Math.ceil(45.23e27);       // 45,23o = 45.23 × 10²⁷
-          case 67: return Math.ceil(930.41e27);      // 930,41o = 930.41 × 10²⁷
-          case 68: return Math.ceil(19.29e30);       // 19,29n = 19.29 × 10³⁰
-          case 69: return Math.ceil(403.01e30);      // 403,01n = 403.01 × 10³⁰
+          case 62: return Math.ceil(2.42e24);        // 2,42sp = 2.42 × 10²⁴
+          // Cases 63–69: extrapoliert – Pair-Multiplikatoren steigen um +0.100/Pair
+          // Paare: (62,63)≈×61, (64,65)≈×117, (66,67)≈×238, (68,69)≈×506
+          case 63: return Math.ceil(147.4e24);       // ~147.4sp = 1.474 × 10²⁶
+          case 64: return Math.ceil(17.23e27);       // ~17.23oc = 1.723 × 10²⁸
+          case 65: return Math.ceil(2.02e30);        // ~2.02n   = 2.02 × 10³⁰
+          case 66: return Math.ceil(480e30);         // ~480n    = 4.80 × 10³²
+          case 67: return Math.ceil(1.14e35);        // ~114d    = 1.14 × 10³⁵
+          case 68: return Math.ceil(5.77e37);        //           5.77 × 10³⁷
+          case 69: return Math.ceil(2.92e40);        //           2.92 × 10⁴⁰
           default:
               // Für Levels außerhalb des definierten Bereichs hier ggf. eine Extrapolation oder Fehlermeldung einbauen
               return undefined;
