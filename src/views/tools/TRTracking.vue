@@ -456,7 +456,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="sub in trTrackingStore.subscribedTracks"
+                v-for="sub in sortedSubscribedTracks"
                 :key="sub.sharedTrackId"
                 class="border-b border-gray-700/50 hover:bg-gray-700/20 transition-colors cursor-pointer"
                 @click="openSubscribedTrackDetails(sub.sharedTrackId)"
@@ -969,6 +969,19 @@ const archivedTracksSorted = computed(() => {
   return [...trTrackingStore.archivedTracks].sort((a, b) => {
     const dateA = a.endDate ? new Date(a.endDate) : new Date(a.createdAt);
     const dateB = b.endDate ? new Date(b.endDate) : new Date(b.createdAt);
+    return dateB - dateA;
+  });
+});
+const sortedSubscribedTracks = computed(() => {
+  return [...trTrackingStore.subscribedTracks].sort((a, b) => {
+    // 1. Alphabetisch nach Owner
+    const ownerCmp = (a.ownerName || '').localeCompare(b.ownerName || '');
+    if (ownerCmp !== 0) return ownerCmp;
+    // 2. Innerhalb des Owners: neuester Track oben (via subscribedTracksData wenn geladen)
+    const trackA = subscribedTracksData.value[a.sharedTrackId];
+    const trackB = subscribedTracksData.value[b.sharedTrackId];
+    const dateA = trackA ? (trackA.endDate ? new Date(trackA.endDate) : new Date(trackA.startDate || 0)) : 0;
+    const dateB = trackB ? (trackB.endDate ? new Date(trackB.endDate) : new Date(trackB.startDate || 0)) : 0;
     return dateB - dateA;
   });
 });
