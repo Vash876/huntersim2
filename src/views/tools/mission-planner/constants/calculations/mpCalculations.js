@@ -203,20 +203,20 @@ export function calculateCampaignFragsMultiplier(loopmodLevels, boonModifiers = 
   const completedCampaigns = boonModifiers.completedCampaigns || 0;
   const shipInstalls = boonModifiers.shipInstalls || 0;
   
-  // Boon: Eternity - x1.03 * completed_campaigns * boon_level
+  // Boon: Eternity - (1 + 0.03 * boon_level) ^ completed_campaigns
   const eternityLevel = loopmodLevels['boon_eternity'] || 0;
   if (eternityLevel > 0 && completedCampaigns > 0) {
     const mod = FRAGMENT_MODS['boon_eternity'];
-    // multiplier = base ^ (campaigns * level)
-    multiplier *= Math.pow(mod.effectBase, completedCampaigns * eternityLevel);
+    // multiplier = (1 + bonus_per_level * level) ^ campaigns
+    multiplier *= Math.pow(1 + (mod.effectBase - 1) * eternityLevel, completedCampaigns);
   }
   
-  // Boon: Hegemony - x1.01 * ship_installs * boon_level
+  // Boon: Hegemony - (1 + 0.01 * boon_level) ^ ship_installs
   const hegemonyLevel = loopmodLevels['boon_hegemony'] || 0;
   if (hegemonyLevel > 0 && shipInstalls > 0) {
     const mod = FRAGMENT_MODS['boon_hegemony'];
-    // multiplier = base ^ (installs * level)
-    multiplier *= Math.pow(mod.effectBase, shipInstalls * hegemonyLevel);
+    // multiplier = (1 + bonus_per_level * level) ^ installs
+    multiplier *= Math.pow(1 + (mod.effectBase - 1) * hegemonyLevel, shipInstalls);
   }
   
   return multiplier;

@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.14.2',
+    date: '2026-03-15',
+    changes: [
+      {
+        text: 'TR Tracking',
+        subItems: [
+          'Subscribe to friends\' TR tracks and view their progress in a live read-only table',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.14.1',
     date: '2026-03-13',
     changes: [

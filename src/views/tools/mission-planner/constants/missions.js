@@ -43,6 +43,70 @@ export const CAMPAIGN_FINAL_MULTIPLIERS = {
   'C4-12': 19
 };
 
+// The shared prefix for all 4 orderings (first 32 missions)
+const _ORDER_PREFIX = [
+  'C1-1','C1-2','C1-3','C1-4','C1-5','C1-6','C1-7','C1-8',
+  'C2-1','C2-2','C2-3','C2-4','C2-5','C2-6','C2-7',
+  'C3-1','C2-8',
+  'C3-2','C3-3','C3-4','C3-5','C3-6','C3-7','C3-8',
+  'C4-1','C4-2','C4-3','C4-4','C4-5','C4-6','C4-7','C4-8',
+];
+
+/**
+ * Campaign ordering presets.
+ * All share the same first 32 missions; differ in where the 4 final missions (CX-12) appear.
+ * Preset 0 = least frags (finals early), Preset 3 = most frags (finals at the very end).
+ */
+export const CAMPAIGN_ORDER_PRESETS = [
+  {
+    label: 'Preset 1',
+    description: 'Finals after each planet\'s C-9/10/11',
+    order: [
+      ..._ORDER_PREFIX,
+      'C1-9','C1-10','C1-11','C1-12',
+      'C2-9','C2-10','C2-11','C2-12',
+      'C3-9','C3-10','C3-11','C3-12',
+      'C4-9','C4-10','C4-11','C4-12',
+    ],
+  },
+  {
+    label: 'Preset 2',
+    description: 'C1-12/C2-12/C3-12 together after C4-9, then C4-10/11/12',
+    order: [
+      ..._ORDER_PREFIX,
+      'C1-9','C1-10','C1-11',
+      'C2-9','C2-10','C2-11',
+      'C3-9','C3-10','C3-11',
+      'C4-9','C1-12','C2-12','C3-12',
+      'C4-10','C4-11','C4-12',
+    ],
+  },
+  {
+    label: 'Preset 3',
+    description: 'C1-12/C2-12/C3-12 after C4-10, then C4-11/12',
+    order: [
+      ..._ORDER_PREFIX,
+      'C1-9','C1-10','C1-11',
+      'C2-9','C2-10','C2-11',
+      'C3-9','C3-10','C3-11',
+      'C4-9','C4-10','C1-12','C2-12','C3-12',
+      'C4-11','C4-12',
+    ],
+  },
+  {
+    label: 'Preset 4',
+    description: 'All 4 finals at the very end',
+    order: [
+      ..._ORDER_PREFIX,
+      'C1-9','C1-10','C1-11',
+      'C2-9','C2-10','C2-11',
+      'C3-9','C3-10','C3-11',
+      'C4-9','C4-10','C4-11',
+      'C1-12','C2-12','C3-12','C4-12',
+    ],
+  },
+];
+
 // Farm mission minimum completion time in seconds (cap)
 export const FARM_MIN_TIME_SECONDS = 2;
 

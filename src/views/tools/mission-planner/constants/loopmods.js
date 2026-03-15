@@ -224,7 +224,7 @@ export const FRAGMENT_MODS = {
     effectType: 'campaign_fragments',
     // Modifier: Completed Campaigns
     modifierType: 'completed_campaigns',
-    // x1.03 * completed_campaigns * boon_level
+    // (1 + 0.03 * boon_level) ^ completed_campaigns
     effectBase: 1.03,
   },
   boon_hegemony: {
@@ -237,7 +237,7 @@ export const FRAGMENT_MODS = {
     effectType: 'campaign_fragments',
     // Modifier: Ouroboros Ship Installs
     modifierType: 'ship_installs',
-    // x1.01 * ship_installs * boon_level
+    // (1 + 0.01 * boon_level) ^ ship_installs
     effectBase: 1.01,
   },
 };

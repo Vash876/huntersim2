@@ -151,9 +151,20 @@
                         <IconEyeOff size="15" />
                       </button>
                       <button
+                        @click.stop="toggleSubscribe(track)"
+                        class="p-1.5 rounded transition-colors"
+                        :class="trTrackingStore.isSubscribedToTrack(track.id)
+                          ? 'text-indigo-400 hover:text-red-400 hover:bg-red-900/20'
+                          : 'text-gray-400 hover:text-indigo-400 hover:bg-indigo-900/20'"
+                        :title="trTrackingStore.isSubscribedToTrack(track.id) ? 'Unsubscribe (remove from Subscribed tab)' : 'Subscribe (follow live in Tracking page)'"
+                      >
+                        <IconBookmark v-if="trTrackingStore.isSubscribedToTrack(track.id)" size="15" />
+                        <IconBookmarkPlus v-else size="15" />
+                      </button>
+                      <button
                         @click.stop="importTrack(track)"
                         class="p-1.5 text-gray-400 hover:text-green-400 hover:bg-green-900/20 rounded transition-colors"
-                        title="Import to My Tracks"
+                        title="Import as local copy"
                       >
                         <IconDownload size="15" />
                       </button>
@@ -277,7 +288,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { 
-  IconUsersGroup, IconX, IconRefresh, IconEye, IconEyeOff, IconDownload, IconChevronRight
+  IconUsersGroup, IconX, IconRefresh, IconEye, IconEyeOff, IconDownload, IconChevronRight, IconBookmark, IconBookmarkPlus
 } from '@tabler/icons-vue';
 import { useFriendsStore } from '@/store/friendsStore';
 import { useTRTrackingStore } from '@/store/trTrackingStore';
@@ -356,6 +367,24 @@ async function refreshTracks() {
     console.error('Failed to refresh friends tracks:', err);
   } finally {
     isRefreshing.value = false;
+  }
+}
+
+async function toggleSubscribe(track) {
+  if (trTrackingStore.isSubscribedToTrack(track.id)) {
+    await trTrackingStore.unsubscribeFromTrack(track.id);
+  } else {
+    const displayName = friendsStore.getFriendDisplayName(track.ownerId, track.ownerName);
+    await trTrackingStore.subscribeToTrack({
+      sharedTrackId: track.id,
+      ownerId: track.ownerId,
+      ownerName: displayName,
+      trackName: track.trackMeta?.name || 'Unknown',
+      trCount: track.trackMeta?.trCount || 0,
+      subscribedAt: new Date().toISOString(),
+      lastSyncedAt: null,
+      lastKnownEntryCount: track.trackMeta?.entryCount || 0
+    });
   }
 }
 

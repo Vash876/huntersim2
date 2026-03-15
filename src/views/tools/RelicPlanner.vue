@@ -54,6 +54,14 @@
                   content="<strong>Auto-updating Fragments:</strong><br/>Grows automatically based on daily production.<br/>Deducted when marking items as purchased."
                   placement="top"
                 />
+                <button
+                  v-if="mpFragsPerDay > 0"
+                  @click="addCampaignFragments"
+                  class="ml-auto flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-purple-700 hover:bg-purple-600 active:bg-purple-800 text-white rounded-lg shadow transition-colors whitespace-nowrap border border-purple-500/40"
+                  title="Add total TR campaign fragments to current balance"
+                >
+                  +{{ formatNumber(missionPlannerStore.totalCampaignFragments?.value ?? 0) }} Camp Frags
+                </button>
               </div>
               <div class="text-xs text-gray-400 mb-2 flex items-center justify-between">
                 <span>Amount you have saved</span>
@@ -604,7 +612,7 @@
             <div v-if="shoppingList.length === 0" class="p-12 text-center">
               <IconShoppingCartOff size="48" class="mx-auto text-gray-600 mb-3" />
               <p class="text-gray-400 text-sm">No items in shopping list</p>
-              <p class="text-gray-500 text-xs mt-1">Add relic upgrades from the catalog</p>
+              <p class="text-gray-500 text-xs mt-1">Add Relics from the catalog</p>
             </div>
 
             <Draggable
@@ -722,6 +730,13 @@ const missionPlannerStore = useMissionPlannerStore();
 const mpFragsPerDay = computed(() =>
   (missionPlannerStore.getTotalFarmFragsPerHour?.(missionPlannerStore.missionAssignments) ?? 0) * 24
 );
+
+function addCampaignFragments() {
+  const amount = missionPlannerStore.totalCampaignFragments?.value ?? 0;
+  if (!amount) return;
+  const current = store.getCurrentFragmentsWithProduction();
+  store.updateCurrentFragments(current + amount);
+}
 
 // Relic IDs that are also in upgrades.js (hunter sim)
 const HUNTER_RELIC_IDS = ['r4', 'r7', 'r16', 'r17', 'r19', 't2r5', 't2r7'];

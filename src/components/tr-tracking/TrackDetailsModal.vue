@@ -20,6 +20,12 @@
             >
               Completed
             </span>
+            <span
+              v-if="props.readOnly"
+              class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-700 text-gray-400 border border-gray-600"
+            >
+              Read Only
+            </span>
           </h3>
         </div>
         <button
@@ -311,6 +317,7 @@
             </div>
             <div class="flex gap-1" @click.stop>
               <button
+                v-if="!props.readOnly"
                 @click="addNewEntry"
                 class="text-xs bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-md transition-colors flex items-center gap-1"
               >
@@ -346,6 +353,7 @@
             <h5 class="text-sm font-medium text-gray-300 mb-2">No entries yet</h5>
             <p class="text-xs text-gray-400 mb-4">Start tracking your progress by adding your first entry</p>
             <button
+              v-if="!props.readOnly"
               @click="addNewEntry"
               class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-md text-sm transition-colors flex items-center gap-2 mx-auto"
             >
@@ -365,13 +373,14 @@
             Progress & Charts
           </button>
           <button
-            v-if="track && track.isActive"
+            v-if="!props.readOnly && track && track.isActive"
             @click="completeTR"
             class="px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-500 transition-colors text-xs"
           >
             Complete TR
           </button>
           <button
+            v-if="!props.readOnly"
             @click="deleteTRTrack"
             class="px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-500 transition-colors text-xs"
           >
@@ -450,7 +459,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 const props = defineProps({
   show: Boolean,
-  track: Object
+  track: Object,
+  readOnly: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['close', 'update', 'showProgress']);
@@ -1443,8 +1453,8 @@ const buildColumnDefs = () => {
     });
   });
 
-  // Add Actions column only (Notes is now handled as a resource)
-  columns.push(
+  // Add Actions column only if not read-only
+  if (!props.readOnly) columns.push(
     {
       headerName: 'Actions',
       field: 'actions',
@@ -1503,6 +1513,11 @@ const buildColumnDefs = () => {
       }
     }
   );
+
+  // In read-only mode, disable editing on all columns
+  if (props.readOnly) {
+    return columns.map(col => ({ ...col, editable: false }));
+  }
 
   return columns;
 };

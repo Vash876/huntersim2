@@ -111,32 +111,83 @@
       </div>
     </div>
 
-    <!-- TR Tracks List -->
-    <div v-if="trTrackingStore.isInitialized && hasSelectedResources" class="space-y-6">
-      <!-- Empty State -->
-      <div v-if="trTracks.length === 0" class="text-center py-12">
-        <IconChartLine size="64" class="mx-auto text-gray-600 mb-4" />
-        <h3 class="text-xl font-semibold text-gray-300 mb-2">No TR Tracks yet</h3>
-        <p class="text-gray-400 mb-6">Create your first TR track to start monitoring your progress</p>
-        <button
-          @click="openNewTRModal"
-          class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-        >
-          <IconPlus size="20" class="inline mr-2" />
-          Create First TR Track
-        </button>
+    <!-- TR Tracks Tabbed View -->
+    <div v-if="trTrackingStore.isInitialized && hasSelectedResources">
+
+      <!-- Tab Navigation -->
+      <div class="bg-gray-800/60 rounded-t-lg border border-b-0 border-gray-700/50">
+        <div class="flex">
+          <!-- My Plans Tab -->
+          <button
+            @click="activeTab = 'myplans'"
+            class="relative flex-1 px-4 py-3 text-sm font-medium transition-colors"
+            :class="activeTab === 'myplans' ? 'text-green-400' : 'text-gray-400 hover:text-gray-300'"
+          >
+            <span class="flex items-center justify-center gap-1.5">
+              My Plans
+              <span class="text-xs opacity-70">({{ trTracks.length }})</span>
+            </span>
+            <div v-if="activeTab === 'myplans'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-green-500"></div>
+          </button>
+
+          <!-- Subscribed Tab (only if logged in) -->
+          <button
+            v-if="isUserAuthenticated"
+            @click="activeTab = 'subscribed'"
+            class="relative flex-1 px-4 py-3 text-sm font-medium transition-colors"
+            :class="activeTab === 'subscribed' ? 'text-indigo-400' : 'text-gray-400 hover:text-gray-300'"
+          >
+            <span class="flex items-center justify-center gap-1.5">
+              Subscribed
+              <span
+                v-if="newEntriesCount > 0"
+                class="inline-flex items-center justify-center min-w-[18px] h-[18px] bg-green-500 text-white text-[10px] font-bold rounded-full px-1"
+              >{{ newEntriesCount }}</span>
+              <span v-else class="text-xs opacity-70">({{ trTrackingStore.subscribedTracks.length }})</span>
+            </span>
+            <div v-if="activeTab === 'subscribed'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500"></div>
+          </button>
+
+          <!-- Archived Tab -->
+          <button
+            @click="activeTab = 'archived'"
+            class="relative flex-1 px-4 py-3 text-sm font-medium transition-colors"
+            :class="activeTab === 'archived' ? 'text-orange-400' : 'text-gray-400 hover:text-gray-300'"
+          >
+            <span class="flex items-center justify-center gap-1.5">
+              Archived
+              <span class="text-xs opacity-70">({{ archivedTracks.length }})</span>
+            </span>
+            <div v-if="activeTab === 'archived'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-500"></div>
+          </button>
+        </div>
       </div>
 
-      <!-- TR Tracks Table -->
-      <div v-else class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg">
-        <!-- Table Header -->
-        <div class="p-4 border-b border-gray-700/50 bg-gray-800/80">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-xl font-semibold text-white">{{ showArchive ? 'Archived Plans' : 'Tracking Plans Overview' }}</h2>
-              <p class="text-sm text-gray-400 mt-1">{{ trTracks.length }} plan{{ trTracks.length !== 1 ? 's' : '' }} total</p>
-            </div>
-            <div class="flex items-center gap-4">
+      <!-- My Plans Tab Content -->
+      <div v-if="activeTab === 'myplans'" class="bg-gray-800/50 rounded-b-lg border border-gray-700/50 overflow-hidden shadow-lg">
+        <!-- Empty State -->
+        <div v-if="trTracks.length === 0" class="text-center py-12">
+          <IconChartLine size="64" class="mx-auto text-gray-600 mb-4" />
+          <h3 class="text-xl font-semibold text-gray-300 mb-2">No TR Tracks yet</h3>
+          <p class="text-gray-400 mb-6">Create your first TR track to start monitoring your progress</p>
+          <button
+            @click="openNewTRModal"
+            class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+          >
+            <IconPlus size="20" class="inline mr-2" />
+            Create First TR Track
+          </button>
+        </div>
+
+        <!-- TR Tracks Table -->
+        <div v-else>
+          <!-- Table Header -->
+          <div class="p-4 border-b border-gray-700/50 bg-gray-800/80">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-xl font-semibold text-white">Tracking Plans Overview</h2>
+                <p class="text-sm text-gray-400 mt-1">{{ trTracks.length }} plan{{ trTracks.length !== 1 ? 's' : '' }} total</p>
+              </div>
               <div class="flex items-center gap-4 text-sm">
                 <span class="flex items-center gap-2">
                   <div class="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -147,20 +198,8 @@
                   <span class="text-gray-300">Completed: {{ completedTracks.length }}</span>
                 </span>
               </div>
-              <button
-                @click="showArchive = !showArchive"
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-                :class="showArchive 
-                  ? 'bg-orange-600 hover:bg-orange-700 text-white' 
-                  : 'bg-gray-700 hover:bg-gray-600 text-gray-300'"
-                :title="showArchive ? 'Back to Plans' : `Show Archive (${archivedTracks.length})`"
-              >
-                <IconArchive size="16" />
-                <span>{{ showArchive ? 'Back' : `Archive (${archivedTracks.length})` }}</span>
-              </button>
             </div>
           </div>
-        </div>
 
         <!-- Table Content -->
         <div class="overflow-x-auto">
@@ -341,12 +380,345 @@
           </table>
         </div>
 
-        <!-- Footer -->
-        <div class="p-4 bg-gray-800/30 border-t border-gray-700/50 text-right">
-          <p class="text-xs text-gray-400">
-            {{ trTracks.length }} plan{{ trTracks.length !== 1 ? 's' : '' }} total
-            <span class="ml-4">Last updated: {{ getLastUpdatedTime() }}</span>
+          <!-- Footer -->
+          <div class="p-4 bg-gray-800/30 border-t border-gray-700/50 text-right">
+            <p class="text-xs text-gray-400">
+              {{ trTracks.length }} plan{{ trTracks.length !== 1 ? 's' : '' }} total
+              <span class="ml-4">Last updated: {{ getLastUpdatedTime() }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subscribed Tab Content -->
+      <div
+        v-if="activeTab === 'subscribed'"
+        class="bg-gray-800/50 rounded-b-lg border border-indigo-900/50 overflow-hidden shadow-lg"
+      >
+        <!-- Section Header -->
+        <div v-if="trTrackingStore.subscribedTracks.length > 0" class="p-4 border-b border-gray-700/50 bg-gray-800/80">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-semibold text-white flex items-center gap-2">
+                <IconBookmark size="18" class="text-indigo-400" />
+                Subscribed Tracks
+              </h2>
+              <p class="text-sm text-gray-400 mt-1">
+                Live view of friends' tracks — read only
+                <span v-if="subscribedLastSynced" class="ml-2 text-gray-500">
+                  · Last synced: {{ subscribedLastSynced.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }}
+                </span>
+              </p>
+            </div>
+            <button
+              @click="loadSubscribedTracks()"
+              :disabled="isLoadingSubscribed"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors disabled:opacity-50"
+              title="Refresh all subscribed tracks"
+            >
+              <IconRefresh size="15" :class="{ 'animate-spin': isLoadingSubscribed }" />
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Empty State (no subscriptions) -->
+        <div v-if="trTrackingStore.subscribedTracks.length === 0 && !isLoadingSubscribed" class="py-12 text-center">
+          <IconBookmark size="48" class="mx-auto text-indigo-600/50 mb-3" />
+          <p class="text-gray-300 font-semibold mb-1">No subscribed tracks yet</p>
+          <p class="text-gray-500 text-sm">
+            Open the
+            <button
+              @click.stop="showFriendsTracksModal = true"
+              class="text-indigo-400 hover:text-indigo-300 underline underline-offset-2 transition-colors"
+            >Friends Tracks</button>
+            modal to subscribe to friends' tracks.
           </p>
+        </div>
+
+        <!-- Table -->
+        <div v-if="trTrackingStore.subscribedTracks.length > 0" class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-700/50">
+              <tr>
+                <th class="text-left py-2 px-3 text-gray-300 font-medium text-sm">Owner</th>
+                <th class="text-left py-2 px-3 text-gray-300 font-medium text-sm">TR#</th>
+                <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">Entries</th>
+                <th
+                  v-for="column in draggableColumns"
+                  :key="column.id"
+                  class="text-center py-2 px-3 font-medium text-sm"
+                  :style="{ color: column.color || '#d1d5db' }"
+                >{{ column.name }}</th>
+                <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">Status</th>
+                <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="sub in trTrackingStore.subscribedTracks"
+                :key="sub.sharedTrackId"
+                class="border-b border-gray-700/50 hover:bg-gray-700/20 transition-colors cursor-pointer"
+                @click="openSubscribedTrackDetails(sub.sharedTrackId)"
+              >
+                <!-- Owner -->
+                <td class="py-2 px-3">
+                  <div class="flex items-center gap-1.5">
+                    <div class="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                      {{ (sub.ownerName || 'U').charAt(0).toUpperCase() }}
+                    </div>
+                    <span class="text-indigo-300 text-sm font-medium">{{ sub.ownerName }}</span>
+                  </div>
+                </td>
+
+                <!-- TR Name -->
+                <td class="py-2 px-3">
+                  <div class="text-white font-medium whitespace-nowrap">
+                    TR#{{ sub.trCount || 0 }} - {{ sub.trackName }}
+                  </div>
+                  <div v-if="subscribedTracksData[sub.sharedTrackId]" class="text-[10px] text-gray-500">
+                    {{ formatDateShort(subscribedTracksData[sub.sharedTrackId].startDate) }}
+                    <span v-if="!subscribedTracksData[sub.sharedTrackId].isActive && subscribedTracksData[sub.sharedTrackId].endDate">
+                      → {{ formatDateShort(subscribedTracksData[sub.sharedTrackId].endDate) }}
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Entries Count -->
+                <td class="py-2 px-3 text-center text-white">
+                  <span class="flex items-center justify-center gap-1">
+                    {{ getSubscribedEntryCount(sub.sharedTrackId) }}
+                    <span
+                      v-if="hasNewEntries(sub)"
+                      class="inline-flex items-center justify-center w-4 h-4 bg-green-500 text-white text-[9px] font-bold rounded-full"
+                      title="New entries since last sync"
+                    >N</span>
+                  </span>
+                </td>
+
+                <!-- Resource / Initial Value Columns (same as My Plans) -->
+                <template v-if="subscribedTracksData[sub.sharedTrackId]">
+                  <td
+                    v-for="column in draggableColumns"
+                    :key="column.id"
+                    class="py-2 px-3 text-center font-mono text-sm"
+                    :style="{ color: column.color }"
+                  >
+                    <div v-if="column.type === 'initial'">
+                      <span class="font-bold">{{ getInitialValue(subscribedTracksData[sub.sharedTrackId], column) }}</span>
+                      <div
+                        v-if="getInitialValueDiff(subscribedTracksData[sub.sharedTrackId], column) !== null"
+                        class="text-[10px] text-white"
+                      >
+                        {{ getInitialValueDiff(subscribedTracksData[sub.sharedTrackId], column) > 0 ? '+' : (getInitialValueDiff(subscribedTracksData[sub.sharedTrackId], column) < 0 ? '-' : '') }}{{ formatInitialValueDiff(subscribedTracksData[sub.sharedTrackId], column) }}
+                      </div>
+                    </div>
+                    <div v-else>
+                      <span class="font-bold">{{ getHighestValue(subscribedTracksData[sub.sharedTrackId], column.id) }}</span>
+                      <div
+                        v-if="getResourceDiff(subscribedTracksData[sub.sharedTrackId], column.id) !== null"
+                        class="text-[10px] text-white"
+                      >
+                        {{ getResourceDiff(subscribedTracksData[sub.sharedTrackId], column.id) > 0 ? '+' : (getResourceDiff(subscribedTracksData[sub.sharedTrackId], column.id) < 0 ? '-' : '') }}{{ formatResourceDiff(subscribedTracksData[sub.sharedTrackId], column.id) }}
+                      </div>
+                    </div>
+                  </td>
+                </template>
+                <template v-else>
+                  <td
+                    v-for="column in draggableColumns"
+                    :key="column.id"
+                    class="py-2 px-3 text-center text-gray-600 text-sm"
+                  >&mdash;</td>
+                </template>
+
+                <!-- Status -->
+                <td class="py-2 px-3 text-center">
+                  <template v-if="subscribedTracksData[sub.sharedTrackId]">
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                      :class="subscribedTracksData[sub.sharedTrackId].isActive
+                        ? 'bg-green-900/50 text-green-300 border border-green-700/50'
+                        : 'bg-blue-900/50 text-blue-300 border border-blue-700/50'"
+                    >
+                      {{ subscribedTracksData[sub.sharedTrackId].isActive ? 'Active' : 'Done' }}
+                    </span>
+                  </template>
+                  <template v-else-if="isLoadingSubscribed">
+                    <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-400 mx-auto"></div>
+                  </template>
+                  <span v-else class="text-gray-500 text-xs">&mdash;</span>
+                </td>
+
+                <!-- Actions -->
+                <td class="py-2 px-3 text-center" @click.stop>
+                  <div class="flex items-center justify-center gap-0.5">
+                    <button
+                      @click="openSubscribedProgress(sub.sharedTrackId)"
+                      :disabled="!subscribedTracksData[sub.sharedTrackId]"
+                      class="p-1 text-gray-400 hover:text-green-400 hover:bg-green-900/20 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      title="Progress & Charts"
+                    >
+                      <IconChartLine size="15" />
+                    </button>
+                    <button
+                      @click="unsubscribeFromTrack(sub.sharedTrackId)"
+                      class="p-1 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded transition-colors"
+                      title="Unsubscribe"
+                    >
+                      <IconBookmarkOff size="15" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+
+
+              <!-- Loading row -->
+              <tr v-if="isLoadingSubscribed && Object.keys(subscribedTracksData).length === 0">
+                <td :colspan="3 + draggableColumns.length + 2" class="py-6 text-center text-gray-400 text-sm">
+                  <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-400 mx-auto mb-2"></div>
+                  Loading subscribed tracks…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Archived Tab Content -->
+      <div
+        v-if="activeTab === 'archived'"
+        class="bg-gray-800/50 rounded-b-lg border border-gray-700/50 overflow-hidden shadow-lg"
+      >
+        <!-- Empty State -->
+        <div v-if="archivedTracks.length === 0" class="text-center py-12">
+          <IconArchive size="64" class="mx-auto text-gray-600 mb-4" />
+          <h3 class="text-xl font-semibold text-gray-300 mb-2">No Archived Tracks</h3>
+          <p class="text-gray-400">Tracks you archive will appear here.</p>
+        </div>
+
+        <!-- Archived Table -->
+        <div v-else>
+          <!-- Table Header -->
+          <div class="p-4 border-b border-gray-700/50 bg-gray-800/80">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-xl font-semibold text-white">Archived Plans</h2>
+                <p class="text-sm text-gray-400 mt-1">{{ archivedTracks.length }} archived plan{{ archivedTracks.length !== 1 ? 's' : '' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table Content -->
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-700/50">
+                <tr>
+                  <th class="text-left py-2 px-3 text-gray-300 font-medium text-sm">TR#</th>
+                  <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">Entries</th>
+                  <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">Duration</th>
+                  <th
+                    v-for="column in draggableColumns"
+                    :key="column.id"
+                    class="text-center py-2 px-3 font-medium text-sm"
+                    :style="{ color: column.color || '#d1d5db' }"
+                  >{{ column.name }}</th>
+                  <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">Status</th>
+                  <th class="text-center py-2 px-3 text-gray-300 font-medium text-sm">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="track in archivedTracksSorted"
+                  :key="track.id"
+                  class="border-b border-gray-700/50 hover:bg-gray-700/20 transition-colors cursor-pointer"
+                  @click="openTrackDetailsModal(track)"
+                >
+                  <td class="py-2 px-3">
+                    <div class="text-white font-medium whitespace-nowrap">
+                      TR#{{ track.trCount || 0 }} - {{ track.name }}
+                    </div>
+                    <div class="text-[10px] text-gray-500">
+                      {{ formatDateShort(track.startDate) }}
+                      <span v-if="track.endDate"> → {{ formatDateShort(track.endDate) }}</span>
+                    </div>
+                  </td>
+                  <td class="py-2 px-3 text-center text-white">{{ track.entries.length }}</td>
+                  <td class="py-2 px-3 text-center text-gray-300 text-sm">{{ getTrackDuration(track) }}</td>
+
+                  <!-- Resource / Initial Value Columns (same as My Plans) -->
+                  <td
+                    v-for="column in draggableColumns"
+                    :key="column.id"
+                    class="py-2 px-3 text-center font-mono text-sm"
+                    :style="{ color: column.color }"
+                  >
+                    <div v-if="column.type === 'initial'">
+                      <span class="font-bold">{{ getInitialValue(track, column) }}</span>
+                      <div
+                        v-if="getInitialValueDiff(track, column) !== null"
+                        class="text-[10px] text-white"
+                      >
+                        {{ getInitialValueDiff(track, column) > 0 ? '+' : (getInitialValueDiff(track, column) < 0 ? '-' : '') }}{{ formatInitialValueDiff(track, column) }}
+                      </div>
+                    </div>
+                    <div v-else>
+                      <span class="font-bold">{{ getHighestValue(track, column.id) }}</span>
+                      <div
+                        v-if="getResourceDiff(track, column.id) !== null"
+                        class="text-[10px] text-white"
+                      >
+                        {{ getResourceDiff(track, column.id) > 0 ? '+' : (getResourceDiff(track, column.id) < 0 ? '-' : '') }}{{ formatResourceDiff(track, column.id) }}
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="py-2 px-3 text-center">
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                      :class="{
+                        'bg-green-900/50 text-green-300 border border-green-700/50': track.isActive,
+                        'bg-blue-900/50 text-blue-300 border border-blue-700/50': !track.isActive
+                      }"
+                    >
+                      {{ track.isActive ? 'Active' : 'Done' }}
+                    </span>
+                  </td>
+                  <td class="py-2 px-3 text-center" @click.stop>
+                    <div class="flex items-center justify-center gap-0.5">
+                      <button
+                        @click="openProgressModal(track)"
+                        class="p-1 text-gray-400 hover:text-green-400 hover:bg-green-900/20 rounded transition-colors"
+                        title="Progress & Charts"
+                      >
+                        <IconChartLine size="15" />
+                      </button>
+                      <button
+                        @click="unarchiveTrack(track)"
+                        class="p-1 text-gray-400 hover:text-green-400 hover:bg-green-900/20 rounded transition-colors"
+                        title="Restore from Archive"
+                      >
+                        <IconArchiveOff size="15" />
+                      </button>
+                      <button
+                        @click="deleteTrack(track)"
+                        class="p-1 text-gray-400 hover:text-red-400 hover:bg-red-900/20 rounded transition-colors"
+                        title="Delete Track"
+                      >
+                        <IconTrash size="15" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Footer -->
+          <div class="p-4 bg-gray-800/30 border-t border-gray-700/50 text-right">
+            <p class="text-xs text-gray-400">{{ archivedTracks.length }} archived plan{{ archivedTracks.length !== 1 ? 's' : '' }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -378,7 +750,8 @@
     <TrackDetailsModal
       :show="showTrackDetailsModal"
       :track="currentTrack"
-      @close="showTrackDetailsModal = false"
+      :readOnly="currentTrackReadOnly"
+      @close="showTrackDetailsModal = false; currentTrackReadOnly = false"
       @update="handleTrackUpdate"
       @showProgress="handleTrackUpdate({ action: 'showProgress' })"
     />
@@ -461,7 +834,10 @@ import {
   IconArchiveOff,
   IconCloud,
   IconCloudOff,
-  IconUsersGroup
+  IconUsersGroup,
+  IconBookmark,
+  IconBookmarkOff,
+  IconRefresh
 } from '@tabler/icons-vue';
 
 // Components
@@ -479,6 +855,7 @@ import Draggable from 'vuedraggable';
 
 import { useFriendsStore } from '@/store/friendsStore';
 import { neonAuthService } from '@/services/neonAuthService';
+import { getSharedTrack } from '@/services/friendsService';
 
 // Store
 const trTrackingStore = useTRTrackingStore();
@@ -504,7 +881,13 @@ const showMultiTRComparisonModal = ref(false);
 const showBuildSelectionModal = ref(false);
 const showFriendsTracksModal = ref(false);
 const currentTrack = ref(null);
-const showArchive = ref(false);
+const currentTrackReadOnly = ref(false);
+const activeTab = ref('myplans'); // 'myplans' | 'subscribed' | 'archived'
+
+// Subscribed tracks state
+const subscribedTracksData = ref({}); // { [sharedTrackId]: normalizedTrack }
+const isLoadingSubscribed = ref(false);
+const subscribedLastSynced = ref(null);
 
 // Hunter Build Selection State - connect to store for persistence
 const selectedHunterBuilds = computed(() => trTrackingStore.hunterBuildSettings?.selectedBuilds || {});
@@ -569,11 +952,7 @@ const draggableColumns = computed({
 });
 
 const trTracks = computed(() => {
-  const tracks = showArchive.value 
-    ? trTrackingStore.archivedTracks 
-    : trTrackingStore.trTracks.filter(t => !t.isArchived);
-  
-  return [...tracks].sort((a, b) => {
+  return [...trTrackingStore.trTracks.filter(t => !t.isArchived)].sort((a, b) => {
     // 1. Aktive Tracks zuerst
     if (a.isActive !== b.isActive) {
       return b.isActive - a.isActive;
@@ -586,12 +965,140 @@ const trTracks = computed(() => {
     return dateB - dateA;
   });
 });
+const archivedTracksSorted = computed(() => {
+  return [...trTrackingStore.archivedTracks].sort((a, b) => {
+    const dateA = a.endDate ? new Date(a.endDate) : new Date(a.createdAt);
+    const dateB = b.endDate ? new Date(b.endDate) : new Date(b.createdAt);
+    return dateB - dateA;
+  });
+});
 const activeTracks = computed(() => trTrackingStore.activeTracks);
 const completedTracks = computed(() => trTrackingStore.completedTracks);
 const archivedTracks = computed(() => trTrackingStore.archivedTracks);
 const hasSelectedResources = computed(() => selectedResources.value.length > 0);
 
 // Methods
+function normalizeSharedTrack(sharedTrack) {
+  return {
+    id: sharedTrack.id,
+    name: sharedTrack.trackMeta?.name || 'Unknown',
+    trCount: sharedTrack.trackMeta?.trCount || 0,
+    startDate: sharedTrack.trackMeta?.startDate || '',
+    endDate: sharedTrack.trackMeta?.endDate || null,
+    isActive: sharedTrack.trackMeta?.isActive || false,
+    entries: (sharedTrack.entries || []).map((e, idx) => ({
+      id: e.id || `sub_entry_${idx}`,
+      date: e.date,
+      values: e.values || {},
+      notes: e.notes || '',
+      createdAt: e.createdAt || ''
+    })),
+    initialValues: sharedTrack.initialValues || {},
+    targetGoals: sharedTrack.targetGoals || {},
+    resourceOrder: sharedTrack.resourceOrder || [],
+    _ownerName: sharedTrack.ownerName,
+    _ownerId: sharedTrack.ownerId,
+    _isSubscribed: true
+  };
+}
+
+async function loadSubscribedTracks(silent = false) {
+  const subs = trTrackingStore.subscribedTracks;
+  if (!subs || subs.length === 0) return;
+  if (!isUserAuthenticated.value) return;
+
+  if (!silent) isLoadingSubscribed.value = true;
+  try {
+    const results = {};
+    await Promise.all(
+      subs.map(async (sub) => {
+        try {
+          const sharedTrack = await getSharedTrack(sub.sharedTrackId);
+          if (sharedTrack) {
+            results[sub.sharedTrackId] = normalizeSharedTrack(sharedTrack);
+          }
+        } catch (err) {
+          console.error(`Failed to load subscribed track ${sub.sharedTrackId}:`, err);
+        }
+      })
+    );
+    subscribedTracksData.value = results;
+    subscribedLastSynced.value = new Date();
+  } finally {
+    isLoadingSubscribed.value = false;
+  }
+}
+
+async function openSubscribedTrackDetails(sharedTrackId) {
+  let track = subscribedTracksData.value[sharedTrackId];
+  if (!track) {
+    isLoadingSubscribed.value = true;
+    try {
+      const sharedTrack = await getSharedTrack(sharedTrackId);
+      if (sharedTrack) {
+        const normalized = normalizeSharedTrack(sharedTrack);
+        subscribedTracksData.value = { ...subscribedTracksData.value, [sharedTrackId]: normalized };
+        track = normalized;
+      }
+    } catch (err) {
+      console.error('Failed to load subscribed track:', err);
+    } finally {
+      isLoadingSubscribed.value = false;
+    }
+  }
+  if (!track) return;
+  // Mark as seen — updates lastKnownEntryCount so the "new" badge disappears
+  await trTrackingStore.updateSubscribedTrackSync(sharedTrackId, track.entries.length);
+  currentTrack.value = track;
+  currentTrackReadOnly.value = true;
+  showTrackDetailsModal.value = true;
+}
+
+async function openSubscribedProgress(sharedTrackId) {
+  let track = subscribedTracksData.value[sharedTrackId];
+  if (!track) {
+    isLoadingSubscribed.value = true;
+    try {
+      const sharedTrack = await getSharedTrack(sharedTrackId);
+      if (sharedTrack) {
+        const normalized = normalizeSharedTrack(sharedTrack);
+        subscribedTracksData.value = { ...subscribedTracksData.value, [sharedTrackId]: normalized };
+        track = normalized;
+      }
+    } catch (err) {
+      console.error('Failed to load subscribed track:', err);
+    } finally {
+      isLoadingSubscribed.value = false;
+    }
+  }
+  if (!track) return;
+  await trTrackingStore.updateSubscribedTrackSync(sharedTrackId, track.entries.length);
+  currentTrack.value = track;
+  currentTrackReadOnly.value = true;
+  showProgressModal.value = true;
+}
+
+async function unsubscribeFromTrack(sharedTrackId) {
+  await trTrackingStore.unsubscribeFromTrack(sharedTrackId);
+  const newData = { ...subscribedTracksData.value };
+  delete newData[sharedTrackId];
+  subscribedTracksData.value = newData;
+}
+
+function getSubscribedEntryCount(sharedTrackId) {
+  return subscribedTracksData.value[sharedTrackId]?.entries?.length ?? '…';
+}
+
+function hasNewEntries(sub) {
+  const current = subscribedTracksData.value[sub.sharedTrackId]?.entries?.length;
+  if (current === undefined || sub.lastSyncedAt === null) return false;
+  return current > (sub.lastKnownEntryCount || 0);
+}
+
+const newEntriesCount = computed(() =>
+  trTrackingStore.subscribedTracks.filter(sub => hasNewEntries(sub)).length
+);
+
 function openResourceSettingsModal() {
   showResourceSettingsModal.value = true;
 }
@@ -626,11 +1133,13 @@ function openNewTRModal() {
 
 function openTrackDetailsModal(track) {
   currentTrack.value = track;
+  currentTrackReadOnly.value = false;
   showTrackDetailsModal.value = true;
 }
 
 function openProgressModal(track) {
   currentTrack.value = track;
+  currentTrackReadOnly.value = false;
   showProgressModal.value = true;
 }
 
@@ -1156,9 +1665,37 @@ watch(() => friendsStore.isInitialized, (initialized) => {
   }
 }, { immediate: true });
 
+// When switching to subscribed tab, load data if not yet loaded
+watch(activeTab, (tab) => {
+  if (tab === 'subscribed' && isUserAuthenticated.value) {
+    const hasData = trTrackingStore.subscribedTracks.every(
+      sub => subscribedTracksData.value[sub.sharedTrackId]
+    );
+    if (!hasData && !isLoadingSubscribed.value) {
+      loadSubscribedTracks();
+    }
+  }
+});
+
+// When a new subscription is added, load its data immediately
+watch(() => trTrackingStore.subscribedTracks.length, (newLen, oldLen) => {
+
+// When auth state becomes ready, load subscribed tracks immediately (for badge indicator)
+watch(isUserAuthenticated, (authenticated) => {
+  if (authenticated && trTrackingStore.subscribedTracks.length > 0 && !isLoadingSubscribed.value) {
+    loadSubscribedTracks(true);
+  }
+}, { immediate: true });
+  if (newLen > (oldLen ?? 0) && isUserAuthenticated.value) {
+    loadSubscribedTracks(true);
+  }
+});
+
 // Lifecycle
 onMounted(async () => {
   await trTrackingStore.init();
+  // Load subscribed friend tracks in the background
+  loadSubscribedTracks(true);
 });
 </script>
 

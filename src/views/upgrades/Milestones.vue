@@ -58,6 +58,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useHunterStore } from '@/store/hunterStore';
+import { useMissionPlannerStore } from '@/store/missionPlannerStore';
 import { 
   getAllUpgradesWithHunterInfo, 
   getHuntersForUpgrade, 
@@ -71,6 +72,7 @@ import UpgradeCard from '@/components/upgrades/UpgradeCard.vue';
 
 // Store für Upgrades
 const hunterStore = useHunterStore();
+const missionPlannerStore = useMissionPlannerStore();
 
 // Milestones aus den Konstanten laden
 const milestones = ref([]);
@@ -107,6 +109,11 @@ function updateMilestoneLevel(item, newLevel) {
   
   // Update im Store
   hunterStore.updateUpgrade(category, item.id, value);
+
+  // Sync m0 (Eternal Milestone) bidirektional zum Mission Planner
+  if (item.id === 'm0') {
+    missionPlannerStore.updateModifier('eternal_milestone_override', value);
+  }
 }
 
 /**

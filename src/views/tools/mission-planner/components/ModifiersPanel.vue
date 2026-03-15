@@ -702,6 +702,13 @@ onMounted(() => {
   });
 });
 
+// Watch hunterStore m0 → keep eternal_milestone_override in sync (bidirectional)
+watch(eternalMilestoneLevelBase, (newVal) => {
+  if (newVal !== (missionPlannerStore.modifierValues?.eternal_milestone_override ?? 0)) {
+    missionPlannerStore.updateModifier('eternal_milestone_override', newVal);
+  }
+});
+
 // Watch relicPlannerStore → keep mission modifiers in sync
 watch(() => relicPlannerStore.currentLevels, (levels) => {
   Object.entries(MODIFIER_TO_RELIC).forEach(([modId, relicId]) => {
@@ -887,6 +894,10 @@ function updateModifier(modifierId, value) {
   const relicId = MODIFIER_TO_RELIC[modifierId];
   if (relicId !== undefined) {
     relicPlannerStore.updateCurrentLevel(relicId, value);
+  }
+  // Bidirectional sync: eternal_milestone_override → hunterStore (m0)
+  if (modifierId === 'eternal_milestone_override') {
+    hunterStore.updateUpgrade('shardmilestones', 'm0', value);
   }
 }
 

@@ -24,7 +24,7 @@ import {
   formatNumber,
   FARM_MIN_TIME_SECONDS
 } from '@/views/tools/mission-planner/constants/missionCalculator';
-import { FARM_MISSIONS, CAMPAIGN_MISSIONS, isFarmMission, DEFAULT_FILL_ORDER, CAMPAIGN_FINAL_MULTIPLIERS } from '@/views/tools/mission-planner/constants/missions';
+import { FARM_MISSIONS, CAMPAIGN_MISSIONS, isFarmMission, DEFAULT_FILL_ORDER, CAMPAIGN_FINAL_MULTIPLIERS, CAMPAIGN_ORDER_PRESETS } from '@/views/tools/mission-planner/constants/missions';
 import {
   optimizeFarmMissions,
   calculateFarmMissionStats,
@@ -129,6 +129,9 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   // Fill order position for the selected campaign (1-17, inserts before farms at that position)
   // Default is 17 (last position, after all farms)
   const campaignFillOrder = useStorage('mission-planner-campaign-fill-order', 17);
+  
+  // Campaign ordering preset index (0-3)
+  const campaignOrderPreset = useStorage('mission-planner-campaign-order-preset', 3);
   
   // Campaign manual mode (persistent)
   const campaignManualMode = useStorage('mission-planner-campaign-manual-mode', false);
@@ -349,6 +352,38 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       * badgeEffectsBreakdown.value.missionSpeedMultiplier;
   });
 
+  // Helper: compute mission speed with a specific ultima override value
+  function computeMissionSpeedWithUltima(ultimaValue) {
+    const adjustedBonuses = { ...loopmodBonuses.value, ultima_productivity: ultimaValue, ultima_swarm: ultimaValue };
+    const mpThreshold = modifierValues.value?.mp || 0;
+    const adjustedLoopmod = getLoopmodEffectsBreakdown(mpThreshold, adjustedBonuses, boonModifiers.value);
+    return adjustedLoopmod.missionSpeedMultiplier
+      * researchEffectsBreakdown.value.missionSpeedMultiplier
+      * relicEffectsBreakdown.value.missionSpeedMultiplier
+      * badgeEffectsBreakdown.value.missionSpeedMultiplier;
+  }
+
+  // Mission speed with 0 ultima levels (before C1-8)
+  const missionSpeedUltima0 = computed(() => computeMissionSpeedWithUltima(0));
+
+  // Mission speed with at most 5 ultima levels (C1-8 to C2-8)
+  const missionSpeedUltima5 = computed(() => {
+    const plusUltima = modifierValues.value?.plus_ultima || 0;
+    return computeMissionSpeedWithUltima(Math.min(plusUltima, 5));
+  });
+
+  // Mission speed with at most 10 ultima levels (C2-8 to C3-12)
+  const missionSpeedUltima10 = computed(() => {
+    const plusUltima = modifierValues.value?.plus_ultima || 0;
+    return computeMissionSpeedWithUltima(Math.min(plusUltima, 10));
+  });
+
+  // Mission speed with Ultima value reduced by 2 (C3-12 and after)
+  const missionSpeedMultiplierUltimaAdjusted = computed(() => {
+    const plusUltima = modifierValues.value?.plus_ultima || 0;
+    return computeMissionSpeedWithUltima(Math.max(0, plusUltima - 2));
+  });
+
   // Combined farm fragments
   // Formula: (base + additive) * multiplier (same pattern as campaign fragments)
   const farmFragments = computed(() => {
@@ -495,36 +530,13 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
   }
 
   /**
-   * Optimal campaign order for maximum fragments
-   * Strategy: Do final campaigns (CX-12) as late as possible to benefit from higher completed_campaigns multiplier
-   * Order: Normal campaigns first, then finals at positions 36, 40, 44, 48
+   * Optimal campaign order — reactive based on selected preset.
+   * Preset 0 = least frags (finals early), Preset 3 = most frags (finals at the very end).
    */
-  const OPTIMAL_CAMPAIGN_ORDER = (() => {
-    const order = [];
-    const finals = ['C1-12', 'C2-12', 'C3-12', 'C4-12'];
-    
-    // First, add all non-final campaigns (44 campaigns total)
-    for (let planet = 1; planet <= 4; planet++) {
-      for (let mission = 1; mission <= 12; mission++) {
-        const tag = `C${planet}-${mission}`;
-        if (!finals.includes(tag)) {
-          order.push(tag);
-        }
-      }
-    }
-    
-    // Now insert finals at optimal positions (36, 40, 44, 48 = indices 35, 39, 43, 47)
-    // C1-12 at position 36 (index 35)
-    order.splice(35, 0, 'C1-12');
-    // C2-12 at position 40 (index 39)
-    order.splice(39, 0, 'C2-12');
-    // C3-12 at position 44 (index 43)
-    order.splice(43, 0, 'C3-12');
-    // C4-12 at position 48 (index 47)
-    order.splice(47, 0, 'C4-12');
-    
-    return order;
-  })();
+  const OPTIMAL_CAMPAIGN_ORDER = computed(() => {
+    const idx = Math.max(0, Math.min(3, campaignOrderPreset.value ?? 3));
+    return CAMPAIGN_ORDER_PRESETS[idx].order;
+  });
 
   /**
    * Total fragments from all 48 campaigns in one TR
@@ -536,7 +548,7 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     
     // Process all 48 campaigns in optimal order
     for (let i = 0; i < 48; i++) {
-      const tag = OPTIMAL_CAMPAIGN_ORDER[i];
+      const tag = OPTIMAL_CAMPAIGN_ORDER.value[i];
       
       // Calculate fragments for this campaign (with its completed_campaigns index)
       let frags = calculateCampaignFragsForIndex(i);
@@ -1402,6 +1414,10 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     campaignFillOrder.value = newPosition;
     
     optimizeAndApply();
+  }
+
+  function setCampaignOrderPreset(index) {
+    campaignOrderPreset.value = Math.max(0, Math.min(3, index));
   }
 
   /**
@@ -3442,12 +3458,6 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
       return;
     }
     
-    // Request notification permission early
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then(permission => {
-      });
-    }
-    
     // Add click listener to play pending alarms on first interaction
     const playPendingOnInteraction = () => {
       tryPlayPendingAlarms();
@@ -3618,6 +3628,10 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     personnelStats,
     personnelWithBonuses,
     missionSpeedMultiplier,
+    missionSpeedUltima0,
+    missionSpeedUltima5,
+    missionSpeedUltima10,
+    missionSpeedMultiplierUltimaAdjusted,
     farmFragments,
     campaignFragments,
     totalCampaignFragments,
@@ -3735,6 +3749,9 @@ export const useMissionPlannerStore = defineStore('missionPlanner', () => {
     calculateCampaignFragsForIndex,
     OPTIMAL_CAMPAIGN_ORDER,
     CAMPAIGN_FINAL_MULTIPLIERS,
+    CAMPAIGN_ORDER_PRESETS,
+    campaignOrderPreset,
+    setCampaignOrderPreset,
     
     // Utility exports for components
     formatCompletionTime,

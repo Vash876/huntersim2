@@ -161,6 +161,10 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     ooRangeMax: 72                    // OO range slider max position (0-72, log scale)
   });
 
+  // Subscribed friend tracks (persisted, included in backup)
+  // Each entry: { sharedTrackId, ownerId, ownerName, trackName, trCount, subscribedAt, lastSyncedAt, lastKnownEntryCount }
+  const subscribedTracks = ref([]);
+
   // Computed
   const activeTracks = computed(() => trTracks.value.filter(track => track.isActive && !track.isArchived));
   const completedTracks = computed(() => trTracks.value.filter(track => !track.isActive && !track.isArchived));
@@ -330,6 +334,12 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
           ooRangeMin: savedComparisonSettings.ooRangeMin ?? 0,
           ooRangeMax: savedComparisonSettings.ooRangeMax ?? 72
         };
+      }
+
+      // Load subscribed tracks
+      const savedSubscribedTracks = await idbService.loadTRSettings('subscribedTracks');
+      if (savedSubscribedTracks) {
+        subscribedTracks.value = savedSubscribedTracks;
       }
 
       // Load custom resources
@@ -898,6 +908,32 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     };
   }
 
+  // ---- Subscribed Tracks Actions ----
+
+  async function subscribeToTrack(sub) {
+    if (subscribedTracks.value.find(s => s.sharedTrackId === sub.sharedTrackId)) return;
+    subscribedTracks.value = [...subscribedTracks.value, sub];
+    await idbService.saveTRSettings('subscribedTracks', subscribedTracks.value);
+  }
+
+  async function unsubscribeFromTrack(sharedTrackId) {
+    subscribedTracks.value = subscribedTracks.value.filter(s => s.sharedTrackId !== sharedTrackId);
+    await idbService.saveTRSettings('subscribedTracks', subscribedTracks.value);
+  }
+
+  function isSubscribedToTrack(sharedTrackId) {
+    return subscribedTracks.value.some(s => s.sharedTrackId === sharedTrackId);
+  }
+
+  async function updateSubscribedTrackSync(sharedTrackId, entryCount) {
+    const idx = subscribedTracks.value.findIndex(s => s.sharedTrackId === sharedTrackId);
+    if (idx === -1) return;
+    const updated = [...subscribedTracks.value];
+    updated[idx] = { ...updated[idx], lastSyncedAt: new Date().toISOString(), lastKnownEntryCount: entryCount };
+    subscribedTracks.value = updated;
+    await idbService.saveTRSettings('subscribedTracks', subscribedTracks.value);
+  }
+
   function exportData() {
     return {
       selectedResources: selectedResources.value,
@@ -907,7 +943,8 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
       ),
       trTracks: trTracks.value,
       hunterBuildSettings: hunterBuildSettings.value,
-      comparisonSettings: comparisonSettings.value
+      comparisonSettings: comparisonSettings.value,
+      subscribedTracks: subscribedTracks.value
     };
   }
 
@@ -956,6 +993,11 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
         console.log(`📥 Imported comparison settings`);
       }
       
+      if (data.subscribedTracks) {
+        subscribedTracks.value = data.subscribedTracks;
+        await idbService.saveTRSettings('subscribedTracks', data.subscribedTracks);
+      }
+
       if (data.trTracks) {
         trTracks.value = data.trTracks;
         const totalEntries = data.trTracks.reduce((sum, track) => sum + (track.entries?.length || 0), 0);
@@ -1087,6 +1129,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     isInitialized,
     hunterBuildSettings,
     comparisonSettings,
+    subscribedTracks,
 
     // Computed
     activeTracks,
@@ -1125,6 +1168,10 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     updateStandardResourceColor,
     updateCustomResource,
     updateHunterBuildSettings,
-    updateComparisonSettings
+    updateComparisonSettings,
+    subscribeToTrack,
+    unsubscribeFromTrack,
+    isSubscribedToTrack,
+    updateSubscribedTrackSync
   };
 });
