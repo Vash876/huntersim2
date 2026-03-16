@@ -1,11 +1,14 @@
 <template>
   <div 
     v-if="isVisible" 
-    class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80 flex items-center justify-center p-2 sm:p-4 pb-[70px] pt-[50px] sm:py-0"
-    @click.self="handleClose"
+    class="fixed inset-0 z-50 overflow-y-auto bg-gray-900/80"
   >
+    <div
+      class="flex min-h-full items-end sm:items-center justify-center p-2 pb-[70px] sm:p-4 sm:pb-4"
+      @click.self="handleClose"
+    >
     <div 
-      class="bg-gray-800 rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto animate-fade-in border border-gray-700"
+      class="bg-gray-800 rounded-t-xl sm:rounded-lg shadow-2xl w-full max-w-3xl max-h-[85dvh] sm:max-h-[90vh] overflow-y-auto animate-fade-in border border-gray-700"
       @click.stop
     >
       <!-- Header mit Reset-Button und Hide Maxed Toggle -->
@@ -224,6 +227,7 @@
           {{ localHideMaxed ? 'All parameters are maxed - disable "Hide Maxed" to see them' : 'No parameters available' }}
         </div>
       </div>
+    </div>
     </div>
   </div>
 </template>

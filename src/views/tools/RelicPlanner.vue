@@ -715,6 +715,8 @@ import { useRelicPlannerStore } from '@/store/relicPlannerStore';
 import { useGemPlannerStore } from '@/store/gemPlannerStore';
 import { useHunterStore } from '@/store/hunterStore';
 import { useMissionPlannerStore } from '@/store/missionPlannerStore';
+import { SECRET_ACCESS_IDS, hasSecretAccessCached } from '@/constants/navigation';
+import { neonAuthService } from '@/services/neonAuthService';
 import { RELICS, calculateTotalCost, getRelicMaxLevel as getRelicMaxLevelFromData } from '@/views/tools/mission-planner/constants/relics.js';
 import { formatNumber } from '@/composables/format';
 import SuffixInput from '@/composables/SuffixInput.vue';
@@ -726,10 +728,17 @@ const gemPlannerStore = useGemPlannerStore();
 const hunterStore = useHunterStore();
 const missionPlannerStore = useMissionPlannerStore();
 
+// Mission Planner access check (same logic as navigation)
+const hasMissionPlannerAccess = computed(() => {
+  const userId = neonAuthService.getUserId();
+  return SECRET_ACCESS_IDS.includes(userId) || hasSecretAccessCached();
+});
+
 // Auto-calculated fragments/day from Mission Planner (> 0 only when MP is actively used)
-const mpFragsPerDay = computed(() =>
-  (missionPlannerStore.getTotalFarmFragsPerHour?.(missionPlannerStore.missionAssignments) ?? 0) * 24
-);
+const mpFragsPerDay = computed(() => {
+  if (!hasMissionPlannerAccess.value) return 0;
+  return (missionPlannerStore.getTotalFarmFragsPerHour?.(missionPlannerStore.missionAssignments) ?? 0) * 24;
+});
 
 function addCampaignFragments() {
   const amount = missionPlannerStore.totalCampaignFragments?.value ?? 0;
