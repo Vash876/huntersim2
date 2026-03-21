@@ -83,12 +83,8 @@ export default defineConfig({
       },
       format: {
         comments: false
-      },
-      mangle: {
-        properties: {
-          regex: /_$/  // Ändere nur Properties die mit _ enden
-        }
       }
+      // Removed mangle.properties because it breaks Firebase/Firestore internals (Unexpected state ID: 3fdd)
     },
     target: 'esnext',
     sourcemap: false,
