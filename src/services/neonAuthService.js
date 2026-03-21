@@ -14,7 +14,7 @@ import {
 } from 'firebase/auth';
 import {
   doc, getDoc, updateDoc, collection, query, where, getDocs, serverTimestamp, writeBatch
-} from 'firebase/firestore/lite';
+} from 'firebase/firestore';
 import { checkAndCacheSecretAccess } from '../constants/navigation';
 
 class NeonAuthService {

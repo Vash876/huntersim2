@@ -381,16 +381,12 @@ export const allBoosts = [
     multiplier: (value, allValues) => {
       const boonLevel = allValues.boonELevel || 0;
       if (boonLevel === 0) return 1;
-      const baseMultiplier = Math.pow(1.006, value);
-      if (boonLevel === 1) return baseMultiplier;
-      return Math.pow(baseMultiplier, boonLevel);
+      return Math.pow(1 + 0.006 * boonLevel, value);
     },
     fragmulti: (value, allValues) => {
       const boonLevel = allValues.boonELevel || 0;
       if (boonLevel === 0) return 1;
-      const baseMultiplier = Math.pow(1.03, value);
-      if (boonLevel === 1) return baseMultiplier;
-      return Math.pow(baseMultiplier, boonLevel);
+      return Math.pow(1 + 0.03 * boonLevel, value);
     },
   },
 
@@ -423,9 +419,7 @@ export const allBoosts = [
     multiplier: (value, allValues) => {
       const boonLevel = allValues.boonHLevel || 0;
       if (boonLevel === 0) return 1;
-      const baseMultiplier = Math.pow(1.000015, value);
-      if (boonLevel === 1) return baseMultiplier;
-      return Math.pow(baseMultiplier, boonLevel);
+      return Math.pow(1 + 0.000015 * boonLevel, value);
     },
   },
   {
@@ -442,9 +436,7 @@ export const allBoosts = [
     fragmulti: (value, allValues) => {
       const boonLevel = allValues.boonHLevel || 0;
       if (boonLevel === 0) return 1;
-      const baseMultiplier = Math.pow(1.01, value);
-      if (boonLevel === 1) return baseMultiplier;
-      return Math.pow(baseMultiplier, boonLevel);
+      return Math.pow(1 + 0.01 * boonLevel, value);
     },
   },
 

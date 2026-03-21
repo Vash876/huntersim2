@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.14.3',
+    date: '2026-03-21',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Further lowered Boss 400 stats',
+        ]
+      },
+      {
+        text: 'TR Planner',
+        subItems: [
+          'Adjusted Catch Up Multiplier formula for more accurate results',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.14.2',
     date: '2026-03-15',
     changes: [

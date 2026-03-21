@@ -6226,7 +6226,6 @@
   (local $7 f64)
   (local $8 f64)
   (local $9 f64)
-  (local $10 f64)
   global.get $~lib/memory/__stack_pointer
   i32.const 12
   i32.sub
@@ -6358,7 +6357,7 @@
   local.get $2
   local.get $0
   f64.convert_i32_s
-  local.tee $9
+  local.tee $8
   f64.const 4
   f64.mul
   f64.const 9
@@ -6378,7 +6377,7 @@
   i32.trunc_sat_f64_s
   local.tee $3
   f64.convert_i32_s
-  local.tee $10
+  local.tee $9
   call $~lib/math/NativeMath.pow
   f64.mul
   f64.const 90
@@ -6395,14 +6394,13 @@
   select
   local.tee $7
   f64.mul
-  f64.const 0.97
+  f64.const 0.95
   f64.const 1
   local.get $0
   i32.const 400
   i32.eq
   local.tee $5
   select
-  local.tee $8
   f64.mul
   f64.store
   global.get $~lib/memory/__stack_pointer
@@ -6415,7 +6413,7 @@
   local.get $2
   i32.store offset=4
   local.get $2
-  local.get $9
+  local.get $8
   f64.const 0.7
   f64.mul
   f64.const 2.5
@@ -6423,7 +6421,7 @@
   local.get $4
   f64.mul
   f64.const 2.85
-  local.get $10
+  local.get $9
   call $~lib/math/NativeMath.pow
   f64.mul
   f64.const 3.63
@@ -6433,7 +6431,10 @@
   f64.mul
   local.get $7
   f64.mul
-  local.get $8
+  f64.const 0.96
+  f64.const 1
+  local.get $5
+  select
   f64.mul
   f64.store offset=16
   global.get $~lib/memory/__stack_pointer
@@ -6640,7 +6641,7 @@
   local.get $6
   select
   f64.mul
-  f64.const 0.97
+  f64.const 0.96
   f64.const 1
   local.get $5
   select

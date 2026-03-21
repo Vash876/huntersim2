@@ -49,8 +49,11 @@ export function calculateOrbRequirement(trCount, allTimeOrbs) {
  * @returns {number} Berechneter Catch-Up Multiplier
  */
 export function calculateCupMultiplier(hoursInTR, allValues = {}) {
+  const hours = hoursInTR || 0;
+  const correctedHours = (hours * 1.01) + 1.0;
+
   // Research 110: Bonus-Stunden hinzufügen (8-48 Stunden je nach Level)
-  let effectiveHours = hoursInTR || 0; // Auch bei 0 Stunden weiterrechnen für Research-Boni
+  let effectiveHours = correctedHours; // Auch bei 0 Stunden weiterrechnen für Research-Boni
   const researchAlltimeValue = allValues.research_alltime || 0;
   
   // Evolution GN #1 und GN #4 prüfen

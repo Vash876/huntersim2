@@ -11,7 +11,7 @@ import { db } from './firebase';
 import {
   doc, getDoc, setDoc, updateDoc, deleteDoc,
   collection, query, where, getDocs, serverTimestamp, writeBatch
-} from 'firebase/firestore/lite';
+} from 'firebase/firestore';
 
 // ----- Friend Code Generation -----
 

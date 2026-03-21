@@ -258,6 +258,13 @@
         <div class="pb-3 border-b border-gray-700">
           <div class="flex items-center justify-between mb-2">
             <span class="text-xs text-gray-400">Cloud Backup</span>
+            
+            <!-- Newer backup available badge -->
+            <span v-if="syncStore.hasNewerCloudBackup && !syncStore.isSyncing" class="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/30">
+              New Backup Available
+            </span>
+
+            <!-- Status dot for active states -->
             <span v-if="syncStore.isSyncing || syncStore.lastSyncError" class="flex items-center gap-1 text-xs">
               <span 
                 class="w-2 h-2 rounded-full inline-block"
@@ -454,6 +461,14 @@
             <span class="text-xs mt-1 font-medium text-slate-300">Account</span>
           </div>
           <span v-if="activeSection === 'account'" class="active-indicator"></span>
+          
+          <!-- Cloud update available dot -->
+          <span 
+            v-if="syncStore.hasNewerCloudBackup && !friendsStore.hasPending" 
+            class="absolute top-0 right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-slate-900"
+            title="Newer backup available in cloud"
+          ></span>
+
           <!-- Friend request badge -->
           <span 
             v-if="friendsStore.hasPending" 

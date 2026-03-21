@@ -448,7 +448,7 @@ export const allBoosts = [
     tooltip: '',
     multiplier: (value, allValues) => {
       const mechCount = allValues?.mechCount || 0;
-      return Math.pow(1 + 0.0005 * mechCount, value);
+      return 1 + (0.0005 * mechCount * value);
     },
     max: 25
   },
@@ -655,28 +655,16 @@ export const allBoosts = [
       level: 1          
     },
     multiplier: (value, allValues) => {
-      // Bestehende Orb-Multiplier-Logik...
       const boonLevel = allValues.boonELevel || 0;
       if (boonLevel === 0) return 1;
       
-      const baseMultiplier = Math.pow(1.006, value);
-      if (boonLevel === 1) return baseMultiplier;
-      return Math.pow(baseMultiplier, boonLevel);
+      return Math.pow(1 + 0.006 * boonLevel, value);
     },
     fragmulti: (value, allValues) => {
       const boonLevel = allValues.boonELevel || 0;
-      
-      // Level 0: Neutral
       if (boonLevel === 0) return 1;
       
-      // Basis-Multiplikator
-      const baseMultiplier = Math.pow(1.03, value);
-      
-      // Level 1: Normaler Multiplikator
-      if (boonLevel === 1) return baseMultiplier;
-      
-      // Level 2+: Potenziert mit dem Boon-Level
-      return Math.pow(baseMultiplier, boonLevel);
+      return Math.pow(1 + 0.03 * boonLevel, value);
     },
   },
 
@@ -714,18 +702,9 @@ export const allBoosts = [
     // Orb-Multiplikator mit Boon H Level Abhängigkeit
     multiplier: (value, allValues) => {
       const boonLevel = allValues.boonHLevel || 0;
-      
-      // Level 0: Neutral
       if (boonLevel === 0) return 1;
       
-      // Basis-Multiplikator
-      const baseMultiplier = Math.pow(1.000015, value);
-      
-      // Level 1: Normaler Multiplikator
-      if (boonLevel === 1) return baseMultiplier;
-      
-      // Level 2+: Potenziert mit dem Boon-Level
-      return Math.pow(baseMultiplier, boonLevel);
+      return Math.pow(1 + 0.000015 * boonLevel, value);
     },
   },
   {
@@ -746,18 +725,9 @@ export const allBoosts = [
     // Fragment-Multiplikator mit Boon H Level Abhängigkeit
     fragmulti: (value, allValues) => {
       const boonLevel = allValues.boonHLevel || 0;
-      
-      // Level 0: Neutral
       if (boonLevel === 0) return 1;
       
-      // Basis-Multiplikator
-      const baseMultiplier = Math.pow(1.01, value);
-      
-      // Level 1: Normaler Multiplikator
-      if (boonLevel === 1) return baseMultiplier;
-      
-      // Level 2+: Potenziert mit dem Boon-Level
-      return Math.pow(baseMultiplier, boonLevel);
+      return Math.pow(1 + 0.01 * boonLevel, value);
     },
   },
 

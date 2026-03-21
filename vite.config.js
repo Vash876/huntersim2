@@ -107,7 +107,7 @@ export default defineConfig({
     define: {}
   },
   optimizeDeps: {
-    include: ['firebase/app', 'firebase/auth', 'firebase/firestore/lite'],
+    include: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
     exclude: [],
     esbuildOptions: {
       target: 'esnext'

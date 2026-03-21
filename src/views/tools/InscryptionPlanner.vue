@@ -59,7 +59,7 @@
               <div class="text-xs text-gray-400 mb-2 flex items-center justify-between">
                 <span>Amount you have saved</span>
                 <button
-                  @click="store.settings.autoUpdateHBM = !store.settings.autoUpdateHBM"
+                  @click="toggleAutoUpdate"
                   :class="[
                     'px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
                     store.settings.autoUpdateHBM
@@ -1728,6 +1728,18 @@ onMounted(async () => {
 });
 
 // Functions
+function toggleAutoUpdate() {
+  if (!store.settings.autoUpdateHBM) {
+    // Switching ON: reset timestamp so the time spent with Auto OFF isn't backfilled
+    store.resetHBMTimestamp();
+    store.settings.autoUpdateHBM = true;
+  } else {
+    // Switching OFF: save the current auto-calculated value as the new base
+    store.updateCurrentHBM(store.getCurrentHBMWithProduction());
+    store.settings.autoUpdateHBM = false;
+  }
+}
+
 function resetProduction() {
   store.settings.hellishBiomatterProduction = 0;
   selectedBuildId.value = '';

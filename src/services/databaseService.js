@@ -4,7 +4,7 @@
  * Replaces the old Netlify Functions + Neon PostgreSQL backend
  */
 import { db, storage } from './firebase';
-import { doc, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore/lite';
+import { doc, getDoc, setDoc, deleteDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { ref as storageRef, uploadString, getBytes, deleteObject } from 'firebase/storage';
 
 export class DatabaseService {
@@ -55,6 +55,29 @@ export class DatabaseService {
       console.warn('Failed to get backup metadata:', error);
       return null;
     }
+  }
+
+  /**
+   * Listen to backup metadata changes in real-time.
+   * @param {string} userId - Firebase User UID
+   * @param {function} callback - Called with metadata object when it changes
+   * @returns {function} Unsubscribe function
+   */
+  subscribeToBackupMetadata(userId, callback) {
+    const docRef = doc(db, 'userBackups', userId);
+    return onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        callback({
+          updated_at: data.updatedAt?.toDate?.()?.toISOString() || null,
+          app_version: data.appVersion || null,
+        });
+      } else {
+        callback(null);
+      }
+    }, (error) => {
+      console.warn('Backup metadata listener error:', error);
+    });
   }
 
   /**

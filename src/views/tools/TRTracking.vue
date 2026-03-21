@@ -767,6 +767,7 @@
       :show="showImportModal"
       @close="showImportModal = false"
       @import="handleImport"
+      @restore="handleCloudRestore"
     />
 
     <ShareTrackModal
@@ -1637,6 +1638,25 @@ function handleImport(trackData) {
   // Add the imported track to the store
   trTrackingStore.createTRTrack(trackData);
   showImportModal.value = false;
+}
+
+// Handle cloud recovery — restores tracks with original IDs so cloud-share links stay valid
+async function handleCloudRestore(tracks) {
+  let restored = 0;
+  for (const trackData of tracks) {
+    const result = await trTrackingStore.restoreTRTrack(trackData);
+    if (result) {
+      restored++;
+      // Re-register in friendsStore so the cloud icon shows correctly
+      if (trackData._sharedTrackId) {
+        friendsStore.mySharedTrackIds?.add?.(trackData.id);
+      }
+    }
+  }
+  // Refresh friendsStore shared track IDs from cloud to reflect restored tracks
+  if (restored > 0 && friendsStore.isInitialized) {
+    friendsStore.loadMySharedTracks();
+  }
 }
 
 // Handle import from friends tracks

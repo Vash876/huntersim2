@@ -491,7 +491,7 @@ export const useInscryptionPlannerStore = defineStore('inscryptionPlanner', () =
     const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24);
     
     const dailyProduction = settings.value.hellishBiomatterProduction || 0;
-    const producedHBM = elapsedDays * dailyProduction;
+    const producedHBM = settings.value.autoUpdateHBM !== false ? elapsedDays * dailyProduction : 0;
     
     const totalHBM = settings.value.currentHBM.value + producedHBM;
     

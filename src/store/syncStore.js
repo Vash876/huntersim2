@@ -19,7 +19,7 @@ export const useSyncStore = defineStore('sync', () => {
   const lastSyncError = ref(null);
   const syncStatus = ref('idle'); // 'idle', 'syncing', 'success', 'error'
   const lastCloudSaveTime = ref(null); // server-side updatedAt — valid across all devices
-  let _metadataFetched = false; // guard: only one Firestore read per session
+  let _metadataUnsubscribe = null; // store the active Firestore listener
   
   // Sync Throttling
   const MIN_SYNC_INTERVAL = 10000; // 10 Sekunden zwischen Syncs
@@ -44,6 +44,25 @@ export const useSyncStore = defineStore('sync', () => {
     const cooldownPassed = timeSinceLastSync >= MIN_SYNC_INTERVAL;
     
     return isAuthenticated.value && !isSyncing.value && cooldownPassed;
+  });
+
+  // Determines if there's a newer backup in the cloud than what we have locally
+  const hasNewerCloudBackup = computed(() => {
+    if (!lastCloudSaveTime.value) return false;
+    
+    // We get the timestamp of the last local update (either a save or a load)
+    const localTime = Math.max(
+      lastUploadTime.value ? new Date(lastUploadTime.value).getTime() : 0,
+      lastDownloadTime.value ? new Date(lastDownloadTime.value).getTime() : 0
+    );
+    
+    // If no local sync has ever happened but a cloud save exists, it's newer
+    if (localTime === 0) return true;
+    
+    const cloudTime = new Date(lastCloudSaveTime.value).getTime();
+    
+    // Adding a 5-second buffer to prevent precision issues
+    return cloudTime > (localTime + 5000);
   });
 
   // Helper functions
@@ -110,7 +129,11 @@ export const useSyncStore = defineStore('sync', () => {
     // Register for auth state changes (Firebase onAuthStateChanged fires callback)
     neonAuthService.onAuthStateChanged = (user) => {
       updateAuthState();
-      if (user) fetchCloudMetadata();
+      if (user) {
+        setupCloudMetadataListener();
+      } else {
+        stopCloudMetadataListener();
+      }
     };
     
     // Also poll for auth state changes every 5 seconds as backup
@@ -133,19 +156,23 @@ export const useSyncStore = defineStore('sync', () => {
     }
   }
 
-  // Fetch only Firestore metadata (cheap read) to get the server-side save timestamp
-  async function fetchCloudMetadata() {
-    if (_metadataFetched) return; // already fetched this session
-    _metadataFetched = true;
-    try {
-      const userId = currentUser.value?.id;
-      if (!userId) { _metadataFetched = false; return; }
-      const meta = await databaseService.getBackupMetadata(userId);
+  // Set up real-time listener for metadata (cheap reads, updates instantly on changes from other devices)
+  function setupCloudMetadataListener() {
+    stopCloudMetadataListener(); // prevent duplicate listeners
+    const userId = currentUser.value?.id;
+    if (!userId) return;
+    
+    _metadataUnsubscribe = databaseService.subscribeToBackupMetadata(userId, (meta) => {
       if (meta?.updated_at) {
         setLastCloudSaveTime(meta.updated_at);
       }
-    } catch (e) {
-      _metadataFetched = false; // allow retry on error
+    });
+  }
+
+  function stopCloudMetadataListener() {
+    if (_metadataUnsubscribe) {
+      _metadataUnsubscribe();
+      _metadataUnsubscribe = null;
     }
   }
 
@@ -245,11 +272,13 @@ export const useSyncStore = defineStore('sync', () => {
     // Computed
     userDisplayName,
     canSync,
+    hasNewerCloudBackup,
     
     // Methods
     init,
     updateAuthState,
-    fetchCloudMetadata,
+    setupCloudMetadataListener,
+    stopCloudMetadataListener,
     createLocalBackup,
     restoreLocalBackup,
     syncToServer,

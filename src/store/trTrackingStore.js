@@ -571,6 +571,43 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     }
   }
 
+  /**
+   * Restore a cloud track preserving its original local ID.
+   * Used by Cloud Recovery so cloud-share links remain valid.
+   */
+  async function restoreTRTrack(trackData) {
+    // Skip if a track with this ID already exists locally
+    if (trTracks.value.some(t => t.id === trackData.id)) {
+      console.warn(`Track ${trackData.id} already exists locally — skipping restore`);
+      return null;
+    }
+    const track = {
+      id: trackData.id,
+      name: trackData.name,
+      startDate: trackData.startDate || new Date().toISOString().split('T')[0],
+      endDate: trackData.endDate || null,
+      isActive: trackData.isActive !== undefined ? trackData.isActive : true,
+      entries: (trackData.entries || []).map(e => ({ ...e, id: e.id || generateId() })),
+      notes: trackData.notes || '',
+      resourceOrder: trackData.resourceOrder || generateDefaultResourceOrder(),
+      trCount: trackData.trCount || null,
+      initialValues: trackData.initialValues || null,
+      targetGoals: trackData.targetGoals || null,
+      selectedResources: trackData.selectedResources || [],
+      createdAt: trackData.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    try {
+      await idbService.saveTRTrack(track);
+      trTracks.value.push(track);
+      return track;
+    } catch (error) {
+      console.error('Failed to restore track:', error);
+      throw error;
+    }
+  }
+
+
   // Helper function to generate default resource order based on store order and selected resources
   function generateDefaultResourceOrder() {
     // Get the IDs of all selected resources
@@ -1147,6 +1184,7 @@ export const useTRTrackingStore = defineStore('trTracking', () => {
     addCustomResource,
     removeCustomResource,
     createTRTrack,
+    restoreTRTrack,
     updateTRTrack,
     updateTRTrackSettings,
     updateResourceOrder,

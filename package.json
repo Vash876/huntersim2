@@ -36,7 +36,7 @@
     "break_infinity.js": "^2.2.0",
     "comlink": "^4.4.2",
     "echarts": "^6.0.0",
-    "firebase": "^12.9.0",
+    "firebase": "^12.10.0",
     "fluid-dnd": "^2.6.2",
     "html-to-image": "^1.11.13",
     "lodash": "^4.17.21",

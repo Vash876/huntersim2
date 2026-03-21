@@ -75,14 +75,14 @@ class Enemy {
       * Math.pow(2.85, floorDiv as f64) 
       * (isBoss ? 90 : 1) 
       * (is300 ? 0.87 : 1)
-      * (is400 ? 0.97 : 1);
+      * (is400 ? 0.95 : 1);
     this.hp = 1;
     this.atk = (2.5 + 0.7 * enemyNum) 
       * multiVal 
       * Math.pow(2.85, floorDiv as f64) 
       * (isBoss ? 3.63 : 1) 
       * (is300 ? 0.87 : 1)
-      * (is400 ? 0.97 : 1);
+      * (is400 ? 0.96 : 1);
     
     // Store base ATK for Infernal Bulk calculations
     this.baseAtk = this.atk;
@@ -124,7 +124,7 @@ class Enemy {
     ) 
       * (isBoss ? 1.92 : 1) 
       * (is300 ? 0.87 : 1)
-      * (is400 ? 0.97 : 1);
+      * (is400 ? 0.96 : 1);
     this.atkSpd = (4.526 - 0.006 * enemyNum) * (isBoss ? 2.42 : 1);
     this.enrage = 0;
     this.stunEnd = 0;

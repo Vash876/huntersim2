@@ -123,6 +123,14 @@
                   {{ friendsStore.pendingCount }}
                 </span>
                 <span class="hidden lg:inline">{{ neonAuthService.getUserDisplayName() || 'User' }}</span>
+                
+                <!-- Cloud update available dot -->
+                <span 
+                  v-if="syncStore.hasNewerCloudBackup && !friendsStore.hasPending" 
+                  class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-blue-500 rounded-full border border-gray-800"
+                  title="Newer backup available in cloud"
+                ></span>
+
                 <IconChevronDown 
                   size="16" 
                   class="ml-1.5 transition-transform duration-200"
@@ -151,6 +159,12 @@
                   <div class="py-3 border-b border-gray-700">
                     <div class="flex items-center justify-between mb-2">
                       <span class="text-xs text-gray-400">Cloud Backup</span>
+                      
+                      <!-- Newer backup available badge -->
+                      <span v-if="syncStore.hasNewerCloudBackup && !syncStore.isSyncing" class="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/30">
+                        New Backup Available
+                      </span>
+
                       <!-- Status dot for active states -->
                       <span v-if="syncStore.isSyncing || syncStore.lastSyncError" class="flex items-center gap-1 text-xs">
                         <span 
