@@ -224,9 +224,9 @@ const store = useTRPlannerStore();
 const settings = computed(() => store.modifiers.settings);
 
 // Gem data for unlock checks
+const gemData = computed(() => getGemDataFromLocalStorage());
 const gemLevels = computed(() => {
-  const gemData = getGemDataFromLocalStorage();
-  return gemData.levels || {};
+  return gemData.value.levels || {};
 });
 
 // Filter categories - only show unlocked boosts
@@ -295,6 +295,9 @@ function toggleBoost(key, type) {
 
 // Get max value for boost
 function getBoostMaxValue(boost) {
+  if (typeof boost.getMax === 'function') {
+    return boost.getMax(gemData.value);
+  }
   if (boost.max !== undefined) return boost.max;
   if (boost.maxFromGem) {
     const gemLevel = gemLevels.value[boost.maxFromGem.gem] || 0;

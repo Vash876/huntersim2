@@ -480,7 +480,7 @@ function enemyAttack(isBonus: boolean = false): void {
 // Kill Enemy function
 function killEnemy(): void {
   if (currentEnem > 0 && currentEnem % 1000 === 0) {
-    currentBorge.currentDr -= 0.007 * currentBorge.atlas;
+    currentBorge.currentDr = Math.max(0, currentBorge.currentDr - 0.007 * currentBorge.atlas);
     currentBorge.currentEffect -= 0.014 * currentBorge.atlas;
     currentBorge.currentCritRate -= 0.025 * currentBorge.atlas;
     furyEnabled = false;

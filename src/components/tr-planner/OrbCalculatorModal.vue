@@ -146,7 +146,7 @@
                       class="ml-1"
                     />
                   </div>
-                  <div v-if="getBoostMaxValue(boost, gemLevels) !== undefined" class="text-[10px] text-gray-400">Max: {{ getBoostMaxValue(boost, gemLevels) }}</div>
+                  <div v-if="getBoostMaxValue(boost, fullGemData) !== undefined" class="text-[10px] text-gray-400">Max: {{ getBoostMaxValue(boost, fullGemData) }}</div>
                 </td>
                   
                   <!-- Neue Spalte für Kosten -->
@@ -214,7 +214,7 @@
                         <TRValueControls
                           :value="currentBoosts[boost.key] || 0"
                           :minValue="0"
-                          :maxValue="getBoostMaxValue(boost, gemLevels) || 999999"
+                          :maxValue="getBoostMaxValue(boost, fullGemData) || 999999"
                           :showFastControls="true"
                           :step="boost.normalControl || 1"
                           :fastStep="boost.fastControl || 10"
@@ -254,7 +254,7 @@
                         <TRValueControls
                           :value="targetBoosts[boost.key] || 0"
                           :minValue="0"  
-                          :maxValue="getBoostMaxValue(boost, gemLevels) || 999999"
+                          :maxValue="getBoostMaxValue(boost, fullGemData) || 999999"
                           :showFastControls="true"
                           :step="boost.normalControl || 1"
                           :fastStep="boost.fastControl || 10"
@@ -303,7 +303,7 @@
                       />
                     </div>
                     
-                    <div v-if="getBoostMaxValue(boost, gemLevels) !== undefined" class="text-[10px] text-gray-400">Max: {{ getBoostMaxValue(boost, gemLevels) }}</div>
+                    <div v-if="getBoostMaxValue(boost, fullGemData) !== undefined" class="text-[10px] text-gray-400">Max: {{ getBoostMaxValue(boost, fullGemData) }}</div>
                     
                     <!-- Multiplier rechts anzeigen -->
                     <div class="text-xs text-right">
@@ -359,7 +359,7 @@
                           <TRValueControls
                             :value="currentBoosts[boost.key] || 0"
                             :minValue="0"
-                            :maxValue="getBoostMaxValue(boost, gemLevels) || 999999"
+                            :maxValue="getBoostMaxValue(boost, fullGemData) || 999999"
                             :showFastControls="true"
                             :step="boost.normalControl || 1"
                             :fastStep="boost.fastControl || 10"
@@ -411,7 +411,7 @@
                           <TRValueControls
                             :value="targetBoosts[boost.key] || 0"
                             :minValue="0"  
-                            :maxValue="getBoostMaxValue(boost, gemLevels) || 999999"
+                            :maxValue="getBoostMaxValue(boost, fullGemData) || 999999"
                             :showFastControls="true"
                             :step="boost.normalControl || 1"
                             :fastStep="boost.fastControl || 10"
@@ -698,6 +698,13 @@ const allTimeOrbsDisplay = computed({
 });
 
 // Gem-Levels aus dem Store laden
+const fullGemData = computed(() => {
+  const data = getGemDataFromLocalStorage();
+  if (data && data.levels && Object.keys(data.levels).length > 0) {
+    return data;
+  }
+  return getGemDataFromStore() || { levels: {}, activeNodes: {}, upgrades: {} };
+});
 const gemLevels = computed(() => {
   // Immer die neuesten Gem-Daten direkt aus localStorage laden
   const gemData = getGemDataFromLocalStorage();
@@ -1166,7 +1173,7 @@ const filteredBoostCategories = computed(() => {
         // VEREINFACHTE Filter-Logik für maxed boosts
         const isMaxedInStatsInput = (() => {
           // Für numerische Boosts mit Maximum
-          const maxValue = getBoostMaxValue(boost, gemLevels.value);
+          const maxValue = getBoostMaxValue(boost, fullGemData.value);
           if (boost.type === 'number' && maxValue !== undefined) {
             const globalLevel = currentMaxStats[boost.key];
             if (globalLevel !== undefined && globalLevel >= maxValue) {
@@ -1315,7 +1322,7 @@ function updateBoostTarget(boost, newValue) {
   let validValue = Math.max(Math.floor(newValue), currentValue);
   
   // Max-Level berücksichtigen
-  const maxValue = getBoostMaxValue(boost, gemLevels.value);
+  const maxValue = getBoostMaxValue(boost, fullGemData.value);
   if (maxValue !== undefined) {
     validValue = Math.min(validValue, maxValue);
   }
@@ -1371,7 +1378,7 @@ function finalizeTargetValue(boost) {
   }
   
   // Max-Level prüfen falls vorhanden
-  const maxValue = getBoostMaxValue(boost, gemLevels.value);
+  const maxValue = getBoostMaxValue(boost, fullGemData.value);
   if (maxValue !== undefined && targetValue > maxValue) {
     targetBoosts.value[boost.key] = maxValue;
     recalculateAll();
@@ -1552,7 +1559,7 @@ function updateBoostCurrent(boost, newValue) {
   let validValue = Math.max(Math.floor(newValue), 0);
   
   // Respect max level if available
-  const maxValue = getBoostMaxValue(boost, gemLevels.value);
+  const maxValue = getBoostMaxValue(boost, fullGemData.value);
   if (maxValue !== undefined) {
     validValue = Math.min(validValue, maxValue);
   }
@@ -1836,7 +1843,7 @@ function createPlanWithCurrentValues() {
   
   allBoosts.forEach(boost => {
     // Für numerische Boosts mit maximalen Wert
-    const maxValue = getBoostMaxValue(boost, gemLevels.value);
+    const maxValue = getBoostMaxValue(boost, fullGemData.value);
     if (maxValue !== undefined && boost.type === 'number') {
       // Aktueller Wert im OrbCalculator
       const currentValue = currentBoosts.value[boost.key];
@@ -1950,7 +1957,7 @@ function createPlanWithTargetValues() {
   
   allBoosts.forEach(boost => {
     // Für numerische Boosts mit maximalen Wert
-    const maxValue = getBoostMaxValue(boost, gemLevels.value);
+    const maxValue = getBoostMaxValue(boost, fullGemData.value);
     if (maxValue !== undefined && boost.type === 'number') {
       // Target-Wert im OrbCalculator
       const targetValue = targetBoosts.value[boost.key];

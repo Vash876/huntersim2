@@ -83,22 +83,67 @@ export function ensureGemDataSync() {
         console.warn('Could not load existing userStats:', e);
       }
       
+      // Check if Exodus Node 3 was just unlocked to reset R6 and R9 maxed states
+      const oldGemData = userStats.gemData;
+      const previouslyHadExodusNode3 = oldGemData?.activeNodes?.exodus?.includes(2);
+      const currentlyHasExodusNode3 = trPlannerGemData?.activeNodes?.exodus?.includes(2);
+      
+      if (!previouslyHadExodusNode3 && currentlyHasExodusNode3 && userStats._orbCalcMaxedBoosts) {
+        if (userStats._orbCalcMaxedBoosts.r6) delete userStats._orbCalcMaxedBoosts.r6;
+        if (userStats._orbCalcMaxedBoosts.r9) delete userStats._orbCalcMaxedBoosts.r9;
+        
+        // Also respect regular save states
+        if (userStats.r6 >= 11) userStats.r6 = 11; // Ensure value isn't kept at 11 or higher
+        if (userStats.r9 >= 100) userStats.r9 = 100;
+        
+        console.log('🔄 Exodus Node 3 selected: Reset maxed state for R6 and R9');
+      }
+
+      // Check if Innovation Level 3 was reached to reset research maxed states
+      const previouslyHadInnovationLevel3 = (oldGemData?.levels?.innovation || 0) >= 3;
+      const currentlyHasInnovationLevel3 = (trPlannerGemData?.levels?.innovation || 0) >= 3;
+      
+      if (!previouslyHadInnovationLevel3 && currentlyHasInnovationLevel3 && userStats._orbCalcMaxedBoosts) {
+        if (userStats._orbCalcMaxedBoosts.research) delete userStats._orbCalcMaxedBoosts.research;
+        if (userStats._orbCalcMaxedBoosts.research_alltime) delete userStats._orbCalcMaxedBoosts.research_alltime;
+        
+        // Respect older manual values when max was fixed at level 2
+        if (userStats.research >= 4465) userStats.research = 4465;
+        if (userStats.research_alltime >= 4155) userStats.research_alltime = 4155;
+        
+        console.log('🔄 Innovation Level 3 reached: Reset maxed state for Research Points');
+      }
+
       // Update gemData in userStats
       userStats.gemData = trPlannerGemData;
-      
+
       // Save back to localStorage
       localStorage.setItem('trplanner_userstats', JSON.stringify(userStats));
-      
+
+      // WICHTIG: Auch den Pinia Store direkt aktualisieren, da useStorage
+      // innerhalb desselben Tabs keine StorageEvents empfängt
+      try {
+        const trPlannerStore = useTRPlannerStore();
+        if (trPlannerStore && trPlannerStore.userStats) {
+          // gemData immer updaten
+          trPlannerStore.userStats.gemData = trPlannerGemData;
+          // _orbCalcMaxedBoosts synchronisieren
+          trPlannerStore.userStats._orbCalcMaxedBoosts = userStats._orbCalcMaxedBoosts || {};
+        }
+      } catch (e) {
+        console.warn('Could not update Pinia store directly:', e);
+      }
+
       // Also save to individual gem data storage for backwards compatibility
       localStorage.setItem('gemData', JSON.stringify(trPlannerGemData));
-      
+
       console.log('✅ Gem data synced successfully:', trPlannerGemData);
-      
+
       // Dispatch event for other components
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('gemDataChanged'));
       }
-      
+
       return trPlannerGemData;
     } else {
       console.log('⚠️ gemPlannerStore ist leer oder nicht verfügbar, verwende bestehende localStorage-Daten');
@@ -393,7 +438,19 @@ export const allBoosts = [
       const part2 = Math.pow(1.05, value); 
       return part1 * part2; 
     },
-    max: 11
+    max: 11,
+    getMax: (passedGemData) => {
+      let gemData = passedGemData;
+      if (!gemData || !gemData.activeNodes || Object.keys(gemData.activeNodes).length === 0) {
+        if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+          gemData = window.__PLAN_CONTEXT__.gemData;
+        } else {
+          gemData = getContextualGemData();
+        }
+      }
+      if (gemData?.activeNodes?.exodus?.includes(2)) return 16;
+      return 11;
+    }
   },
   {
     id: 6,
@@ -405,7 +462,19 @@ export const allBoosts = [
     permanent: true,
     tooltip: '0',
     multiplier: (value) => Math.pow(1.08, value),
-    max: 100
+    max: 100,
+    getMax: (passedGemData) => {
+      let gemData = passedGemData;
+      if (!gemData || !gemData.activeNodes || Object.keys(gemData.activeNodes).length === 0) {
+        if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+          gemData = window.__PLAN_CONTEXT__.gemData;
+        } else {
+          gemData = getContextualGemData();
+        }
+      }
+      if (gemData?.activeNodes?.exodus?.includes(2)) return 105;
+      return 100;
+    }
   },
   {
     id: 41,
@@ -833,15 +902,16 @@ export const allBoosts = [
       return overallMultiplier;
     },
     // Dynamic max based on Innovation Gem Level
-    getMax: () => {
-      let gemData;
-      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
-        gemData = window.__PLAN_CONTEXT__.gemData;
-      } else {
-        gemData = getContextualGemData();
+    getMax: (passedGemData) => {
+      let gemData = passedGemData;
+      if (!gemData || !gemData.levels || Object.keys(gemData.levels).length === 0) {
+        if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+          gemData = window.__PLAN_CONTEXT__.gemData;
+        } else {
+          gemData = getContextualGemData();
+        }
       }
-      const innovationGemLevel = gemData.levels.innovation || 0;
-      
+      const innovationGemLevel = gemData?.levels?.innovation || 0;
       if (innovationGemLevel >= 3) {
         return 8040; // Innovation Level 3: New research max
       } else if (innovationGemLevel >= 2) {
@@ -984,15 +1054,16 @@ export const allBoosts = [
       return overallMultiplier;
     },
     // Dynamic max based on Innovation Gem Level
-    getMax: () => {
-      let gemData;
-      if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
-        gemData = window.__PLAN_CONTEXT__.gemData;
-      } else {
-        gemData = getContextualGemData();
+    getMax: (passedGemData) => {
+      let gemData = passedGemData;
+      if (!gemData || !gemData.levels || Object.keys(gemData.levels).length === 0) {
+        if (typeof window !== 'undefined' && window.__PLAN_CONTEXT__ && window.__PLAN_CONTEXT__.gemData) {
+          gemData = window.__PLAN_CONTEXT__.gemData;
+        } else {
+          gemData = getContextualGemData();
+        }
       }
-      const innovationGemLevel = gemData.levels.innovation || 0;
-      
+      const innovationGemLevel = gemData?.levels?.innovation || 0;
       if (innovationGemLevel >= 3) {
         return 14500; // Innovation Level 3: Highest permanent research requirement
       } else if (innovationGemLevel >= 2) {

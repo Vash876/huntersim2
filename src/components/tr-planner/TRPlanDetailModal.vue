@@ -364,8 +364,8 @@ import { computed, ref } from 'vue';
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
 import { getGadgetCost, formatGadgetCost } from '@/utils/gadgetCostUtils';
-import { getM0Cost, formatM0Cost, calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
-import { LOOP_MODS, getLoopModCost, formatLoopModCost, calculateLoopModCostRangeSafe, getRuleOfConsistencyExponent } from '@/utils/loopModCostUtils';
+import { calculateM0CostRangeSafe } from '@/utils/m0CostUtils';
+import { getRuleOfConsistencyExponent } from '@/utils/loopModCostUtils';
 import VChart from 'vue-echarts';
 import '@/utils/echarts';
 import { darkTooltip, darkXAxis, darkYAxis, darkGrid } from '@/utils/echarts';
@@ -373,673 +373,327 @@ import { useTRPlannerStore } from '@/store/orbStore';
 import { allBoosts } from '@/constants/tr-planner';
 import { formatNumber } from '@/composables/format';
 import { calculateOrbRequirement } from '@/composables/calculations';
-import { 
-  IconX, 
-  IconCircleCheck, 
-  IconCircleX,
-  IconTrash,
-  IconEdit,
-  IconCalendarEvent,
-  IconRepeat,
-  IconClock,
-  IconCircle
-} from '@tabler/icons-vue';
+import { IconX, IconCircleX, IconTrash, IconEdit, IconCalendarEvent, IconRepeat, IconClock } from '@tabler/icons-vue';
 import InfoTooltip from '@/composables/InfoTooltip.vue';
 
 const props = defineProps({
-  isVisible: {
-    type: Boolean,
-    default: false
-  },
-  planId: {
-    type: String,
-    default: null
-  },
-  currentStats: {
-    type: Object,
-    default: () => ({})
-  }
+  isVisible: { type: Boolean, default: false },
+  planId: { type: String, default: null },
+  currentStats: { type: Object, default: () => ({}) }
 });
 
 const emit = defineEmits(['close', 'delete', 'edit']);
 
-// Store einbinden
-const trPlannerStore = useTRPlannerStore();
+// ── Helpers for dual format (object vs array) ──────────────────────
+function normalizeBoosts(boosts) {
+  if (!boosts) return [];
+  if (typeof boosts === 'object' && !Array.isArray(boosts)) {
+    return Object.entries(boosts).map(([key, data]) => ({ key, ...data }));
+  }
+  if (Array.isArray(boosts)) return boosts;
+  return [];
+}
 
-// Current TR count from stats
+function getBoostTargetLevel(boosts, key) {
+  if (!boosts) return undefined;
+  if (typeof boosts === 'object' && !Array.isArray(boosts)) {
+    return boosts[key]?.targetLevel;
+  }
+  if (Array.isArray(boosts)) {
+    return boosts.find(b => b.key === key)?.targetLevel;
+  }
+  return undefined;
+}
+
+// ── Core ────────────────────────────────────────────────────────────
+const trPlannerStore = useTRPlannerStore();
+const plan = computed(() => props.planId ? trPlannerStore.getTRPlanById(props.planId) : null);
 const currentTrCount = computed(() => props.currentStats?.trCount || 0);
 
-// Plan aus dem Store abrufen
-const plan = computed(() => props.planId ? trPlannerStore.getTRPlanById(props.planId) : null);
+const boostsByKey = computed(() => {
+  const map = {};
+  allBoosts.forEach(b => { map[b.key] = b; });
+  return map;
+});
 
-// Berechnung der Gesamtanzahl der TRs im Plan
+// ── Plan metrics ────────────────────────────────────────────────────
 const totalTRsInPlan = computed(() => {
   if (!plan.value) return 0;
-  
-  // Basis-TR + alle Chain-TRs
   return 1 + (plan.value.trChain?.length || 0);
 });
 
-// Erster TR Hours
-const firstTrHours = computed(() => {
-  if (!plan.value?.boosts) return 0;
-  
-  // NEUES FORMAT: Object
-  if (typeof plan.value.boosts === 'object' && !Array.isArray(plan.value.boosts)) {
-    return plan.value.boosts.hoursInTR?.targetLevel || 0;
-  }
-  // ALTES FORMAT: Array (Rückwärtskompatibilität)
-  else if (Array.isArray(plan.value.boosts)) {
-    const hoursBoost = plan.value.boosts.find(b => b.key === 'hoursInTR');
-    return hoursBoost?.targetLevel || 0;
-  }
-  
-  return 0;
-});
+const firstTrHours = computed(() => getBoostTargetLevel(plan.value?.boosts, 'hoursInTR') || 0);
 
-// Erster TR Orb Gains
-const firstTrOrbGains = computed(() => {
-  return plan.value?.results?.orbGains || 0;
-});
-
-// Erster TR Fragment Gains
-const firstTrFragGains = computed(() => {
-  return plan.value?.results?.campaignFragGains || 0;
-});
-
-// Stunden für einen Chain-Schritt abrufen
 function getChainTrHours(chainStep) {
-  if (!chainStep?.boosts) return 0;
-  
-  // NEUES FORMAT: Object
-  if (typeof chainStep.boosts === 'object' && !Array.isArray(chainStep.boosts)) {
-    return chainStep.boosts.hoursInTR?.targetLevel || 0;
-  }
-  // ALTES FORMAT: Array (Rückwärtskompatibilität)
-  else if (Array.isArray(chainStep.boosts)) {
-    const hoursBoost = chainStep.boosts.find(b => b.key === 'hoursInTR');
-    return hoursBoost?.targetLevel || 0;
-  }
-  
-  return 0;
+  return getBoostTargetLevel(chainStep?.boosts, 'hoursInTR') || 0;
 }
 
-// Total Hours in TR für alle TRs zusammen
 const totalHoursInTR = computed(() => {
   if (!plan.value) return 0;
-  
-  // Stunden des ersten TRs
   let total = firstTrHours.value;
-  
-  // Stunden aller Chain-TRs
-  if (plan.value.trChain && Array.isArray(plan.value.trChain)) {
-    plan.value.trChain.forEach(chainStep => {
-      total += getChainTrHours(chainStep);
-    });
+  if (plan.value.trChain) {
+    for (const step of plan.value.trChain) total += getChainTrHours(step);
   }
-  
   return total;
 });
 
-// Gesamte Orb-Gewinne
+// ── Orbs & Fragments ────────────────────────────────────────────────
+const firstTrOrbGains = computed(() => plan.value?.results?.orbGains || 0);
+const firstTrFragGains = computed(() => plan.value?.results?.campaignFragGains || 0);
+
 const totalOrbGains = computed(() => {
   if (!plan.value) return 0;
-  
-  // Orbs vom ersten TR
   let total = firstTrOrbGains.value;
-  
-  // Orbs von allen Chain-TRs
-  if (plan.value.trChain && Array.isArray(plan.value.trChain)) {
-    plan.value.trChain.forEach(chainStep => {
-      total += chainStep.results?.orbGains || 0;
-    });
+  if (plan.value.trChain) {
+    for (const step of plan.value.trChain) total += step.results?.orbGains || 0;
   }
-  
   return total;
 });
 
-// Gesamte Fragment-Gewinne
 const totalFragGains = computed(() => {
   if (!plan.value) return 0;
-  
-  // Fragments vom ersten TR
   let total = firstTrFragGains.value;
-  
-  // Fragments von allen Chain-TRs
-  if (plan.value.trChain && Array.isArray(plan.value.trChain)) {
-    plan.value.trChain.forEach(chainStep => {
-      total += chainStep.results?.campaignFragGains || 0;
-    });
+  if (plan.value.trChain) {
+    for (const step of plan.value.trChain) total += step.results?.campaignFragGains || 0;
   }
-  
   return total;
 });
 
-// Start- und Endzeit des Plans
-const planStartDate = computed(() => {
-  if (!plan.value?.trStartDate || !plan.value?.trStartTime) return new Date();
-  
-  const [year, month, day] = plan.value.trStartDate.split('-').map(Number);
-  const [hours, minutes] = plan.value.trStartTime.split(':').map(Number);
-  
-  return new Date(year, month - 1, day, hours, minutes);
-});
-
-const planEndDate = computed(() => {
-  if (!planStartDate.value) return new Date();
-  
-  // Millisekunden für die Gesamtstunden berechnen
-  const totalMilliseconds = totalHoursInTR.value * 60 * 60 * 1000;
-  
-  // Enddatum berechnen
-  return new Date(planStartDate.value.getTime() + totalMilliseconds);
-});
-
-// Formatierung der Dauer
-const formatDuration = computed(() => {
-  const hours = totalHoursInTR.value;
-  
-  // Weniger als 24 Stunden
-  if (hours < 24) {
-    return `${hours}h`;
-  }
-  
-  // Mehr als 24 Stunden -> Tage + Stunden
-  const days = Math.floor(hours / 24);
-  const remainingHours = hours % 24;
-  
-  if (remainingHours === 0) {
-    return `${days}d`;
-  }
-  
-  return `${days}d ${remainingHours}h`;
-});
-
-// Progression berechnen
-const progressPercentage = computed(() => {
-  if (!planStartDate.value || !planEndDate.value) return 0;
-  
-  const now = new Date();
-  
-  // Plan noch nicht begonnen
-  if (now < planStartDate.value) return 0;
-  
-  // Plan bereits abgeschlossen
-  if (now > planEndDate.value) return 100;
-  
-  // Berechnen des Fortschritts basierend auf der Zeit
-  const totalDuration = planEndDate.value - planStartDate.value;
-  const elapsed = now - planStartDate.value;
-  
-  return Math.floor((elapsed / totalDuration) * 100);
-});
-
-// Fortschritt-Status
-const progressStatus = computed(() => {
-  if (!planStartDate.value || !planEndDate.value) return "";
-  
-  const now = new Date();
-  
-  // Plan noch nicht begonnen
-  if (now < planStartDate.value) {
-    const diffMs = planStartDate.value - now;
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    
-    if (diffHours < 24) {
-      return `Starts in ${diffHours}h`;
-    }
-    
-    const diffDays = Math.floor(diffHours / 24);
-    return `Starts in ${diffDays}d`;
-  }
-  
-  // Plan bereits abgeschlossen
-  if (now > planEndDate.value) {
-    const diffMs = now - planEndDate.value;
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    
-    if (diffHours < 24) {
-      return `Completed ${diffHours}h ago`;
-    }
-    
-    const diffDays = Math.floor(diffHours / 24);
-    return `Completed ${diffDays}d ago`;
-  }
-  
-  // Plan läuft
-  const diffMs = planEndDate.value - now;
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  
-  if (diffHours < 24) {
-    return `${diffHours}h remaining`;
-  }
-  
-  const diffDays = Math.floor(diffHours / 24);
-  const remainingHours = diffHours % 24;
-  
-  if (remainingHours === 0) {
-    return `${diffDays}d remaining`;
-  }
-  
-  return `${diffDays}d ${remainingHours}h remaining`;
-});
-
-// Farbe für den Fortschritt
-const progressColor = computed(() => {
-  if (!planStartDate.value || !planEndDate.value) return "text-gray-400";
-  
-  const now = new Date();
-  
-  // Plan noch nicht begonnen
-  if (now < planStartDate.value) return "text-blue-400";
-  
-  // Plan abgeschlossen
-  if (now > planEndDate.value) return "text-green-400";
-  
-  // Plan läuft
-  return "text-yellow-400";
-});
-
-// Farbe für den Fortschrittsbalken
-const progressBarColor = computed(() => {
-  const now = new Date();
-  
-  // Plan noch nicht begonnen
-  if (now < planStartDate.value) return "bg-blue-500";
-  
-  // Plan abgeschlossen
-  if (now > planEndDate.value) return "bg-green-500";
-  
-  // Plan läuft - verschiedene Farben je nach Fortschritt
-  if (progressPercentage.value < 30) return "bg-blue-500";
-  if (progressPercentage.value < 70) return "bg-yellow-500";
-  return "bg-green-500";
-});
-
-// Erhalte alle verbesserten Boosts mit Startwerten aus dem ersten TR
-const allImprovedBoosts = computed(() => {
-  if (!plan.value) return [];
-  
-  const result = [];
-  const boostedStats = new Map();
-  
-  // Vorhandene Boosts aus dem allBoosts-Array holen um die Kategorien zu kennen
-  const boostsByKey = {};
-  allBoosts.forEach(boost => {
-    boostsByKey[boost.key] = boost;
-  });
-  
-  // Sammle die Startwerte aus dem ersten TR (targetLevel nach dem ersten TR)
-  const firstTrTargetLevels = {};
-  if (plan.value.boosts) {
-    // NEUES FORMAT: Object statt Array
-    if (typeof plan.value.boosts === 'object' && !Array.isArray(plan.value.boosts)) {
-      Object.entries(plan.value.boosts).forEach(([key, boostData]) => {
-        if (boostData.type === 'number') {
-          firstTrTargetLevels[key] = boostData.targetLevel;
-        }
-      });
-    } 
-    // ALTES FORMAT: Array (Rückwärtskompatibilität)
-    else if (Array.isArray(plan.value.boosts)) {
-      plan.value.boosts.forEach(boost => {
-        if (boost.type === 'number') {
-          firstTrTargetLevels[boost.key] = boost.targetLevel;
-        }
-      });
-    }
-  }
-  
-  // Verfolge die Progression durch die TR-Kette und sammle nur verbesserte Boosts
-  if (plan.value.trChain && Array.isArray(plan.value.trChain)) {
-    plan.value.trChain.forEach(chainStep => {
-      if (chainStep.boosts) {
-        // NEUES FORMAT: Object
-        if (typeof chainStep.boosts === 'object' && !Array.isArray(chainStep.boosts)) {
-          Object.entries(chainStep.boosts).forEach(([key, boostData]) => {
-            if (boostData.type === 'number') {
-              const firstTrLevel = firstTrTargetLevels[key] || 0;
-              const chainTrLevel = boostData.targetLevel;
-              
-              // Nur hinzufügen wenn in der Chain eine Verbesserung stattfindet
-              if (chainTrLevel > firstTrLevel) {
-                const boostInfo = boostsByKey[key];
-                if (boostInfo) {
-                  if (!boostedStats.has(key)) {
-                    boostedStats.set(key, {
-                      key: key,
-                      label: boostData.label || key,
-                      startValue: firstTrLevel,  // Startwert: Level nach dem ersten TR
-                      endValue: chainTrLevel,    // Endwert: Level nach dem Chain-TR
-                      category: boostInfo.category
-                    });
-                  } else {
-                    // Update den Endwert falls schon vorhanden
-                    const statInfo = boostedStats.get(key);
-                    statInfo.endValue = Math.max(statInfo.endValue, chainTrLevel);
-                  }
-                }
-              }
-            }
-          });
-        }
-        // ALTES FORMAT: Array (Rückwärtskompatibilität)
-        else if (Array.isArray(chainStep.boosts)) {
-          chainStep.boosts.forEach(boost => {
-            if (boost.type === 'number') {
-              const firstTrLevel = firstTrTargetLevels[boost.key] || 0;
-              const chainTrLevel = boost.targetLevel;
-              
-              // Nur hinzufügen wenn in der Chain eine Verbesserung stattfindet
-              if (chainTrLevel > firstTrLevel) {
-                const boostInfo = boostsByKey[boost.key];
-                if (boostInfo) {
-                  if (!boostedStats.has(boost.key)) {
-                    boostedStats.set(boost.key, {
-                      key: boost.key,
-                      label: boost.label || boost.key,
-                      startValue: firstTrLevel,  // Startwert: Level nach dem ersten TR
-                      endValue: chainTrLevel,    // Endwert: Level nach dem Chain-TR
-                      category: boostInfo.category
-                    });
-                  } else {
-                    // Update den Endwert falls schon vorhanden
-                    const statInfo = boostedStats.get(boost.key);
-                    statInfo.endValue = Math.max(statInfo.endValue, chainTrLevel);
-                  }
-                }
-              }
-            }
-          });
-        }
-      }
-    });
-  }
-  
-  // Konvertiere die Map in ein Array und sortiere
-  for (const boost of boostedStats.values()) {
-    result.push(boost);
-  }
-  
-  return result.sort((a, b) => {
-    // Sortieren nach relativer Verbesserung (Prozentsatz)
-    const aImprovement = (a.endValue - a.startValue) / Math.max(1, a.startValue);
-    const bImprovement = (b.endValue - b.startValue) / Math.max(1, b.startValue);
-    return bImprovement - aImprovement;
-  });
-});
-
-
-// Berechne den höchsten Orbs-pro-Stunde-Wert für den Chart
-const maxOrbsPerHour = computed(() => {
-  let max = firstTrOrbGains.value / Math.max(1, firstTrHours.value);
-  
-  // Prüfe auch Chain TRs
-  if (plan.value?.trChain) {
-    plan.value.trChain.forEach(step => {
-      const orbsPerHour = (step.results?.orbGains || 0) / Math.max(1, getChainTrHours(step));
-      max = Math.max(max, orbsPerHour);
-    });
-  }
-  
-  // Runde auf einen "schönen" Wert auf
-  return Math.ceil(max * 1.1 / 1000) * 1000;
-});
-
-// Funktion zum Erzeugen eines Donutchart-Pfades
-function getDonutPath(startAngle, endAngle) {
-  // Parameter für den SVG-Pfad
-  const innerRadius = 8; // Innerer Radius des Donuts
-  const outerRadius = 18; // Äußerer Radius des Donuts
-  const startRadians = (startAngle - 90) * Math.PI / 180;
-  const endRadians = (endAngle - 90) * Math.PI / 180;
-  
-  const centerX = 18;
-  const centerY = 18;
-  
-  const startX1 = centerX + innerRadius * Math.cos(startRadians);
-  const startY1 = centerY + innerRadius * Math.sin(startRadians);
-  const endX1 = centerX + outerRadius * Math.cos(startRadians);
-  const endY1 = centerY + outerRadius * Math.sin(startRadians);
-  
-  const startX2 = centerX + outerRadius * Math.cos(endRadians);
-  const startY2 = centerY + outerRadius * Math.sin(endRadians);
-  const endX2 = centerX + innerRadius * Math.cos(endRadians);
-  const endY2 = centerY + innerRadius * Math.sin(endRadians);
-  
-  const largeArc1 = endAngle - startAngle <= 180 ? 0 : 1;
-  const largeArc2 = endAngle - startAngle <= 180 ? 0 : 1;
-  
-  return [
-    `M ${startX1} ${startY1}`,
-    `L ${endX1} ${endY1}`,
-    `A ${outerRadius} ${outerRadius} 0 ${largeArc1} 1 ${startX2} ${startY2}`,
-    `L ${endX2} ${endY2}`,
-    `A ${innerRadius} ${innerRadius} 0 ${largeArc2} 0 ${startX1} ${startY1}`,
-    'Z'
-  ].join(' ');
-}
-
-// Signifikante Boost-Progression im Plan
-const significantBoosts = computed(() => {
-  if (!plan.value) return [];
-  
-  const boosts = [];
-  const trackKeys = new Set();
-  
-  // Füge wichtige Boosts aus dem ersten TR hinzu
-  if (plan.value.boosts && Array.isArray(plan.value.boosts)) {
-    plan.value.boosts.forEach(boost => {
-      if (boost.type === 'number' && boost.targetLevel - boost.currentLevel > 0) {
-        trackKeys.add(boost.key);
-        
-        boosts.push({
-          key: boost.key,
-          label: boost.label,
-          startValue: boost.currentLevel,
-          endValue: boost.targetLevel,
-          maxValue: boost.max || boost.targetLevel * 2, // Schätzen eines sinnvollen Max-Wertes
-          steps: []
-        });
-      }
-    });
-  }
-  
-  // Verfolge Progression durch die TR-Kette
-  if (plan.value.trChain && Array.isArray(plan.value.trChain)) {
-    plan.value.trChain.forEach((chainStep, index) => {
-      if (chainStep.boosts && Array.isArray(chainStep.boosts)) {
-        chainStep.boosts.forEach(boost => {
-          if (boost.type === 'number' && trackKeys.has(boost.key)) {
-            // Finde den Boost im Array
-            const existingBoost = boosts.find(b => b.key === boost.key);
-            if (existingBoost) {
-              existingBoost.steps[index] = boost.targetLevel;
-              existingBoost.endValue = boost.targetLevel;
-            }
-          }
-        });
-      }
-    });
-  }
-  
-  // Sortiere nach größter relativer Steigerung
-  return boosts
-    .filter(boost => boost.endValue - boost.startValue > 0)
-    .sort((a, b) => {
-      const aGrowth = (a.endValue - a.startValue) / a.startValue;
-      const bGrowth = (b.endValue - b.startValue) / b.startValue;
-      return bGrowth - aGrowth;
-    })
-    .slice(0, 5); // Top 5 Boosts mit der größten Steigerung
-});
-
-// Prüfen, ob ein Loop Mod im Plan vorkommt
-const hasLoopModInPlan = computed(() => {
-  if (!plan.value) return false;
-  
-  // Im ersten TR suchen
-  if (plan.value.boosts) {
-    // NEUES FORMAT: Object
-    if (typeof plan.value.boosts === 'object' && !Array.isArray(plan.value.boosts)) {
-      if (plan.value.boosts.lmConsistency) {
-        return true;
-      }
-    }
-    // ALTES FORMAT: Array (Rückwärtskompatibilität)
-    else if (Array.isArray(plan.value.boosts)) {
-      if (plan.value.boosts.some(b => b.key === 'lmConsistency')) {
-        return true;
-      }
-    }
-  }
-  
-  // In der TR-Chain suchen
-  if (plan.value.trChain) {
-    for (const chainStep of plan.value.trChain) {
-      if (chainStep.boosts) {
-        // NEUES FORMAT: Object
-        if (typeof chainStep.boosts === 'object' && !Array.isArray(chainStep.boosts)) {
-          if (chainStep.boosts.lmConsistency) {
-            return true;
-          }
-        }
-        // ALTES FORMAT: Array (Rückwärtskompatibilität)
-        else if (Array.isArray(chainStep.boosts)) {
-          if (chainStep.boosts.some(b => b.key === 'lmConsistency')) {
-            return true;
-          }
-        }
-      }
-    }
-  }
-  
-  return false;
-});
-
-// Loop Mod Kosten anzeigen
-function getLoopModCostDisplay() {
-  // Höchstes Loop Mod Level im Plan finden
-  let highestLevel = 0;
-  
-  // Im ersten TR suchen
-  if (plan.value.boosts) {
-    let lmLevel = 0;
-    
-    // NEUES FORMAT: Object
-    if (typeof plan.value.boosts === 'object' && !Array.isArray(plan.value.boosts)) {
-      lmLevel = plan.value.boosts.lmConsistency?.targetLevel || 0;
-    }
-    // ALTES FORMAT: Array (Rückwärtskompatibilität)
-    else if (Array.isArray(plan.value.boosts)) {
-      const lmBoost = plan.value.boosts.find(b => b.key === 'lmConsistency');
-      lmLevel = lmBoost?.targetLevel || 0;
-    }
-    
-    highestLevel = Math.max(highestLevel, lmLevel);
-  }
-  
-  // In der TR-Chain suchen
-  if (plan.value.trChain) {
-    for (const chainStep of plan.value.trChain) {
-      if (chainStep.boosts) {
-        let lmLevel = 0;
-        
-        // NEUES FORMAT: Object
-        if (typeof chainStep.boosts === 'object' && !Array.isArray(chainStep.boosts)) {
-          lmLevel = chainStep.boosts.lmConsistency?.targetLevel || 0;
-        }
-        // ALTES FORMAT: Array (Rückwärtskompatibilität)
-        else if (Array.isArray(chainStep.boosts)) {
-          const lmBoost = chainStep.boosts.find(b => b.key === 'lmConsistency');
-          lmLevel = lmBoost?.targetLevel || 0;
-        }
-        
-        highestLevel = Math.max(highestLevel, lmLevel);
-      }
-    }
-  }
-  
-  // Kosten für das höchste Level anzeigen (nur Exponent)
-  const exponent = getRuleOfConsistencyExponent(highestLevel);
-  return exponent.toString();
-}
-
-// Ermittle den Basis-All-Time-Orbs-Wert vor dem ersten TR
 const baseAllTimeOrbs = computed(() => {
   return plan.value?.updatedStats?.allTimeOrbs || props.currentStats?.allTimeOrbs || 0;
 });
 
-// Berechne den kumulativen All-Time-Orbs-Wert nach einem bestimmten Chain-Index
+const finalAllTimeOrbs = computed(() => baseAllTimeOrbs.value + totalOrbGains.value);
+
 function getCumulativeAllTimeOrbs(chainIndex) {
-  if (!plan.value) return 0;
-  
-  // Starte mit dem Basis-Wert plus dem ersten TR
-  let cumulativeOrbs = baseAllTimeOrbs.value + firstTrOrbGains.value;
-  
-  // Addiere alle Chain-TRs bis zum angegebenen Index
+  let cumulative = baseAllTimeOrbs.value + firstTrOrbGains.value;
   for (let i = 0; i <= chainIndex; i++) {
-    if (plan.value.trChain && plan.value.trChain[i]) {
-      cumulativeOrbs += plan.value.trChain[i].results?.orbGains || 0;
-    }
+    cumulative += plan.value?.trChain?.[i]?.results?.orbGains || 0;
   }
-  
-  return cumulativeOrbs;
+  return cumulative;
 }
 
-// Gesamter All-Time-Orbs-Wert am Ende des Plans
-const finalAllTimeOrbs = computed(() => {
-  if (!plan.value) return 0;
-  
-  // Basis-Wert plus alle Orb-Gewinne aus diesem Plan
-  return baseAllTimeOrbs.value + totalOrbGains.value;
+// ── Timeline ────────────────────────────────────────────────────────
+const planStartDate = computed(() => {
+  if (!plan.value?.trStartDate || !plan.value?.trStartTime) return new Date();
+  const [year, month, day] = plan.value.trStartDate.split('-').map(Number);
+  const [hours, minutes] = plan.value.trStartTime.split(':').map(Number);
+  return new Date(year, month - 1, day, hours, minutes);
 });
 
-// Datum formatieren
+const planEndDate = computed(() => {
+  return new Date(planStartDate.value.getTime() + totalHoursInTR.value * 3600000);
+});
+
+function getChainStartDate(index) {
+  let ms = planStartDate.value.getTime() + firstTrHours.value * 3600000;
+  for (let i = 0; i < index; i++) {
+    ms += getChainTrHours(plan.value?.trChain?.[i]) * 3600000;
+  }
+  return new Date(ms);
+}
+
+const formatDuration = computed(() => {
+  const hours = totalHoursInTR.value;
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  const rem = hours % 24;
+  return rem === 0 ? `${days}d` : `${days}d ${rem}h`;
+});
+
+// ── Date formatting ─────────────────────────────────────────────────
 function formatDate(date, includeTime) {
   if (!date) return '';
-  
   try {
-    if (includeTime) {
-      return date.toLocaleDateString(undefined, { 
-        month: 'short', 
-        day: 'numeric',
-        hour: '2-digit', 
-        minute: '2-digit'
-      });
-    } else {
-      return date.toLocaleDateString(undefined, { 
-        month: 'short', 
-        day: 'numeric'
+    const opts = includeTime
+      ? { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+      : { month: 'short', day: 'numeric' };
+    return date.toLocaleDateString(undefined, opts);
+  } catch { return ''; }
+}
+
+// ── Progress ────────────────────────────────────────────────────────
+const progressPercentage = computed(() => {
+  const now = Date.now();
+  const start = planStartDate.value.getTime();
+  const end = planEndDate.value.getTime();
+  if (now <= start) return 0;
+  if (now >= end) return 100;
+  return Math.floor(((now - start) / (end - start)) * 100);
+});
+
+const progressStatus = computed(() => {
+  const now = Date.now();
+  const start = planStartDate.value.getTime();
+  const end = planEndDate.value.getTime();
+
+  if (now < start) {
+    const h = Math.floor((start - now) / 3600000);
+    return h < 24 ? `Starts in ${h}h` : `Starts in ${Math.floor(h / 24)}d`;
+  }
+  if (now > end) {
+    const h = Math.floor((now - end) / 3600000);
+    return h < 24 ? `Completed ${h}h ago` : `Completed ${Math.floor(h / 24)}d ago`;
+  }
+  const h = Math.floor((end - now) / 3600000);
+  if (h < 24) return `${h}h remaining`;
+  const d = Math.floor(h / 24);
+  const rem = h % 24;
+  return rem === 0 ? `${d}d remaining` : `${d}d ${rem}h remaining`;
+});
+
+const progressColor = computed(() => {
+  const now = Date.now();
+  if (now < planStartDate.value.getTime()) return 'text-blue-400';
+  if (now > planEndDate.value.getTime()) return 'text-green-400';
+  return 'text-yellow-400';
+});
+
+const progressBarColor = computed(() => {
+  const now = Date.now();
+  if (now < planStartDate.value.getTime()) return 'bg-blue-500';
+  if (now > planEndDate.value.getTime()) return 'bg-green-500';
+  if (progressPercentage.value < 30) return 'bg-blue-500';
+  if (progressPercentage.value < 70) return 'bg-yellow-500';
+  return 'bg-green-500';
+});
+
+// ── Boost Progression ───────────────────────────────────────────────
+// Collects ALL boosts improved across the entire plan (first TR + chain)
+const allImprovedBoosts = computed(() => {
+  if (!plan.value) return [];
+
+  const result = new Map();
+
+  // 1) First TR: compare currentLevel → targetLevel
+  for (const boost of normalizeBoosts(plan.value.boosts)) {
+    if (boost.type !== 'number') continue;
+    const info = boostsByKey.value[boost.key];
+    if (!info) continue;
+
+    const start = boost.currentLevel ?? 0;
+    const end = boost.targetLevel ?? 0;
+
+    if (end > start) {
+      result.set(boost.key, {
+        key: boost.key,
+        label: boost.label || boost.key,
+        startValue: start,
+        endValue: end,
+        category: info.category
       });
     }
-  } catch (e) {
-    console.error("Error formatting date:", e);
-    return '';
   }
+
+  // 2) Chain steps: track further improvements
+  if (plan.value.trChain) {
+    for (const chainStep of plan.value.trChain) {
+      for (const boost of normalizeBoosts(chainStep.boosts)) {
+        if (boost.type !== 'number') continue;
+        const info = boostsByKey.value[boost.key];
+        if (!info) continue;
+
+        const chainTarget = boost.targetLevel ?? 0;
+
+        if (result.has(boost.key)) {
+          const existing = result.get(boost.key);
+          if (chainTarget > existing.endValue) {
+            existing.endValue = chainTarget;
+          }
+        } else {
+          const chainStart = boost.currentLevel ?? 0;
+          if (chainTarget > chainStart) {
+            result.set(boost.key, {
+              key: boost.key,
+              label: boost.label || boost.key,
+              startValue: chainStart,
+              endValue: chainTarget,
+              category: info.category
+            });
+          }
+        }
+      }
+    }
+  }
+
+  return [...result.values()].sort((a, b) => {
+    const aGrowth = (a.endValue - a.startValue) / Math.max(1, a.startValue);
+    const bGrowth = (b.endValue - b.startValue) / Math.max(1, b.startValue);
+    return bGrowth - aGrowth;
+  });
+});
+
+// ── Loop Mod detection ──────────────────────────────────────────────
+const hasLoopModInPlan = computed(() => {
+  if (!plan.value) return false;
+  if (getBoostTargetLevel(plan.value.boosts, 'lmConsistency') !== undefined) return true;
+  if (plan.value.trChain) {
+    for (const step of plan.value.trChain) {
+      if (getBoostTargetLevel(step.boosts, 'lmConsistency') !== undefined) return true;
+    }
+  }
+  return false;
+});
+
+function getLoopModCostDisplay() {
+  let highest = 0;
+  const firstLm = getBoostTargetLevel(plan.value?.boosts, 'lmConsistency');
+  if (firstLm) highest = Math.max(highest, firstLm);
+  if (plan.value?.trChain) {
+    for (const step of plan.value.trChain) {
+      const lm = getBoostTargetLevel(step.boosts, 'lmConsistency');
+      if (lm) highest = Math.max(highest, lm);
+    }
+  }
+  return getRuleOfConsistencyExponent(highest).toString();
 }
 
-// Erste TR Orbs pro Stunde für Debugging
-const firstTrOrbsPerHour = computed(() => firstTrOrbGains.value / Math.max(1, firstTrHours.value));
+// ── Upgrade Costs ───────────────────────────────────────────────────
+const upgradeCosts = computed(() => {
+  if (!allImprovedBoosts.value.length) return null;
 
-// Hilfsfunktion, um Orbs pro Stunde für eine Chain zu berechnen
-function getChainStepOrbsPerHour(chainStep) {
-  return (chainStep.results?.orbGains || 0) / Math.max(1, getChainTrHours(chainStep));
-}
+  const costs = { fragments: 0, hellishBiomatter: 0, tessarects: 0, mp: 0, shards: 0 };
 
-// TR-Requirement für den ersten Schritt
-function getStepOrbRequirement(step, index) {
-  return step?.results?.orbRequirement || 0;
-}
+  for (const boost of allImprovedBoosts.value) {
+    if (boost.endValue <= boost.startValue) continue;
 
-// TR-Requirement für einen Chain-Schritt
-function getChainStepRequirement(chainStep, index) {
-  return chainStep?.results?.orbRequirement || 0;
-}
+    if (boost.key === 'ms0') {
+      costs.shards = 1;
+      costs.shardsFormatted = calculateM0CostRangeSafe(boost.startValue, boost.endValue);
+    } else if (boost.key === 'lmConsistency') {
+      costs.mp = 1;
+      costs.mpFormatted = getRuleOfConsistencyExponent(boost.endValue).toString();
+    } else if (boost.category === 'relic') {
+      for (let lvl = boost.startValue + 1; lvl <= boost.endValue; lvl++) {
+        costs.fragments += getRelicCost(boost.key, lvl);
+      }
+    } else if (boost.category === 'inscryption') {
+      const inscrId = `i${boost.key.replace('i', '')}`;
+      for (let lvl = boost.startValue + 1; lvl <= boost.endValue; lvl++) {
+        costs.hellishBiomatter += getInscryptionCost(inscrId, lvl);
+      }
+    } else if (boost.category === 'gadget') {
+      let gadgetId = boost.key;
+      if (boost.key === 'oogadget') gadgetId = 'g4';
+      if (boost.key === 'campfragdet') gadgetId = 'g14';
+      for (let lvl = boost.startValue + 1; lvl <= boost.endValue; lvl++) {
+        costs.tessarects += getGadgetCost(gadgetId, lvl);
+      }
+    }
+  }
 
+  if (!costs.fragments && !costs.hellishBiomatter && !costs.tessarects && !costs.mp && !costs.shards) {
+    return null;
+  }
+  return costs;
+});
+
+const hasUpgradeCosts = computed(() => upgradeCosts.value !== null);
+
+// ── Actions ─────────────────────────────────────────────────────────
 function handleEdit(planId) {
-  emit('close'); 
-  emit('edit', planId); 
+  emit('close');
+  emit('edit', planId);
 }
 
 function handleDelete(planId) {
@@ -1048,79 +702,96 @@ function handleDelete(planId) {
 }
 
 
-// Anzahl der zukünftigen TRs, die projiziert werden sollen
+// ── Boost Tooltip HTML ──────────────────────────────────────────────
+function getBoostListHtml(trIndex) {
+  const rawBoosts = trIndex === 0
+    ? plan.value?.boosts
+    : plan.value?.trChain?.[trIndex - 1]?.boosts;
+
+  const boosts = normalizeBoosts(rawBoosts);
+
+  // Find the most recent value of a boost before this TR
+  function findPreviousValue(key, beforeTrIndex) {
+    for (let i = beforeTrIndex - 1; i >= 1; i--) {
+      const val = getBoostTargetLevel(plan.value?.trChain?.[i - 1]?.boosts, key);
+      if (val !== undefined) return val;
+    }
+    if (beforeTrIndex >= 1) {
+      const val = getBoostTargetLevel(plan.value?.boosts, key);
+      if (val !== undefined) return val;
+    }
+    return plan.value?.updatedStats?.[key] ?? props.currentStats?.[key] ?? 0;
+  }
+
+  const improved = [];
+  for (const boost of boosts) {
+    if (boost.type !== 'number') continue;
+    if (!boostsByKey.value[boost.key]) continue;
+
+    const prevValue = findPreviousValue(boost.key, trIndex);
+    if (boost.targetLevel > prevValue) {
+      improved.push({ ...boost, actualStart: prevValue });
+    }
+  }
+
+  if (!improved.length) {
+    return '<div class="p-2 text-gray-400 text-xs">No boosts improved</div>';
+  }
+
+  improved.sort((a, b) => {
+    const aRatio = (a.targetLevel - a.actualStart) / Math.max(1, a.actualStart);
+    const bRatio = (b.targetLevel - b.actualStart) / Math.max(1, b.actualStart);
+    return bRatio - aRatio;
+  });
+
+  let html = '<div class="p-2"><div class="text-sm font-medium text-white mb-2">Improved Boosts</div><div class="grid grid-cols-1 gap-1">';
+  for (const b of improved) {
+    const diff = b.targetLevel - b.actualStart;
+    html += `<div class="flex items-center justify-between text-xs py-1 border-b border-gray-700"><span class="font-medium text-gray-200 pr-3">${b.label}</span><div class="flex items-center"><span class="text-gray-400">${b.actualStart}</span><span class="mx-1 text-gray-500">→</span><span class="text-blue-300 font-medium">${b.targetLevel}</span><span class="ml-1 text-green-400">(+${diff})</span></div></div>`;
+  }
+  html += '</div></div>';
+  return html;
+}
+
+// ── Future TR Projections ───────────────────────────────────────────
 const futureTRsToProject = ref(10);
 
-// Berechne die TR-Requirements-Projektionen für zukünftige TRs
 const futureTRProjections = computed(() => {
   if (!plan.value) return [];
-  
+
+  const startTR = (plan.value.updatedStats?.trCount || currentTrCount.value) + totalTRsInPlan.value;
+  let accOrbs = finalAllTimeOrbs.value;
   const projections = [];
-  
-  // Startpunkt: Letzter TR im Plan (nicht +1 wie bisher)
-  let startTR = (plan.value.updatedStats?.trCount || currentTrCount.value) + totalTRsInPlan.value;
-  let accumulatedOrbs = finalAllTimeOrbs.value;
-  
-  console.log("--- TR Requirement Debug ---");
-  console.log(`StartTR: ${startTR}, Start All-Time Orbs: ${formatNumber(accumulatedOrbs)}`);
-  
-  // Generiere Projektionen für die angegebene Anzahl von zukünftigen TRs
+
   for (let i = 0; i < futureTRsToProject.value; i++) {
-    // Jetzt beginnen wir mit dem letzten TR aus dem Plan (ohne +1)
     const trCount = startTR + i;
-    
-    // Berechne Requirement für den aktuellen TR
-    const requirement = calculateOrbRequirement(trCount, accumulatedOrbs);
-    
-    console.log(`TR ${trCount} Requirement: ${formatNumber(requirement)}`);
-    console.log(`Current All-Time Orbs: ${formatNumber(accumulatedOrbs)}`);
-    
-    // Wir speichern die aktuelle Situation für diesen TR
-    projections.push({
-      trCount,
-      requirement,
-      orbsAvailable: accumulatedOrbs,
-      sufficient: accumulatedOrbs >= requirement
-    });
-    
-    // WICHTIG: Erst NACH dem Speichern des Projektion-Objekts addieren wir
-    // das Requirement zu den All-Time Orbs für den nächsten TR
-    console.log(`Adding current requirement ${formatNumber(requirement)} to All-Time Orbs`);
-    accumulatedOrbs += requirement;
-    console.log(`New All-Time Orbs value: ${formatNumber(accumulatedOrbs)}`);
-    console.log("---");
+    const requirement = calculateOrbRequirement(trCount, accOrbs);
+    projections.push({ trCount, requirement, orbsAvailable: accOrbs, sufficient: accOrbs >= requirement });
+    accOrbs += requirement;
   }
-  
-  console.log("Projections calculated:", projections.length);
   return projections;
 });
 
-// ECharts option (replaces chartData + chartOptions)
+// ── Chart ───────────────────────────────────────────────────────────
 const chartOption = computed(() => {
   if (!futureTRProjections.value.length) return null;
-  
-  const labels = futureTRProjections.value.map(proj => `TR${proj.trCount}`);
-  const requirementData = futureTRProjections.value.map(proj => proj.requirement);
-  const availableData = futureTRProjections.value.map(proj => proj.orbsAvailable);
-  
+
+  const labels = futureTRProjections.value.map(p => `TR${p.trCount}`);
+  const reqData = futureTRProjections.value.map(p => p.requirement);
+  const orbData = futureTRProjections.value.map(p => p.orbsAvailable);
+
   return {
     backgroundColor: 'transparent',
     animation: false,
     grid: { ...darkGrid, bottom: 50 },
-    legend: {
-      show: true,
-      top: 0,
-      textStyle: { color: '#9ca3af', fontSize: 11 }
-    },
+    legend: { show: true, top: 0, textStyle: { color: '#9ca3af', fontSize: 11 } },
     tooltip: {
       ...darkTooltip,
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
       formatter: (params) => {
-        const label = params[0].name;
-        return `<strong>${label}</strong><br/>` + params.map(p => 
-          `${p.marker} ${p.seriesName}: ${formatNumber(p.value)}`
-        ).join('<br/>');
+        return `<strong>${params[0].name}</strong><br/>` +
+          params.map(p => `${p.marker} ${p.seriesName}: ${formatNumber(p.value)}`).join('<br/>');
       }
     },
     xAxis: {
@@ -1132,16 +803,13 @@ const chartOption = computed(() => {
     yAxis: {
       type: 'log',
       ...darkYAxis,
-      axisLabel: {
-        ...darkYAxis.axisLabel,
-        formatter: (v) => formatNumber(v)
-      }
+      axisLabel: { ...darkYAxis.axisLabel, formatter: (v) => formatNumber(v) }
     },
     series: [
       {
         name: 'TR Requirement',
         type: 'bar',
-        data: requirementData,
+        data: reqData,
         itemStyle: {
           color: 'rgba(239, 68, 68, 0.25)',
           borderColor: 'rgba(239, 68, 68, 1)',
@@ -1153,7 +821,7 @@ const chartOption = computed(() => {
       {
         name: 'All-Time Orbs',
         type: 'line',
-        data: availableData,
+        data: orbData,
         lineStyle: { color: 'rgba(74, 222, 128, 1)', width: 2 },
         itemStyle: { color: 'rgba(74, 222, 128, 1)' },
         symbolSize: 6,
@@ -1162,240 +830,6 @@ const chartOption = computed(() => {
     ]
   };
 });
-
-// Berechne die Upgrade-Kosten für alle verbesserten Boosts
-const upgradeCosts = computed(() => {
-  if (!allImprovedBoosts.value.length) return null;
-  
-  // Kosten nach Ressourcentyp gruppieren
-  const costs = {
-    fragments: 0,        // Für Relics
-    hellishBiomatter: 0, // Für Inscryptions
-    tessarects: 0,       // Für Gadgets
-    mp: 0,               // Für Loop Mods
-    shards: 0            // Für M0
-  };
-  
-  // Kosten für jeden verbesserten Boost berechnen
-  allImprovedBoosts.value.forEach(boost => {
-    // Nur wenn tatsächlich ein Upgrade stattfindet
-    if (boost.endValue > boost.startValue) {
-      // Spezialfall: M0 (kostet Shards)
-      if (boost.key === 'ms0') {
-        const costString = calculateM0CostRangeSafe(boost.startValue, boost.endValue);
-        // Setze auf 1 damit v-if="upgradeCosts.shards > 0" funktioniert
-        costs.shards = 1;  
-        // Speichere den formatierten String für die Anzeige
-        costs.shardsFormatted = costString;
-      } 
-      // Spezialfall: Loop Mods (kosten MP)
-      else if (boost.key === 'lmConsistency') {
-        const exponent = getRuleOfConsistencyExponent(boost.endValue);
-        const costString = exponent.toString();
-        // Setze auf 1 damit v-if="upgradeCosts.mp > 0" funktioniert
-        costs.mp = 1;
-        // Speichere den formatierten String für die Anzeige
-        costs.mpFormatted = costString;
-      }
-      // Relics (kosten Fragments)
-      else if (boost.category === 'relic') {
-        // T2 Relics direkt verwenden, sonst boost.key
-        const relicId = boost.key;
-        for (let level = boost.startValue + 1; level <= boost.endValue; level++) {
-          costs.fragments += getRelicCost(relicId, level);
-        }
-      }
-      // Inscryptions (kosten Hellish-Biomatter)
-      else if (boost.category === 'inscryption') {
-        const inscrId = `i${boost.key.replace('i', '')}`;
-        for (let level = boost.startValue + 1; level <= boost.endValue; level++) {
-          costs.hellishBiomatter += getInscryptionCost(inscrId, level);
-        }
-      }
-      // Gadgets (kosten Tessarects)
-      else if (boost.category === 'gadget') {
-        // Spezialfall-Mapping für bestimmte Gadgets
-        let gadgetId = boost.key;
-        if (boost.key === 'oogadget') gadgetId = 'g4';
-        if (boost.key === 'campfragdet') gadgetId = 'g14';
-        
-        for (let level = boost.startValue + 1; level <= boost.endValue; level++) {
-          costs.tessarects += getGadgetCost(gadgetId, level);
-        }
-      }
-    }
-  });
-  
-  // Prüfen ob überhaupt Kosten angefallen sind
-  if (costs.fragments === 0 && costs.hellishBiomatter === 0 && costs.tessarects === 0 &&
-      costs.mp === 0 && costs.shards === 0) {
-    return null;
-  }
-  
-  return costs;
-});
-
-// Hilfsfunktion, um zu prüfen ob Kosten angezeigt werden sollen
-const hasUpgradeCosts = computed(() => {
-  return upgradeCosts.value !== null;
-});
-
-function getChainStartDate(index) {
-  // Beginne mit dem Startdatum des ersten TRs
-  let currentDate = new Date(planStartDate.value.getTime());
-  
-  // Addiere die Stunden des ersten TRs
-  currentDate = new Date(currentDate.getTime() + (firstTrHours.value * 60 * 60 * 1000));
-  
-  // Für alle TRs vor dem aktuellen, addiere deren Stunden
-  for (let i = 0; i < index; i++) {
-    if (plan.value?.trChain && plan.value.trChain[i]) {
-      const hours = getChainTrHours(plan.value.trChain[i]);
-      currentDate = new Date(currentDate.getTime() + (hours * 60 * 60 * 1000));
-    }
-  }
-  
-  return currentDate;
-}
-
-// Verbesserte Funktion für den Tooltip, die nur die Boosts anzeigt, 
-// die auch in der Boosts Progression Sektion erscheinen
-function getBoostListHtml(trIndex) {
-  // Erster TR oder Chain-TR?
-  const rawBoosts = trIndex === 0 
-    ? plan.value?.boosts 
-    : plan.value?.trChain?.[trIndex-1]?.boosts;
-
-  // Konvertiere Boosts zu einheitlichem Array-Format
-  let currentBoosts = [];
-  
-  // NEUES FORMAT: Object
-  if (rawBoosts && typeof rawBoosts === 'object' && !Array.isArray(rawBoosts)) {
-    currentBoosts = Object.entries(rawBoosts).map(([key, boostData]) => ({
-      key,
-      ...boostData
-    }));
-  }
-  // ALTES FORMAT: Array (Rückwärtskompatibilität)
-  else if (Array.isArray(rawBoosts)) {
-    currentBoosts = rawBoosts;
-  }
-
-  // Rekursive Funktion, um den aktuellsten Wert eines Boosts vor diesem TR zu finden
-  function findMostRecentValue(boostKey, currentTrIndex) {
-    // Wenn wir beim ersten TR sind, verwenden wir die Startwerte aus den Stats
-    if (currentTrIndex === 0) {
-      // Verwende den Wert aus updatedStats oder currentStats
-      if (plan.value?.updatedStats && plan.value.updatedStats[boostKey] !== undefined) {
-        return plan.value.updatedStats[boostKey];
-      }
-      if (props.currentStats && props.currentStats[boostKey] !== undefined) {
-        return props.currentStats[boostKey];
-      }
-      return 0;
-    }
-    
-    // Für TR 1 (index 0) suchen wir direkt in den Boosts
-    if (currentTrIndex === 1) {
-      const planBoosts = plan.value?.boosts;
-      let boost = null;
-      
-      // NEUES FORMAT: Object
-      if (planBoosts && typeof planBoosts === 'object' && !Array.isArray(planBoosts)) {
-        boost = planBoosts[boostKey];
-      }
-      // ALTES FORMAT: Array
-      else if (Array.isArray(planBoosts)) {
-        boost = planBoosts.find(b => b.key === boostKey);
-      }
-      
-      if (boost) {
-        return boost.targetLevel;
-      }
-    } else {
-      // Für TR 2+ suchen wir in der Chain
-      const chainBoosts = plan.value?.trChain?.[currentTrIndex-2]?.boosts;
-      let boost = null;
-      
-      // NEUES FORMAT: Object
-      if (chainBoosts && typeof chainBoosts === 'object' && !Array.isArray(chainBoosts)) {
-        boost = chainBoosts[boostKey];
-      }
-      // ALTES FORMAT: Array
-      else if (Array.isArray(chainBoosts)) {
-        boost = chainBoosts.find(b => b.key === boostKey);
-      }
-      
-      if (boost) {
-        return boost.targetLevel;
-      }
-    }
-    
-    // Wenn der Boost im aktuellen TR nicht gefunden wurde, suche im vorherigen TR
-    return findMostRecentValue(boostKey, currentTrIndex - 1);
-  }
-
-  // Finde nur Boosts, die in diesem TR tatsächlich verbessert werden
-  const improvedBoosts = [];
-  
-  for (const boost of currentBoosts) {
-    // Filtere wie in der allImprovedBoosts computed property:
-    // 1. Nur numerische Boosts betrachten
-    if (boost.type !== 'number') continue;
-    
-    // 2. Kategorien filtern, die nicht angezeigt werden sollen
-    const boostInfo = allBoosts.find(b => b.key === boost.key);
-    if (!boostInfo) continue;
-    
-    // 3. Rekursiv nach dem letzten bekannten Wert suchen
-    const actualStart = findMostRecentValue(boost.key, trIndex);
-    
-    // 4. Nur Boosts einbeziehen, die tatsächlich verbessert wurden
-    if (boost.targetLevel > actualStart) {
-      improvedBoosts.push({
-        ...boost,
-        actualStart: actualStart
-      });
-    }
-  }
-  
-  // Wenn keine Boosts verbessert wurden
-  if (improvedBoosts.length === 0) {
-    return '<div class="p-2 text-gray-400 text-xs">No boosts improved</div>';
-  }
-  
-  let html = '<div class="p-2">';
-  html += '<div class="text-sm font-medium text-white mb-2">Improved Boosts</div>';
-  html += `<div class="grid grid-cols-1 gap-1">`;
-  
-  // Sortieren nach prozentualem Wachstum
-  improvedBoosts.sort((a, b) => {
-    const aImprovement = (a.targetLevel - a.actualStart) / Math.max(1, a.actualStart);
-    const bImprovement = (b.targetLevel - b.actualStart) / Math.max(1, b.actualStart);
-    return bImprovement - aImprovement;
-  });
-  
-  // Einträge für jeden verbesserten Boost generieren
-  improvedBoosts.forEach(boost => {
-    const improvement = boost.targetLevel - boost.actualStart;
-    
-    html += `
-      <div class="flex items-center justify-between text-xs py-1 border-b border-gray-700">
-        <span class="font-medium text-gray-200 pr-3">${boost.label}</span>
-        <div class="flex items-center">
-          <span class="text-gray-400">${boost.actualStart}</span>
-          <span class="mx-1 text-gray-500">→</span>
-          <span class="text-blue-300 font-medium">${boost.targetLevel}</span>
-          <span class="ml-1 text-green-400">(+${improvement})</span>
-        </div>
-      </div>
-    `;
-  });
-  
-  html += `</div>`;
-  html += '</div>';
-  return html;
-}
 </script>
 
 <style scoped>

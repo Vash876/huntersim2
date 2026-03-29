@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.14.4',
+    date: '2026-03-30',
+    changes: [
+      {
+        text: 'TR Planner',
+        subItems: [
+          'T1 Relics Max level increase with Exodus Gem Node #3',
+          'Planner now automatically resets maxed states for related boosts when significant gem level/nodes are reached (e.g. Research Points at Innovation Gem Level 3)',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.14.3',
     date: '2026-03-21',
     changes: [

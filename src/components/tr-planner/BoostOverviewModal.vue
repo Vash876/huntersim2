@@ -214,7 +214,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { allBoosts, boostCategories } from '@/constants/tr-planner';
+import { allBoosts, boostCategories, getBoostMaxValue, getGemDataFromStore } from '@/constants/tr-planner';
 import { formatNumber } from '@/composables/format';
 import { getRelicCost, formatRelicCost } from '@/utils/relicCostUtils';
 import { getInscryptionCost, formatInscryptionCost } from '@/utils/inscryptionCostUtils';
@@ -261,6 +261,8 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 const printableContent = ref(null);
 
+const planGemData = computed(() => getGemDataFromStore());
+
 const maxLevelStats = computed(() => {
   try {
     const storedStats = localStorage.getItem('trplanner_userstats');
@@ -284,7 +286,7 @@ const combinedCurrentStats = computed(() => {
     
     if (boost.type === 'boolean' && value === true) {
       combined[key] = true;
-    } else if (typeof value === 'number' && boost.max !== undefined && value >= boost.max) {
+    } else if (typeof value === 'number' && getBoostMaxValue(boost, planGemData.value) !== undefined && value >= getBoostMaxValue(boost, planGemData.value)) {
       combined[key] = value;
     }
   }
@@ -344,7 +346,8 @@ async function copyToClipboard() {
           valueText = `${current} → ${target}`;
         } else {
           valueText = `${currentValue} → ${targetValue}`;
-          if (boost.max) valueText += ` (max: ${boost.max})`;
+          const mVal = getBoostMaxValue(boost, planGemData.value);
+          if (mVal !== undefined) valueText += ` (max: ${mVal})`;
         }
         
         text += `${boost.label}: ${valueText}\n`;

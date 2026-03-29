@@ -140,7 +140,11 @@ export const allBoosts = [
       const part2 = Math.pow(1.05, value);
       return part1 * part2;
     },
-    max: 11
+    max: 11,
+    getMax: (gemData) => {
+      if (gemData?.activeNodes?.exodus?.includes(2)) return 16;
+      return 11;
+    }
   },
   {
     key: 'r9',
@@ -151,7 +155,11 @@ export const allBoosts = [
     permanent: true,
     tooltip: '0',
     multiplier: (value) => Math.pow(1.08, value),
-    max: 100
+    max: 100,
+    getMax: (gemData) => {
+      if (gemData?.activeNodes?.exodus?.includes(2)) return 105;
+      return 100;
+    }
   },
   {
     key: 't2r4',

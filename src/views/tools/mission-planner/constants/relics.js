@@ -27,7 +27,7 @@ const RELIC_DATA = {
   r9:  { bonus: 1.08,  baseCost: 8,    additive: 1.8,  exp0: 1.18,  exp10: 1.03,  exp20: 1.08,   exp30: 1,     exp40: 1,    exp50: 1 },
   r10: { bonus: 1.08,  baseCost: 2,    additive: 15,   exp0: 72,    fixedCosts: [2, 15, 72, 257, 594, 1691, 3140, 18861, 139150, 539370, 2200000, 9000000, 36000000] },
   r11: { bonus: 2,     baseCost: 3,    additive: 65,   exp0: 305,   fixedCosts: [3, 65, 305, 2055, 4805, 8555, 15000, 27500, 575000, 750000, 1000000, 1500000, 2000000] },
-  r12: { bonus: 0.5,   baseCost: 50,   additive: 30,   exp0: 1.09,  exp10: 1.01,  exp20: 1,      exp30: 1,     exp40: 1.00372, exp50: null },
+  r12: { bonus: 0.5,   baseCost: 50,   additive: 30,   exp0: 1.09,  exp10: 1.01,  exp20: 1,      exp30: 1,     exp40: 1.00372, exp50: 1.0534 },
   r13: { bonus: 468,   baseCost: 10,   additive: 1.13, exp0: 1.013, exp10: 1.012, exp20: 1,      exp30: 1,     exp40: 1,    exp50: 1.00378, maxLevel: 200 },
   r14: { bonus: 468,   baseCost: 20,   additive: 100,  exp0: 320,   fixedCosts: [20, 100, 320, 880, 2240, 5440, 12800, 29440] },
   r15: { bonus: 1,     baseCost: 30,   additive: 140,  exp0: 440,   fixedCosts: [30, 140, 440, 1200, 3040, 7360, 17280, 39680, 89000, 196000, 420000, 880000, 1800000] },
@@ -161,7 +161,7 @@ export const RELIC_COSTS = {
   r18: (level) => calculateFloorCost(RELIC_DATA.r18, level),
   r19: (level) => calculateFixedCost(RELIC_DATA.r19, level),
   r20: (level) => calculateFloorCost(RELIC_DATA.r20, level),
-  // Tier 2 Relics - Official formulas from dev
+  // Tier 2 Relics 
   t2r1: (level) => calculateT2Cost(RELIC_DATA.t2r1, level),
   t2r2: (level) => calculateT2Cost(RELIC_DATA.t2r2, level),
   t2r3: (level) => calculateT2Cost(RELIC_DATA.t2r3, level),

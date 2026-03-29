@@ -9945,6 +9945,8 @@
    f64.const 0.007
    f64.mul
    f64.sub
+   f64.const 0
+   f64.max
    f64.store offset=120
    global.get $~lib/memory/__stack_pointer
    global.get $assembly/evalBorge/currentBorge

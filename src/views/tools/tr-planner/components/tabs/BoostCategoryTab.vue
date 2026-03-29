@@ -28,10 +28,10 @@
         v-if="boost.type === 'number'"
         :value="getBoostValue(boost.key)"
         :min-value="0"
-        :max-value="boost.max || 9999"
+        :max-value="getBoostMaxValue(boost) || 9999"
         :step="1"
         :fast-step="boost.fastControl || boost.normalControl || 10"
-        :show-fast-controls="(boost.max || 9999) > 20"
+        :show-fast-controls="(getBoostMaxValue(boost) || 9999) > 20"
         @update:value="setBoostValue(boost.key, $event)"
       />
       
@@ -71,12 +71,16 @@ const gemPlannerStore = useGemPlannerStore();
 // Get gem data for unlock checks
 const gemData = computed(() => {
   const levels = {};
+  const activeNodes = {};
   const gemIds = ['temporal', 'power', 'attraction', 'innovation', 'evolution', 'creation', 'exodus'];
   gemIds.forEach(id => {
     const state = gemPlannerStore.getGemState(id);
     levels[id] = state?.level || 0;
+    if (state?.activeNodes) {
+      activeNodes[id] = state.activeNodes;
+    }
   });
-  return { levels };
+  return { levels, activeNodes };
 });
 
 // Filter boosts based on unlock requirements
@@ -94,6 +98,13 @@ const filteredBoosts = computed(() => {
 const hasLockedBoosts = computed(() => {
   return props.boosts.some(boost => !isBoostUnlocked(boost, gemData.value));
 });
+
+function getBoostMaxValue(boost) {
+  if (typeof boost.getMax === 'function') {
+    return boost.getMax(gemData.value);
+  }
+  return boost.max;
+}
 
 function getBoostValue(key) {
   return store.getBoostValue(key);

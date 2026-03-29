@@ -91,7 +91,7 @@
                   </div>
                   <div class="text-[11px] text-gray-300 mt-0.5">
                     Max: <span :class="boost.type === 'boolean' ? 'text-green-400' : 'text-blue-400'">
-                      {{ boost.type === 'boolean' ? 'ON' : getBoostMaxValue(boost, gemLevels) || '-' }}
+                      {{ boost.type === 'boolean' ? 'ON' : getBoostMaxValue(boost, fullGemData) || '-' }}
                     </span>
                   </div>
                 </div>
@@ -171,7 +171,14 @@ const isLoading = ref(true);
 const error = ref(null);
 const maxedBoosts = reactive({});
 
-// Gem-Levels aus dem Store laden
+// Gem-Daten aus dem Store laden, mit Fallback auf gemPlannerStore
+const fullGemData = computed(() => {
+  const storeData = trPlannerStore.userStats.gemData;
+  if (storeData && storeData.levels && Object.keys(storeData.levels).length > 0) {
+    return storeData;
+  }
+  return getGemDataFromStore() || { levels: {}, activeNodes: {}, upgrades: {} };
+});
 const gemLevels = computed(() => {
   return trPlannerStore.userStats.gemData?.levels || {
     exodus: 0,
@@ -207,7 +214,7 @@ const filteredBoostsByCategory = computed(() => {
         // Ausschließen: hoursInTR und loopMods
         boost.key !== 'hoursInTR' && boost.key !== 'loopMods' &&
         // Einschließen: Alle Boolean-Boosts oder numerische Boosts mit max Level
-        (boost.type === 'boolean' || (boost.type === 'number' && getBoostMaxValue(boost, gemLevels.value) !== undefined)) &&
+        (boost.type === 'boolean' || (boost.type === 'number' && getBoostMaxValue(boost, fullGemData.value) !== undefined)) &&
         // Nur freigeschaltete Boosts anzeigen
         isBoostUnlocked(boost)
       );
@@ -259,7 +266,7 @@ function initializeMaxedState() {
       if (boost.type === 'boolean') {
         // Boolean Boosts sind "maxed" wenn sie in _orbCalcMaxedBoosts markiert sind
         maxedBoosts[boost.key] = orbCalcMaxedBoosts[boost.key] === true;
-      } else if (boost.type === 'number' && getBoostMaxValue(boost, gemLevels.value) !== undefined) {
+      } else if (boost.type === 'number' && getBoostMaxValue(boost, fullGemData.value) !== undefined) {
         // Numerische Boosts sind "maxed" wenn sie in _orbCalcMaxedBoosts markiert sind
         maxedBoosts[boost.key] = orbCalcMaxedBoosts[boost.key] === true;
       }
@@ -313,7 +320,7 @@ function saveAndClose() {
       if (boost.type === 'boolean') {
         updatedStats[key] = true;
       } else if (boost.type === 'number') {
-        const maxValue = getBoostMaxValue(boost, gemLevels.value);
+        const maxValue = getBoostMaxValue(boost, fullGemData.value);
         if (maxValue !== undefined) {
           updatedStats[key] = maxValue;
         }

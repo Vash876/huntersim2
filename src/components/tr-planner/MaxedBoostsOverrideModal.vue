@@ -136,6 +136,7 @@ const localOverrides = ref({});
 const boostCategories = ref([]);
 
 // Gem-Levels aus dem Store laden
+const fullGemData = computed(() => getGemDataFromStore());
 const gemLevels = computed(() => {
   return getGemDataFromStore()?.levels || {};
 });
@@ -154,7 +155,7 @@ async function loadBoostData() {
       
       // Include both numeric boosts (with max property) and boolean boosts
       category.boosts.forEach(boost => {
-        const maxValue = getBoostMaxValue(boost, gemLevels.value);
+        const maxValue = getBoostMaxValue(boost, fullGemData.value);
         if (maxValue !== undefined || boost.type === 'boolean') {
           categoryParams.push({
             key: boost.key,
