@@ -283,6 +283,9 @@
             <span class="ml-2 text-sm text-gray-400">
               ({{ visibleMechs.length }}/{{ mechs.length }} unlocked)
             </span>
+            <span class="ml-auto text-sm text-gray-400 font-normal">
+              {{ mechPlannerStore.totalMechsOwned }} Mechs Owned
+            </span>
           </h3>
         </div>
         

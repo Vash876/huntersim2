@@ -53,6 +53,10 @@
                 {{ isCapped ? '1e140 (capped)' : currentMultiDisplay }}
               </td>
             </tr>
+            <tr v-if="killsPerDay > 0" class="bg-purple-950/15">
+              <td class="text-gray-400 px-1 py-0.5">Multi / Day</td>
+              <td class="text-right text-white font-mono px-1 py-0.5">{{ multiPerDayDisplay }}</td>
+            </tr>
           </tbody>
         </table>
 
@@ -101,7 +105,7 @@
             Auto {{ autoUpdate ? 'ON' : 'OFF' }}
           </button>
         </div>
-        <div v-if="autoUpdate && killsPerDay > 0" class="text-[10px] text-gray-500 mt-0.5">
+        <div v-if="killsPerDay > 0" class="text-[10px] text-gray-500 mt-0.5">
           ~{{ killsPerDay.toFixed(1) }} kills/day
         </div>
     </div>
@@ -177,6 +181,18 @@ const killsPerDay = computed(() => {
   if (bossesPerRun.value <= 0 || avgTimeMinutes.value <= 0) return 0;
   const runsPerDay = 1440 / avgTimeMinutes.value;
   return bossesPerRun.value * runsPerDay;
+});
+
+// Multiplier produced per day: 1.2^killsPerDay
+const multiPerDayDisplay = computed(() => {
+  if (killsPerDay.value <= 0) return '×1';
+  const multi = Math.pow(MULTI_PER_KILL, killsPerDay.value);
+  if (multi >= 1e6) {
+    const exp = Math.floor(Math.log10(multi));
+    const mantissa = multi / Math.pow(10, exp);
+    return `×${mantissa.toFixed(2)}e${exp}`;
+  }
+  return `×${multi.toFixed(2)}`;
 });
 
 // Display kills: baseKills + elapsed production (if autoUpdate is on)
