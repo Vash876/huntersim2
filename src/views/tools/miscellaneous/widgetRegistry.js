@@ -42,6 +42,16 @@ export const WIDGETS = [
     accent: 'from-transparent via-amber-500 to-transparent',
     hoverShadow: 'hover:shadow-amber-900/20',
   },
+  {
+    id: 'exodusCapCalc',
+    label: 'Exodus GN#5 Cap',
+    requires: (access) => access.canSeeExodusCapCalc.value,
+    component: defineAsyncComponent(() => import('./components/ExodusCapCalc.vue')),
+    border: 'border-purple-800/30',
+    bg: 'bg-gradient-to-br from-indigo-950/40 via-purple-900/30 to-pink-950/20',
+    accent: 'from-blue-500 via-purple-500 to-pink-500',
+    hoverShadow: 'hover:shadow-purple-900/20',
+  },
   // {
   //   id: 'relicEfficiency',
   //   label: 'Relic Efficiency',

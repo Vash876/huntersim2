@@ -2,6 +2,28 @@
 const changelog = 
 [
   {
+    version: '2.14.5',
+    date: '2026-03-30',
+    changes: [
+      {
+        text: 'Mech Planner',
+        subItems: [
+          'Added real-time calculation for Current Vectid Crystals based on daily production',
+          'Added Auto ON/OFF toggle for live resource updating',
+          'Linked Relic and Gadget levels bidirectionally with their respective planners (The C.O.O.R.S, Tulsandstof Kit, Mech Engineer Tool-Pants)',
+          'Linked Creation Gem "Mech Bonus Cap" upgrade bidirectionally to global settings',
+          'Integrated Exodus Gem Node #5 cap multiplier',
+        ]
+      },
+      {
+        text: 'Miscellaneous Tools',
+        subItems: [
+          'Exodus GN#5 Mech Cap Calculator',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.14.4',
     date: '2026-03-30',
     changes: [

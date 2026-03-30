@@ -47,8 +47,22 @@
             <!-- Current Vectid Crystals -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <div class="font-medium text-white text-sm mb-1">Current Vectid Crystals</div>
-              <div class="text-xs text-gray-400 mb-2">Amount you have saved</div>
-              
+              <div class="text-xs text-gray-400 mb-2 flex items-center justify-between">
+                <span>Amount you have saved</span>
+                <button
+                  @click="toggleAutoUpdate"
+                  :class="[
+                    'px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
+                    mechPlannerStore.autoUpdateCrystals
+                      ? 'bg-green-600/20 text-green-400 hover:bg-green-600/30'
+                      : 'bg-gray-600/20 text-gray-400 hover:bg-gray-600/30'
+                  ]"
+                  :title="mechPlannerStore.autoUpdateCrystals ? 'Auto-update: ON' : 'Auto-update: OFF'"
+                >
+                  {{ mechPlannerStore.autoUpdateCrystals ? 'Auto ON' : 'Auto OFF' }}
+                </button>
+              </div>
+
               <SuffixInput
                 v-model="currentVectidCrystals"
                 placeholder="0"
@@ -81,22 +95,14 @@
             <IconSettings size="16" class="mr-1.5 text-blue-400" />
             Global Settings
           </h3>
-          
-          <button 
-            @click="resetSettings" 
-            class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-0.5 text-xs rounded-lg flex items-center transition-colors"
-          >
-            <IconRefresh size="14" class="mr-1" />
-            Reset All
-          </button>
         </div>
-        
+
         <div class="p-2 sm:p-3">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Left Column -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
               <!-- The C.O.O.R.S (Relic #8) -->
-              <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center">
                   <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
                     <IconStar size="16" class="text-orange-400" />
@@ -163,9 +169,54 @@
             </div>
             
             <!-- Right Column -->
-            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
+            <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50 flex flex-col gap-3">
+              <!-- Exodus Gem Node #5 -->
+              <div v-if="exodusGemNode5" class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                    <svg width="0" height="0" class="absolute">
+                      <defs>
+                        <linearGradient id="exodusGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stop-color="#5a95f5" />
+                          <stop offset="40%" stop-color="#6326f1" />
+                          <stop offset="100%" stop-color="#ec4899" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <IconDiamond size="16" color="url(#exodusGrad)" />
+                  </div>
+                  <span class="text-sm text-gray-300">Exodus Gem Node #5</span>
+                  <span class="ml-1 text-xs text-gray-500">(1e140 Cap)</span>
+                </div>
+                <span class="text-sm font-medium text-purple-400">
+                  Activated
+                </span>
+              </div>
+
+              <!-- Creation Gem: Mech Bonus Cap -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                    <IconDiamond size="16" class="text-orange-400" />
+                  </div>
+                  <span class="text-sm text-gray-300">Mech Bonus Cap</span>
+                  <span class="ml-1 text-xs text-gray-500">(Creation GU)</span>
+                </div>
+                <ToolValueControls
+                  :value="creationMechBonusCap"
+                  @update:value="creationMechBonusCap = $event"
+                  :minValue="0"
+                  :maxValue="9999"
+                  :step="1"
+                  :fastStep="10"
+                  value-class="text-orange-400 font-medium"
+                  :autoEdit="true"
+                  class="ml-2"
+                />
+              </div>
+
               <!-- The Transmission Amplifier - nur wenn Creation Gem Level >= 4 -->
-              <div v-if="creationGemLevel >= 4" class="space-y-2">
+              <div v-if="creationGemLevel >= 4" class="space-y-3">
                 <!-- Transmission Amplifier Tier -->
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
@@ -210,12 +261,12 @@
                   />
                 </div>
               </div>
-              
+
               <!-- Placeholder wenn Transmission Amplifier nicht verfügbar -->
-              <div v-else class="text-center text-gray-400 text-sm py-8">
-                <IconLock size="32" class="mx-auto mb-2 text-gray-500" />
+              <div v-else class="text-center text-gray-400 text-sm py-4 border-t border-gray-700/30 pt-3 mt-auto">
+                <IconLock size="24" class="mx-auto mb-1 text-gray-500" />
                 <p class="text-xs text-gray-500">
-                  Requires Creation Gem Level 4
+                  Amplifier Requires Creation Lvl 4
                 </p>
               </div>
             </div>
@@ -571,12 +622,16 @@ import InfoTooltip from '@/composables/InfoTooltip.vue';
 import { useGemPlannerStore } from '@/store/gemPlannerStore.js';
 import { useHunterStore } from '@/store/hunterStore';
 import { useMechPlannerStore } from '@/store/mechPlannerStore.js';
+import { useRelicPlannerStore } from '@/store/relicPlannerStore.js';
+import { useGadgetPlannerStore } from '@/store/gadgetPlannerStore.js';
 import { shouldEvaluate } from '@/services/evaluationCacheService';
 
 // Initialize stores
 const gemPlannerStore = useGemPlannerStore();
 const hunterStore = useHunterStore();
 const mechPlannerStore = useMechPlannerStore();
+const relicPlannerStore = useRelicPlannerStore();
+const gadgetPlannerStore = useGadgetPlannerStore();
 
 // Build Selection State
 const cachedResults = ref({});
@@ -591,24 +646,31 @@ const selectedBuildId = computed({
   set: (value) => { mechPlannerStore.selectedBuildId = value; mechPlannerStore.saveToStorage(); }
 });
 
+const liveUpdateTrigger = ref(0);
+
 const currentVectidCrystals = computed({
-  get: () => mechPlannerStore.currentVectidCrystals,
-  set: (value) => { mechPlannerStore.currentVectidCrystals = value; mechPlannerStore.saveToStorage(); }
+  get() {
+    liveUpdateTrigger.value; // react to timer
+    return mechPlannerStore.getCurrentCrystalsWithProduction(vectidCrystalsPerDay.value);
+  },
+  set(value) {
+    mechPlannerStore.updateCurrentCrystals(value);
+  }
 });
 
 const coorsRelic = computed({
-  get: () => mechPlannerStore.coorsRelic,
-  set: (value) => { mechPlannerStore.coorsRelic = value; mechPlannerStore.saveToStorage(); }
+  get: () => relicPlannerStore.currentLevels['r8'] || 0,
+  set: (value) => { relicPlannerStore.updateCurrentLevel('r8', value); }
 });
 
 const tulsandstofKit = computed({
-  get: () => mechPlannerStore.tulsandstofKit,
-  set: (value) => { mechPlannerStore.tulsandstofKit = value; mechPlannerStore.saveToStorage(); }
+  get: () => relicPlannerStore.currentLevels['r15'] || 0,
+  set: (value) => { relicPlannerStore.updateCurrentLevel('r15', value); }
 });
 
 const mechEngineerToolPants = computed({
-  get: () => mechPlannerStore.mechEngineerToolPants,
-  set: (value) => { mechPlannerStore.mechEngineerToolPants = value; mechPlannerStore.saveToStorage(); }
+  get: () => gadgetPlannerStore.currentLevels['g13'] || 0,
+  set: (value) => { gadgetPlannerStore.updateCurrentLevel('g13', value); }
 });
 
 const transmissionAmplifierTier = computed({
@@ -689,9 +751,19 @@ const creationGemNode2 = computed(() => {
   return creationGem?.nodes?.[1] || false;
 });
 
-const creationMechBonusCap = computed(() => {
-  const creationGem = gemPlannerStore.getGemState('creation');
-  return creationGem?.upgrades?.['mech-bonus-cap'] || 0;
+const creationMechBonusCap = computed({
+  get: () => {
+    const creationGem = gemPlannerStore.getGemState('creation');
+    return creationGem?.upgrades?.['mech-bonus-cap'] || 0;
+  },
+  set: (value) => {
+    gemPlannerStore.updateUpgradeLevel('creation', 'mech-bonus-cap', value);
+  }
+});
+
+const exodusGemNode5 = computed(() => {
+  const exodusGem = gemPlannerStore.getGemState('exodus');
+  return exodusGem?.nodes?.[4] || false;
 });
 
 // Computed Properties für Unlock-System
@@ -913,6 +985,11 @@ const getMaxCapacity = (mechKey) => {
     capacity = capacity.mul(amplifierBonus);
   }
   
+  // Exodus Gem Node #5 bonus
+  if (exodusGemNode5.value) {
+    capacity = capacity.mul(new Decimal("1e140"));
+  }
+
   return capacity;
 };
 
@@ -922,7 +999,7 @@ const getTimeToCap = (mechKey) => {
   const maxCapacity = getMaxCapacity(mechKey);
   const currentMulti = getCurrentMultiplier(mechKey);
   const currentTimer = getCurrentTimer(mechKey);
-  
+
   // Wenn bereits gecappt oder keine Daten
   if (currentOutput.gte(maxCapacity) || currentMulti.eq(0) || currentOutput.eq(0)) {
     return 'Already capped or no data';
@@ -1421,6 +1498,18 @@ async function loadCachedResults() {
 }
 
 // Update from selected build
+// Functions
+function toggleAutoUpdate() {
+  if (!mechPlannerStore.autoUpdateCrystals) {
+    mechPlannerStore.resetCrystalsTimestamp();
+    mechPlannerStore.autoUpdateCrystals = true;
+  } else {
+    mechPlannerStore.updateCurrentCrystals(mechPlannerStore.getCurrentCrystalsWithProduction(vectidCrystalsPerDay.value));
+    mechPlannerStore.autoUpdateCrystals = false;
+  }
+  mechPlannerStore.saveToStorage();
+}
+
 function updateFromSelectedBuild() {
   if (!selectedBuildId.value) {
     return;
@@ -2434,6 +2523,9 @@ onMounted(async () => {
   gemPlannerStore.init();
   mechPlannerStore.init(); // Lade alle Daten aus localStorage
   
+  // Update Crystals timestamp on mount
+  mechPlannerStore.resetCrystalsTimestamp();
+  
   // Initialize hunter store for Ozzy first
   if (!hunterStore.hunterBuilds || !hunterStore.hunterBuilds.ozzy || hunterStore.hunterBuilds.ozzy.length === 0) {
     await hunterStore.initHunterConfig('ozzy');
@@ -2481,6 +2573,8 @@ const stopAutoUpdateTimer = () => {
 
 // Prüft für jeden Mech, ob ein kompletter Zyklus abgeschlossen wurde
 const checkAndUpdateCompletedCycles = () => {
+  liveUpdateTrigger.value++;
+  
   const now = Date.now();
   let updatedCount = 0;
   

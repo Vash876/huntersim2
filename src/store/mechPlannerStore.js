@@ -18,7 +18,11 @@ export const useMechPlannerStore = defineStore('mechPlanner', () => {
   
   // Vectid Crystal Production Settings
   const selectedBuildId = ref('');
-  const currentVectidCrystals = ref(0);
+  const currentVectidCrystals = ref({
+    value: 0,
+    timestamp: Date.now()
+  });
+  const autoUpdateCrystals = ref(true);
   
   // Global Settings - Relics & Equipment
   const coorsRelic = ref(0);
@@ -131,9 +135,23 @@ export const useMechPlannerStore = defineStore('mechPlanner', () => {
       
       const savedCrystals = localStorage.getItem('mechPlanner_currentVectidCrystals');
       if (savedCrystals !== null) {
-        currentVectidCrystals.value = Number(savedCrystals) || 0;
+        try {
+          const parsed = JSON.parse(savedCrystals);
+          if (typeof parsed === 'object' && parsed !== null && 'value' in parsed) {
+            currentVectidCrystals.value = parsed;
+          } else {
+            currentVectidCrystals.value = { value: Number(parsed) || 0, timestamp: Date.now() };
+          }
+        } catch {
+          currentVectidCrystals.value = { value: Number(savedCrystals) || 0, timestamp: Date.now() };
+        }
       }
       
+      const savedAutoUpdate = localStorage.getItem('mechPlanner_autoUpdateCrystals');
+      if (savedAutoUpdate !== null) {
+        autoUpdateCrystals.value = savedAutoUpdate === 'true';
+      }
+
       console.log('✅ MechPlanner Store loaded from storage');
     } catch (error) {
       console.error('❌ Error loading MechPlanner Store:', error);
@@ -168,7 +186,8 @@ export const useMechPlannerStore = defineStore('mechPlanner', () => {
       
       // Save Vectid Crystal settings separately (for backward compatibility)
       localStorage.setItem('mechPlanner_selectedBuildId', selectedBuildId.value);
-      localStorage.setItem('mechPlanner_currentVectidCrystals', String(currentVectidCrystals.value || 0));
+      localStorage.setItem('mechPlanner_currentVectidCrystals', JSON.stringify(currentVectidCrystals.value));
+      localStorage.setItem('mechPlanner_autoUpdateCrystals', String(autoUpdateCrystals.value));
       
     } catch (error) {
       console.error('Error saving MechPlanner Store:', error);
@@ -192,7 +211,7 @@ export const useMechPlannerStore = defineStore('mechPlanner', () => {
    */
   function resetProduction() {
     selectedBuildId.value = '';
-    currentVectidCrystals.value = 0;
+    currentVectidCrystals.value = { value: 0, timestamp: Date.now() };
     localStorage.removeItem('mechPlanner_selectedBuildId');
     localStorage.removeItem('mechPlanner_currentVectidCrystals');
   }
@@ -203,7 +222,7 @@ export const useMechPlannerStore = defineStore('mechPlanner', () => {
   function resetAll() {
     // Reset all state
     selectedBuildId.value = '';
-    currentVectidCrystals.value = 0;
+    currentVectidCrystals.value = { value: 0, timestamp: Date.now() };
     coorsRelic.value = 0;
     tulsandstofKit.value = 0;
     mechEngineerToolPants.value = 0;
@@ -291,6 +310,62 @@ export const useMechPlannerStore = defineStore('mechPlanner', () => {
     }
   }
   
+  /**
+   * Update Current Crystals Value and Timestamp
+   */
+  function updateCurrentCrystals(value) {
+    currentVectidCrystals.value = {
+      value: typeof value === 'number' ? value : 0,
+      timestamp: Date.now()
+    };
+    saveToStorage();
+  }
+
+  /**
+   * Reset the timestamp to now without changing the value
+   */
+  function resetCrystalsTimestamp() {
+    if (!currentVectidCrystals.value || typeof currentVectidCrystals.value !== 'object') {
+      currentVectidCrystals.value = {
+        value: typeof currentVectidCrystals.value === 'number' ? currentVectidCrystals.value : 0,
+        timestamp: Date.now()
+      };
+    } else {
+      currentVectidCrystals.value.timestamp = Date.now();
+    }
+    saveToStorage();
+  }
+
+  /**
+   * Compute the current crystals including live production
+   */
+  function getCurrentCrystalsWithProduction(dailyProductionRaw) {
+    let dailyProduction = 0;
+    // Handle Decimal or Number
+    if (dailyProductionRaw && typeof dailyProductionRaw.toNumber === 'function') {
+      dailyProduction = dailyProductionRaw.toNumber();
+    } else if (typeof dailyProductionRaw === 'number') {
+      dailyProduction = dailyProductionRaw;
+    }
+
+    if (!currentVectidCrystals.value || typeof currentVectidCrystals.value !== 'object' || !currentVectidCrystals.value.timestamp) {
+      currentVectidCrystals.value = {
+        value: typeof currentVectidCrystals.value === 'number' ? currentVectidCrystals.value : 0,
+        timestamp: Date.now()
+      };
+      return currentVectidCrystals.value.value;
+    }
+
+    const now = Date.now();
+    const elapsedMs = now - currentVectidCrystals.value.timestamp;
+    const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24);
+
+    const produced = autoUpdateCrystals.value !== false ? elapsedDays * dailyProduction : 0;
+    const total = currentVectidCrystals.value.value + produced;
+
+    return Math.max(0, total);
+  }
+
   // ============================================================================
   // RETURN (Public API)
   // ============================================================================
@@ -299,6 +374,7 @@ export const useMechPlannerStore = defineStore('mechPlanner', () => {
     // State
     selectedBuildId,
     currentVectidCrystals,
+    autoUpdateCrystals,
     coorsRelic,
     tulsandstofKit,
     mechEngineerToolPants,
@@ -309,11 +385,11 @@ export const useMechPlannerStore = defineStore('mechPlanner', () => {
     currentOutputMultiplierInput,
     currentOutputTimestamps,
     isInitialized,
-    
+
     // Computed
     hasAnyMechData,
     totalMechsOwned,
-    
+
     // Methods
     init,
     loadFromStorage,
@@ -327,6 +403,9 @@ export const useMechPlannerStore = defineStore('mechPlanner', () => {
     getCurrentOutput,
     getCurrentOutputInput,
     getTimestamp,
-    initializeMechSettings
+    initializeMechSettings,
+    updateCurrentCrystals,
+    resetCrystalsTimestamp,
+    getCurrentCrystalsWithProduction
   };
 });

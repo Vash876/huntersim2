@@ -56,6 +56,9 @@ export function useContentAccess() {
   /** Evolution Gem Node 5 reduces RP interval from 80 → 75 */
   const hasReducedRPInterval = hasGemNode('evolution', 5);
 
+  /** Exodus Gem Node #4 unlocks the x1.2 boss kill multiplier */
+  const canSeeExodusCapCalc = hasGemNode('exodus', 4);
+
   /** The actual RP interval value (80 default, 75 with evolution node 5) */
   const rpInterval = computed(() => hasReducedRPInterval.value ? 75 : 80);
 
@@ -70,6 +73,7 @@ export function useContentAccess() {
     canSeeT2R6,
     canSeeLP_RP,
     hasReducedRPInterval,
+    canSeeExodusCapCalc,
     rpInterval,
   };
 }
