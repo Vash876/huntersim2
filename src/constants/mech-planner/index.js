@@ -65,7 +65,7 @@ export const mechs = [
     timeCost: 2e4,
     timeMaxLevels: 30,
     timeCostTiers: [
-      { minLevel: 55, multiplier: 16.2 },
+      { minLevel: 60, multiplier: 16.2 },
       { minLevel: 50, multiplier: 10.125 },
       { minLevel: 45, multiplier: 6.328125 },
       { minLevel: 40, multiplier: 4.21875 },
