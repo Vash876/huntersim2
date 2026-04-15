@@ -1278,6 +1278,7 @@ function calculateScenarioCost(scenarioIndex) {
           case 'r16': relicType = 'relic16'; break;
           case 'r17': relicType = 'relic17'; break;
           case 'r19': relicType = 'relic19'; break;
+          case 't2r7': relicType = 't2r7'; break;
           default: return 0; // Relictyp nicht erkannt
         }
         
@@ -1733,6 +1734,7 @@ function getNextUpgradeCost(key, scenarioIndex = -1) {
       case 'r16': relicType = 'relic16'; break;
       case 'r17': relicType = 'relic17'; break;
       case 'r19': relicType = 'relic19'; break;
+      case 't2r7': relicType = 't2r7'; break;
       default: return 0; // Relictyp nicht erkannt
     }
     

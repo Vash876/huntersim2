@@ -53,8 +53,11 @@
         </div>
       </div>
 
+      <!-- Empty State wenn alle maxed und versteckt -->
+      <DesertEmptyState v-if="!loading && hideMaxed && finalFilteredInscryptions.length === 0" />
+
       <!-- Grid mit Upgrades -->
-      <UpgradeGrid :loading="loading" :columns="4">
+      <UpgradeGrid v-else :loading="loading" :columns="4">
         <UpgradeCard
           v-for="inscryption in finalFilteredInscryptions" 
           :key="inscryption.id"
@@ -140,6 +143,7 @@ import { useButtonControls } from '@/utils/useButtonControls.js';
 import { getNextLevelCost, formatInscryptionCost, INSCRYPTION_CONFIGS } from '@/utils/inscryptionCostUtils.js';
 import UpgradeGrid from '@/components/upgrades/UpgradeGrid.vue';
 import UpgradeCard from '@/components/upgrades/UpgradeCard.vue';
+import DesertEmptyState from '@/components/common/DesertEmptyState.vue';
 
 // Store für Upgrades
 const hunterStore = useHunterStore();

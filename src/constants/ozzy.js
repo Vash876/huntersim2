@@ -500,6 +500,7 @@ export const UPGRADE_CURRENCIES = {
   'upgrades.relics.r4': CURRENCY_TYPES.FRAGS,
   'upgrades.relics.r7': CURRENCY_TYPES.FRAGS,
   'upgrades.relics.r17': CURRENCY_TYPES.FRAGS,
+  'upgrades.relics.t2r7': CURRENCY_TYPES.FRAGS,
 }
 
 export const UPGRADES_BY_CURRENCY = {
@@ -538,7 +539,7 @@ export const UPGRADES_BY_CURRENCY = {
     { key: 'upgrades.relics.r4', label: 'Relic #4', max: 100 },
     { key: 'upgrades.relics.r7', label: 'Relic #7', max: 100 },
     { key: 'upgrades.relics.r17', label: 'Relic #17', max: 100 },
-    { key: 'upgrades.relics.r19', label: 'Relic #19', max: 8 }
+    { key: 'upgrades.relics.t2r7', label: 'T2 Relic #7', max: 40 },
   ]
 };
 
