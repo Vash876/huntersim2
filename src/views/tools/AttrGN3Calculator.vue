@@ -7,6 +7,13 @@
           <span>AttGN#3 Calculator</span>
         </h2>
         
+        <!-- Info Banner -->
+        <div class="bg-blue-900/30 border border-blue-800 rounded-lg p-3 mb-4 text-center">
+          <p class="text-blue-200 text-sm">
+            The 5900 RP bonus is currently disabled because the buff does not work correctly in-game. It will be re-added once the issue is fixed.
+          </p>
+        </div>
+        
         <!-- Input Settings -->
         <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
           <div class="header p-3 flex justify-between items-center">
