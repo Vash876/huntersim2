@@ -628,7 +628,7 @@ const maxResearchPoints = computed(() => {
     return innovationGemLevel.value >= 3 ? 6250 : 1337;
   } else {
     // Standard: verwende researchData
-    return innovationGemLevel.value >= 3 ? 5900 : 1509;
+    return innovationGemLevel.value >= 3 ? 5200 : 1509; //auf 5900 ändern wenn gefixed
   }
 });
 
@@ -1473,7 +1473,7 @@ const researchData = [
   { id: "research71", level: 6, bonus: 7, cost: "1509" },
   { id: "research91", level: 1, bonus: 0.2, cost: "4500" },
   { id: "research91", level: 3, bonus: 0.6, cost: "5200" },
-  { id: "research91", level: 5, bonus: 1, cost: "5900" },
+  //{ id: "research91", level: 5, bonus: 1, cost: "5900" },
 ];
 
 const researchDataResearch = [

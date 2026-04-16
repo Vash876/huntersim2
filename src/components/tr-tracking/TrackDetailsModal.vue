@@ -1948,7 +1948,7 @@ const researchData = [
   { id: "research71", level: 6, bonus: 7, cost: "1509" },
   { id: "research91", level: 1, bonus: 0.2, cost: "4500" },
   { id: "research91", level: 3, bonus: 0.6, cost: "5200" },
-  { id: "research91", level: 5, bonus: 1, cost: "5900" },
+  //{ id: "research91", level: 5, bonus: 1, cost: "5900" },
 ];
 
 // Helper: Get AttrGN3 Calculator settings from localStorage
@@ -2370,7 +2370,7 @@ function getAttGN3PendingMultiplier() {
     { bonus: 7, cost: 1509 },
     { bonus: 0.2, cost: 4500 },
     { bonus: 0.6, cost: 5200 },
-    { bonus: 1, cost: 5900 }
+    //{ bonus: 1, cost: 5900 }
   ];
   
   // Calculate affordable research and retention rate
