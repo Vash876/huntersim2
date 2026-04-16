@@ -224,6 +224,8 @@
               </div>
               <div class="text-sm font-semibold text-green-400">
                 {{ getAttGN3PendingMultiplier() }}
+                <span v-if="getAttGN3ProjectedValue()" class="text-gray-400"> → </span> 
+                <span v-if="getAttGN3ProjectedValue()" class="text-green-400">{{ getAttGN3ProjectedValue() }}</span>
               </div>
             </div>
 
@@ -2394,6 +2396,29 @@ function getAttGN3PendingMultiplier() {
   }
   
   return multiplier.toFixed(2);
+}
+
+// Get projected AttGN3 value (current buff × pending multiplier)
+function getAttGN3ProjectedValue() {
+  const latestValues = getLatestValues();
+  const rawBuff = latestValues['attgn3-buff'];
+  if (!rawBuff) return null;
+
+  const pendingStr = getAttGN3PendingMultiplier();
+  if (!pendingStr || pendingStr === '∞') return null;
+
+  try {
+    const currentBuff = new Decimal(rawBuff);
+    const multiplier = new Decimal(pendingStr);
+    const projected = currentBuff.times(multiplier);
+
+    if (projected.exponent >= 6) {
+      return projected.mantissa.toFixed(2) + 'e' + projected.exponent;
+    }
+    return projected.toFixed(2);
+  } catch {
+    return null;
+  }
 }
 
 // Get Time in LR - calculates current time spent in this LR run (including live time elapsed)
