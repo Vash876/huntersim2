@@ -308,7 +308,7 @@
             <div class="flex items-center gap-1">
               <span class="text-[10px] text-gray-400">Mechs:</span>
               <span class="text-[10px] font-mono text-orange-400">
-                ×{{ (1.001 ** (missionPlannerStore.modifierValues.creation_node_5_mechs || 0)).toFixed(4) }}
+                ×{{ (1 + 0.001 * (missionPlannerStore.modifierValues.creation_node_5_mechs || 0)).toFixed(4) }}
               </span>
             </div>
             <ToolValueControls

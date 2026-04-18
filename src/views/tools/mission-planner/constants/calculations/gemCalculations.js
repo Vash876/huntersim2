@@ -67,9 +67,9 @@ export function calculateCreationEffects(isActive, mechCount = 0) {
     mechCount: mechCount,
   };
   
-  // Node 5: All fragments x1.001 per Mech owned
+  // Node 5: All fragments +0.1% per Mech owned (additive)
   if (isActive && mechCount > 0) {
-    effects.allFragsMultiplier = Math.pow(1.001, mechCount);
+    effects.allFragsMultiplier = 1 + 0.001 * mechCount;
   }
   
   return effects;
