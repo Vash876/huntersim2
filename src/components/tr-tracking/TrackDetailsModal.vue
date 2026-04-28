@@ -2411,7 +2411,8 @@ function getAttGN3ProjectedValue() {
   try {
     const currentBuff = new Decimal(rawBuff);
     const multiplier = new Decimal(pendingStr);
-    const projected = currentBuff.times(multiplier);
+    const maxCap = new Decimal('1e333');
+    const projected = Decimal.min(currentBuff.times(multiplier), maxCap);
 
     if (projected.exponent >= 6) {
       return projected.mantissa.toFixed(2) + 'e' + projected.exponent;
