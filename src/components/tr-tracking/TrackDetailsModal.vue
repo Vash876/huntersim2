@@ -222,8 +222,9 @@
                   placement="top" 
                 />
               </div>
-              <div class="text-sm font-semibold text-green-400">
-                {{ getAttGN3PendingMultiplier() }}
+              <div class="text-sm font-semibold">
+                <span class="text-gray-400"> + </span> 
+                <span class="text-green-400">{{ getAttGN3PendingMultiplier() }}</span> 
                 <span v-if="getAttGN3ProjectedValue()" class="text-gray-400"> → </span> 
                 <span v-if="getAttGN3ProjectedValue()" class="text-green-400">{{ getAttGN3ProjectedValue() }}</span>
               </div>

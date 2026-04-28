@@ -14667,9 +14667,9 @@
   if (result f64)
    local.get $98
    f64.convert_i32_s
-   f64.const 100
+   f64.const 1e3
    f64.min
-   f64.const 0.01
+   f64.const 0.001
    f64.mul
    f64.const 1
    f64.add

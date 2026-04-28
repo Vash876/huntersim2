@@ -43,7 +43,7 @@ export function calculateOrbRequirement(trCount, allTimeOrbs) {
 }
 
 /**
- * Berechnet den Catch-Up Multiplier basierend auf hoursInTR und Research 109/110
+ * Berechnet den Catch-Up Multiplier basierend auf hoursInTR und Speed-Boni
  * @param {number} hoursInTR - Stunden im aktuellen TR
  * @param {Object} allValues - Alle aktuellen Werte für Research-Zugriff (optional)
  * @returns {number} Berechneter Catch-Up Multiplier
@@ -52,8 +52,7 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
   const hours = hoursInTR || 0;
   const correctedHours = (hours * 1.01) + 1.0;
 
-  // Research 110: Bonus-Stunden hinzufügen (8-48 Stunden je nach Level)
-  let effectiveHours = correctedHours; // Auch bei 0 Stunden weiterrechnen für Research-Boni
+  let effectiveHours = correctedHours;
   const researchAlltimeValue = allValues.research_alltime || 0;
   
   // Evolution GN #1 und GN #4 prüfen
@@ -90,19 +89,10 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
     evolutionGN4Active = false;
   }
   
-  // Research 110 & 109 Boni berechnen
-  let totalBonusHours = 0;
+  // Research 109 Bonus berechnen
   let totalSpeedBonus = 0;
   
   if (researchAlltimeValue > 0) {
-    // Research 110: Bonus-Stunden (additiv)
-    const research110Data = researchData_permanent['110'] || [];
-    for (const level of research110Data) {
-      if (researchAlltimeValue >= level.price && level.catchupHours) {
-        totalBonusHours += level.catchupHours; // Additiv: 8 + 16 + 24 + 32 + 40 + 48 = 168 Stunden
-      }
-    }
-    
     // Research 109: Speed-Bonus (additiv)
     const research109Data = researchData_permanent['109'] || [];
     for (const level of research109Data) {
@@ -111,9 +101,6 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
       }
     }
   }
-  
-  // Effektive Stunden mit Research 110 Bonus
-  effectiveHours += totalBonusHours;
   
   // Speed-Multiplikator mit Research 109 Bonus, Evolution GN #1, Evolution GN #4 und t2r4
   let speedMultiplier = 1 + totalSpeedBonus;
@@ -142,9 +129,9 @@ export function calculateCupMultiplier(hoursInTR, allValues = {}) {
     maxCatchUp = 8; // Evolution GN #4 erhöht auf 8 (überschreibt GN #1)
   }
   
-  // KORRIGIERTE Catch-Up Formel: 
+  // KORRIGIERTE Catch-Up Formel:
   // Original: Math.min(2, Math.max(1, (hoursInTR * 0.00024) / 0.25 + 1))
-  // Mit Research-Boni und Evolution GN #1: 
+  // Mit Speed-Boni und Evolution GN #1:
   const enhancedRate = 0.00024 * speedMultiplier;
   const result = Math.min(maxCatchUp, Math.max(1, (effectiveHours * enhancedRate) / 0.25 + 1));
   
