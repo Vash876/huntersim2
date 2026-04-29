@@ -862,10 +862,10 @@ export function EVALKNOX_WASM(
   knox.lvl = lvl;
   knox.maxStage = maxStage;
   
-  // Crea Gem 5: HP Bonus basierend auf crea_galvTrinketsCount (0.01% pro Count, Cap bei 100%)
+  // Crea Gem 5: HP Bonus basierend auf crea_galvTrinketsCount (0.1% pro Count, Cap bei 1000 = max 2x)
   let creaGem5HpBonus: f64 = 1;
   if (crea_gem5 > 0) {
-    let hpBonusPercent = Math.min(100, crea_galvTrinketsCount as f64) * 0.01;
+    let hpBonusPercent = Math.min(1000, crea_galvTrinketsCount as f64) * 0.001;
     creaGem5HpBonus = 1 + hpBonusPercent;
   }
   
