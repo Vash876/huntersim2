@@ -312,6 +312,8 @@ export const OVERRIDES = {
   // Gem Levels
   gemLevels: [
     "upgrades.gems_nodes.attraction_level",     // Attraction Gem Level
+    "upgrades.gems_nodes.power_level",          // Power Gem Level
+    "upgrades.gems_nodes.innovation_level",     // Innovation Gem Level
   ],
 
   trinkets: [

@@ -1262,11 +1262,21 @@ const visibleCategories = computed(() => {
         
         // Wenn das Relic unlock_gem und unlock_lvl hat, prüfe die Bedingung
         if (relic?.unlock_gem && relic?.unlock_lvl) {
-          // Hole das Gem-Level aus dem gemPlannerStore
-          const gemLevel = gemPlannerStore.gemStates?.[relic.unlock_gem]?.level || 0;
+          // Berücksichtige Override für das Gem-Level
+          const gemLevelKey = `upgrades.gems_nodes.${relic.unlock_gem}_level`;
+          const gemLevelOverride = localOverrides.value[gemLevelKey];
+          
+          const gemLevelParam = parameterData.value
+            .flatMap(cat => cat.params)
+            .find(p => p.key === gemLevelKey);
+          const gemLevelGlobalValue = gemLevelParam?.globalValue ?? (gemPlannerStore.gemStates?.[relic.unlock_gem]?.level || 0);
+          
+          const effectiveGemLevel = (gemLevelOverride !== null && gemLevelOverride !== undefined)
+            ? gemLevelOverride
+            : gemLevelGlobalValue;
           
           // Nur anzeigen wenn das Gem-Level erreicht ist
-          return gemLevel >= relic.unlock_lvl;
+          return effectiveGemLevel >= relic.unlock_lvl;
         }
         
         // Tier 1 Relics oder Relics ohne Unlock-Bedingung immer anzeigen
@@ -1280,11 +1290,21 @@ const visibleCategories = computed(() => {
         const research = UPGRADES.researches?.find(r => r.id === researchId);
         
         if (research?.unlock_gem && research?.unlock_lvl) {
-          const gemState = gemPlannerStore.gemStates?.[research.unlock_gem];
-          const gemLevel = gemState?.level || 0;
+          // Berücksichtige Override für das Gem-Level
+          const researchGemLevelKey = `upgrades.gems_nodes.${research.unlock_gem}_level`;
+          const researchGemLevelOverride = localOverrides.value[researchGemLevelKey];
+          
+          const researchGemLevelParam = parameterData.value
+            .flatMap(cat => cat.params)
+            .find(p => p.key === researchGemLevelKey);
+          const researchGemLevelGlobalValue = researchGemLevelParam?.globalValue ?? (gemPlannerStore.gemStates?.[research.unlock_gem]?.level || 0);
+          
+          const effectiveResearchGemLevel = (researchGemLevelOverride !== null && researchGemLevelOverride !== undefined)
+            ? researchGemLevelOverride
+            : researchGemLevelGlobalValue;
           
           // Prüfe Gem-Level
-          if (gemLevel < research.unlock_lvl) {
+          if (effectiveResearchGemLevel < research.unlock_lvl) {
             return false;
           }
           

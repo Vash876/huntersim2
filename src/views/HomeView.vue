@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.14.6',
+    date: '2026-05-20',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Fixed build code import/export bug where Power Gem level was not included in the parameter list, causing incorrect builds to be generated',
+        ]
+      },
+      {
+        text: 'TR Tracker',
+        subItems: [
+          'Added "Time in TR" filter to the Multi-TR Comparison modal for more precise entry filtering',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.14.5',
     date: '2026-03-30',
     changes: [

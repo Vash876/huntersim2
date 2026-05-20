@@ -650,7 +650,7 @@ export const UPGRADES = {
       id: 'innovation',
       name: 'Innovation Gem',
       type: 'level',
-      maxLevel: 2,
+      maxLevel: 3,
       color: "yellow",
       nodes: [
         { id: 'gem2', name: 'Innovation Gem Node #2', type: 'boolean' },

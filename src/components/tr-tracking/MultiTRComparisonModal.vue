@@ -73,6 +73,30 @@
               </div>
             </div>
 
+            <!-- Time in TR Range Slider (only show when using Time in TR axis) -->
+            <div v-if="xAxisType === 'timeInTR'" class="p-2 bg-gray-800/40 rounded-md border border-gray-700/40">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs text-gray-400">
+                  Time in TR Range:
+                  <span :class="timeInTRFilterActive ? 'text-blue-300 font-medium' : 'text-gray-500'">{{ timeInTRMinDisplay }}</span>
+                  <span class="text-gray-600 mx-0.5">–</span>
+                  <span :class="timeInTRFilterActive ? 'text-blue-300 font-medium' : 'text-gray-500'">{{ timeInTRMaxDisplay }}</span>
+                </span>
+                <button v-if="timeInTRFilterActive" @click="resetTimeInTRRange" class="text-xs text-gray-500 hover:text-gray-300 transition-colors">Reset</button>
+              </div>
+              <div class="oo-range-container">
+                <div class="oo-range-track"></div>
+                <div class="oo-range-fill" :style="timeInTRRangeFillStyle"></div>
+                <input type="range" class="oo-range-input" min="0" :max="TIME_IN_TR_MAX" step="1"
+                  :value="timeInTRRangeMin" @input="onTimeInTRRangeMinInput" />
+                <input type="range" class="oo-range-input" min="0" :max="TIME_IN_TR_MAX" step="1"
+                  :value="timeInTRRangeMax" @input="onTimeInTRRangeMaxInput" />
+              </div>
+              <div class="flex justify-between text-[9px] text-gray-600 mt-0.5 select-none" style="padding: 0 6px;">
+                <span>0h</span><span>100h</span><span>200h</span><span>300h</span><span>400h</span><span>500h</span>
+              </div>
+            </div>
+
             <!-- Resource Selection -->
             <div>
               <div class="text-xs text-gray-400 mb-2">Resource:</div>
@@ -432,12 +456,19 @@ const OO_SLIDER_MAX = 72; // 72 positions → exponent 0..36 in 0.5 steps
 const ooRangeMin = ref(trTrackingStore.comparisonSettings.ooRangeMin ?? 0);
 const ooRangeMax = ref(trTrackingStore.comparisonSettings.ooRangeMax ?? OO_SLIDER_MAX);
 
+// Time in TR Range filter
+const TIME_IN_TR_MAX = 500; // 500 hours max
+const timeInTRRangeMin = ref(trTrackingStore.comparisonSettings.timeInTRRangeMin ?? 0);
+const timeInTRRangeMax = ref(trTrackingStore.comparisonSettings.timeInTRRangeMax ?? TIME_IN_TR_MAX);
+
 function sliderToOO(pos) {
   if (pos <= 0) return 0;
   return Math.pow(10, pos * 0.5);
 }
 
 const ooFilterActive = computed(() => ooRangeMin.value > 0 || ooRangeMax.value < OO_SLIDER_MAX);
+
+const timeInTRFilterActive = computed(() => timeInTRRangeMin.value > 0 || timeInTRRangeMax.value < TIME_IN_TR_MAX);
 
 const ooMinDisplay = computed(() => {
   const val = sliderToOO(ooRangeMin.value);
@@ -467,6 +498,30 @@ function onOORangeMaxInput(e) {
 function resetOORange() {
   ooRangeMin.value = 0;
   ooRangeMax.value = OO_SLIDER_MAX;
+}
+
+const timeInTRMinDisplay = computed(() => `${timeInTRRangeMin.value}h`);
+const timeInTRMaxDisplay = computed(() => timeInTRRangeMax.value >= TIME_IN_TR_MAX ? '∞' : `${timeInTRRangeMax.value}h`);
+
+const timeInTRRangeFillStyle = computed(() => {
+  const left = (timeInTRRangeMin.value / TIME_IN_TR_MAX) * 100;
+  const right = 100 - (timeInTRRangeMax.value / TIME_IN_TR_MAX) * 100;
+  return { left: `${left}%`, right: `${right}%` };
+});
+
+function onTimeInTRRangeMinInput(e) {
+  const val = parseInt(e.target.value);
+  timeInTRRangeMin.value = Math.min(val, timeInTRRangeMax.value);
+}
+
+function onTimeInTRRangeMaxInput(e) {
+  const val = parseInt(e.target.value);
+  timeInTRRangeMax.value = Math.max(val, timeInTRRangeMin.value);
+}
+
+function resetTimeInTRRange() {
+  timeInTRRangeMin.value = 0;
+  timeInTRRangeMax.value = TIME_IN_TR_MAX;
 }
 
 // Get starting OO value from a track's initialValues
@@ -519,6 +574,8 @@ watch(() => props.show, (newShow) => {
       showHiddenFriendsTracks.value = saved.showHiddenFriendsTracks;
       ooRangeMin.value = saved.ooRangeMin ?? 0;
       ooRangeMax.value = saved.ooRangeMax ?? OO_SLIDER_MAX;
+      timeInTRRangeMin.value = saved.timeInTRRangeMin ?? 0;
+      timeInTRRangeMax.value = saved.timeInTRRangeMax ?? TIME_IN_TR_MAX;
     } else {
       // First time defaults
       const defaultResources = ['mp'];
@@ -540,6 +597,8 @@ watch(() => props.show, (newShow) => {
       showHiddenFriendsTracks.value = false;
       ooRangeMin.value = 0;
       ooRangeMax.value = OO_SLIDER_MAX;
+      timeInTRRangeMin.value = 0;
+      timeInTRRangeMax.value = TIME_IN_TR_MAX;
     }
     
     // Initialize crosshair at 24 hours
@@ -550,7 +609,7 @@ watch(() => props.show, (newShow) => {
 
 // Persist comparison settings to store on changes
 watch(
-  [chartSelectedResources, enabledTracks, enabledFriendsTracks, showFriendsTracks, xAxisType, friendSearchQuery, enabledFriendUids, showFriendFilter, showHiddenFriendsTracks, ooRangeMin, ooRangeMax],
+  [chartSelectedResources, enabledTracks, enabledFriendsTracks, showFriendsTracks, xAxisType, friendSearchQuery, enabledFriendUids, showFriendFilter, showHiddenFriendsTracks, ooRangeMin, ooRangeMax, timeInTRRangeMin, timeInTRRangeMax],
   () => {
     trTrackingStore.updateComparisonSettings({
       chartSelectedResources: chartSelectedResources.value,
@@ -563,7 +622,9 @@ watch(
       showFriendFilter: showFriendFilter.value,
       showHiddenFriendsTracks: showHiddenFriendsTracks.value,
       ooRangeMin: ooRangeMin.value,
-      ooRangeMax: ooRangeMax.value
+      ooRangeMax: ooRangeMax.value,
+      timeInTRRangeMin: timeInTRRangeMin.value,
+      timeInTRRangeMax: timeInTRRangeMax.value
     });
   },
   { deep: true }
@@ -838,7 +899,13 @@ const chartDatasets = computed(() => {
         }
       }).filter(point => {
         if (point[1] === null || point[1] === undefined) return false;
-        if (xAxisType.value === 'timeInTR') return point[0] >= 0;
+        if (xAxisType.value === 'timeInTR') {
+          // Apply Time in TR range filter
+          if (timeInTRFilterActive.value && (point[0] < timeInTRRangeMin.value || point[0] > timeInTRRangeMax.value)) {
+            return false;
+          }
+          return point[0] >= 0;
+        }
         return true;
       });
       
@@ -871,7 +938,13 @@ const chartDatasets = computed(() => {
         }
       }).filter(point => {
         if (point[1] === null || point[1] === undefined) return false;
-        if (xAxisType.value === 'timeInTR') return point[0] >= 0;
+        if (xAxisType.value === 'timeInTR') {
+          // Apply Time in TR range filter
+          if (timeInTRFilterActive.value && (point[0] < timeInTRRangeMin.value || point[0] > timeInTRRangeMax.value)) {
+            return false;
+          }
+          return point[0] >= 0;
+        }
         return true;
       });
       
