@@ -399,6 +399,7 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.attraction_level",     // Attraction Gem Level
   "upgrades.gems_nodes.attraction_catchUp2",      // Catch-Up Power (Knox)
   "upgrades.relics.t2r7",                     // Relic T2R7
+  "upgrades.gems_nodes.power_level",          // Power Gem Level
 ];
 
 export const STATS_RESULT_LABELS = [

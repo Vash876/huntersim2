@@ -511,7 +511,6 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.creation_gem5",    // Creation Gem Node 5
   "upgrades.gems_nodes.evolution_gem6",   // Evolution Gem Node 6
   "upgrades.relics.t2r7",                  // Relic T2R7
-  "upgrades.gems_nodes.innovation_level",     // Innovation Gem Level
   "upgrades.gems_nodes.power_level",          // Power Gem Level
 ];
 

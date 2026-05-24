@@ -527,6 +527,18 @@ function convertGemStatesToUpgrades(upgradesData, gemPlannerStore) {
       },
       upgrades: GEM_UPGRADE_MAPPING // Verwende zentrales Mapping
     },
+    power: {
+      level: 'power_level',
+      nodes: {
+        gem1: 'power_gem1',
+        gem2: 'power_gem2',
+        gem3: 'power_gem3',
+        gem4: 'power_gem4',
+        gem5: 'power_gem5',
+        gem6: 'power_gem6',
+      },
+      upgrades: GEM_UPGRADE_MAPPING
+    },
     evolution: {
       level: 'evolution_level',
       nodes: {
