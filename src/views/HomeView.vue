@@ -2,6 +2,18 @@
 const changelog = 
 [
   {
+    version: '2.14.7',
+    date: '2026-05-24',
+    changes: [
+      {
+        text: 'Ultima Calculator',
+        subItems: [
+          'Redesigned the UI',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.14.6',
     date: '2026-05-20',
     changes: [
