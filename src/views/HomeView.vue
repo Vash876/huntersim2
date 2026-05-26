@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.14.8',
+    date: '2026-05-26',
+    changes: [
+      {
+        text: 'AttGN#3 Calculator',
+        subItems: [
+          'Re-added Research #91 levels 5 and 6 to the research list',
+          'Fixed InnoGN#6 multiplier formula',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.14.7',
     date: '2026-05-24',
     changes: [

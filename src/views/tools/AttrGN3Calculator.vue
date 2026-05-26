@@ -7,12 +7,12 @@
           <span>AttGN#3 Calculator</span>
         </h2>
         
-        <!-- Info Banner -->
+        <!-- Info Banner
         <div class="bg-blue-900/30 border border-blue-800 rounded-lg p-3 mb-4 text-center">
           <p class="text-blue-200 text-sm">
-            The 5900 RP bonus is currently disabled because the buff does not work correctly in-game. It will be re-added once the issue is fixed.
+            
           </p>
-        </div>
+        </div> -->
         
         <!-- Input Settings -->
         <div class="bg-gray-800/50 rounded-lg border border-gray-700/50 overflow-hidden shadow-lg mb-4">
@@ -635,7 +635,7 @@ const maxResearchPoints = computed(() => {
     return innovationGemLevel.value >= 3 ? 6250 : 1337;
   } else {
     // Standard: verwende researchData
-    return innovationGemLevel.value >= 3 ? 5200 : 1509; //auf 5900 ändern wenn gefixed
+    return innovationGemLevel.value >= 3 ? 5900 : 1509; 
   }
 });
 
@@ -988,12 +988,11 @@ const retainedStudiesPerDay = computed(() => {
   return studiesPerDay.value * (retainedStudiesBonus.value / 100);
 });
 
-// Innovation multiplier per day (0.002089270% per 10 retained studies)
+// Innovation multiplier per day (1.00001^(retainedStudies/15))
 const innovationMultiPerDay = computed(() => {
   if (!innovationNode6Active.value) return 1;
-  const studyGroups = retainedStudiesPerDay.value / 10; // Every 10 studies
-  const innovationRate = 0.00002; // 0.002089270% - Corrected rate based on real game data
-  return Math.pow(1 + innovationRate, studyGroups);
+  const studyGroups = retainedStudiesPerDay.value / 15;
+  return Math.pow(1.00001, studyGroups);
 });
 
 // Innovation multiplier cap at 1e222
@@ -1035,9 +1034,8 @@ const daysToInnovationCap = computed(() => {
 const currentInnovationMultiplier = computed(() => {
   if (!innovationNode6Active.value || currentRetainedStudies.value <= 0) return new Decimal(1);
   
-  const studyGroups = currentRetainedStudies.value / 10; // Every 10 studies
-  const innovationRate = 0.00002089270; // 0.002089270% - Corrected rate based on real game data
-  const base = new Decimal(1 + innovationRate);
+  const studyGroups = currentRetainedStudies.value / 15; //  /15
+  const base = new Decimal(1.00001); // 1.00001^(studies/15)
   const calculatedMultiplier = base.pow(studyGroups);
   
   // Calculate the final result (Current * Pending)
@@ -1480,16 +1478,16 @@ const researchData = [
   { id: "research71", level: 6, bonus: 7, cost: "1509" },
   { id: "research91", level: 1, bonus: 0.2, cost: "4500" },
   { id: "research91", level: 3, bonus: 0.6, cost: "5200" },
-  //{ id: "research91", level: 5, bonus: 1, cost: "5900" },
+  { id: "research91", level: 5, bonus: 1, cost: "5900" },
 ];
 
 const researchDataResearch = [
   { id: "research44", level: 1, bonus: 0.2, cost: "90" },
   { id: "research44", level: 3, bonus: 0.3, cost: "141" },
   { id: "research44", level: 5, bonus: 0.5, cost: "193" },
-  { id: "research51", level: 1, bonus: 0.2, cost: "251" },
-  { id: "research51", level: 3, bonus: 0.3, cost: "354" },
-  { id: "research51", level: 5, bonus: 0.5, cost: "456" },
+  { id: "research51", level: 1, bonus: 0.4, cost: "251" },
+  { id: "research51", level: 3, bonus: 0.6, cost: "354" },
+  { id: "research51", level: 5, bonus: 1, cost: "456" },
   { id: "research61", level: 1, bonus: 1, cost: "297" },
   { id: "research61", level: 3, bonus: 3, cost: "429" },
   { id: "research61", level: 5, bonus: 5, cost: "561" },
@@ -1549,7 +1547,7 @@ onBeforeUnmount(() => {
 });
 
 // Watch for changes and save (excluding toggles, they save themselves)
-watch([tickSpeed, ticksPerTick, relic14, researchPoints, currentTicksInLR], () => {
+watch([tickSpeed, ticksPerTick, relic14, researchPoints, currentTicksInLR, studiesPerStudy], () => {
   saveSettings();
 });
 
