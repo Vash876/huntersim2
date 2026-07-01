@@ -170,6 +170,20 @@
             
             <!-- Right Column -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50 flex flex-col gap-3">
+              <!-- Creation Gem Node #5 -->
+              <div v-if="creationGemNode5" class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <div class="w-5 h-5 flex items-center justify-center rounded-full mr-2">
+                    <IconDiamond size="16" class="text-orange-400" />
+                  </div>
+                  <span class="text-sm text-gray-300">Creation Gem Node #5</span>
+                  <span class="ml-1 text-xs text-gray-500">(1e50 Cap)</span>
+                </div>
+                <span class="text-sm font-medium text-orange-400">
+                  Activated
+                </span>
+              </div>
+
               <!-- Exodus Gem Node #5 -->
               <div v-if="exodusGemNode5" class="flex items-center justify-between">
                 <div class="flex items-center">
@@ -769,6 +783,11 @@ const exodusGemNode5 = computed(() => {
   return exodusGem?.nodes?.[4] || false;
 });
 
+const creationGemNode5 = computed(() => {
+  const creationGem = gemPlannerStore.getGemState('creation');
+  return creationGem?.nodes?.[4] || false;
+});
+
 // Computed Properties für Unlock-System
 const visibleMechs = computed(() => {
   return mechs.filter(mech => {
@@ -991,6 +1010,11 @@ const getMaxCapacity = (mechKey) => {
   // Exodus Gem Node #5 bonus
   if (exodusGemNode5.value) {
     capacity = capacity.mul(new Decimal("1e140"));
+  }
+
+  // Creation Gem Node #5 bonus
+  if (creationGemNode5.value) {
+    capacity = capacity.mul(new Decimal("1e50"));
   }
 
   return capacity;
