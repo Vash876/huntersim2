@@ -136,11 +136,6 @@ const routes = [
     name: 'Enemy Stats Debug',
     component: () => import('../views/debug/EnemyStatsDebug.vue'),
   },
-  {
-    path: '/admin/backup-downloader',
-    name: 'Admin Backup Downloader',
-    component: () => import('../views/admin/BackupDownloader.vue'),
-  },
 
   // Settings Route
   {
