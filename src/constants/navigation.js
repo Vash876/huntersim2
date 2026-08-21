@@ -23,7 +23,8 @@ import {
   IconDatabase,
   IconShieldCheck,
   IconCoins,
-  IconList
+  IconList,
+  IconExchange
 } from '@tabler/icons-vue';
 
 const IconMilestone = {
@@ -290,6 +291,7 @@ export const NAVIGATION = {
         { label: 'Researches', path: '/upgrades/researches', icon: IconResearch, unlock_gem: 'innovation', unlock_lvl: 2 },
         { label: 'Construction Milest.', path: '/upgrades/cms', icon: IconConstructionMilestone, unlock_gem: 'power', unlock_lvl: 2 },
         { label: 'Trinkets', path: '/upgrades/trinkets', icon: IconBook, unlock_gem: 'creation', unlock_lvl: 4, unlock_node: 5 },
+        { label: 'Mats Exchange', path: '/upgrades/matsexchange', icon: IconExchange, unlock_gem: 'temporal', unlock_lvl: 4 }
       ]
     },
     {

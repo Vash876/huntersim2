@@ -84,10 +84,11 @@ export const ATTRIBUTE_MIN_VALUE = {
 export const HUNTER_UPGRADES = {
   relics: ["t2r5", "t2r7"],
   gadgets: ["anchor"],
-  inscryptions: ["i105"],
-  researches: ["res81", "res95", "res105"],
-  cms: ["cm46", "cm47", "cm48", "cm51", "cm53", "cm54", "cm57"],
-  loopMods: ["stelzi"],
+  inscryptions: ["i105", "i114", "i115"],
+  researches: ["res81", "res95", "res105", "res112"],
+  cms: ["cm46", "cm47", "cm48", "cm51", "cm53", "cm54", "cm57", "cm58", "cm_ultima", "cm_ultimas"],
+  mats_exchange: ["torkinstone", "pytoxene", "gigantium"],
+  loopMods: ["stelzi", "roe"],
   diamondspecials: ["hunterloot", "reviveboost"],
   iap: ["travpack"],
   ultima: ["ulti"],
@@ -170,6 +171,7 @@ export const EVAL_PARAMS = [
   "upgrades.researches.res81",      // Research#81
   "upgrades.researches.res95",      // Research#95
   "upgrades.researches.res105",     // Research#105
+  "upgrades.researches.res112",     // Research#112
   "upgrades.cms.cm46",              // Construction Milestone 46
   "upgrades.cms.cm47",              // Construction Milestone 47
   "upgrades.cms.cm48",              // Construction Milestone 48
@@ -177,7 +179,9 @@ export const EVAL_PARAMS = [
   "upgrades.cms.cm53",              // Construction Milestone 53
   "upgrades.cms.cm54",              // Construction Milestone 54
   "upgrades.cms.cm57",              // Construction Milestone 57
-
+  "upgrades.cms.cm58",              // Construction Milestone 58
+  "upgrades.cms.cm_ultima",          // Construction Milestone Ultima
+  "upgrades.cms.cm_ultimas",          // Construction Milestone Ultimas
   "upgrades.gems_nodes.creation_knoxGU", // Creation Node (Knox Gem Upgrade)
   "upgrades.gems_nodes.evolution_gem2", // Evolution Gem Node 2
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
@@ -199,6 +203,10 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.attraction_lootKnox",      // Attraction Loot (Knox)
   "upgrades.relics.t2r5",                     // Relic T2R5
   "upgrades.relics.t2r7",                     // Relic T2R7
+  "upgrades.loopmods.roe",             // Rule of Experience
+  "upgrades.mats_exchange.tysconDrives",     // Total Tyscon Drives (mat exchange)
+  "upgrades.inscryptions.i114",        // Inscription #114
+  "upgrades.inscryptions.i115",        // Inscription #115
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -263,6 +271,8 @@ export const OVERRIDES = {
   // Inscryptions
   inscryptions: [
     "upgrades.inscryptions.i105",     // Inscription #105
+    "upgrades.inscryptions.i114",     // Inscription #114
+    "upgrades.inscryptions.i115",     // Inscription #115
   ],
 
   // Research
@@ -270,11 +280,13 @@ export const OVERRIDES = {
     "upgrades.researches.res81",     // Research#81
     "upgrades.researches.res95",     // Research#95
     "upgrades.researches.res105",    // Research#105
+    "upgrades.researches.res112",    // Research#112
   ],
 
   // Loop Mods
   loopMods: [
     "upgrades.loopmods.stelzi",       // Stelzi
+    "upgrades.loopmods.roe",          // Rule of Experience
   ],
 
   // Construction Milestones
@@ -286,6 +298,9 @@ export const OVERRIDES = {
     "upgrades.cms.cm53",             // CM53
     "upgrades.cms.cm54",             // CM54
     "upgrades.cms.cm57",             // CM57
+    "upgrades.cms.cm58",             // CM58
+    "upgrades.cms.cm_ultima",       // CM Ultima
+    "upgrades.cms.cm_ultimas",       // CM Ultimas
     "upgrades.cms.milestoneCount",    // Exodus Milestones Count
   ],
 
@@ -324,6 +339,10 @@ export const OVERRIDES = {
     "upgrades.diamondspecials.reviveboost", // Revive Cooldown
   ],
 
+  matsExchange: [
+    "upgrades.mats_exchange.tysconDrives",  // Tyscon Drives total
+  ],
+
 };
 
 // flaches Array für alle Overrides
@@ -337,6 +356,7 @@ export const OVERRIDES_FLAT = [
   ...OVERRIDES.gemLevels,
   ...OVERRIDES.trinkets,
   ...OVERRIDES.diamondSpecials,
+  ...OVERRIDES.matsExchange,
 ];
 
 // Kategorie-Namen für das UI
@@ -400,6 +420,9 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.gems_nodes.attraction_catchUp2",      // Catch-Up Power (Knox)
   "upgrades.relics.t2r7",                     // Relic T2R7
   "upgrades.gems_nodes.power_level",          // Power Gem Level
+  "upgrades.inscryptions.i114",        // Inscription #114
+  "upgrades.inscryptions.i115",        // Inscription #115
+
 ];
 
 export const STATS_RESULT_LABELS = [

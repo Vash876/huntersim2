@@ -649,10 +649,10 @@ function arrayAverage(arr: StaticArray<f64>): f64 {
 function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd: i32, trample: boolean, 
              special: f64, iap: boolean, ultima: f64, scavengers: i32, m0: i32, r7: i32, r19: i32, 
              attrGN2: boolean, attrGN3: boolean, lootgu: i32, i14: i32, i80: i32, i44: i32, 
-             research81: i32, research95: i32, research105: i32, cm46: i32, cm47: i32, cm48: i32, cm51: i32, cm53: i32, cm54: i32, cm57: i32, gadgetLootMulti: f64, 
+             research81: i32, research95: i32, research105: i32, cm46: i32, cm47: i32, cm48: i32, cm51: i32, cm53: i32, cm54: i32, cm57: i32, cm58: i32, cm_ultima: i32, cm_ultimas: i32, gadgetLootMulti: f64, 
              card: boolean, i60: i32, evo_gem2: i32, evoGN3: i32, tempGN4: i32, stelzi: i32, i103: i32, exodus_gem1: i32, exodus_temporalEvolutionCount: i32,
              exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32, inno_gem5: i32, crea_gem4: i32, crea_gem5: i32,
-             crea_galvTrinketsCount: i32
+             crea_galvTrinketsCount: i32, roe: i32, tysconDrives: i32
             ): void {
   // Globale Variablen setzen
   currentBorge = borge;
@@ -756,7 +756,8 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
   let enemiesInSection: i32 = 1010;
   let excludedXpMultis = (attrGN2 ? 1.5 : 1) 
     * Math.pow(2, Math.floor((currentMaxStage - 1) / 100) as f64) 
-    * Math.pow(2, r19 as f64);
+    * Math.pow(2, r19 as f64)
+    * Math.pow(1.0001, roe as f64);
   
   let includedMultis = (1 + borge.timeless * 0.14) 
     * gadgetLootMulti 
@@ -793,11 +794,15 @@ function sim(borge: Borge, maxStage: i32, attr: i32, catchup99gu: i32, reviveCd:
     * (cm53 > 0 ? 1.02 : 1) 
     * (cm54 > 0 ? 1.02 : 1) 
     * (cm57 > 0 ? 1.1 : 1) 
+    * (cm58 > 0 ? 1.08 : 1)
+    * Math.pow(1.002, cm_ultima as f64)
+    * Math.pow(1.001, cm_ultimas as f64)
     * Math.pow(1.02, stelzi as f64) 
     * Math.pow(1.08, i103 as f64) 
     * (1 + exodus_temporalEvolutionCount * 0.002) 
     * (inno_gem5 > 0 ? 1.3 : 1) 
-    * (evo_gem2 > 0 ? 1.1 : 1);
+    * (evo_gem2 > 0 ? 1.1 : 1)
+    * (1 + Math.floor(tysconDrives as f64 / 75) * 0.004 * Math.pow(1.1, Math.floor(tysconDrives as f64 / 100)));
   
   let loopLoot = normalized 
     * (
@@ -942,10 +947,10 @@ export function EVALBORGE_WASM(
   creaGN1: i32, creaGN2: i32, creaGN3: i32, innoGN3: i32,
   attrGN2: i32, attrGN3: i32, attr: i32, catchup99gu: i32,
   lootgu: i32, card: i32, research81: i32, research95: i32, research105: i32, iters: i32,
-  cm46: i32, cm47: i32, cm48: i32, cm51: i32, cm53: i32, cm54: i32, cm57: i32, creaBorgeStat: i32, evo_gem2: i32, evoGN3: i32,
+  cm46: i32, cm47: i32, cm48: i32, cm51: i32, cm53: i32, cm54: i32, cm57: i32, cm58: i32, cm_ultima: i32, cm_ultimas: i32, creaBorgeStat: i32, evo_gem2: i32, evoGN3: i32,
   tempGN4: i32, stelzi: i32, i103: i32, exodus_gem1: i32, exodus_temporalEvolutionCount: i32,
   exodus_gem4: i32, exodus_constructionMilestoneCount: i32, temp_gem6: i32, inno_gem5: i32,
-  crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32, evo_gem6: i32, t2r7: i32
+  crea_gem4: i32, crea_gem5: i32, crea_galvTrinketsCount: i32, evo_gem6: i32, t2r7: i32, roe: i32, tysconDrives: i32
 ): f64 {
   
   // Enemies initialisieren
@@ -1096,7 +1101,7 @@ export function EVALBORGE_WASM(
   
   // Run simulation
   for (let i = 0; i < iters; i++) {
-    sim(borge, maxStage, attr, catchup99gu, reviveCd, trample > 0, special, iap > 0, ultima, scavengers, m0, r7, r19, attrGN2 > 0, attrGN3 > 0, lootgu, i14, i80, i44, research81, research95, research105, cm46, cm47, cm48, cm51, cm53, cm54, cm57, gadgetLootMulti, card > 0, i60, evo_gem2, evoGN3, tempGN4, stelzi, i103, exodus_gem1, exodus_temporalEvolutionCount, exodus_gem4, exodus_constructionMilestoneCount, temp_gem6, inno_gem5, crea_gem4, crea_gem5, crea_galvTrinketsCount);
+    sim(borge, maxStage, attr, catchup99gu, reviveCd, trample > 0, special, iap > 0, ultima, scavengers, m0, r7, r19, attrGN2 > 0, attrGN3 > 0, lootgu, i14, i80, i44, research81, research95, research105, cm46, cm47, cm48, cm51, cm53, cm54, cm57, cm58, cm_ultima, cm_ultimas, gadgetLootMulti, card > 0, i60, evo_gem2, evoGN3, tempGN4, stelzi, i103, exodus_gem1, exodus_temporalEvolutionCount, exodus_gem4, exodus_constructionMilestoneCount, temp_gem6, inno_gem5, crea_gem4, crea_gem5, crea_galvTrinketsCount, roe, tysconDrives);
   }
 
   // Set lastBorge for export functions
@@ -1106,7 +1111,7 @@ export function EVALBORGE_WASM(
   // Return result (Loot per minute)
   return borge.ls * 60;
 }
-
+ 
 // Test function
 export function testEnemyCreation(): f64 {
   initEnemies();

@@ -150,14 +150,20 @@ export function getCurrentUpgradeValues(upgradeParams, hunterStore) {
       const category = parts[1];
       const upgradeId = parts[2];
       
-      // Kategorie initialisieren, wenn sie noch nicht existiert
       if (!result[category]) result[category] = {};
-      
-      // Wert aus dem Store abrufen
+
+      // tysconDrives is computed — derive it from the 3 real keys
+      if (category === 'mats_exchange' && upgradeId === 'tysconDrives') {
+        const mx = hunterStore.upgrades?.mats_exchange || {};
+        result[category][upgradeId] = (mx.torkinstone || 0) * 1
+          + (mx.pytoxene || 0) * 4
+          + (mx.gigantium || 0) * 8;
+        return;
+      }
+
       if (hunterStore.upgrades?.[category]?.[upgradeId] !== undefined) {
         result[category][upgradeId] = hunterStore.upgrades[category][upgradeId];
       } else {
-        // Standardwert 0, wenn nicht im Store
         result[category][upgradeId] = 0;
       }
     }
@@ -800,7 +806,22 @@ export async function shouldUpdateOnUpgradesChange(hunterId, oldUpgrades, newUpg
       if (parts.length >= 3) {
         const category = parts[1];
         const upgradeId = parts[2];
-        
+
+        // tysconDrives is computed from 3 keys — compare the actual stored values
+        if (category === 'mats_exchange' && upgradeId === 'tysconDrives') {
+          const oldDrives = (oldUpgrades?.mats_exchange?.torkinstone || 0) * 1
+            + (oldUpgrades?.mats_exchange?.pytoxene || 0) * 4
+            + (oldUpgrades?.mats_exchange?.gigantium || 0) * 8;
+          const newDrives = (newUpgrades?.mats_exchange?.torkinstone || 0) * 1
+            + (newUpgrades?.mats_exchange?.pytoxene || 0) * 4
+            + (newUpgrades?.mats_exchange?.gigantium || 0) * 8;
+          if (oldDrives !== newDrives) {
+            console.log(`🔧 Relevant upgrade changed: mats_exchange.tysconDrives (${oldDrives} -> ${newDrives})`);
+            return true;
+          }
+          continue;
+        }
+
         const oldValue = oldUpgrades?.[category]?.[upgradeId] || 0;
         const newValue = newUpgrades?.[category]?.[upgradeId] || 0;
         

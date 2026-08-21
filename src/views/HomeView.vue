@@ -2,6 +2,24 @@
 const changelog = 
 [
   {
+    version: '2.15.0',
+    date: '2026-08-21',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Adapted to new game patch',
+        ]
+      },
+      {
+        text: 'Loop Mod Overview',
+        subItems: [
+          'Changed +Ultima Cap Input into a normal Input',
+        ]
+      }
+    ]
+  },
+  {
     version: '2.14.8',
     date: '2026-05-26',
     changes: [

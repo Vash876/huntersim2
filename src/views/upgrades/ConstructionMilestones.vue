@@ -3,6 +3,12 @@
     <div class="bg-gray-900/95 rounded-xl p-4 sm:p-8">
       <h2 class="text-3xl font-bold mb-8 text-center text-white md:hidden">Construction Milestones</h2>
 
+      <!-- Gesamtbonus aller aktiven CMs auf Hunter Loot Rewards -->
+      <div class="bg-gray-800/50 rounded-lg p-3 mb-6 border border-gray-700/50 flex items-center justify-between">
+        <span class="text-gray-300 text-sm font-medium">Total Hunter Loot Rewards Bonus</span>
+        <span class="text-yellow-400 font-bold text-lg">×{{ totalLootBonus.toFixed(3) }}</span>
+      </div>
+
       <!-- Grid mit Milestones -->
       <UpgradeGrid :loading="loading" :columns="3">
         <UpgradeCard
@@ -22,6 +28,22 @@
         >
           <!-- Milestone Bonuses -->
           <div class="bg-gray-900/50 p-3 rounded-md w-full mb-4">
+            <!-- TS#17 Toggle nur für cm_ultima -->
+            <div v-if="milestone.id === 'cm_ultimas'" class="flex justify-between items-center py-1 mb-2 border-b border-gray-700/50 pb-2">
+              <span class="text-gray-300 text-sm font-medium">TS#17 Activated</span>
+              <button
+                @click="toggleTs17"
+                class="relative inline-flex h-5 w-11 items-center rounded-full transition-all duration-300 focus:outline-none"
+                :class="ts17Active
+                  ? 'bg-gradient-to-r from-blue-700 to-blue-500 border border-blue-400/30'
+                  : 'bg-gray-700/60 border border-gray-600/40'"
+              >
+                <span
+                  class="relative inline-block h-3.5 w-3.5 transform rounded-full transition-all duration-300"
+                  :class="ts17Active ? 'translate-x-[1.4rem] bg-white' : 'translate-x-1 bg-gray-500'"
+                ></span>
+              </button>
+            </div>
             <!-- Milestone Status nur für Boolean-Milestones anzeigen -->
             <div 
               v-if="milestone.type === 'boolean'"
@@ -74,14 +96,14 @@
                 </span>
               </div>
               
-              <!-- Fallback für andere numerische Milestones -->
+              <!-- Fallback für andere numerische Milestones (z.B. cm_ultima: value^level) -->
               <div 
                 v-else-if="milestone.type !== 'boolean'"
                 class="flex justify-between items-center py-1"
               >
-                <span class="text-gray-400 text-sm">{{ milestone.description || milestone.multitext || 'Current Level' }}</span>
-                <span class="font-medium text-sm">
-                  {{ getMilestoneLevel({ id: milestone.id }) }}
+                <span class="text-gray-400 text-sm">{{ milestone.multitext || milestone.description || 'Current Level' }}</span>
+                <span class="font-medium text-sm text-white">
+                  {{ formatNumberMilestoneValue(milestone, getMilestoneLevel({ id: milestone.id })) }}
                 </span>
               </div>
             </div>
@@ -151,6 +173,10 @@ onMounted(async () => {
   try {
     // Alle Construction Milestones laden (ungefiltert)
     allConstructionMilestones.value = getUpgrades(category);
+    try {
+      const saved = JSON.parse(localStorage.getItem('cm_ultima_ts17'));
+      if (saved !== null) ts17Active.value = saved;
+    } catch (e) {}
   } catch (error) {
     console.error(`Fehler beim Laden der ${category}:`, error);
   } finally {
@@ -158,14 +184,40 @@ onMounted(async () => {
   }
 });
 
+// Gesamtbonus aller aktiven Loot-Reward-CMs
+const totalLootBonus = computed(() => {
+  let bonus = 1;
+  for (const milestone of constructionMilestones.value) {
+    if (milestone.multitext !== 'Hunter Loot Rewards') continue;
+    if (milestone.id === 'cm_ultimas') continue;
+    const level = getMilestoneLevel({ id: milestone.id });
+    if (milestone.type === 'boolean' && level > 0 && milestone.value) {
+      bonus *= milestone.value;
+    } else if (milestone.type === 'number' && level > 0 && milestone.value) {
+      bonus *= Math.pow(milestone.value, level);
+    }
+  }
+  return bonus;
+});
+
 // Getter für Milestone-Status (aktiv/inaktiv)
 function getMilestoneLevel(item) {
   return hunterStore.getUpgradeValue(category, item.id);
 }
 
+const ts17Active = ref(false);
+
+function toggleTs17() {
+  ts17Active.value = !ts17Active.value;
+  if (!ts17Active.value) {
+    hunterStore.updateUpgrade(category, 'cm_ultimas', 0);
+  }
+  try { localStorage.setItem('cm_ultima_ts17', JSON.stringify(ts17Active.value)); } catch (e) {}
+}
+
 // Milestone Level aktualisieren (für numerische Milestones)
 function updateMilestoneLevel(item, newLevel) {
-  // Finde das Milestone-Objekt um Limits zu prüfen
+  if (item.id === 'cm_ultimas' && !ts17Active.value) return;
   const milestone = allConstructionMilestones.value.find(m => m.id === item.id);
   if (!milestone) return;
   
@@ -220,6 +272,13 @@ function formatMilestoneValue(milestone, level) {
   // Pro 3 Milestones -0.01 Attack Speed
   const totalReduction = Math.floor(level / 3) * 0.01;
   return `-${totalReduction.toFixed(2)}`;
+}
+
+// value^level Multiplikator für numerische Milestones wie cm_ultima
+function formatNumberMilestoneValue(milestone, level) {
+  if (level <= 0) return '-';
+  if (milestone.value) return `x${Math.pow(milestone.value, level).toFixed(3)}`;
+  return level;
 }
 
 // useButtonControls initialisieren mit den richtigen Funktions-Signaturen

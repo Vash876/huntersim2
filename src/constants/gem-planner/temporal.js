@@ -6,7 +6,7 @@ import Decimal from 'break_infinity.js';
 export const TEMPORAL_GEM = {
   id: 'temporal',
   name: 'Temporal',
-  maxLevel: 3,
+  maxLevel: 4,
   color: {
     primary: '#dc2626', // Red
     secondary: '#e67b7bff', // Light Red

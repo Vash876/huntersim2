@@ -61,6 +61,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@vitejs/plugin-vue": "^5.2.1",
     "assemblyscript": "^0.28.2",
+    "firebase-admin": "^13.10.0",
     "rollup": "^4.40.0",
     "unplugin-icons": "^22.1.0",
     "unplugin-vue-components": "^28.4.1",

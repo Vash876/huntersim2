@@ -216,8 +216,9 @@ function updateUpgradeLevel(item, newLevel) {
   
   switch (inscryption.format) {
     case 'value':
-      const valueResult = Math.round(inscryption.add * level);
-      return inscryption.add ? `+${valueResult}` : `+${valueResult}`;
+      const valueResult = inscryption.add * level;
+      const formatted = Number.isInteger(valueResult) ? valueResult : valueResult.toFixed(2);
+      return `+${formatted}`;
       
     case 'percent':
       const percentResult = (inscryption.add * level).toFixed(2);

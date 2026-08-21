@@ -65,7 +65,7 @@
                 <ToolValueControls
                   :value="mpValue"
                   :minValue="0"
-                  :maxValue="15000"
+                  :maxValue="150000"
                   :step="10"
                   :fastStep="100"
                   :validateOnFinalOnly="true"
@@ -157,64 +157,26 @@
                   class="ml-2"
                 />
               </div>
-              
-              <div class="flex items-center gap-2">
-                <span class="text-sm text-gray-300">Ultima Cap:</span>
-                <span class="text-sm text-white font-medium">+{{ totalUltimaCap }}</span>
+
+              <!-- Ultima Cap -->
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-sm text-gray-300">+Ultima Cap</label>
+                <ToolValueControls
+                  :value="totalUltimaCap"
+                  :minValue="0"
+                  :maxValue="999"
+                  :step="1"
+                  :fastStep="10"
+                  :showFastControls="false"
+                  @update:value="handleTotalUltimaCapUpdate"
+                  value-class="text-blue-400 font-medium"
+                  :autoEdit="true"
+                  class="ml-2"
+                />
               </div>
             </div>
           </div>
           
-          <!-- Ultima Cap Upgrades -->
-          <div class="mt-4 bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-            <div class="flex justify-between items-center mb-2">
-              <span class="font-medium text-white text-sm">Ultima Cap Upgrades</span>
-            </div>
-            
-            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
-              <div 
-                v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => !u.hasLevels)" 
-                :key="upgrade.id"
-                @click="toggleUltimaCapUpgrade(upgrade.id)"
-                class="px-2 py-1.5 rounded border text-center text-sm cursor-pointer transition-colors"
-                :class="selectedUltimaCapUpgrades.includes(upgrade.id) ? 
-                  'bg-blue-900/50 border-blue-500 text-blue-300' : 
-                  'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700'"
-              >
-                {{ upgrade.name }} (+{{ upgrade.bonus }})
-              </div>
-              
-              <!-- T2R1 Special Level Control -->
-              <div 
-                v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => u.hasLevels)" 
-                :key="upgrade.id"
-                class="rounded border text-center text-sm transition-colors flex items-stretch relative"
-                :class="t2r1Level > 0 ? 
-                  'bg-blue-800/40 border-blue-500 text-blue-300' : 
-                  'bg-gray-700/40 border-gray-700 text-gray-400'"
-              >
-                <button 
-                  @click="adjustT2r1Level(-1)"
-                  :disabled="t2r1Level <= 0"
-                  class="absolute left-0 top-0 bottom-0 w-6 rounded-l bg-gray-600/30 hover:bg-gray-500/50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center z-10 transition-colors"
-                >
-                  <IconChevronLeft size="14" />
-                </button>
-                
-                <span class="flex-1 py-1.5 px-8 text-sm">
-                  {{ upgrade.name }} (+{{ t2r1Level }})
-                </span>
-                
-                <button 
-                  @click="adjustT2r1Level(1)"
-                  :disabled="t2r1Level >= upgrade.maxLevel"
-                  class="absolute right-0 top-0 bottom-0 w-6 rounded-r bg-gray-600/30 hover:bg-gray-500/50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center z-10 transition-colors"
-                >
-                  <IconChevronRight size="14" />
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       
@@ -259,7 +221,7 @@
                   <ToolValueControls
                     :value="newMpValue"
                     :minValue="0"
-                    :maxValue="15000"
+                    :maxValue="150000"
                     :step="10"
                     :fastStep="100"
                     :validateOnFinalOnly="true"
@@ -339,60 +301,21 @@
                     class="ml-2"
                   />
                 </div>
-              </div>
-            </div>
-            
-            <!-- Ultima Cap Upgrades -->
-            <div class="mt-4 bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-              <div class="flex justify-between items-center mb-2">
-                <span class="font-medium text-white text-sm">New Ultima Cap Upgrades</span>
-              </div>
-              
-              <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
-                <div 
-                  v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => !u.hasLevels)" 
-                  :key="`new-${upgrade.id}`"
-                  @click="toggleNewUltimaCapUpgrade(upgrade.id)"
-                  class="px-2 py-1.5 rounded border text-center text-sm cursor-pointer transition-colors"
-                  :class="newSelectedUltimaCapUpgrades.includes(upgrade.id) ? 
-                    'bg-blue-900/50 border-blue-500 text-blue-300' : 
-                    selectedUltimaCapUpgrades.includes(upgrade.id) ?
-                    'bg-gray-700/50 border-gray-600 text-gray-400 cursor-default' :
-                    'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700'"
-                >
-                  {{ upgrade.name }} (+{{ upgrade.bonus }})
-                </div>
-                
-                <!-- T2R1 New Level Control -->
-                <div 
-                  v-for="upgrade in ULTIMA_CAP_UPGRADES.filter(u => u.hasLevels)" 
-                  :key="`new-${upgrade.id}`"
-                  class="rounded border text-center text-sm transition-colors flex items-stretch relative"
-                  :class="newT2r1Level > t2r1Level ? 
-                    'bg-blue-800/40 border-blue-500 text-blue-300' : 
-                    newT2r1Level > 0 ? 
-                    'bg-gray-700/40 border-gray-600 text-gray-400' :
-                    'bg-gray-700/40 border-gray-700 text-gray-400'"
-                >
-                  <button 
-                    @click="adjustNewT2r1Level(-1)"
-                    :disabled="newT2r1Level <= t2r1Level"
-                    class="absolute left-0 top-0 bottom-0 w-6 rounded-l bg-gray-600/30 hover:bg-gray-500/50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center z-10 transition-colors"
-                  >
-                    <IconChevronLeft size="14" />
-                  </button>
-                  
-                  <span class="flex-1 py-1.5 px-8 text-sm">
-                    {{ upgrade.name }} (+{{ newT2r1Level * upgrade.bonus }})
-                  </span>
-                  
-                  <button 
-                    @click="adjustNewT2r1Level(1)"
-                    :disabled="newT2r1Level >= upgrade.maxLevel"
-                    class="absolute right-0 top-0 bottom-0 w-6 rounded-r bg-gray-600/30 hover:bg-gray-500/50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center z-10 transition-colors"
-                  >
-                    <IconChevronRight size="14" />
-                  </button>
+                <!-- Ultima Cap -->
+                <div class="flex items-center justify-between mb-2">
+                  <label class="text-sm text-gray-300">+Ultima Cap</label>
+                  <ToolValueControls
+                    :value="newTotalUltimaCap"
+                    :minValue="totalUltimaCap"
+                    :maxValue="999"
+                    :step="1"
+                    :fastStep="10"
+                    :showFastControls="false"
+                    @update:value="handleNewTotalUltimaCapUpdate"
+                    value-class="text-blue-400 font-medium"
+                    :autoEdit="true"
+                    class="ml-2"
+                  />
                 </div>
               </div>
             </div>
@@ -698,6 +621,8 @@ const i75Level = ref(0); // Level statt Boolean
 const i61Level = ref(0); // Level statt Boolean
 const selectedUltimaCapUpgrades = ref([]);
 const t2r1Level = ref(0);
+const totalUltimaCap = ref(0);
+const newTotalUltimaCap = ref(0);
 const sortBy = ref('cost');
 const sortDirection = ref('asc');
 const mpValueRaw = ref(mpValue.value);
@@ -834,8 +759,7 @@ function initializeNewRequirements() {
   newTemporalGemLevel.value = temporalGemLevel.value;
   newI61Level.value = i61Level.value;
   newI75Level.value = i75Level.value;
-  newSelectedUltimaCapUpgrades.value = [...selectedUltimaCapUpgrades.value];
-  newT2r1Level.value = t2r1Level.value;
+  newTotalUltimaCap.value = totalUltimaCap.value;
   newMpValue.value = mpValue.value;
   newMpValueRaw.value = mpValue.value;
   newTemporalGemLevelRaw.value = temporalGemLevel.value;
@@ -848,14 +772,7 @@ function initializeNewRequirements() {
 function checkNewlyAvailableMods() {
   if (!showRequirementsPanel.value) return;
 
-  // Berechne neue total Ultima Cap
-  const newRegularBonus = ULTIMA_CAP_UPGRADES
-    .filter(upgrade => !upgrade.hasLevels && newSelectedUltimaCapUpgrades.value.includes(upgrade.id))
-    .reduce((sum, upgrade) => sum + upgrade.bonus, 0);
-  
-  const t2r1Upgrade = ULTIMA_CAP_UPGRADES.find(upgrade => upgrade.id === 'T2R1');
-  const newT2r1Bonus = t2r1Upgrade ? newT2r1Level.value * t2r1Upgrade.bonus : 0;
-  const newTotalUltimaCap = newRegularBonus + newT2r1Bonus;
+  const newTotalUltimaCapVal = newTotalUltimaCap.value;
   
   console.log('=== DEBUG: checkNewlyAvailableMods ===');
   console.log('Old requirements:', {
@@ -869,7 +786,7 @@ function checkNewlyAvailableMods() {
     temporalGemLevel: newTemporalGemLevel.value,
     i61: newI61Level.value,
     i75: newI75Level.value,
-    ultimaCap: newTotalUltimaCap
+    ultimaCap: newTotalUltimaCapVal
   });
   
   console.log('MP Value:', newMpValue.value);
@@ -891,7 +808,7 @@ function checkNewlyAvailableMods() {
     if (mod.requiresTemp3 && newTemporalGemLevel.value < 3) return false;
     if (mod.requiresI61Level && mod.requiresI61Level > newI61Level.value) return false;
     if (mod.requiresI75Level && mod.requiresI75Level > newI75Level.value) return false;
-    if (mod.requiresUltimaCap && mod.requiresUltimaCap > newTotalUltimaCap) return false;
+    if (mod.requiresUltimaCap && mod.requiresUltimaCap > newTotalUltimaCapVal) return false;
     if (mod.cost > newMpValue.value) return false;
     return true;
   });
@@ -999,17 +916,6 @@ function finalizeNewI75Level() {
 }
 
 // Computed
-const totalUltimaCap = computed(() => {
-  const regularBonus = ULTIMA_CAP_UPGRADES
-    .filter(upgrade => !upgrade.hasLevels && selectedUltimaCapUpgrades.value.includes(upgrade.id))
-    .reduce((sum, upgrade) => sum + upgrade.bonus, 0);
-  
-  const t2r1Upgrade = ULTIMA_CAP_UPGRADES.find(upgrade => upgrade.id === 'T2R1');
-  const t2r1Bonus = t2r1Upgrade ? t2r1Level.value * t2r1Upgrade.bonus : 0;
-  
-  return regularBonus + t2r1Bonus;
-});
-
 const filteredLoopMods = computed(() => {
   let result = allLoopMods.value;
 
@@ -1157,6 +1063,18 @@ function finalizeAllTimeHighestMP() {
   }
 }
 
+function handleTotalUltimaCapUpdate(val) {
+  totalUltimaCap.value = val;
+  saveFilters();
+}
+
+function handleNewTotalUltimaCapUpdate(val) {
+  if (val >= totalUltimaCap.value) {
+    newTotalUltimaCap.value = val;
+    checkNewlyAvailableMods();
+  }
+}
+
 // Methods
 function toggleUltimaCapUpgrade(id) {
   if (selectedUltimaCapUpgrades.value.includes(id)) {
@@ -1210,6 +1128,7 @@ function resetFilters() {
   i61Level.value = 0; // Angepasst
   selectedUltimaCapUpgrades.value = [];
   t2r1Level.value = 0;
+  totalUltimaCap.value = 0;
   sortBy.value = 'cost';
   sortDirection.value = 'asc';
   saveFilters();
@@ -1249,10 +1168,7 @@ function loadFilters() {
     if (savedFilters.mpRangeEnabled !== undefined) mpRangeEnabled.value = savedFilters.mpRangeEnabled;
     if (savedFilters.i75Level !== undefined) i75Level.value = Number(savedFilters.i75Level); // Angepasst
     if (savedFilters.i61Level !== undefined) i61Level.value = Number(savedFilters.i61Level); // Angepasst
-    if (savedFilters.selectedUltimaCapUpgrades !== undefined) {
-      selectedUltimaCapUpgrades.value = savedFilters.selectedUltimaCapUpgrades;
-    }
-    if (savedFilters.t2r1Level !== undefined) t2r1Level.value = Number(savedFilters.t2r1Level);
+    if (savedFilters.totalUltimaCap !== undefined) totalUltimaCap.value = Number(savedFilters.totalUltimaCap);
     if (savedFilters.sortBy !== undefined) sortBy.value = savedFilters.sortBy;
     if (savedFilters.sortDirection !== undefined) sortDirection.value = savedFilters.sortDirection;
   } catch (error) {
@@ -1270,8 +1186,7 @@ function saveFilters() {
       mpRangeEnabled: mpRangeEnabled.value,
       i75Level: i75Level.value, // Angepasst
       i61Level: i61Level.value, // Angepasst
-      selectedUltimaCapUpgrades: selectedUltimaCapUpgrades.value,
-      t2r1Level: t2r1Level.value,
+      totalUltimaCap: totalUltimaCap.value,
       sortBy: sortBy.value,
       sortDirection: sortDirection.value
     }));

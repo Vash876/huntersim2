@@ -96,10 +96,11 @@ export const HUNTER_UPGRADES = {
   relics: ["r4", "r7", "r17", "t2r7"],
   inscryptions: ["i31", "i32", "i33", "i36", "i37", "i40", "i81", "i86", "i92", "i104"],
   gadgets: ["zaptron"],
-  loopmods: ["scavenger2", "stelzi"],
+  loopmods: ["scavenger2", "stelzi", "roe"],
   shardmilestones: ["m0"],
   researches: ["res810", "res95", "res105"],
-  cms: ["cm46", "cm47", "cm48", "cm51", "cm53", "cm54", "cm57"],
+  cms: ["cm46", "cm47", "cm48", "cm51", "cm53", "cm54", "cm57", "cm58", "cm_ultima", "cm_ultimas"],
+  mats_exchange: ["torkinstone", "pytoxene", "gigantium"],
   diamondspecials: ["hunterloot", "reviveboost"],
   diamondcards: ["iridian"],	
   iap: ["travpack"],
@@ -191,6 +192,9 @@ export const EVAL_PARAMS = [
   "upgrades.cms.cm53",              // Construction Milestone 53
   "upgrades.cms.cm54",              // Construction Milestone 54
   "upgrades.cms.cm57",              // Construction Milestone 57
+  "upgrades.cms.cm58",              // Construction Milestone 58
+  "upgrades.cms.cm_ultima",          // Construction Milestone Ultima
+  "upgrades.cms.cm_ultimas",          // Construction Milestone Ultimas
   "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
   "upgrades.gems_nodes.evolution_gem2", // Evolution Gem Node 2
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
@@ -208,6 +212,8 @@ export const EVAL_PARAMS = [
   "upgrades.gems_nodes.creation_gem6",      // Creation Gem Node 6
   "upgrades.gems_nodes.evolution_gem6",         // Evolution Gem Node 6
   "upgrades.relics.t2r7",                     // Relic T2R7
+  "upgrades.loopmods.roe",             // Rule of Experience
+  "upgrades.mats_exchange.tysconDrives",     // Total Tyscon Drives (mat exchange)
 ];
 
 export const EVAL_RESULT_LABELS = {
@@ -300,6 +306,9 @@ export const OVERRIDES = {
     "upgrades.cms.cm53",
     "upgrades.cms.cm54",
     "upgrades.cms.cm57",
+    "upgrades.cms.cm58",            // Construction Milestone 58
+    "upgrades.cms.cm_ultima",       // Construction Milestone Ultima
+    "upgrades.cms.cm_ultimas",      // Construction Milestone Ultimas
     "upgrades.cms.milestoneCount",
   ],
 
@@ -307,6 +316,7 @@ export const OVERRIDES = {
   loopmods: [
     "upgrades.loopmods.scavenger2",   // Scavengers Advantage
     "upgrades.loopmods.stelzi",       // Stelzi
+    "upgrades.loopmods.roe",          // Rule of Experience
   ],
 
   // Shard Milestones
@@ -359,6 +369,10 @@ export const OVERRIDES = {
   diamondCards: [
     "upgrades.diamondcards.iridian",         // Diamond Card (Gaiden)
   ],
+
+  matsExchange: [
+    "upgrades.mats_exchange.tysconDrives",  // Tyscon Drives total
+  ],
 };
 
 // Für den Fall, dass du auch ein flaches Array benötigst
@@ -376,7 +390,8 @@ export const OVERRIDES_FLAT = [
   ...OVERRIDES.gemUpgrades,
   ...OVERRIDES.gemLevels,
   ...OVERRIDES.trinkets,
-  ...OVERRIDES.diamondCards
+  ...OVERRIDES.diamondCards,
+  ...OVERRIDES.matsExchange
 ];
 
 // Kategorie-Namen für das UI
@@ -450,7 +465,6 @@ export const BUILD_CODE_PARAMS = [
   "upgrades.diamondspecials.reviveboost", // Revive Cooldown
   "upgrades.gems_nodes.creation_ozzyGU", // Creation Gem Node (Ozzy)
   "upgrades.gems_nodes.evolution_gem3", // Evolution Gem Node 3
-  "upgrades.loopmods.stelzi",           // Stelzi
   "upgrades.gems_nodes.exodus_gem3",      // Exodus Gem Node 3
   "upgrades.gems_nodes.exodus_gem4",      // Exodus Gem Node 4
   "upgrades.cms.milestoneCount",  // Exodus Milestones Count

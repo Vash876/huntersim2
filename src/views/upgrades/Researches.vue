@@ -23,27 +23,41 @@
           <!-- Effekt-Box mit Hunter-Multiplikatoren -->
           <div class="bg-gray-900/50 p-3 rounded-md w-full mb-4">
             
-            <!-- Hunter-spezifische Multiplikatoren -->
-            <div 
-              v-for="hunter in HUNTERS"
-              :key="`${research.id}-${hunter.id}`"
-              class="flex justify-between items-center py-1"
-            >
-              <span class="text-gray-400 text-sm">
-                {{ hunter.name }} {{ research.multitext || 'Bonus' }}
-              </span>
-              <span 
-                class="text-white font-medium text-sm"
-                :class="{
-                  'text-red-300': hunter.color === 'red',
-                  'text-green-300': hunter.color === 'green',
-                  'text-blue-300': hunter.color === 'blue',
-                  'text-purple-300': hunter.color === 'purple'
-                }"
+            <!-- Per-Stat Anzeige (wenn Tier stats-Objekt hat, z.B. res112) -->
+            <template v-if="getResearchTierStats(research, getResearchLevel({ id: research.id }))">
+              <div
+                v-for="(value, statKey) in getResearchTierStats(research, getResearchLevel({ id: research.id }))"
+                :key="`${research.id}-${statKey}`"
+                class="flex justify-between items-center py-1"
               >
-                {{ formatResearchValue(research, getResearchLevel({ id: research.id }), hunter.id) }}
-              </span>
-            </div>
+                <span class="text-gray-400 text-sm">Knox {{ STAT_LABELS[statKey] || statKey }}</span>
+                <span class="text-white font-medium text-sm">x{{ value.toFixed(2) }}</span>
+              </div>
+            </template>
+
+            <!-- Hunter-spezifische Multiplikatoren (normal) -->
+            <template v-else>
+              <div 
+                v-for="hunter in getResearchHunters(research)"
+                :key="`${research.id}-${hunter.id}`"
+                class="flex justify-between items-center py-1"
+              >
+                <span class="text-gray-400 text-sm">
+                  {{ hunter.name }} {{ research.multitext || 'Bonus' }}
+                </span>
+                <span 
+                  class="text-white font-medium text-sm"
+                  :class="{
+                    'text-red-300': hunter.color === 'red',
+                    'text-green-300': hunter.color === 'green',
+                    'text-blue-300': hunter.color === 'blue',
+                    'text-purple-300': hunter.color === 'purple'
+                  }"
+                >
+                  {{ formatResearchValue(research, getResearchLevel({ id: research.id }), hunter.id) }}
+                </span>
+              </div>
+            </template>
           </div>
         </UpgradeCard>
       </UpgradeGrid>
@@ -158,6 +172,25 @@ function formatResearchValue(research, level, hunterId) {
   
   // Formatiere den Wert mit x-Präfix
   return `x${value.toFixed(2)}`;
+}
+
+// Nur Hunter anzeigen, die im Research tatsächlich Multiplikatoren haben
+function getResearchHunters(research) {
+  if (!research.tiers) return HUNTERS;
+  const hunterIds = new Set();
+  research.tiers.forEach(tier => {
+    if (tier.multipliers) Object.keys(tier.multipliers).forEach(id => hunterIds.add(id));
+  });
+  if (hunterIds.size === 0) return HUNTERS;
+  return HUNTERS.filter(h => hunterIds.has(h.id));
+}
+
+const STAT_LABELS = { atk: 'Atk Power', hp: 'HP', regen: 'HP Regen' };
+
+function getResearchTierStats(research, level) {
+  if (!research.tiers) return null;
+  const tier = research.tiers.find(t => t.level === level);
+  return tier?.stats || null;
 }
 
 // useButtonControls initialisieren mit den richtigen Funktions-Signaturen

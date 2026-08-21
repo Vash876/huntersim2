@@ -32,7 +32,7 @@
           class="text-xs transition-colors duration-300"
           :class="isMaxed ? maxedSubTextClass : 'text-gray-500'"
         >
-          {{ maxLevel !== Infinity ? `/${formattedMaxLevel}` : '' }}
+          {{ maxLevel != null && maxLevel !== Infinity ? `/${formattedMaxLevel}` : '' }}
         </span>
       </div>
     </div>

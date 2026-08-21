@@ -58,6 +58,7 @@ const routes = [
       { path: 'diamondcards',    name: 'Diamond Cards',           component: () => import('../views/upgrades/DiamondCards.vue') },
       { path: 'iap',             name: 'IAP',                     component: () => import('../views/upgrades/IAP.vue') },
       { path: 'ultima',          name: 'Ultima',                  component: () => import('../views/upgrades/Ultima.vue') },
+      { path: 'matsexchange',     name: 'Material Exchange',       component: () => import('../views/upgrades/MaterialExchange.vue') },
     ]
   },
 
@@ -134,6 +135,11 @@ const routes = [
     path: '/debug/enemy-stats',
     name: 'Enemy Stats Debug',
     component: () => import('../views/debug/EnemyStatsDebug.vue'),
+  },
+  {
+    path: '/admin/backup-downloader',
+    name: 'Admin Backup Downloader',
+    component: () => import('../views/admin/BackupDownloader.vue'),
   },
 
   // Settings Route

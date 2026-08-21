@@ -153,6 +153,24 @@ export const UPGRADES = {
         { level: 5, multipliers: { borge: 1.56, ozzy: 1.56, knox: 1.2 } },  
         { level: 6, multipliers: { borge: 1.56, ozzy: 1.56, knox: 1.56 } }, 
       ]
+    },
+    {
+      id: "res112",
+      name: "Research #112",
+      hunter: "Knox",
+      type: "level",
+      maxLevel: 6,
+      unlock_gem: "innovation",
+      unlock_lvl: 3,
+      tiers: [
+        { level: 0, stats: { atk: 1.00,   hp: 1.00,   regen: 1.00   } },
+        { level: 1, stats: { atk: 1.03,   hp: 1.00,   regen: 1.00   } },
+        { level: 2, stats: { atk: 1.03,   hp: 1.03,   regen: 1.00   } },
+        { level: 3, stats: { atk: 1.03,   hp: 1.03,   regen: 1.03   } },
+        { level: 4, stats: { atk: 1.0609, hp: 1.03,   regen: 1.03   } },
+        { level: 5, stats: { atk: 1.0609, hp: 1.0609, regen: 1.03   } },
+        { level: 6, stats: { atk: 1.0609, hp: 1.0609, regen: 1.0609 } },
+      ]
     }
   ],
 
@@ -591,6 +609,28 @@ export const UPGRADES = {
       format: "multiplier",
       color: "blue"
     },
+    {
+      id: "i114",
+      name: "Inscryption #114",
+      hunter: "knox",
+      type: "level",
+      add: 0.6,
+      maxLevel: 3,
+      description: "Base ATK Power",
+      format: "value",
+      color: "blue"
+    },
+    {
+      id: "i115",
+      name: "Inscryption #115",
+      hunter: "knox",
+      type: "level",
+      add: 0.12,
+      maxLevel: 7,
+      description: "Flat DMG Reduction",
+      format: "percent",
+      color: "blue"
+    }
   ],
 
   ///////////////GEMS////////////////
@@ -743,6 +783,16 @@ export const UPGRADES = {
       maxLevel: 8,  //+e600 cost
       description: "Loot Rewards",
     },
+    {
+      id: "roe",
+      name: "Ultima: Rule of Experience",
+      hunter: "all",
+      type: "level",
+      upgradeType: "multiplicative",
+      temporary: true,
+      value: 1.0001,
+      description: "EXP Gained",
+    }
   ],
 
   ///////////////CONSTRUCTION MILESTONES////////////////
@@ -819,6 +869,36 @@ export const UPGRADES = {
       unlock_lvl: 2,
     },
     {
+      id: "cm58",
+      name: "CM #58",
+      type: "boolean",
+      temporary: true,
+      value: 1.08,
+      multitext: "Hunter Loot Rewards",
+      unlock_gem: "power",
+      unlock_lvl: 2,
+    },
+    {
+      id: "cm_ultima",
+      name: "CM Ultima #2",
+      type: "number",
+      temporary: true,
+      value: 1.002,
+      multitext: "Hunter Loot Rewards",
+      unlock_gem: "power",
+      unlock_lvl: 3,
+    },
+    {
+      id: "cm_ultimas",
+      name: "CM Ultima Count",
+      type: "number",
+      temporary: true,
+      value: 1.001,
+      multitext: "Hunter Loot Rewards",
+      unlock_gem: "power",
+      unlock_lvl: 3,
+    },
+    {
       id: "milestoneCount",
       name: "Milestones Count ",
       hunter: "all",
@@ -872,6 +952,35 @@ export const UPGRADES = {
       unlock_gem: "creation",
       unlock_lvl: 4,
       unlock_node: 5,
+    },
+  ],
+
+  ///////////////MATS EXCHANGE////////////////
+
+  mats_exchange: [
+    {
+      id: "torkinstone",
+      name: "Torkinstone EDC",
+      type: "level",
+      value: 1,
+      upgradeType: "additive",
+      maxLevel: Infinity,
+    },
+    {
+      id: "pytoxene",
+      name: "Pytoxene EDC",
+      type: "level",
+      value: 4,
+      upgradeType: "additive",
+      maxLevel: Infinity,
+    },
+    {
+      id: "gigantium",
+      name: "Gigantium EDC",
+      type: "level",
+      value: 8,
+      upgradeType: "additive",
+      maxLevel: Infinity,
     },
   ],
 

@@ -41,6 +41,11 @@ async function initializeWorker() {
  * Parameter-Extraktion mit Unterstützung für useSeeded
  */
 function extractParamValue(storeData, hunterId, buildData, param) {
+  // Tyscon Drives: computed from mats_exchange levels
+  if (param === 'upgrades.mats_exchange.tysconDrives') {
+    const mx = storeData.upgrades?.mats_exchange || {};
+    return (mx.torkinstone || 0) * 1 + (mx.pytoxene || 0) * 4 + (mx.gigantium || 0) * 8;
+  }
   // Spezielle Behandlung für useSeeded-Parameter
   if (param === 'useSeeded') {    
     // Muss explizit prüfen, ob der Wert === false ist
