@@ -99,18 +99,18 @@
                 type="range" 
                 v-model.number="multiplierValue" 
                 min="1" 
-                max="3.4476" 
+                max="10" 
                 step="0.0001"
                 class="w-full appearance-none bg-gray-700/60 h-5 rounded-full outline-none cursor-pointer"
                 @change="updateUltimaValue"
               >
               <div class="relative mt-1 h-4">
-                <span class="absolute left-0 text-xs text-gray-500">1.0×</span>
-                <span class="absolute left-[21%] transform -translate-x-1/2 text-xs text-gray-500">1.5×</span>
-                <span class="absolute left-[41%] transform -translate-x-1/2 text-xs text-gray-500">2×</span>
-                <span class="absolute left-[61.5%] transform -translate-x-1/2 text-xs text-gray-500">2.5×</span>
-                <span class="absolute left-[81.6%] transform -translate-x-1/2 text-xs text-gray-500">3.0×</span>
-                <span class="absolute right-0 text-xs text-gray-500">3.4476×</span>
+                <span class="absolute left-0 text-xs text-gray-500">1×</span>
+                <span class="absolute left-[21%] transform -translate-x-1/2 text-xs text-gray-500">2.8×</span>
+                <span class="absolute left-[40%] transform -translate-x-1/2 text-xs text-gray-500">4.6×</span>
+                <span class="absolute left-[60%] transform -translate-x-1/2 text-xs text-gray-500">6.4×</span>
+                <span class="absolute left-[80%] transform -translate-x-1/2 text-xs text-gray-500">8.2×</span>
+                <span class="absolute right-0 text-xs text-gray-500">10×</span>
               </div>
             </div>
           </div>

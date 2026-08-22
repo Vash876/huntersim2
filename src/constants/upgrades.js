@@ -792,6 +792,8 @@ export const UPGRADES = {
       temporary: true,
       value: 1.0001,
       description: "EXP Gained",
+      unlock_gem: "temporal",
+      unlock_lvl: 4,
     }
   ],
 

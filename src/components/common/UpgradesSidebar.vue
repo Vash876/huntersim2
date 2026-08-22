@@ -81,7 +81,7 @@ const PATH_TO_CATEGORY = Object.fromEntries(
 const NO_MAX_THRESHOLD = 1000;
 
 const STATIC_MAX_VALUES = {
-  'ulti': 3.4476,
+  'ulti': 10,
 };
 
 function isPathMaxed(path) {

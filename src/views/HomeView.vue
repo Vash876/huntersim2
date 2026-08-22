@@ -2,6 +2,19 @@
 const changelog = 
 [
   {
+    version: '2.15.1',
+    date: '2026-08-22',
+    changes: [
+      {
+        text: 'Hunter Simulator',
+        subItems: [
+          'Increased Ultima Cap limit',
+          'Added cost calculations for Inscryptions #114 and #115',
+        ]
+      },
+    ]
+  },
+  {
     version: '2.15.0',
     date: '2026-08-21',
     changes: [

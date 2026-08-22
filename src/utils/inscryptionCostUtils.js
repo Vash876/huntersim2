@@ -43,11 +43,8 @@ const INSCRYPTION_CONFIGS = {
   i108: { startValue: 8e20, multiplier: 3 },
   i109: { startValue: 9e20, multiplier: 3 },
   i110: { startValue: 1e21, multiplier: 10 },
-  // Hier können einfach neue Inscryptions hinzugefügt werden:
-  // i31: { startValue: 50000, multiplier: 2.5 },
-  // i36: { startValue: 75000, multiplier: 3.2 },
-  // i37: { startValue: 120000, multiplier: 2.8 },
-  // i40: { startValue: 200000, multiplier: 3.5 },
+  i114: { startValue: 25e27, multiplier: 10 },
+  i115: { startValue: 1e29, multiplier: 5 },
 };
 
 /**
