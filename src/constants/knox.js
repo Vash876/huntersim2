@@ -204,9 +204,9 @@ export const EVAL_PARAMS = [
   "upgrades.relics.t2r5",                     // Relic T2R5
   "upgrades.relics.t2r7",                     // Relic T2R7
   "upgrades.loopmods.roe",             // Rule of Experience
-  "upgrades.mats_exchange.tysconDrives",     // Total Tyscon Drives (mat exchange)
   "upgrades.inscryptions.i114",        // Inscription #114
   "upgrades.inscryptions.i115",        // Inscription #115
+  "upgrades.mats_exchange.tysconDrives",     // Total Tyscon Drives (mat exchange)
 ];
 
 export const EVAL_RESULT_LABELS = {
