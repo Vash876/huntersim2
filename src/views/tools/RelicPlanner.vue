@@ -27,22 +27,15 @@
         <div class="p-2 sm:p-4">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
-            <!-- Fragments per Day (manual or auto from Mission Planner) -->
+            <!-- Fragments per Day -->
             <div class="bg-gray-900/60 rounded-lg p-3 border border-gray-700/50">
-              <div class="font-medium text-white text-sm mb-1 flex items-center gap-1.5">
-                Fragments per Day
-                <span v-if="mpFragsPerDay > 0" class="text-[10px] bg-purple-800/60 text-purple-300 px-1.5 py-0.5 rounded font-normal">Auto</span>
-              </div>
-              <div class="text-xs text-gray-400 mb-2">
-                <span v-if="mpFragsPerDay > 0">From Mission Planner</span>
-                <span v-else>Enter your daily fragment rate</span>
-              </div>
+              <div class="font-medium text-white text-sm mb-1">Fragments per Day</div>
+              <div class="text-xs text-gray-400 mb-2">Enter your daily fragment rate</div>
               <SuffixInput
                 v-model="fragmentsPerDay"
                 placeholder="0"
                 :focus-ring-class="'focus:ring-purple-500'"
-                :disabled="mpFragsPerDay > 0"
-                class="w-full text-sm bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+                class="w-full text-sm bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none"
               />
             </div>
 
@@ -55,7 +48,7 @@
                   placement="top"
                 />
                 <button
-                  v-if="mpFragsPerDay > 0"
+                  v-if="hasMissionPlannerAccess && (missionPlannerStore.totalCampaignFragments?.value ?? 0) > 0"
                   @click="addCampaignFragments"
                   class="ml-auto flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-purple-700 hover:bg-purple-600 active:bg-purple-800 text-white rounded-lg shadow transition-colors whitespace-nowrap border border-purple-500/40"
                   title="Add total TR campaign fragments to current balance"
@@ -734,12 +727,6 @@ const hasMissionPlannerAccess = computed(() => {
   return SECRET_ACCESS_IDS.includes(userId) || hasSecretAccessCached();
 });
 
-// Auto-calculated fragments/day from Mission Planner (> 0 only when MP is actively used)
-const mpFragsPerDay = computed(() => {
-  if (!hasMissionPlannerAccess.value) return 0;
-  return (missionPlannerStore.getTotalFarmFragsPerHour?.(missionPlannerStore.missionAssignments) ?? 0) * 24;
-});
-
 function addCampaignFragments() {
   const amount = missionPlannerStore.totalCampaignFragments?.value ?? 0;
   if (!amount) return;
@@ -1108,11 +1095,6 @@ watch(
   () => syncRelicLevelsFromHunterStore(),
   { deep: true }
 );
-
-// Auto-sync Mission Planner fragments/day → Relic Planner (transparent for non-MP users)
-watch(mpFragsPerDay, (val) => {
-  if (val > 0) store.updateFragmentsPerDay(Math.round(val));
-}, { immediate: true });
 
 onUnmounted(() => {
   if (liveInterval) clearInterval(liveInterval);
